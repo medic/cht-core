@@ -218,7 +218,7 @@ describe('Selectors', () => {
     });
 
     it('should getBubbleCounter', () => {
-      expect(Selectors.getBubbleCounter.projector(state)).to.deep.equal({
+      expect(Selectors.getBubbleCounter.projector(state.global, state.tasks)).to.deep.equal({
         ...clonedState.global.bubbleCounter,
         task: clonedState.tasks.overdue.tasks.length || 0
       });
