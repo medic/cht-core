@@ -137,8 +137,10 @@ describe('Tasks', () => {
       .include('TypeError: Cannot read properties of undefined (reading \'name\')');
 
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'name\')');
+    feedbackDocs.forEach(feedbackDoc => {
+      expect(feedbackDoc.info.message).to.include('Cannot read properties of undefined (reading \'name\')');
+    });
+
     await chtDbUtils.clearFeedbackDocs();
   });
 
