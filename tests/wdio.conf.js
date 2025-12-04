@@ -188,10 +188,11 @@ const baseConfig = {
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
-  specFileRetries: DEBUG ? 0 : 5,
+  // specFileRetries: DEBUG ? 0 : 5,
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
+    retries: DEBUG ? 0 : 5,
   },
   //
   // =====
