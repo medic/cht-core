@@ -26,34 +26,16 @@ describe('Replication Limit Log service', () => {
         });
     });
 
-    it('should persist log', () => {
+    it('should persist log with all docs count', () => {
       const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
       const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
       const logType = replicationLimitLogService.LOG_TYPE;
-      const expectedDoc = {
-        _id: logType + 'userXYZ',
-        user: 'userXYZ',
-        count: 100
-      };
 
-      return replicationLimitLogService
-        .put('userXYZ', 100)
-        .then(() => {
-          chai.expect(getStub.called).to.be.true;
-          chai.expect(putStub.called).to.be.true;
-          chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
-        });
-    });
-
-    it('should persist log with pre-purge count', () => {
-      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
-      const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
-      const logType = replicationLimitLogService.LOG_TYPE;
       const expectedDoc = {
         _id: logType + 'userXYZ',
         user: 'userXYZ',
         count: 100,
-        prePurgeCount: 500
+        all_docs_count: 500
       };
 
       return replicationLimitLogService
@@ -129,11 +111,13 @@ describe('Replication Limit Log service', () => {
     it('should return false when logs are not different enough', () => {
       const oldLog = {
         date: 1583944505000, // 2020/03/12 03:05:05
-        count: 50
+        count: 50,
+        all_docs_count: 100
       };
       const newLog = {
         date: 1584635705000, // 2020/03/20 03:05:05
-        count: 40
+        count: 55,
+        all_docs_count: 105
       };
 
       const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
@@ -182,16 +166,16 @@ describe('Replication Limit Log service', () => {
       chai.expect(result).to.be.true;
     });
 
-    it('should return true when pre-purge count is different enough', () => {
+    it('should return true when all_docs_count count is different enough', () => {
       const oldLog = {
         date: 1583944505000,
         count: 50,
-        prePurgeCount: 100
+        all_docs_count: 100
       };
       const newLog = {
         date: 1583944505000,
         count: 50,
-        prePurgeCount: 250
+        all_docs_count: 250
       };
 
       const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
