@@ -99,7 +99,7 @@ const applyPhoneFilters = function(config, phone) {
 const normalizeRecipient= function(recipient) {
   const toArray = Array.isArray(recipient) ? recipient : [recipient];  
   return toArray.map(
-    r => (r === null ? '': String(r).trim())
+    r => (typeof r === 'string' || typeof r === 'number' ? String(r).trim(): '')
   ).filter(r => r.length > 0);
 };
 
@@ -126,14 +126,9 @@ const resolveMany = (context, recipients) => {
       return phone;
     }    
   }
-  return null;
 };
 
 const resolveRecipient = function(context, recipient) {
-  if (!recipient) {
-    return null;
-  }
-
   const resolvers = [
     {
       name: 'reporting_unit',

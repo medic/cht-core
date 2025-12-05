@@ -636,6 +636,10 @@ describe('messageUtils', () => {
       utils._getRecipient({from: 'foo'}, '', false)
         .should.equal('foo');
     });
+
+    it('returns first existing string from recipients', () => {
+      utils._getRecipient({from: 'foo'}, [false, true, undefined, null, 'bar'], false).should.equal('bar');
+    });
   });
 
   describe('extendedTemplateContext', () => {
