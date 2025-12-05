@@ -35,7 +35,7 @@ export const Selectors = {
   getBubbleCounter: createSelector(getGlobalState, getTasksState, (globalState, taskState) => {
     return {
       ...(globalState.bubbleCounter as any),
-      task: taskState.overdue?.tasks?.length || 0,
+      task: taskState.overdue?.length || 0,
     };
   }),
 
@@ -131,7 +131,7 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
-  getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue?.tasks),
+  getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
   getLastSubmittedTask: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.lastSubmittedTask),

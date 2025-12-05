@@ -116,10 +116,7 @@ const state = {
   },
   tasks: {
     tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
-    overdue: {
-      tasks: [],
-      calculatedAt: null,
-    },
+    overdue: [],
     loaded: 'are tasks loaded?',
     selected: { _id: 'selected task' },
     taskGroup: {
@@ -220,7 +217,7 @@ describe('Selectors', () => {
     it('should getBubbleCounter', () => {
       expect(Selectors.getBubbleCounter.projector(state.global, state.tasks)).to.deep.equal({
         ...clonedState.global.bubbleCounter,
-        task: clonedState.tasks.overdue.tasks.length || 0
+        task: clonedState.tasks.overdue.length || 0
       });
     });
 
@@ -491,10 +488,7 @@ describe('Selectors', () => {
     it('should getOverdueTasks with overdue tasks', () => {
       const stateWithOverdue = {
         ...state.tasks,
-        overdue: {
-          tasks: [{ _id: 'task1' }, { _id: 'task2' }],
-          calculatedAt: new Date()
-        }
+        overdue: [{ _id: 'task1' }, { _id: 'task2' }],
       };
       expect(Selectors.getOverdueTasks.projector(stateWithOverdue)).to.deep.equal([
         { _id: 'task1' },

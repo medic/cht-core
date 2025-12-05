@@ -17,10 +17,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, GlobalActions.clearSelected());
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: null,
         loaded: false,
         taskGroup: {
@@ -71,10 +68,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTasksLoaded(true));
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: null,
         loaded: true,
         taskGroup: {
@@ -125,10 +119,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setSelectedTask(selected));
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: selected,
         loaded: false,
         taskGroup: {
@@ -196,10 +187,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTasksList([]));
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: moment().valueOf(),
-        },
+        overdue: [],
         selected: null,
         loaded: false,
         taskGroup: {
@@ -228,10 +216,9 @@ describe('Tasks reducer', () => {
       expect(state.selected).to.deep.equal({ _id: 'aaa' });
       expect(state.loaded).to.equal(true);
       // First task is overdue (before 2025-06-01)
-      expect(state.overdue.tasks).to.deep.equal([
+      expect(state.overdue).to.deep.equal([
         { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready' }
       ]);
-      expect(moment(state.overdue.calculatedAt).isSame(moment(), 'second')).to.be.true;
     });
 
     it('should set the list to empty', () => {
@@ -244,8 +231,7 @@ describe('Tasks reducer', () => {
       expect(state.tasksList).to.deep.equal([]);
       expect(state.selected).to.deep.equal({ _id: 'aaa' });
       expect(state.loaded).to.equal(true);
-      expect(state.overdue.tasks).to.deep.equal([]);
-      expect(moment(state.overdue.calculatedAt).isSame(moment(), 'second')).to.be.true;
+      expect(state.overdue).to.deep.equal([]);
     });
 
     it('should sort provided tasks by due date', () => {
@@ -281,7 +267,7 @@ describe('Tasks reducer', () => {
         { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
       ]);
       // All numeric timestamps are before current date (2025-06-01), so they're all overdue
-      expect(state.overdue.tasks).to.have.deep.members([
+      expect(state.overdue).to.have.deep.members([
         { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
         { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
         { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
@@ -290,7 +276,6 @@ describe('Tasks reducer', () => {
         { _id: 'task5', dueDate: 500, state: 'Ready', field: 5 },
         { _id: 'task8', dueDate: 899, state: 'Ready', field: 8 },
       ]);
-      expect(moment(state.overdue.calculatedAt).isSame(moment(), 'second')).to.be.true;
     });
 
     it('should sort provided tasks by priority and due date', () => {
@@ -504,7 +489,7 @@ describe('Tasks reducer', () => {
         },
       ]);
       // All tasks with dates before 2025-06-01 are overdue
-      expect(state.overdue.tasks).to.have.deep.members([
+      expect(state.overdue).to.have.deep.members([
         {
           _id: 'task12',
           dueDate: '2025-05-17',
@@ -583,7 +568,6 @@ describe('Tasks reducer', () => {
           field: 6,
         },
       ]);
-      expect(moment(state.overdue.calculatedAt).isSame(moment(), 'second')).to.be.true;
     });
   });
 
@@ -593,10 +577,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setLastSubmittedTask(task));
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: null,
         loaded: false,
         taskGroup: {
@@ -677,10 +658,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTaskGroupContact(contact));
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: null,
         loaded: false,
         taskGroup: {
@@ -759,10 +737,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTaskGroupContactLoading(true));
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: null,
         loaded: false,
         taskGroup: {
@@ -809,10 +784,7 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.clearTaskGroup());
       expect(state).to.deep.equal({
         tasksList: [],
-        overdue: {
-          tasks: [],
-          calculatedAt: null,
-        },
+        overdue: [],
         selected: null,
         loaded: false,
         taskGroup: {
@@ -871,8 +843,7 @@ describe('Tasks reducer', () => {
         emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
       };
       state = tasksReducer(state, Actions.setOverdueTasks([task]));
-      expect(state.overdue.tasks).to.deep.equal([task]);
-      expect(state.overdue.calculatedAt).to.equal(null);
+      expect(state.overdue).to.deep.equal([task]);
     });
 
     it('should add new overdue task to existing overdue tasks', () => {
@@ -880,15 +851,12 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
-        overdue: {
-          tasks: [
-            {
-              _id: 'task1',
-              emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
-            }
-          ],
-          calculatedAt: moment('2025-05-31'),
-        },
+        overdue: [
+          {
+            _id: 'task1',
+            emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
+          }
+        ],
         taskGroup: {
           contact: null,
           loadingContact: null,
@@ -901,10 +869,8 @@ describe('Tasks reducer', () => {
         emission: { _id: 'task2', dueDate: '2025-05-15', state: 'Ready' }
       };
       state = tasksReducer(state, Actions.setOverdueTasks([newTask]));
-      expect(state.overdue.tasks.length).to.equal(2);
-      expect(state.overdue.tasks).to.deep.include(newTask);
-      // calculatedAt should remain the same for single task updates
-      expect(moment(state.overdue.calculatedAt).isSame(moment('2025-05-31'), 'second')).to.be.true;
+      expect(state.overdue.length).to.equal(2);
+      expect(state.overdue).to.deep.include(newTask);
     });
 
     it('should remove task that is no longer overdue', () => {
@@ -912,15 +878,12 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
-        overdue: {
-          tasks: [
-            {
-              _id: 'task1',
-              emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
-            }
-          ],
-          calculatedAt: moment('2025-05-31'),
-        },
+        overdue: [
+          {
+            _id: 'task1',
+            emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
+          }
+        ],
         taskGroup: {
           contact: null,
           loadingContact: null,
@@ -934,7 +897,7 @@ describe('Tasks reducer', () => {
         emission: { _id: 'task1', dueDate: '2025-12-01', state: 'Ready' }
       };
       state = tasksReducer(state, Actions.setOverdueTasks([updatedTask]));
-      expect(state.overdue.tasks.length).to.equal(0);
+      expect(state.overdue.length).to.equal(0);
     });
 
     it('should handle multiple tasks being updated at once', () => {
@@ -942,15 +905,12 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
-        overdue: {
-          tasks: [
-            {
-              _id: 'task1',
-              emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
-            }
-          ],
-          calculatedAt: moment('2025-05-31'),
-        },
+        overdue: [
+          {
+            _id: 'task1',
+            emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
+          }
+        ],
         taskGroup: {
           contact: null,
           loadingContact: null,
@@ -973,12 +933,7 @@ describe('Tasks reducer', () => {
         }
       ];
       state = tasksReducer(state, Actions.setOverdueTasks(tasks));
-      expect(state.overdue.tasks.length).to.equal(2);
-      expect(state.overdue.tasks).to.deep.include(tasks[1]);
-      expect(state.overdue.tasks).to.deep.include(tasks[2]);
-      expect(state.overdue.tasks).to.not.deep.include(tasks[0]);
-      // calculatedAt should be updated for multiple task updates
-      expect(moment(state.overdue.calculatedAt).isSame(moment(), 'second')).to.be.true;
+      expect(state.overdue).to.have.deep.members([tasks[1], tasks[2]]);
     });
   });
 });

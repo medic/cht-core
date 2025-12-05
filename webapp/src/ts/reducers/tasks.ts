@@ -6,10 +6,7 @@ import moment from 'moment';
 
 const initialState = {
   tasksList: [] as any[],
-  overdue: {
-    tasks: [] as any[],
-    calculatedAt: null as any,
-  },
+  overdue: [] as any[],
   selected: null,
   loaded: false,
   taskGroup: {
@@ -110,18 +107,15 @@ const _tasksReducer = createReducer(
     return {
       ...state,
       tasksList: sortedTasks,
-      overdue: {
-        tasks: overdueTasks,
-        calculatedAt: moment().valueOf(),
-      }
+      overdue: overdueTasks,
     };
   }),
 
   on(Actions.setOverdueTasks, (state, { payload: { tasks } }) => {
-    const overdueTasks = [...state.overdue.tasks];
+    const overdueTasks = [...state.overdue];
     tasks.forEach(task => {
       const isOverdue = isTaskOverdue(task.emission);
-      const overdueTaskIndex = state.overdue.tasks.findIndex(overdue => overdue._id === task._id);
+      const overdueTaskIndex = state.overdue.findIndex(overdue => overdue._id === task._id);
 
       const isCurrentlyOverdue = overdueTaskIndex !== -1;
 
@@ -136,10 +130,7 @@ const _tasksReducer = createReducer(
 
     return {
       ...state,
-      overdue: {
-        calculatedAt: tasks.length === 1 ? state.overdue.calculatedAt : moment().valueOf(),
-        tasks: overdueTasks,
-      }
+      overdue: overdueTasks,
     };
   }),
 
