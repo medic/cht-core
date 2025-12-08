@@ -55,7 +55,7 @@ describe('Recipient Resolution Integration', () => {
   after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
-  it('correctly resolves recipients', () => {
+  it('correctly resolves recipients', async () => {
     const settings = {
       transitions: { registration: true },
       sms: {
@@ -135,20 +135,17 @@ describe('Recipient Resolution Integration', () => {
       }
     };
 
-    return utils
-      .updateSettings(settings, { ignoreReload: 'sentinel' })
-      .then(() => utils.saveDocs([report]))
-      .then(() => sentinelUtils.waitForSentinel([report._id]))
-      .then(() => utils.getDocs([report._id]))
-      .then(([updated]) => {
-        expect(updated.scheduled_tasks.length).to.equal(6);
-        const [msg1, msg2, msg3, msg4, msg5, msg6] = updated.scheduled_tasks;
-        expect(msg1['messages'][0].to).to.equal(SENDER_PHONE);
-        expect(msg2['messages'][0].to).to.equal(SENDER_PHONE);
-        expect(msg3['messages'][0].to).to.equal(VALID_PHONE);
-        expect(msg4['messages'][0].to).to.equal(SENDER_PHONE);
-        expect(msg5['messages'][0].to).to.equal(HEALTHCENTER_PHONE);
-        expect(msg6['messages'][0].to).to.equal('field1');
-      });
+    await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
+    await utils.saveDocs([report]);
+    await sentinelUtils.waitForSentinel([report._id]);
+    const [updated] = await utils.getDocs([report._id]);
+    expect(updated.scheduled_tasks.length).to.equal(6);
+    const [msg1, msg2, msg3, msg4, msg5, msg6] = updated.scheduled_tasks;
+    expect(msg1['messages'][0].to).to.equal(SENDER_PHONE);
+    expect(msg2['messages'][0].to).to.equal(SENDER_PHONE);
+    expect(msg3['messages'][0].to).to.equal(VALID_PHONE);
+    expect(msg4['messages'][0].to).to.equal(SENDER_PHONE);
+    expect(msg5['messages'][0].to).to.equal(HEALTHCENTER_PHONE);
+    expect(msg6['messages'][0].to).to.equal('field1');
   });
 });

@@ -97,12 +97,11 @@ const applyPhoneFilters = function(config, phone) {
 };
 
 const normalizeRecipient= function(recipient) {
-  const toArray = Array.isArray(recipient) ? recipient : [recipient];  
-const recipientArray = Array.isArray(recipient) ? recipient : [recipient];  
-const isValid = r => typeof r === 'string' || typeof r === 'number';
-return recipientArray
-  .map(r => isValid(r) && String(r).trim())
-  .filter(Boolean);
+  const recipientArray = Array.isArray(recipient) ? recipient : [recipient];  
+  const isValid = r => typeof r === 'string' || typeof r === 'number';
+  return recipientArray
+    .map(r => isValid(r) && String(r).trim())
+    .filter(Boolean);
 };
 
 const getRecipient = function(context, recipient, defaultToSender = true) {
