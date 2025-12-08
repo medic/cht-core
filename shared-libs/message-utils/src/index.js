@@ -98,9 +98,11 @@ const applyPhoneFilters = function(config, phone) {
 
 const normalizeRecipient= function(recipient) {
   const toArray = Array.isArray(recipient) ? recipient : [recipient];  
-  return toArray.map(
-    r => (typeof r === 'string' || typeof r === 'number' ? String(r).trim(): '')
-  ).filter(r => r.length > 0);
+const recipientArray = Array.isArray(recipient) ? recipient : [recipient];  
+const isValid = r => typeof r === 'string' || typeof r === 'number';
+return recipientArray
+  .map(r => isValid(r) && String(r).trim())
+  .filter(Boolean);
 };
 
 const getRecipient = function(context, recipient, defaultToSender = true) {
