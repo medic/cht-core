@@ -103,6 +103,17 @@ describe('Targets', () => {
 
     const filterLabel = await analyticsPage.filterOptionLabel();
     expect(await filterLabel.getText()).to.equal('This month');
+    expect(await filterLabel.getText()).to.equal('Last month');
+  });
+
+  it('should filter targets by date range', async () => {
+    await analyticsPage.filterOptionLabel().waitForDisplayed();
+    await targetAggregatesPage.selectFilterOptions(['This month']);
+    await targetAggregatesPage.selectFilterOptions(['Last month']);
+
+    const filterLabel = await analyticsPage.filterOptionLabel();
+    expect(await filterLabel.getText()).to.equal('This month');
+    expect(await filterLabel.getText()).to.equal('Last month');
   });
 
   it('should show error message for bad config', async () => {
