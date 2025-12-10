@@ -109,7 +109,7 @@ EOF_DELIMITER`;
     console.log(`Tearing down ${CHT_NGINX_SERVICE_NAME} service...`);
     await new Promise((resolve) => {
       exec(
-        `docker compose -f "${COMPOSE_FILE_PATH}" down -v --remove-orphans`,
+        `docker compose -f "${COMPOSE_FILE_PATH}" down -v --remove-orphans -t 0`,
         (error, stdout, stderr) => { // -v to remove volumes
           if (error) {
             console.error(`docker compose down failed during cleanup: ${stderr}`);
