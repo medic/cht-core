@@ -285,8 +285,7 @@ Commits:
       const { login, name, url } = author.user;
       if (login && !ignoreLogins.has(login)) {
         ignoreLogins.add(login);
-        const profileUrl = url;
-        lines.push(`- [${name || login}](${profileUrl})`);
+        lines.push(`- [${name || login}](${url})`);
       }
     });
     return lines.join('\n');
@@ -329,14 +328,15 @@ ${formatCommits(commits)} `;
 
     console.log('Saving output to release.notes.md...');
     const fs = require('node:fs/promises');
-    await fs.writeFile('./release.notes.md', releaseNotes);
+    await fs.writeFile('./release.notes.md', releaseNotes)
+      .then(process.exit());
   };
 
   const getCommits = async () => {
     const latestReleaseName = await getLatestReleaseName();
     const milestoneBranch = await getMilestoneBranch();
     const commitsForRelease = await getCommitsForRelease(latestReleaseName, milestoneBranch);
-    validateCommits(commitsForRelease);
+    await validateCommits(commitsForRelease);
     return commitsForRelease;
   };
 
