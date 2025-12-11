@@ -4,6 +4,7 @@ const configUpdatesEvents = new EventEmitter();
 const db = require('../db');
 const dbWatcher = require('./db-watcher');
 const logger = require('@medic/logger');
+const { DOC_IDS_PREFIX, DOC_IDS } = require('@medic/constants');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
@@ -168,15 +169,15 @@ const listen = () => {
       return handleSettingsChange();
     }
 
-    if (change.id.startsWith('messages-')) {
+    if (change.id.startsWith(DOC_IDS_PREFIX.TRANSLATIONS)) {
       return handleTranslationsChange();
     }
 
-    if (change.id.startsWith('form:')) {
+    if (change.id.startsWith(DOC_IDS_PREFIX.FORM)) {
       return handleFormChange(change);
     }
 
-    if (change.id === 'branding') {
+    if (change.id === DOC_IDS.BRANDING) {
       return handleBrandingChanges();
     }
 

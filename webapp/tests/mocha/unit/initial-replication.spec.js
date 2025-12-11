@@ -165,9 +165,11 @@ describe('Initial replication', () => {
       };
       remoteDb = {
         bulkGet: sinon.stub(),
+        get: sinon.stub(),
       };
       clock = sinon.useFakeTimers();
       initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
+      initialReplication.__set__('setUiStatus', sinon.stub());
     });
 
     it('should perform initial replication', async () => {
@@ -250,6 +252,75 @@ describe('Initial replication', () => {
         remoteDb,
         { since: 5 },
       ]]);
+
+      expect(remoteDb.get.callCount).to.equal(0);
+    });
+
+    it('should download forms separately from other docs', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({
+        doc_ids_revs: [
+          { id: 'one', rev: 1 },
+          { id: 'form:contact', rev: 2 },
+          { id: 'two', rev: 1 },
+          { id: 'form:assessment', rev: 1 },
+        ],
+        warn_docs: 4,
+        last_seq: '123-fdhsfs',
+        warn: false,
+        limit: 10000
+      });
+
+      localDb.allDocs.resolves({ rows: [] });
+
+      remoteDb.bulkGet.resolves({
+        results: [
+          { id: 'one', docs: [{ ok: { _id: 'one', _rev: 1, field: 'one' } }], },
+          { id: 'two', docs: [{ ok: { _id: 'two', _rev: 1, field: 'two' } }], },
+        ]
+      });
+
+      remoteDb.get
+        .withArgs('form:contact', { attachments: true }).resolves({ _id: 'form:contact', _rev: 2, type: 'form' })
+        .withArgs('form:assessment', { attachments: true }).resolves({ _id: 'form:assessment', _rev: 1, type: 'form' });
+
+      localDb.bulkDocs.resolves();
+      localDb.get.onCall(0).rejects({ status: 404 }).resolves({ _id: FLAG_ID, start_time: 0 });
+      localDb.put.resolves();
+
+      localDb.replicate.to.resolves();
+      localDb.info.resolves({ update_seq: 4 });
+
+      await initialReplication.replicate(remoteDb, localDb);
+
+      expect(remoteDb.bulkGet.args).to.deep.equal([[{
+        docs: [
+          { id: 'one', rev: 1 },
+          { id: 'two', rev: 1 },
+        ],
+        attachments: true,
+        revs: true,
+      }]]);
+
+      expect(remoteDb.get.callCount).to.equal(2);
+      expect(remoteDb.get.args).to.deep.equal([
+        ['form:contact', { attachments: true }],
+        ['form:assessment', { attachments: true }],
+      ]);
+
+      expect(localDb.bulkDocs.callCount).to.equal(3);
+      expect(localDb.bulkDocs.args[0]).to.deep.equal([
+        [
+          { _id: 'one', _rev: 1, field: 'one' },
+          { _id: 'two', _rev: 1, field: 'two' },
+        ],
+        { new_edits: false },
+      ]);
+      expect(localDb.bulkDocs.args[1]).to.deep.equal([
+        [{ _id: 'form:contact', _rev: 2, type: 'form' }, { new_edits: false }],
+      ]);
+      expect(localDb.bulkDocs.args[2]).to.deep.equal([
+        [{ _id: 'form:assessment', _rev: 1, type: 'form' }, { new_edits: false }],
+      ]);
     });
 
     it('should save duration and data usage in log file', async () => {

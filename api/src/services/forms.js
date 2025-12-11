@@ -2,7 +2,7 @@
  * @module forms
  */
 const db = require('../db');
-const FORM_DOC_ID_PREFIX = 'form:';
+const { DOC_IDS_PREFIX } = require('@medic/constants');
 const DOC_TYPE = 'form';
 const logger = require('@medic/logger');
 
@@ -45,8 +45,8 @@ module.exports = {
    */
   getFormDocs: async () => {
     const response = await db.medic.allDocs({
-      startkey: FORM_DOC_ID_PREFIX,
-      endkey: `${FORM_DOC_ID_PREFIX}\ufff0`,
+      startkey: DOC_IDS_PREFIX.FORM,
+      endkey: `${DOC_IDS_PREFIX.FORM}\ufff0`,
       include_docs: true,
     });
 

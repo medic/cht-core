@@ -4,6 +4,8 @@
 // Document IDs
 const DOC_IDS = {
   SERVICE_WORKER_META: 'service-worker-meta',
+  BRANDING: 'branding',
+  EXTENSION_LIBS: 'extension-libs',
 };
 
 // Document Types
@@ -27,8 +29,15 @@ const USER_ROLES = {
   ONLINE: 'mm-online',
 };
 
+const DOC_IDS_PREFIX =  {
+  DDOC: '_design/',
+  FORM: 'form:',
+  TRANSLATIONS: 'messages-'
+};
+
 module.exports = {
   DOC_IDS,
+  DOC_IDS_PREFIX,
   DOC_TYPES,
   HTTP_HEADERS,
   SENTINEL_METADATA,

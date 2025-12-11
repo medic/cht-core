@@ -1,7 +1,9 @@
 const utils = require('./utils');
 const { setUiStatus, displayTooManyDocsWarning } = require('./ui-status');
+const { DOC_IDS_PREFIX } = require('@medic/constants');
 
-let docIdsRevs;
+const docIdsRevs = [];
+const forms = [];
 let remoteDocCount;
 
 const INITIAL_REPLICATION_LOG = '_local/initial-replication';
@@ -48,16 +50,24 @@ const getDataUsage = () => {
   }
 };
 
-const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
+const assignMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
   const localDocs = await getLocalDocList(localDb);
-  return remoteDocIdsRevs.filter(({ id, rev }) => !localDocs[id] || localDocs[id] !== rev);
+  for (const { id, rev } of remoteDocIdsRevs) {
+    if (!localDocs[id] || localDocs[id] !== rev) { // doc is missing or rev is different
+      if (id.startsWith(DOC_IDS_PREFIX.FORM)) {
+        forms.push({ id, rev });
+      } else {
+        docIdsRevs.push({ id, rev });
+      }
+    }
+  }
 };
 
 const getDownloadList = async (localDb = true) => {
   const response = await utils.fetchJSON('/api/v1/replication/get-ids');
 
-  docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
-  remoteDocCount = response.doc_ids_revs.length;
+  await assignMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
+  remoteDocCount = response.doc_ids_revs.length - forms.length;
 
   if (response.warn) {
     await displayTooManyDocsWarning(response);
@@ -86,12 +96,22 @@ const getDocsBatch = async (remoteDb, localDb) => {
   await localDb.bulkDocs(docs, { new_edits: false });
 };
 
+const getForms = async (remoteDb, localDb) => {
+  for (const form of forms) {
+    const formDoc = await remoteDb.get(form.id, { attachments: true });
+    await localDb.bulkDocs([ formDoc, { new_edits: false } ]);
+  }
+};
+
 const downloadDocs = async (remoteDb, localDb) => {
   setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
   do {
     await getDocsBatch(remoteDb, localDb);
     setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
   } while (docIdsRevs.length > 0);
+
+  setUiStatus('FETCH_FORMS');
+  await getForms(remoteDb, localDb);
 };
 
 const writeCheckpointers = async (remoteDb, localDb) => {

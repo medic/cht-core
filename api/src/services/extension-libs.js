@@ -1,9 +1,8 @@
 const db = require('../db');
-
-const DOC_ID = 'extension-libs';
+const { DOC_IDS } = require('@medic/constants');
 
 const getLibsDoc = () => {
-  return db.medic.get(DOC_ID, { attachments: true })
+  return db.medic.get(DOC_IDS.EXTENSION_LIBS, { attachments: true })
     .catch(err => {
       if (err.status === 404) {
         // no doc means no configured libs
@@ -22,7 +21,7 @@ const formatResult = (name, attachment) => {
 };
 
 module.exports = {
-  isLibChange: (change) => (change && change.id) === DOC_ID,
+  isLibChange: (change) => (change && change.id) === DOC_IDS.EXTENSION_LIBS,
   getAll: async () => {
     const doc = await getLibsDoc();
     if (!doc || !doc._attachments) {
