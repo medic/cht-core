@@ -28,6 +28,7 @@ describe('ContactTypes service', () => {
     };
     remoteDb = {
       bulkGet: sinon.stub(),
+      get: sinon.stub(),
     };
     rulesEngineService = { monitorExternalChanges: sinon.stub() };
 
@@ -127,6 +128,124 @@ describe('ContactTypes service', () => {
       ];
       expect(localDb.bulkDocs.args).to.deep.equal([[ updatedDocs, { new_edits: false } ]]);
       expect(rulesEngineService.monitorExternalChanges.args).to.deep.equal([[{ docs: updatedDocs }]]);
+      expect(remoteDb.get.callCount).to.equal(0);
+    });
+
+    it('should download forms separately from other docs', async () => {
+      localDb.allDocs.resolves({
+        rows: [
+          { id: 'd1', value: { rev: 1 } },
+        ]
+      });
+      http.get.returns(of({
+        doc_ids_revs: [
+          { id: 'd1', rev: 1 },
+          { id: 'd2', rev: 1 },
+          { id: 'form:contact', rev: 2 },
+          { id: 'form:assessment', rev: 1 },
+        ]
+      }));
+      remoteDb.bulkGet.resolves({
+        results: [
+          { docs: [{ ok: { _id: 'd2', _rev: 1, f: 1 } }] },
+        ]
+      });
+      remoteDb.get
+        .withArgs('form:contact', { attachments: true, revs: true })
+        .resolves({ _id: 'form:contact', _rev: 2, type: 'form' })
+        .withArgs('form:assessment', { attachments: true, revs: true })
+        .resolves({ _id: 'form:assessment', _rev: 1, type: 'form' });
+
+      const resp = await service.replicateFrom();
+      expect(resp).to.deep.equal({ read_docs: 3 });
+
+      expect(remoteDb.bulkGet.args).to.deep.equal([[{
+        docs: [
+          { id: 'd2', rev: 1 },
+        ],
+        attachments: true,
+        revs: true,
+      }]]);
+
+      expect(remoteDb.get.args).to.deep.equal([
+        ['form:contact', { attachments: true, revs: true }],
+        ['form:assessment', { attachments: true, revs: true }],
+      ]);
+
+      expect(localDb.bulkDocs.callCount).to.equal(3);
+      expect(localDb.bulkDocs.args[0]).to.deep.equal([
+        [{ _id: 'd2', _rev: 1, f: 1 }],
+        { new_edits: false },
+      ]);
+      expect(localDb.bulkDocs.args[1]).to.deep.equal([
+        [{ _id: 'form:contact', _rev: 2, type: 'form' }, { new_edits: false }],
+      ]);
+      expect(localDb.bulkDocs.args[2]).to.deep.equal([
+        [{ _id: 'form:assessment', _rev: 1, type: 'form' }, { new_edits: false }],
+      ]);
+    });
+
+    it('should download only forms when no other docs need updating', async () => {
+      localDb.allDocs.resolves({
+        rows: [
+          { id: 'd1', value: { rev: 1 } },
+          { id: 'd2', value: { rev: 1 } },
+        ]
+      });
+      http.get.returns(of({
+        doc_ids_revs: [
+          { id: 'd1', rev: 1 },
+          { id: 'd2', rev: 1 },
+          { id: 'form:pregnancy', rev: 1 },
+        ]
+      }));
+      remoteDb.get
+        .withArgs('form:pregnancy', { attachments: true, revs: true })
+        .resolves({ _id: 'form:pregnancy', _rev: 1, type: 'form' });
+
+      const resp = await service.replicateFrom();
+      expect(resp).to.deep.equal({ read_docs: 1 });
+
+      expect(remoteDb.bulkGet.callCount).to.equal(0);
+      expect(remoteDb.get.args).to.deep.equal([
+        ['form:pregnancy', { attachments: true, revs: true }],
+      ]);
+
+      expect(localDb.bulkDocs.args).to.deep.equal([[
+        [{ _id: 'form:pregnancy', _rev: 1, type: 'form' }, { new_edits: false }],
+      ]]);
+    });
+
+    it('should skip forms that already exist locally with same rev', async () => {
+      localDb.allDocs.resolves({
+        rows: [
+          { id: 'd1', value: { rev: 1 } },
+          { id: 'form:contact', value: { rev: 2 } },
+        ]
+      });
+      http.get.returns(of({
+        doc_ids_revs: [
+          { id: 'd1', rev: 1 },
+          { id: 'd2', rev: 1 },
+          { id: 'form:contact', rev: 2 },
+          { id: 'form:assessment', rev: 1 },
+        ]
+      }));
+      remoteDb.bulkGet.resolves({
+        results: [
+          { docs: [{ ok: { _id: 'd2', _rev: 1, f: 1 } }] },
+        ]
+      });
+      remoteDb.get
+        .withArgs('form:assessment', { attachments: true, revs: true })
+        .resolves({ _id: 'form:assessment', _rev: 1, type: 'form' });
+
+      const resp = await service.replicateFrom();
+      expect(resp).to.deep.equal({ read_docs: 2 });
+
+      expect(remoteDb.get.args).to.deep.equal([
+        ['form:assessment', { attachments: true, revs: true }],
+      ]);
     });
 
     it('should download multiple batches of missing docs', async () => {
@@ -417,6 +536,56 @@ describe('ContactTypes service', () => {
           expect.fail('Should have thrown');
         } catch (err) {
           expect(err.message).to.equal('bulkdocserr');
+          expect(http.post.callCount).to.equal(0);
+        }
+      });
+
+      it('should throw form download errors', async () => {
+        localDb.allDocs.resolves({
+          rows: [
+            { id: 'd1', value: { rev: 1 } },
+          ]
+        });
+        http.get.returns(of({
+          doc_ids_revs: [
+            { id: 'd1', rev: 1 },
+            { id: 'form:contact', rev: 2 },
+          ]
+        }));
+        remoteDb.get.rejects(new Error('form download failed'));
+
+        try {
+          await service.replicateFrom();
+          expect.fail('Should have thrown');
+        } catch (err) {
+          expect(err.message).to.equal('form download failed');
+          expect(remoteDb.bulkGet.callCount).to.equal(0);
+          expect(localDb.bulkDocs.callCount).to.equal(0);
+        }
+      });
+
+      it('should throw form save errors', async () => {
+        localDb.allDocs.resolves({
+          rows: [
+            { id: 'd1', value: { rev: 1 } },
+          ]
+        });
+        http.get.returns(of({
+          doc_ids_revs: [
+            { id: 'd1', rev: 1 },
+            { id: 'form:contact', rev: 2 },
+          ]
+        }));
+        remoteDb.get
+          .withArgs('form:contact', { attachments: true, revs: true })
+          .resolves({ _id: 'form:contact', _rev: 2, type: 'form' });
+        localDb.bulkDocs.rejects(new Error('form save failed'));
+
+        try {
+          await service.replicateFrom();
+          expect.fail('Should have thrown');
+        } catch (err) {
+          expect(err.message).to.equal('form save failed');
           expect(http.post.callCount).to.equal(0);
         }
       });

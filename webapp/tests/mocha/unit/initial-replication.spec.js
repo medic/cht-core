@@ -840,6 +840,63 @@ describe('Initial replication', () => {
       expect(localDb.replicate.to.callCount).to.equal(0);
     });
 
+    it('should throw form download errors', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({
+        doc_ids_revs: [
+          { id: 'one', rev: 1 },
+          { id: 'form:contact', rev: 2 },
+        ],
+        warn_docs: 2,
+        last_seq: '123-fdhsfs',
+        warn: false,
+        limit: 10000
+      });
+
+      localDb.allDocs.resolves({ rows: [] });
+
+      remoteDb.bulkGet.resolves({
+        results: [
+          { id: 'one', docs: [{ ok: { _id: 'one', _rev: 1, field: 'one' } }] },
+        ]
+      });
+      remoteDb.get.rejects(new Error('form download failed'));
+
+      localDb.bulkDocs.resolves();
+      localDb.get.onCall(0).rejects({ status: 404 });
+      localDb.put.resolves();
+
+      await expect(initialReplication.replicate(remoteDb, localDb)).to.be.rejectedWith(Error, 'form download failed');
+
+      expect(remoteDb.get.args).to.deep.equal([['form:contact', { attachments: true }]]);
+      expect(localDb.replicate.to.callCount).to.equal(0);
+    });
+
+    it('should throw form save errors', async () => {
+      sinon.stub(utils, 'fetchJSON').resolves({
+        doc_ids_revs: [
+          { id: 'form:contact', rev: 2 },
+        ],
+        warn_docs: 1,
+        last_seq: '123-fdhsfs',
+        warn: false,
+        limit: 10000
+      });
+
+      localDb.allDocs.resolves({ rows: [] });
+      remoteDb.get
+        .withArgs('form:contact', { attachments: true })
+        .resolves({ _id: 'form:contact', _rev: 2, type: 'form' });
+
+      localDb.bulkDocs.rejects(new Error('form save failed'));
+      localDb.get.onCall(0).rejects({ status: 404 });
+      localDb.put.resolves();
+
+      await expect(initialReplication.replicate(remoteDb, localDb)).to.be.rejectedWith(Error, 'form save failed');
+
+      expect(remoteDb.bulkGet.callCount).to.equal(0);
+      expect(localDb.replicate.to.callCount).to.equal(0);
+    });
+
     it('should throw replicate to errors', async () => {
       sinon.stub(utils, 'fetchJSON').resolves({
         doc_ids_revs: [ { id: 'five', rev: 1 }, ],

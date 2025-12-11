@@ -3,6 +3,7 @@ import { lastValueFrom } from 'rxjs';
 import { DbService } from './db.service';
 import { HttpClient } from '@angular/common/http';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+const { DOC_IDS_PREFIX } = require('@medic/constants');
 
 @Injectable({
   providedIn: 'root'
@@ -39,14 +40,27 @@ export class ReplicationService {
   }
 
   private async getMissingDocs(localIdRevMap, remoteDocIdsRevs):Promise<number> {
-    const docIdRevsToDownload = remoteDocIdsRevs
-      .filter(({ id, rev }) => !localIdRevMap[id] || localIdRevMap[id] !== rev);
-    const nbrDocs = docIdRevsToDownload.length;
+    const docIdRevsToDownload:{ id, rev }[] = [];
+    const formsToDownload:{ id, rev }[] = [];
+
+    for (const { id, rev } of remoteDocIdsRevs) {
+      if (!localIdRevMap[id] || localIdRevMap[id] !== rev) {
+        if (id.startsWith(DOC_IDS_PREFIX.FORM)) {
+          formsToDownload.push({ id, rev });
+        } else {
+          docIdRevsToDownload.push({ id, rev });
+        }
+      }
+    }
+
+    const nbrDocs = docIdRevsToDownload.length + formsToDownload.length;
 
     while (docIdRevsToDownload.length) {
       const batch = docIdRevsToDownload.splice(0, this.BATCH_SIZE);
       await this.downloadDocsBatch(batch);
     }
+
+    await this.downloadForms(formsToDownload);
 
     return nbrDocs;
   }
@@ -78,5 +92,12 @@ export class ReplicationService {
       .filter(doc => doc);
     await this.dbService.get().bulkDocs(docs, { new_edits: false });
     this.rulesEngineService.monitorExternalChanges({ docs });
+  }
+
+  private async downloadForms(formsToDownload):Promise<void> {
+    for (const form of formsToDownload) {
+      const formDoc = await this.dbService.get({ remote: true }).get(form.id, { attachments: true, revs: true });
+      await this.dbService.get().bulkDocs([ formDoc, { new_edits: false } ]);
+    }
   }
 }
