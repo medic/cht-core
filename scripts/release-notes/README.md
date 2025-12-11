@@ -33,3 +33,5 @@ Options:
 Repository: The name of the repository (e.g. cht-core).
 
 Milestone: The name of the milestone (e.g. 2.15.0).
+
+Output will be saved in `release.notes.md` file to be used in docs.
