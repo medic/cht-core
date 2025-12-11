@@ -10,7 +10,7 @@ spec:
     matchLabels:
       cht.service: api
   strategy:
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:
