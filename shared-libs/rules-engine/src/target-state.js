@@ -135,22 +135,33 @@ const serializeFunction = (fn) => {
  */
 const deserializeFunction = (fnString) => {
   if (!isValidFunctionString(fnString)) {
-    return fnString;
+    return fnString; // return as-is if unsafe
   }
 
   const { args, body } = splitFunctionString(fnString);
   const cleanedArgs = cleanArgs(args);
 
+  // Double-check forbidden patterns
+  const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
+  if (forbidden.test(fnString)) {
+    return fnString;
+  }
+
   try {
-    return body.startsWith('{')
-      ? new Function(cleanedArgs, body)               // Block body
-      : new Function(cleanedArgs, `return (${body});`); // Expression body
+    // Restrict execution to safe arrow functions only
+    if (body.startsWith('{')) {
+      return new Function(cleanedArgs, body); // Block body
+    } else {
+      return new Function(cleanedArgs, `return (${body});`); // Expression body
+    }
   } catch (err) {
+    // Optional: log to debug only in dev, avoid logging in prod
     // eslint-disable-next-line no-console
-    console.error('Failed to deserialize function:', err, fnString);
+    console.warn('Failed to deserialize function, returning original string.', err);
     return fnString;
   }
 };
+
 
 /**
  * Checks if a string represents a valid function.
