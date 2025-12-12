@@ -32,6 +32,8 @@ describe('Task overdue bubble counter', () => {
     reported_date: new Date().getTime(),
   }));
 
+  const CONFIGURED_OVERDUE_TASKS = 3;
+
   const getTaskBubble = async () => {
     const tasksTab = await commonPage.tabsSelector.taskTab();
     return await tasksTab.$('.mm-badge');
@@ -115,14 +117,14 @@ describe('Task overdue bubble counter', () => {
 
     // Should show 3 overdue tasks
     const bubbleCount = await getTasksBubbleCount();
-    expect(bubbleCount).to.equal(patients.length * 3);
+    expect(bubbleCount).to.equal(patients.length * CONFIGURED_OVERDUE_TASKS);
   });
 
   it('should update bubble count when task is completed', async () => {
     await waitForBubble();
 
     let bubbleCount = await getTasksBubbleCount();
-    expect(bubbleCount).to.equal(patients.length * 3);
+    expect(bubbleCount).to.equal(patients.length * CONFIGURED_OVERDUE_TASKS);
 
     await commonPage.goToTasks();
     await submitForm(patients[0].name, 'task_overdue_1');

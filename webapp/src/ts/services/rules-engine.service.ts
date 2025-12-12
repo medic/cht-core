@@ -311,13 +311,11 @@ export class RulesEngineService implements OnDestroy {
   private monitorTaskChanges() {
     const taskDocSubscription = this.changesService.subscribe({
       key: 'task-doc-update',
+      filter: change => change.doc.type === 'task' && this.rulesEngineCore.showTask(change.doc),
       callback: change => {
-        const { doc } = change;
-        if (doc.type === 'task') {
-          this.ngZone.run(() => {
-            this.taskActions.setOverdueTasks([doc]);
-          });
-        }
+        this.ngZone.run(() => {
+          this.taskActions.setOverdueTasks(this.hydrateTaskDocs([change.doc]));
+        });
       }
     });
     this.subscriptions.add(taskDocSubscription);
@@ -554,4 +552,29 @@ export interface Target {
   subtitle_translation_key: string;
   goal: number;
   value: TargetValue;
+}
+
+export interface Task {
+  _id: string;
+  authoredOn: number;
+  stateHistory: {
+    state: string;
+    timestamp: number;
+  }[],
+  state: string,
+  user: string;
+  requester: string;
+  owner: string;
+  emission: TaskEmission;
+}
+
+export interface TaskEmission {
+  _id: string;
+  title: string;
+  resolved: boolean;
+  actions: any[];
+  dueDate: string;
+  priority: string;
+  priorityLabel: string;
+  overdue: boolean;
 }

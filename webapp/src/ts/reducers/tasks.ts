@@ -3,10 +3,12 @@ import { createReducer, on } from '@ngrx/store';
 import { Actions as GlobalActions } from '@mm-actions/global';
 import { Actions } from '@mm-actions/tasks';
 import moment from 'moment';
+import { TaskEmission } from '@mm-services/rules-engine.service';
+
 
 const initialState = {
-  tasksList: [] as any[],
-  overdue: [] as any[],
+  tasksList: [] as TaskEmission[],
+  overdue: [] as TaskEmission[],
   selected: null,
   loaded: false,
   taskGroup: {
@@ -94,15 +96,14 @@ const orderByDueDateAndPriority = (t1, t2) => {
   return compareDates();
 };
 
-const isTaskOverdue = (emission) => moment(emission.dueDate, 'YYYY-MM-DD').isBefore(moment());
-
 const _tasksReducer = createReducer(
   initialState,
   on(GlobalActions.clearSelected, state => ({ ...state, selected: null })),
 
   on(Actions.setTasksList, (state, { payload: { tasks } }) => {
-    const sortedTasks = [...tasks].sort(orderByDueDateAndPriority);
-    const overdueTasks = tasks.filter(isTaskOverdue);
+    const taskEmissions = tasks as TaskEmission[];
+    const sortedTasks = [...taskEmissions].sort(orderByDueDateAndPriority);
+    const overdueTasks = taskEmissions.filter(task => task.overdue);
 
     return {
       ...state,
@@ -113,18 +114,17 @@ const _tasksReducer = createReducer(
 
   on(Actions.setOverdueTasks, (state, { payload: { tasks } }) => {
     const overdueTasks = [...state.overdue];
-    tasks.forEach(task => {
-      const isOverdue = isTaskOverdue(task.emission);
-      const overdueTaskIndex = state.overdue.findIndex(overdue => overdue._id === task._id);
+    tasks.forEach(({ emission }) => {
+      const overdueTaskIndex = state.overdue.findIndex(overdue => overdue._id === emission._id);
 
       const isCurrentlyOverdue = overdueTaskIndex !== -1;
 
-      if (isCurrentlyOverdue && !isOverdue) {
+      if (isCurrentlyOverdue && !emission.overdue) {
         // was overdue, shouldn't be anymore → remove
         overdueTasks.splice(overdueTaskIndex, 1);
-      } else if (!isCurrentlyOverdue && isOverdue) {
+      } else if (!isCurrentlyOverdue && emission.overdue) {
         // wasn't overdue, should be now → add
-        overdueTasks.push(task);
+        overdueTasks.push(emission);
       }
     });
 

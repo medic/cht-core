@@ -179,6 +179,7 @@ describe('RulesEngineService', () => {
       getDirtyContacts: sinon.stub().returns([]),
       fetchTasksBreakdown: sinon.stub(),
       refreshEmissionsFor: refreshEmissionsFor,
+      showTask: sinon.stub().callsFake(doc => doc?.emission?.state === 'Ready'),
     };
     const rulesEngineCoreFactory= { get: () => rulesEngineCoreStubs };
 
@@ -1057,9 +1058,6 @@ describe('RulesEngineService', () => {
     }));
 
     it('should not update overdue tasks for non-task documents', fakeAsync(async () => {
-      const store = TestBed.inject(Store);
-      const dispatchSpy = sinon.spy(store, 'dispatch');
-
       service = TestBed.inject(RulesEngineService);
       await service.isEnabled();
 
@@ -1068,17 +1066,13 @@ describe('RulesEngineService', () => {
       tick(1000);
       await nextTick();
 
-      // Get the task-doc-update subscription callback
+      // Get the task-doc-update subscription
       const taskDocSubscription = changesService.subscribe.args.find(
         args => args[0].key === 'task-doc-update'
       );
       expect(taskDocSubscription).to.exist;
 
-      const callback = taskDocSubscription[0].callback;
-
-      const initialDispatchCount = dispatchSpy.getCalls().filter(
-        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
-      ).length;
+      const filter = taskDocSubscription[0].filter;
 
       // Simulate a non-task document change
       const reportChange = {
@@ -1090,13 +1084,62 @@ describe('RulesEngineService', () => {
         },
       };
 
-      callback(reportChange);
+      // Verify that the filter rejects non-task documents
+      expect(filter(reportChange)).to.be.false;
+    }));
 
-      // Verify that setOverdueTasks was not dispatched for non-task docs
-      const setOverdueTasksCalls = dispatchSpy.getCalls().filter(
-        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
+    it('should not update overdue tasks for tasks that are not in Ready state', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
       );
-      expect(setOverdueTasksCalls.length).to.equal(initialDispatchCount);
+      expect(taskDocSubscription).to.exist;
+
+      const filter = taskDocSubscription[0].filter;
+
+      // Simulate a task document that is not in Ready state (e.g., Cancelled)
+      const cancelledTaskChange = {
+        id: 'task-cancelled',
+        doc: {
+          _id: 'task-cancelled',
+          type: 'task',
+          state: 'Cancelled',
+          emission: {
+            _id: 'emission-cancelled',
+            state: 'Cancelled',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      // Verify that the filter rejects tasks not in Ready state
+      expect(filter(cancelledTaskChange)).to.be.false;
+
+      // Simulate a task document that is in Ready state
+      const readyTaskChange = {
+        id: 'task-ready',
+        doc: {
+          _id: 'task-ready',
+          type: 'task',
+          state: 'Ready',
+          emission: {
+            _id: 'emission-ready',
+            state: 'Ready',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      // Verify that the filter accepts tasks in Ready state
+      expect(filter(readyTaskChange)).to.be.true;
     }));
   });
 });

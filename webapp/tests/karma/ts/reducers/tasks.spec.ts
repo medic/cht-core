@@ -205,19 +205,19 @@ describe('Tasks reducer', () => {
         loaded: true,
       };
       const taskList = [
-        { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready' },
-        { _id: 'ccc', dueDate: '2025-07-01', state: 'Ready' },
+        { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready', overdue: true },
+        { _id: 'ccc', dueDate: '2025-07-01', state: 'Ready', overdue: false },
       ];
       state = tasksReducer(state, Actions.setTasksList(taskList));
       expect(state.tasksList).to.deep.equal([
-        { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready' },
-        { _id: 'ccc', dueDate: '2025-07-01', state: 'Ready' },
+        { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready', overdue: true },
+        { _id: 'ccc', dueDate: '2025-07-01', state: 'Ready', overdue: false },
       ]);
       expect(state.selected).to.deep.equal({ _id: 'aaa' });
       expect(state.loaded).to.equal(true);
-      // First task is overdue (before 2025-06-01)
+      // First task is overdue based on the overdue property
       expect(state.overdue).to.deep.equal([
-        { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready' }
+        { _id: 'bbb', dueDate: '2025-01-01', state: 'Ready', overdue: true }
       ]);
     });
 
@@ -236,15 +236,15 @@ describe('Tasks reducer', () => {
 
     it('should sort provided tasks by due date', () => {
       const tasks = [
-        { _id: 'task1', dueDate: false, state: 'Ready', field: 1 },
-        { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
-        { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
-        { _id: 'task4', dueDate: 500, state: 'Ready', field: 4 },
-        { _id: 'task5', dueDate: 500, state: 'Ready', field: 5 },
-        { _id: 'task6', dueDate: 250, state: 'Ready', field: 6 },
-        { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
-        { _id: 'task8', dueDate: 899, state: 'Ready', field: 8 },
-        { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
+        { _id: 'task1', dueDate: false, state: 'Ready', field: 1, overdue: false },
+        { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2, overdue: false },
+        { _id: 'task3', dueDate: 0, state: 'Ready', field: 3, overdue: true },
+        { _id: 'task4', dueDate: 500, state: 'Ready', field: 4, overdue: true },
+        { _id: 'task5', dueDate: 500, state: 'Ready', field: 5, overdue: true },
+        { _id: 'task6', dueDate: 250, state: 'Ready', field: 6, overdue: true },
+        { _id: 'task7', dueDate: 125, state: 'Ready', field: 7, overdue: true },
+        { _id: 'task8', dueDate: 899, state: 'Ready', field: 8, overdue: true },
+        { _id: 'task9', dueDate: -100, state: 'Ready', field: 9, overdue: true },
       ];
 
       state = tasksReducer(state, Actions.setTasksList(tasks));
@@ -256,25 +256,25 @@ describe('Tasks reducer', () => {
         loadingContact: null,
       });
       expect(state.tasksList).to.deep.equal([
-        { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
-        { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
-        { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
-        { _id: 'task6', dueDate: 250, state: 'Ready', field: 6 },
-        { _id: 'task4', dueDate: 500, state: 'Ready', field: 4 },
-        { _id: 'task5', dueDate: 500, state: 'Ready', field: 5 },
-        { _id: 'task8', dueDate: 899, state: 'Ready', field: 8 },
-        { _id: 'task1', dueDate: false, state: 'Ready', field: 1 },
-        { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
+        { _id: 'task9', dueDate: -100, state: 'Ready', field: 9, overdue: true },
+        { _id: 'task3', dueDate: 0, state: 'Ready', field: 3, overdue: true },
+        { _id: 'task7', dueDate: 125, state: 'Ready', field: 7, overdue: true },
+        { _id: 'task6', dueDate: 250, state: 'Ready', field: 6, overdue: true },
+        { _id: 'task4', dueDate: 500, state: 'Ready', field: 4, overdue: true },
+        { _id: 'task5', dueDate: 500, state: 'Ready', field: 5, overdue: true },
+        { _id: 'task8', dueDate: 899, state: 'Ready', field: 8, overdue: true },
+        { _id: 'task1', dueDate: false, state: 'Ready', field: 1, overdue: false },
+        { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2, overdue: false },
       ]);
-      // All numeric timestamps are before current date (2025-06-01), so they're all overdue
+      // Tasks with overdue: true are in the overdue array
       expect(state.overdue).to.have.deep.members([
-        { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
-        { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
-        { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
-        { _id: 'task6', dueDate: 250, state: 'Ready', field: 6 },
-        { _id: 'task4', dueDate: 500, state: 'Ready', field: 4 },
-        { _id: 'task5', dueDate: 500, state: 'Ready', field: 5 },
-        { _id: 'task8', dueDate: 899, state: 'Ready', field: 8 },
+        { _id: 'task9', dueDate: -100, state: 'Ready', field: 9, overdue: true },
+        { _id: 'task3', dueDate: 0, state: 'Ready', field: 3, overdue: true },
+        { _id: 'task7', dueDate: 125, state: 'Ready', field: 7, overdue: true },
+        { _id: 'task6', dueDate: 250, state: 'Ready', field: 6, overdue: true },
+        { _id: 'task4', dueDate: 500, state: 'Ready', field: 4, overdue: true },
+        { _id: 'task5', dueDate: 500, state: 'Ready', field: 5, overdue: true },
+        { _id: 'task8', dueDate: 899, state: 'Ready', field: 8, overdue: true },
       ]);
     });
 
@@ -286,6 +286,7 @@ describe('Tasks reducer', () => {
           priority: 'invalid',
           state: 'Ready',
           field: 1,
+          overdue: true,
         },
         {
           _id: 'task2',
@@ -293,6 +294,7 @@ describe('Tasks reducer', () => {
           priority: 3,
           state: 'Ready',
           field: 2,
+          overdue: true,
         },
         {
           _id: 'task3',
@@ -300,6 +302,7 @@ describe('Tasks reducer', () => {
           priority: 1,
           state: 'Ready',
           field: 3,
+          overdue: true,
         },
         {
           _id: 'task4',
@@ -307,6 +310,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 4,
+          overdue: true,
         },
         {
           _id: 'task5',
@@ -314,6 +318,7 @@ describe('Tasks reducer', () => {
           priority: undefined,
           state: 'Ready',
           field: 5,
+          overdue: true,
         },
         {
           _id: 'task6',
@@ -321,6 +326,7 @@ describe('Tasks reducer', () => {
           priority: 'high',
           state: 'Ready',
           field: 6,
+          overdue: true,
         },
         {
           _id: 'task7',
@@ -328,6 +334,7 @@ describe('Tasks reducer', () => {
           priority: 1,
           state: 'Ready',
           field: 7,
+          overdue: true,
         },
         {
           _id: 'task8',
@@ -335,6 +342,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 8,
+          overdue: true,
         },
         {
           _id: 'task9',
@@ -342,6 +350,7 @@ describe('Tasks reducer', () => {
           priority: 3,
           state: 'Ready',
           field: 9,
+          overdue: false,
         },
         {
           _id: 'task10',
@@ -349,6 +358,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 10,
+          overdue: false,
         },
         {
           _id: 'task14',
@@ -356,6 +366,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 14,
+          overdue: true,
         },
         {
           _id: 'task11',
@@ -363,6 +374,7 @@ describe('Tasks reducer', () => {
           priority: undefined,
           state: 'Ready',
           field: 11,
+          overdue: false,
         },
         {
           _id: 'task12',
@@ -370,6 +382,7 @@ describe('Tasks reducer', () => {
           priority: 5,
           state: 'Ready',
           field: 12,
+          overdue: true,
         },
         {
           _id: 'task13',
@@ -377,6 +390,7 @@ describe('Tasks reducer', () => {
           priority: -1,
           state: 'Ready',
           field: 13,
+          overdue: true,
         },
       ];
 
@@ -395,6 +409,7 @@ describe('Tasks reducer', () => {
           priority: 5,
           state: 'Ready',
           field: 12,
+          overdue: true,
         },
         {
           _id: 'task2',
@@ -402,6 +417,7 @@ describe('Tasks reducer', () => {
           priority: 3,
           state: 'Ready',
           field: 2,
+          overdue: true,
         },
         {
           _id: 'task9',
@@ -409,6 +425,7 @@ describe('Tasks reducer', () => {
           priority: 3,
           state: 'Ready',
           field: 9,
+          overdue: false,
         },
         {
           _id: 'task8',
@@ -416,6 +433,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 8,
+          overdue: true,
         },
         {
           _id: 'task14',
@@ -423,6 +441,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 14,
+          overdue: true,
         },
         {
           _id: 'task4',
@@ -430,6 +449,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 4,
+          overdue: true,
         },
         {
           _id: 'task10',
@@ -437,6 +457,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 10,
+          overdue: false,
         },
         {
           _id: 'task7',
@@ -444,6 +465,7 @@ describe('Tasks reducer', () => {
           priority: 1,
           state: 'Ready',
           field: 7,
+          overdue: true,
         },
         {
           _id: 'task3',
@@ -451,6 +473,7 @@ describe('Tasks reducer', () => {
           priority: 1,
           state: 'Ready',
           field: 3,
+          overdue: true,
         },
         {
           _id: 'task13',
@@ -458,6 +481,7 @@ describe('Tasks reducer', () => {
           priority: -1,
           state: 'Ready',
           field: 13,
+          overdue: true,
         },
         {
           _id: 'task1',
@@ -465,6 +489,7 @@ describe('Tasks reducer', () => {
           priority: 'invalid',
           state: 'Ready',
           field: 1,
+          overdue: true,
         },
         {
           _id: 'task5',
@@ -472,6 +497,7 @@ describe('Tasks reducer', () => {
           priority: undefined,
           state: 'Ready',
           field: 5,
+          overdue: true,
         },
         {
           _id: 'task6',
@@ -479,6 +505,7 @@ describe('Tasks reducer', () => {
           priority: 'high',
           state: 'Ready',
           field: 6,
+          overdue: true,
         },
         {
           _id: 'task11',
@@ -486,9 +513,10 @@ describe('Tasks reducer', () => {
           priority: undefined,
           state: 'Ready',
           field: 11,
+          overdue: false,
         },
       ]);
-      // All tasks with dates before 2025-06-01 are overdue
+      // Tasks with overdue: true are in the overdue array
       expect(state.overdue).to.have.deep.members([
         {
           _id: 'task12',
@@ -496,6 +524,7 @@ describe('Tasks reducer', () => {
           priority: 5,
           state: 'Ready',
           field: 12,
+          overdue: true,
         },
         {
           _id: 'task2',
@@ -503,6 +532,7 @@ describe('Tasks reducer', () => {
           priority: 3,
           state: 'Ready',
           field: 2,
+          overdue: true,
         },
         {
           _id: 'task8',
@@ -510,6 +540,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 8,
+          overdue: true,
         },
         {
           _id: 'task14',
@@ -517,6 +548,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 14,
+          overdue: true,
         },
         {
           _id: 'task4',
@@ -524,6 +556,7 @@ describe('Tasks reducer', () => {
           priority: 2,
           state: 'Ready',
           field: 4,
+          overdue: true,
         },
         {
           _id: 'task7',
@@ -531,6 +564,7 @@ describe('Tasks reducer', () => {
           priority: 1,
           state: 'Ready',
           field: 7,
+          overdue: true,
         },
         {
           _id: 'task3',
@@ -538,6 +572,7 @@ describe('Tasks reducer', () => {
           priority: 1,
           state: 'Ready',
           field: 3,
+          overdue: true,
         },
         {
           _id: 'task13',
@@ -545,6 +580,7 @@ describe('Tasks reducer', () => {
           priority: -1,
           state: 'Ready',
           field: 13,
+          overdue: true,
         },
         {
           _id: 'task1',
@@ -552,6 +588,7 @@ describe('Tasks reducer', () => {
           priority: 'invalid',
           state: 'Ready',
           field: 1,
+          overdue: true,
         },
         {
           _id: 'task5',
@@ -559,6 +596,7 @@ describe('Tasks reducer', () => {
           priority: undefined,
           state: 'Ready',
           field: 5,
+          overdue: true,
         },
         {
           _id: 'task6',
@@ -566,6 +604,7 @@ describe('Tasks reducer', () => {
           priority: 'high',
           state: 'Ready',
           field: 6,
+          overdue: true,
         },
       ]);
     });
@@ -827,23 +866,12 @@ describe('Tasks reducer', () => {
   });
 
   describe('setOverdueTasks', () => {
-    let clock;
-
-    beforeEach(() => {
-      clock = sinon.useFakeTimers(moment('2025-06-01').valueOf());
-    });
-
-    afterEach(() => {
-      clock.restore();
-    });
-
     it('should add overdue task to empty state', () => {
       const task = {
-        _id: 'task1',
-        emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
+        emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready', overdue: true }
       };
       state = tasksReducer(state, Actions.setOverdueTasks([task]));
-      expect(state.overdue).to.deep.equal([task]);
+      expect(state.overdue).to.deep.equal([task.emission]);
     });
 
     it('should add new overdue task to existing overdue tasks', () => {
@@ -852,10 +880,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: false,
         overdue: [
-          {
-            _id: 'task1',
-            emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
-          }
+          { _id: 'task1', dueDate: '2025-05-01', state: 'Ready', overdue: true }
         ],
         taskGroup: {
           contact: null,
@@ -865,12 +890,11 @@ describe('Tasks reducer', () => {
       };
 
       const newTask = {
-        _id: 'task2',
-        emission: { _id: 'task2', dueDate: '2025-05-15', state: 'Ready' }
+        emission: { _id: 'task2', dueDate: '2025-05-15', state: 'Ready', overdue: true }
       };
       state = tasksReducer(state, Actions.setOverdueTasks([newTask]));
       expect(state.overdue.length).to.equal(2);
-      expect(state.overdue).to.deep.include(newTask);
+      expect(state.overdue).to.deep.include(newTask.emission);
     });
 
     it('should remove task that is no longer overdue', () => {
@@ -879,10 +903,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: false,
         overdue: [
-          {
-            _id: 'task1',
-            emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
-          }
+          { _id: 'task1', dueDate: '2025-05-01', state: 'Ready', overdue: true }
         ],
         taskGroup: {
           contact: null,
@@ -891,10 +912,9 @@ describe('Tasks reducer', () => {
         },
       };
 
-      // Update task1 to have a future due date (not overdue anymore)
+      // Update task1 to no longer be overdue
       const updatedTask = {
-        _id: 'task1',
-        emission: { _id: 'task1', dueDate: '2025-12-01', state: 'Ready' }
+        emission: { _id: 'task1', dueDate: '2025-12-01', state: 'Ready', overdue: false }
       };
       state = tasksReducer(state, Actions.setOverdueTasks([updatedTask]));
       expect(state.overdue.length).to.equal(0);
@@ -906,10 +926,7 @@ describe('Tasks reducer', () => {
         selected: null,
         loaded: false,
         overdue: [
-          {
-            _id: 'task1',
-            emission: { _id: 'task1', dueDate: '2025-05-01', state: 'Ready' }
-          }
+          { _id: 'task1', dueDate: '2025-05-01', state: 'Ready', overdue: true }
         ],
         taskGroup: {
           contact: null,
@@ -920,20 +937,17 @@ describe('Tasks reducer', () => {
 
       const tasks = [
         {
-          _id: 'task1',
-          emission: { _id: 'task1', dueDate: '2025-12-01', state: 'Ready' } // no longer overdue
+          emission: { _id: 'task1', dueDate: '2025-12-01', state: 'Ready', overdue: false } // no longer overdue
         },
         {
-          _id: 'task2',
-          emission: { _id: 'task2', dueDate: '2025-05-15', state: 'Ready' } // new overdue
+          emission: { _id: 'task2', dueDate: '2025-05-15', state: 'Ready', overdue: true } // new overdue
         },
         {
-          _id: 'task3',
-          emission: { _id: 'task3', dueDate: '2025-05-20', state: 'Ready' } // new overdue
+          emission: { _id: 'task3', dueDate: '2025-05-20', state: 'Ready', overdue: true } // new overdue
         }
       ];
       state = tasksReducer(state, Actions.setOverdueTasks(tasks));
-      expect(state.overdue).to.have.deep.members([tasks[1], tasks[2]]);
+      expect(state.overdue).to.have.deep.members([tasks[1].emission, tasks[2].emission]);
     });
   });
 });
