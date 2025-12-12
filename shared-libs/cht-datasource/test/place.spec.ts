@@ -15,14 +15,12 @@ describe('place', () => {
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
-  let isPlaceInput: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
-    isPlaceInput = sinon.stub(Input.v1, 'isPlaceInput');
   });
 
   afterEach(() => sinon.restore());
@@ -321,7 +319,6 @@ describe('place', () => {
           name: 'place-1',
           type: 'place',
         };
-        isPlaceInput.returns(true);
         createPlaceDoc.resolves(input);
         const result = await Place.v1.create(dataContext)(input);
 
@@ -335,10 +332,13 @@ describe('place', () => {
         adapt.returns(updatePlaceDoc);
         const updateInput = {
           name: 'place-1',
-          type: 'place'
+          type: 'place',
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: new Date(12312312)
         };
         const expectedDoc = {
-          ...updateInput, reported_date: 12312312
+          ...updateInput
         };
         updatePlaceDoc.resolves(expectedDoc);
         const result = await Place.v1.update(dataContext)(updateInput);
@@ -350,8 +350,8 @@ describe('place', () => {
         const updatePlaceDoc = sinon.stub();
         adapt.returns(updatePlaceDoc);
         const updateInput = 'my-updated-place';
-        await expect(Place.v1.update(dataContext)(updateInput))
-          .to.be.rejectedWith('Invalid place update input');
+        await expect(Place.v1.update(dataContext)(updateInput as unknown as Input.v1.UpdatePlaceInput<Place.v1.Place>))
+          .to.be.rejectedWith('Updated place data not provided.');
       });
     });
   });

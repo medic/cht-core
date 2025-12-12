@@ -203,18 +203,18 @@ describe('libs parameter-validators', () => {
   });
 
   describe('assertPersonInput', () => {
-    it('throws error for invalid person input with missing fields', () => {
+    it('throws error for invalid person input with missing parent field', () => {
       const personInput = {
         name: 'apoorva',
         type: 'person'
       };
       expect(() => assertPersonInput(personInput)).to.throw(
         InvalidArgumentError,
-        `Invalid person type [${JSON.stringify(personInput)}].`
+        'The [parent] field must be valued.'
       );
     });
 
-    it('throws error for invalid person input here with invalid reported_date', () => {
+    it('throws error for invalid person input with invalid reported_date', () => {
       const personInput = {
         name: 'apoorva',
         type: 'person',
@@ -223,7 +223,8 @@ describe('libs parameter-validators', () => {
       };
       expect(() => assertPersonInput(personInput)).to.throw(
         InvalidArgumentError,
-        `Invalid person type [${JSON.stringify(personInput)}].`
+        `Invalid reported_date ["last august"]. Expected format to be ` +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
       );
     });
 
@@ -244,7 +245,7 @@ describe('libs parameter-validators', () => {
       };
       expect(() => assertPlaceInput(placeInput)).to.throw(
         InvalidArgumentError,
-        `Invalid place type [${JSON.stringify(placeInput)}].`
+        'The [name] field must be valued.'
       );
     });
 
@@ -266,7 +267,7 @@ describe('libs parameter-validators', () => {
       };
       expect(() => assertReportInput(reportInput)).to.throw(
         InvalidArgumentError,
-        `Invalid report type [${JSON.stringify(reportInput)}].`
+        'The [contact] field must be valued.'
       );
     });
 

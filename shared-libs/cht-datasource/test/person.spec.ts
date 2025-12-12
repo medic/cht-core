@@ -2,7 +2,6 @@ import * as Person from '../src/person';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
-import * as Input from '../src/input';
 import * as Context from '../src/libs/data-context';
 import * as Core from '../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
@@ -15,14 +14,12 @@ describe('person', () => {
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
-  let isPersonInput: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
-    isPersonInput = sinon.stub(Input.v1, 'isPersonInput');
   });
 
   afterEach(() => sinon.restore());
@@ -320,7 +317,6 @@ describe('person', () => {
           type: 'person',
           parent: 'p1'
         };
-        isPersonInput.returns(true);
         createPersonDoc.resolves(input);
         const result = await Person.v1.create(dataContext)(input);
 
@@ -335,7 +331,10 @@ describe('person', () => {
         const input = {
           name: 'person-1',
           type: 'person',
-          parent: 'p1'
+          parent: { _id: 'p1' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312
         };
         updatePersonDoc.resolves(input);
         const result = await Person.v1.update(dataContext)(input);
@@ -346,8 +345,8 @@ describe('person', () => {
         const updatePersonDoc = sinon.stub();
         adapt.returns(updatePersonDoc);
         const input = 'apoorva';
-        await expect(Person.v1.update(dataContext)(input))
-          .to.be.rejectedWith(`Invalid person update input`);
+        await expect(Person.v1.update(dataContext)(input as unknown as Person.v1.Person))
+          .to.be.rejectedWith(`Updated person data not provided.`);
       });
     });
   });

@@ -1,4 +1,4 @@
-import { DataContext, Input } from '../src';
+import { DataContext } from '../src';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import * as Qualifier from '../src/qualifier';
@@ -15,14 +15,13 @@ describe('report', () => {
   let isUuidQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
   let isRecord: SinonStub;
-  let validateReportInput: SinonStub;
+
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
     isRecord = sinon.stub(Core, 'isRecord');
-    validateReportInput = sinon.stub(Input.v1, 'validateReportInput');
   });
 
   afterEach(() => sinon.restore());
@@ -327,7 +326,7 @@ describe('report', () => {
     });
 
     describe('create', () => {
-      it('returns person doc for valid input', async () => {
+      it('returns report doc for valid input', async () => {
         const createReportDoc = sinon.stub();
         adapt.returns(createReportDoc);
         const input = {
@@ -336,7 +335,7 @@ describe('report', () => {
           contact: 'c1',
           form: 'form'
         };
-        validateReportInput.returns(input);
+        isRecord.returns(true);
         createReportDoc.resolves(input);
         const result = await Report.v1.create(dataContext)(input);
         expect(result).to.deep.equal(input);
@@ -347,19 +346,21 @@ describe('report', () => {
       it('throws error for invalid input', async () => {
         const input = 'my-string-report';
         isRecord.returns(false);
-        await expect(Report.v1.update(dataContext)(input))
+        await expect(Report.v1.update(dataContext)(input as unknown as Report.v1.Report))
           .to.be.rejectedWith(`Invalid report update input`);
       });
 
       it('returns updated report doc for valid input', async() => {
         const updateReportDoc = sinon.stub();
         adapt.returns(updateReportDoc);
-        const input = {
+        const input: Report.v1.Report = {
           '_id': 'b8208fa332bf1f09b606e6efd8002a4a',
           '_rev': '1-9ffca0e670bcc111de86f68ae8f47d3b',
           'form': 'pregnancy_danger_sign',
           'type': 'data_record',
-          'reported_date': '2025-08-24T11:37:06.815Z'
+          'contact': { _id: 'c1' },
+          'reported_date': 12312312,
+          'fields': {}
         };
         isRecord.returns(true);
         updateReportDoc.resolves(input);

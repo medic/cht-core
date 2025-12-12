@@ -47,7 +47,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: 'person', _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         isContact.returns(true);
 
@@ -61,7 +61,7 @@ describe('local contact', () => {
       });
 
       it('returns null if the identified doc does not have a contact type', async () => {
-        const doc = { type: 'not-contact', _id: '_id' };
+        const doc = { type: 'not-contact', _id: '_id', _rev: '1' };
         getDocByIdInner.resolves(doc);
         isContact.returns(false);
 
@@ -71,7 +71,7 @@ describe('local contact', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isContact.calledOnceWithExactly(settingsGetAll(), doc)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid contact.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -84,7 +84,7 @@ describe('local contact', () => {
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(settingsGetAll.notCalled).to.be.true;
         expect(isContact.notCalled).to.be.true;
-        expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
       });
 
       it('propagates error if getMedicDocById throws an error', async () => {

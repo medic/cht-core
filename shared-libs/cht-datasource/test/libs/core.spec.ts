@@ -7,7 +7,6 @@ import {
   getLastElement,
   getPagedGenerator,
   hasField,
-  hasFields,
   isDataObject,
   isIdentifiable,
   isNonEmptyArray,
@@ -15,7 +14,6 @@ import {
   isRecord,
   isString,
   NonEmptyArray,
-  convertToUnixTimestamp
 } from '../../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
 
@@ -135,6 +133,7 @@ describe('core lib', () => {
   });
 
   describe('hasField', () => {
+    type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'function' | 'object';
     ([
       [ {}, { name: 'uuid', type: 'string' }, false ],
       [ { uuid: 'uuid' }, { name: 'uuid', type: 'string' }, true ],
@@ -145,7 +144,7 @@ describe('core lib', () => {
       [ { getUuid: () => 'uuid' }, { name: 'getUuid', type: 'function' }, true ],
     ] as [ Record<string, unknown>, {
       name: string,
-      type: string
+      type: FieldType
     }, boolean ][]).forEach(([ record, field, expected ]) => {
       it(`evaluates ${JSON.stringify(record)} with ${JSON.stringify(field)}`, () => {
         expect(hasField(record, field)).to.equal(expected);
@@ -288,38 +287,4 @@ describe('core lib', () => {
     });
   });
 
-  describe('convertToUnixTimeStamp', () => {
-    it('should return the same number if input is already a unix epoch', () => {
-      const epoch = 1704067200000;
-      expect(convertToUnixTimestamp(epoch)).to.equal(epoch);
-    });
-  
-    it('should parse a date in \'YYYY-MM-DDTHH:mm:ssZ\' format', () => {
-      const dateStr = '2024-01-01T00:00:00Z';
-      const expected = new Date(dateStr).getTime();
-      expect(convertToUnixTimestamp(dateStr)).to.equal(expected);
-    });
-  
-    it('should parse a date in \'YYYY-MM-DDTHH:mm:ss.SSSZ\' format', () => {
-      const dateStr = '2024-01-01T12:34:56.789Z';
-      const expected = new Date(dateStr).getTime();
-      expect(convertToUnixTimestamp(dateStr)).to.equal(expected);
-    });
-  
-    it('should throw an error for invalid date strings', () => {
-      const invalid = 'not-a-date';
-      expect(() => convertToUnixTimestamp(invalid)).to.throw(
-        'Invalid reported_date. '
-        +'Expected format to be \'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
-      );
-    });
-  
-    it('should throw an error for non-string/number input', () => {
-      // @ts-expect-error: passing invalid type intentionally
-      expect(() => convertToUnixTimestamp({})).to.throw(
-        'Invalid reported_date. ' +
-        'Expected format to be \'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
-      );
-    });
-  });
 });

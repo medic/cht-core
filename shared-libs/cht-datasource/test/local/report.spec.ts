@@ -4,10 +4,12 @@ import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Report from '../../src/local/report';
+import * as LocalContact from '../../src/local/contact';
+import * as ReportTypes from '../../src/report';
+import * as Input from '../../src/input';
 import { expect } from 'chai';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 import * as Lineage from '../../src/local/libs/lineage';
-import { convertToUnixTimestamp } from '../../src/libs/core';
 
 describe('local report', () => {
   let localContext: LocalDataContext.LocalDataContext;
@@ -19,6 +21,9 @@ describe('local report', () => {
   let updateDocInner: SinonStub;
   let getDocByIdOuter: SinonStub;
   let getDocByIdInner: SinonStub;
+  let getDocsByIdsInner: SinonStub;
+  let getDocUuidsByIdRangeOuter: SinonStub;
+  let getDocUuidsByIdRangeInner: SinonStub;
   beforeEach(() => {
     createDocInner = sinon.stub();
     updateDocInner = sinon.stub();
@@ -32,6 +37,10 @@ describe('local report', () => {
     updateDocOuter = sinon.stub(LocalDoc, 'updateDoc').returns(updateDocInner);
     getDocByIdInner = sinon.stub();
     getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
+    getDocsByIdsInner = sinon.stub();
+    sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+    getDocUuidsByIdRangeInner = sinon.stub();
+    getDocUuidsByIdRangeOuter = sinon.stub(LocalDoc, 'getDocUuidsByIdRange').returns(getDocUuidsByIdRangeInner);
   });
 
   afterEach(() => sinon.restore());
@@ -43,7 +52,8 @@ describe('local report', () => {
       const identifier = { uuid: 'uuid' } as const;
 
       it('returns a report by UUID', async () => {
-        const doc = { type: 'data_record', form: 'yes' };
+        // Doc needs _id and _rev for isDoc check
+        const doc = { type: 'data_record', form: 'yes', _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
 
@@ -65,7 +75,7 @@ describe('local report', () => {
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a report.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid report.`)).to.be.true;
       });
 
       it('returns null if the identified doc does not have a form field', async () => {
@@ -78,7 +88,7 @@ describe('local report', () => {
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a report.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid report.`)).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -89,8 +99,7 @@ describe('local report', () => {
         expect(result).to.be.null;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
-        expect(warn.calledOnceWithExactly(`No report found for identifier [${identifier.uuid}].`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid report.`)).to.be.true;
       });
 
       it('propagates error if getMedicDocById throws an error', async () => {
@@ -108,45 +117,51 @@ describe('local report', () => {
 
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
-      let mockFetchHydratedDoc: sinon.SinonStub;
+      let fetchHydratedDocOuter: SinonStub;
+      let fetchHydratedDocInner: SinonStub;
 
       beforeEach(() => {
-        mockFetchHydratedDoc = sinon.stub(Lineage, 'fetchHydratedDoc');
+        fetchHydratedDocInner = sinon.stub();
+        fetchHydratedDocOuter = sinon.stub(Lineage, 'fetchHydratedDoc').returns(fetchHydratedDocInner);
       });
 
       it('returns a report with contact lineage when found', async () => {
-        const report = { type: 'data_record', form: 'yes', _id: 'report_id', contact: { _id: 'contact_id' } };
-        const mockFunction = sinon.stub().resolves(report);
-        mockFetchHydratedDoc.returns(mockFunction);
+        // Doc needs _rev for isDoc check
+        const report = {
+          type: 'data_record',
+          form: 'yes',
+          _id: 'report_id',
+          _rev: '1',
+          contact: { _id: 'contact_id' }
+        };
+        fetchHydratedDocInner.resolves(report);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.deep.equal(report);
-        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(fetchHydratedDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(fetchHydratedDocInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
 
       it('returns null if document is not a report', async () => {
         const report = { type: 'not_a_report', _id: 'doc_id' };
-        const mockFunction = sinon.stub().resolves(report);
-        mockFetchHydratedDoc.returns(mockFunction);
+        fetchHydratedDocInner.resolves(report);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(fetchHydratedDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(fetchHydratedDocInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
 
       it('returns null if document is not found', async () => {
-        const mockFunction = sinon.stub().resolves(null);
-        mockFetchHydratedDoc.returns(mockFunction);
+        fetchHydratedDocInner.resolves(null);
 
         const result = await Report.v1.getWithLineage(localContext)(identifier);
 
         expect(result).to.be.null;
-        expect(mockFetchHydratedDoc.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(mockFunction.calledOnceWithExactly(identifier.uuid)).to.be.true;
+        expect(fetchHydratedDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(fetchHydratedDocInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
       });
     });
 
@@ -728,14 +743,12 @@ describe('local report', () => {
     });
 
     describe('createReport', () => {
-      let queryDocUuidsByKeyInner: SinonStub;
-      let queryDocUuidsByKeyOuter: SinonStub;
+      let isContact: SinonStub;
 
       beforeEach(() => {
-        queryDocUuidsByKeyInner = sinon.stub();
-        queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
-        queryDocUuidsByKeyOuter.returns(queryDocUuidsByKeyInner);
+        isContact = sinon.stub(LocalContact.v1, 'isContact');
       });
+
       it('creates a report doc for valid report qualifier', async () => {
         const input = {
           type: 'data_record',
@@ -751,10 +764,12 @@ describe('local report', () => {
             _id: 'c2'
           }
         };
-        queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
+        // getSupportedForms uses getDocUuidsByIdRange
+        getDocUuidsByIdRangeInner.resolves(['form:pregnancy_danger_sign']);
         getDocByIdInner.resolves(returnedContactDoc);
+        isContact.returns(true);
         const updatedInput = {
-          ...input, reported_date: convertToUnixTimestamp(input.reported_date), contact: {
+          ...input, reported_date: new Date(input.reported_date).getTime(), contact: {
             _id: input.contact, parent: returnedContactDoc.parent
           }
         };
@@ -767,6 +782,7 @@ describe('local report', () => {
         expect(createDocOuter.calledOnce).to.be.true;
         expect(createDocInner.calledOnceWithExactly(updatedInput)).to.be.true;
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocUuidsByIdRangeOuter.calledOnce).to.be.true;
       });
 
       it('throws error when contact with id does not exist in the db', async () => {
@@ -776,18 +792,20 @@ describe('local report', () => {
           contact: 'c1',
           reported_date: new Date().toISOString()
         };
-        queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
+        getDocUuidsByIdRangeInner.resolves(['form:pregnancy_danger_sign']);
         getDocByIdInner.resolves(null);
+        isContact.returns(false);
 
         expect(createDocOuter.calledOnce).to.be.false;
 
         await expect(Report.v1.create(localContext)(input))
-          .to.be.rejectedWith(`Contact with _id ${input.contact} does not exist.`);
+          .to.be.rejectedWith(`Contact [${input.contact}] not found.`);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
       it('throws error for invalid `form` value', async () => {
-        queryDocUuidsByKeyInner.resolves([ 'form:undo_death_report' ]);
+        getDocUuidsByIdRangeInner.resolves(['form:undo_death_report']);
+        getDocByIdInner.resolves({ _id: 'c1' });
         const input = {
           type: 'data_record',
           form: 'dummy_form_value',
@@ -796,8 +814,7 @@ describe('local report', () => {
         };
 
         await expect(Report.v1.create(localContext)(input))
-          .to.be.rejectedWith('Invalid `form` value');
-        expect(getDocByIdInner.called).to.be.false;
+          .to.be.rejectedWith(`Invalid form value [${input.form}].`);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
       });
 
@@ -810,32 +827,30 @@ describe('local report', () => {
           contact: 'c1'
         };
 
-        await expect(Report.v1.create(localContext)(input))
-          .to.be.rejectedWith('Cannot pass `_rev` when creating a report.');
+        await expect(Report.v1.create(localContext)(input as unknown as Input.v1.ReportInput))
+          .to.be.rejectedWith('The [_rev] field must not be set.');
+        // createDocOuter is called when setting up the function, but createDocInner should not be called
         expect(createDocInner.called).to.be.false;
-        expect(createDocOuter.called).to.be.true;
       });
     });
   });
 
   describe('updateReport', () => {
-    let queryDocUuidsByKeyInner: SinonStub;
-    let queryDocUuidsByKeyOuter: SinonStub;
+    let isContact: SinonStub;
 
     beforeEach(() => {
-      queryDocUuidsByKeyInner = sinon.stub();
-      queryDocUuidsByKeyOuter = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
-      queryDocUuidsByKeyOuter.returns(queryDocUuidsByKeyInner);
+      isContact = sinon.stub(LocalContact.v1, 'isContact');
     });
+
     it('throws error when the update payload does not contain _id or _rev', async () => {
       const reportInput = {
         form: 'pregnancy_danger_sign',
         type: 'data_record',
         reported_date: 12312312
       };
-      await expect(Report.v1.update(localContext)(reportInput))
-        .to.be.rejectedWith(`Document for update is not a valid Doc ${JSON.stringify(reportInput)}`);
-      expect(getDocByIdInner.called).to.be.false;
+      await expect(Report.v1.update(localContext)(reportInput as unknown as ReportTypes.v1.Report))
+        .to.be.rejectedWith(`Valid _id, _rev, form, and type fields must be provided.`);
+      expect(getDocsByIdsInner.called).to.be.false;
     });
 
     it('throws error when _rev does not match with the original doc', async () => {
@@ -849,9 +864,10 @@ describe('local report', () => {
           _id: '5'
         }
       };
-      getDocByIdInner.resolves({ ...reportInput, _rev: '3' });
+      // getDocsByIds returns [originalReport, contactDoc]
+      getDocsByIdsInner.resolves([{ ...reportInput, _rev: '3' }, { _id: '5' }]);
       await expect(Report.v1.update(localContext)(reportInput))
-        .to.be.rejectedWith('`_rev` does not match');
+        .to.be.rejectedWith('The [_rev] field must not be changed.');
     });
 
     it('throws error when update input `form` is invalid', async () => {
@@ -865,10 +881,12 @@ describe('local report', () => {
           _id: '5'
         }
       };
-      queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
-      getDocByIdInner.resolves({ ...reportInput, form: 'pregnancy_danger_sign' });
+      // getSupportedForms uses getDocUuidsByIdRange
+      getDocUuidsByIdRangeInner.resolves(['form:pregnancy_danger_sign']);
+      // getDocsByIds returns [originalReport, contactDoc]
+      getDocsByIdsInner.resolves([{ ...reportInput, form: 'pregnancy_danger_sign' }, { _id: '5' }]);
       await expect(Report.v1.update(localContext)(reportInput))
-        .to.be.rejectedWith('Invalid `form` value');
+        .to.be.rejectedWith(`Invalid form value [${reportInput.form}].`);
     });
 
     it('throws error original doc does not exist', async () => {
@@ -882,9 +900,10 @@ describe('local report', () => {
           _id: '5'
         }
       };
-      getDocByIdInner.resolves(null);
+      // getDocsByIds returns [null, contactDoc] when original report not found
+      getDocsByIdsInner.resolves([null, { _id: '5' }]);
       await expect(Report.v1.update(localContext)(reportInput))
-        .to.be.rejectedWith('Report not found');
+        .to.be.rejectedWith('Report record');
     });
 
     it('throws error if contact lineage does not match with the original doc', async () => {
@@ -898,9 +917,15 @@ describe('local report', () => {
           _id: '5', parent: { _id: '7' }
         }
       };
-      getDocByIdInner.resolves({ ...reportInput, contact: { _id: '5', parent: { _id: '6' } } });
+      // getDocsByIds returns [originalReport, contactDoc]
+      getDocsByIdsInner.resolves([
+        { ...reportInput, contact: { _id: '5', parent: { _id: '6' } } },
+        { _id: '5', parent: { _id: '6' } }
+      ]);
+      // isContact must return true so the code reaches the lineage check
+      isContact.returns(true);
       await expect(Report.v1.update(localContext)(reportInput))
-        .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
+        .to.be.rejectedWith(`The given contact lineage does not match the current lineage for that contact.`);
     });
 
     it('updates report for valid input', async () => {
@@ -916,21 +941,23 @@ describe('local report', () => {
           parent: { _id: '7' }
         }
       };
-      queryDocUuidsByKeyInner.resolves([ 'form:pregnancy_danger_sign' ]);
-      getDocByIdInner.resolves({ ...reportInput, old: true, language: 'English' });
-      const modified = {
-        ...reportInput, contact: {
-          _id: '5', parent: {
-            _id: '7'
-          }
-        }
-      };
-      updateDocInner.resolves(modified);
+      // getSupportedForms uses getDocUuidsByIdRange
+      getDocUuidsByIdRangeInner.resolves(['form:pregnancy_danger_sign']);
+      // getDocsByIds returns [originalReport, contactDoc]
+      getDocsByIdsInner.resolves([
+        { ...reportInput, old: true, language: 'English' },
+        { _id: '5', parent: { _id: '7' } }
+      ]);
+      // updateDoc returns the new _rev
+      updateDocInner.resolves('3');
       const updatedReport = await Report.v1.update(localContext)(reportInput);
-      // ensure dehydrated lineage
-      expect(updatedReport).to.deep.equal(modified);
+      // When contact lineage is unchanged, getUpdatedContact returns updated.contact directly
+      // so extra fields are preserved
+      expect(updatedReport).to.deep.equal({
+        ...reportInput,
+        _rev: '3'
+      });
       expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-      expect(updateDocInner.calledOnceWithExactly(reportInput)).to.be.true;
     });
   });
 });

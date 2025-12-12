@@ -195,7 +195,7 @@ describe('remote context lib', () => {
 
       fetchResponse.text.resolves(errorMsg);
       const expectedError = new InvalidArgumentError(errorMsg);
-      await expect(postResource(context, path)(qualifier)).to.be.rejectedWith(errorMsg);
+      await expect(postResource(path)(context)(qualifier)).to.be.rejectedWith(errorMsg);
 
       expect(fetchStub.calledOnceWithExactly(
         `${context.url}/${path}`,
@@ -211,7 +211,7 @@ describe('remote context lib', () => {
       expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to POST ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        `Failed to POST resource to ${context.url}/${path}.`,
         expectedError
       ]);
     });
@@ -223,7 +223,7 @@ describe('remote context lib', () => {
       fetchResponse.status = 500;
       fetchResponse.statusText = 'Internal Server Error';
 
-      await expect(postResource(context, path)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+      await expect(postResource(path)(context)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
 
       expect(fetchStub.calledOnceWithExactly(
         `${context.url}/${path}`,
@@ -240,7 +240,7 @@ describe('remote context lib', () => {
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.calledOnce).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to POST ${JSON.stringify(qualifier)} to ${context.url}/${path}.`,
+        `Failed to POST resource to ${context.url}/${path}.`,
         new Error(fetchResponse.statusText)
       ]);
     });
@@ -257,7 +257,7 @@ describe('remote context lib', () => {
       fetchResponse.status = 200;
       fetchResponse.json.resolves(expected_response);
 
-      const response = await postResource(context, path)(qualifier);
+      const response = await postResource(path)(context)(qualifier);
 
       expect(response).to.deep.equal(expected_response);
       expect(fetchStub.calledOnceWithExactly(
@@ -279,6 +279,7 @@ describe('remote context lib', () => {
     it('throws InvalidArgumentError if the Bad Request - 400 status is returned', async () => {
       const path = 'path';
       const input = {
+        _id: '1',
         name: 'user-1',
         contact: {
           _id: '1',
@@ -294,11 +295,10 @@ describe('remote context lib', () => {
 
       fetchResponse.text.resolves(errorMsg);
       const expectedError = new InvalidArgumentError(errorMsg);
-      const resourceId = '1';
-      await expect(putResource(context, path)(resourceId, input)).to.be.rejectedWith(errorMsg);
+      await expect(putResource(path)(context)(input)).to.be.rejectedWith(errorMsg);
 
       expect(fetchStub.calledOnceWithExactly(
-        `${context.url}/${path}/${resourceId}`,
+        `${context.url}/${path}/${input._id}`,
         {
           method: 'PUT',
           headers: {
@@ -311,23 +311,22 @@ describe('remote context lib', () => {
       expect(fetchResponse.text.called).to.be.true;
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to PUT ${JSON.stringify(input)} to ${context.url}/${path}/${resourceId}.`,
+        `Failed to PUT resource to ${context.url}/${path}/${input._id}.`,
         expectedError
       ]);
     });
 
     it('throws an error when the server responds with non-400 error status', async () => {
       const path = 'path';
-      const qualifier = { name: 'city-1', type: 'place' };
+      const qualifier = { _id: '1', name: 'city-1', type: 'place' };
       fetchResponse.ok = false;
       fetchResponse.status = 502;
       fetchResponse.statusText = 'Bad Gateway';
-      const resourceId = '1';
 
-      await expect(putResource(context, path)(resourceId, qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+      await expect(putResource(path)(context)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
 
       expect(fetchStub.calledOnceWithExactly(
-        `${context.url}/${path}/${resourceId}`,
+        `${context.url}/${path}/${qualifier._id}`,
         {
           method: 'PUT',
           headers: {
@@ -341,7 +340,7 @@ describe('remote context lib', () => {
       expect(fetchResponse.json.notCalled).to.be.true;
       expect(loggerError.calledOnce).to.be.true;
       expect(loggerError.args[0]).to.deep.equal([
-        `Failed to PUT ${JSON.stringify(qualifier)} to ${context.url}/${path}/${resourceId}.`,
+        `Failed to PUT resource to ${context.url}/${path}/${qualifier._id}.`,
         new Error(fetchResponse.statusText)
       ]);
     });
@@ -349,21 +348,21 @@ describe('remote context lib', () => {
     it('updates a resource for valid req body and path', async () => {
       const path = 'path';
       const qualifier = {
+        _id: '1',
         name: 'city-1',
         type: 'place'
       };
 
-      const expected_response = { ...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      const expected_response = { ...qualifier, _rev: '1', _reported_date: 123123123 };
       fetchResponse.ok = true;
       fetchResponse.status = 200;
       fetchResponse.json.resolves(expected_response);
-      const resourceId = '1';
 
-      const response = await putResource(context, path)(resourceId, qualifier);
+      const response = await putResource(path)(context)(qualifier);
 
       expect(response).to.deep.equal(expected_response);
       expect(fetchStub.calledOnceWithExactly(
-        `${context.url}/${path}/${resourceId}`,
+        `${context.url}/${path}/${qualifier._id}`,
         {
           method: 'PUT',
           headers: {

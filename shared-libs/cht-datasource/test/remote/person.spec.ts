@@ -10,20 +10,12 @@ describe('remote person', () => {
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
-  let postResourceOuter: SinonStub;
-  let postResourceInner: SinonStub;
-  let putResourceOuter: SinonStub;
-  let putResourceInner: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
-    postResourceInner = sinon.stub();
-    postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
-    putResourceInner = sinon.stub();
-    putResourceOuter = sinon.stub(RemoteEnv, 'putResource').returns(putResourceInner);
   });
 
   afterEach(() => sinon.restore());
@@ -119,11 +111,14 @@ describe('remote person', () => {
           parent: 'p1'
         };
         const expected_doc = { ...personInput, _id: '2', _rev: '1' };
-        postResourceInner.resolves(expected_doc);
+        const innerFn = sinon.stub().resolves(expected_doc);
+        const createStub = sinon.stub(Person.v1, 'create').returns(innerFn);
+
         const result = await Person.v1.create(remoteContext)(personInput);
+
         expect(result).to.deep.equal(expected_doc);
-        expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
-        expect(postResourceInner.calledOnceWithExactly(personInput)).to.be.true;
+        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(personInput)).to.be.true;
       });
     });
 
@@ -137,11 +132,14 @@ describe('remote person', () => {
           rev: '1-rev'
         };
         const expected_doc = personInput;
-        putResourceInner.resolves(expected_doc);
+        const innerFn = sinon.stub().resolves(expected_doc);
+        const updateStub = sinon.stub(Person.v1, 'update').returns(innerFn);
+
         const result = await Person.v1.update(remoteContext)(personInput);
+
         expect(result).to.deep.equal(expected_doc);
-        expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
-        expect(putResourceInner.calledOnceWithExactly('1-id', personInput)).to.be.true;
+        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(personInput)).to.be.true;
       });
     });
   });

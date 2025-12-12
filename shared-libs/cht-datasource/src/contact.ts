@@ -30,7 +30,7 @@ export namespace v1 {
   export interface Contact extends Doc, NormalizedParent {
     readonly contact_type?: string;
     readonly name?: string;
-    readonly reported_date?: Date;
+    readonly reported_date?: number;
     readonly type: string;
   }
 

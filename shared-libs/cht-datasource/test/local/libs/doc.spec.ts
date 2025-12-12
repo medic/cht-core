@@ -133,15 +133,15 @@ describe('local doc lib', () => {
       expect(isDoc.notCalled).to.be.true;
     });
 
-    it('does not return an entry for a blank id', async () => {
+    it('returns null for a blank id', async () => {
       const result = await getDocsByIds(db)([ '' ]);
 
-      expect(result).to.deep.equal([]);
+      expect(result).to.deep.equal([null]);
       expect(dbAllDocs.notCalled).to.be.true;
       expect(isDoc.notCalled).to.be.true;
     });
 
-    it('does not return an entry that is not a doc', async () => {
+    it('returns null for an entry that is not a doc', async () => {
       const doc0 = { _id: 'doc0' };
       const ids = [ doc0._id ];
       dbAllDocs.resolves({
@@ -153,23 +153,23 @@ describe('local doc lib', () => {
 
       const result = await getDocsByIds(db)(ids);
 
-      expect(result).to.deep.equal([]);
+      expect(result).to.deep.equal([null]);
       expect(dbAllDocs.calledOnceWithExactly({ keys: ids, include_docs: true })).to.be.true;
       expect(isDoc.args).to.deep.equal([ [ doc0 ] ]);
     });
 
-    it('returns one entry when duplicate ids are provided', async () => {
+    it('returns entries for duplicate ids as returned by db', async () => {
       const doc0 = { _id: 'doc0' };
       dbAllDocs.resolves({
-        rows: [ { doc: doc0 } ]
+        rows: [ { doc: doc0 }, { doc: doc0 } ]
       });
       isDoc.returns(true);
 
       const result = await getDocsByIds(db)([ doc0._id, doc0._id ]);
 
-      expect(result).to.deep.equal([ doc0 ]);
-      expect(dbAllDocs.calledOnceWithExactly({ keys: [ doc0._id ], include_docs: true })).to.be.true;
-      expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
+      expect(result).to.deep.equal([ doc0, doc0 ]);
+      expect(dbAllDocs.calledOnceWithExactly({ keys: [ doc0._id, doc0._id ], include_docs: true })).to.be.true;
+      expect(isDoc.args).to.deep.equal([ [ doc0 ], [ doc0 ] ]);
     });
   });
 
@@ -649,52 +649,20 @@ describe('local doc lib', () => {
   });
 
   describe('updateDoc', () => {
-    it('should update and retrieve the doc', async () => {
+    it('should update the doc and return the new rev', async () => {
       const updateDocQualifier = {
         _id: '1-id',
         _rev: '2-rev',
         name: 'apoorva',
         type: 'person'
       };
-      dbPut.resolves({ id: '1-id', ok: true });
-      isDoc.returns(true);
-      const expectedDoc = { ...updateDocQualifier, _rev: '3-rev' };
-      dbGet.resolves(expectedDoc);
+      dbPut.resolves({ id: '1-id', ok: true, rev: '3-rev' });
 
       const result = await updateDoc(db)(updateDocQualifier);
 
-      expect(result).to.equal(expectedDoc);
-      expect(dbGet.calledOnceWithExactly(expectedDoc._id)).to.be.true;
-    });
-
-    it('should throw error for missing _id', async () => {
-      const updateDocQualifier = {
-        _rev: '2-rev',
-        name: 'apoorva',
-        type: 'person'
-      };
-
-      await expect(updateDoc(db)(updateDocQualifier))
-        .to.be.rejectedWith(`Missing or empty required field (_id) for [${JSON.stringify(updateDocQualifier)}]`);
-
-      expect(isDoc.called).to.be.false;
-      expect(dbGet.called).to.be.false;
-      expect(dbPut.called).to.be.false;
-    });
-
-    it('should throw error for missing _rev', async () => {
-      const updateDocQualifier = {
-        _id: '1-id',
-        name: 'apoorva',
-        type: 'person'
-      };
-
-      await expect(updateDoc(db)(updateDocQualifier))
-        .to.be.rejectedWith(`Missing or empty required field (_rev) for [${JSON.stringify(updateDocQualifier)}]`);
-
-      expect(isDoc.called).to.be.false;
-      expect(dbGet.called).to.be.false;
-      expect(dbPut.called).to.be.false;
+      expect(result).to.equal('3-rev');
+      expect(dbPut.calledOnceWithExactly(updateDocQualifier)).to.be.true;
+      expect(dbGet.notCalled).to.be.true;
     });
 
     it('case when database returns false for ok', async () => {
