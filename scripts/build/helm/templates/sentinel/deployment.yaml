@@ -19,7 +19,7 @@ spec:
       containers:
         - env:
             - name: LOG_LEVEL
-              value: '{{ .Values.api.log_level | default "info" }}'
+              value: '{{ .Values.sentinel.log_level | default "info" }}'
             - name: API_HOST
               value: api.{{ .Values.namespace }}.svc.cluster.local
             - name: COUCH_URL
