@@ -2,7 +2,7 @@
 const minimist = require('minimist');
 const { Octokit } = require('@octokit/core');
 const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
-const {async} = require('xhr-mock/lib/handle');
+require('xhr-mock/lib/handle');
 const ExtendedOctokit = Octokit.plugin(paginateGraphql);
 
 
@@ -331,7 +331,7 @@ ${formatCommits(commits)} `;
     console.log('Saving output to release.notes.md...');
     const fs = require('node:fs/promises');
     await fs.writeFile('./release.notes.md', releaseNotes);
-    console.log('Release not generation complete!');
+    console.log('Release note generation complete!');
   };
 
   const getCommits = async () => {
@@ -371,4 +371,3 @@ const getTokenFromUser = () => {
   const token = await getTokenFromUser();
   await main(token);
 })();
-
