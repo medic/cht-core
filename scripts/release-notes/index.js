@@ -175,6 +175,10 @@ const main = async(token) => {
     return commitsWithoutMilestone;
   };
 
+  const printCommitError = (commit) => {
+    const link = `https://github.com/medic/${REPO_NAME}/commit/`;
+    console.error(`- ${link}${commit.oid.substring(0, 6)} : ${commit.messageHeadline}`);
+  };
   const validateCommits = async (commitsForRelease) => {
     if (argv['skip-commit-validation']) {
       return;
@@ -191,7 +195,8 @@ Some commits included in the release are not associated with a milestone. Commit
 
 Commits:
   `);
-      commitsWithoutMilestone.forEach(commit => console.error(`- ${commit.oid}: ${commit.messageHeadline}`));
+      commitsWithoutMilestone.forEach(commit => printCommitError(commit));
+      console.error(''); // adds empty line after last commit URL
       throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
     }
   };
