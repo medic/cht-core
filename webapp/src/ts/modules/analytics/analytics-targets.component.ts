@@ -96,15 +96,44 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   * Converts a serialized function string (like "() => 'x'") back into a real JS function.
   */
   private reviveFunction(fnString: string): any {
+    if (typeof fnString !== 'string') {
+      return fnString;
+    }
+
+    // Must contain an arrow at minimum
+    if (!fnString.includes('=>')) {
+      return fnString;
+    }
+
+    // SECURITY: Block dangerous keywords
+    const forbidden = /(require|process|global|import|while|for\s*\(|eval)/;
+    if (forbidden.test(fnString)) {
+      console.warn('Blocked unsafe function:', fnString);
+      return fnString;
+    }
+
+    // Extract the arrow parts
+    const arrowIndex = fnString.indexOf('=>');
+    const args = fnString.substring(0, arrowIndex).trim();
+    const body = fnString.substring(arrowIndex + 2).trim();
+
+    // Clean argument parentheses
+    const cleanedArgs = args.replace(/^\(|\)$/g, '').trim();
+
     try {
-      if (typeof fnString === 'string' && fnString.includes('=>')) {
-        return eval(fnString);  // Rebuild function
+      if (body.startsWith('{')) {
+      // BLOCK BODY  => use function body
+        return new Function(cleanedArgs, body);
+      } else {
+      // EXPRESSION BODY => return expression
+        return new Function(cleanedArgs, `return (${body});`);
       }
     } catch (err) {
-      console.error('Failed to revive target function:', err, fnString);
+      console.error('Failed to revive function:', err, fnString);
+      return fnString;
     }
-    return fnString;
   }
+
 
 
   /**
