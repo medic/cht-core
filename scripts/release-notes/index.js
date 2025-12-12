@@ -329,8 +329,8 @@ ${formatCommits(commits)} `;
 
     console.log('Saving output to release.notes.md...');
     const fs = require('node:fs/promises');
-    await fs.writeFile('./release.notes.md', releaseNotes)
-      .then(process.exit());
+    await fs.writeFile('./release.notes.md', releaseNotes);
+    console.log('Release not generation complete!');
   };
 
   const getCommits = async () => {
