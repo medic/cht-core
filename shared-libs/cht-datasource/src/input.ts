@@ -1,267 +1,63 @@
-// The reason why a something like `PersonInput` and `Person` interfaces exist is because `PersonInput`
-// acts like a input DTO for the cht-datasource API to act upon while creating a person, whereas 
-// `Person` is the actual database model.
+import { DataObject } from './libs/core';
+import * as Place from './place';
+import * as Report from './report';
+import { Doc } from './libs/doc';
 
-// `ReportInput`, `Report` and `PlaceInput`, `Place` types 
-// coexist in the cht-datasource codebase for the same reason.  
-
-import { convertToUnixTimestamp, hasField, hasFields, isRecord } from './libs/core';
-import { InvalidArgumentError } from './libs/error';
-
-const ISO_8601_DATE_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)$/;
-
+/** */
 export namespace v1 {
   /**
-   * An input for a contact
+   * Input data for a contact.
    */
-  interface ContactInput {
-    readonly type: string,
-    readonly name: string,
-    readonly reported_date?: string | number,
-    readonly _id?: string,
-    readonly _rev?: string
-    [key: string]: unknown
-  };
+  export interface ContactInput extends DataObject {
+    readonly type: string
+    readonly name: string
+    readonly reported_date?: string | number
+    readonly _id?: never
+    readonly _rev?: never
+  }
 
   /**
-   * Builds an input object for creation and update of a contact with
-   * the given fields.
-   * @param data object containing the fields for a contact
-   * @returns the contact input
-   * @throws Error if data is not an object
-   * @throws Error if type is not provided or is empty
-   * @throws Error if name is not provided or is empty
-   * @throws Error if reported_date is not in a valid format.
-   * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
-   * @internal
+   * Input data for a report.
    */
-  export const validateContactInputNonAssertive = (data: unknown): Record<string, unknown> => {
-    if (!isRecord(data)) {
-      throw new InvalidArgumentError('Invalid "data": expected an object.');
-    }
-    const input = { ...data };
-    insertReportedDateIfMissing(input);
-    if (!isValidReportedDate(input.reported_date)) {
-      throw new InvalidArgumentError(
-        'Invalid reported_date. Expected format to be ' +
-        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
-      );
-    }
-    input.reported_date = convertToUnixTimestamp(input.reported_date as string | number);
-    if (!checkContactInputFields(input)) {
-      throw new InvalidArgumentError(
-        `Missing or empty required fields (name, type)`
-      );
-    }
-    return input;
-  };
+  export interface ReportInput extends DataObject {
+    readonly form: string
+    readonly reported_date?: string | number
+    readonly contact: string
+    readonly _id?: never
+    readonly _rev?: never
+  }
 
   /**
-   *
+   * Input data for updating a report.
    */
-  const insertReportedDateIfMissing = (input: Record<string, unknown>): void => {
-    if (!('reported_date' in input)) {
-      input.reported_date = new Date().toISOString();
-    }
-  };
+  export type UpdateReportInput<T extends Report.v1.Report | Report.v1.ReportWithLineage> = T
+    | Omit<T, 'contact'> & Doc & { contact: string };
 
   /**
-   * Returns `true` if the given input is a {@link ContactInput} otherwise `false`.
-   * @param input the input to check
-   * @returns `true` if the given type is a {@link ContactInput}, otherwise `false`.
-   */
-  export const isContactInput = (input: unknown): input is ContactInput => {
-    return checkContactInputFields(input);
-  };
-
-  /** @internal */
-  const checkContactInputFields = (data: unknown): data is Record<string, unknown> => {
-    return isRecord(data) &&
-      hasFields(data, [
-        { name: 'type', type: 'string', ensureTruthyValue: true },
-        { name: 'name', type: 'string', ensureTruthyValue: true }
-      ]) &&
-      (!('reported_date' in data) || isValidReportedDate(data.reported_date));
-  };
-
-  /**
-   * An input for a report
-   */
-  export interface ReportInput {
-    readonly type: string,
-    readonly form: string,
-    readonly reported_date?: string | number,
-    readonly _id?: string,
-    readonly _rev?: string,
-    readonly contact: string,
-    [key: string]: unknown
-  };
-
-  /**
-   * Builds an input object for creation and update of a report with
-   * the given fields.
-   * @param data object containing the fields for a report
-   * @returns the validated report input
-   */
-  export const validateReportInput = (data: unknown): ReportInput => {
-    if (!isRecord(data)) {
-      throw new InvalidArgumentError('Invalid "data": expected an object.');
-    }
-
-    const input = { ...data };
-    insertReportedDateIfMissing(input);
-    if (!isValidReportedDate(input.reported_date)) {
-      throw new InvalidArgumentError(
-        'Invalid reported_date. Expected format to be ' +
-        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
-      );
-    }
-    input.reported_date = convertToUnixTimestamp(input.reported_date as string | number);
-    if (!hasField(input, { name: 'contact', type: 'string', ensureTruthyValue: true })) {
-      throw new InvalidArgumentError(`Missing or empty required field (contact)`);
-    }
-    if (!isReportInput(input)) {
-      throw new InvalidArgumentError(`Missing or empty required field (form)`);
-    }
-    return input;
-  };
-
-  /**
-   * Returns `true` if the given input is a {@link ReportInput} otherwise `false`.
-   * @param input the input to check
-   * @returns `true` if the given type is a {@link ReportInput}, otherwise `false`.
-   */
-  export const isReportInput = (input: unknown): input is ReportInput => {
-    if (isRecord(input) &&
-      hasFields(input, [
-        { name: 'form', type: 'string', ensureTruthyValue: true },
-        { name: 'contact', type: 'string', ensureTruthyValue: true }
-      ])
-    ) {
-      if ('reported_date' in input && !isValidReportedDate(input.reported_date)) {
-        return false;
-      }
-      return true;
-    }
-    return false;
-  };
-
-
-  /** @internal */
-  const isValidReportedDate = (value: unknown): boolean => {
-    if (typeof value === 'number') {
-      return Number.isInteger(value);
-    }
-
-    if (typeof value === 'string') {
-      return ISO_8601_DATE_PATTERN.test(value);
-    }
-
-    return false;
-  };
-
-  /**
-   * An input for a person
+   * Input data for a person
    */
   export interface PersonInput extends ContactInput {
-    readonly parent: string;
-    readonly date_of_birth?: Date;
-    readonly phone?: string;
-    readonly patient_id?: string;
-    readonly sex?: string;
-  };
+    readonly parent: string
+    readonly date_of_birth?: Date
+    readonly phone?: string
+    readonly patient_id?: string
+    readonly sex?: string
+  }
 
   /**
-   * Builds an input object for creation and update of a person with
-   * the given fields.
-   * @param data object containing the fields for a person
-   * @returns the validated person input
-   * @internal
-   */
-  export const validatePersonInput = (data: unknown): PersonInput => {
-    const input = validateContactInputNonAssertive(data);
-
-    if (!hasField(input, { name: 'parent', type: 'string', ensureTruthyValue: true })) {
-      throw new InvalidArgumentError(`Missing or empty required field (parent)`);
-    }
-
-    return input as unknown as PersonInput;
-  };
-
-  /** @internal */
-  export const isPersonInput = (data: unknown): data is PersonInput => {
-    if (!checkContactInputFields(data)) {
-      return false;
-    }
-
-    // `parent` must be present for person, so cannot use `hasInvalidContactLineageForField`
-    return hasField(data, { name: 'parent', type: 'string', ensureTruthyValue: true });
-  };
-
-  /**
-   * An input for a place
+   * Input data for a place
    */
   export interface PlaceInput extends ContactInput {
-    readonly parent?: string;
-    readonly contact?: string;
-    readonly place_id?: string;
-  };
+    readonly parent?: string
+    readonly contact?: string
+    readonly place_id?: string
+    readonly _id?: never
+    readonly _rev?: never
+  }
 
   /**
-   * Builds an input object for creation and update of a place with the given fields
-   * @param data object containing the fields for a person
-   * @returns the place input
+   * Input data for updating a place.
    */
-  export const validatePlaceInput = (data: unknown): PlaceInput => {
-    const input = validateContactInputNonAssertive(data);
-
-    if (!isValidPlaceContact(input)) {
-      throw new InvalidArgumentError(
-        `Missing or empty required field (contact)`
-      );
-    }
-
-    if (!isValidPlaceParent(input)) {
-      throw new InvalidArgumentError(
-        `Missing or empty required field (parent)`
-      );
-    }
-
-    return input as PlaceInput;
-  };
-
-  /** @internal*/
-  export const isPlaceInput = (data: unknown): data is PlaceInput => {
-    if (!checkContactInputFields(data)) {
-      return false;
-    }
-
-    if (!isValidPlaceParent(data)) {
-      return false;
-    }
-
-    return isValidPlaceContact(data);
-  };
-
-  /** @internal*/
-  const isValidPlaceContact = (data: Record<string, unknown>): boolean => {
-    if (!hasField(data, { name: 'contact', type: 'string' })) {
-      return true;
-    }
-    // If `contact` is present, it must be a non-empty string.
-    return hasField(data, { name: 'contact', type: 'string', ensureTruthyValue: true });
-  };
-
-  /**
-   *
-   */
-  const isValidPlaceParent = (data: Record<string, unknown>): boolean => {
-    if (!hasField(data, { name: 'parent', type: 'string' })) {
-      return true;
-    }
-    // If `parent` is present, it must be a non-empty string.
-    return hasField(data, { name: 'parent', type: 'string', ensureTruthyValue: true });
-  };
-
-
+  export type UpdatePlaceInput<T extends Place.v1.Place | Place.v1.PlaceWithLineage> = T
+    | Omit<T, 'contact'> & Doc & { contact?: string };
 }

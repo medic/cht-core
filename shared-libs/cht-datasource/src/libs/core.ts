@@ -52,6 +52,17 @@ export const isDataObject = (value: unknown): value is DataObject => {
     .every((v) => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertDataObject (
+  value: unknown,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is DataObject {
+  if (!isDataObject(value)) {
+    throw new ErrorClass('Invalid data object value.');
+  }
+}
+
 /**
  * Ideally, this function should only be used at the edge of this library (when returning potentially cross-referenced
  * data objects) to avoid unintended consequences if any of the objects are edited in-place. This function should not
@@ -85,29 +96,81 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
-interface FieldDescriptor<T> {
-  name: keyof T;
-  type: string;
-  ensureTruthyValue?: boolean
+type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'function' | 'object';
+interface FieldTypeToValue {
+  string: string
+  number: number
+  boolean: boolean
+  date: Date,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  function: Function,
+  object: object
+}
+interface FieldDescriptor<K extends FieldType> {
+  name: string;
+  type: K;
 }
 
 /** @internal */
-export const hasField = <T extends Record<string, unknown>>(
+export const hasField = <T extends Record<string, unknown>, K extends FieldType>(
   value: T,
-  { name, type, ensureTruthyValue = false }: FieldDescriptor<T>
-): value is T & Record<typeof name, string> => {
-  const valueField = value[name];
-  if (ensureTruthyValue) {
-    return typeof valueField === type && !!valueField;
+  { name, type }: FieldDescriptor<K>
+): value is T & Record<typeof name, FieldTypeToValue[K]> => {
+  const fieldValue = value[name];
+  if (type === 'date') {
+    return fieldValue instanceof Date;
   }
-  return typeof valueField === type;
+  return typeof fieldValue === type;
 };
 
 /** @internal */
-export const hasFields = <T extends Record<string, unknown>>(
-  value: T,
-  fields: NonEmptyArray<FieldDescriptor<T>>,
+export const hasFields = <K extends FieldType>(
+  value: Record<string, unknown>,
+  fields: NonEmptyArray<FieldDescriptor<K>>,
 ): boolean => fields.every(field => hasField(value, field));
+
+/** @internal */
+export const hasStringFieldWithValue = <T extends Record<string, unknown>>(
+  value: T,
+  fieldName: string
+): value is T & Record<typeof fieldName, string> => {
+  return hasField(value, { name: fieldName, type: 'string' }) && !!(value[fieldName].trim());
+};
+
+/** @internal */
+export const assertDoesNotHaveField = (
+  value: Record<string, unknown>,
+  name: string,
+  ErrorClass: new (message: string) => Error = Error
+): void => {
+  if (!(value[name] === undefined || value[name] === null)) {
+    throw new ErrorClass(`Field ${String(name)} is not allowed.`);
+  }
+};
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertHasOptionalField <T extends Record<string, unknown>, K extends FieldType>(
+  value: T,
+  { name, type }: FieldDescriptor<K>,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is T & Record<typeof name, FieldTypeToValue[K] | undefined> {
+  if (name in value && !hasField(value, { name, type })) {
+    throw new ErrorClass(`Invalid ${String(name)} value.`);
+  }
+}
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertHasRequiredField <T extends Record<string, unknown>, K extends FieldType>(
+  value: T,
+  { name, type }: FieldDescriptor<K>,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is T & Record<typeof name, FieldTypeToValue[K]> {
+  if (!hasField(value, { name, type }) || !value[name]) {
+    throw new ErrorClass(`Missing or empty required field (${String(name)})`);
+  }
+}
 
 /** @internal */
 export interface Identifiable extends DataObject {
@@ -116,7 +179,7 @@ export interface Identifiable extends DataObject {
 
 /** @internal */
 export const isIdentifiable = (value: unknown): value is Identifiable => isRecord(value)
-  && hasField(value, { name: '_id', type: 'string' });
+  && hasStringFieldWithValue(value, '_id');
 
 /** @internal */
 export const findById = <T extends Identifiable>(values: T[], id: string): Nullable<T> => values

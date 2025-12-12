@@ -8,6 +8,8 @@ import {
   isIdentifiable,
   isNonEmptyArray,
   isNotNull,
+  isRecord,
+  isString,
   NonEmptyArray,
   NormalizedParent,
   Nullable
@@ -16,6 +18,13 @@ import { Doc } from '../../libs/doc';
 import { getDocsByIds, queryDocsByRange } from './doc';
 import logger from '@medic/logger';
 import lineageFactory from '@medic/lineage';
+import * as Report from '../../report';
+import * as Input from '../../input';
+import * as Place from '../../place';
+import { SettingsService } from './data-context';
+import * as LocalContact from '../contact';
+import { InvalidArgumentError } from '../../libs/error';
+import contactTypeUtils from '@medic/contact-types-utils';
 
 /**
  * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
@@ -24,7 +33,7 @@ import lineageFactory from '@medic/lineage';
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
   const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
-  return (id: string) => fn([ id ], [ id, {} ]);
+  return (id: string) => fn([id], [id, {}]);
 };
 
 /** @internal */
@@ -90,13 +99,20 @@ export const hydrateLineage = (
       );
       return { _id: parentId };
     });
-  const hierarchy: NonEmptyArray<DataObject> = [ contact, ...fullLineage ];
+  const hierarchy: NonEmptyArray<DataObject> = [contact, ...fullLineage];
   return mergeLineage(hierarchy.slice(0, -1), getLastElement(hierarchy)) as Contact.v1.Contact;
 };
 
 /** @internal */
 export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
   const getMedicDocsById = getDocsByIds(medicDb);
+  const getDocs = async (uuids: string[]): Promise<Doc[]> => {
+    const keys = Array
+      .from(new Set(uuids))
+      .filter(Boolean);
+    const docs = await getMedicDocsById(keys);
+    return docs.filter(d => d !== null);
+  };
 
   return async (
     places: NonEmptyArray<Nullable<Doc>>,
@@ -104,8 +120,8 @@ export const getContactLineage = (medicDb: PouchDB.Database<Doc>) => {
   ): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
     const primaryContactUuids = getPrimaryContactIds(places);
     const uuidsToFetch = person ? primaryContactUuids.filter(uuid => uuid !== person._id) : primaryContactUuids;
-    const fetchedContacts = await getMedicDocsById(uuidsToFetch);
-    const allContacts = person ? [ person, ...fetchedContacts ] : fetchedContacts;
+    const fetchedContacts = await getDocs(uuidsToFetch);
+    const allContacts = person ? [person, ...fetchedContacts] : fetchedContacts;
     const contactsWithHydratedPrimaryContact = places.map(
       hydratePrimaryContact(allContacts)
     );
@@ -137,4 +153,93 @@ export const fetchHydratedDoc = (medicDb: PouchDB.Database<Doc>): (uuid: string)
       throw e;
     }
   };
+};
+
+/** @internal */
+export const minifyDoc = (medicDb: PouchDB.Database<Doc>) => {
+  const { minify } = lineageFactory(Promise, medicDb);
+  return <T extends DataObject>(doc: T): T => {
+    const minified = deepCopy(doc);
+    minify(minified);
+    return minified;
+  };
+};
+
+/** @internal */
+export const minifyLineage = (medicDb: PouchDB.Database<Doc>) => {
+  const { minifyLineage } = lineageFactory(Promise, medicDb);
+  return (doc: DataObject): NormalizedParent => minifyLineage(doc) as NormalizedParent;
+};
+
+const isSameLineage = (
+  a: unknown,
+  b: unknown
+): boolean => {
+  if (!isRecord(a) || !isRecord(b)) {
+    return a === b;
+  }
+  if (a._id !== b._id) {
+    return false;
+  }
+  return isSameLineage(a.parent, b.parent);
+};
+
+/** @internal*/
+export const assertSameParentLineage = (a: DataObject, b: DataObject): void => {
+  if (!isSameLineage(a.parent, b.parent)) {
+    throw new InvalidArgumentError('Parent lineage does not match.');
+  }
+};
+
+type WithUpdatableContact = Input.v1.UpdateReportInput<Report.v1.Report | Report.v1.ReportWithLineage>
+  | Input.v1.UpdatePlaceInput<Place.v1.Place | Place.v1.PlaceWithLineage>;
+
+/** @internal */
+export const getContactIdForUpdate = (updated: WithUpdatableContact): string | undefined => {
+  return isString(updated.contact) ? updated.contact : updated.contact?._id;
+};
+
+/** @internal */
+export const isContactUpdated = (
+  original: Report.v1.Report | Place.v1.Place,
+  updated: WithUpdatableContact,
+): boolean => !!updated.contact && !isSameLineage(original.contact, updated.contact);
+
+/** @internal */
+export const getUpdatedContact = (
+  settings: SettingsService,
+  medicDb: PouchDB.Database<Doc>
+) => {
+  const minify = minifyLineage(medicDb);
+
+  return (
+    original: Report.v1.Report | Place.v1.Place,
+    updated: WithUpdatableContact,
+    contact: Nullable<Doc>
+  ): string | NormalizedParent | undefined => {
+    if (!isContactUpdated(original, updated)) {
+      return updated.contact;
+    }
+    if (!contact || !LocalContact.v1.isContact(settings, contact)) {
+      throw new InvalidArgumentError(`No contact found for [${getContactIdForUpdate(updated)}].`);
+    }
+    if (isString(updated.contact)) {
+      return minify(contact);
+    }
+    if (!isSameLineage(contact, updated.contact)) {
+      throw new InvalidArgumentError('The given contact lineage does not match the existing contact.');
+    }
+
+    return updated.contact;
+  };
+};
+
+/** @internal */
+export const assertHasValidParentType = (childType: Record<string, unknown>, parent: Doc): void => {
+  const parentType = contactTypeUtils.getTypeId(parent);
+  if (!contactTypeUtils.isParentOf(parentType, childType)) {
+    throw new InvalidArgumentError(
+      `Parent of type "${parentType}" is not allowed for "${childType.id}" type`
+    );
+  }
 };

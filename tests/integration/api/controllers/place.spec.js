@@ -273,7 +273,7 @@ describe('Place API', () => {
   describe('POST /api/v1/place', () => {
     it('creates place for valid input', async () => {
       const input = {
-        type: 'place',
+        type: 'district_hospital',
         name: 'place-1',
         contact: contact0._id
       };
@@ -288,9 +288,12 @@ describe('Place API', () => {
       };
       const placeDoc = await utils.request(opts);
       const updatedInput = {
-        ...input, contact: {
+        ...input,
+        contact: {
           _id: contact0._id, parent: contact0.parent
-        }
+        },
+        type: 'contact',
+        contact_type: 'district_hospital'
       };
       expect(placeDoc).excluding([ 'reported_date', '_id', '_rev' ]).to.deep.equal(updatedInput);
     });
@@ -313,7 +316,7 @@ describe('Place API', () => {
         .to.be.rejectedWith(
           `400 - ${JSON.stringify({
             code: 400,
-            error: `Missing or empty required fields (name, type)`
+            error: `Missing or empty required field (type)`
           })}`
         );
     });
@@ -358,7 +361,7 @@ describe('Place API', () => {
       const endpoint = '/api/v1/place';
       const createPlaceInput = {
         name: 'place-1',
-        type: 'place',
+        type: 'clinic',
         parent: place1._id
       };
       const createOpts = {
@@ -399,7 +402,7 @@ describe('Place API', () => {
       const endpoint = '/api/v1/place';
       const createPlaceInput = {
         name: 'place-1',
-        type: 'place',
+        type: 'clinic',
         parent: place1._id
       };
       const createOpts = {
@@ -439,7 +442,7 @@ describe('Place API', () => {
       const endpoint = '/api/v1/place';
       const createPlaceInput = {
         name: 'place-1',
-        type: 'place',
+        type: 'clinic',
         parent: place1._id
       };
       const createOpts = {

@@ -214,11 +214,11 @@ describe('cht-datasource Person', () => {
     describe('create', async () => {
       const createPerson = Person.v1.create(dataContext);
       it('creates a person for a valid person input', async () => {
-        const personInput = Input.v1.validatePersonInput({
+        const personInput = {
           name: 'apoorva',
           type: 'person',
           parent: place0._id
-        });
+        };
         const person = await createPerson(personInput);
         expect(person).excluding([ '_rev', 'reported_date', '_id' ])
           .to.deep.equal({
@@ -228,12 +228,12 @@ describe('cht-datasource Person', () => {
       });
 
       it('throws error for parent type not among allowed parents in settings.contact_types', async () => {
-        const personInput = Input.v1.validatePersonInput({
+        const personInput = {
           name: 'apoorva',
           type: 'person',
           parent: contact0._id,
           reported_date: 12312312
-        });
+        };
         await expect(createPerson(personInput))
           .to.be.rejectedWith({
             code: 400,
@@ -243,12 +243,12 @@ describe('cht-datasource Person', () => {
     });
 
     describe('update', async () => {
-      const personInput = Input.v1.validatePersonInput({
+      const personInput = {
         name: 'apoorva',
         type: 'person',
         hobby: 'guitar',
         parent: place0._id
-      });
+      };
       const createPersonDoc = await Person.v1.create(dataContext)(personInput);
       const updatePerson = Person.v1.update(dataContext);
 

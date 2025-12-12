@@ -1,6 +1,6 @@
 import logger from '@medic/logger';
 import { DataContext } from '../../libs/data-context';
-import { AbstractDataContext, isString, Nullable } from '../../libs/core';
+import { AbstractDataContext, Identifiable, isString, Nullable } from '../../libs/core';
 import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
@@ -85,19 +85,14 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
 };
 
 /** @internal */
-export const postResource = (context: RemoteDataContext, path: string) => async <T>(
+export const postResource = (path: string) => (context: RemoteDataContext) => async <T>(
   body: Record<string, unknown>,
-): Promise<T> => {
-  return await requestWithBody(context, path, body, 'POST');
-};
+): Promise<T> => requestWithBody(context, path, body, 'POST');
 
 /** @internal */
-export const putResource = (context: RemoteDataContext, path: string) => async <T>(
-  id: string,
-  body: Record<string, unknown>,
-): Promise<T> => {
-  return await requestWithBody(context, `${path}/${id}`, body, 'PUT');
-};
+export const putResource = (path: string) => (context: RemoteDataContext) => async <T>(
+  body: Identifiable,
+): Promise<T> => requestWithBody(context, `${path}/${body._id}`, body, 'PUT');
 
 const requestWithBody = async <T>(
   context: RemoteDataContext,

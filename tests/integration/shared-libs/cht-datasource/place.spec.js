@@ -232,13 +232,16 @@ describe('cht-datasource Place', () => {
       it('creates a place for a valid input', async () => {
         const placeInput = {
           name: 'place-1',
-          type: 'place',
-          parent: contact0._id,
+          type: 'health_center',
+          parent: place2._id,
           contact: contact1._id
         };
         const updatedPlaceInput = {
-          ...placeInput, parent: { _id: contact0._id, parent: contact0.parent },
-          contact: { _id: contact1._id, parent: contact1.parent }
+          ...placeInput,
+          parent: { _id: place2._id },
+          contact: { _id: contact1._id, parent: contact1.parent },
+          type: 'contact',
+          contact_type: 'health_center'
         };
         const placeDoc = await Place.v1.create(dataContext)(placeInput);
         expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])

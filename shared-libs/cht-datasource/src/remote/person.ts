@@ -2,21 +2,12 @@ import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
-import * as Input from '../input';
 
 /** @internal */
 export namespace v1 {
   const getPerson = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/person');
 
   const getPeople = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/person');
-
-  const createPerson = (
-    remoteContext: RemoteDataContext
-  ) => postResource(remoteContext, 'api/v1/person');
-
-  const updatePerson = (
-    remoteContext: RemoteDataContext
-  ) => putResource(remoteContext, 'api/v1/person');
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -46,17 +37,8 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const create =
-    (remoteContext: RemoteDataContext) => (
-      input: Input.v1.PersonInput
-    ): Promise<Person.v1.Person> => createPerson(remoteContext)(input);
+  export const create = postResource('api/v1/person');
 
   /** @internal */
-  export const update =
-    (remoteContext: RemoteDataContext) => (
-      input: Record<string, unknown>
-    ): Promise<Person.v1.Person> => {
-      const id = input._id as string;
-      return updatePerson(remoteContext)(id, input);
-    };
+  export const update = putResource('api/v1/person');
 }

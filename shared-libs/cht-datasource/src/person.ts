@@ -6,7 +6,7 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
+import { getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import * as Input from './input';
@@ -128,21 +128,22 @@ export namespace v1 {
   export const create = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
+
     /**
      * Creates a new person record.
      * @param input input fields for creating a person
      * @returns the created person record
-     * @throws InvalidArgumentError if the input does not contain required fields
-     * @throws InvalidArgumentError if the input's parent field is not one of the allowed parents in the config
-     * @throws InvalidArgumentError if the required fields do not have the expected type
-     * @throws Error if input is not an object
-     * @throws Error if type is not provided or is empty
-     * @throws Error if name is not provided or is empty
-     * @throws Error if parent is not provided or is empty
-     * @throws Error if reported_date is not in a valid format.
-     * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     * @throws InvalidArgumentError if `type` is not provided or is not a supported person contact type
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if `parent` is not provided or is not the identifier of a valid contact. The parent
+     * contact's type must be one of the supported parent contact types for the new person.
+     * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
+     * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
      */
     const curriedFn = async (input: Input.v1.PersonInput): Promise<Person> => {
+      if (!isRecord(input)) {
+        throw new InvalidArgumentError('Person data not provided.');
+      }
       return fn(input);
     };
     return curriedFn;
@@ -151,25 +152,30 @@ export namespace v1 {
   /**
    * Returns a function for updating a person from the given data context.
    * @param context the current data context
-   * @returns a function for updating a person.
+   * @returns a function for updating a person
    * @throws Error if a data context is not provided
    */
   export const update = (context: DataContext): typeof curriedFn => {
     assertDataContext(context);
     const fn = adapt(context, Local.Person.v1.update, Remote.Person.v1.update);
+
     /**
-     * Returns the updated Person Doc for the provided updateInput
-     * @param updateInput the Doc containing updated fields
-     * @returns updated person Doc
-     * @throws InvalidArgumentError if updateInput has changes in immutable fields
-     * @throws InvalidArgumentError if updateInput does not contain required fields
-     * @throws InvalidArgumentError if updateInput fields are not of expected type
+     * Updates an existing person to have the provided data.
+     * @param updated the updated person data. The complete data for the person must be provided. Existing fields not
+     * included in the updated data will be removed from the person. If the provided parent lineage is hydrated (e.g.
+     * for a {@link PersonWithLineage}), the lineage will be properly dehydrated before being stored.
+     * @returns the updated person with the new `_rev` value
+     * @throws InvalidArgumentError if `_id` is not provided or does not identify an existing person contact
+     * @throws InvalidArgumentError if `_rev` is not provided or does not match the person's current `_rev` value
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`, `parent`,
+     * `type`, `contact_type`
      */
-    const curriedFn = async (updateInput: unknown): Promise<Person> => {
-      if (!isRecord(updateInput)) {
-        throw new InvalidArgumentError('Invalid person update input');
+    const curriedFn = async <T extends Person | PersonWithLineage>(updated: T): Promise<T> => {
+      if (!isIdentifiable(updated)) {
+        throw new InvalidArgumentError('Updated person data not provided.');
       }
-      return fn(updateInput);
+      return fn(updated);
     };
     return curriedFn;
   };

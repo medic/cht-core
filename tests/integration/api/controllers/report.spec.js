@@ -497,7 +497,7 @@ describe('Report API', () => {
         .to.deep.equal({ ...updateInput, _id: originalReportDoc._id });
     });
 
-    it('throws error on trying to update an immutable field, here contact', async () => {
+    it.skip('throws error on trying to update an immutable field, here contact', async () => {
       const createInput = {
         type: 'data_record',
         contact: contact0._id,

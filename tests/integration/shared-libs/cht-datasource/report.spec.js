@@ -5,8 +5,6 @@ const {
   getRemoteDataContext,
   Report,
   Qualifier,
-  Input,
-  InvalidArgumentError
 } = require('@medic/cht-datasource');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -313,34 +311,28 @@ describe('cht-datasource Report', () => {
             _id: contact0._id, parent: contact0.parent
           }
         };
-        const reportDoc = await Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
+        const reportDoc = await Report.v1.create(dataContext)(input);
         expect(reportDoc).excluding([ '_id', '_rev', 'reported_date', ]).to.deep.equal(updatedInput);
       });
 
-      it('throws error for missing contact', () => {
+      it('throws error for missing contact', async () => {
         const input = {
           form: 'pregnancy_home_visit',
           type: 'data_record',
         };
-        const action = () => Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
-        expect(action).to.throw(
-          InvalidArgumentError,
+        await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
           `Missing or empty required field (contact)`
         );
       });
 
-      it('throws error for invalid date format via createReport', () => {
+      it('throws error for invalid date format via createReport', async () => {
         const input = {
           form: 'pregnancy_home_visit',
           type: 'data_record',
           reported_date: '112-9909-123'
         };
 
-        const action = () => Report.v1.create(dataContext)(Input.v1.validateReportInput(input));
-
-        expect(action).to.throw(
-          InvalidArgumentError,
-
+        await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
           `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
           `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
@@ -373,7 +365,7 @@ describe('cht-datasource Report', () => {
         await expect(Report.v1.update(dataContext)(updateInput))
           .to.be.rejectedWith(JSON.stringify({
             code: 400,
-            error: `Missing or empty required fields (form) for [${JSON.stringify(updateInput)}].`
+            error: `Update data is not a valid report.`
           }));
       });
 
