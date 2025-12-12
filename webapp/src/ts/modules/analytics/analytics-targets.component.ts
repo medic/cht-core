@@ -92,58 +92,6 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   }
 
 
-  /**
-  * Converts a serialized function string (like "() => 'x'") back into a real JS function.
-  */
-  private reviveFunction(fnString: string): any {
-    if (!this.isValidFunctionString(fnString)) {
-      return fnString;
-    }
-
-    const { args, body } = this.splitFunctionString(fnString);
-    const cleanedArgs = this.cleanArgs(args);
-
-    try {
-      return body.startsWith('{')
-        ? new Function(cleanedArgs, body)               // Block body
-        : new Function(cleanedArgs, `return (${body});`); // Expression body
-    } catch (err) {
-      console.error('Failed to revive function:', err, fnString);
-      return fnString;
-    }
-  }
-
-  // Reduce Cognitive Complexity
-  private isValidFunctionString(fnString: string): boolean {
-    if (typeof fnString !== 'string') {
-      return false;
-    }
-    if (!fnString.includes('=>')) {
-      return false;
-    }
-
-    // Grouping fixes Sonar's regex warning
-    const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
-
-    if (forbidden.test(fnString)) {
-      console.warn('Blocked unsafe function:', fnString);
-      return false;
-    }
-    return true;
-  }
-
-  // Extract args & body
-  private splitFunctionString(fnString: string): { args: string; body: string } {
-    const arrowIndex = fnString.indexOf('=>');
-    const args = fnString.slice(0, arrowIndex).trim();
-    const body = fnString.slice(arrowIndex + 2).trim();
-    return { args, body };
-  }
-
-  // Sonar-friendly replacement for replaceAll()
-  private cleanArgs(args: string): string {
-    return args.replace(/[()]/g, '').trim();
-  }
 
 
 
@@ -182,7 +130,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
             if (typeof target.subtitle_translation_key === 'string' &&
                target.subtitle_translation_key.includes('=>')) {
               target.subtitle_translation_key =
-               this.reviveFunction(target.subtitle_translation_key);
+               this.rulesEngineService.deserializeFunction(target.subtitle_translation_key);
             }
             return target;
           });
@@ -216,6 +164,3 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     return subtitleKey;
   }
 }
-
-
-

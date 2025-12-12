@@ -107,6 +107,96 @@ const createState = (existentStaleState) => {
   };
 };
 
+/**
+ * Serializes a function into a string representation.
+ * @param {Function} fn - The function to serialize
+ * @returns {string} - The serialized function string
+ */
+const serializeFunction = (fn) => {
+  if (typeof fn !== 'function') {
+    return fn;
+  }
+
+  const fnString = fn.toString();
+
+  // Check for unsafe patterns
+  const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
+  if (forbidden.test(fnString)) {
+    // console.warn('Blocked unsafe function serialization:', fnString);
+    return fnString;
+  }
+
+  return fnString;
+};
+
+/**
+ * Deserializes a function string back into a function.
+ * @param {string} fnString - The serialized function string
+ * @returns {Function|string} - The deserialized function or original string if invalid
+ */
+const deserializeFunction = (fnString) => {
+  if (!isValidFunctionString(fnString)) {
+    return fnString;
+  }
+
+  const { args, body } = splitFunctionString(fnString);
+  const cleanedArgs = cleanArgs(args);
+
+  try {
+    return body.startsWith('{')
+      ? new Function(cleanedArgs, body)               // Block body
+      : new Function(cleanedArgs, `return (${body});`); // Expression body
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to deserialize function:', err, fnString);
+    return fnString;
+  }
+};
+
+/**
+ * Checks if a string represents a valid function.
+ * @param {string} fnString - The string to check
+ * @returns {boolean} - True if valid function string
+ */
+const isValidFunctionString = (fnString) => {
+  if (typeof fnString !== 'string') {
+    return false;
+  }
+  if (!fnString.includes('=>')) {
+    return false;
+  }
+
+  // Grouping fixes Sonar's regex warning
+  const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
+
+  if (forbidden.test(fnString)) {
+    // console.warn('Blocked unsafe function:', fnString);
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Splits a function string into args and body.
+ * @param {string} fnString - The function string
+ * @returns {Object} - Object with args and body properties
+ */
+const splitFunctionString = (fnString) => {
+  const arrowIndex = fnString.indexOf('=>');
+  const args = fnString.slice(0, arrowIndex).trim();
+  const body = fnString.slice(arrowIndex + 2).trim();
+  return { args, body };
+};
+
+/**
+ * Cleans function arguments by removing parentheses.
+ * @param {string} args - The arguments string
+ * @returns {string} - Cleaned arguments
+ */
+const cleanArgs = (args) => {
+  return args.replace(/[()]/g, '').trim();
+};
+
 module.exports = {
   /**
    * Builds an empty target-state.
@@ -244,4 +334,7 @@ module.exports = {
 
     return { aggregate, isUpdated };
   },
+
+  serializeFunction,
+  deserializeFunction,
 };
