@@ -1,10 +1,9 @@
 import logger from '@medic/logger';
-import { hasField, NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
+import { NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
 import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
-import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db

@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier, Input } = require('@medic/cht-datasource');
+const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
 const { expect } = require('chai');
 const userFactory = require('@factories/cht/users/users');
 const { setAuth, removeAuth } = require('./auth');
