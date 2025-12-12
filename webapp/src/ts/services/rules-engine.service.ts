@@ -605,6 +605,15 @@ export class RulesEngineService implements OnDestroy {
     return ['rules-engine', ...params].join(':');
   }
 
+  /**
+   * Deserializes a function string back into a function.
+   * @param fnString - The serialized function string
+   * @returns The deserialized function or original string if invalid
+   */
+  deserializeFunction(fnString: string): any {
+    return this.rulesEngineCore.deserializeFunction(fnString);
+  }
+
 }
 
 export enum TargetType {
