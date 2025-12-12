@@ -96,43 +96,55 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   * Converts a serialized function string (like "() => 'x'") back into a real JS function.
   */
   private reviveFunction(fnString: string): any {
-    if (typeof fnString !== 'string') {
+    if (!this.isValidFunctionString(fnString)) {
       return fnString;
     }
 
-    // Must contain an arrow at minimum
-    if (!fnString.includes('=>')) {
-      return fnString;
-    }
-
-    // SECURITY: Block dangerous keywords
-    const forbidden = /(require|process|global|import|while|for\s*\(|eval)/;
-    if (forbidden.test(fnString)) {
-      console.warn('Blocked unsafe function:', fnString);
-      return fnString;
-    }
-
-    // Extract the arrow parts
-    const arrowIndex = fnString.indexOf('=>');
-    const args = fnString.substring(0, arrowIndex).trim();
-    const body = fnString.substring(arrowIndex + 2).trim();
-
-    // Clean argument parentheses
-    const cleanedArgs = args.replace(/^\(|\)$/g, '').trim();
+    const { args, body } = this.splitFunctionString(fnString);
+    const cleanedArgs = this.cleanArgs(args);
 
     try {
-      if (body.startsWith('{')) {
-      // BLOCK BODY  => use function body
-        return new Function(cleanedArgs, body);
-      } else {
-      // EXPRESSION BODY => return expression
-        return new Function(cleanedArgs, `return (${body});`);
-      }
+      return body.startsWith('{')
+        ? new Function(cleanedArgs, body)               // Block body
+        : new Function(cleanedArgs, `return (${body});`); // Expression body
     } catch (err) {
       console.error('Failed to revive function:', err, fnString);
       return fnString;
     }
   }
+
+  // Reduce Cognitive Complexity
+  private isValidFunctionString(fnString: string): boolean {
+    if (typeof fnString !== 'string') {
+      return false;
+    }
+    if (!fnString.includes('=>')) {
+      return false;
+    }
+
+    // Grouping fixes Sonar's regex warning
+    const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
+
+    if (forbidden.test(fnString)) {
+      console.warn('Blocked unsafe function:', fnString);
+      return false;
+    }
+    return true;
+  }
+
+  // Extract args & body
+  private splitFunctionString(fnString: string): { args: string; body: string } {
+    const arrowIndex = fnString.indexOf('=>');
+    const args = fnString.slice(0, arrowIndex).trim();
+    const body = fnString.slice(arrowIndex + 2).trim();
+    return { args, body };
+  }
+
+  // Sonar-friendly replacement for replaceAll()
+  private cleanArgs(args: string): string {
+    return args.replace(/\(/g, '').replace(/\)/g, '').trim();
+  }
+
 
 
 
