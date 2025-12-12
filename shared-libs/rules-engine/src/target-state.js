@@ -122,7 +122,6 @@ const serializeFunction = (fn) => {
   // Check for unsafe patterns
   const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
   if (forbidden.test(fnString)) {
-    // console.warn('Blocked unsafe function serialization:', fnString);
     return fnString;
   }
 
@@ -170,7 +169,6 @@ const isValidFunctionString = (fnString) => {
   const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
 
   if (forbidden.test(fnString)) {
-    // console.warn('Blocked unsafe function:', fnString);
     return false;
   }
   return true;
@@ -194,8 +192,9 @@ const splitFunctionString = (fnString) => {
  * @returns {string} - Cleaned arguments
  */
 const cleanArgs = (args) => {
-  return args.replace(/[()]/g, '').trim();
+  return args.replaceAll('(', '').replaceAll(')', '').trim();
 };
+
 
 module.exports = {
   /**
