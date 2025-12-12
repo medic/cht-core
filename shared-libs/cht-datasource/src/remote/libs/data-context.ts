@@ -1,7 +1,7 @@
 import logger from '@medic/logger';
 import { DataContext } from '../../libs/data-context';
 import { AbstractDataContext, Identifiable, isString, Nullable } from '../../libs/core';
-import { InvalidArgumentError } from '../../libs/error';
+import { InvalidArgumentError, ResourceNotFoundError } from '../../libs/error';
 
 /** @internal */
 export class RemoteDataContext extends AbstractDataContext {
@@ -38,6 +38,17 @@ export const getRemoteDataContext = (url = ''): DataContext => {
   return new RemoteDataContext(url);
 };
 
+const handleJsonResponse = async (response: Response) => {
+  if (response.status === 400) {
+    const errorMessage = await response.text();
+    throw new InvalidArgumentError(errorMessage);
+  }
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+  return response.json();
+};
+
 /** @internal */
 export const getResource = (context: RemoteDataContext, path: string) => async <T>(
   identifier: string,
@@ -46,17 +57,10 @@ export const getResource = (context: RemoteDataContext, path: string) => async <
   const params = new URLSearchParams(queryParams).toString();
   try {
     const response = await fetch(`${context.url}/${path}/${identifier}?${params}`);
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      } else if (response.status === 400) {
-        const errorMessage = await response.text();
-        throw new InvalidArgumentError(errorMessage);
-      }
-      throw new Error(response.statusText);
+    if (response.status === 404) {
+      return null;
     }
-
-    return (await response.json()) as T;
+    return (await handleJsonResponse(response)) as T;
   } catch (error) {
     logger.error(`Failed to fetch ${identifier} from ${context.url}/${path}`, error);
     throw error;
@@ -70,14 +74,7 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
   const params = new URLSearchParams(queryParams).toString();
   try {
     const response = await fetch(`${context.url}/${path}?${params}`);
-    if (response.status === 400) {
-      const errorMessage = await response.text();
-      throw new InvalidArgumentError(errorMessage);
-    } else if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    return (await response.json()) as T;
+    return (await handleJsonResponse(response)) as T;
   } catch (error) {
     logger.error(`Failed to fetch resources from ${context.url}/${path} with params: ${params}`, error);
     throw error;
@@ -102,22 +99,19 @@ const requestWithBody = async <T>(
 ): Promise<T> => {
   try {
     const response = await fetch(`${context.url}/${path}`, {
-      method: method,
+      method,
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body)
     });
-    if (response.status === 400) {
+    if (response.status === 404) {
       const errorMessage = await response.text();
-      throw new InvalidArgumentError(errorMessage);
-    } else if (!response.ok) {
-      throw new Error(response.statusText);
+      throw new ResourceNotFoundError(errorMessage);
     }
-
-    return (await response.json()) as T;
+    return (await handleJsonResponse(response)) as T;
   } catch (error) {
-    logger.error(`Failed to ${method} ${JSON.stringify(body)} to ${context.url}/${path}.`, error);
+    logger.error(`Failed to ${method} resource to ${context.url}/${path}.`, error);
     throw error;
   }
 };

@@ -316,7 +316,7 @@ describe('Place API', () => {
         .to.be.rejectedWith(
           `400 - ${JSON.stringify({
             code: 400,
-            error: `Missing or empty required field (type)`
+            error: `The [type] field must be valued.`
           })}`
         );
     });

@@ -221,13 +221,13 @@ export const getUpdatedContact = (
       return updated.contact;
     }
     if (!contact || !LocalContact.v1.isContact(settings, contact)) {
-      throw new InvalidArgumentError(`No contact found for [${getContactIdForUpdate(updated)}].`);
+      throw new InvalidArgumentError(`No valid contact found for [${getContactIdForUpdate(updated)}].`);
     }
     if (isString(updated.contact)) {
       return minify(contact);
     }
     if (!isSameLineage(contact, updated.contact)) {
-      throw new InvalidArgumentError('The given contact lineage does not match the existing contact.');
+      throw new InvalidArgumentError('The given contact lineage does not match the current lineage for that contact.');
     }
 
     return updated.contact;
@@ -239,7 +239,7 @@ export const assertHasValidParentType = (childType: Record<string, unknown>, par
   const parentType = contactTypeUtils.getTypeId(parent);
   if (!contactTypeUtils.isParentOf(parentType, childType)) {
     throw new InvalidArgumentError(
-      `Parent of type "${parentType}" is not allowed for "${childType.id}" type`
+      `Parent contact of type [${parentType}] is not allowed for type [${childType.id}].`
     );
   }
 };

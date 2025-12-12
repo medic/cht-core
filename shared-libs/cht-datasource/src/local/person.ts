@@ -6,7 +6,7 @@ import * as Person from '../person';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
-import { InvalidArgumentError } from '../libs/error';
+import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertFieldsUnchanged, getReportedDateTimestamp, validateCursor } from './libs/core';
 import * as Input from '../input';
 import { assertHasValidParentType, assertSameParentLineage, fetchHydratedDoc, minifyDoc } from './libs/lineage';
@@ -25,7 +25,7 @@ const DEFAULT_PERSON_TYPE = {
 const getTypeProperties = (settings: DataObject, input: Input.v1.PersonInput) => {
   const customType = contactTypeUtils.getTypeById(settings, input.type);
   if (!contactTypeUtils.isPersonType(customType ?? { id: input.type })) {
-    throw new InvalidArgumentError('Invalid person type.');
+    throw new InvalidArgumentError(`[${input.type}] is not a valid person type.`);
   }
   return customType
     ? { contact_type: input.type, type: 'contact' }
@@ -39,7 +39,7 @@ function assertParent(
   parent: Nullable<Doc>
 ): asserts parent is Doc {
   if (!parent) {
-    throw new InvalidArgumentError(`Parent with _id ${input.parent} does not exist.`);
+    throw new InvalidArgumentError(`Parent contact [${input.parent}] not found.`);
   }
   const childType = contactTypeUtils.getTypeById(settings, input.type) ?? DEFAULT_PERSON_TYPE;
   assertHasValidParentType(childType, parent);
@@ -150,11 +150,11 @@ export namespace v1 {
 
     return async <T extends Person.v1.Person | Person.v1.PersonWithLineage>(updatedPerson: T): Promise<T> => {
       if (!isPerson(settings, updatedPerson)) {
-        throw new InvalidArgumentError(`Update data is not a valid person record.`);
+        throw new InvalidArgumentError('Valid _id, _rev, and type fields must be provided.');
       }
       const originalPerson = await getPerson(Qualifier.byUuid(updatedPerson._id));
       if (!originalPerson) {
-        throw new InvalidArgumentError(`Person record with id [${updatedPerson._id}] not found.`);
+        throw new ResourceNotFoundError(`Person record [${updatedPerson._id}] not found.`);
       }
 
       assertFieldsUnchanged(originalPerson, updatedPerson, ['_rev', 'reported_date', 'type', 'contact_type']);

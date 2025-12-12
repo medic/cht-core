@@ -6,7 +6,7 @@ import * as Place from '../place';
 import { createDoc, fetchAndFilter, getDocById, getDocsByIds, queryDocsByKey, updateDoc } from './libs/doc';
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import logger from '@medic/logger';
-import { InvalidArgumentError } from '../libs/error';
+import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertFieldsUnchanged, getReportedDateTimestamp, validateCursor } from './libs/core';
 import * as Input from '../input';
 import {
@@ -31,13 +31,22 @@ const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[] 
     parents: ['health_center'],
   },
 };
-const DEFAULT_PLACE_TYPES = new Set(Object.keys(DEFAULT_PLACE_TYPES_DICT));
+
+const getPlaceType = (
+  settings: DataObject,
+  input: Input.v1.PlaceInput
+) => {
+  const type: Record<string, unknown> | undefined = contactTypeUtils.getTypeById(settings, input.type)
+    ?? DEFAULT_PLACE_TYPES_DICT[input.type];
+  if (!type || type.person) {
+    throw new InvalidArgumentError(`[${input.type}] is not a valid place type.`);
+  }
+  return type;
+};
 
 const getTypeProperties = (settings: DataObject, input: Input.v1.PlaceInput) => {
+  getPlaceType(settings, input);
   const customType = contactTypeUtils.getTypeById(settings, input.type);
-  if (customType?.person || (!customType && !DEFAULT_PLACE_TYPES.has(input.type))) {
-    throw new InvalidArgumentError('Invalid place type.');
-  }
   return customType
     ? { contact_type: input.type, type: 'contact' }
     : { type: input.type };
@@ -48,7 +57,7 @@ const getPrimaryContactForCreate = (settings: SettingsService, input: Input.v1.P
     return undefined;
   }
   if (!LocalContact.v1.isContact(settings, contact)) {
-    throw new InvalidArgumentError(`No contact found for [${input.contact}].`);
+    throw new InvalidArgumentError(`Primary contact [${input.contact}] not found.`);
   }
   return contact;
 };
@@ -58,21 +67,18 @@ const getParentForCreate = (
   input: Input.v1.PlaceInput,
   parentDoc: Nullable<Doc>
 ) => {
-  const childType = contactTypeUtils.getTypeById(settings, input.type) ?? DEFAULT_PLACE_TYPES_DICT[input.type];
-  if (!childType) {
-    throw new InvalidArgumentError('Invalid place type.');
-  }
+  const childType = getPlaceType(settings.getAll(), input);
   if (!input.parent && !childType.parents) {
     return undefined;
   }
   if (input.parent && !childType.parents) {
-    throw new InvalidArgumentError('Place type does not support having a parent.');
+    throw new InvalidArgumentError(`Place type [${childType.id}] does not support having a parent contact.`);
   }
   if (!input.parent && childType.parents) {
-    throw new InvalidArgumentError('Place type requires a parent.');
+    throw new InvalidArgumentError(`Place type [${childType.id}] requires a parent contact.`);
   }
   if (!v1.isPlace(settings, parentDoc)) {
-    throw new InvalidArgumentError(`No place found for parent [${input.parent}].`);
+    throw new InvalidArgumentError(`Parent contact [${input.parent}] not found.`);
   }
   assertHasValidParentType(childType, parentDoc);
   return parentDoc;
@@ -185,14 +191,14 @@ export namespace v1 {
       updatedPlace: Input.v1.UpdatePlaceInput<T>
     ): Promise<T> => {
       if (!isPlace(settings, updatedPlace)) {
-        throw new InvalidArgumentError(`Update data is not a valid place record.`);
+        throw new InvalidArgumentError('Valid _id, _rev, and type fields must be provided.');
       }
       const [originalPlace, contactDoc] = await getMedicDocsByIds([
         updatedPlace._id,
         getContactIdForUpdate(updatedPlace)
       ]);
       if (!isPlace(settings, originalPlace)) {
-        throw new InvalidArgumentError(`Place record with id [${updatedPlace._id}] not found.`);
+        throw new ResourceNotFoundError(`Place record [${updatedPlace._id}] not found.`);
       }
 
       const contact = getContactForUpdate(originalPlace, updatedPlace, contactDoc);

@@ -321,7 +321,7 @@ describe('cht-datasource Report', () => {
           type: 'data_record',
         };
         await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
-          `Missing or empty required field (contact)`
+          `The [contact] field must be valued.`
         );
       });
 
@@ -333,7 +333,7 @@ describe('cht-datasource Report', () => {
         };
 
         await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
-          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
+          `Invalid reported_date [\\"112-9909-123\\"]. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
           `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
       });
@@ -365,7 +365,7 @@ describe('cht-datasource Report', () => {
         await expect(Report.v1.update(dataContext)(updateInput))
           .to.be.rejectedWith(JSON.stringify({
             code: 400,
-            error: `Update data is not a valid report.`
+            error: `Valid _id, _rev, form, and type fields must be provided.`
           }));
       });
 
@@ -376,8 +376,8 @@ describe('cht-datasource Report', () => {
         };
         await expect(Report.v1.update(dataContext)(updateInput))
           .to.be.rejectedWith(JSON.stringify({
-            code: 400,
-            error: `Report not found`
+            code: 404,
+            error: `Report record [123123123] not found.`
           }));
       });
     });

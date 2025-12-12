@@ -1,5 +1,4 @@
 import { DataContext } from './data-context';
-import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -59,7 +58,7 @@ export function assertDataObject (
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is DataObject {
   if (!isDataObject(value)) {
-    throw new ErrorClass('Invalid data object value.');
+    throw new ErrorClass('Not a valid JSON object value.');
   }
 }
 
@@ -124,12 +123,6 @@ export const hasField = <T extends Record<string, unknown>, K extends FieldType>
 };
 
 /** @internal */
-export const hasFields = <K extends FieldType>(
-  value: Record<string, unknown>,
-  fields: NonEmptyArray<FieldDescriptor<K>>,
-): boolean => fields.every(field => hasField(value, field));
-
-/** @internal */
 export const hasStringFieldWithValue = <T extends Record<string, unknown>>(
   value: T,
   fieldName: string
@@ -144,7 +137,7 @@ export const assertDoesNotHaveField = (
   ErrorClass: new (message: string) => Error = Error
 ): void => {
   if (!(value[name] === undefined || value[name] === null)) {
-    throw new ErrorClass(`Field ${String(name)} is not allowed.`);
+    throw new ErrorClass(`The [${String(name)}] field must not be set.`);
   }
 };
 
@@ -156,7 +149,7 @@ export function assertHasOptionalField <T extends Record<string, unknown>, K ext
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<typeof name, FieldTypeToValue[K] | undefined> {
   if (name in value && !hasField(value, { name, type })) {
-    throw new ErrorClass(`Invalid ${String(name)} value.`);
+    throw new ErrorClass(`The [${String(name)}] field must have the type [${String(type)}].`);
   }
 }
 
@@ -168,7 +161,7 @@ export function assertHasRequiredField <T extends Record<string, unknown>, K ext
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<typeof name, FieldTypeToValue[K]> {
   if (!hasField(value, { name, type }) || !value[name]) {
-    throw new ErrorClass(`Missing or empty required field (${String(name)})`);
+    throw new ErrorClass(`The [${String(name)}] field must be valued.`);
   }
 }
 
@@ -235,23 +228,6 @@ export interface NormalizedParent extends DataObject, Identifiable {
 /** @ignore */
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
-};
-
-/** @internal */
-export const convertToUnixTimestamp = (date: string | number): number => {
-  if (typeof date === 'number') {
-    return date;
-  }
-
-  const parsedDate = new Date(date);
-  if (Number.isNaN(parsedDate.getTime())) {
-    throw new InvalidArgumentError(
-      'Invalid reported_date. Expected format to be ' +
-      '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
-    );
-  }
-
-  return parsedDate.getTime();
 };
 
 /** @internal */

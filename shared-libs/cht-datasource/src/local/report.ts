@@ -23,7 +23,7 @@ import {
   validateCursor,
 } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
-import { InvalidArgumentError } from '../libs/error';
+import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import * as Input from '../input';
 import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc } from './libs/lineage';
 import { assertReportInput } from '../libs/parameter-validators';
@@ -157,10 +157,10 @@ export namespace v1 {
         getForms()
       ]);
       if (!supportedForms.includes(input.form)) {
-        throw new InvalidArgumentError('Invalid `form` value');
+        throw new InvalidArgumentError(`Invalid form value [${input.form}].`);
       }
       if (!LocalContact.v1.isContact(settings, contact)) {
-        throw new InvalidArgumentError(`No contact found.`);
+        throw new InvalidArgumentError(`Contact [${input.contact}] not found.`);
       }
 
       const reportDoc = minifyLineage({
@@ -187,26 +187,26 @@ export namespace v1 {
       updatedReport: Input.v1.UpdateReportInput<T>
     ): Promise<T> => {
       if (!isReport(updatedReport)) {
-        throw new InvalidArgumentError('Update data is not a valid report.');
+        throw new InvalidArgumentError('Valid _id, _rev, form, and type fields must be provided.');
       }
       const [originalReport, contactDoc] = await getMedicDocsByIds([
         updatedReport._id,
         getContactIdForUpdate(updatedReport)
       ]);
       if (!isReport(originalReport)) {
-        throw new InvalidArgumentError(`Report not found`);
+        throw new ResourceNotFoundError(`Report record [${updatedReport._id}] not found.`);
       }
 
       const contact = getContactForUpdate(originalReport, updatedReport, contactDoc);
       if (originalReport.contact && !contact) {
-        throw new InvalidArgumentError('A contact is required.');
+        throw new InvalidArgumentError('A contact is must be provided.');
       }
       assertFieldsUnchanged(originalReport, updatedReport, ['_rev', 'reported_date', 'type']);
       if (originalReport.form !== updatedReport.form) {
         assertHasRequiredField(updatedReport, { name: 'form', type: 'string' }, InvalidArgumentError);
         const supportedForms = await getForms();
         if (!supportedForms.includes(updatedReport.form)) {
-          throw new InvalidArgumentError('Invalid `form` value');
+          throw new InvalidArgumentError(`Invalid form value [${updatedReport.form}].`);
         }
       }
 

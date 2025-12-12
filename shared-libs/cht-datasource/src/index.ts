@@ -41,7 +41,7 @@ export { Nullable, NonEmptyArray } from './libs/core';
 export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
-export { InvalidArgumentError } from './libs/error';
+export { InvalidArgumentError, ResourceNotFoundError } from './libs/error';
 export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
@@ -249,7 +249,8 @@ export const getDatasource = (ctx: DataContext) => {
          * included in the updated data will be removed from the place. If the provided parent/contact lineage is
          * hydrated (e.g. for a {@link PlaceWithLineage}), the lineage will be properly dehydrated before being stored.
          * @returns the updated place with the new `_rev` value
-         * @throws InvalidArgumentError if `_id` is not provided or does not identify an existing place contact
+         * @throws InvalidArgumentError if `_id` is not provided
+         * @throws ResourceNotFoundError if `_id does not identify an existing place contact
          * @throws InvalidArgumentError if `_rev` is not provided or does not match the place's current `_rev` value
          * @throws InvalidArgumentError if `name` is not provided
          * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact
@@ -324,7 +325,8 @@ export const getDatasource = (ctx: DataContext) => {
          * not included in the updated data will be removed from the person. If the provided parent lineage is
          * hydrated (e.g. for a {@link PersonWithLineage}), the lineage will be properly dehydrated before being stored.
          * @returns the updated person with the new `_rev` value
-         * @throws InvalidArgumentError if `_id` is not provided or does not identify an existing person contact
+         * @throws InvalidArgumentError if `_id` is not provided
+         * @throws ResourceNotFoundError if `_id does not identify an existing person contact
          * @throws InvalidArgumentError if `_rev` is not provided or does not match the person's current `_rev` value
          * @throws InvalidArgumentError if `name` is not provided
          * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`,
@@ -398,7 +400,8 @@ export const getDatasource = (ctx: DataContext) => {
          * lineage is hydrated (e.g. for a {@link ReportWithLineage}), the lineage will be properly dehydrated before
          * being stored.
          * @returns the updated report with the new `_rev` value
-         * @throws InvalidArgumentError if `_id` is not provided or does not identify an existing report
+         * @throws InvalidArgumentError if `_id` is not provided
+         * @throws ResourceNotFoundError if `_id does not identify an existing report
          * @throws InvalidArgumentError if `_rev` is not provided or does not match the report's current `_rev` value
          * @throws InvalidArgumentError if `form` is not provided or is not a supported form id
          * @throws InvalidArgumentError if `contact` is not provided or is not a valid contact

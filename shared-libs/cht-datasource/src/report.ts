@@ -163,7 +163,8 @@ export namespace v1 {
      * included in the updated data will be removed from the report. If the provided parent/patient/place lineage is
      * hydrated (e.g. for a {@link ReportWithLineage}), the lineage will be properly dehydrated before being stored.
      * @returns the updated report with the new `_rev` value
-     * @throws InvalidArgumentError if `_id` is not provided or does not identify an existing report
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id does not identify an existing report
      * @throws InvalidArgumentError if `_rev` is not provided or does not match the report's current `_rev` value
      * @throws InvalidArgumentError if `form` is not provided or is not a supported form id
      * @throws InvalidArgumentError if `contact` is not provided or is not a valid contact

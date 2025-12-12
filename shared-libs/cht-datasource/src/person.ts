@@ -165,7 +165,8 @@ export namespace v1 {
      * included in the updated data will be removed from the person. If the provided parent lineage is hydrated (e.g.
      * for a {@link PersonWithLineage}), the lineage will be properly dehydrated before being stored.
      * @returns the updated person with the new `_rev` value
-     * @throws InvalidArgumentError if `_id` is not provided or does not identify an existing person contact
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id does not identify an existing person contact
      * @throws InvalidArgumentError if `_rev` is not provided or does not match the person's current `_rev` value
      * @throws InvalidArgumentError if `name` is not provided
      * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`, `parent`,

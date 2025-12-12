@@ -203,7 +203,9 @@ describe('Report API', () => {
         path: `${endpoint}/invalid-uuid`,
         qs: { with_lineage: 'true' }
       };
-      await expect(utils.request(opts)).to.be.rejectedWith('404 - {"code":404,"error":"Report not found"}');
+      await expect(utils.request(opts)).to.be.rejectedWith(
+        '404 - {"code":404,"error":"Report not found"}'
+      );
     });
 
     [
@@ -454,7 +456,7 @@ describe('Report API', () => {
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - ${JSON.stringify({
           code: 400,
-          error: `Missing or empty required field (contact)`
+          error: `The [contact] field must be valued.`
         })}`);
     });
   });
@@ -566,7 +568,9 @@ describe('Report API', () => {
       };
 
       await expect(utils.request(updateOpts))
-        .to.be.rejectedWith(`Report not found`);
+        .to.be.rejectedWith(
+          '404 - {"code":404,"error":"Report record [12312312] not found."}'
+        );
     });
   });
 });

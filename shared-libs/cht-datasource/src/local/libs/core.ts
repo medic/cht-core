@@ -1,4 +1,4 @@
-import { convertToUnixTimestamp, DataObject, hasStringFieldWithValue, isRecord, Nullable } from '../../libs/core';
+import { DataObject, Nullable } from '../../libs/core';
 import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
@@ -36,11 +36,7 @@ const assertFieldUnchanged = (original: DataObject, updated: DataObject, key: st
     return;
   }
 
-  throw new InvalidArgumentError(
-    `Value ${JSON.stringify(
-      updated[key]
-    )} of immutable field '${key}' does not match with the original doc`
-  );
+  throw new InvalidArgumentError(`The [${key}] field must not be changed.`);
 };
 
 /** @internal*/
@@ -49,6 +45,16 @@ export const assertFieldsUnchanged = (
   updated: DataObject,
   keys: string[]
 ): void => keys.forEach((key) => assertFieldUnchanged(original, updated, key));
+
+const convertToUnixTimestamp = (date: string | number): number => {
+  const timestamp = new Date(date).getTime();
+  if (Number.isNaN(timestamp)) {
+    throw new InvalidArgumentError(`Invalid date value [${date}].`);
+  }
+
+  return timestamp;
+};
+
 
 /** @internal */
 export const getReportedDateTimestamp = (

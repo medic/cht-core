@@ -153,25 +153,6 @@ describe('core lib', () => {
     });
   });
 
-  describe('hasFields', () => {
-    ([
-      [ {}, [ { name: 'uuid', type: 'string' } ], false ],
-      [ { uuid: 'uuid' }, [ { name: 'uuid', type: 'string' } ], true ],
-      [ { getUuid: () => 'uuid' }, [ { name: 'getUuid', type: 'function' }, { name: 'uuid', type: 'string' } ], false ],
-      [
-        { getUuid: () => 'uuid', uuid: 'uuid' },
-        [ { name: 'getUuid', type: 'function' }, { name: 'uuid', type: 'string' } ],
-        true
-      ],
-    ] as [ Record<string, unknown>, NonEmptyArray<{ name: string, type: string }>, boolean ][]).forEach(
-      ([ record, fields, expected ]) => {
-        it(`evaluates ${JSON.stringify(record)} with ${JSON.stringify(fields)}`, () => {
-          expect(hasFields(record, fields)).to.equal(expected);
-        });
-      }
-    );
-  });
-
   describe('isIdentifiable', () => {
     [
       [ null, false ],

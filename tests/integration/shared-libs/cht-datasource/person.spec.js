@@ -237,7 +237,7 @@ describe('cht-datasource Person', () => {
         await expect(createPerson(personInput))
           .to.be.rejectedWith({
             code: 400,
-            error: `Parent of type "person" is not allowed for ${JSON.stringify(personInput.type)} type`
+            error: `Parent of type [person] is not allowed for type [${personInput.type}].`
           });
       });
     });
