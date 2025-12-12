@@ -367,8 +367,7 @@ const getTokenFromUser = () => {
     });
   });
 };
-// NOSONAR
-(async() => {
+(async() => { // NOSONAR
   const token = await getTokenFromUser();
   await main(token);
 })();
