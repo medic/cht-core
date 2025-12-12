@@ -142,8 +142,9 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
   // Sonar-friendly replacement for replaceAll()
   private cleanArgs(args: string): string {
-    return args.replace(/\(/g, '').replace(/\)/g, '').trim();
+    return args.replace(/[()]/g, '').trim();
   }
+
 
 
 
