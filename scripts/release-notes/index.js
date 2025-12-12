@@ -357,16 +357,17 @@ ${formatCommits(commits)} `;
 
 const getTokenFromUser = () => {
   return new Promise((resolve) => {
-    process.stdout.write('Enter Your GitHub Token (41 chars, starts with "ghp_"): ');
+    process.stdout.write('Enter Your GitHub Token (40 chars, starts with "ghp_"): ');
     process.stdin.once('data', (input) => {
       const value = input.toString().trim();
       if (value.length !== 40) {
-        throw new Error(`Token is not 41 characters. Check token value and try again. `);
+        throw new Error(`Token is not 40 characters. Check token value and try again. `);
       }
       resolve(value);
     });
   });
 };
+// NOSONAR
 (async() => {
   const token = await getTokenFromUser();
   await main(token);
