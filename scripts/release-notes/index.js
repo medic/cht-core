@@ -245,12 +245,13 @@ Commits:
     }
   };
 
-  // eslint-disable-next-line max-nested-callbacks -- Convenient
+  const ignorePrefixes = label => {
+    return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
+  };
+
   const filterIssues = issues => {
     return issues.filter(issue => {
-      return issue.labels.nodes.every(label => {
-        return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
-      });
+      return issue.labels.nodes.every(label => ignorePrefixes(label));
     });
   };
 
@@ -354,7 +355,6 @@ ${formatCommits(commits)} `;
     .catch(console.error);
 };
 
-let token = false;
 const getTokenFromUser = () => {
   return new Promise((resolve) => {
     process.stdout.write('Enter Your GitHub Token (41 chars, starts with "ghp_"): ');
@@ -368,7 +368,7 @@ const getTokenFromUser = () => {
   });
 };
 (async() => {
-  token = await getTokenFromUser();
+  const token = await getTokenFromUser();
   await main(token);
 })();
 
