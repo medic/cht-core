@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
+
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -17,6 +18,7 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { Selectors } from '@mm-selectors/index';
+
 
 @Component({
   templateUrl: './analytics-targets.component.html',
@@ -45,14 +47,16 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   sidebarFilter;
   reportingPeriodFilter;
 
+
   constructor(
     private readonly rulesEngineService: RulesEngineService,
-    private  readonly performanceService: PerformanceService,
+    private readonly performanceService: PerformanceService,
     private readonly store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
     this.globalActions = new GlobalActions(store);
   }
+
 
   ngOnInit(): void {
     this.subscribeToStore();
@@ -60,10 +64,12 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.setDefaultFilters();
   }
 
+
   ngOnDestroy(): void {
     this.globalActions.clearSidebarFilter();
     this.subscriptions.unsubscribe();
   }
+
 
   private subscribeToStore() {
     const selectorsSubscription = combineLatest([
@@ -76,6 +82,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
+
   private setDefaultFilters() {
     const defaultFilters = {
       reportingPeriod: ReportingPeriod.CURRENT,
@@ -84,16 +91,38 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.reportingPeriodFilter = defaultFilters.reportingPeriod;
   }
 
+
+  /**
+  * Converts a serialized function string (like "() => 'x'") back into a real JS function.
+  */
+  private reviveFunction(fnString: string): any {
+    try {
+      if (typeof fnString === 'string' && fnString.includes('=>')) {
+        return eval(fnString);  // Rebuild function
+      }
+    } catch (err) {
+      console.error('Failed to revive target function:', err, fnString);
+    }
+    return fnString;
+  }
+
+
+  /**
+  * Loads targets and revives any function-based keys.
+  */
   getTargets(reportingPeriod?) {
     if (reportingPeriod) {
       this.reportingPeriodFilter = reportingPeriod;
     }
 
+
     return this.rulesEngineService
       .isEnabled()
       .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
-        return isEnabled ? this.rulesEngineService.fetchTargets(this.reportingPeriodFilter) : [];
+        return isEnabled
+          ? this.rulesEngineService.fetchTargets(this.reportingPeriodFilter)
+          : [];
       })
       .catch(err => {
         console.error('Error getting targets', err);
@@ -102,7 +131,21 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-        this.targets = targets.filter(target => target.visible !== false);
+
+
+        // --- REVIVE FUNCTION FIELDS HERE ---
+        this.targets = targets
+          .filter(target => target.visible !== false)
+          .map(target => {
+            if (typeof target.subtitle_translation_key === 'string' &&
+               target.subtitle_translation_key.includes('=>')) {
+              target.subtitle_translation_key =
+               this.reviveFunction(target.subtitle_translation_key);
+            }
+            return target;
+          });
+
+
         this.trackPerformance?.stop({
           name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,
@@ -110,11 +153,27 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       });
   }
 
-  getSubtitleKey(subtitleKey: string, reportingPeriod: ReportingPeriod): string {
+
+  /**
+  * Returns correct subtitle for each target.
+  */
+  getSubtitleKey(
+    subtitleKey: string | ((period: ReportingPeriod) => string),
+    reportingPeriod: ReportingPeriod
+  ): string {
     if (!subtitleKey) {
       return '';
     }
-    return reportingPeriod === ReportingPeriod.CURRENT ? 'this_month' : 'all_time';
-  }
 
+
+    if (typeof subtitleKey === 'function') {
+      return subtitleKey(reportingPeriod);
+    }
+
+
+    return subtitleKey;
+  }
 }
+
+
+
