@@ -245,6 +245,7 @@ Commits:
     }
   };
 
+  // eslint-disable-next-line max-nested-callbacks -- Convenient
   const filterIssues = issues => {
     return issues.filter(issue => {
       return issue.labels.nodes.every(label => {
