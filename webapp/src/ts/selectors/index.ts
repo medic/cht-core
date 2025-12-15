@@ -32,7 +32,13 @@ export const Selectors = {
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
-  getUnreadCount: createSelector(getGlobalState, (globalState) => globalState.unreadCount),
+  getBubbleCounter: createSelector(getGlobalState, getTasksState, (globalState, taskState) => {
+    return {
+      ...(globalState.bubbleCounter as any),
+      task: taskState.overdue?.length || 0,
+    };
+  }),
+
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
   getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState.userFacilityIds),
   getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
@@ -125,6 +131,7 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
+  getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
   getLastSubmittedTask: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.lastSubmittedTask),

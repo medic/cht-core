@@ -313,7 +313,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
-      .then(() => this.initUnreadCount())
+      .then(() => this.initBubbleCounter())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses())
       .catch(err => {
@@ -607,13 +607,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .catch(err => console.error('Failed to load privacy policy', err));
   }
 
-  private initUnreadCount() {
+  private initBubbleCounter() {
     this.unreadRecordsService.init((err, data) => {
       if (err) {
         console.error('Error fetching read status', err);
         return;
       }
-      this.globalActions.setUnreadCount(data);
+      this.globalActions.setBubbleCounter(data);
     });
   }
 
