@@ -206,7 +206,7 @@ describe('Target Interval controller', () => {
             Qualifier.byContactUuids(['contact1', 'contact2']),
             Qualifier.byReportingPeriod('2024-01')
           ),
-          undefined,
+          undefined, // NOSONAR
           undefined
         );
         expect(res.json).to.have.been.calledOnceWithExactly(expectedPage);
