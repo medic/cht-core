@@ -15,45 +15,93 @@ const offlineUser = utils.deepFreeze(userFactory.build({
   },
   roles: ['chw']
 }));
-const targetInterval = utils.deepFreeze({
-  _id: 'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw',
-  type: 'target',
-  user: 'org.couchdb.user:chw',
-  owner: 'c3f6b91e-b095-48ef-a524-705e29fd9f6d',
-  reporting_period: '2025-09',
-  targets: [
-    {
-      id: 'deaths-this-month',
-      value: {
-        pass: 2,
-        total: 2
-      }
-    },
-    {
-      id: 'births-this-month',
-      value: {
-        pass: 5,
-        total: 10
-      }
-    },
-    {
-      id: 'facility-deliveries',
-      value: {
-        pass: 1,
-        total: 10,
-        percent: 10
-      }
-    },
-  ],
-  updated_date: 1758690000000
-});
+
+const createTargetInterval = ({
+  owner,
+  reporting_period,
+  user = 'org.couchdb.user:chw',
+  updated_date = 1758690000000
+}) => {
+  return {
+    _id: `target~${reporting_period}~${owner}~${user}`,
+    type: 'target',
+    user,
+    owner,
+    reporting_period,
+    targets: [],
+    updated_date
+  };
+};
+
+const targetIntervals = utils.deepFreeze([
+  {
+    ...createTargetInterval({
+      owner: '7de6849e-e6e5-4a8d-9b6d-71c9eaa23415',
+      reporting_period: '2025-09',
+    }),
+    targets: [
+      {
+        id: 'deaths-this-month',
+        value: {
+          pass: 2,
+          total: 2
+        }
+      },
+      {
+        id: 'births-this-month',
+        value: {
+          pass: 5,
+          total: 10
+        }
+      },
+      {
+        id: 'facility-deliveries',
+        value: {
+          pass: 1,
+          total: 10,
+          percent: 10
+        }
+      },
+    ],
+  },
+  {
+    ...createTargetInterval({
+      owner: '9998989-e6e5-4a8d-9b6d-71c9eaa23999',
+      reporting_period: '2025-09',
+    }),
+    targets: [
+      {
+        id: 'deaths-this-month',
+        value: {
+          pass: 0,
+          total: 2
+        }
+      },
+    ],
+  },
+  createTargetInterval({
+    owner: 'c3f6b91e-b095-48ef-a524-705e29fd9f6d',
+    reporting_period: '2025-09',
+    user: 'org.couchdb.user:supervisor'
+  })
+]);
+
+const targetIntervalDifferentReportingPeriod = utils.deepFreeze(createTargetInterval({
+  owner: targetIntervals[0].owner,
+  reporting_period: '2025-10',
+}));
+
 
 describe('cht-datasource Target Interval', () => {
   const dataContext = getRemoteDataContext(utils.getOrigin());
 
   before(async () => {
     setAuth();
-    await utils.saveDocs([targetInterval, place]);
+    await utils.saveDocs([
+      ...targetIntervals,
+      place,
+      targetIntervalDifferentReportingPeriod,
+    ]);
     await utils.createUsers([offlineUser]);
   });
 
@@ -68,17 +116,73 @@ describe('cht-datasource Target Interval', () => {
       const getTargetInterval = TargetInterval.v1.get(dataContext);
 
       it('returns the target interval matching the provided UUID', async () => {
-        const result = await getTargetInterval(Qualifier.byUuid(targetInterval._id));
+        const result = await getTargetInterval(Qualifier.byUuid(targetIntervals[0]._id));
         expect(result)
           .excluding(['_rev'])
           .to
           .deep
-          .equal(targetInterval);
+          .equal(targetIntervals[0]);
       });
 
       it('returns null when no target interval is found for the UUID', async () => {
         const result = await getTargetInterval(Qualifier.byUuid('invalid-target'));
         expect(result).to.be.null;
+      });
+    });
+
+    describe('getPage', async () => {
+      const getPage = TargetInterval.v1.getPage(dataContext);
+
+      it('returns a page of target intervals for no limit and cursor passed', async () => {
+        const { data, cursor } = await getPage(Qualifier.and(
+          Qualifier.byReportingPeriod('2025-09'),
+          Qualifier.byContactUuids([
+            targetIntervals[0].owner,
+            targetIntervals[1].owner,
+            targetIntervals[2].owner,
+          ])
+        ));
+
+        expect(data).excludingEvery(['_rev']).to.deep.equal(targetIntervals);
+        expect(cursor).to.be.equal(null);
+      });
+
+      it('returns a page of target intervals when limit and cursor is passed', async () => {
+        const { data, cursor } = await getPage(
+          Qualifier.and(
+            Qualifier.byReportingPeriod('2025-09'),
+            Qualifier.byContactUuids([
+              targetIntervals[0].owner,
+              targetIntervals[1].owner,
+              targetIntervals[2].owner,
+            ])
+          ),
+          '1',
+          1
+        );
+
+        expect(data).excludingEvery(['_rev']).to.deep.equal([targetIntervals[1]]);
+        expect(cursor).to.be.equal('2');
+      });
+
+      it('throws error when limit is invalid', async () => {
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2025-09'),
+          Qualifier.byContactUuids([targetIntervals[0].owner])
+        );
+        await expect(getPage(qualifier, null, -1)).to.be.rejectedWith(
+          `The limit must be a positive integer: [-1].`
+        );
+      });
+
+      it('throws error when cursor is invalid', async () => {
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2025-09'),
+          Qualifier.byContactUuids([targetIntervals[0].owner])
+        );
+        await expect(getPage(qualifier, -1)).to.be.rejectedWith(
+          `The cursor must be a string or null for first page: [-1].`
+        );
       });
     });
   });

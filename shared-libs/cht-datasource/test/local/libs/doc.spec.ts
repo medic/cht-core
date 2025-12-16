@@ -6,7 +6,7 @@ import {
   fetchAndFilter,
   fetchAndFilterUuids,
   getDocById,
-  getDocsByIds,
+  getDocsByIds, getDocUuidsByIdRange,
   queryDocsByKey,
   queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange, queryNouveauIndex, queryNouveauIndexUuids,
 } from '../../../src/local/libs/doc';
@@ -159,6 +159,22 @@ describe('local doc lib', () => {
       expect(dbAllDocs.calledOnceWithExactly({ keys: [doc0._id], include_docs: true })).to.be.true;
       expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
     });
+  });
+
+  it('getDocUuidsByIdRange - returns ids found in the given range', async () => {
+    const startKey = 'doc0';
+    const endKey = 'doc3';
+    dbAllDocs.resolves({
+      rows: [
+        { id: startKey },
+        { id: 'doc1' },
+        { id: 'doc2' }
+      ]
+    });
+
+    const result = await getDocUuidsByIdRange(db)(startKey, endKey);
+
+    expect(result).to.deep.equal([startKey, 'doc1', 'doc2']);
   });
 
   describe('queryDocsByRange', () => {

@@ -11,12 +11,10 @@ describe('target-interval', () => {
   const dataContext = { } as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
-  let isContactUuidsQualifier: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
-    isContactUuidsQualifier = sinon.stub(Qualifier, 'isContactUuidsQualifier');
   });
 
   afterEach(() => sinon.restore());
@@ -151,7 +149,6 @@ describe('target-interval', () => {
       });
 
       it('retrieves the target interval when qualifier is UUID', async () => {
-        isContactUuidsQualifier.returns(true);
         const qualifier = Qualifier.and(
           Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
           Qualifier.byReportingPeriod('2025-01')
@@ -169,44 +166,36 @@ describe('target-interval', () => {
       });
 
       it('throws an error if the data context is invalid', () => {
-        isContactUuidsQualifier.returns(true);
-        assertDataContext.throws(new Error('Invalid data context [null].'));
+        const errorMsg = 'Invalid data context [null].';
+        assertDataContext.throws(new Error(errorMsg));
 
-        expect(() => TargetInterval.v1.getPage(dataContext)).to.throw('Invalid data context [null].');
+        expect(() => TargetInterval.v1.getPage(dataContext)).to.throw(errorMsg);
 
         expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
         expect(adapt).to.not.have.been.called;
         expect(getPage).to.not.have.been.called;
       });
 
-      it('throws an error if the qualifier is invalid', async () => {
-        isContactUuidsQualifier.returns(false);
-        
-        const invalidQualifier = {
-          contactUuids: (['invalid', 'invalid']), 
-          reportingPeriod: '2025-01'
-        };
+      ([
+        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byReportingPeriod('2025-01')
+      ] as unknown as (
+        Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
+      )[]).forEach(invalidQualifier => {
+        it('throws an error if the qualifier is invalid', async () => {
+          await expect(TargetInterval.v1.getPage(dataContext)(invalidQualifier, null, 10))
+            .to.be.rejectedWith(`Invalid target intervals qualifier [${JSON.stringify(invalidQualifier)}].`);
 
-        await expect(
-          TargetInterval.v1.getPage(dataContext)(
-            invalidQualifier as (Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier), 
-            null, 
-            10
-          )
-        )
-          .to.be.rejectedWith(`Invalid target intervals qualifier [${JSON.stringify(invalidQualifier)}].`);
-
-          
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(
-            dataContext, 
-            Local.TargetInterval.v1.getPage, 
-            Remote.TargetInterval.v1.getPage
-          )
-        ).to.be.true;
-        expect(isContactUuidsQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
-        expect(getPage.notCalled).to.be.true;
+          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+          expect(
+            adapt.calledOnceWithExactly(
+              dataContext,
+              Local.TargetInterval.v1.getPage,
+              Remote.TargetInterval.v1.getPage
+            )
+          ).to.be.true;
+          expect(getPage.notCalled).to.be.true;
+        });
       });
 
       [
@@ -220,7 +209,6 @@ describe('target-interval', () => {
       ].forEach(l => {
         it('throws an error when an invalid limit is provided', async () => {
           const getTarget = TargetInterval.v1.getPage(dataContext);
-          isContactUuidsQualifier.returns(true);
           
           await expect(
             getTarget(
@@ -248,7 +236,6 @@ describe('target-interval', () => {
         false,
       ].forEach(c => {
         it('throws an error when an invalid cursor is provided', async () => {
-          isContactUuidsQualifier.returns(true);
           const getTarget = TargetInterval.v1.getPage(dataContext);
           
           await expect(

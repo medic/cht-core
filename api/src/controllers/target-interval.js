@@ -30,11 +30,9 @@ module.exports = {
     getAll: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const contactUuids = Array.isArray(req.query.contact_uuids) 
-        ? req.query.contact_uuids
-        : (req.query.contact_uuids ?? '')
-          .split(',')
-          .filter(Boolean);
+      const contactUuids = (req.query.contact_uuids ?? '')
+        .split(',')
+        .filter(Boolean);
 
       const docs = await getTargetIntervals(
         Qualifier.and(

@@ -229,26 +229,18 @@ export interface ContactUuidsQualifier {
  * @returns `true` if the given qualifier is a {@link ContactUuidsQualifier}, otherwise `false`.
  */
 export const isContactUuidsQualifier = (qualifier: unknown): qualifier is ContactUuidsQualifier => {
-  const valid = isRecord(qualifier) &&
-    hasField(qualifier, { name: 'contactUuids', type: 'object' }) &&
-    qualifier.contactUuids.length > 0;
-  
-  if (!valid) {
-    return false;
-  }
-  
-  const validList = (qualifier as unknown as ContactUuidsQualifier)
-    .contactUuids
-    .every((contactUuid: string) => contactUuid.length > 0 && isContactUuidQualifier({contactUuid}));
-  
-  return validList;
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'contactUuids', type: 'object' })
+    && Array.isArray(qualifier.contactUuids)
+    && qualifier.contactUuids.length > 0
+    && qualifier.contactUuids.every((contactUuid) => contactUuid?.length > 0);
 };
 
 /**
- * Builds a qualifier that identifies a target interval by a list of UUIDs.
- * @param uuids the UUIDs of the entities
+ * Builds a qualifier for finding entities by contact UUIDs.
+ * @param contactUuids the contact UUIDs to search with
  * @returns the qualifier
- * @throws InvalidArgumentError if one the UUIDs is invalid
+ * @throws InvalidArgumentError if the contact UUIDs are not valid
  */
 export const byContactUuids = (contactUuids: [string, ...string[]]): ContactUuidsQualifier => {
   const qualifier = { contactUuids };

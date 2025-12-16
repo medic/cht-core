@@ -85,14 +85,14 @@ describe('remote target interval', () => {
       const limit = 3;
       const cursor = '1';
       const qualifier = {
-        contactUuids: ['c4e6b91e-b095-48ef-b524-805e28fd9c7d', 'd3f6b91e-b095-48ef-a524-705e29fd9f6d'], 
+        contactUuids: [doc[1].owner, doc[0].owner],
         reportingPeriod: '2025-01'
       } as (ReportingPeriodQualifier & ContactUuidsQualifier);
       
       const queryParam = {
         limit: limit.toString(),
-        reporting_period: '2025-01',
-        contact_uuids: 'c4e6b91e-b095-48ef-b524-805e28fd9c7d,d3f6b91e-b095-48ef-a524-705e29fd9f6d',
+        reporting_period: qualifier.reportingPeriod,
+        contact_uuids: `${doc[1].owner},${doc[0].owner}`,
         cursor
       };
 
@@ -104,8 +104,6 @@ describe('remote target interval', () => {
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
-        
-        expect(getResourcesInner.callCount).to.be.equal(1);
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
 

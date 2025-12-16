@@ -1,15 +1,11 @@
 import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
-  ContactUuidsQualifier,
   FreetextQualifier,
-  ReportingPeriodQualifier,
-  UuidQualifier,
   isContactTypeQualifier,
-  isContactUuidsQualifier,
   isFreetextQualifier,
-  isReportingPeriodQualifier,
   isUuidQualifier,
+  UuidQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
 
@@ -19,15 +15,6 @@ export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is C
 ) => {
   if (!isContactTypeQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid contact type [${JSON.stringify(qualifier)}].`);
-  }
-};
-
-/** @internal */
-export const assertTargetIntervalQualifier: (qualifier: unknown) => asserts qualifier is (
-  ReportingPeriodQualifier & ContactUuidsQualifier
-) = (qualifier: unknown) => {
-  if (!(isContactUuidsQualifier(qualifier) && isReportingPeriodQualifier(qualifier))) {
-    throw new InvalidArgumentError(`Invalid target intervals qualifier [${JSON.stringify(qualifier)}].`);
   }
 };
 

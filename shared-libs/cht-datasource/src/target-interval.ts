@@ -3,8 +3,8 @@ import { Doc } from './libs/doc';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import {
   byUuid,
-  ContactUuidQualifier, ContactUuidsQualifier, isContactUuidQualifier, 
-  isReportingPeriodQualifier, 
+  ContactUuidQualifier, ContactUuidsQualifier, isContactUuidQualifier, isContactUuidsQualifier,
+  isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
   ReportingPeriodQualifier,
@@ -15,7 +15,7 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { InvalidArgumentError } from './libs/error';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTargetIntervalQualifier } from './libs/parameter-validators';
+import { assertCursor, assertLimit } from './libs/parameter-validators';
 
 const getTargetIntervalUuid = (
   identifier: (ReportingPeriodQualifier & ContactUuidQualifier & UsernameQualifier) | UuidQualifier
@@ -35,6 +35,15 @@ const getTargetIntervalUuid = (
     `target~${identifier.reportingPeriod}~${identifier.contactUuid}~org.couchdb.user:${identifier.username}`
   );
 };
+
+// eslint-disable-next-line func-style
+function assertQualifierForGettingTargetIntervals (
+  qualifier: unknown
+): asserts qualifier is (ReportingPeriodQualifier & ContactUuidsQualifier) {
+  if (!(isContactUuidsQualifier(qualifier) && isReportingPeriodQualifier(qualifier))) {
+    throw new InvalidArgumentError(`Invalid target intervals qualifier [${JSON.stringify(qualifier)}].`);
+  }
+}
 
 /** */
 export namespace v1 {
@@ -116,7 +125,7 @@ export namespace v1 {
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<TargetInterval>> => {
-      assertTargetIntervalQualifier(qualifier);
+      assertQualifierForGettingTargetIntervals(qualifier);
       assertCursor(cursor);
       assertLimit(limit);
       
@@ -143,7 +152,7 @@ export namespace v1 {
     const curriedGen = (
       qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
     ): AsyncGenerator<TargetInterval, null> => {
-      assertTargetIntervalQualifier(qualifier);
+      assertQualifierForGettingTargetIntervals(qualifier);
       
       const getPage = context.bind(v1.getPage);
       return getPagedGenerator(getPage, qualifier);

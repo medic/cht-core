@@ -60,7 +60,7 @@ describe('local target interval', () => {
         expect(getDocByIdOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
         expect(getDocByIdInner).to.have.been.calledOnceWithExactly(identifier.uuid);
         expect(warn).to.have.been.calledOnceWithExactly(
-          `No target interval found for identifier [${identifier.uuid}].`
+          `Document [${identifier.uuid}] is not a valid target interval.`
         );
       });
 
@@ -112,6 +112,151 @@ describe('local target interval', () => {
         });
       });
     });
-    
+
+    describe('getPage', () => {
+      const targetInterval0 = {
+        _id: 'target~2025-01~contact-1',
+        user: 'user1',
+        owner: 'contact-1',
+        reporting_period: '2025-01',
+        updated_date: 123,
+        targets: []
+      };
+      const targetInterval1 = {
+        _id: 'target~2025-01~contact-2',
+        user: 'user2',
+        owner: 'contact-2',
+        reporting_period: '2025-01',
+        updated_date: 124,
+        targets: []
+      };
+      const targetInterval2 = {
+        _id: 'target~2025-01~contact-2',
+        user: 'user2',
+        owner: 'contact-2',
+        reporting_period: '2025-01',
+        updated_date: 124,
+        targets: []
+      };
+      const invalidTargetInterval = {
+        _id: 'target~2025-01~contact-2'
+      };
+      const qualifier = {
+        reportingPeriod: '2025-01',
+        contactUuids: [
+          targetInterval0.owner,
+          targetInterval1.owner,
+          targetInterval2.owner
+        ] as [string, ...string[]]
+      };
+      let getDocUuidsByIdRangeOuter: SinonStub;
+      let getDocUuidsByIdRangeInner: SinonStub;
+      let getDocsByIdsOuter: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+
+      beforeEach(() => {
+        getDocUuidsByIdRangeInner = sinon.stub();
+        getDocUuidsByIdRangeOuter = sinon
+          .stub(LocalDoc, 'getDocUuidsByIdRange')
+          .returns(getDocUuidsByIdRangeInner);
+
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
+      });
+
+      it('returns paginated target intervals for valid qualifier with matching contactUuids', async () => {
+        getDocUuidsByIdRangeInner.resolves([
+          targetInterval0._id,
+          targetInterval1._id,
+          targetInterval2._id,
+          invalidTargetInterval._id,
+          'target~2025-01~different-contact-id',
+        ]);
+        const expectedPage = {
+          data: [targetInterval0, targetInterval1, targetInterval2],
+          cursor: '3'
+        };
+        fetchAndFilterInner.resolves(expectedPage);
+        getDocsByIdsInner.resolves([targetInterval0, targetInterval1, targetInterval2, invalidTargetInterval]);
+
+        const result = await TargetInterval.v1.getPage(localContext)(qualifier, null, 10);
+
+        expect(result).to.equal(expectedPage);
+        expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+        expect(getDocUuidsByIdRangeInner).to.have.been.calledOnceWithExactly(
+          `target~${qualifier.reportingPeriod}~`,
+          `target~${qualifier.reportingPeriod}~\ufff0`
+        );
+        expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+        expect(fetchAndFilterOuter).to.have.been.calledOnce;
+        expect(fetchAndFilterInner).to.have.been.calledOnceWithExactly(10, 0);
+
+        const [getFn, filterFn, limit] = fetchAndFilterOuter.getCall(0).args;
+        expect(limit).to.equal(10);
+
+        const docs = await getFn(10, 0);
+        expect(docs).to.deep.equal([targetInterval0, targetInterval1, targetInterval2, invalidTargetInterval]);
+        expect(getDocsByIdsInner).to.have.been.calledOnceWithExactly([
+          targetInterval0._id,
+          targetInterval1._id,
+          targetInterval2._id,
+          invalidTargetInterval._id
+        ]);
+        // Assert ids are filtered by skip/limit
+        await getFn(2, 0);
+        expect(getDocsByIdsInner).to.have.been.calledWithExactly([targetInterval0._id, targetInterval1._id]);
+        await getFn(2, 10);
+        expect(getDocsByIdsInner).to.have.been.calledWithExactly([]);
+
+        expect(filterFn(targetInterval0)).to.be.true;
+        expect(filterFn(invalidTargetInterval)).to.be.false;
+        expect(filterFn({})).to.be.false;
+      });
+
+      [
+        [],
+        ['target~2025-01~different-contact-id',]
+      ].forEach(targetIntervalIds => {
+        it('returns empty page when no target intervals are found for the reporting period and contacts', async () => {
+          getDocUuidsByIdRangeInner.resolves(targetIntervalIds);
+
+          const result = await TargetInterval.v1.getPage(localContext)(qualifier, null, 10);
+
+          expect(result).to.deep.equal({
+            data: [],
+            cursor: null
+          });
+          expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+          expect(getDocUuidsByIdRangeInner).to.have.been.calledOnceWithExactly(
+            `target~${qualifier.reportingPeriod}~`,
+            `target~${qualifier.reportingPeriod}~\ufff0`
+          );
+          expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+          expect(fetchAndFilterOuter).to.not.have.been.called;
+          expect(fetchAndFilterInner).to.not.have.been.called;
+        });
+      });
+
+      it('throws error when invalid cursor provided', async () => {
+        const cursor = { cursor: 'cursor' } as unknown as string;
+        const getPage = TargetInterval.v1.getPage(localContext);
+
+        expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+        expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+
+        await expect(getPage(qualifier, cursor, 10)).to.be.rejectedWith(
+          `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}].`
+        );
+
+        expect(getDocUuidsByIdRangeInner).to.not.have.been.called;
+        expect(fetchAndFilterOuter).to.not.have.been.called;
+        expect(fetchAndFilterInner).to.not.have.been.called;
+      });
+    });
   });
 });

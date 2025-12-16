@@ -14,13 +14,29 @@ const offlineUser = utils.deepFreeze(userFactory.build({
   roles: ['chw']
 }));
 
+const createTargetInterval = ({
+  owner,
+  reporting_period,
+  user = 'org.couchdb.user:chw',
+  updated_date = 1758690000000
+}) => {
+  return {
+    _id: `target~${reporting_period}~${owner}~${user}`,
+    type: 'target',
+    user,
+    owner,
+    reporting_period,
+    targets: [],
+    updated_date
+  };
+};
+
 const targetIntervals = utils.deepFreeze([
   {
-    _id: 'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw',
-    type: 'target',
-    user: 'org.couchdb.user:chw',
-    owner: 'c3f6b91e-b095-48ef-a524-705e29fd9f6d',
-    reporting_period: '2025-09',
+    ...createTargetInterval({
+      owner: '7de6849e-e6e5-4a8d-9b6d-71c9eaa23415',
+      reporting_period: '2025-09',
+    }),
     targets: [
       {
         id: 'deaths-this-month',
@@ -45,50 +61,42 @@ const targetIntervals = utils.deepFreeze([
         }
       },
     ],
-    updated_date: 1758690000000
   },
   {
-    _id: 'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-    type: 'target',
-    user: 'org.couchdb.user:chw',
-    owner: '7de6849e-e6e5-4a8d-9b6d-71c9eaa23415',
-    reporting_period: '2025-09',
+    ...createTargetInterval({
+      owner: '9998989-e6e5-4a8d-9b6d-71c9eaa23999',
+      reporting_period: '2025-09',
+    }),
     targets: [
       {
         id: 'deaths-this-month',
         value: {
-          pass: 2,
+          pass: 0,
           total: 2
         }
       },
-      {
-        id: 'births-this-month',
-        value: {
-          pass: 5,
-          total: 13
-        }
-      },
-      {
-        id: 'facility-deliveries',
-        value: {
-          pass: 1,
-          total: 12,
-          percent: 10
-        }
-      },
     ],
-    updated_date: 1758690000000
   },
+  createTargetInterval({
+    owner: 'c3f6b91e-b095-48ef-a524-705e29fd9f6d',
+    reporting_period: '2025-09',
+    user: 'org.couchdb.user:supervisor'
+  })
 ]);
-const invalidQualifier = {
-  contactUuids: ['INVALID_UUID'],
-  reportingPeriod: 'INVALID_PERIOD'
-};
+
+const targetIntervalDifferentReportingPeriod = utils.deepFreeze(createTargetInterval({
+  owner: targetIntervals[0].owner,
+  reporting_period: '2025-10',
+}));
 
 describe('Target Interval API', () => {
   
   before(async () => {
-    await utils.saveDocs([...targetIntervals, place]);
+    await utils.saveDocs([
+      ...targetIntervals,
+      place,
+      targetIntervalDifferentReportingPeriod,
+    ]);
     await utils.createUsers([offlineUser]);
   });
   
@@ -129,78 +137,61 @@ describe('Target Interval API', () => {
     const endpoint = '/api/v1/target-interval';
     
     it('returns a page of target intervals for no limit and cursor passed', async () => {
-      const opts = {
+      const { data, cursor } = await utils.request({
         path: `${endpoint}`,
         qs: {
           contact_uuids: [
-            'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-            'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
+            targetIntervals[0].owner,
+            targetIntervals[1].owner,
+            targetIntervals[2].owner,
           ].join(','),
           reporting_period: '2025-09'
         }
-      };
-      const responsePage = await utils.request(opts);
-      const responseTargetIntervals = responsePage.data;
-      const responseCursor = responsePage.cursor;
+      });
 
-      
-
-      expect(responseTargetIntervals).excludingEvery(['_rev']).to.deep.equalInAnyOrder(targetIntervals);
-      expect(responseCursor).to.be.equal(null);
+      expect(data).excludingEvery(['_rev']).to.deep.equal(targetIntervals);
+      expect(cursor).to.be.equal(null);
     });
 
-    it('returns a page of target intervals when limit and cursor is passed and cursor can be reused', async () => {
-      const page = await utils.request({ 
+    it('returns a page of target intervals when limit and cursor is passed', async () => {
+      const { data, cursor } = await utils.request({
         path: endpoint, 
         qs: { 
           contact_uuids: [
-            'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-            'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
+            targetIntervals[0].owner,
+            targetIntervals[1].owner,
+            targetIntervals[2].owner,
           ].join(','),
           reporting_period: '2025-09',
-          limit: 3
+          cursor: '1',
+          limit: 1
         } 
       });
 
-      expect(page.data).excludingEvery(['_rev']).to.deep.equalInAnyOrder(targetIntervals);
-      expect(page.data.length).to.be.equal(2);
-      expect(page.cursor).to.be.equal(null);
+      expect(data).excludingEvery(['_rev']).to.deep.equal([targetIntervals[1]]);
+      expect(cursor).to.be.equal('2');
     });
 
     it(`throws error when user is not an online user`, async () => {
       const opts = {
         path: `/api/v1/target-interval`,
+        qs: {
+          contact_uuids: targetIntervals[0].owner,
+          reporting_period: '2025-09'
+        },
         auth: { username: offlineUser.username, password: offlineUser.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
 
-    it('throws 400 error when reporting period is invalid', async () => {
-      const queryParams = {
-        contact_uuids: [
-          'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-          'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
-        ].join(','),
-        reporting_period: invalidQualifier.reportingPeriod,
-      };
-      const queryString = new URLSearchParams(queryParams).toString();
-      const opts = {
-        path: `/api/v1/target-interval?${queryString}`,
-      };
-
-      const message = `400 - {"code":400,"error":"Invalid reporting period [${invalidQualifier.reportingPeriod}]."}`;
-      await expect(utils.request(opts)).to.be.rejectedWith(message);
-    });
-
     it('throws 400 error when limit is invalid', async () => {
-      const queryParams = {
-        contact_uuids: '7de6849e-e6e5-4a8d-9b6d-71c9eaa23415,c3f6b91e-b095-48ef-a524-705e29fd9f6d',
-        reporting_period: '2025-07',
-        limit: -1
-      };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/target-interval?${queryString}`,
+        path: `/api/v1/target-interval`,
+        qs: {
+          contact_uuids: targetIntervals[0].owner,
+          reporting_period: '2025-07',
+          limit: -1
+        },
       };
 
       await expect(utils.request(opts)).to.be.rejectedWith(
@@ -209,17 +200,13 @@ describe('Target Interval API', () => {
     });
 
     it('throws 400 error when cursor is invalid', async () => {
-      const queryParams = {
-        contact_uuids: [
-          'target~2025-09~7de6849e-e6e5-4a8d-9b6d-71c9eaa23415~org.couchdb.user:chw',
-          'target~2025-09~c3f6b91e-b095-48ef-a524-705e29fd9f6d~org.couchdb.user:chw'
-        ].join(','),
-        reporting_period: '2025-07',
-        cursor: '-1'
-      };
-      const queryString = new URLSearchParams(queryParams).toString();
       const opts = {
-        path: `/api/v1/target-interval?${queryString}`,
+        path: `/api/v1/target-interval`,
+        qs: {
+          contact_uuids: targetIntervals[0].owner,
+          reporting_period: '2025-07',
+          cursor: '-1'
+        },
       };
 
       await expect(utils.request(opts))
