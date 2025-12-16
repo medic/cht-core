@@ -5,7 +5,7 @@
 anyio==4.1.0
 attrs==23.1.0
 certifi==2024.7.4
-filelock==3.13.1
+filelock==3.20.1
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.25.2
