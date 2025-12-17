@@ -3,8 +3,9 @@ const path = require('path');
 const environment = require('@medic/environment');
 const isClientHuman = require('./is-client-human');
 const logger = require('@medic/logger');
+const { HTTP_HEADERS } = require('@medic/constants');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
-const REQUEST_ID_HEADER = 'X-Request-Id';
+const REQUEST_ID_HEADER = HTTP_HEADERS.REQUEST_ID;
 const cookie = require('./services/cookie');
 const {InvalidArgumentError} = require('@medic/cht-datasource');
 

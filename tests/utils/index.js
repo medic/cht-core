@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
+const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -52,7 +53,7 @@ const CONTAINER_NAMES = {};
 const originalTranslations = {};
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
-const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
+const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
@@ -412,7 +413,7 @@ const deleteDocs = ids => {
 };
 
 const PROTECTED_DOCS = [
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
@@ -1018,7 +1019,7 @@ const delayPromise = async (promiseFn, interval) => {
 
 const setTransitionSeqToNow = () => {
   return Promise.all([
-    sentinelDb.get('_local/transitions-seq').catch(() => ({ _id: '_local/transitions-seq' })),
+    sentinelDb.get(SENTINEL_METADATA.TRANSITIONS_SEQ).catch(() => ({ _id: SENTINEL_METADATA.TRANSITIONS_SEQ })),
     db.info()
   ]).then(([sentinelMetadata, { update_seq: updateSeq }]) => {
     sentinelMetadata.value = updateSeq;
@@ -1078,7 +1079,7 @@ const addTranslations = (languageCode, translations = {}) => {
       if (err.status === 404) {
         return {
           _id: `messages-${code}`,
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           code: code,
           name: code,
           enabled: true,
@@ -1626,7 +1627,7 @@ const logFeedbackDocs = async (test) => {
     return false;
   }
 
-  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/[^\w.-]/g, '-');
   const filePath = path.resolve(__dirname, '..', 'logs', filename);
   fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
   existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
@@ -1640,6 +1641,16 @@ const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
+
+const waitForIndexes = async () => {
+  let indexes = [];
+  do {
+    indexes = await request({ path: '/_active_tasks' });
+    if (indexes.length) {
+      await delayPromise(500);
+    }
+  } while (indexes.length);
+};
 
 module.exports = {
   db,
@@ -1724,4 +1735,5 @@ module.exports = {
   runCommand,
   deletePurgeDbs,
   saveLogs,
+  waitForIndexes,
 };

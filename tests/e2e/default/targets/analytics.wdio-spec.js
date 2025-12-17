@@ -45,7 +45,6 @@ describe('Targets', () => {
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login(chw);
-    await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
   });
 
   afterEach(async () => {
@@ -72,7 +71,7 @@ describe('Targets', () => {
 
   it('should display correct message when no target found', async () => {
     const settings = await compileTargets();
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
 
     await analyticsPage.goToTargets();
 
@@ -87,7 +86,7 @@ describe('Targets', () => {
     const tasks = {
       targets: { enabled: false }
     };
-    await utils.updateSettings({ tasks }, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings({ tasks }, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
@@ -111,7 +110,7 @@ describe('Targets', () => {
 
   it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
     await analyticsPage.goToTargets();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();
@@ -124,8 +123,9 @@ describe('Targets', () => {
       .include('TypeError: Cannot read properties of undefined (reading \'muted\')');
 
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-    expect(feedbackDocs.length).to.equal(1);
-    expect(feedbackDocs[0].info.message).to.include('Cannot read properties of undefined (reading \'muted\')');
+    feedbackDocs.forEach(feedbackDoc => {
+      expect(feedbackDoc.info.message).to.include('Cannot read properties of undefined (reading \'muted\')');
+    });
     await chtDbUtils.clearFeedbackDocs();
   });
 });

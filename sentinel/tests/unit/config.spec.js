@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const db = require('../../src/db');
 const translationUtils = require('@medic/translation-utils');
 const transitions = require('../../src/transitions');
+const { DOC_TYPES } = require('@medic/constants');
 
 const rewire = require('rewire');
 const expect = chai.expect;
@@ -48,7 +49,7 @@ describe('config', () => {
     expect(db.medic.query.firstCall.args).to.deep.equal([
       'medic-client/doc_by_type',
       {
-        key: ['translations'],
+        key: [DOC_TYPES.TRANSLATIONS],
         include_docs: true,
       }
     ]);
