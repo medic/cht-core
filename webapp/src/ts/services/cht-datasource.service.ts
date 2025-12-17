@@ -100,22 +100,39 @@ export class CHTDatasourceService {
   /**
    * Binds a cht-datasource function to the data context.
    * (e.g. `const getPersonWithLineage = this.bind(Person.v1.getWithLineage);`)
+   * @see {@link bindGenerator} for binding a function that returns an `AsyncGenerator`
    * @param fn the function to bind. It should accept a data context as the parameter and return another function that
    * results in a `Promise`.
    * @returns a "context-aware" version of the function that is bound to the data context and ready to be used
    */
-  bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F):
-  (...p: Parameters<F>) => ReturnType<F> {
-    return (...p) => {
-      return new Promise((resolve, reject) => {
-        this.isInitialized().then(() => {
-          const contextualFn = this.dataContext.bind(fn);
-          contextualFn(...p)
-            .then(resolve)
-            .catch(reject);
-        });
-      }) as ReturnType<F>;
-    };
+  bind<R, F extends (arg?: unknown) => Promise<R>>(fn: (ctx: DataContext) => F): F {
+    return (async (...p: Parameters<F>) => {
+      await this.isInitialized();
+      const contextualFn = this.dataContext.bind(fn);
+      return contextualFn(...p);
+    }) as F;
+  }
+
+  /**
+   * Binds a cht-datasource function to the data context.
+   * (e.g. `const getTargetIntervals = this.bindGenerator(TargetInterval.v1.getAll);`)
+   * @see {@link bind} for binding a function that returns a `Promise`
+   * @param fn the function to bind. It should accept a data context as the parameter and return another function that
+   * results in an `AsyncGenerator`.
+   * @returns a "context-aware" version of the function that is bound to the data context and ready to be used
+   */
+  bindGenerator<R, F extends (arg?: unknown) => AsyncGenerator<R>>(fn: (ctx: DataContext) => F): F {
+    const self = this; // NOSONAR
+    let innerGen: AsyncGenerator<R>;
+    return async function* (...p: Parameters<F>) {
+      if (!innerGen) {
+        await self.isInitialized();
+        innerGen = self.dataContext.bind(fn)(...p);
+      }
+      for await (const value of innerGen) {
+        yield value;
+      }
+    } as F;
   }
 
   async get() {
