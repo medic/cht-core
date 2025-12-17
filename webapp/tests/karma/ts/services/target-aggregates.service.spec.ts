@@ -6,7 +6,6 @@ import * as moment from 'moment';
 
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
-import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -16,13 +15,16 @@ import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { TargetInterval, Qualifier } from '@medic/cht-datasource';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+
+const { byContactUuids, byReportingPeriod } = Qualifier;
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
   let uhcSettingsService;
   let translateFromService;
   let searchService;
-  let dbService;
   let getDataRecordsService;
   let userSettingsService;
   let contactTypesService;
@@ -30,6 +32,7 @@ describe('TargetAggregatesService', () => {
   let settingsService;
   let calendarIntervalService;
   let translateService;
+  let getTargetIntervals;
 
   const randomString = (length?) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
   const ratioTranslationKey = 'analytics.target.aggregates.ratio';
@@ -48,10 +51,6 @@ describe('TargetAggregatesService', () => {
       get: sinon.stub(),
       getUserFacilities: sinon.stub(),
     };
-    dbService = {
-      get: sinon.stub(),
-      allDocs: sinon.stub()
-    };
     uhcSettingsService = {getMonthStartDate: sinon.stub()};
     translateFromService = {get: sinon.stub()};
     calendarIntervalService = {
@@ -59,6 +58,9 @@ describe('TargetAggregatesService', () => {
       getInterval: sinon.stub().returns({ end: 100 }),
       getPrevious: sinon.stub().returns({ end: 100 }),
     };
+    getTargetIntervals = sinon.stub();
+    const chtDatasourceService = { bindGenerator: sinon.stub() };
+    chtDatasourceService.bindGenerator.withArgs(TargetInterval.v1.getAll).returns(getTargetIntervals);
 
     TestBed.configureTestingModule({
       imports: [
@@ -71,15 +73,14 @@ describe('TargetAggregatesService', () => {
         {provide: GetDataRecordsService, useValue: getDataRecordsService},
         {provide: SearchService, useValue: searchService},
         {provide: UserSettingsService, useValue: userSettingsService},
-        {provide: DbService, useValue: dbService},
         {provide: UHCSettingsService, useValue: uhcSettingsService},
         {provide: TranslateFromService, useValue: translateFromService},
         {provide: CalendarIntervalService, useValue: calendarIntervalService},
+        {provide: CHTDatasourceService, useValue: chtDatasourceService }
       ]
     });
     service = TestBed.inject(TargetAggregatesService);
     translateService = TestBed.inject(TranslateService);
-    dbService.get.returns(dbService);
   });
 
   afterEach(() => {
@@ -155,7 +156,6 @@ describe('TargetAggregatesService', () => {
         }]
       } } });
       userSettingsService.getUserFacilities.rejects({ err: 'some' });
-      dbService.allDocs.resolves({ rows: [] });
 
       return service
         .getAggregates()
@@ -172,7 +172,6 @@ describe('TargetAggregatesService', () => {
         }]
       } } });
       userSettingsService.get.resolves({});
-      dbService.allDocs.resolves({ rows: [] });
 
       return service
         .getAggregates()
@@ -190,7 +189,6 @@ describe('TargetAggregatesService', () => {
       } } });
       userSettingsService.get.resolves({ facility_id: 'home' });
       getDataRecordsService.get.withArgs([ 'home' ]).resolves();
-      dbService.allDocs.resolves({ rows: [] });
 
       return service
         .getAggregates()
@@ -205,7 +203,7 @@ describe('TargetAggregatesService', () => {
 
       expect(result.length).to.equal(0);
       expect(searchService.search.callCount).to.equal(0);
-      expect(dbService.allDocs.callCount).to.equal(0);
+      expect(getTargetIntervals.notCalled).to.be.true;
     });
 
     it('should search for contacts by type', async () => {
@@ -222,7 +220,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }, { id: 'type2' }, { id: 'type3' }]);
       searchService.search.resolves([]);
-      dbService.allDocs.resolves({ rows: [] });
 
       const result = await service.getAggregates();
 
@@ -258,7 +255,6 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }, { id: 'type2' }, { id: 'type3' }]);
-      dbService.allDocs.resolves({ rows: [] });
 
       searchService.search.onCall(0).resolves(Array.from({ length: 100 }).map(() => ({ _id: 'place' })));
       searchService.search.onCall(1).resolves(Array.from({ length: 100 }).map(() => ({ _id: 'place' })));
@@ -316,7 +312,11 @@ describe('TargetAggregatesService', () => {
           { id: 'target', value: { pass: 0, total: 0 } },
         ],
       }));
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      getTargetIntervals.returns((async function* () {
+        for (const doc of targetDocs) {
+          yield doc;
+        }
+      })());
 
       const result = await service.getAggregates();
 
@@ -351,6 +351,10 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[1]).to.deep.equal([places.slice(0, 100).map(place => place.contact)]);
       expect(getDataRecordsService.get.args[2]).to.deep.equal([places.slice(100, 200).map(place => place.contact)]);
       expect(getDataRecordsService.get.args[3]).to.deep.equal([places.slice(200, 300).map(place => place.contact)]);
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
 
     it('should discard contacts that are not under the parent place or that have no contact', async () => {
@@ -377,7 +381,7 @@ describe('TargetAggregatesService', () => {
       const oneDifferentPlace = { contact: '', lineage: [] };
       // at least one place will be discarded
       const places = Array.from({ length: 265 }).map((a, i) => i && genPlace(i) || oneDifferentPlace);
-      dbService.allDocs.resolves({ rows: [] });
+      getTargetIntervals.returns((async function* () {})());
 
       searchService.search.onCall(0).resolves(places.slice(0, 100));
       searchService.search.onCall(1).resolves(places.slice(100, 200));
@@ -429,6 +433,10 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[3]).to.deep.equal([
         places.slice(200, 300).filter(isRelevantPlace).map(place => place.contact)
       ]);
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
 
     it('should exclude person types from places search', async () => {
@@ -441,7 +449,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([ { id: 'type1' }, { id: 'type2' } ]);
       searchService.search.resolves([]);
-      dbService.allDocs.resolves({ rows: [] });
 
       const result = await service.getAggregates();
 
@@ -467,7 +474,6 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs([ 'home' ]).resolves([ { _id: 'home' } ]);
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([]);
-      dbService.allDocs.resolves({ rows: [] });
 
       const result = await service.getAggregates();
 
@@ -490,9 +496,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('district');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'health_center' }]);
       searchService.search.resolves([]);
-
-      dbService.allDocs.resolves({ rows: [] });
-
       uhcSettingsService.getMonthStartDate.returns(12);
       calendarIntervalService.getCurrent.returns({
         start: moment('2019-05-12').valueOf(),
@@ -506,12 +509,7 @@ describe('TargetAggregatesService', () => {
 
       expect(getDataRecordsService.get.callCount).to.equal(2);
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[facilityId]]);
-      expect(dbService.allDocs.callCount).to.equal(1);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2019-06~',
-        end_key: 'target~2019-06~\ufff0',
-        include_docs: true
-      }]);
+      expect(getTargetIntervals.notCalled).to.be.true;
       expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
@@ -528,9 +526,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
-
-      dbService.allDocs.resolves({ rows: [] });
-
       uhcSettingsService.getMonthStartDate.returns(12);
       calendarIntervalService.getCurrent.returns({
         start: moment('2019-05-12').valueOf(),
@@ -543,12 +538,7 @@ describe('TargetAggregatesService', () => {
       expect(result[0].id).to.equal('target');
       expect(result[0].values.length).to.equal(0);
 
-      expect(dbService.allDocs.callCount).to.equal(1);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2019-06~',
-        end_key: 'target~2019-06~\ufff0',
-        include_docs: true
-      }]);
+      expect(getTargetIntervals.notCalled).to.be.true;
       expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
@@ -566,9 +556,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('district');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'health_center' }]);
       searchService.search.resolves([]);
-
-      dbService.allDocs.resolves({ rows: [] });
-
       uhcSettingsService.getMonthStartDate.returns(1);
       calendarIntervalService.getCurrent.returns({
         start: moment('2019-08-01').valueOf(),
@@ -585,12 +572,7 @@ describe('TargetAggregatesService', () => {
       expect(result[0].id).to.equal('target');
       expect(result[0].values.length).to.equal(0);
 
-      expect(dbService.allDocs.callCount).to.equal(1);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2019-07~',
-        end_key: 'target~2019-07~\ufff0',
-        include_docs: true
-      }]);
+      expect(getTargetIntervals.notCalled).to.be.true;
       expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
       expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(calendarIntervalService.getInterval.callCount).to.equal(1);
@@ -614,7 +596,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
       translateFromService.get.callsFake(e => e);
-      dbService.allDocs.resolves({ rows: [] });
 
       const result = await service.getAggregates();
 
@@ -731,7 +712,11 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      getTargetIntervals.returns((async function* () {
+        for (const doc of targetDocs) {
+          yield doc;
+        }
+      })());
       translateService.instant = sinon.stub().returnsArg(0);
       translateFromService.get.returnsArg(0);
 
@@ -834,6 +819,10 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[2], value: { pass: 7, total: 7, percent: 350, goalMet: true } },
         ],
       });
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
 
     it('should exclude targets from other contacts', async () => {
@@ -869,8 +858,11 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
-
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      getTargetIntervals.returns((async function* () {
+        for (const doc of targetDocs) {
+          yield doc;
+        }
+      })());
 
       const result = await service.getAggregates();
 
@@ -889,6 +881,10 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[1], value: { pass: 9, total: 9, percent: 0 } },
         ]
       });
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
 
     it('should create placeholders for missing targets and missing target values', async () => {
@@ -929,7 +925,11 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      getTargetIntervals.returns((async function* () {
+        for (const doc of targetDocs) {
+          yield doc;
+        }
+      })());
 
       const result = await service.getAggregates();
 
@@ -965,6 +965,10 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[2], value: { pass: 10, total: 15, percent: 67 } },
         ]
       });
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
 
     it('should only process one target doc per contact', async () => {
@@ -1011,7 +1015,11 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      getTargetIntervals.returns((async function* () {
+        for (const doc of targetDocs) {
+          yield doc;
+        }
+      })());
 
       const result = await service.getAggregates();
 
@@ -1043,6 +1051,10 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[0], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
         ]
       });
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
 
     it('should discard additional target values from target docs', async () => {
@@ -1087,7 +1099,11 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      dbService.allDocs.resolves({ rows: targetDocs.map(doc => ({ doc })) });
+      getTargetIntervals.returns((async function* () {
+        for (const doc of targetDocs) {
+          yield doc;
+        }
+      })());
 
       const result = await service.getAggregates();
 
@@ -1121,6 +1137,10 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
         ]
       });
+      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+        byReportingPeriod('1969-12'),
+        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+      )]]);
     });
   });
 
@@ -1135,9 +1155,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
-
-      dbService.allDocs.resolves({ rows: [] });
-
       uhcSettingsService.getMonthStartDate.returns(1);
       calendarIntervalService.getCurrent.returns({
         start: moment('2024-08-01').valueOf(),
@@ -1163,9 +1180,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
-
-      dbService.allDocs.resolves({ rows: [] });
-
       uhcSettingsService.getMonthStartDate.returns(1);
       calendarIntervalService.getCurrent.returns({
         start: moment('2024-08-01').valueOf(),
@@ -1197,9 +1211,6 @@ describe('TargetAggregatesService', () => {
       searchService.search.resolves([]);
       translateService.instant = sinon.stub().returns('Last month');
       settingsService.get.rejects({ some: 'err' });
-
-      dbService.allDocs.resolves({ rows: [] });
-
       uhcSettingsService.getMonthStartDate.returns(1);
       calendarIntervalService.getPrevious.returns({
         start: moment('2024-07-01').valueOf(),
@@ -1320,9 +1331,15 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      dbService.allDocs.onCall(0).resolves({rows: [{ id: targetDoc._id, doc: targetDoc }]});
-      dbService.allDocs.onCall(1).resolves({rows: [{ id: targetDoc2._id, doc: targetDoc2 }]});
-      dbService.allDocs.onCall(2).resolves({rows: [{ id: targetDoc3._id, doc: targetDoc3 }]});
+      getTargetIntervals.onCall(0).returns((async function* () {
+        yield targetDoc;
+      })());
+      getTargetIntervals.onCall(1).returns((async function* () {
+        yield targetDoc2;
+      })());
+      getTargetIntervals.onCall(2).returns((async function* () {
+        yield targetDoc3;
+      })());
 
       const result = await service.getTargetDocs({ _id: 'uuid' }, ['facility'], 'contact');
 
@@ -1337,22 +1354,19 @@ describe('TargetAggregatesService', () => {
       expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([20, moment('2020-02-20').valueOf()]);
       expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([20, moment('2020-01-20').valueOf()]);
       expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([20, moment('2019-12-20').valueOf()]);
-      expect(dbService.allDocs.callCount).to.equal(3);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2020-02~uuid~',
-        end_key: 'target~2020-02~uuid~\ufff0',
-        include_docs: true,
-      }]);
-      expect(dbService.allDocs.args[1]).to.deep.equal([{
-        start_key: 'target~2020-01~uuid~',
-        end_key: 'target~2020-01~uuid~\ufff0',
-        include_docs: true,
-      }]);
-      expect(dbService.allDocs.args[2]).to.deep.equal([{
-        start_key: 'target~2019-12~uuid~',
-        end_key: 'target~2019-12~uuid~\ufff0',
-        include_docs: true,
-      }]);
+      expect(getTargetIntervals.callCount).to.equal(3);
+      expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2020-02'),
+        byContactUuids(['uuid'])
+      )]);
+      expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2020-01'),
+        byContactUuids(['uuid'])
+      )]);
+      expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2019-12'),
+        byContactUuids(['uuid'])
+      )]);
     });
 
     it('should fetch user target docs when loading target docs for the facility', async () => {
@@ -1408,9 +1422,15 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      dbService.allDocs.onCall(0).resolves({rows: [{ id: targetDoc._id, doc: targetDoc }]});
-      dbService.allDocs.onCall(1).resolves({rows: [{ id: targetDoc2._id, doc: targetDoc2 }]});
-      dbService.allDocs.onCall(2).resolves({rows: [{ id: targetDoc3._id, doc: targetDoc3 }]});
+      getTargetIntervals.onCall(0).returns((async function* () {
+        yield targetDoc;
+      })());
+      getTargetIntervals.onCall(1).returns((async function* () {
+        yield targetDoc2;
+      })());
+      getTargetIntervals.onCall(2).returns((async function* () {
+        yield targetDoc3;
+      })());
 
       const result = await service.getTargetDocs({ _id: 'facility' }, ['facility'], 'usercontact');
 
@@ -1423,22 +1443,19 @@ describe('TargetAggregatesService', () => {
       expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2023-08-01').valueOf()]);
       expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([1, moment('2023-07-01').valueOf()]);
       expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([1, moment('2023-06-01').valueOf()]);
-      expect(dbService.allDocs.callCount).to.equal(3);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2023-08~usercontact~',
-        end_key: 'target~2023-08~usercontact~\ufff0',
-        include_docs: true,
-      }]);
-      expect(dbService.allDocs.args[1]).to.deep.equal([{
-        start_key: 'target~2023-07~usercontact~',
-        end_key: 'target~2023-07~usercontact~\ufff0',
-        include_docs: true,
-      }]);
-      expect(dbService.allDocs.args[2]).to.deep.equal([{
-        start_key: 'target~2023-06~usercontact~',
-        end_key: 'target~2023-06~usercontact~\ufff0',
-        include_docs: true,
-      }]);
+      expect(getTargetIntervals.callCount).to.equal(3);
+      expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2023-08'),
+        byContactUuids(['usercontact'])
+      )]);
+      expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2023-07'),
+        byContactUuids(['usercontact'])
+      )]);
+      expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2023-06'),
+        byContactUuids(['usercontact'])
+      )]);
     });
 
     it('should fetch user target docs when loading target docs for one of the facilities', async () => {
@@ -1494,9 +1511,15 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      dbService.allDocs.onCall(0).resolves({rows: [{ id: targetDoc._id, doc: targetDoc }]});
-      dbService.allDocs.onCall(1).resolves({rows: [{ id: targetDoc2._id, doc: targetDoc2 }]});
-      dbService.allDocs.onCall(2).resolves({rows: [{ id: targetDoc3._id, doc: targetDoc3 }]});
+      getTargetIntervals.onCall(0).returns((async function* () {
+        yield targetDoc;
+      })());
+      getTargetIntervals.onCall(1).returns((async function* () {
+        yield targetDoc2;
+      })());
+      getTargetIntervals.onCall(2).returns((async function* () {
+        yield targetDoc3;
+      })());
 
       const result = await service.getTargetDocs({ _id: 'facility2' }, ['facility1', 'facility2'], 'usercontact');
 
@@ -1509,22 +1532,19 @@ describe('TargetAggregatesService', () => {
       expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2023-08-01').valueOf()]);
       expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([1, moment('2023-07-01').valueOf()]);
       expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([1, moment('2023-06-01').valueOf()]);
-      expect(dbService.allDocs.callCount).to.equal(3);
-      expect(dbService.allDocs.args[0]).to.deep.equal([{
-        start_key: 'target~2023-08~usercontact~',
-        end_key: 'target~2023-08~usercontact~\ufff0',
-        include_docs: true,
-      }]);
-      expect(dbService.allDocs.args[1]).to.deep.equal([{
-        start_key: 'target~2023-07~usercontact~',
-        end_key: 'target~2023-07~usercontact~\ufff0',
-        include_docs: true,
-      }]);
-      expect(dbService.allDocs.args[2]).to.deep.equal([{
-        start_key: 'target~2023-06~usercontact~',
-        end_key: 'target~2023-06~usercontact~\ufff0',
-        include_docs: true,
-      }]);
+      expect(getTargetIntervals.callCount).to.equal(3);
+      expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2023-08'),
+        byContactUuids(['usercontact'])
+      )]);
+      expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2023-07'),
+        byContactUuids(['usercontact'])
+      )]);
+      expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
+        byReportingPeriod('2023-06'),
+        byContactUuids(['usercontact'])
+      )]);
     });
 
     it('should not load target docs for contacts that are not persons', async () => {
@@ -1558,9 +1578,11 @@ describe('TargetAggregatesService', () => {
         ]
       };
 
-      dbService.allDocs.onCall(0).resolves({ rows: [{ id: targetDoc._id, doc: targetDoc }] });
-      dbService.allDocs.onCall(1).resolves({ rows: [] });
-      dbService.allDocs.onCall(2).resolves({ rows: [] });
+      getTargetIntervals.onCall(0).returns((async function* () {
+        yield targetDoc;
+      })());
+      getTargetIntervals.onCall(1).returns((async function* () { })());
+      getTargetIntervals.onCall(2).returns((async function* () { })());
 
       const result = await service.getTargetDocs({ _id: 'uuid' }, ['facility'], 'contact');
 
@@ -1574,6 +1596,12 @@ describe('TargetAggregatesService', () => {
           { id: 'target4', value: { pass: 18, total: 18 } },
         ]
       }]);
+      expect(getTargetIntervals.args).to.deep.equal(
+        Array.from({ length: 3 }, () => [Qualifier.and(
+          byReportingPeriod('1969-12'),
+          byContactUuids(['uuid'])
+        )])
+      );
     });
   });
 
