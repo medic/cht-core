@@ -133,7 +133,7 @@ describe('cht-datasource Target Interval', () => {
     describe('getPage', async () => {
       const getPage = TargetInterval.v1.getPage(dataContext);
 
-      it('returns a page of target intervals for no limit and cursor passed', async () => {
+      it('returns a page of target intervals for multiple contact UUIDs', async () => {
         const { data, cursor } = await getPage(Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
           Qualifier.byContactUuids([
@@ -144,6 +144,16 @@ describe('cht-datasource Target Interval', () => {
         ));
 
         expect(data).excludingEvery(['_rev']).to.deep.equal(targetIntervals);
+        expect(cursor).to.be.equal(null);
+      });
+
+      it('returns a page of target intervals for single contact UUID', async () => {
+        const { data, cursor } = await getPage(Qualifier.and(
+          Qualifier.byReportingPeriod('2025-09'),
+          Qualifier.byContactUuid(targetIntervals[0].owner)
+        ));
+
+        expect(data).excludingEvery(['_rev']).to.deep.equal([targetIntervals[0]]);
         expect(cursor).to.be.equal(null);
       });
 

@@ -14,6 +14,16 @@ const checkUserPermissions = async (req) => {
   }
 };
 
+const getContactUuidQualifier = ({ contact_uuids, contact_uuid }) => {
+  if (contact_uuid) {
+    return Qualifier.byContactUuid(contact_uuid);
+  }
+  const contactUuids = (contact_uuids ?? '')
+    .split(',')
+    .filter(Boolean);
+  return Qualifier.byContactUuids(contactUuids);
+};
+
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
@@ -30,13 +40,9 @@ module.exports = {
     getAll: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const contactUuids = (req.query.contact_uuids ?? '')
-        .split(',')
-        .filter(Boolean);
-
       const docs = await getTargetIntervals(
         Qualifier.and(
-          Qualifier.byContactUuids(contactUuids),
+          getContactUuidQualifier(req.query),
           Qualifier.byReportingPeriod(req.query.reporting_period)
         ),
         req.query.cursor,

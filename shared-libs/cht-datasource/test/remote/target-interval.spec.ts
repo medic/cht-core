@@ -3,7 +3,12 @@ import { expect } from 'chai';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import * as TargetInterval from '../../src/remote/target-interval';
-import { ContactUuidsQualifier, ReportingPeriodQualifier } from '../../src/qualifier';
+import {
+  and,
+  byContactUuid,
+  byReportingPeriod,
+  byContactUuids
+} from '../../src/qualifier';
 
 describe('remote target interval', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -84,37 +89,55 @@ describe('remote target interval', () => {
 
       const limit = 3;
       const cursor = '1';
-      const qualifier = {
-        contactUuids: [doc[1].owner, doc[0].owner],
-        reportingPeriod: '2025-01'
-      } as (ReportingPeriodQualifier & ContactUuidsQualifier);
-      
-      const queryParam = {
-        limit: limit.toString(),
-        reporting_period: qualifier.reportingPeriod,
-        contact_uuids: `${doc[1].owner},${doc[0].owner}`,
-        cursor
-      };
 
-      it('returns target intervals', async () => {
+      it('returns target intervals for multiple contact UUIDs', async () => {
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactUuids([doc[1].owner, doc[0].owner]));
 
         const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
-        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_uuids: `${doc[1].owner},${doc[0].owner}`,
+          cursor
+        })).to.be.true;
+      });
+
+      it('returns target intervals for single contact UUID', async () => {
+        const expectedResponse = { data: doc.slice(0, 1), cursor };
+        getResourcesInner.resolves(expectedResponse);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
+
+        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_uuid: doc[0].owner,
+          cursor
+        })).to.be.true;
       });
 
       it('returns empty array if docs are not found', async () => {
         getResourcesInner.resolves([]);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
 
         const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
-        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_uuid: doc[0].owner,
+          cursor
+        })).to.be.true;
       });
     });
   });

@@ -15,7 +15,7 @@ import { Target, TargetValue } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
-const { byContactUuids, byReportingPeriod } = Qualifier;
+const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
 
 @Injectable({
   providedIn: 'root'
@@ -82,7 +82,7 @@ export class TargetAggregatesService {
 
   private async fetchTargetDocsForInterval(contactUuid, intervalTag) {
     const results: TargetInterval.v1.TargetInterval[] = [];
-    const qualifier = Qualifier.and(byContactUuids([contactUuid]), byReportingPeriod(intervalTag));
+    const qualifier = Qualifier.and(byContactUuid(contactUuid), byReportingPeriod(intervalTag));
     for await (const targetInt of this.getTargetIntervals(qualifier)) {
       results.push(targetInt);
     }

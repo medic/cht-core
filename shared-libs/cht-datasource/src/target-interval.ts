@@ -39,8 +39,9 @@ const getTargetIntervalUuid = (
 // eslint-disable-next-line func-style
 function assertQualifierForGettingTargetIntervals (
   qualifier: unknown
-): asserts qualifier is (ReportingPeriodQualifier & ContactUuidsQualifier) {
-  if (!(isContactUuidsQualifier(qualifier) && isReportingPeriodQualifier(qualifier))) {
+): asserts qualifier is (ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier)) {
+  const isUuidQualifier = isContactUuidsQualifier(qualifier) !== isContactUuidQualifier(qualifier);
+  if (!(isUuidQualifier && isReportingPeriodQualifier(qualifier))) {
     throw new InvalidArgumentError(`Invalid target intervals qualifier [${JSON.stringify(qualifier)}].`);
   }
 }
@@ -121,7 +122,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
+      qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<TargetInterval>> => {
@@ -150,7 +151,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ReportingPeriodQualifier & ContactUuidsQualifier,
+      qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
     ): AsyncGenerator<TargetInterval, null> => {
       assertQualifierForGettingTargetIntervals(qualifier);
       

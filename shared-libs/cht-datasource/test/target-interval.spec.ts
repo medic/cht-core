@@ -6,6 +6,8 @@ import * as TargetInterval from '../src/target-interval';
 import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
+import { and } from '../src/qualifier';
+import * as Core from '../src/libs/core';
 
 describe('target-interval', () => {
   const dataContext = { } as DataContext;
@@ -148,21 +150,26 @@ describe('target-interval', () => {
         adapt.returns(getPage);
       });
 
-      it('retrieves the target interval when qualifier is UUID', async () => {
-        const qualifier = Qualifier.and(
-          Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
-          Qualifier.byReportingPeriod('2025-01')
-        );
-        getPage.resolves(targetIntervals);
+      [
+        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byContactUuid('owner1-uuid')
+      ].forEach(contactQualifier => {
+        it('retrieves the target interval with the correct parameters', async () => {
+          const qualifier = Qualifier.and(
+            contactQualifier,
+            Qualifier.byReportingPeriod('2025-01')
+          );
+          getPage.resolves(targetIntervals);
 
-        const result = await TargetInterval.v1.getPage(dataContext)(qualifier);
+          const result = await TargetInterval.v1.getPage(dataContext)(qualifier);
 
-        expect(result).to.equal(targetIntervals);
-        expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
-        expect(adapt).to.have.been.calledOnceWithExactly(
-          dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage
-        );
-        expect(getPage).to.have.been.calledOnceWith(qualifier);
+          expect(result).to.equal(targetIntervals);
+          expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
+          expect(adapt).to.have.been.calledOnceWithExactly(
+            dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage
+          );
+          expect(getPage).to.have.been.calledOnceWith(qualifier);
+        });
       });
 
       it('throws an error if the data context is invalid', () => {
@@ -177,8 +184,14 @@ describe('target-interval', () => {
       });
 
       ([
+        Qualifier.byContactUuid('owner1-uuid'),
         Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
-        Qualifier.byReportingPeriod('2025-01')
+        Qualifier.byReportingPeriod('2025-01'),
+        and(
+          Qualifier.byContactUuid('owner1-uuid'),
+          Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+          Qualifier.byReportingPeriod('2025-01')
+        )
       ] as unknown as (
         Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
       )[]).forEach(invalidQualifier => {
@@ -254,6 +267,101 @@ describe('target-interval', () => {
             dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage
           );
           expect(getPage).to.not.have.been.called;
+        });
+      });
+    });
+
+    describe('getAll', () => {
+      const targetIntervals = [
+        {
+          user: 'user',
+          owner: 'owner1-uuid',
+          reporting_period: '2025-01',
+          updated_date: 123,
+          targets: [
+            { id: 'target1', value: { pass: 5, total: 6 } },
+            { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
+          ]
+        },
+        {
+          user: 'user',
+          owner: 'owner2-uuid',
+          reporting_period: '2025-01',
+          updated_date: 123,
+          targets: [
+            { id: 'target1', value: { pass: 5, total: 6 } },
+            { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
+          ]
+        }
+      ] as TargetInterval.v1.TargetInterval[];
+      const mockGenerator = async function* () {
+        for (const target of targetIntervals) {
+          yield target;
+        }
+      };
+
+      let getPage: SinonStub;
+      let getPagedGenerator: SinonStub;
+
+      beforeEach(() => {
+        getPage = sinon.stub(TargetInterval.v1, 'getPage');
+        dataContext.bind = sinon.stub().returns(getPage);
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+      });
+
+      [
+        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byContactUuid('owner1-uuid')
+      ].forEach(contactQualifier => {
+        it('returns target interval generator with correct parameters', () => {
+          const qualifier = Qualifier.and(
+            contactQualifier,
+            Qualifier.byReportingPeriod('2025-01')
+          );
+          getPagedGenerator.returns(mockGenerator);
+
+          const generator = TargetInterval.v1.getAll(dataContext)(qualifier);
+
+          expect(generator).to.deep.equal(mockGenerator);
+          expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
+          expect(adapt).to.not.have.been.called;
+          expect(getPagedGenerator).to.have.been.calledOnceWithExactly(getPage, qualifier);
+        });
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        const errorMsg = 'Invalid data context [null].';
+        assertDataContext.throws(new Error(errorMsg));
+
+        expect(() => TargetInterval.v1.getAll(dataContext)).to.throw(errorMsg);
+
+        expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
+        expect(adapt).to.not.have.been.called;
+        expect(getPagedGenerator).to.not.have.been.called;
+      });
+
+      ([
+        Qualifier.byContactUuid('owner1-uuid'),
+        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byReportingPeriod('2025-01'),
+        and(
+          Qualifier.byContactUuid('owner1-uuid'),
+          Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+          Qualifier.byReportingPeriod('2025-01')
+        )
+      ] as unknown as (
+        Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
+      )[]).forEach(invalidQualifier => {
+        it('throws an error if the qualifier is invalid', () => {
+          const getAll = TargetInterval.v1.getAll(dataContext);
+
+          expect(() => getAll(invalidQualifier)).to.throw(
+            `Invalid target intervals qualifier [${JSON.stringify(invalidQualifier)}].`
+          );
+
+          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+          expect(adapt).to.not.have.been.called;
+          expect(getPagedGenerator.notCalled).to.be.true;
         });
       });
     });

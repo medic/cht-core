@@ -5,6 +5,7 @@ import { Doc } from '../../src/libs/doc';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as TargetInterval from '../../src/local/target-interval';
 import { LocalDataContext } from '../../src/local/libs/data-context';
+import { and, byReportingPeriod, byContactUuid, byContactUuids } from '../../src/qualifier';
 
 describe('local target interval', () => {
   let localContext: LocalDataContext;
@@ -141,14 +142,14 @@ describe('local target interval', () => {
       const invalidTargetInterval = {
         _id: 'target~2025-01~contact-2'
       };
-      const qualifier = {
-        reportingPeriod: '2025-01',
-        contactUuids: [
+      const qualifier = and(
+        byReportingPeriod('2025-01'),
+        byContactUuids([
           targetInterval0.owner,
           targetInterval1.owner,
           targetInterval2.owner
-        ] as [string, ...string[]]
-      };
+        ])
+      );
       let getDocUuidsByIdRangeOuter: SinonStub;
       let getDocUuidsByIdRangeInner: SinonStub;
       let getDocsByIdsOuter: SinonStub;
@@ -216,6 +217,37 @@ describe('local target interval', () => {
         expect(filterFn(targetInterval0)).to.be.true;
         expect(filterFn(invalidTargetInterval)).to.be.false;
         expect(filterFn({})).to.be.false;
+      });
+
+      [
+        byContactUuid(targetInterval0.owner),
+        byContactUuids([targetInterval0.owner])
+      ].forEach(contactQualifier => {
+        it('returns target interval for valid qualifier with single contactUuid', async () => {
+          getDocUuidsByIdRangeInner.resolves([targetInterval0._id]);
+          const expectedPage = {
+            data: [targetInterval0],
+            cursor: '3'
+          };
+          fetchAndFilterInner.resolves(expectedPage);
+          getDocsByIdsInner.resolves([targetInterval0]);
+          const qualifier = and(
+            byReportingPeriod('2025-01'),
+            contactQualifier
+          );
+
+          const result = await TargetInterval.v1.getPage(localContext)(qualifier, null, 10);
+
+          expect(result).to.equal(expectedPage);
+          expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+          expect(getDocUuidsByIdRangeInner).to.have.been.calledOnceWithExactly(
+            `target~${qualifier.reportingPeriod}~${targetInterval0.owner}~`,
+            `target~${qualifier.reportingPeriod}~${targetInterval0.owner}~\ufff0`
+          );
+          expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
+          expect(fetchAndFilterOuter).to.have.been.calledOnce;
+          expect(fetchAndFilterInner).to.have.been.calledOnceWithExactly(10, 0);
+        });
       });
 
       [

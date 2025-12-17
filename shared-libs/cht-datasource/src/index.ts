@@ -33,7 +33,7 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
-import { and } from './qualifier';
+import { and, byContactUuid, byContactUuids, byReportingPeriod } from './qualifier';
 import * as Report from './report';
 import * as TargetInterval from './target-interval';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT, } from './libs/constants';
@@ -364,12 +364,15 @@ export const getDatasource = (ctx: DataContext) => {
          * account for paging
          */
         getPageByReportingPeriodContactUuids: (
-          reportingPeriod: string, 
-          contactUuids: [string, ...string[]],
+          reportingPeriod: string,
+          contactUuids: string | [string, ...string[]],
           cursor: Nullable<string> = null,
           limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
         ) => ctx.bind(TargetInterval.v1.getPage)(
-          and(Qualifier.byReportingPeriod(reportingPeriod), Qualifier.byContactUuids(contactUuids)), cursor, limit
+          and(
+            byReportingPeriod(reportingPeriod),
+            Array.isArray(contactUuids) ? byContactUuids(contactUuids) : byContactUuid(contactUuids)
+          ), cursor, limit
         ),
 
         /**
@@ -382,10 +385,10 @@ export const getDatasource = (ctx: DataContext) => {
          */
         getByReportingPeriodContactUuids: (
           reportingPeriod: string, 
-          contactUuids: [string, ...string[]]
+          contactUuids: string | [string, ...string[]]
         ) => ctx.bind(TargetInterval.v1.getAll)(and(
-          Qualifier.byReportingPeriod(reportingPeriod),
-          Qualifier.byContactUuids(contactUuids)
+          byReportingPeriod(reportingPeriod),
+          Array.isArray(contactUuids) ? byContactUuids(contactUuids) : byContactUuid(contactUuids)
         ))
       }
     }

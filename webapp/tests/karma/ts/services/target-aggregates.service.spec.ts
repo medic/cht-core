@@ -18,7 +18,7 @@ import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.
 import { TargetInterval, Qualifier } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
-const { byContactUuids, byReportingPeriod } = Qualifier;
+const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
@@ -1357,15 +1357,15 @@ describe('TargetAggregatesService', () => {
       expect(getTargetIntervals.callCount).to.equal(3);
       expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-02'),
-        byContactUuids(['uuid'])
+        byContactUuid('uuid')
       )]);
       expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-01'),
-        byContactUuids(['uuid'])
+        byContactUuid('uuid')
       )]);
       expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2019-12'),
-        byContactUuids(['uuid'])
+        byContactUuid('uuid')
       )]);
     });
 
@@ -1446,15 +1446,15 @@ describe('TargetAggregatesService', () => {
       expect(getTargetIntervals.callCount).to.equal(3);
       expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
-        byContactUuids(['usercontact'])
+        byContactUuid('usercontact')
       )]);
       expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-07'),
-        byContactUuids(['usercontact'])
+        byContactUuid('usercontact')
       )]);
       expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-06'),
-        byContactUuids(['usercontact'])
+        byContactUuid('usercontact')
       )]);
     });
 
@@ -1535,15 +1535,15 @@ describe('TargetAggregatesService', () => {
       expect(getTargetIntervals.callCount).to.equal(3);
       expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
-        byContactUuids(['usercontact'])
+        byContactUuid('usercontact')
       )]);
       expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-07'),
-        byContactUuids(['usercontact'])
+        byContactUuid('usercontact')
       )]);
       expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-06'),
-        byContactUuids(['usercontact'])
+        byContactUuid('usercontact')
       )]);
     });
 
@@ -1599,7 +1599,7 @@ describe('TargetAggregatesService', () => {
       expect(getTargetIntervals.args).to.deep.equal(
         Array.from({ length: 3 }, () => [Qualifier.and(
           byReportingPeriod('1969-12'),
-          byContactUuids(['uuid'])
+          byContactUuid('uuid')
         )])
       );
     });

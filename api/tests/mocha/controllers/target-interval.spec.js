@@ -102,7 +102,7 @@ describe('Target Interval controller', () => {
         req = { query: {} };
       });
 
-      it('responds with json when target intervals are found', async () => {
+      it('responds with json when target intervals are found for multiple contact UUIDs', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
           contact_uuids: 'contact1,contact2',
@@ -121,6 +121,33 @@ describe('Target Interval controller', () => {
         expect(getTargetIntervals).to.have.been.calledOnceWithExactly(
           Qualifier.and(
             Qualifier.byContactUuids(['contact1', 'contact2']),
+            Qualifier.byReportingPeriod('2024-01')
+          ),
+          'cursor123',
+          '10'
+        );
+        expect(res.json).to.have.been.calledOnceWithExactly(expectedPage);
+      });
+
+      it('responds with json when target intervals are found for single contact UUID', async () => {
+        auth.isOnlineOnly.returns(true);
+        req.query = {
+          contact_uuid: 'contact1',
+          reporting_period: '2024-01',
+          cursor: 'cursor123',
+          limit: '10'
+        };
+        const expectedPage = { data: [targetInterval], cursor: null };
+        getTargetIntervals.resolves(expectedPage);
+
+        await controller.v1.getAll(req, res);
+
+        expect(serverUtils.error).to.not.have.been.called;
+        expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
+        expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
+        expect(getTargetIntervals).to.have.been.calledOnceWithExactly(
+          Qualifier.and(
+            Qualifier.byContactUuid('contact1'),
             Qualifier.byReportingPeriod('2024-01')
           ),
           'cursor123',

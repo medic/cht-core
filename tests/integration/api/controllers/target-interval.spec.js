@@ -136,7 +136,7 @@ describe('Target Interval API', () => {
   describe('GET /api/v1/target-interval', async () => {
     const endpoint = '/api/v1/target-interval';
     
-    it('returns a page of target intervals for no limit and cursor passed', async () => {
+    it('returns a page of target intervals for multiple contact UUIDs', async () => {
       const { data, cursor } = await utils.request({
         path: `${endpoint}`,
         qs: {
@@ -150,6 +150,19 @@ describe('Target Interval API', () => {
       });
 
       expect(data).excludingEvery(['_rev']).to.deep.equal(targetIntervals);
+      expect(cursor).to.be.equal(null);
+    });
+
+    it('returns a page of target intervals for single contact UUID', async () => {
+      const { data, cursor } = await utils.request({
+        path: `${endpoint}`,
+        qs: {
+          contact_uuid: targetIntervals[0].owner,
+          reporting_period: '2025-09'
+        }
+      });
+
+      expect(data).excludingEvery(['_rev']).to.deep.equal([targetIntervals[0]]);
       expect(cursor).to.be.equal(null);
     });
 
