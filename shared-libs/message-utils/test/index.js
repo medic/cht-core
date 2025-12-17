@@ -601,6 +601,45 @@ describe('messageUtils', () => {
       utils._getRecipient({from: 'foo'}, 'a-recipient')
         .should.equal('foo');
     });
+
+    it('returns doc.from if the recipient cannot be resolved and default_to_sender is set to true', () => {
+      utils._getRecipient({from: 'foo'}, 'a-recipient', true)
+        .should.equal('foo');
+    });
+
+    it('returns a-recipient in text if the recipient cannot be resolved and default_to_sender is false.', () => {
+      utils._getRecipient({from: 'foo'}, 'a-recipient', false)
+        .should.equal('a-recipient');
+    });
+
+    it('returns doc.from when recipient is empty and default_to_sender is true.', () => {
+      utils._getRecipient({from: 'foo'}, '', true)
+        .should.equal('foo');
+    });
+
+    it('returns doc.from when recipient is empty and default_to_sender is false.', () => {
+      utils._getRecipient({from: 'foo'}, '', false)
+        .should.equal('foo');
+    });
+
+    it('returns trimmed phone number from array when first field is invalid', () => {
+      utils._getRecipient({from: 'foo'}, ['unknown_field', ' +18005550123 '], false)
+        .should.equal('+18005550123');
+    });
+
+    it('returns doc.from when recipient is white space.', () => {
+      utils._getRecipient({from: 'foo'}, ' ', false)
+        .should.equal('foo');
+    });
+
+    it('returns doc.from when recipient is undefined and default_to_sender is false.', () => {
+      utils._getRecipient({from: 'foo'}, '', false)
+        .should.equal('foo');
+    });
+
+    it('returns first existing string from recipients', () => {
+      utils._getRecipient({from: 'foo'}, [false, true, undefined, null, 'bar'], false).should.equal('bar');
+    });
   });
 
   describe('extendedTemplateContext', () => {
@@ -848,6 +887,179 @@ describe('messageUtils', () => {
         const message = messages[0];
         expect(message.to).to.equal('+333');
       });
+
+      it('returns first recipient when multiple recipients are requested and all have phone.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'          
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['clinic', 'district'];
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              },
+              parent: {
+                type: 'health_center',
+                parent: {
+                  type: 'district_hospital',
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+222');
+      });
+
+      it('returns second recipient when multiple recipients are requested and first does not have phone.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'       
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              },
+              parent: {
+                type: 'health_center', //parent
+                parent: {
+                  type: 'district_hospital', //grandparent
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
+
+      it('returns third recipient when first and second do not have phone.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'        
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['clinic', 'parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              parent: {
+                type: 'health_center',
+                parent: {
+                  type: 'district_hospital',
+                  contact: {
+                    type: 'person',
+                    phone: '+333'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+333');
+      });
+      
+      it('returns sender when multiple recipients are requested and none exist.', () => {
+        const config = {};
+        const translate = null;
+        const doc = {
+          from: '+111'        
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['child', 'parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person',
+                phone: '+222'
+              },
+              parent: {
+                type: 'health_center',
+                parent: {
+                  type: 'district_hospital',
+                  contact: {
+                    type: 'person'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('+111');
+      });
+
+      it('returns first recipient text when none of the recipients have phone and default_to_sender is false', () => {
+        const config = {
+          sms: {
+            default_to_sender: false
+          }
+        };
+        const translate = null;
+        const doc = {
+          from: '+111'        
+        };
+        const content = { message: 'xxx' };
+        const recipient = ['clinic', 'parent', 'grandparent'];
+        const context = {
+          patient: {
+            parent: {
+              type: 'clinic',
+              contact: {
+                type: 'person'                
+              },
+              parent: {
+                type: 'health_center',
+                parent: {
+                  type: 'district_hospital',
+                  contact: {
+                    type: 'person'
+                  }
+                }
+              }
+            }
+          }
+        };
+        const messages = utils.generate(config, translate, doc, content, recipient, context);
+        expect(messages.length).to.equal(1);
+        const message = messages[0];
+        expect(message.to).to.equal('clinic');
+      });
+
     });
 
     describe('truncation', () => {

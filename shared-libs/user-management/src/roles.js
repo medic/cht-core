@@ -1,11 +1,12 @@
 const _ = require('lodash');
 const config = require('./libs/config');
+const { USER_ROLES } = require('@medic/constants');
 
 /**
  * this role is used in webapp bootstrap and session service to mainly determine whether the user should
  * replicate or not, without requiring access to server settings.
  */
-const ONLINE_ROLE = 'mm-online';
+const ONLINE_ROLE = USER_ROLES.ONLINE;
 const DB_ADMIN_ROLE = '_admin';
 
 const hasRole = (userCtx, role) => {
