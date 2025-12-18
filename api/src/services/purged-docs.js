@@ -59,7 +59,9 @@ const getGroupPurgedIds = async (groupIds, purgeDb) => {
 
 const getIndividualPurgedIds = async (purgeDb, docIds) => {
   const results = await purgeDb.allDocs({ keys: docIds.map(purgingUtils.getPurgedId) });
-  return results.rows.map(row => purgingUtils.extractId(row.id)).filter(Boolean);
+  return results.rows
+    .filter(row => row.id && !row.value.deleted)
+    .map(row => purgingUtils.extractId(row.id));
 };
 
 /**
@@ -81,11 +83,15 @@ const getPurgedIds = async (userCtx, docIds, useCache = true, groupIds = []) => 
   let purgeDb;
   let purgedIds = [];
 
+  if (!docIds?.length || !userCtx.roles?.length) {
+    return purgedIds;
+  }
+
   try {
     purgeDb = await getPurgeDb(userCtx.roles);
 
     const groupPurgedIds = await getGroupPurgedIds(groupIds, purgeDb);
-    purgedIds = groupPurgedIds.purgedIds;
+    purgedIds = _.intersection(docIds, groupPurgedIds.purgedIds);
     docIds = _.difference(docIds, groupPurgedIds.allIds);
 
     purgedIds = purgedIds.concat(await getIndividualPurgedIds(purgeDb, docIds));

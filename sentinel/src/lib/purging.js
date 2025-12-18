@@ -107,7 +107,7 @@ const getRoles = () => {
 const getAlreadyPurgedDocs = async (roleHashes, groups, ids) => {
   const purgedDocsByHash = Object.fromEntries(roleHashes.map(hash => [hash, {}]));
 
-  if (!ids || !ids.length) {
+  if (!ids?.length && !Object.keys(groups).length) {
     return purgedDocsByHash;
   }
 
@@ -125,13 +125,13 @@ const getAlreadyPurgedDocs = async (roleHashes, groups, ids) => {
         if (!doc) {
           continue;
         }
-        purgedDocsByHash[hash][serverSidePurgeUtils.extractId(doc._id)] = doc._rev;
+        purgedDocsByHash[hash][doc._id] = doc._rev;
         Object.assign(purgedDocsByHash[hash], doc.ids);
-        knownIds.push(...Object.keys(doc.ids), serverSidePurgeUtils.extractId(doc._id));
+        knownIds.push(...Object.keys(doc.ids));
       }
     }
 
-    const unknownIds = [...ids];
+    const unknownIds = [...Object.keys(groups), ...ids].filter(id => !knownIds.includes(id));
     if (!unknownIds.length) {
       continue;
     }
@@ -175,7 +175,7 @@ const getPurgedGroup = (group, alreadyPurged, toPurge) => {
 
   const doc = {
     _id: purgedContactDocId,
-    _rev: alreadyPurged[contactId],
+    _rev: alreadyPurged[purgedContactDocId],
   };
 
   if (!group.ids.length) {
@@ -189,8 +189,10 @@ const getPurgedGroup = (group, alreadyPurged, toPurge) => {
   };
 };
 
-const getPurgeUpdates = (ids, alreadyPurged, toPurge) => {
+const getPurgeUpdates = (groups, ids, alreadyPurged, toPurge) => {
   const docs = [];
+  ids = [...ids, ...Object.keys(groups)];
+
   for (const id of ids) {
 
     // do nothing if purge state is unchanged
@@ -208,7 +210,7 @@ const getPurgeUpdates = (ids, alreadyPurged, toPurge) => {
 
 const updatePurgedDocs = async (rolesHashes, groups, ids, alreadyPurged, toPurge) => {
   for (const hash of rolesHashes) {
-    const docs = getPurgeUpdates(ids, alreadyPurged[hash], toPurge[hash]);
+    const docs = getPurgeUpdates(groups, ids, alreadyPurged[hash], toPurge[hash]);
 
     if (docs.length) {
       const results =  await bulkDocs(getPurgeDb(hash), docs);
@@ -234,6 +236,10 @@ const bulkDocs = async (dbInstance, docs) => {
 
     return doc;
   });
+
+  if (!docs.length) {
+    return [];
+  }
 
   const results = await dbInstance.bulkDocs({ docs });
   const conflicts = results.filter(result => result.error === 'conflict');
@@ -272,13 +278,24 @@ const getRecordGroupInfo = (hit) => {
  * @returns {Promise<void>}
  */
 const getRecordsForContacts = async (groups, subjectIds) => {
-  const results = [];
+  let results = [];
   const subjectsCopy = [...subjectIds];
-  do {
+  while (subjectsCopy.length && results.length < MAX_BATCH_SIZE) {
     const batch = subjectsCopy.splice(0, nouveau.BATCH_LIMIT);
     const batchResults = await getRecordsForContactsBatch(batch);
-    results.push(...batchResults);
-  } while (subjectsCopy.length && results.length < MAX_BATCH_SIZE);
+
+    // Check if adding these results would exceed the limit
+    if (results.length + batchResults.length >= MAX_BATCH_SIZE) {
+      // Only add results up to the limit
+      const remainingSpace = MAX_BATCH_SIZE - results.length;
+      if (remainingSpace > 0) {
+        results = results.concat(batchResults.slice(0, remainingSpace));
+      }
+      break;
+    }
+
+    results = results.concat(batchResults);
+  }
 
   logger.info(`Found ${results.length} records`);
   if (results.length >= MAX_BATCH_SIZE) {
@@ -325,8 +342,19 @@ const getRecordsForContactsBatch = async (subjectIds) => {
     });
 
     bookmark = result.bookmark;
+
+    // Check if adding these results would exceed the limit
+    if (results.length + result.hits.length >= MAX_BATCH_SIZE) {
+      // Only add results up to the limit
+      const remainingSpace = MAX_BATCH_SIZE - results.length;
+      if (remainingSpace > 0) {
+        results = results.concat(result.hits.slice(0, remainingSpace));
+      }
+      break;
+    }
+
     results = results.concat(result.hits);
-    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
+    requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT;
   } while (requestNext);
 
   return results;
@@ -382,9 +410,6 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
   Object.values(groups).forEach(group => {
     rolesHashes.forEach(hash => {
       toPurge[hash] = toPurge[hash] || {};
-      if (!group.ids.length) {
-        return;
-      }
 
       const idsToPurge = purgeFn(
         { roles: roles[hash] },
@@ -422,10 +447,7 @@ const batchedContactsPurge = async (roles, purgeFn, startKey = '', startKeyDocId
   let nextKeyDocId;
   let nextKey;
   let nextBatch = false;
-  const groups = {};
-  const subjectIds = [];
   const rolesHashes = Object.keys(roles);
-  let docIds;
 
   logger.info(
     `Purging: Starting contacts batch: key "${startKey}", doc id "${startKeyDocId}", batch size ${contactsBatchSize}`
@@ -446,6 +468,9 @@ const batchedContactsPurge = async (roles, purgeFn, startKey = '', startKeyDocId
   // using `db.queryMedic` library because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
   try {
+    const groups = {};
+    const subjectIds = [];
+
     const queryResult = await db.queryMedic('medic-client/contacts_by_type', queryString);
     queryResult.rows.forEach(row => {
       if (row.id === startKeyDocId) {
@@ -457,7 +482,7 @@ const batchedContactsPurge = async (roles, purgeFn, startKey = '', startKeyDocId
     });
 
     await getRecordsForContacts(groups, subjectIds);
-    docIds = getIdsFromGroups(groups);
+    const docIds = getIdsFromGroups(groups);
     const alreadyPurged = await getAlreadyPurgedDocs(rolesHashes, groups, docIds);
 
     const toPurge = getDocsToPurge(purgeFn, groups, roles);

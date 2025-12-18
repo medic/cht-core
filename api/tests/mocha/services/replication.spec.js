@@ -48,7 +48,7 @@ describe('Initial Replication service', () => {
         [authContext, docsByReplicationKey],
         [authContext, docsByReplicationKey, { includeTasks: false }],
       ]);
-      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, [1, 2, 3, 'purged']]]);
+      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[authContext, [1, 2, 3, 'purged']]]);
       expect(db.medic.info.callCount).to.equal(1);
       expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3]]);
     });
@@ -72,7 +72,7 @@ describe('Initial Replication service', () => {
         lastSeq: '222-bbb',
       });
 
-      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, allDocsIds]]);
+      expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[authContext, allDocsIds]]);
       expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, allDocsIds.length]]);
     });
 

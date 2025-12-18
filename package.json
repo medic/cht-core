@@ -46,7 +46,7 @@
     "unit-couchdb": "cd couchdb/tests && make test",
     "unit": "node scripts/build/cli npmCiModules && npm run unit-webapp && npm run unit-admin && npm run unit-shared-lib && npm run unit-api && npm run unit-sentinel && npm run unit-couchdb",
     "unit-admin": "node ./scripts/ci/run-karma.js",
-    "unit-api": "UNIT_TEST_ENV=1 nyc --nycrcPath='api/nyc.config.js' mocha 'api/tests/mocha/services/sso-login.spec.js' 'api/tests/mocha/**/*.js'",
+    "unit-api": "UNIT_TEST_ENV=1 nyc --nycrcPath='api/nyc.config.js' mocha --config mocharc.js 'api/tests/mocha/services/sso-login.spec.js' 'api/tests/mocha/**/*.js'",
     "unit-sentinel": "UNIT_TEST_ENV=1 nyc --nycrcPath='sentinel/nyc.config.js' mocha 'sentinel/tests/**/*.js'",
     "unit-shared-lib": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
     "unit-webapp": "cd webapp && npm run unit:mocha:tz && npm run unit -- --watch=false && npm run unit:cht-form -- --watch=false",
