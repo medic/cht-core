@@ -237,7 +237,7 @@ describe('Purged Docs service', () => {
         });
     });
 
-    it('should request allDocs from correct purge db depending on roles and save cache without group purging', () => {
+    it('should request allDocs from correct purge db depending on roles and save cache', () => {
       sinon.stub(config, 'get').returns({});
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');

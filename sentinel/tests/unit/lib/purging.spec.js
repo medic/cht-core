@@ -74,6 +74,106 @@ describe('ServerSidePurge', () => {
     });
   });
 
+  describe('getPurgeUpdates', () => {
+    it('should return empty when purge state is unchanged', () => {
+      const groups = { c1: { contact: { _id: 'c1' }}};
+      const ids = ['r1'];
+      const alreadyPurged = { 'r1': '1-rev', 'c1': '2-rev' };
+      const toPurge = { 'r1': true, 'c1': true };
+      const res = service.__get__('getPurgeUpdates')(groups, ids, alreadyPurged, toPurge);
+      chai.expect(res).to.deep.equal([]);
+    });
+
+    it('should create docs for state changes including deletions', () => {
+      const groups = { c1: { contact: { _id: 'c1' }}};
+      const ids = ['r1', 'r2'];
+      const alreadyPurged = { 'r1': '1-rev', 'c1': '2-rev' };
+      const toPurge = { 'r1': false, 'r2': true, 'c1': false };
+      const res = service.__get__('getPurgeUpdates')(groups, ids, alreadyPurged, toPurge);
+      chai.expect(res).to.have.deep.members([
+        { _id: 'purged:r1', _rev: '1-rev', _deleted: true }, // toggled off -> delete
+        { _id: 'purged:r2', _deleted: false }, // new purge -> create
+        { _id: 'purged:c1', _rev: '2-rev', _deleted: true }, // group id appears via groups keys
+      ]);
+    });
+  });
+
+  describe('bulkDocs', () => {
+    it('should filter invalid docs and strip fields, and return results', async () => {
+      const bulkDocsStub = sinon.stub().resolves([
+        { id: 'purged:r2', rev: '3-rev' },
+      ]);
+      const fakeDb = { bulkDocs: (args) => bulkDocsStub(args) };
+
+      const input = [
+        null,
+        undefined,
+        { _id: 'purged:r1', _deleted: true }, // no _rev -> filtered out
+        { _id: 'purged:r2', _rev: '2-rev', _deleted: false }, // should remove _deleted
+        { _id: 'purged:r3' }, // should remove empty _rev
+      ];
+
+      const results = await service.__get__('bulkDocs')(fakeDb, input);
+      chai.expect(bulkDocsStub.callCount).to.equal(1);
+      chai.expect(bulkDocsStub.args[0][0]).to.deep.equal({
+        docs: [
+          { _id: 'purged:r2', _rev: '2-rev' },
+          { _id: 'purged:r3' },
+        ]
+      });
+      chai.expect(results).to.deep.equal([{ id: 'purged:r2', rev: '3-rev' }]);
+    });
+
+    it('should throw on conflicts', async () => {
+      const bulkDocsStub = sinon.stub().resolves([
+        { id: 'purged:r2', rev: '3-rev' },
+        { id: 'purged:r3', error: 'conflict' },
+        { id: 'purged:r4', error: 'conflict' },
+      ]);
+      const fakeDb = { bulkDocs: (args) => bulkDocsStub(args) };
+
+      try {
+        await service.__get__('bulkDocs')(fakeDb, [ { _id: 'purged:r2' }, { _id: 'purged:r3' }, { _id: 'purged:r4' } ]);
+        throw new Error('expected error');
+      } catch (e) {
+        chai.expect(e.message).to.contain('Conflicts while purging');
+        chai.expect(e.message).to.contain('purged:r3');
+        chai.expect(e.message).to.contain('purged:r4');
+      }
+    });
+  });
+
+  describe('assignRecordsToGroups', () => {
+    it('should assign records by subject to existing group and standalone for missing subject', () => {
+      const groups = {
+        c1: { contact: { _id: 'c1' }, reports: [], messages: [], ids: [], subjectIds: ['subj-1'] },
+      };
+
+      const hits = [
+        // report with subject maps to c1
+        { fields: { subject: 'subj-1' }, doc: { _id: 'r1', form: 'X' } },
+        // message with key not matching any group -> ignored until assignment
+        { fields: { key: 'phone:+1' }, doc: { _id: 'm1' } },
+        // report with missing subject -> standalone
+        { fields: {}, doc: { _id: 'r2', form: 'Y' } },
+      ];
+
+      service.__get__('assignRecordsToGroups')(hits, groups);
+
+      chai.expect(groups.c1.reports.map(r => r._id)).to.deep.equal(['r1']);
+      chai.expect(groups.c1.messages).to.deep.equal([]); // message key didn’t match any subjectIds
+      chai.expect(groups['r2']).to.deep.include({ reports: [ { _id: 'r2', form: 'Y' } ] });
+      chai.expect(groups['r2'].messages).to.deep.equal([]);
+    });
+  });
+
+  describe('getRecordsForContactsBatch', () => {
+    it('should return empty for empty input', async () => {
+      const res = await service.__get__('getRecordsForContactsBatch')([]);
+      chai.expect(res).to.deep.equal([]);
+    });
+  });
+
   describe('getRoles', () => {
     beforeEach(() => {
       sinon.stub(db.users, 'allDocs');

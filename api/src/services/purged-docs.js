@@ -37,7 +37,7 @@ const getGroupPurgedIds = async (groupIds, purgeDb) => {
   let purgedIds = [];
   let allIds = [];
 
-  if (!groupIds) {
+  if (!groupIds?.length) {
     return { allIds, purgedIds };
   }
 
