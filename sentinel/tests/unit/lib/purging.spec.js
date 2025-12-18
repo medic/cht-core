@@ -92,7 +92,7 @@ describe('ServerSidePurge', () => {
       const res = service.__get__('getPurgeUpdates')(groups, ids, alreadyPurged, toPurge);
       chai.expect(res).to.have.deep.members([
         { _id: 'purged:r1', _rev: '1-rev', _deleted: true }, // toggled off -> delete
-        { _id: 'purged:r2', _deleted: false }, // new purge -> create
+        { _id: 'purged:r2', _deleted: false, _rev: undefined }, // new purge -> create
         { _id: 'purged:c1', _rev: '2-rev', _deleted: true }, // group id appears via groups keys
       ]);
     });
