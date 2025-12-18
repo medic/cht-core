@@ -44,7 +44,7 @@ export class TargetAggregatesService {
   private readonly getTargetIntervals: ReturnType<typeof TargetInterval.v1.getAll>;
 
   private getIntervalTag(targetInterval) {
-    return moment(targetInterval.end).format(this.INTERVAL_TAG_FORMAT);
+    return moment(targetInterval.end).locale('en').format(this.INTERVAL_TAG_FORMAT);
   }
 
   private getCurrentInterval(appSettings) {
