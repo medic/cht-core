@@ -50,7 +50,7 @@ describe('Initial Replication service', () => {
       ]);
       expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[authContext, [1, 2, 3, 'purged']]]);
       expect(db.medic.info.callCount).to.equal(1);
-      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3]]);
+      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3, 4]]);
     });
 
     it('should warn if there are too many allowed docs', async () => {
@@ -73,7 +73,7 @@ describe('Initial Replication service', () => {
       });
 
       expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[authContext, allDocsIds]]);
-      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, allDocsIds.length]]);
+      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, allDocsIds.length, allDocsIds.length]]);
     });
 
     it('should only warn about unpurged docs', async () => {

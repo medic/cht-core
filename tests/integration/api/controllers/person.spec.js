@@ -2,6 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { USER_ROLES } = require('@medic/constants');
 
 describe('Person API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -33,7 +34,7 @@ describe('Person API', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [USER_ROLES.ONLINE]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',

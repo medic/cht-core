@@ -1156,5 +1156,112 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone3', message: 'to district' }] },
       ]);
     });
+
+    it('should send to sender if field is not found and default_to_sender is set to true', async () => {
+      const settings = {
+        sms: {
+          default_to_sender: true
+        },
+        transitions: {
+          conditional_alerts: true,
+          update_clinics: true
+        },
+        alerts: [
+          {
+            form: 'FORM',
+            condition: 'true',
+            message: 'to patient',
+            recipient: 'patient.message_phone'
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'contact_chw5',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone1',
+          reported_date: new Date().getTime(),
+        }
+      ];
+
+      const [ contactChw1] = await processReportsAndSettings(reports, settings);
+      expectTasks(contactChw1, [
+        { messages: [{ to: 'phone1', message: 'to patient' }] }
+      ]);
+    });
+
+    it('should send to sender if recipent is empty and default_to_sender is set to false', async () => {
+      const settings = {
+        sms: {
+          default_to_sender: false
+        },
+        transitions: {
+          conditional_alerts: true,
+          update_clinics: true
+        },
+        alerts: [
+          {
+            form: 'FORM',
+            condition: 'true',
+            message: 'to patient',
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'contact_chw5',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone1',
+          reported_date: new Date().getTime(),
+        }
+      ];
+
+      const [ contactChw1] = await processReportsAndSettings(reports, settings);
+      expectTasks(contactChw1, [
+        { messages: [{ to: 'phone1', message: 'to patient' }] }
+      ]);
+    });
+
+    it('should not send to sender if field is not found and default_to_sender is set to false', async () => {
+      const settings = {
+        sms: {
+          default_to_sender: false
+        },
+        transitions: {
+          conditional_alerts: true,
+          update_clinics: true
+        },
+        alerts: [
+          {
+            form: 'FORM',
+            condition: 'true',
+            message: 'to patient',
+            recipient: 'patient.message_phone'
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'contact_chw5',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone1',
+          reported_date: new Date().getTime(),
+        }
+      ];
+
+      const [ contactChw1] = await processReportsAndSettings(reports, settings);
+      expectTasks(contactChw1, [
+        { messages: [{ to: 'patient.message_phone', message: 'to patient' }] }
+      ]);
+    });
   });
 });

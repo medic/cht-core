@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const { USER_ROLES } = require('@medic/constants');
 
 const config = require('../../src/libs/config');
 const roles = require('../../src/roles');
@@ -38,9 +39,9 @@ describe('roles', () => {
         ['_admin'],
         ['_admin', 'other_role'],
         ['chw', '_admin'],
-        ['mm-online'],
-        ['mm-online', 'other'],
-        ['not-mm-online', 'mm-online'],
+        [USER_ROLES.ONLINE],
+        [USER_ROLES.ONLINE, 'other'],
+        ['not-mm-online', USER_ROLES.ONLINE],
       ];
       scenarios.forEach(userRoles => {
         const message = `hasOnlineRole failed for ${userRoles}`;
@@ -62,8 +63,8 @@ describe('roles', () => {
     });
 
     it('should check for "mm-online" role', () => {
-      chai.expect(roles.isOnlineOnly({ roles: ['mm-online'] })).to.equal(true);
-      chai.expect(roles.isOnlineOnly({ roles: ['mm-online', 'offline'] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: [USER_ROLES.ONLINE] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: [USER_ROLES.ONLINE, 'offline'] })).to.equal(true);
     });
 
     it('should return false for non-admin roles', () => {

@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { SettingsService } from '@mm-services/settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import {DbService} from '@mm-services/db.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Languages service', () => {
   afterEach(() => {
@@ -23,7 +24,7 @@ describe('Languages service', () => {
       rows: [
         {
           id: 'messages-es',
-          key: ['translations'],
+          key: [DOC_TYPES.TRANSLATIONS],
           doc: {
             _id: 'messages-es',
             code: 'es',
@@ -34,7 +35,7 @@ describe('Languages service', () => {
         },
         {
           id: 'messages-en',
-          key: ['translations'],
+          key: [DOC_TYPES.TRANSLATIONS],
           doc: {
             _id: 'messages-en',
             code: 'en',
@@ -45,7 +46,7 @@ describe('Languages service', () => {
         },
         {
           id: 'messages-fr',
-          key: ['translations'],
+          key: [DOC_TYPES.TRANSLATIONS],
           doc: {
             _id: 'messages-fe',
             code: 'fr',
