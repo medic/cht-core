@@ -123,13 +123,9 @@ export class CHTDatasourceService {
    */
   bindGenerator<R, F extends (arg?: unknown) => AsyncGenerator<R>>(fn: (ctx: DataContext) => F): F {
     const self = this; // NOSONAR
-    let innerGen: AsyncGenerator<R>;
     return async function* (...p: Parameters<F>) {
-      if (!innerGen) {
-        await self.isInitialized();
-        innerGen = self.dataContext.bind(fn)(...p);
-      }
-      for await (const value of innerGen) {
+      await self.isInitialized();
+      for await (const value of self.dataContext.bind(fn)(...p)) {
         yield value;
       }
     } as F;
