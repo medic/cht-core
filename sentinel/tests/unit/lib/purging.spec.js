@@ -92,7 +92,7 @@ describe('ServerSidePurge', () => {
       const res = service.__get__('getPurgeUpdates')(groups, ids, alreadyPurged, toPurge);
       chai.expect(res).to.have.deep.members([
         { _id: 'purged:r1', _rev: '1-rev', _deleted: true }, // toggled off -> delete
-        { _id: 'purged:r2', _deleted: false }, // new purge -> create
+        { _id: 'purged:r2', _deleted: false, _rev: undefined }, // new purge -> create
         { _id: 'purged:c1', _rev: '2-rev', _deleted: true }, // group id appears via groups keys
       ]);
     });
@@ -141,6 +141,22 @@ describe('ServerSidePurge', () => {
         chai.expect(e.message).to.contain('purged:r4');
       }
     });
+
+    it('should return empty array when all docs are filtered out', async () => {
+      const bulkDocsStub = sinon.stub();
+      const fakeDb = { bulkDocs: (args) => bulkDocsStub(args) };
+
+      const input = [
+        null,
+        undefined,
+        { _id: 'purged:r1', _deleted: true }, // no _rev -> filtered out
+        { _id: 'purged:r2', _deleted: true }, // no _rev -> filtered out
+      ];
+
+      const results = await service.__get__('bulkDocs')(fakeDb, input);
+      chai.expect(bulkDocsStub.callCount).to.equal(0);
+      chai.expect(results).to.deep.equal([]);
+    });
   });
 
   describe('assignRecordsToGroups', () => {
@@ -171,6 +187,49 @@ describe('ServerSidePurge', () => {
     it('should return empty for empty input', async () => {
       const res = await service.__get__('getRecordsForContactsBatch')([]);
       chai.expect(res).to.deep.equal([]);
+    });
+
+    it('should paginate through results using bookmarks', async () => {
+      const nouveauModule = require('@medic/nouveau');
+      const MOCKED_RESULTS_LIMIT = 100;
+
+      sinon.stub(nouveauModule, 'RESULTS_LIMIT').value(MOCKED_RESULTS_LIMIT);
+      sinon.stub(environment, 'couchUrl').value('http://test:5984/medic');
+      sinon.stub(request, 'post');
+
+      // First batch must have exactly RESULTS_LIMIT hits to trigger pagination
+      const firstBatchHits = Array.from({ length: MOCKED_RESULTS_LIMIT }, (_, i) => ({
+        id: `doc${i}`,
+        fields: { subject: 'subject1', type: 'data_record' },
+        doc: { _id: `doc${i}`, form: 'test' }
+      }));
+
+      const secondBatchHits = Array.from({ length: 50 }, (_, i) => ({
+        id: `doc${i + MOCKED_RESULTS_LIMIT}`,
+        fields: { subject: 'subject1', type: 'data_record' },
+        doc: { _id: `doc${i + MOCKED_RESULTS_LIMIT}`, form: 'test' }
+      }));
+
+      request.post.onCall(0).resolves({
+        hits: firstBatchHits,
+        bookmark: 'bookmark1'
+      });
+
+      request.post.onCall(1).resolves({
+        hits: secondBatchHits,
+        bookmark: undefined
+      });
+
+      const res = await service.__get__('getRecordsForContactsBatch')(['subject1', 'subject2']);
+
+      chai.expect(res).to.have.lengthOf(MOCKED_RESULTS_LIMIT + 50);
+      chai.expect(request.post.callCount).to.equal(2);
+
+      // First call should not have bookmark
+      chai.expect(request.post.args[0][0].body).to.not.have.property('bookmark');
+
+      // Second call should include the bookmark from first response
+      chai.expect(request.post.args[1][0].body).to.have.property('bookmark', 'bookmark1');
     });
   });
 
@@ -504,6 +563,82 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeDbAllDocs.callCount).to.equal(2);
       });
     });
+
+    it('should skip unknown id check when all ids are in group documents', () => {
+      const hashes = ['hash1', 'hash2'];
+      const groups = {
+        'contact1': {
+          contact: { _id: 'contact1' },
+          ids: ['report1', 'report2'],
+        },
+      };
+      const ids = ['report1', 'report2'];
+
+      // First call fetches group documents for hash1
+      purgeDbAllDocs.onCall(0).resolves({
+        rows: [
+          {
+            doc: {
+              _id: 'purged-group:contact1',
+              _rev: '1-rev',
+              purged_contact: false,
+              ids: {
+                'report1': '1-rev',
+                'report2': '2-rev',
+                'contact1': '10-rev',  // Include contact1 in known ids
+              }
+            }
+          },
+        ]
+      });
+
+      // For hash1, all unknownIds (contact1, report1, report2) are in knownIds from group doc, so continue triggers
+
+      // Second call fetches group documents for hash2
+      purgeDbAllDocs.onCall(1).resolves({
+        rows: [
+          {
+            doc: {
+              _id: 'purged-group:contact1',
+              _rev: '3-rev',
+              purged_contact: false,
+              ids: {
+                'report1': '11-rev',
+              }
+            }
+          },
+        ]
+      });
+
+      // For hash2, contact1 and report2 are not in knownIds, so it needs unknownIds call
+      purgeDbAllDocs.onCall(2).resolves({
+        rows: [
+          { id: 'purged:contact1', value: { rev: '4-rev' } },
+          { id: 'purged:report2', value: { rev: '22-rev' } },
+        ]
+      });
+
+      return service.__get__('getAlreadyPurgedDocs')(hashes, groups, ids).then(results => {
+        chai.expect(results).to.deep.equalInAnyOrder({
+          'hash1': {
+            'report1': '1-rev',
+            'report2': '2-rev',
+            'contact1': '10-rev',
+            'purged-group:contact1': '1-rev',
+          },
+          'hash2': {
+            'report1': '11-rev',
+            'contact1': '4-rev',
+            'report2': '22-rev',
+            'purged-group:contact1': '3-rev',
+          }
+        });
+
+        // hash1: 1 call for groups (no unknownIds call because all ids are in knownIds)
+        // hash2: 1 call for groups + 1 call for unknownIds
+        chai.expect(purgeDbAllDocs.callCount).to.equal(3);
+      });
+    });
   });
 
   describe('getPurgedGroup', () => {
@@ -525,7 +660,7 @@ describe('ServerSidePurge', () => {
         'report3': true,
       };
 
-      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge);
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, undefined);
 
       chai.expect(result).to.deep.equal({
         _id: 'purged-group:contact1',
@@ -551,7 +686,7 @@ describe('ServerSidePurge', () => {
         'report1': true,
       };
 
-      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge);
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, undefined);
 
       chai.expect(result).to.deep.equal({
         _id: 'purged-group:contact1',
@@ -572,8 +707,12 @@ describe('ServerSidePurge', () => {
         'purged-group:contact1': '1-rev',
       };
       const toPurge = {};
+      const previousAlreadyPurged = {
+        'purged-group:contact1': '1-rev',
+        'contact1': false,
+      };
 
-      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge);
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, previousAlreadyPurged);
 
       chai.expect(result).to.deep.equal({
         _id: 'purged-group:contact1',
@@ -599,7 +738,7 @@ describe('ServerSidePurge', () => {
         'report3': false, // Was purged but shouldn't be anymore
       };
 
-      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge);
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, undefined);
 
       chai.expect(result).to.deep.equal({
         _id: 'purged-group:contact1',
@@ -611,6 +750,139 @@ describe('ServerSidePurge', () => {
           'report3': false, // toPurge is false so result is false
           'report4': false,
         }
+      });
+    });
+
+    it('should return undefined when contents are identical to previous state', () => {
+      const group = {
+        contact: { _id: 'contact1' },
+        ids: ['report1', 'report2'],
+      };
+      const alreadyPurged = {
+        'report1': '1-rev',
+        'report2': '2-rev',
+        'purged-group:contact1': '5-rev',
+      };
+      const toPurge = {
+        'report1': true,
+        'report2': true,
+      };
+      const previousAlreadyPurged = {
+        'report1': '1-rev',
+        'report2': '2-rev',
+        'purged-group:contact1': '5-rev',
+        'contact1': false,
+      };
+
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, previousAlreadyPurged);
+
+      chai.expect(result).to.equal(undefined);
+    });
+
+    it('should return doc when purged_contact state changes', () => {
+      const group = {
+        contact: { _id: 'contact1' },
+        ids: ['report1'],
+      };
+      const alreadyPurged = {
+        'contact1': '10-rev',
+        'report1': '1-rev',
+        'purged-group:contact1': '5-rev',
+      };
+      const toPurge = {
+        'contact1': true,
+        'report1': true,
+      };
+      const previousAlreadyPurged = {
+        'report1': '1-rev',
+        'purged-group:contact1': '5-rev',
+        'contact1': false, // Was not purged before
+      };
+
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, previousAlreadyPurged);
+
+      chai.expect(result).to.deep.equal({
+        _id: 'purged-group:contact1',
+        _rev: '5-rev',
+        purged_contact: true,
+        ids: {
+          'report1': '1-rev',
+        }
+      });
+    });
+
+    it('should return doc when ids change', () => {
+      const group = {
+        contact: { _id: 'contact1' },
+        ids: ['report1', 'report2', 'report3'],
+      };
+      const alreadyPurged = {
+        'report1': '1-rev',
+        'report2': '2-rev',
+        'report3': '3-rev',
+        'purged-group:contact1': '5-rev',
+      };
+      const toPurge = {
+        'report1': true,
+        'report2': true,
+        'report3': true,
+      };
+      const previousAlreadyPurged = {
+        'report1': '1-rev',
+        'report2': '2-rev',
+        // report3 wasn't in the previous state
+        'purged-group:contact1': '5-rev',
+        'contact1': false,
+      };
+
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, previousAlreadyPurged);
+
+      chai.expect(result).to.deep.equal({
+        _id: 'purged-group:contact1',
+        _rev: '5-rev',
+        purged_contact: false,
+        ids: {
+          'report1': '1-rev',
+          'report2': '2-rev',
+          'report3': '3-rev',
+        }
+      });
+    });
+
+    it('should return undefined when no previous doc and no ids', () => {
+      const group = {
+        contact: { _id: 'contact1' },
+        ids: [],
+      };
+      const alreadyPurged = {};
+      const toPurge = {};
+      const previousGroupDoc = undefined;
+
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, previousGroupDoc);
+
+      chai.expect(result).to.equal(undefined);
+    });
+
+    it('should return deletion doc when previous doc exists but no ids', () => {
+      const group = {
+        contact: { _id: 'contact1' },
+        ids: [],
+      };
+      const alreadyPurged = {
+        'purged-group:contact1': '1-rev',
+      };
+      const toPurge = {};
+      const previousAlreadyPurged = {
+        'purged-group:contact1': '1-rev',
+        'contact1': false,
+      };
+
+      const result = service.__get__('getPurgedGroup')(group, alreadyPurged, toPurge, previousAlreadyPurged);
+
+      chai.expect(result).to.deep.equal({
+        _id: 'purged-group:contact1',
+        _rev: '1-rev',
+        _deleted: true,
       });
     });
   });

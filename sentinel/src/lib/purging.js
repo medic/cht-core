@@ -169,24 +169,43 @@ const getPurgeFn = () => {
   return purgeFn;
 };
 
-const getPurgedGroup = (group, alreadyPurged, toPurge) => {
+const getPurgedGroup = (group, currentlyPurged, toPurge, previouslyPurged) => {
   const contactId = group.contact._id;
   const purgedContactDocId = serverSidePurgeUtils.getPurgedGroupId(contactId);
 
   const doc = {
     _id: purgedContactDocId,
-    _rev: alreadyPurged[purgedContactDocId],
+    _rev: currentlyPurged?.[purgedContactDocId],
   };
 
   if (!group.ids.length) {
-    return { _deleted: true, ...doc };
+    return previouslyPurged?.[purgedContactDocId] ? { _deleted: true, ...doc } : undefined;
+  }
+
+  const ids = Object.fromEntries(group.ids.map(id => [id,  (toPurge[id] && currentlyPurged[id]) || false]));
+  if (previouslyPurged?.[purgedContactDocId]) {
+    const previousIds = Object.fromEntries(group.ids.map(id => [id, previouslyPurged[id] || false]));
+    if (!!previouslyPurged[contactId] === !!toPurge[contactId] && areGroupIdsIdentical(ids, previousIds)) {
+      return;
+    }
   }
 
   return {
     ...doc,
-    purged_contact: toPurge[contactId] || false,
-    ids: Object.fromEntries(group.ids.map(id => [id,  (toPurge[id] && alreadyPurged[id]) || false])),
+    purged_contact: !!toPurge[contactId],
+    ids: ids,
   };
+};
+
+const areGroupIdsIdentical = (ids1, ids2) => {
+  if (ids1.length !== ids2.length) {
+    return false;
+  }
+
+  const sortedIds1 = Object.keys(ids1).sort();
+  const sortedIds2 = Object.keys(ids2).sort();
+
+  return sortedIds1.every((key, idx) => key === sortedIds2[idx] && ids1[key] === ids2[key]);
 };
 
 const getPurgeUpdates = (groups, ids, alreadyPurged, toPurge) => {
@@ -210,17 +229,24 @@ const getPurgeUpdates = (groups, ids, alreadyPurged, toPurge) => {
 
 const updatePurgedDocs = async (rolesHashes, groups, ids, alreadyPurged, toPurge) => {
   for (const hash of rolesHashes) {
+    const currentlyPurged = { ...alreadyPurged[hash] };
     const docs = getPurgeUpdates(groups, ids, alreadyPurged[hash], toPurge[hash]);
 
     if (docs.length) {
       const results =  await bulkDocs(getPurgeDb(hash), docs);
       for (const result of results) {
-        alreadyPurged[hash][serverSidePurgeUtils.extractId(result.id)] = result.rev;
+        currentlyPurged[serverSidePurgeUtils.extractId(result.id)] = result.rev;
       }
     }
 
-    const groupDocs = Object.values(groups).map(group => getPurgedGroup(group, alreadyPurged[hash], toPurge[hash]));
-    await bulkDocs(getPurgeDb(hash), groupDocs);
+    const groupDocs = Object
+      .values(groups)
+      .map(group => getPurgedGroup(group, currentlyPurged, toPurge[hash], alreadyPurged[hash]))
+      .filter(Boolean);
+
+    if (groupDocs.length) {
+      await bulkDocs(getPurgeDb(hash), groupDocs);
+    }
   }
 };
 
