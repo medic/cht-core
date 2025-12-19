@@ -161,20 +161,46 @@ describe('local doc lib', () => {
     });
   });
 
-  it('getDocUuidsByIdRange - returns ids found in the given range', async () => {
-    const startKey = 'doc0';
-    const endKey = 'doc3';
-    dbAllDocs.resolves({
-      rows: [
-        { id: startKey },
-        { id: 'doc1' },
-        { id: 'doc2' }
-      ]
+  describe('getDocUuidsByIdRange', () => {
+    it('returns ids found in the given range', async () => {
+      const startkey = 'doc0';
+      const endkey = 'doc3';
+      dbAllDocs.resolves({
+        rows: [
+          { id: startkey },
+          { id: 'doc1' },
+          { id: 'doc2' }
+        ]
+      });
+
+      const result = await getDocUuidsByIdRange(db)(startkey, endkey);
+
+      expect(result).to.deep.equal([startkey, 'doc1', 'doc2']);
+      expect(dbAllDocs).to.be.calledOnceWithExactly({
+        startkey,
+        endkey,
+        include_docs: false,
+        limit: undefined,
+        skip: 0
+      });
     });
 
-    const result = await getDocUuidsByIdRange(db)(startKey, endKey);
+    it('returns an empty array if no ids are found', async () => {
+      const startkey = 'doc0';
+      const endkey = 'doc3';
+      dbAllDocs.resolves({ rows: [] });
 
-    expect(result).to.deep.equal([startKey, 'doc1', 'doc2']);
+      const result = await getDocUuidsByIdRange(db)(startkey, endkey);
+
+      expect(result).to.deep.equal([]);
+      expect(dbAllDocs).to.be.calledOnceWithExactly({
+        startkey,
+        endkey,
+        include_docs: false,
+        limit: undefined,
+        skip: 0
+      });
+    });
   });
 
   describe('queryDocsByRange', () => {
