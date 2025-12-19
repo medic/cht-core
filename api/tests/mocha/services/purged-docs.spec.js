@@ -1,5 +1,3 @@
-const chai = require('chai');
-const sinon = require('sinon');
 const rewire = require('rewire');
 
 const db = require('../../../src/db');
@@ -154,13 +152,13 @@ describe('Purged Docs service', () => {
 
   describe('getPurgedIds', () => {
     it('should return empty list when no ids provided', () => {
-      return service.getPurgedIds(['a', 'b']).then(result => {
+      return service.getPurgedIds({ roles: ['a', 'b'] }).then(result => {
         chai.expect(result).to.deep.equal([]);
       });
     });
 
     it('should return empty when no roles provided', () => {
-      return service.getPurgedIds({ }, ['a']).then(result => {
+      return service.getPurgedIds({ roles: [] }, ['a']).then(result => {
         chai.expect(result).to.deep.equal([]);
       });
     });
@@ -240,6 +238,7 @@ describe('Purged Docs service', () => {
     });
 
     it('should request allDocs from correct purge db depending on roles and save cache', () => {
+      sinon.stub(config, 'get').returns({});
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
       sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
@@ -279,6 +278,95 @@ describe('Purged Docs service', () => {
       });
     });
 
+    it('should request allDocs from correct purge db with group purging', async () => {
+      sinon.stub(config, 'get').returns({ use_grouping: true });
+      const ids = ['1', '2', '3', '4', '5', '6', 'contact3'];
+      const groupIds = ['contact1', 'contact2', 'contact3', 'contact4'];
+      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
+      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
+
+      sinon.stub(purgedDocsCache, 'get').resolves();
+      sinon.stub(purgedDocsCache, 'set').resolves();
+
+      const purgeDb = { allDocs: sinon.stub() };
+      sinon.stub(db, 'exists').resolves(purgeDb);
+      sinon.stub(db, 'close');
+      purgeDb.allDocs.onCall(0).resolves({
+        rows: [
+          {
+            id: 'purged-group:contact1',
+            doc: {
+              _id: 'purged-group:contact1',
+              purged_contact: false,
+              ids: {
+                '1': '1-fdsjfkds',
+                '2': false,
+                'unrelated': '2-fdsfds'
+              }
+            }
+          },
+          {
+            id: 'purged-group:contact2',
+            doc: {
+              _id: 'purged-group:contact2',
+              purged_contact: false,
+              ids: {
+                '3': false,
+                '4': '4-rev',
+                'unrelated2': '2-fdsfds',
+                'unrelated3': false,
+              }
+            }
+          },
+          {
+            id: 'purged-group:contact3',
+            doc: {
+              _id: 'purged-group:contact3',
+              purged_contact: true,
+              ids: {
+                '5': '4-rev',
+                'unrelated4': '2-fdsfds',
+                'unrelated5': false,
+              }
+            }
+          },
+          {
+            key: 'contact4',
+            error: 'not_found',
+          }
+        ]
+      });
+      purgeDb.allDocs.onCall(1).resolves({
+        rows: [
+          { id: 'purged:6', value: { rev: '2-rev' } },
+        ]
+      });
+
+      const purgedIds = await service.getPurgedIds({ roles: [ 'a', 'b' ], name: 'jerry' }, ids, true, groupIds);
+      chai.expect(purgedIds).to.have.members(['1', '4', '5', '6', 'contact3']);
+
+      chai.expect(purgedDocsCache.get.args).to.deep.equal([['jerry']]);
+
+      chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
+      chai.expect(purgingUtils.getPurgeDbName.args[0]).to.deep.equal([environment.db, 'some_random_hash']);
+      chai.expect(purgingUtils.getRoleHash.callCount).to.equal(1);
+      chai.expect(purgingUtils.getRoleHash.args[0]).to.deep.equal([['a', 'b']]);
+      chai.expect(purgeDb.allDocs.callCount).to.equal(2);
+
+      chai.expect(purgeDb.allDocs.args[0]).to.deep.equal([{
+        keys: ['purged-group:contact1', 'purged-group:contact2', 'purged-group:contact3', 'purged-group:contact4'],
+        include_docs: true,
+      }]);
+
+      chai.expect(purgeDb.allDocs.args[1]).to.deep.equal([{
+        keys: ['purged:6']
+      }]);
+
+      chai.expect(purgedDocsCache.set.args).to.deep.equal([['jerry', purgedIds]]);
+      chai.expect(db.close.callCount).to.equal(1);
+      chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
+    });
+
     it('should throw other cache update errors', async () => {
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
@@ -305,7 +393,8 @@ describe('Purged Docs service', () => {
       }
     });
 
-    it('should skip deleted purges', () => {
+    it('should skip deleted purges without group purges', () => {
+      sinon.stub(config, 'get').returns({});
       const ids = ['1', '2', '3', '4', '5', '6'];
       sinon.stub(purgedDocsCache, 'get').resolves();
       sinon.stub(purgedDocsCache, 'set').resolves();
@@ -359,10 +448,15 @@ describe('Purged Docs service', () => {
       const purgedIds = ['f', 'a', 'd'];
       service.__set__('getPurgedIds', sinon.stub().resolves(purgedIds));
       //sinon.stub(service, 'getPurgedIds').resolves(purgedIds);
-      return service.getUnPurgedIds(['a', 'b'], ids).then(result => {
+      return service.getUnPurgedIds({ userCtx: { roles: [ 'a', 'b' ] } }, ids).then(result => {
         chai.expect(result).to.deep.equal(_.difference(ids, purgedIds));
         chai.expect(service.__get__('getPurgedIds').callCount).to.equal(1);
-        chai.expect(service.__get__('getPurgedIds').args[0]).to.deep.equal([['a', 'b'], ids]);
+        chai.expect(service.__get__('getPurgedIds').args[0]).to.deep.equal([
+          { roles: ['a', 'b'] },
+          ids,
+          true,
+          undefined
+        ]);
       });
     });
   });

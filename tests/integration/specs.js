@@ -11,5 +11,6 @@ module.exports = {
     'tests/integration/api/controllers/bulk-get.spec.js',
     'tests/integration/api/controllers/db-doc.spec.js',
     'tests/integration/api/controllers/replication.spec.js',
+    'tests/integration/sentinel/schedules/purging.spec.js',
   ]
 };

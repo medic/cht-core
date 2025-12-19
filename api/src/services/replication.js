@@ -10,7 +10,7 @@ const getContext = async (userCtx) => {
   const docsByReplicationKey = await authorization.getDocsByReplicationKey(authContext);
 
   const allowedIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey);
-  const unpurgedIds = await purgedDocs.getUnPurgedIds(userCtx, allowedIds);
+  const unpurgedIds = await purgedDocs.getUnPurgedIds(authContext, allowedIds);
 
   const excludeTasks = { includeTasks: false };
   const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTasks);
@@ -34,6 +34,12 @@ const getDocIdsRevPairs = async (docIds) => {
     .map(row => ({ id: row.id, rev: row.value.rev }));
 };
 
+/**
+ *
+ * @param {userCtx} userCtx
+ * @param {string[]} docIds
+ * @returns {Promise<string[]|*[]>}
+ */
 const getDocIdsToDelete = async (userCtx, docIds) => {
   if (!docIds.length) {
     return [];
