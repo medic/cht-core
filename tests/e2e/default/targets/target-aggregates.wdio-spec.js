@@ -222,6 +222,7 @@ describe('Target aggregates', () => {
             owner: contact._id,
             user: 'irrelevant',
             date_updated: `yesterday ${contact.name}`,
+            updated_date: Date.now(),
           }));
         };
         const targetDocs = [
@@ -318,6 +319,7 @@ describe('Target aggregates', () => {
             owner: contact._id,
             user: 'irrelevant',
             date_updated: `yesterday ${contact.name}`,
+            updated_date: Date.now(),
           }));
         };
         const targetDocs = [
