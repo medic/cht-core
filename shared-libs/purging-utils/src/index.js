@@ -1,6 +1,7 @@
 const crypto = require('crypto');
+const { USER_ROLES } = require('@medic/constants');
 
-const ONLINE_ROLE = 'mm-online';
+const ONLINE_ROLE = USER_ROLES.ONLINE;
 const DB_ADMIN_ROLE = '_admin';
 
 const sortedUniqueRoles = roles => ([...new Set(roles)].sort());
