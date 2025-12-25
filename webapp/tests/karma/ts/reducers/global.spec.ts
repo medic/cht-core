@@ -366,4 +366,51 @@ describe('Global Reducer', () => {
       storageInfo: { status: StorageStatus.NORMAL, availableBytes: 50, storageUsagePercentage: 50 },
     });
   });
+
+  it('should set bubble counter', () => {
+    const bubbleCounter = { report: 5, message: 3 };
+    state = globalReducer(state, Actions.setBubbleCounter(bubbleCounter));
+
+    expect(state).to.deep.equal({
+      bubbleCounter: { report: 5, message: 3 },
+    });
+  });
+
+  it('should replace bubble counter when set again', () => {
+    state = { bubbleCounter: { report: 5, message: 3 } };
+    const newBubbleCounter = { report: 10, message: 7, task: 2 };
+    state = globalReducer(state, Actions.setBubbleCounter(newBubbleCounter));
+
+    expect(state).to.deep.equal({
+      bubbleCounter: { report: 10, message: 7, task: 2 },
+    });
+  });
+
+  it('should update bubble counter by merging with existing values', () => {
+    state = { bubbleCounter: { report: 5, message: 3 } };
+    const updates = { report: 4 };
+    state = globalReducer(state, Actions.updateBubbleCounter(updates));
+
+    expect(state).to.deep.equal({
+      bubbleCounter: { report: 4, message: 3 },
+    });
+  });
+
+  it('should update bubble counter with new properties', () => {
+    state = { bubbleCounter: { report: 5 } };
+    const updates = { message: 10, task: 2 };
+    state = globalReducer(state, Actions.updateBubbleCounter(updates));
+
+    expect(state).to.deep.equal({
+      bubbleCounter: { report: 5, message: 10, task: 2 },
+    });
+  });
+
+  it('should handle empty bubble counter', () => {
+    state = globalReducer(state, Actions.setBubbleCounter({}));
+
+    expect(state).to.deep.equal({
+      bubbleCounter: {},
+    });
+  });
 });

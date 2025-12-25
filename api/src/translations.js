@@ -7,9 +7,10 @@ const logger = require('@medic/logger');
 const util = require('util');
 const path = require('path');
 const settingsService = require('./services/settings');
+const { DOC_TYPES } = require('@medic/constants');
 
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
-const DOC_TYPE = 'translations';
+const DOC_TYPE = DOC_TYPES.TRANSLATIONS;
 const MESSAGES_DOC_ID_PREFIX = 'messages-';
 
 const parseProperties = util.promisify(properties.parse);
