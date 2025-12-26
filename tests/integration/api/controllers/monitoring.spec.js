@@ -1,6 +1,3 @@
-const chai = require('chai');
-const chaiExclude = require('chai-exclude');
-chai.use(chaiExclude);
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 
@@ -10,7 +7,6 @@ const VIEW_INDEXES_BY_DB = {
     'medic-admin',
     'medic-client',
     'medic-conflicts',
-    'medic-scripts',
     'medic-sms',
   ],
   'medic-test-sentinel': ['sentinel'],
@@ -19,7 +15,7 @@ const VIEW_INDEXES_BY_DB = {
 };
 
 const NOUVEAU_INDEXES_BY_DB = {
-  'medic-test': ['medic/contacts_by_freetext', 'medic/reports_by_freetext'],
+  'medic-test': ['medic/contacts_by_freetext', 'medic/reports_by_freetext', 'medic/docs_by_replication_key'],
 };
 
 const getAppVersion = async () => {
@@ -88,7 +84,10 @@ const assertIndeterminateFields = (result) => {
 };
 
 describe('monitoring', () => {
-  beforeEach(() => sentinelUtils.waitForSentinel());
+  beforeEach(async () => {
+    await utils.waitForIndexes();
+    await sentinelUtils.waitForSentinel();
+  });
   afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {

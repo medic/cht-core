@@ -9,7 +9,7 @@ ingress:
   annotations:
     groupname: "dev-cht-alb" # DEFAULT: Good default for EKS dev environment
     tags: "Environment=dev,Team=QA" # DEFAULT: Good default for EKS dev environment
-    certificate: "arn:aws:iam::720541322708:server-certificate/2024-wildcard-dev-medicmobile-org-chain" # DEFAULT: Good default for EKS dev environment
+    certificate: "arn:aws:iam::720541322708:server-certificate/2026-q1-wildcard-dev-medicmobile-org-letsencrypt" # DEFAULT: Good default for EKS dev environment
   # Ensure the host is not already taken. Valid characters for a subdomain are:
   #   a-z, 0-9, and - (but not as first or last character).
   host: "<subdomain>.dev.medicmobile.org"  # # REQUIRED: User must set this (e.g. "mrjones.dev.medicmobile.org")

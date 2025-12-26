@@ -188,6 +188,7 @@ const baseConfig = {
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
+  // specFileRetries: DEBUG ? 0 : 5,
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
@@ -297,7 +298,11 @@ const baseConfig = {
   afterTest: async (test, context, { passed }) => {
     await utils.apiLogTestEnd(test.title);
     if (passed === false) {
-      await browser.takeScreenshot();
+      try {
+        await browser.takeScreenshot();
+      } catch (screenshotError) {
+        console.warn('Failed to take screenshot during error handling:', screenshotError);
+      }
     }
 
     const savedFeedbackDocs = await utils.logFeedbackDocs(test);

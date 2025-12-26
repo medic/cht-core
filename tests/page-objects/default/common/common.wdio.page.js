@@ -20,6 +20,8 @@ const hamburgerMenuSelectors = {
   appManagementButton: () => $('aria/App Management'),
   syncButton: () => $('aria/Sync now'),
   syncSuccess: () => $('aria/All reports synced'),
+  syncFailed: () => $('aria/Reports to sync'),
+  syncUnknown: () => $('aria/Unable to connect'),
   syncInProgress: () => $('mat-sidenav-content').$('*="Currently syncing"'),
   aboutButton: () => $('aria/About'),
   trainingMaterialsButton: () => $('aria/Training materials'),
@@ -170,10 +172,14 @@ const waitForLoaderToDisappear = async (element) => {
 };
 
 const waitForLoaders = async () => {
-  await browser.waitUntil(async () => {
-    const visibleLoaders = await getVisibleLoaders();
-    return !visibleLoaders.length;
-  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
+  // get all loaders.
+  do {
+    await browser.waitUntil(async () => {
+      const visibleLoaders = await getVisibleLoaders();
+      return !visibleLoaders.length;
+    }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  } while ((await getVisibleLoaders()).length > 0);
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
@@ -184,11 +190,8 @@ const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
   await waitForAngularLoaded();
-  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
-  // get all loaders.
-  do {
-    await waitForLoaders();
-  } while ((await getVisibleLoaders()).length > 0);
+
+  await waitForLoaders();
 };
 
 const clickFastActionById = async (id) => {
@@ -432,11 +435,14 @@ const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT
     }
     await openHamburgerMenu();
 
-    if (!await hamburgerMenuSelectors.syncSuccess().isDisplayed()) {
+    if (await hamburgerMenuSelectors.syncFailed().isDisplayed() ||
+        await hamburgerMenuSelectors.syncUnknown().isDisplayed()) {
       throw new Error('Failed to sync');
     }
   } catch (err) {
-    console.error(err);
+    if (err.message !== 'Failed to sync') {
+      console.error(err);
+    }
     return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
   }
 };

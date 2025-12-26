@@ -11,6 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
 const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
+const { USER_ROLES } = require('@medic/constants');
 
 describe('Create user for contacts', () => {
   const NEW_USERS = [];
@@ -41,7 +42,7 @@ describe('Create user for contacts', () => {
     username: `user_for_contacts_online_user`,
     place: DISTRICT._id,
     contact: USER_CONTACT,
-    roles: ['program_officer', 'mm-online'],
+    roles: ['program_officer', USER_ROLES.ONLINE],
   }));
 
   const SETTINGS = utils.deepFreeze({

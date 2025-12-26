@@ -59,6 +59,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
+
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
+
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
@@ -94,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['test-config-default']
+        cmd: ['test-config-covid-19', 'test-config-default', 'test-config-demo']
 
     steps:
     - uses: actions/checkout@v4
@@ -167,6 +171,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
 
       - name: Download docker images artifacts
         uses: actions/download-artifact@v4
@@ -296,6 +303,9 @@ jobs:
       working-directory: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
+    - name: Set system ulimit
+      uses: ./.github/actions/bump-system-ulimit
+
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
@@ -303,16 +313,7 @@ jobs:
     - name: Install cht-conf
       run:  npm install -g cht-conf
     - run: npm ci
-    - name: Fetch allure history
-      uses: actions/checkout@v4
-      with:
-        repository: 'medic/build-history-data'
-        path: 'build-history-data'
-        persist-credentials: false
-    - name: Copy allure history
-      run: |
-        mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ env.JOB_NAME }}/allure-report/history allure-results | true
+
     - name: Cache Chrome 90 Installer
       if: ${{ matrix.chrome-version == '90' }}
       id: cache-chrome
@@ -336,48 +337,6 @@ jobs:
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
-    - name: Fetch allure history
-      if: always()
-      uses: actions/checkout@v4
-      with:
-        repository: 'medic/build-history-data'
-        path: 'build-history-data-new'
-        persist-credentials: false
-    - name: Copy new allure history
-      if: always()
-      run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ env.JOB_NAME }}/allure-report | true
-    - name: Upload allure report history
-      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-      continue-on-error: true # don't fail the build if git push fails
-      uses: actions-js/push@master
-      with:
-        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-        directory: 'build-history-data-new'
-        repository: 'medic/build-history-data'
-        force: true
-    - name: Fetch report repo
-      if: always()
-      uses: actions/checkout@v4
-      with:
-        repository: 'medic/build-history'
-        path: 'build-history'
-        persist-credentials: false
-    - name: Copy new report
-      if: always()
-      run: |
-        mkdir -p build-history/cht-core/allure/${{ env.JOB_NAME }}
-        cp -r allure-report build-history/cht-core/allure/${{ env.JOB_NAME }} | true
-    - name: Upload allure report
-      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
-      continue-on-error: true # don't fail the build if git push fails
-      uses: actions-js/push@master
-      with:
-        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-        directory: 'build-history'
-        repository: 'medic/build-history'
-        force: true
     - name: Archive Results
       uses: actions/upload-artifact@v4
       with:
@@ -400,7 +359,7 @@ jobs:
     steps:
     - name: Install regctl
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: regclient/actions/regctl-installer@main
+      uses: regclient/actions/regctl-installer@df29323daedc1f78ee74b261bd8d849327cb4ff0
 
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
@@ -495,6 +454,10 @@ jobs:
           registry-type: public
           mask-password: 'true'
       - uses: actions/checkout@v4
+
+      - name: Set system ulimit
+        uses: ./.github/actions/bump-system-ulimit
+
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV

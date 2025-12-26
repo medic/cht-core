@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const dataFactory = require('@factories/cht/generate');
 const constants = require('@constants');
+const { DOC_IDS } = require('@medic/constants');
 
 const docs = dataFactory.createHierarchy({ name: 'base', user: true, nbrClinics: 2 });
 const docIds = [...docs.places, ...docs.persons, ...docs.reports].map(d => d._id);
@@ -41,6 +42,11 @@ describe('auditing', () => {
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.persons, ...docs.reports]);
     await utils.createUsers([docs.user]);
+  });
+
+  after(async () => {
+    await utils.deleteUsers([docs.user]);
+    await utils.revertDb([], true);
   });
 
   it('should audit created docs', async () => {
@@ -111,8 +117,8 @@ describe('auditing', () => {
 
       expect(auditAfter.audit.history.length).to.equal(auditBefore.audit.history.length + 1);
     });
-  }); 
-  
+  });
+
   describe('for offline users', () => {
     const auth = { username: docs.user.username, password: docs.user.password };
     it('should ignore GET', async () => {
@@ -209,7 +215,7 @@ describe('auditing', () => {
     });
 
     it('should not audit service worker cache', async () => {
-      const audit = await getAudit('service-worker-meta');
+      const audit = await getAudit(DOC_IDS.SERVICE_WORKER_META);
       expect(audit.audit).to.be.undefined;
     });
 

@@ -5,6 +5,7 @@ const db = require('../db');
 const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const deployInfoService = require('./deploy-info');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -19,7 +20,6 @@ const VIEW_INDEXES_TO_MONITOR = {
     'medic-admin',
     'medic-client',
     'medic-conflicts',
-    'medic-scripts',
     'medic-sms',
   ],
   sentinel: ['sentinel'],
@@ -32,6 +32,7 @@ const NOUVEAU_INDEXES_TO_MONITOR = {
     'medic': [
       'contacts_by_freetext',
       'reports_by_freetext',
+      'docs_by_replication_key'
     ],
   },
   sentinel: {},
@@ -70,7 +71,7 @@ const getAppVersion = async () => {
 
 const getSentinelProcessedSeq = () => {
   return db.sentinel
-    .get('_local/transitions-seq')
+    .get(SENTINEL_METADATA.TRANSITIONS_SEQ)
     .then(metadata => metadata.value)
     .catch(err => {
       if (err.status === 404) {

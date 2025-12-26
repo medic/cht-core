@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const DOC_TYPES = constants.DOC_TYPES;
 
 angular.module('controllers').controller('EditLanguageCtrl',
   function (
@@ -33,7 +35,7 @@ angular.module('controllers').controller('EditLanguageCtrl',
       rtl: false,
       generic: {},
       custom: {},
-      type: 'translations'
+      type: DOC_TYPES.TRANSLATIONS
     };
 
     $scope.submit = function() {
