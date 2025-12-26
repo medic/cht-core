@@ -10,8 +10,7 @@ const constants = require('@constants');
 
 describe('Training Materials Page', () => {
   it('admin User without contact should be able to complete training', async () => {
-    const trainingName = 'admin_welcome';
-    const trainingId = `training:${trainingName}`;
+    const trainingId = 'training:admin_welcome';
     const trainingTitle = 'Getting started';
 
     await utils.deleteDocs([constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id]);
@@ -19,11 +18,11 @@ describe('Training Materials Page', () => {
     await trainingCardsPage.waitForTrainingCards();
     expect(await trainingCardsPage.getTrainingTitle()).to.equal(trainingTitle);
 
-    const introCard = await trainingCardsPage.getCardContent(trainingName, 'welcome/instance_info:label"]');
+    const introCard = await trainingCardsPage.getCardContent('data', 'welcome/instance_info:label"]');
     expect(introCard).to.equal('Welcome to your new CHT instance! It is running the Maternal and Newborn Health app.');
-    const nextCard = await trainingCardsPage.getNextCardContent(trainingName, 'contacts/add_contacts:label"]');
+    const nextCard = await trainingCardsPage.getNextCardContent('data', 'contacts/add_contacts:label"]');
     expect(nextCard).to.equal('Get started by adding contacts and users.');
-    const lastCard = await trainingCardsPage.getNextCardContent(trainingName, 'community/intro:label"]');
+    const lastCard = await trainingCardsPage.getNextCardContent('data', 'community/intro:label"]');
     expect(lastCard).to.equal('The CHT is maintained by a community of people around the world.');
     await trainingCardsPage.submitTraining();
 
