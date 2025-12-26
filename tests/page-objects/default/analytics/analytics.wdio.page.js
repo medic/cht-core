@@ -3,6 +3,7 @@ const TARGET_UNMET_COLOR = '#000000';
 
 const goToTargets = () => browser.url('/#/analytics/targets');
 const noSelectedTarget = () => $('.empty-selection');
+const filterOptionLabel = () => $('.filter-option-label');
 const targets = () => $$('.target');
 const targetWrap = () => $('.page .targets');
 const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
@@ -59,6 +60,7 @@ const getTargets = async () => {
 
 module.exports = {
   noSelectedTarget,
+  filterOptionLabel,
   goToTargets,
   getTargets,
   emptySelectionError,
