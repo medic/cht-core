@@ -77,6 +77,7 @@ describe('RulesEngineService', () => {
       other: true,
       dueDate: '2023-10-24',
     },
+    stateHistory: []
   };
   const sampleTarget =  {
     id: 'pregnancy-registrations-this-month',
