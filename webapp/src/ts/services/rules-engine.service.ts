@@ -21,6 +21,8 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { Store } from '@ngrx/store';
+import { TasksActions } from '@mm-actions/tasks';
 
 interface DebounceActive {
   [key: string]: {
@@ -59,7 +61,7 @@ export class RulesEngineCoreFactoryService {
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
-  private readonly ENSURE_FRESHNESS_MILLIS = 120 * 1000;
+  private readonly ENSURE_FRESHNESS_MILLIS = 1000;
   private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
   private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
   private readonly FRESHNESS_KEY = 'freshness';
@@ -68,6 +70,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
+  private readonly taskActions: TasksActions;
 
   constructor(
     private translateService:TranslateService,
@@ -86,10 +89,12 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService
+    private chtDatasourceService:CHTDatasourceService,
+    private store: Store
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.taskActions = new TasksActions(this.store);
   }
 
   ngOnDestroy(): void {
@@ -143,7 +148,7 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
-      this.refreshEmissions();
+      this.fetchOverdueTasksForAllContacts();
     }, this.ENSURE_FRESHNESS_MILLIS);
 
     this.debounceActive[this.FRESHNESS_KEY] = {
@@ -159,6 +164,14 @@ export class RulesEngineService implements OnDestroy {
     trackPerformance?.stop(trackName);
 
     return true;
+  }
+
+  private async fetchOverdueTasksForAllContacts() {
+    const allTasks = await this.fetchTaskDocsForAllContacts();
+    this.ngZone.run(() => {
+      this.taskActions.setTasksList(allTasks.map(task => task.emission));
+    });
+    this.monitorTaskChanges();
   }
 
   private cancelDebounce(entity) {
@@ -300,6 +313,19 @@ export class RulesEngineService implements OnDestroy {
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
+  }
+
+  private monitorTaskChanges() {
+    const taskDocSubscription = this.changesService.subscribe({
+      key: 'task-doc-update',
+      filter: change => change.doc.type === 'task' && this.rulesEngineCore.showTask(change.doc),
+      callback: change => {
+        this.ngZone.run(() => {
+          this.taskActions.setOverdueTasks(this.hydrateTaskDocs([change.doc]));
+        });
+      }
+    });
+    this.subscriptions.add(taskDocSubscription);
   }
 
   private monitorChanges(rulesEngineContext) {
@@ -533,4 +559,29 @@ export interface Target {
   subtitle_translation_key: string;
   goal: number;
   value: TargetValue;
+}
+
+export interface Task {
+  _id: string;
+  authoredOn: number;
+  stateHistory: {
+    state: string;
+    timestamp: number;
+  }[],
+  state: string,
+  user: string;
+  requester: string;
+  owner: string;
+  emission: TaskEmission;
+}
+
+export interface TaskEmission {
+  _id: string;
+  title: string;
+  resolved: boolean;
+  actions: any[];
+  dueDate: string;
+  priority: string;
+  priorityLabel: string;
+  overdue: boolean;
 }

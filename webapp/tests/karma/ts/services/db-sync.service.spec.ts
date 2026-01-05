@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { Store } from '@ngrx/store';
+import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 import { SessionService } from '@mm-services/session.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -1178,7 +1179,7 @@ describe('DBSync service', () => {
     });
 
     it('does not replicate the service-worker-meta doc', () => {
-      const actual = filterFunction({ _id: 'service-worker-meta' });
+      const actual = filterFunction({ _id: DOC_IDS.SERVICE_WORKER_META });
       expect(actual).to.equal(false);
     });
 
@@ -1188,7 +1189,7 @@ describe('DBSync service', () => {
     });
 
     it('does not replicate translations', () => {
-      const actual = filterFunction({ _id: '1', type: 'translations' });
+      const actual = filterFunction({ _id: '1', type: DOC_TYPES.TRANSLATIONS });
       expect(actual).to.equal(false);
     });
 
