@@ -2,7 +2,7 @@
 
   'use strict';
 
-  const { DOC_IDS } = require('@medic/constants');
+  const SETTINGS_ID = 'settings';
 
   angular.module('inboxServices').factory('Settings',
     function(
@@ -17,14 +17,14 @@
       const cache = Cache({
         get: function(callback) {
           DB()
-            .get(DOC_IDS.SETTINGS)
+            .get(SETTINGS_ID)
             .then(function(doc) {
               callback(null, doc.settings);
             })
             .catch(callback);
         },
         invalidate: function(change) {
-          return change.id === DOC_IDS.SETTINGS;
+          return change.id === SETTINGS_ID;
         }
       });
 
