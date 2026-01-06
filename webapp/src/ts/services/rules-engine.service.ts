@@ -606,12 +606,86 @@ export class RulesEngineService implements OnDestroy {
   }
 
   /**
+   * Serializes a function into a string representation.
+   * @param fn - The function to serialize
+   * @returns The serialized function string
+   */
+  serializeFunction(fn: any): string | any {
+    if (typeof fn !== 'function') {
+      return fn;
+    }
+
+    const fnString = fn.toString();
+
+    // Check for unsafe patterns
+    const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
+    if (forbidden.test(fnString)) {
+      return fnString;
+    }
+
+    return fnString;
+  }
+
+  /**
    * Deserializes a function string back into a function.
    * @param fnString - The serialized function string
    * @returns The deserialized function or original string if invalid
    */
   deserializeFunction(fnString: string): any {
-    return this.rulesEngineCore.deserializeFunction(fnString);
+    if (!this.isValidFunctionString(fnString)) {
+      return fnString; // return as-is if unsafe
+    }
+
+    const { args, body } = this.splitFunctionString(fnString);
+    const cleanedArgs = this.cleanArgs(args);
+
+    // Double-check forbidden patterns and ensure no 'function' keyword
+    const forbidden = /(require|process|global|import|eval|while|for\s*\(|\bfunction\b)/g;
+    if (forbidden.test(fnString) || forbidden.test(body)) {
+      return fnString;
+    }
+
+    try {
+      // Restrict execution to safe arrow functions only
+      if (body.startsWith('{')) {
+        return new Function(cleanedArgs, body); // Block body
+      } else {
+        return new Function(cleanedArgs, `return (${body});`); // Expression body
+      }
+    } catch (err) {
+      // Optional: log to debug only in dev, avoid logging in prod
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to deserialize function, returning original string.', err);
+      }
+      return fnString;
+    }
+  }
+
+  private isValidFunctionString(fnString: string): boolean {
+    if (typeof fnString !== 'string') {
+      return false;
+    }
+    if (!fnString.includes('=>')) {
+      return false;
+    }
+
+    const forbidden = /(require|process|global|import|eval|while|for\s*\()/g;
+
+    if (forbidden.test(fnString)) {
+      return false;
+    }
+    return true;
+  }
+
+  private splitFunctionString(fnString: string): { args: string; body: string } {
+    const arrowIndex = fnString.indexOf('=>');
+    const args = fnString.slice(0, arrowIndex).trim();
+    const body = fnString.slice(arrowIndex + 2).trim();
+    return { args, body };
+  }
+
+  private cleanArgs(args: string): string {
+    return args.replace(/\(/g, '').replace(/\)/g, '').trim();
   }
 
 }

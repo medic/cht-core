@@ -8,7 +8,6 @@ const pouchdbProvider = require('./pouchdb-provider');
 const rulesEmitter = require('./rules-emitter');
 const rulesStateStore = require('./rules-state-store');
 const wireupToProvider = require('./provider-wireup');
-const { serializeFunction, deserializeFunction } = require('./target-state');
 
 /**
  * @param {Object} db Medic pouchdb database
@@ -109,9 +108,5 @@ module.exports = db => {
      * @returns {Array} list of dirty contacts UUIDs
      */
     getDirtyContacts: () => rulesStateStore.getDirtyContacts(),
-
-    // Utility functions
-    serializeFunction,
-    deserializeFunction,
   };
 };
