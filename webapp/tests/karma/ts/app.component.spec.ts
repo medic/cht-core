@@ -102,6 +102,7 @@ describe('AppComponent', () => {
   let originalPouchDB;
   const changesListener:any = {};
   let consoleErrorStub;
+  let originalMedicMobileAndroid;
 
   const getComponent = () => {
     fixture = TestBed.createComponent(AppComponent);
@@ -180,6 +181,7 @@ describe('AppComponent', () => {
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
     };
+    originalMedicMobileAndroid = window.medicmobile_android;
     originalPouchDB = window.PouchDB;
     window.PouchDB = {
       fetch: sinon.stub()
@@ -262,6 +264,7 @@ describe('AppComponent', () => {
     clock && clock.restore();
     window.PouchDB = originalPouchDB;
     window.localStorage.removeItem('medic-last-replicated-date');
+    window.medicmobile_android = originalMedicMobileAndroid;
   });
 
   it('should create component and init services', async () => {
@@ -299,6 +302,7 @@ describe('AppComponent', () => {
     expect(updateServiceWorkerService.update.callCount).to.equal(1);
     // init storage info service
     expect(storageInfoService.init.callCount).to.equal(1);
+    expect(tasksNotificationService.initOnAndroid.callCount).to.equal(0);
   });
 
   it('should init task notifications on android', async () => {

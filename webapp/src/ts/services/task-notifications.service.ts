@@ -25,10 +25,7 @@ export interface Notification {
 })
 export class TasksNotificationService implements OnDestroy {
 
-  private debouncedReload;
-  private canGetNotifications;
-  private isRulesEngineEnabled;
-  subscription = new Subscription();
+  private subscription = new Subscription();
   constructor(
     private readonly rulesEngineService: RulesEngineService,
     private readonly translateService: TranslateService,
@@ -45,7 +42,6 @@ export class TasksNotificationService implements OnDestroy {
     if (!await this.isEnabled()) {
       return;
     }
-    this.debouncedReload = _debounce(this.updateAndroidStore.bind(this), 1000, { maxWait: 10 * 1000 });
     this.subscribeToRulesEngine();
     this.updateAndroidStore();
   }
@@ -58,15 +54,16 @@ export class TasksNotificationService implements OnDestroy {
   }
 
   private async isEnabled() {
-    this.isRulesEngineEnabled = await this.rulesEngineService.isEnabled();
-    this.canGetNotifications = await this.authService.has('can_get_task_notifications');
-    return this.isRulesEngineEnabled && this.canGetNotifications;
+    const isRulesEngineEnabled = await this.rulesEngineService.isEnabled();
+    const canGetNotifications = await this.authService.has('can_get_task_notifications');
+    return isRulesEngineEnabled && canGetNotifications;
   }
 
   private subscribeToRulesEngine() {
+    const debouncedReload = _debounce(this.updateAndroidStore.bind(this), 1000, { maxWait: 10 * 1000 });
     const rulesEngineSubscription = this.rulesEngineService.contactsMarkedAsDirty(() => {
-      this.debouncedReload.cancel();
-      return this.debouncedReload();
+      debouncedReload.cancel();
+      return debouncedReload();
     });
     this.subscription.add(rulesEngineSubscription);
   }
@@ -115,7 +112,6 @@ export class TasksNotificationService implements OnDestroy {
     if (settings?.tasks?.max_task_notifications) {
       return settings.tasks.max_task_notifications;
     }
-    console.warn('Invalid or missing max_task_notifications setting, using default value');
     return DEFAULT_MAX_NOTIFICATIONS;
   }
 

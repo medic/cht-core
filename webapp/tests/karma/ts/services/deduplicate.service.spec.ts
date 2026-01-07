@@ -22,7 +22,7 @@ const SIBLINGS = [
   {
     _id: 'sib1',
     name: 'Test1',
-    date_of_birth: '2000-01-02',
+    date_of_birth: '2000-01-31',
     parent: { _id: 'parent1' },
     contact_type: CONTACT_TYPE,
     reported_date: 1736845534001
