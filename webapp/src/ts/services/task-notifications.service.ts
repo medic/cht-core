@@ -25,7 +25,7 @@ export interface Notification {
 })
 export class TasksNotificationService implements OnDestroy {
 
-  private subscription = new Subscription();
+  private readonly subscription = new Subscription();
   constructor(
     private readonly rulesEngineService: RulesEngineService,
     private readonly translateService: TranslateService,
