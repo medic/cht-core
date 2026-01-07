@@ -57,19 +57,16 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.globalActions = new GlobalActions(store);
   }
 
-
   ngOnInit(): void {
     this.subscribeToStore();
     this.getTargets();
     this.setDefaultFilters();
   }
 
-
   ngOnDestroy(): void {
     this.globalActions.clearSidebarFilter();
     this.subscriptions.unsubscribe();
   }
-
 
   private subscribeToStore() {
     const selectorsSubscription = combineLatest([
@@ -82,7 +79,6 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.subscriptions.add(selectorsSubscription);
   }
 
-
   private setDefaultFilters() {
     const defaultFilters = {
       reportingPeriod: ReportingPeriod.CURRENT,
@@ -91,20 +87,10 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
     this.reportingPeriodFilter = defaultFilters.reportingPeriod;
   }
 
-
-
-
-
-
-
-  /**
-  * Loads targets and revives any function-based keys.
-  */
   getTargets(reportingPeriod?) {
     if (reportingPeriod) {
       this.reportingPeriodFilter = reportingPeriod;
     }
-
 
     return this.rulesEngineService
       .isEnabled()
@@ -121,8 +107,6 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-
-
         // --- REVIVE FUNCTION FIELDS HERE ---
         this.targets = targets
           .filter(target => target.visible !== false)
@@ -135,14 +119,12 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
             return target;
           });
 
-
         this.trackPerformance?.stop({
           name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,
         });
       });
   }
-
 
   /**
   * Returns correct subtitle for each target.

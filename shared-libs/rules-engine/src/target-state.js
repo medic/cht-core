@@ -107,9 +107,6 @@ const createState = (existentStaleState) => {
   };
 };
 
-
-
-
 module.exports = {
   /**
    * Builds an empty target-state.
@@ -247,6 +244,4 @@ module.exports = {
 
     return { aggregate, isUpdated };
   },
-
-
 };
