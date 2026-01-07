@@ -20,12 +20,10 @@ describe('TasksNotificationService', () => {
   let authService;
 
   let tasks;
-  let clock;
   const getTask = (id: string) => tasks.find((task) => task._id === id);
 
   beforeEach(() => {
     consoleErrorMock = sinon.stub(console, 'error');
-    clock = sinon.useFakeTimers(moment().valueOf());
     tasks = [
       {
         _id: 'task1',
@@ -121,7 +119,6 @@ describe('TasksNotificationService', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock.restore();
     localStorage.clear();
   });
 
@@ -266,6 +263,19 @@ describe('TasksNotificationService', () => {
         dueDate: moment(task.emission.dueDate).valueOf()
       });
     });
+  });
+
+  it('should initOnAndroid', async () => {
+    const isEnabledStub = sinon.stub(service, 'isEnabled').resolves(true);
+    const subscribeToRulesEngineStub = sinon.stub(service, 'subscribeToRulesEngine');
+    const updateAndroidStoreStub = sinon.stub(service, 'updateAndroidStore');
+
+    await service.initOnAndroid();
+
+    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(isEnabledStub.callCount).to.equal(1);
+    expect(subscribeToRulesEngineStub.callCount).to.equal(1);
+    expect(updateAndroidStoreStub.callCount).to.equal(1);
   });
 
 });
