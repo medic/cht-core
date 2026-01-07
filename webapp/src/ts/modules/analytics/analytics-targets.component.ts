@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
-
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -18,7 +17,6 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { Selectors } from '@mm-selectors/index';
-
 
 @Component({
   templateUrl: './analytics-targets.component.html',
@@ -46,7 +44,6 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   direction;
   sidebarFilter;
   reportingPeriodFilter;
-
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
