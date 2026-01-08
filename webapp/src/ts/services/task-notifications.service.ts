@@ -46,13 +46,6 @@ export class TasksNotificationService implements OnDestroy {
     this.updateAndroidStore();
   }
 
-  async get(): Promise<Notification[]> {
-    if (!await this.isEnabled()) {
-      return [];
-    }
-    return await this.fetchNotifications();
-  }
-
   private async isEnabled() {
     const isRulesEngineEnabled = await this.rulesEngineService.isEnabled();
     const canGetNotifications = await this.authService.has('can_get_task_notifications');

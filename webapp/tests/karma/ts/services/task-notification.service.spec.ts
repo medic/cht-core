@@ -235,47 +235,27 @@ describe('TasksNotificationService', () => {
     expect(consoleErrorMock.callCount).to.equal(1);
   });
 
-  it('should not get() notifications without necessary permissions', async () => {
-    authService.has.resolves(false);
-    const notifications = await service.get();
-    expect(notifications).to.be.an('array').that.is.empty;
-    expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(0);
-    expect(translateService.instant.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
-  });
-
-  it('should get() notifications', async () => {
-    const notifications = await service.get();
-    expect(notifications).to.be.an('array').that.has.lengthOf(3);
-    expect(authService.has.calledOnceWith('can_get_task_notifications')).to.be.true;
-    expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
-    expect(translateService.instant.callCount).to.equal(3);
-    expect(consoleErrorMock.callCount).to.equal(0);
-    notifications.forEach((notification) => {
-      const task = getTask(notification._id);
-      expect(notification).to.be.an('object');
-      expect(notification).to.eql({
-        _id: task._id,
-        readyAt: task.stateHistory[1].timestamp,
-        title: task.emission.title,
-        contentText: 'android.notification.tasks.contentText',
-        endDate: moment(task.emission.endDate).valueOf(),
-        dueDate: moment(task.emission.dueDate).valueOf()
-      });
-    });
-  });
-
   it('should initOnAndroid', async () => {
     const isEnabledStub = sinon.stub(service, 'isEnabled').resolves(true);
     const subscribeToRulesEngineStub = sinon.stub(service, 'subscribeToRulesEngine');
     const updateAndroidStoreStub = sinon.stub(service, 'updateAndroidStore');
 
     await service.initOnAndroid();
-
     expect(consoleErrorMock.callCount).to.equal(0);
     expect(isEnabledStub.callCount).to.equal(1);
     expect(subscribeToRulesEngineStub.callCount).to.equal(1);
     expect(updateAndroidStoreStub.callCount).to.equal(1);
+  });
+
+  it('should not initOnAndroid without can_get_task_notifications permission', async () => {
+    authService.has = sinon.stub().withArgs('can_get_task_notifications').resolves(false);
+    const subscribeToRulesEngineStub = sinon.stub(service, 'subscribeToRulesEngine');
+    const updateAndroidStoreStub = sinon.stub(service, 'updateAndroidStore');
+
+    await service.initOnAndroid();
+    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(subscribeToRulesEngineStub.callCount).to.equal(0);
+    expect(updateAndroidStoreStub.callCount).to.equal(0);
   });
 
 });
