@@ -2,7 +2,8 @@
 
   'use strict';
 
-  const SETTINGS_ID = 'settings';
+  const constants = require('@medic/constants');
+  const DOC_IDS = constants.DOC_IDS;
 
   angular.module('inboxServices').factory('Settings',
     function(
@@ -17,7 +18,7 @@
       const cache = Cache({
         get: function(callback) {
           DB()
-            .get(SETTINGS_ID)
+            .get(DOC_IDS.SETTINGS)
             .then(function(doc) {
               callback(null, doc.settings);
             })
