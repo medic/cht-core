@@ -115,5 +115,4 @@ module.exports = {
       });
   },
   getDeprecatedTransitions: getDeprecatedTransitions,
-  SETTINGS_DOC_ID: DOC_IDS.SETTINGS,
 };
