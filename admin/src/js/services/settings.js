@@ -25,7 +25,7 @@
             .catch(callback);
         },
         invalidate: function(change) {
-          return change.id === SETTINGS_ID;
+          return change.id === DOC_IDS.SETTINGS;
         }
       });
 
