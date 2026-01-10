@@ -4,20 +4,14 @@ const { Octokit } = require('@octokit/core');
 const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
 const ExtendedOctokit = Octokit.plugin(paginateGraphql);
 
-(async() => { // NOSONAR
-  const token = process.env.GH_TOKEN;
-  console.log('Logging in to GitHub...');
-  const octokit = new ExtendedOctokit({
-    auth: token,
-    userAgent: 'cht-release-note-generator',
-  });
 
-  const OWNER = 'medic';
-  const BOTS = ['dependabot[bot]'];
+const token = process.env.GH_TOKEN;
+const OWNER = 'medic';
+const BOTS = ['dependabot[bot]'];
 
-  const argv = minimist(process.argv.slice(2));
-  if (argv.help) {
-    console.log(`
+const argv = minimist(process.argv.slice(2));
+if (argv.help) {
+  console.log(`
   Usage: node index.js [OPTIONS] REPO MILESTONE
   
   Generates a changelog given a GH report and milestone. Requires a GitHub API token to be configured. 
@@ -31,38 +25,55 @@ const ExtendedOctokit = Octokit.plugin(paginateGraphql);
   
   Milestone: The name of the milestone (e.g. 2.15.0).
   `);
-    process.exit(0);
+  process.exit(0);
+}
+
+const [REPO_NAME, MILESTONE_NAME] = argv._;
+if (!REPO_NAME) {
+  throw new Error('You must specify a repo name (eg: "cht-core") as the first argument');
+}
+if (!MILESTONE_NAME) {
+  throw new Error('You must specify a milestone name (eg: "2.15.0") as the second argument');
+}
+
+const WARNINGS = [
+  { labels: ['Breaking change'], title: 'Breaking changes' },
+  { labels: ['UI/UX'], title: 'UI/UX changes' },
+];
+
+const TYPES = [
+  { labels: ['Type: Feature'], title: 'Features' },
+  { labels: ['enhancement', 'Type: Improvement'], title: 'Improvements' },
+  { labels: ['Type: Security'], title: 'Security fixes' },
+  { labels: ['Type: Performance'], title: 'Performance improvements' },
+  { labels: ['bug', 'Type: Bug'], title: 'Bug fixes' },
+  { labels: ['Type: Technical issue', 'Type: Internal process'], title: 'Technical improvements' },
+];
+
+const PREFIXES_TO_IGNORE = [
+  'Type: Internal process',
+  'Won\'t fix:',
+  'Type: Investigation',
+];
+
+const getRepoQueryString = query => `{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`;
+
+const getIssueNumbers = commitMessage => {
+  const issuePattern = /#(\d+)/g;
+  const results = commitMessage.match(issuePattern);
+  if (!results) {
+    return [];
   }
 
-  const [REPO_NAME, MILESTONE_NAME] = argv._;
-  if (!REPO_NAME) {
-    throw new Error('You must specify a repo name (eg: "cht-core") as the first argument');
-  }
-  if (!MILESTONE_NAME) {
-    throw new Error('You must specify a milestone name (eg: "2.15.0") as the second argument');
-  }
+  return results.map(result => result.substring(1));
+};
 
-  const WARNINGS = [
-    { labels: ['Breaking change'], title: 'Breaking changes' },
-    { labels: ['UI/UX'], title: 'UI/UX changes' },
-  ];
-
-  const TYPES = [
-    { labels: ['Type: Feature'], title: 'Features' },
-    { labels: ['enhancement', 'Type: Improvement'], title: 'Improvements' },
-    { labels: ['Type: Security'], title: 'Security fixes' },
-    { labels: ['Type: Performance'], title: 'Performance improvements' },
-    { labels: ['bug', 'Type: Bug'], title: 'Bug fixes' },
-    { labels: ['Type: Technical issue', 'Type: Internal process'], title: 'Technical improvements' },
-  ];
-
-  const PREFIXES_TO_IGNORE = [
-    'Type: Internal process',
-    'Won\'t fix:',
-    'Type: Investigation',
-  ];
-
-  const getRepoQueryString = query => `{ repository(owner: "${OWNER}", name: "${REPO_NAME}") { ${query} } }`;
+(async() => { // NOSONAR
+  console.log('Logging in to GitHub...');
+  const octokit = new ExtendedOctokit({
+    auth: token,
+    userAgent: 'cht-release-note-generator',
+  });
 
   const queryRepo = query => octokit.graphql(getRepoQueryString(query));
 
@@ -130,16 +141,6 @@ const ExtendedOctokit = Octokit.plugin(paginateGraphql);
   const commitHasPRWithMilestone = commit => commit.associatedPullRequests.nodes.find(pr => pr.milestone);
   const prHasIssueWithMilestone = pr => pr.closingIssuesReferences.edges.find(edge => edge.node.milestone);
   const commitPRHasIssueWithMilestone = commit => commit.associatedPullRequests.nodes.find(prHasIssueWithMilestone);
-
-  const getIssueNumbers = commitMessage => {
-    const issuePattern = /#(\d+)/g;
-    const results = commitMessage.match(issuePattern);
-    if (!results) {
-      return [];
-    }
-
-    return results.map(result => result.substring(1));
-  };
 
   const issueHasMilestone = async issueNumber => queryRepo(
     `issueOrPullRequest(number: ${issueNumber}){
@@ -331,11 +332,9 @@ ${formatGroups(types)}
 Thanks to all who committed changes for this release!
 
 ${formatCommits(commits)} `;
-
-    console.log('Saving output to release.notes.md...');
-    const fs = require('node:fs/promises');
-    await fs.writeFile('./release.notes.md', releaseNotes);
-    console.log('Release note generation complete!');
+    console.log('Done! See below');
+    console.log('-------------Everything below this is the release notes markdown-------------');
+    console.log(releaseNotes);
   };
 
   const getCommits = async () => {
