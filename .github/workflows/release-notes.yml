@@ -2,6 +2,8 @@ name: Release notes markdown generator
 
 on:
   workflow_dispatch:
+  push:
+  pull_request:
 
 jobs:
   release_notes:
