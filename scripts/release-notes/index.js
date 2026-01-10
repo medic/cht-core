@@ -2,11 +2,10 @@
 const minimist = require('minimist');
 const { Octokit } = require('@octokit/core');
 const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
-require('xhr-mock/lib/handle');
 const ExtendedOctokit = Octokit.plugin(paginateGraphql);
 
-
-const main = async(token) => {
+(async() => { // NOSONAR
+  const token = process.env.GH_TOKEN;
   console.log('Logging in to GitHub...');
   const octokit = new ExtendedOctokit({
     auth: token,
@@ -358,21 +357,4 @@ ${formatCommits(commits)} `;
   return Promise.all([ getIssues(), getCommits() ])
     .then(([ issues, commits ]) => output(issues, commits))
     .catch(console.error);
-};
-
-const getTokenFromUser = () => {
-  return new Promise((resolve) => {
-    process.stdout.write('Enter Your GitHub Token (40 chars, starts with "ghp_"): ');
-    process.stdin.once('data', (input) => {
-      const value = input.toString().trim();
-      if (value.length !== 40) {
-        throw new Error(`Token is not 40 characters. Check token value and try again. `);
-      }
-      resolve(value);
-    });
-  });
-};
-(async() => { // NOSONAR
-  const token = await getTokenFromUser();
-  await main(token);
 })();
