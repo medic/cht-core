@@ -69,7 +69,7 @@ const getIssueNumbers = commitMessage => {
 };
 
 (async() => { // NOSONAR
-  console.log('Logging in to GitHub...');
+  console.log('Logging in to GitHub with token that is',token.length,'chars...');
   const octokit = new ExtendedOctokit({
     auth: token,
     userAgent: 'cht-release-note-generator',
