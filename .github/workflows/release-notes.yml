@@ -5,7 +5,7 @@ on:
     inputs:
       tags:
         description: 'version'
-        required: true
+        default: 5.1.0
 
 jobs:
   release_notes:
