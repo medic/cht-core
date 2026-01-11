@@ -23,7 +23,7 @@ This token needs at least `read:org` permissions.
 Run the script with the following command:
 
 ```shell
-node index.js [OPTIONS] REPO MILESTONE > tmp.md
+node index.js [OPTIONS] REPO MILESTONE
 ```
 
 Options:
