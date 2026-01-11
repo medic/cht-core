@@ -2,6 +2,9 @@ name: Release notes markdown generator
 
 on:
   workflow_dispatch:
+    - inputs:
+      tags:
+        description: 'CHT Version'
 
 jobs:
   release_notes:
@@ -19,4 +22,4 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          GH_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js cht-core 5.1.0
+          GH_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js cht-core ${{ github.event.inputs.CHTVersion }}
