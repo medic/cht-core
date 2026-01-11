@@ -167,7 +167,7 @@ const TRANSLATIONS = {
     SESSION_EXPIRED_DESCRIPTION: 'لقد انتهت جلستك وتم تسجيل خروجك. الرجاء تسجيل الدخول للمتابعة.',
     LOGIN: 'تسجيل الدخول',
   },
-  'pt-BR': {
+  pt: {
     FETCH_INFO: ({ count, total }) => `Obtendo informações (${count} de ${total} docs)…`,
     LOAD_APP: 'Carregando aplicação…',
     PASSWORD_CHANGE_SUCCESS: 'Senha alterada com sucesso',
