@@ -25,7 +25,8 @@ const LOCAL_NAME_MAP = {
   hi: 'हिन्दी (Hindi)',
   id: 'Bahasa Indonesia (Indonesian)',
   lg: 'Luganda (Ganda)',
-  ar: 'عربي (Arabic)'
+  ar: 'عربي (Arabic)',
+  'pt-BR': 'Português (Portuguese)'
 };
 
 const RTL_LANGUAGES =  ['ar'];
