@@ -3,8 +3,9 @@ name: Release notes generator
 on:
   workflow_dispatch:
     inputs:
-      tags:
-        description: version
+      version:
+        description: 'Version to build release notes from'
+        type: environment
         required: true
 
 jobs:
