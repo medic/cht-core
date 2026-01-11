@@ -2,9 +2,10 @@ name: Release notes markdown generator
 
 on:
   workflow_dispatch:
-    - inputs:
+    inputs:
       tags:
         description: 'CHT Version'
+        required: true
 
 jobs:
   release_notes:
