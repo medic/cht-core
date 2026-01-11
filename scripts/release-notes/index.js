@@ -249,13 +249,13 @@ Commits:
     }
   };
 
-  const ignorePrefixes = label => {
+  const includePrefixes = label => {
     return !PREFIXES_TO_IGNORE.some(prefix => label.name.startsWith(prefix));
   };
 
   const filterIssues = issues => {
     return issues.filter(issue => {
-      return issue.labels.nodes.every(label => ignorePrefixes(label));
+      return issue.labels.nodes.every(label => includePrefixes(label));
     });
   };
 
