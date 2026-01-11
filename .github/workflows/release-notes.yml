@@ -1,11 +1,11 @@
-name: Release notes markdown generator
+name: Release notes generator
 
 on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'version'
-        default: 5.1.0
+        description: version
+        required: true
 
 jobs:
   release_notes:
@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Install dependencies & Generate Markdown (or error)
+      - name: Install Deps & Create Markdown (or error)
         run: |
           cd scripts
           npm ci
