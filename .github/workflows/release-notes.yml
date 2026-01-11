@@ -14,9 +14,9 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Install dependencies Generate Markdown (or error)
+      - name: Install dependencies & Generate Markdown (or error)
         run: |
           cd scripts
           npm ci
           cd release-notes
-          GH_TOKEN=$(gh auth token) node index.js cht-core 5.1.0
+          GH_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js cht-core 5.1.0
