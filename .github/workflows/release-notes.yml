@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'CHT Version'
+        description: 'version'
         required: true
 
 jobs:
@@ -23,4 +23,4 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          GH_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js cht-core ${{ github.event.inputs.CHTVersion }}
+          GH_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js cht-core ${{ github.event.inputs.version }}
