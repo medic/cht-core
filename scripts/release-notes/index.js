@@ -1,4 +1,3 @@
-
 const minimist = require('minimist');
 const { Octokit } = require('@octokit/core');
 const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
