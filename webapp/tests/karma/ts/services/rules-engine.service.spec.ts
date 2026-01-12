@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { DOC_IDS } from '@medic/constants';
 
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -49,7 +50,7 @@ describe('RulesEngineService', () => {
   let refreshEmissionsForRecursive;
 
   const settingsDoc = {
-    _id: 'settings',
+    _id: DOC_IDS.SETTINGS,
     tasks: {
       rules: 'rules',
       schedules: ['schedules'],
@@ -298,7 +299,7 @@ describe('RulesEngineService', () => {
       const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
       const expectedParams = [allContexts.id, emptyContext.id, matchingContext.id];
       const settingsDoc = {
-        _id: 'settings',
+        _id: DOC_IDS.SETTINGS,
         tasks: {
           targets: {
             items: [ allContexts, emptyContext, matchingContext, noMatchingContext ]
@@ -329,7 +330,7 @@ describe('RulesEngineService', () => {
       service = TestBed.inject(RulesEngineService);
 
       const settingsDoc = {
-        _id: 'settings',
+        _id: DOC_IDS.SETTINGS,
         tasks: {
           rules: 'rules',
           isDeclarative: false,
@@ -397,7 +398,7 @@ describe('RulesEngineService', () => {
     });
 
     const cachebustScenarios = [
-      { _id: 'settings', settings: settingsDoc },
+      { _id: DOC_IDS.SETTINGS, settings: settingsDoc },
       userContactDoc,
       userContactGrandparent,
     ];
