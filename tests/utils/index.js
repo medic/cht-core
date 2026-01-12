@@ -420,7 +420,7 @@ const PROTECTED_DOCS = [
   'resources',
   'branding',
   'partners',
-  'settings',
+  DOC_IDS.SETTINGS,
   /^form:/,
   /^_design/
 ];
@@ -1119,7 +1119,7 @@ const enableLanguages = async (languageCodes) => {
   await updateSettings({ languages });
 };
 
-const getSettings = () => getDoc('settings').then(settings => settings.settings);
+const getSettings = () => getDoc(DOC_IDS.SETTINGS).then(settings => settings.settings);
 
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scripts', 'build', `${file}.yml.template`);
 

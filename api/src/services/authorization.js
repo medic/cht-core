@@ -15,7 +15,7 @@ const MEDIC_CLIENT_DDOC = '_design/medic-client';
 const DEFAULT_DDOCS = [
   MEDIC_CLIENT_DDOC,
   DOC_IDS.SERVICE_WORKER_META,
-  'settings',
+  DOC_IDS.SETTINGS,
 ];
 
 /**
