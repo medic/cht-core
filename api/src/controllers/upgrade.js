@@ -73,10 +73,9 @@ const compareUpgrade = async (req, res) => {
 
     const buildInfo = req.body.build;
     if (!buildInfo) {
-      throw {
-        message: 'You must provide a build info body',
-        status: 400
-      };
+      const err = new Error('You must provide a build info body');
+      err.status = 400;
+      throw err;
     }
 
     const compare = await service.compareBuildVersions(buildInfo);

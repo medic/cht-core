@@ -81,6 +81,30 @@ const upgradeInProgress = () => {
 
 const canUpgrade = () => upgradeUtils.isDockerUpgradeServiceRunning();
 
+const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
+  const differences = [];
+  const remoteDdoc = remoteDdocs.find(ddoc => localDdoc._id === ddoc._id);
+
+  if (!remoteDdoc) {
+    differences.push({ type: 'remove', ddoc: localDdoc._id, db: database.name });
+  } else if (areViewsDifferent(localDdoc, remoteDdoc)) {
+    differences.push({ type: 'changed_views', ddoc: localDdoc._id, db: database.name });
+  } else if (areIndexesDifferent(localDdoc, remoteDdoc)) {
+    differences.push({ type: 'changed_indexes', ddoc: localDdoc._id, db: database.name });
+  }
+
+  return differences;
+};
+
+const compareRemoteToLocal = (database, remoteDdoc, localDdocs) => {
+  const localDdoc = localDdocs.find(ddoc => ddoc._id === remoteDdoc._id);
+  if (!localDdoc) {
+    return [{ type: 'add', ddoc: remoteDdoc._id, db: database.name }];
+  }
+
+  return [];
+};
+
 const compareBuildVersions = async (buildInfo) => {
   const remoteBuild = await upgradeUtils.downloadDdocDefinitions(buildInfo);
   const localBuild = await upgradeUtils.getLocalDdocDefinitions();
@@ -91,26 +115,26 @@ const compareBuildVersions = async (buildInfo) => {
     const remoteDdocs = remoteBuild.get(database);
 
     for (const localDdoc of localDdocs) {
-      const remoteDdoc = remoteDdocs.find(ddoc => localDdoc._id === ddoc._id);
-      if (!remoteDdoc) {
-        differences.push({ type: 'remove', ddoc: localDdoc._id, db: database.name });
-      } else if (areViewsDifferent(localDdoc, remoteDdoc)) {
-        differences.push({ type: 'changed_views', ddoc: localDdoc._id, db: database.name });
-      } else if (areIndexesDifferent(localDdoc, remoteDdoc)) {
-        differences.push({ type: 'changed_indexes', ddoc: localDdoc._id, db: database.name });
-      }
-
+      differences.push(...compareLocalToRemote(database, localDdoc, remoteDdocs));
     }
 
     for (const remoteDdoc of remoteDdocs) {
-      const localDdoc = localDdocs.find(ddoc => ddoc._id === remoteDdoc._id);
-      if (!localDdoc) {
-        differences.push({ type: 'add', ddoc: remoteDdoc._id, db: database.name });
-      }
+      differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
     }
   }
 
   return differences;
+};
+
+const compareViews = (local, remote) => {
+  for (const [viewName, localView] of Object.entries(local.views)) {
+    const remoteView = remote.views[viewName];
+    if (!remoteView || localView.map !== remoteView.map) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 const areViewsDifferent = (local,  remote) => {
@@ -126,9 +150,16 @@ const areViewsDifferent = (local,  remote) => {
     return true;
   }
 
-  for (const [viewName, localView] of Object.entries(local.views)) {
-    const remoteView = remote.views[viewName];
-    if (!remoteView || localView.map !== remoteView.map) {
+  return compareViews(local, remote);
+};
+
+const compareIndexes = (local, remote) => {
+  for (const [indexName, localIndex] of Object.entries(local.nouveau)) {
+    const remoteIndex = remote.nouveau[indexName];
+    if (!remoteIndex ||
+        localIndex.index !== remoteIndex.index ||
+        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers)
+    ) {
       return true;
     }
   }
@@ -148,16 +179,7 @@ const areIndexesDifferent = (local, remote) => {
     return true;
   }
 
-  for (const [indexName, localIndex] of Object.entries(local.nouveau)) {
-    const remoteIndex = remote.nouveau[indexName];
-    if (!remoteIndex ||
-        localIndex.index !== remoteIndex.index ||
-        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers)
-    ) {
-      return true;
-    }
-  }
-  return false;
+  return compareIndexes(local, remote);
 };
 
 const isShallowEqual = (obj1, obj2) => {
