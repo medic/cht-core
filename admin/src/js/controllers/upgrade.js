@@ -30,6 +30,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     let containerWaitPeriodTimeout;
     let apiBuildsUrl;
+    let buildsDb;
 
     const logError = (error, key) => {
       return $translate
@@ -106,7 +107,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    const getBuilds = (buildsDb, options) => {
+    const getBuilds = (options) => {
       options.descending = true;
       options.limit = BUILD_LIST_LIMIT;
 
@@ -124,25 +125,25 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const loadBuilds = () => {
       const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
-      const buildsDb = pouchDB(apiBuildsUrl || DEFAULT_BUILDS_URL);
+      buildsDb = buildsDb || pouchDB(apiBuildsUrl || DEFAULT_BUILDS_URL);
 
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
       //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
       return $q
         .all([
-          getBuilds(buildsDb, {
+          getBuilds({
             startkey: [ 'branch', 'medic', 'medic', {}],
             endkey: [ 'branch', 'medic', 'medic'],
           }),
-          getBuilds(buildsDb, {
+          getBuilds({
             startkey: [ 'beta', 'medic', 'medic', {}],
             endkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
           }),
-          getBuilds(buildsDb, {
+          getBuilds({
             startkey: [ 'release', 'medic', 'medic', {}],
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
           }),
-          $scope.isUsingFeatureRelease ? getBuilds(buildsDb, {
+          $scope.isUsingFeatureRelease ? getBuilds({
             startkey: [ minVersion.featureRelease, 'medic', 'medic', {} ],
             endkey: [
               minVersion.featureRelease,
@@ -157,11 +158,6 @@ angular.module('controllers').controller('UpgradeCtrl',
         ])
         .then(([ branches, betas, releases, featureReleases ]) => {
           $scope.versions = { branches, betas, releases, featureReleases };
-          buildsDb.close();
-        })
-        .catch(err => {
-          buildsDb.close();
-          throw err;
         });
     };
 
@@ -216,17 +212,20 @@ angular.module('controllers').controller('UpgradeCtrl',
       const stageOnly = action === 'stage';
       const confirmCallback = () => upgrade(build, action);
 
-      return Modal({
-        templateUrl: 'templates/upgrade_confirm.html',
-        controller: 'UpgradeConfirmCtrl',
-        model: {
-          stageOnly,
-          before: $scope.currentDeploy.version,
-          after: build.version,
-          confirmCallback,
-          errorKey: 'instance.upgrade.error.deploy'
-        },
-      }).catch(() => {});
+      return $scope
+        .compareReleases(build)
+        .then((releaseCompare) => Modal({
+          templateUrl: 'templates/upgrade_confirm.html',
+          controller: 'UpgradeConfirmCtrl',
+          model: {
+            stageOnly,
+            before: $scope.currentDeploy.version,
+            after: build.version,
+            confirmCallback,
+            errorKey: 'instance.upgrade.error.compare',
+            releaseCompare
+          }
+        })).catch(() => {});
     };
 
     const waitUntilApiStarts = () => new Promise((resolve) => {
@@ -281,6 +280,17 @@ angular.module('controllers').controller('UpgradeCtrl',
       }
       const action = $scope.upgradeDoc.action === 'stage' ? 'stage' : undefined;
       return $scope.upgrade($scope.upgradeDoc.to, action);
+    };
+
+    $scope.compareReleases = (build) => {
+      const url = `${UPGRADE_URL}/compare`;
+
+      return $http
+        .post(url, { build })
+        .then(({ data }) => data)
+        .catch(error => {
+          $log.error('Failed to compare releases', error);
+        });
     };
 
     const abortUpgrade = () => {

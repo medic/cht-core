@@ -67,6 +67,25 @@ const canUpgrade = async (req, res) => {
   }
 };
 
+const compareUpgrade = async (req, res) => {
+  try {
+    await checkAuth(req);
+
+    const buildInfo = req.body.build;
+    if (!buildInfo) {
+      throw {
+        message: 'You must provide a build info body',
+        status: 400
+      };
+    }
+
+    const compare = await service.compareBuildVersions(buildInfo);
+    res.json(compare);
+  } catch (err) {
+    serverUtils.error(err, req, res);
+  }
+};
+
 module.exports = {
   canUpgrade: canUpgrade,
   upgrade: (req, res) => upgrade(req, res, false),
@@ -80,4 +99,5 @@ module.exports = {
       .then(() => res.json({ ok: true }))
       .catch(err => serverUtils.error(err, req, res));
   },
+  compare: compareUpgrade,
 };

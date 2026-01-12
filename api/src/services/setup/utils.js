@@ -391,4 +391,6 @@ module.exports = {
   getUpgradeServicePayload,
   makeUpgradeRequest,
   isDockerUpgradeServiceRunning,
+  downloadDdocDefinitions,
+  getLocalDdocDefinitions,
 };

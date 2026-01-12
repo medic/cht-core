@@ -8,6 +8,23 @@
   on-submit="submit()"
 >
   <p translate-values="{ before: '{{model.before}}', after: '{{model.after}}' }" translate>instance.upgrade.confirm.summary</p>
+  <div ng-if="model.releaseCompare">
+    <p ng-if="!model.releaseCompare.length" class="alert alert-info" translate>instance.upgrade.no.changes</p>
+    <div class="alert alert-warning" ng-if="model.releaseCompare.length">
+      <p class="alert-heading" translate>instance.upgrade.indexing</p>
+      <br>
+      <table class="table">
+        <tr>
+          <th><span translate>instance.upgrade.indexing.db</span></th>
+          <th><span translate>instance.upgrade.indexing.ddoc</span></th>
+        </tr>
+        <tr ng-repeat="difference in model.releaseCompare">
+          <td>{{difference.db}}</td>
+          <td>{{difference.ddoc}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
   <p ng-if="model.stageOnly" translate>instance.stage.confirm.note</p>
   <p ng-if="!model.stageOnly" translate>instance.upgrade.confirm.warning.text</p>
 </mm-modal>
