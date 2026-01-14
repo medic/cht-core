@@ -233,7 +233,7 @@
     "semver": "^7.7.0",
     "simple-password-tester": "^1.0.0",
     "tmp-promise": "^3.0.3",
-    "undici": "^7.16.0",
+    "undici": "^7.18.2",
     "url": "^0.11.1",
     "url-join": "^4.0.1",
     "uuid": "^10.0.0",
