@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DataContext, getDatasource, getLocalDataContext, getRemoteDataContext } from '@medic/cht-datasource';
+import { DOC_IDS } from '@medic/constants';
 
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
@@ -84,7 +85,7 @@ export class CHTDatasourceService {
   private watchChanges() {
     this.changesService.subscribe({
       key: 'cht-script-api-settings-changes',
-      filter: change => change.id === 'settings',
+      filter: change => change.id === DOC_IDS.SETTINGS,
       callback: () => this.getSettings()
     });
   }

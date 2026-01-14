@@ -1,4 +1,5 @@
 const chai = require('chai');
+const { USER_ROLES } = require('@medic/constants');
 const utils = require('../src/index');
 
 describe('Purging Utils', () => {
@@ -48,8 +49,8 @@ describe('Purging Utils', () => {
       const config = { roleA: { offline: true }};
       chai.expect(utils.isOffline(config, ['roleA', '_admin'])).to.equal(false);
       chai.expect(utils.isOffline(config, ['roleB', '_admin'])).to.equal(false);
-      chai.expect(utils.isOffline(config, ['mm-online', 'roleA'])).to.equal(false);
-      chai.expect(utils.isOffline(config, ['mm-online', 'roleB'])).to.equal(false);
+      chai.expect(utils.isOffline(config, [USER_ROLES.ONLINE, 'roleA'])).to.equal(false);
+      chai.expect(utils.isOffline(config, [USER_ROLES.ONLINE, 'roleB'])).to.equal(false);
     });
   });
 
