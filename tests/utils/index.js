@@ -877,11 +877,18 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const listenForApi = async () => {
-  let retryCount = 180;
+  const totalTries = 180; // 3 minutes
+  let retryCount = totalTries;
   do {
     try {
       console.log(`Checking API, retries left ${retryCount}`);
-      return await request({ path: '/api/info' });
+      await request({ path: '/api/info' });
+      if (retryCount < totalTries) {
+        // if api request failed at least once, make sure that it's stable
+        await delayPromise(1000);
+        await request({ path: '/api/info' });
+      }
+      return;
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
