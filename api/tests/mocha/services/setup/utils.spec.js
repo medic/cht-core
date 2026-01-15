@@ -1122,4 +1122,32 @@ describe('Setup utils', () => {
       expect(request.get.args[0]).to.deep.equal([{ url: 'http://someurl' }]);
     });
   });
+
+  describe('getDdocInfo', () => {
+    it('should return view_index info on success', async () => {
+      const database = { name: 'medic' };
+      const ddoc = '_design/medic';
+      const response = { view_index: { sizes: { active: 123 } } };
+      sinon.stub(request, 'get').resolves(response);
+
+      const result = await utils.getDdocInfo(database, ddoc);
+
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0][0].url).to.contain('/medic/_design/medic/_info');
+      expect(result).to.deep.equal(response.view_index);
+    });
+
+    it('should return null and log error on failure', async () => {
+      const database = { name: 'medic' };
+      const ddoc = '_design/medic';
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+      sinon.stub(logger, 'error');
+
+      const result = await utils.getDdocInfo(database, ddoc);
+
+      expect(result).to.equal(null);
+      expect(logger.error.callCount).to.equal(1);
+      expect(logger.error.args[0][0]).to.equal('Error fetching view index info: %o');
+    });
+  });
 });

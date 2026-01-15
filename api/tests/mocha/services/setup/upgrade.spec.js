@@ -12,12 +12,36 @@ let upgrade;
 describe('upgrade service', () => {
   beforeEach(() => {
     upgrade = rewire('../../../../src/services/setup/upgrade');
+    sinon.stub(upgradeUtils, 'getDdocInfo').resolves({ sizes: { active: 100 } });
   });
   afterEach(() => {
     sinon.restore();
   });
 
   describe('upgrade', () => {
+    it('should call prep and safeInstall', async () => {
+      const buildInfo = { version: '1.0.0' };
+      const username = 'admin';
+      const stageOnly = false;
+      sinon.stub(upgradeSteps, 'prep').resolves();
+      sinon.stub(upgradeSteps, 'stage').resolves();
+      sinon.stub(upgradeSteps, 'indexStagedViews').resolves();
+      sinon.stub(upgradeSteps, 'complete').resolves();
+      sinon.stub(upgradeSteps, 'finalize').resolves();
+
+      await upgrade.upgrade(buildInfo, username, stageOnly);
+
+      expect(upgradeSteps.prep.calledOnceWith(buildInfo, username, stageOnly)).to.equal(true);
+      
+      // safeInstall is purposefully called without await
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(upgradeSteps.stage.calledOnceWith(buildInfo)).to.equal(true);
+      expect(upgradeSteps.indexStagedViews.calledOnce).to.equal(true);
+      expect(upgradeSteps.complete.calledOnceWith(buildInfo)).to.equal(true);
+      expect(upgradeSteps.finalize.calledOnce).to.equal(true);
+    });
+
     it('should prep and not wait for stage or views indexing when only staging', async () => {
       sinon.stub(upgradeSteps, 'prep').resolves();
       let stage;
@@ -239,5 +263,522 @@ describe('upgrade service', () => {
       sinon.stub(upgradeUtils, 'isDockerUpgradeServiceRunning').resolves(false);
       expect(await upgrade.canUpgrade()).to.equal(false);
     });
+  });
+
+  describe('compareBuildVersions', () => {
+    it('should report add when remote has a new ddoc', async () => {
+      const local = {
+        medic: [{ _id: '_design/a' }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a' }, { _id: '_design/b', views: { v1: {} } }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{ type: ['added'], ddoc: '_design/b', db: 'medic', indexing: true }]);
+    });
+
+    it('should report nothing when local has a ddoc missing remotely', async () => {
+      const local = {
+        medic: [{ _id: '_design/a' }, { _id: '_design/b' }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a' }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should report views when view map differs', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', views: { v1: { map: 'emit(doc._id)' } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', views: { v1: { map: 'emit(doc.type)' } } }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when nouveau differs', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'field1', field_analyzers: { field1: 'std' } } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'field2', field_analyzers: { field1: 'std' } } } }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report views when local has views and remote does not', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', views: { v1: { map: 'emit(doc._id)' } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a' }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report views when remote has views and local does not', async () => {
+      const local = {
+        medic: [{ _id: '_design/a' }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', views: { v1: { map: 'emit(doc._id)' } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report views when view count differs', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', views: { v1: { map: 'emit(doc._id)' } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', views: { v1: { map: 'emit(doc._id)' }, v2: { map: 'emit(1)' } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when local has indexes and remote does not', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: {} } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a' }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when remote has indexes and local does not', async () => {
+      const local = {
+        medic: [{ _id: '_design/a' }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: {} } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when index count differs', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1' } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1' }, idx2: {} } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when field_analyzers differ in value', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'std' } } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'simple' } } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when field_analyzers differ in length', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'std' } } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'std', f2: 'std' } } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when field_analyzers is missing in one ddoc', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'std' } } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1' } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should return empty when both ddocs have no views or indexes', async () => {
+      const local = {
+        medic: [{ _id: '_design/a' }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a' }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should handle null field_analyzers', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: null } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'std' } } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report no changes when multiple views and indexes match perfectly', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          views: {
+            v1: { map: 'emit(1)' },
+            v2: { map: 'emit(2)' },
+          },
+          nouveau: {
+            idx1: { index: 'f1' },
+            idx2: { index: 'f2' },
+          }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          views: {
+            v1: { map: 'emit(1)' },
+            v2: { map: 'emit(2)' },
+          },
+          nouveau: {
+            idx1: { index: 'f1' },
+            idx2: { index: 'f2' },
+          }
+        }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should report views when one of multiple views differs', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          views: {
+            v1: { map: 'emit(1)' },
+            v2: { map: 'emit(2)' },
+          }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          views: {
+            v1: { map: 'emit(1)' },
+            v2: { map: 'emit(3)' },
+          }
+        }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when one of multiple indexes differs', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          nouveau: {
+            idx1: { index: 'f1' },
+            idx2: { index: 'f2' },
+          }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          nouveau: {
+            idx1: { index: 'f1' },
+            idx2: { index: 'f3' },
+          }
+        }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should handle undefined field_analyzers', async () => {
+      const local = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: null } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a', nouveau: { idx1: { index: 'f1', field_analyzers: undefined } } }],
+      };
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should return empty when there are no differences', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(doc._id)' } },
+          nouveau: { idx1: { index: 'field1', field_analyzers: { field1: 'std' } } }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(doc._id)' } },
+          nouveau: { idx1: { index: 'field1', field_analyzers: { field1: 'std' } } }
+        }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should handle multiple databases and include db name in results', async () => {
+      const local = {
+        medic: [{ _id: '_design/a' }],
+        'medic-logs': [{ _id: '_design/x', views: { v1: { map: 'emit(doc._id)' } } }],
+      };
+      const remote = {
+        medic: [{ _id: '_design/a' }, { _id: '_design/b', views: { v1: {} } }],
+        'medic-logs': [{ _id: '_design/x', views: { v1: { map: 'emit(doc.type)' } } }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.have.deep.members([
+        { type: ['added'], ddoc: '_design/b', db: 'medic', indexing: true },
+        { type: ['views'], ddoc: '_design/x', db: 'medic-logs', size: 100, indexing: true },
+      ]);
+      expect(result).to.have.length(2);
+    });
+
+    it('should report both views and indexes when both differ in the same ddoc', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(1)' } },
+          nouveau: { idx1: { index: 'f1' } }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(2)' } },
+          nouveau: { idx1: { index: 'f2' } }
+        }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views', 'indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report views when only views differ in a ddoc that also has nouveau indexes', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(1)' } },
+          nouveau: { idx1: { index: 'f1' } }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(2)' } },
+          nouveau: { idx1: { index: 'f1' } }
+        }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when only nouveau indexes differ in a ddoc that also has views', async () => {
+      const local = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(1)' } },
+          nouveau: { idx1: { index: 'f1' } }
+        }],
+      };
+      const remote = {
+        medic: [{
+          _id: '_design/a',
+          views: { v1: { map: 'emit(1)' } },
+          nouveau: { idx1: { index: 'f2' } }
+        }],
+      };
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
   });
 });

@@ -161,6 +161,20 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
+    const loadBuildsCompare = () => {
+      return $q
+        .all(
+          $scope.versions.releases.map(release => $scope.compareReleases(release))
+        ).then(releaseCompare => {
+          releaseCompare.forEach((compare, index) => {
+            if (compare) {
+              $scope.versions.releases[index].compare = compare;
+              $scope.versions.releases[index].requiresIndexing = !!compare.find(difference => difference.indexing);
+            }
+          });
+        });
+    };
+
     $scope.setupPromise = $q
       .all([
         getExistingDeployment(),
@@ -183,19 +197,20 @@ angular.module('controllers').controller('UpgradeCtrl',
       .catch((err) => logError(err, 'instance.upgrade.error.version_fetch'))
       .then(() => {
         $scope.loading = false;
-      });
+      })
+      .then(() => loadBuildsCompare());
 
     $scope.potentiallyIncompatible = (release) => {
       // Old builds may not have a base version, which means unless their version
-      // is in the form 1.2.3[-maybe.4] (ie it's a branch) we can't tell and will
+      // is in the form 1.2.3[-maybe.4] (ie it's a branch), we can't tell and will
       // just presume maybe it's bad
       if (!release.base_version && !Version.parse(release.version)) {
         return true;
       }
 
-      const currentVersion = Version.currentVersion($scope.currentDeploy);
+      const currentVersion = Version.parse($scope.currentDeploy.base_version || $scope.currentDeploy.version);
       if (!currentVersion) {
-        // Unable to parse the current version information so all releases are
+        // Unable to parse the current version information, so all releases are
         // potentially incompatible
         return true;
       }
@@ -297,6 +312,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $http
         .delete(UPGRADE_URL)
         .then(() => getCurrentUpgrade())
-        .then(() => loadBuilds());
+        .then(() => loadBuilds())
+        .then(() => loadBuildsCompare());
     };
   });

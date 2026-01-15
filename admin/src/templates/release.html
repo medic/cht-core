@@ -1,10 +1,15 @@
 <div class="col-xs-5">
     <span class="label label-info release-name" title="{{release | buildVersion}}">{{release | buildVersion}}</span>
 </div>
-<div class="col-xs-3" ng-if="!dateFormat" ng-bind-html="release.time | date"></div>
+<div class="col-xs-2" ng-if="!dateFormat" ng-bind-html="release.time | date"></div>
 <div class="col-xs-3" ng-if="dateFormat === 'medium'" ng-bind-html="release.time | date:'medium'"></div>
-<div class="col-xs-1">
-  <span ng-if="showBaseVersion">{{ release.base_version }}</span>
+<div class="col-xs-1" ng-if="showBaseVersion">
+  <span>{{ release.base_version }}</span>
+</div>
+<div class="col-xs-2" ng-if="!dateFormat">
+  <span ng-if="release.compare && !release.requiresIndexing">
+    <span translate="" class="label label-success">instance.upgrade.indexing.not_required.short</span>
+  </span>
 </div>
 <div class="col-xs-1">
   <i ng-if="potentiallyIncompatible(release)" class="fa fa-exclamation-triangle" translate translate-attr-title="instance.upgrade.potentiallyIncompatible"></i>

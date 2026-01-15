@@ -2,6 +2,7 @@ const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLog = require('./upgrade-log');
 const upgradeSteps = require('./upgrade-steps');
 const upgradeUtils = require('./utils');
+const { DATABASES } = require('./databases');
 const logger = require('@medic/logger');
 
 /**
@@ -82,27 +83,41 @@ const upgradeInProgress = () => {
 const canUpgrade = () => upgradeUtils.isDockerUpgradeServiceRunning();
 
 const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
-  const differences = [];
-  const remoteDdoc = remoteDdocs.find(ddoc => localDdoc._id === ddoc._id);
+  const remoteDdoc = remoteDdocs?.find(ddoc => localDdoc._id === ddoc._id);
 
   if (!remoteDdoc) {
-    differences.push({ type: 'remove', ddoc: localDdoc._id, db: database.name });
-  } else if (areViewsDifferent(localDdoc, remoteDdoc)) {
-    differences.push({ type: 'changed_views', ddoc: localDdoc._id, db: database.name });
-  } else if (areIndexesDifferent(localDdoc, remoteDdoc)) {
-    differences.push({ type: 'changed_indexes', ddoc: localDdoc._id, db: database.name });
+    return [];
+  }
+  const types = [
+    areViewsDifferent(localDdoc, remoteDdoc) && 'views',
+    areIndexesDifferent(localDdoc, remoteDdoc) && 'indexes',
+  ].filter(Boolean);
+
+  if (!types.length) {
+    return [];
   }
 
-  return differences;
+  return [{
+    type: types,
+    ddoc: localDdoc._id,
+    db: database.name,
+    size: localDdoc.info.sizes.active,
+    indexing: true,
+  }];
 };
 
 const compareRemoteToLocal = (database, remoteDdoc, localDdocs) => {
   const localDdoc = localDdocs.find(ddoc => ddoc._id === remoteDdoc._id);
-  if (!localDdoc) {
-    return [{ type: 'add', ddoc: remoteDdoc._id, db: database.name }];
+  if (localDdoc) {
+    return [];
   }
 
-  return [];
+  return [{
+    type: ['added'],
+    ddoc: remoteDdoc._id,
+    db: database.name,
+    indexing: !!remoteDdoc.nouveau || !!remoteDdoc.views
+  }];
 };
 
 const compareBuildVersions = async (buildInfo) => {
@@ -111,15 +126,17 @@ const compareBuildVersions = async (buildInfo) => {
 
   const differences = [];
 
-  for (const [database, localDdocs] of localBuild) {
-    const remoteDdocs = remoteBuild.get(database);
+  for (const [database, localDdocs] of Object.entries(localBuild)) {
+    const remoteDdocs = remoteBuild[database] || [];
+    const db = DATABASES.find(d => d.name === database);
 
     for (const localDdoc of localDdocs) {
-      differences.push(...compareLocalToRemote(database, localDdoc, remoteDdocs));
+      localDdoc.info = await upgradeUtils.getDdocInfo(db, localDdoc._id);
+      differences.push(...compareLocalToRemote(db, localDdoc, remoteDdocs));
     }
 
     for (const remoteDdoc of remoteDdocs) {
-      differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
+      differences.push(...compareRemoteToLocal(db, remoteDdoc, localDdocs));
     }
   }
 

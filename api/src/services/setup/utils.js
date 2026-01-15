@@ -374,6 +374,16 @@ const upgradeResponseSuccess = (payload, response) => {
   return !!sucessfullyUpdatedFiles.length || !!successfullyUpdatedContainers.length;
 };
 
+const getDdocInfo = async (database, ddoc) => {
+  try {
+    const response = await request.get({ url: `${environment.serverUrl}/${database.name}/${ddoc}/_info` });
+    return response.view_index;
+  } catch (err) {
+    logger.error('Error fetching view index info: %o', err);
+    return null;
+  }
+};
+
 module.exports = {
   cleanup,
 
@@ -393,4 +403,5 @@ module.exports = {
   isDockerUpgradeServiceRunning,
   downloadDdocDefinitions,
   getLocalDdocDefinitions,
+  getDdocInfo,
 };
