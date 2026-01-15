@@ -11,41 +11,43 @@
   <div ng-if="model.releaseCompare">
     <p ng-if="!model.releaseCompare.length" class="alert alert-info" translate>instance.upgrade.indexing.not_required</p>
     <div ng-if="model.releaseCompare.length">
-      <div class="alert alert-warning btn" ng-click="status.open = !status.open">
-        <i class="fa" ng-class="{'fa-chevron-down': status.open, 'fa-chevron-right': !status.open}"></i>
+      <a class="alert alert-warning btn" ng-click="isCollapsed = !isCollapsed">
+        <i class="fa" ng-class="{'fa-chevron-down': !isCollapsed, 'fa-chevron-right': isCollapsed}"></i>
         <span translate>instance.upgrade.indexing.required</span>
-      </div>
+      </a>
 
-      <div uib-accordion ng-if="model.releaseCompare.length" class="indexing-accordion">
-        <div uib-accordion-group is-open="status.open">
-          <table class="table">
-            <tr>
-              <th><span translate>instance.upgrade.indexing.db</span></th>
-              <th><span translate>instance.upgrade.indexing.ddoc</span></th>
-              <th>Type</th>
-              <th>Size</th>
-            </tr>
-            <tr ng-repeat="difference in model.releaseCompare">
-              <td>{{difference.db}}</td>
-              <td>{{difference.ddoc}}</td>
-              <td>
+      <div uib-collapse="isCollapsed">
+        <table class="table">
+          <tr>
+            <th><span translate>instance.upgrade.indexing.db</span></th>
+            <th><span translate>instance.upgrade.indexing.ddoc</span></th>
+            <th><span translate>instance.upgrade.indexing.type</span></th>
+            <th><span translate>instance.upgrade.indexing.size</span></th>
+          </tr>
+          <tr ng-repeat="difference in model.releaseCompare">
+            <td>{{difference.db}}</td>
+            <td>{{difference.ddoc}}</td>
+            <td>
                 <span ng-repeat="type in difference.type">
                   <span translate="instance.upgrade.indexing.type.{{type}}"></span>
                 </span>
-              </td>
-              <td>
+            </td>
+            <td>
                 <span>
                   {{difference.size | bytes}}
                 </span>
-              </td>
-            </tr>
-          </table>
-        </div>
+            </td>
+          </tr>
+        </table>
 
+        <div class="alert alert-warning">
+          <span translate>instance.upgrade.indexing.size.warning</span>
+
+        </div>
       </div>
     </div>
 
   </div>
   <p ng-if="model.stageOnly" translate>instance.stage.confirm.note</p>
-  <p ng-if="!model.stageOnly" translate>instance.upgrade.confirm.warning.text</p>
+  <p ng-if="!model.stageOnly" translate class="alert alert-info">instance.upgrade.confirm.warning.text</p>
 </mm-modal>

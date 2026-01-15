@@ -324,6 +324,20 @@ describe('upgrade service', () => {
       expect(result).to.deep.equal([]);
     });
 
+    it('should report nothing when a whole database is missing remotely', async () => {
+      const localMedic = buildMap('medic', [{ id: 'a' }]);
+      const localOther = buildMap('other-db', [{ id: 'b', views: { v1: {} } }]);
+      const local = new Map([...localMedic, ...localOther]);
+
+      const remote = buildMap('medic', [{ id: 'a' }]);
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([]);
+    });
+
     it('should report views when view map differs', async () => {
       const local = buildMap('medic', [{ id: 'a', views: { v1: { map: 'emit(doc._id)' } } }]);
       const remote = buildMap('medic', [{ id: 'a', views: { v1: { map: 'emit(doc.type)' } } }]);

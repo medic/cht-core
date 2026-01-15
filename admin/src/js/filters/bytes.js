@@ -1,9 +1,9 @@
 angular.module('filters').filter('bytes', function() {
   return function(bytes, precision) {
-    if (isNaN(parseFloat(bytes)) || !isFinite(bytes) || bytes === 0) {
+    if (Number.isNaN(Number.parseFloat(bytes)) || !Number.isFinite(bytes) || bytes === 0) {
       return '-';
     }
-    if (typeof precision === 'undefined') {
+    if (!precision) {
       precision = 1;
     }
     const units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'];

@@ -165,17 +165,20 @@ angular.module('controllers').controller('UpgradeCtrl',
       if (!$scope.versions.releases) {
         return;
       }
-      return $q
-        .all(
-          $scope.versions.releases.map(release => $scope.compareReleases(release))
-        ).then(releaseCompare => {
-          releaseCompare.forEach((compare, index) => {
-            if (compare) {
-              $scope.versions.releases[index].compare = compare;
-              $scope.versions.releases[index].requiresIndexing = !!compare.find(difference => difference.indexing);
-            }
-          });
+
+      const updateReleaseInfo = (releaseCompare) => {
+        releaseCompare.forEach((compare, index) => {
+          if (compare) {
+            const release = $scope.versions.releases[index];
+            release.compare = compare;
+            release.requiresIndexing = compare.some(difference => difference.indexing);
+          }
         });
+      };
+
+      return $q
+        .all($scope.versions.releases.map(release => $scope.compareReleases(release)))
+        .then(updateReleaseInfo);
     };
 
 

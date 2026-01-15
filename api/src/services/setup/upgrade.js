@@ -133,8 +133,10 @@ const compareBuildVersions = async (buildInfo) => {
       differences.push(...compareLocalToRemote(database, localDdoc, remoteDdocs));
     }
 
-    for (const remoteDdoc of remoteDdocs) {
-      differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
+    if (remoteDdocs) {
+      for (const remoteDdoc of remoteDdocs) {
+        differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
+      }
     }
   }
 
