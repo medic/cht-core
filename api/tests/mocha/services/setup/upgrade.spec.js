@@ -659,6 +659,49 @@ describe('upgrade service', () => {
       }]);
     });
 
+    it('should report indexes when default_analyzer differs', async () => {
+      const local = buildMap(
+        'medic',
+        [{ id: 'a', nouveau: { idx1: { index: 'f1', default_analyzer: 'std' } } }]
+      );
+      const remote = buildMap(
+        'medic',
+        [{ id: 'a', nouveau: { idx1: { index: 'f1', default_analyzer: 'simple' } } }]
+      );
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
+    it('should report indexes when default_analyzer is missing in one ddoc', async () => {
+      const local = buildMap(
+        'medic',
+        [{ id: 'a', nouveau: { idx1: { index: 'f1', default_analyzer: 'std' } } }]
+      );
+      const remote = buildMap('medic', [{ id: 'a', nouveau: { idx1: { index: 'f1' } } }]);
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 100,
+        indexing: true
+      }]);
+    });
+
     it('should handle undefined field_analyzers', async () => {
       const local = buildMap('medic', [{ id: 'a', nouveau: { idx1: { index: 'f1', field_analyzers: null } } }]);
       const remote = buildMap('medic', [{ id: 'a', nouveau: { idx1: { index: 'f1', field_analyzers: undefined } } }]);

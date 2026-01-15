@@ -173,7 +173,8 @@ const compareIndexes = (local, remote) => {
     const remoteIndex = remote.nouveau[indexName];
     if (!remoteIndex ||
         localIndex.index !== remoteIndex.index ||
-        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers)
+        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
+        localIndex.default_analyzer !== remoteIndex.default_analyzer
     ) {
       return true;
     }
