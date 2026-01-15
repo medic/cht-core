@@ -162,6 +162,9 @@ angular.module('controllers').controller('UpgradeCtrl',
     };
 
     const loadBuildsCompare = () => {
+      if (!$scope.versions.releases) {
+        return;
+      }
       return $q
         .all(
           $scope.versions.releases.map(release => $scope.compareReleases(release))

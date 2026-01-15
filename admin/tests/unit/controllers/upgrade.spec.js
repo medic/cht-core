@@ -285,8 +285,8 @@ describe('UpgradeCtrl controller', () => {
       [{ ddoc: '_design/sentinel', db: 'sentinel', indexing: false } ]
     );
     expect(scope.versions.releases[1].requiresIndexing).to.equal(false);
-    expect(scope.versions.betas[0].compare).to.deep.equal([{ ddoc: '_design/medic', db: 'medic', indexing: true }]);
-    expect(scope.versions.branches[0].compare).to.deep.equal([{ ddoc: '_design/medic', db: 'medic', indexing: true }]);
+    expect(scope.versions.betas[0].compare).to.equal(undefined);
+    expect(scope.versions.branches[0].compare).to.equal(undefined);
     expect(scope.canUpgrade).to.equal(true);
     expect(buildsDb.query.callCount).to.equal(3);
     expect(buildsDb.query.args[0]).to.deep.equal([
