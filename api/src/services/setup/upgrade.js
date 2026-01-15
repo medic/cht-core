@@ -2,7 +2,6 @@ const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLog = require('./upgrade-log');
 const upgradeSteps = require('./upgrade-steps');
 const upgradeUtils = require('./utils');
-const { DATABASES } = require('./databases');
 const logger = require('@medic/logger');
 
 /**
@@ -134,7 +133,6 @@ const compareBuildVersions = async (buildInfo) => {
       differences.push(...compareLocalToRemote(database, localDdoc, remoteDdocs));
     }
 
-    console.warn(remoteDdocs, localDdocs, database);
     for (const remoteDdoc of remoteDdocs) {
       differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
     }
