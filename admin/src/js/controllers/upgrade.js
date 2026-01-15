@@ -175,6 +175,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
+
     $scope.setupPromise = $q
       .all([
         getExistingDeployment(),

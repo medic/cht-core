@@ -126,17 +126,17 @@ const compareBuildVersions = async (buildInfo) => {
 
   const differences = [];
 
-  for (const [database, localDdocs] of Object.entries(localBuild)) {
-    const remoteDdocs = remoteBuild[database] || [];
-    const db = DATABASES.find(d => d.name === database);
+  for (const [database, localDdocs] of localBuild) {
+    const remoteDdocs = remoteBuild.get(database);
 
     for (const localDdoc of localDdocs) {
-      localDdoc.info = await upgradeUtils.getDdocInfo(db, localDdoc._id);
-      differences.push(...compareLocalToRemote(db, localDdoc, remoteDdocs));
+      localDdoc.info = await upgradeUtils.getDdocInfo(database, localDdoc._id);
+      differences.push(...compareLocalToRemote(database, localDdoc, remoteDdocs));
     }
 
+    console.warn(remoteDdocs, localDdocs, database);
     for (const remoteDdoc of remoteDdocs) {
-      differences.push(...compareRemoteToLocal(db, remoteDdoc, localDdocs));
+      differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
     }
   }
 
