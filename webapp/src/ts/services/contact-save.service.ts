@@ -51,12 +51,13 @@ export class ContactSaveService {
         // on the doc's parents being attached.
         const repeated = this.prepareRepeatedDocs(submitted.doc, submitted.repeats);
 
-        // Process attachments from FileManager and attach to main document
-        this.processFileAttachments(doc, xmlStr);
+        // Process attachments for all documents
+        const preparedDocs = [ doc ].concat(repeated, siblings); // NB: order matters: #4200
+        this.processAllAttachments(preparedDocs, xmlStr);
 
         return {
           docId: doc._id,
-          preparedDocs: [ doc ].concat(repeated, siblings) // NB: order matters: #4200
+          preparedDocs: preparedDocs
         };
       });
   }
@@ -83,23 +84,29 @@ export class ContactSaveService {
     });
   }
 
-  private processFileAttachments(doc: Record<string, any>, xmlStr: string) {
+  private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
     // Get files from FileManager (uploaded via file widgets)
+    // For now, attach file widgets to the main document (first doc)
+    // TODO: Map file widgets to correct document based on field location
+    const mainDoc = preparedDocs[0];
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false);
+        this.attachmentService.add(mainDoc, `user-file-${file.name}`, file, file.type, false);
       });
 
-    // Process binary fields from XML
+    // Process binary fields from XML and map to correct documents
     if (xmlStr) {
-      this.processBinaryFields(doc, xmlStr);
+      this.processBinaryFieldsForAllDocs(preparedDocs, xmlStr);
     }
   }
 
-  private processBinaryFields(doc: Record<string, any>, xmlStr: string) {
+  private processBinaryFieldsForAllDocs(preparedDocs: Record<string, any>[], xmlStr: string) {
     const $record = $($.parseXML(xmlStr));
     const formId = $record.find(':first').attr('id');
+
+    // Build a map of document boundaries: which XPath prefixes correspond to which documents
+    const docBoundaries = this.buildDocumentBoundaries($record, preparedDocs);
 
     $record
       .find('[type=binary]')
@@ -111,9 +118,57 @@ export class ContactSaveService {
           // Replace instance root element node name with form internal ID
           const filename = 'user-file' +
             (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
-          this.attachmentService.add(doc, filename, content, 'image/png', true);
+
+          // Find which document this attachment belongs to based on XPath
+          const targetDoc = this.findTargetDocument(xpath, docBoundaries, preparedDocs);
+          this.attachmentService.add(targetDoc, filename, content, 'image/png', true);
         }
       });
+  }
+
+  private buildDocumentBoundaries($record: JQuery<XMLDocument>, preparedDocs: Record<string, any>[]): Record<string, number> {
+    // Map XPath prefixes to document indices
+    // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 1 (sibling)
+    const boundaries: Record<string, number> = {};
+    const rootElement = $record.find(':first')[0];
+    const rootName = rootElement.nodeName;
+
+    // Get direct children of root element
+    const children = $(rootElement).children();
+    children.each((idx, child) => {
+      const childName = child.nodeName;
+      const xpath = `/${rootName}/${childName}`;
+
+      // Map xpath to document index
+      // First child is main doc (index 0)
+      // Subsequent children are siblings (starting from index 1, after any repeats)
+      if (idx === 0) {
+        boundaries[xpath] = 0; // main document
+      } else {
+        // For siblings, they appear after repeats in preparedDocs array
+        // Since we don't have repeats yet, siblings start at index 1
+        // TODO: Handle repeats properly
+        boundaries[xpath] = preparedDocs.length - (children.length - idx);
+      }
+    });
+
+    return boundaries;
+  }
+
+  private findTargetDocument(
+    xpath: string,
+    docBoundaries: Record<string, number>,
+    preparedDocs: Record<string, any>[]
+  ): Record<string, any> {
+    // Find which document boundary this xpath falls under
+    for (const [boundaryXpath, docIndex] of Object.entries(docBoundaries)) {
+      if (xpath.startsWith(boundaryXpath)) {
+        return preparedDocs[docIndex];
+      }
+    }
+
+    // Default to main document if no match found
+    return preparedDocs[0];
   }
 
   private extractIfRequired(name, value) {
