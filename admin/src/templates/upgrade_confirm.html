@@ -8,14 +8,13 @@
   on-submit="submit()"
 >
   <p translate-values="{ before: '{{model.before}}', after: '{{model.after}}' }" translate>instance.upgrade.confirm.summary</p>
-  <div ng-if="model.releaseCompare">
-    <p ng-if="!model.releaseCompare.length" class="alert alert-info" translate>instance.upgrade.indexing.not_required</p>
-    <div ng-if="model.releaseCompare.length">
+  <div ng-if="model.build.compare">
+    <p ng-if="!model.build.compare.length" class="alert alert-info" translate>instance.upgrade.indexing.not_required</p>
+    <div ng-if="model.build.compare.length">
       <a class="alert alert-warning btn" ng-click="isCollapsed = !isCollapsed">
         <i class="fa" ng-class="{'fa-chevron-down': !isCollapsed, 'fa-chevron-right': isCollapsed}"></i>
         <span translate>instance.upgrade.indexing.required</span>
       </a>
-
       <div uib-collapse="isCollapsed">
         <table class="table">
           <tr>
@@ -24,7 +23,7 @@
             <th><span translate>instance.upgrade.indexing.type</span></th>
             <th><span translate>instance.upgrade.indexing.size</span></th>
           </tr>
-          <tr ng-repeat="difference in model.releaseCompare">
+          <tr ng-repeat="difference in model.build.compare">
             <td>{{difference.db}}</td>
             <td>{{difference.ddoc}}</td>
             <td>
@@ -42,10 +41,13 @@
 
         <div class="alert alert-warning">
           <span translate>instance.upgrade.indexing.size.warning</span>
-
         </div>
       </div>
     </div>
+
+    <p>
+      <a href="https://docs.communityhealthtoolkit.org/hosting/cht/upgrade-troubleshooting/" target="_blank" translate>instance.upgrade.indexing.documentation</a>
+    </p>
 
   </div>
   <p ng-if="model.stageOnly" translate>instance.stage.confirm.note</p>

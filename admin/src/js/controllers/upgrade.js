@@ -165,20 +165,10 @@ angular.module('controllers').controller('UpgradeCtrl',
       if (!$scope.versions.releases) {
         return;
       }
-
-      const updateReleaseInfo = (releaseCompare) => {
-        releaseCompare.forEach((compare, index) => {
-          if (compare) {
-            const release = $scope.versions.releases[index];
-            release.compare = compare;
-            release.requiresIndexing = compare.some(difference => difference.indexing);
-          }
-        });
-      };
-
-      return $q
-        .all($scope.versions.releases.map(release => $scope.compareReleases(release)))
-        .then(updateReleaseInfo);
+      let series = Promise.resolve();
+      $scope.versions.releases.forEach(release => series = series.then(() => $scope.compareReleases(release)));
+      $scope.versions.betas.forEach(release => series = series.then(() => $scope.compareReleases(release)));
+      return series;
     };
 
 
@@ -232,20 +222,22 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.upgrade = (build, action) => {
       const stageOnly = action === 'stage';
-      const confirmCallback = () => upgrade(build, action);
+      const upgradeBuild = Object.assign({}, build);
+      delete upgradeBuild.compare;
+      delete upgradeBuild.requiresIndexing;
 
       return $scope
         .compareReleases(build)
-        .then((releaseCompare) => Modal({
+        .then(() => Modal({
           templateUrl: 'templates/upgrade_confirm.html',
           controller: 'UpgradeConfirmCtrl',
           model: {
             stageOnly,
+            build,
             before: $scope.currentDeploy.version,
             after: build.version,
-            confirmCallback,
+            confirmCallback: () => upgrade(upgradeBuild, action),
             errorKey: 'instance.upgrade.error.compare',
-            releaseCompare
           }
         })).catch(() => {});
     };
@@ -306,10 +298,16 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.compareReleases = (build) => {
       const url = `${UPGRADE_URL}/compare`;
+      if (build.compare) {
+        return $q.resolve();
+      }
 
       return $http
         .post(url, { build })
-        .then(({ data }) => data)
+        .then(({ data }) => {
+          build.compare = data;
+          build.requiresIndexing = data.some(difference => difference.indexing);
+        })
         .catch(error => {
           $log.error('Failed to compare releases', error);
         });

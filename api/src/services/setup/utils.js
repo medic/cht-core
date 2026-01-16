@@ -183,24 +183,34 @@ const getDdocDefinitions = (buildInfo) => {
   return downloadDdocDefinitions(buildInfo);
 };
 
+let localDdocDefinitionsCache = null;
 /**
  * Returns map of bundled ddoc definitions for every database
  * @return {Map<Database, Array>}
  */
 const getLocalDdocDefinitions = async () => {
+  if (localDdocDefinitionsCache) {
+    return localDdocDefinitionsCache;
+  }
   const ddocDefinitions = new Map();
   for (const database of DATABASES) {
     ddocDefinitions.set(database, await getBundledDdocs(database));
   }
+  localDdocDefinitionsCache = ddocDefinitions;
   return ddocDefinitions;
 };
 
+const remoteDdocDefinitionsCache = new Map();
 /**
  * Returns map of bundled ddoc definitions for every database, downloaded from the staging server
  * @param {BuildInfo} buildInfo
  * @return {Map<Database, Array>}
  */
 const downloadDdocDefinitions = async (buildInfo) => {
+  if (remoteDdocDefinitionsCache.has(buildInfo.version)) {
+    return remoteDdocDefinitionsCache.get(buildInfo.version);
+  }
+
   const ddocDefinitions = new Map();
 
   const stagingDoc = await getStagingDoc(buildInfo);
@@ -220,6 +230,7 @@ const downloadDdocDefinitions = async (buildInfo) => {
     }
   }
 
+  remoteDdocDefinitionsCache.set(buildInfo.version, ddocDefinitions);
   return ddocDefinitions;
 };
 

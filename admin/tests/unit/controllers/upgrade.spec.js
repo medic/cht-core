@@ -285,8 +285,11 @@ describe('UpgradeCtrl controller', () => {
       [{ ddoc: '_design/sentinel', db: 'sentinel', indexing: false } ]
     );
     expect(scope.versions.releases[1].requiresIndexing).to.equal(false);
-    expect(scope.versions.betas[0].compare).to.equal(undefined);
-    expect(scope.versions.branches[0].compare).to.equal(undefined);
+    expect(scope.versions.betas[0].compare).to.deep.equal([{ ddoc: '_design/medic', db: 'medic', indexing: true }]);
+    expect(scope.versions.betas[1].compare).to.deep.equal(
+      [{ ddoc: '_design/medic', db: 'medic', indexing: true } ]
+    );
+    expect(scope.versions.branches[0].compare).to.be.undefined;
     expect(scope.canUpgrade).to.equal(true);
     expect(buildsDb.query.callCount).to.equal(3);
     expect(buildsDb.query.args[0]).to.deep.equal([
@@ -571,8 +574,6 @@ describe('UpgradeCtrl controller', () => {
         'model.before': '4.1.0',
         'model.after': '4.2.0'
       });
-      // release comparison failed, so modal receives undefined
-      expect(modal.args[0][0].model.releaseCompare).to.equal(undefined);
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -580,10 +581,8 @@ describe('UpgradeCtrl controller', () => {
 
       await upgradeCb();
       expect(http.post.callCount).to.equal(2);
-      expect(http.post.args[1]).to.deep.equal([
-        '/api/v2/upgrade/stage',
-        { build: { version: '4.2.0' } },
-      ]);
+      expect(http.post.args[1][0]).to.equal('/api/v2/upgrade/stage');
+      expect(http.post.args[1][1].build.version).to.equal('4.2.0');
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
     });
 
@@ -618,7 +617,6 @@ describe('UpgradeCtrl controller', () => {
         'model.before': '4.1.0',
         'model.after': '4.2.0'
       });
-      expect(modal.args[0][0].model.releaseCompare).to.equal(undefined);
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -663,9 +661,9 @@ describe('UpgradeCtrl controller', () => {
         controller: 'UpgradeConfirmCtrl',
         'model.stageOnly': true,
         'model.before': '4.1.0',
-        'model.after': '4.2.0'
+        'model.after': '4.2.0',
+        'model.build.compare': compareResponse
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': compareResponse });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -723,10 +721,9 @@ describe('UpgradeCtrl controller', () => {
         controller: 'UpgradeConfirmCtrl',
         'model.stageOnly': false,
         'model.before': '4.1.0',
-        'model.after': '4.2.0'
+        'model.after': '4.2.0',
+        'model.build.compare': [{ ddoc: '_design/medic', db: 'medic' }]
       });
-      expect(modal.args[0][0])
-        .to.deep.nested.include({ 'model.releaseCompare': [{ ddoc: '_design/medic', db: 'medic' }] });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -785,9 +782,9 @@ describe('UpgradeCtrl controller', () => {
         controller: 'UpgradeConfirmCtrl',
         'model.stageOnly': false,
         'model.before': '4.1.0',
-        'model.after': '4.2.0'
+        'model.after': '4.2.0',
+        'model.build.compare': compareResponse,
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': compareResponse });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -845,15 +842,14 @@ describe('UpgradeCtrl controller', () => {
         'model.before': '4.1.0',
         'model.after': '4.2.0',
         'model.errorKey': 'instance.upgrade.error.compare',
+        'model.build.compare': []
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': [] });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(1);
 
       await upgradeCb();
-
       expect(http.post.callCount).to.equal(2);
       expect(http.post.args[1]).to.deep.equal([
         '/api/v2/upgrade/complete',
@@ -891,8 +887,8 @@ describe('UpgradeCtrl controller', () => {
         'model.before': '4.1.0',
         'model.after': '4.2.0',
         'model.errorKey': 'instance.upgrade.error.compare',
+        'model.build.compare': []
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': [] });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -939,8 +935,8 @@ describe('UpgradeCtrl controller', () => {
         'model.before': '4.1.0',
         'model.after': '4.2.0',
         'model.errorKey': 'instance.upgrade.error.compare',
+        'model.build.compare': []
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': [] });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -1104,9 +1100,9 @@ describe('UpgradeCtrl controller', () => {
         controller: 'UpgradeConfirmCtrl',
         'model.stageOnly': true,
         'model.before': '4.1.0',
-        'model.after': '4.2.0'
+        'model.after': '4.2.0',
+        'model.build.compare': compareResponseRetry1
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': compareResponseRetry1 });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -1148,9 +1144,9 @@ describe('UpgradeCtrl controller', () => {
         controller: 'UpgradeConfirmCtrl',
         'model.stageOnly': false,
         'model.before': '4.2.0',
-        'model.after': '4.3.0'
+        'model.after': '4.3.0',
+        'model.build.compare': compareResponseRetry2
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': compareResponseRetry2 });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
@@ -1218,8 +1214,8 @@ describe('UpgradeCtrl controller', () => {
         'model.before': '4.1.0',
         'model.after': '4.3.0',
         'model.errorKey': 'instance.upgrade.error.compare',
+        'model.build.compare': compareResponseRetryErr
       });
-      expect(modal.args[0][0]).to.deep.nested.include({ 'model.releaseCompare': compareResponseRetryErr });
       const upgradeCb = modal.args[0][0].model.confirmCallback;
       expect(http.post.callCount).to.equal(1);
       expect(http.post.args[0][0]).to.equal('/api/v2/upgrade/compare');
