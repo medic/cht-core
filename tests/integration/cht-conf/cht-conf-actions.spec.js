@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { DOC_IDS } = require('@medic/constants');
 
 const { runCommand } = require('@utils/cht-conf');
 const utils = require('@utils');
@@ -24,7 +25,7 @@ let originalVersion;
 
 describe('cht-conf actions tests', () => {
   before(async () => {
-    const settings = await utils.getDoc('settings');
+    const settings = await utils.getDoc(DOC_IDS.SETTINGS);
     originalVersion = Number(settings._rev.charAt(0));
     expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor');
   });
@@ -34,7 +35,7 @@ describe('cht-conf actions tests', () => {
   it('should execute upload-app-settings', async () => {
     const result = await runCommand('upload-app-settings', configPath);
     expect(result).to.contain(`INFO Settings updated successfully`);
-    const settings = await utils.getDoc('settings');
+    const settings = await utils.getDoc(DOC_IDS.SETTINGS);
     const newVersion = Number(settings._rev.charAt(0));
     expect(newVersion).to.be.greaterThanOrEqual(originalVersion);
     expect(settings.settings.roles).to.include.all.keys('program_officer', 'chw_supervisor');
