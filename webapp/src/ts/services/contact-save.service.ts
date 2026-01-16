@@ -4,8 +4,10 @@ import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import FileManager from '../../js/enketo/file-manager';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +19,7 @@ export class ContactSaveService {
   constructor(
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
+    private attachmentService:AttachmentService,
     private ngZone:NgZone,
     chtDatasourceService: CHTDatasourceService,
   ) {
@@ -47,6 +50,9 @@ export class ContactSaveService {
         // on the doc's parents being attached.
         const repeated = this.prepareRepeatedDocs(submitted.doc, submitted.repeats);
 
+        // Process attachments from FileManager and attach to main document
+        this.processFileAttachments(doc);
+
         return {
           docId: doc._id,
           preparedDocs: [ doc ].concat(repeated, siblings) // NB: order matters: #4200
@@ -74,6 +80,15 @@ export class ContactSaveService {
       child.parent = this.extractLineageService.extract(doc);
       return this.prepare(child);
     });
+  }
+
+  private processFileAttachments(doc) {
+    // Get files from FileManager (uploaded via file widgets)
+    FileManager
+      .getCurrentFiles()
+      .forEach(file => {
+        this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false);
+      });
   }
 
   private extractIfRequired(name, value) {

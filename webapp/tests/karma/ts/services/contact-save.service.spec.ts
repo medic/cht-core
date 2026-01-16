@@ -6,14 +6,17 @@ import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 
 describe('ContactSave service', () => {
 
   let service;
   let enketoTranslationService;
   let extractLineageService;
+  let attachmentService;
   let clock;
   let chtDatasourceService;
   let getContact;
@@ -24,6 +27,10 @@ describe('ContactSave service', () => {
     };
 
     extractLineageService = { extract: sinon.stub() };
+    attachmentService = {
+      add: sinon.stub(),
+      remove: sinon.stub()
+    };
     getContact = sinon.stub();
     chtDatasourceService = { bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact) };
     TestBed.configureTestingModule({
@@ -31,6 +38,7 @@ describe('ContactSave service', () => {
         provideMockStore(),
         { provide: EnketoTranslationService, useValue: enketoTranslationService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: AttachmentService, useValue: attachmentService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: HttpClient, useValue: {} },
       ]
@@ -224,5 +232,33 @@ describe('ContactSave service', () => {
           reported_date: 5000,
         });
       });
+  });
+
+  describe('file attachments', () => {
+    it('should attach files from FileManager to main contact document', () => {
+      const form = { getDataStr: () => '<data><person><name>John Doe</name></person></data>' };
+      const docId = null;
+      const type = 'person';
+
+      const mockFile = new File(['test file content'], 'test-photo.png', { type: 'image/png' });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([mockFile]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'person1', type: 'person', name: 'John Doe' }
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(() => {
+          assert.isTrue(attachmentService.add.calledOnce, 'AttachmentService.add should be called once');
+
+          const addCall = attachmentService.add.getCall(0);
+          assert.equal(addCall.args[0]._id, 'person1', 'Should attach to the main document');
+          assert.equal(addCall.args[1], 'user-file-test-photo.png', 'Should use correct attachment name pattern');
+          assert.equal(addCall.args[2], mockFile, 'Should pass the file content');
+          assert.equal(addCall.args[3], 'image/png', 'Should pass the file type');
+          assert.equal(addCall.args[4], false, 'Should not be pre-encoded');
+        });
+    });
   });
 });
