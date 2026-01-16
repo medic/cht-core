@@ -687,6 +687,43 @@ describe(`Rules Engine Integration Tests`, () => {
     });
   });
 
+  describe('showTask', () => {
+    it('should return true for tasks in Ready state', () => {
+      const taskDoc = { state: 'Ready' };
+      expect(rulesEngine.showTask(taskDoc)).to.be.true;
+    });
+
+    it('should return false for tasks in Draft state', () => {
+      const taskDoc = { state: 'Draft' };
+      expect(rulesEngine.showTask(taskDoc)).to.be.false;
+    });
+
+    it('should return false for tasks in Completed state', () => {
+      const taskDoc = { state: 'Completed' };
+      expect(rulesEngine.showTask(taskDoc)).to.be.false;
+    });
+
+    it('should return false for tasks in Failed state', () => {
+      const taskDoc = { state: 'Failed' };
+      expect(rulesEngine.showTask(taskDoc)).to.be.false;
+    });
+
+    it('should return false for tasks in Cancelled state', () => {
+      const taskDoc = { state: 'Cancelled' };
+      expect(rulesEngine.showTask(taskDoc)).to.be.false;
+    });
+
+    it('should return false for tasks with no state', () => {
+      const taskDoc = {};
+      expect(rulesEngine.showTask(taskDoc)).to.be.false;
+    });
+
+    it('should return false for tasks with undefined state', () => {
+      const taskDoc = { state: undefined };
+      expect(rulesEngine.showTask(taskDoc)).to.be.false;
+    });
+  });
+
   // interface is not used within cht-core but is used by cht-conf-test-harness
   it('custom emitter', async () => {
     const expectedEmission = {

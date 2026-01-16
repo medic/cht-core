@@ -1,10 +1,11 @@
 const chai = require('chai');
 const path = require('path');
 const constants = require('@constants');
+const { DOC_IDS } = require('@medic/constants');
 const utils = require('@utils');
 
 const getDoc = () => {
-  return utils.getDoc('settings');
+  return utils.getDoc(DOC_IDS.SETTINGS);
 };
 
 describe('Settings API', () => {
