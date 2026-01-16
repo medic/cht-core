@@ -20,7 +20,7 @@ export class ContactSaveService {
   constructor(
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
-    private attachmentService:AttachmentService,
+    private readonly attachmentService:AttachmentService,
     private ngZone:NgZone,
     chtDatasourceService: CHTDatasourceService,
   ) {
