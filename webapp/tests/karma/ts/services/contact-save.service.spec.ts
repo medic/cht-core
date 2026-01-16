@@ -260,5 +260,46 @@ describe('ContactSave service', () => {
           assert.equal(addCall.args[4], false, 'Should not be pre-encoded');
         });
     });
+
+    it('should extract and attach binary field data from XML', () => {
+      const xmlWithBinaryField =
+        '<data id="person-create">' +
+        '<person>' +
+        '<name>Jane Doe</name>' +
+        '<signature type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</signature>' +
+        '</person>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlWithBinaryField };
+      const docId = null;
+      const type = 'person';
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'person1', type: 'person', name: 'Jane Doe' }
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(() => {
+          assert.isTrue(attachmentService.add.calledOnce, 'AttachmentService.add should be called once');
+
+          const addCall = attachmentService.add.getCall(0);
+          assert.equal(addCall.args[0]._id, 'person1', 'Should attach to the main document');
+          assert.equal(
+            addCall.args[1],
+            'user-file/person-create/person/signature',
+            'Should use XPath-based attachment name for binary field'
+          );
+          assert.equal(
+            addCall.args[2],
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            'Should pass the base64 content'
+          );
+          assert.equal(addCall.args[3], 'image/png', 'Should use image/png as content type for binary fields');
+          assert.equal(addCall.args[4], true, 'Should indicate content is already base64 encoded');
+        });
+    });
   });
 });

@@ -7,6 +7,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import FileManager from '../../js/enketo/file-manager';
 
 @Injectable({
@@ -26,7 +27,7 @@ export class ContactSaveService {
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
-  private prepareSubmittedDocsForSave(original, submitted, typeFields) {
+  private prepareSubmittedDocsForSave(original, submitted, typeFields, xmlStr: string) {
     if (original) {
       _defaults(submitted.doc, original);
     } else {
@@ -51,7 +52,7 @@ export class ContactSaveService {
         const repeated = this.prepareRepeatedDocs(submitted.doc, submitted.repeats);
 
         // Process attachments from FileManager and attach to main document
-        this.processFileAttachments(doc);
+        this.processFileAttachments(doc, xmlStr);
 
         return {
           docId: doc._id,
@@ -82,12 +83,36 @@ export class ContactSaveService {
     });
   }
 
-  private processFileAttachments(doc) {
+  private processFileAttachments(doc: Record<string, any>, xmlStr: string) {
     // Get files from FileManager (uploaded via file widgets)
     FileManager
       .getCurrentFiles()
       .forEach(file => {
         this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false);
+      });
+
+    // Process binary fields from XML
+    if (xmlStr) {
+      this.processBinaryFields(doc, xmlStr);
+    }
+  }
+
+  private processBinaryFields(doc: Record<string, any>, xmlStr: string) {
+    const $record = $($.parseXML(xmlStr));
+    const formId = $record.find(':first').attr('id');
+
+    $record
+      .find('[type=binary]')
+      .each((idx, element) => {
+        const $element = $(element);
+        const content = $element.text();
+        if (content) {
+          const xpath = Xpath.getElementXPath(element);
+          // Replace instance root element node name with form internal ID
+          const filename = 'user-file' +
+            (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
+          this.attachmentService.add(doc, filename, content, 'image/png', true);
+        }
       });
   }
 
@@ -163,8 +188,9 @@ export class ContactSaveService {
   async save(form, docId, typeFields, xmlVersion) {
     return this.ngZone.runOutsideAngular(async () => {
       const original = docId ? await this.getContactFromDatasource(Qualifier.byUuid(docId)) : null;
-      const submitted = this.enketoTranslationService.contactRecordToJs(form.getDataStr({ irrelevant: false }));
-      const docData = await this.prepareSubmittedDocsForSave(original, submitted, typeFields);
+      const xmlStr = form.getDataStr({ irrelevant: false });
+      const submitted = this.enketoTranslationService.contactRecordToJs(xmlStr);
+      const docData = await this.prepareSubmittedDocsForSave(original, submitted, typeFields, xmlStr);
       if (xmlVersion) {
         for (const doc of docData.preparedDocs) {
           doc.form_version = xmlVersion;
