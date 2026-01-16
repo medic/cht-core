@@ -129,30 +129,50 @@ export class ContactSaveService {
   private buildDocumentBoundaries($record: JQuery<XMLDocument>, preparedDocs: Record<string, any>[]): Record<string, number> {
     // Map XPath prefixes to document indices
     // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 1 (sibling)
+    // For repeats: '/data/child_data/child[1]' -> 1, '/data/child_data/child[2]' -> 2
     const boundaries: Record<string, number> = {};
     const rootElement = $record.find(':first')[0];
     const rootName = rootElement.nodeName;
 
     // Get direct children of root element
     const children = $(rootElement).children();
+    let currentDocIndex = 0;
+
     children.each((idx, child) => {
       const childName = child.nodeName;
-      const xpath = `/${rootName}/${childName}`;
+      const $child = $(child);
 
-      // Map xpath to document index
-      // First child is main doc (index 0)
-      // Subsequent children are siblings (starting from index 1, after any repeats)
-      if (idx === 0) {
-        boundaries[xpath] = 0; // main document
+      // Check if this child contains repeated elements
+      const repeatedChildren = $child.children();
+      if (repeatedChildren.length > 1 && this.areAllSameTag(repeatedChildren)) {
+        // This is a repeat group (e.g., child_data containing multiple child elements)
+        const repeatedTagName = repeatedChildren.first()[0].nodeName;
+
+        // Map each repeat instance to its document
+        repeatedChildren.each((repeatIdx, _repeatElement) => {
+          currentDocIndex++;
+          const repeatXpath = `/${rootName}/${childName}/${repeatedTagName}[${repeatIdx + 1}]`;
+          boundaries[repeatXpath] = currentDocIndex;
+        });
+      } else if (idx === 0) {
+        // First child is main doc (index 0)
+        boundaries[`/${rootName}/${childName}`] = 0;
       } else {
-        // For siblings, they appear after repeats in preparedDocs array
-        // Since we don't have repeats yet, siblings start at index 1
-        // TODO: Handle repeats properly
-        boundaries[xpath] = preparedDocs.length - (children.length - idx);
+        // Sibling documents appear after repeats in preparedDocs array
+        currentDocIndex++;
+        boundaries[`/${rootName}/${childName}`] = currentDocIndex;
       }
     });
 
     return boundaries;
+  }
+
+  private areAllSameTag(elements: JQuery): boolean {
+    if (elements.length <= 1) {
+      return false;
+    }
+    const firstTagName = elements.first()[0].nodeName;
+    return elements.toArray().every(el => el.nodeName === firstTagName);
   }
 
   private findTargetDocument(

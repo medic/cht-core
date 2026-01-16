@@ -357,5 +357,78 @@ describe('ContactSave service', () => {
           assert.equal(siblingCall.args[4], true, 'Should indicate content is already base64 encoded');
         });
     });
+
+    it('should attach binary fields to repeated child documents based on repeat index', () => {
+      // XML structure: household registration with repeated children, each with their own photo
+      const xmlWithRepeats =
+        '<data id="household-create">' +
+        '<household>' +
+        '<name>Smith Family</name>' +
+        '</household>' +
+        '<child_data>' +
+        '<child>' +
+        '<name>Alice Smith</name>' +
+        '<photo type="binary">AAAA</photo>' +
+        '</child>' +
+        '<child>' +
+        '<name>Bob Smith</name>' +
+        '<photo type="binary">BBBB</photo>' +
+        '</child>' +
+        '</child_data>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlWithRepeats };
+      const docId = null;
+      const type = 'household';
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      // ContactSaveService creates three documents: household (main) and two children (repeats)
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'household1', type: 'household', name: 'Smith Family' },
+        repeats: {
+          child_data: [
+            { _id: 'child1', type: 'person', name: 'Alice Smith', parent: 'PARENT' },
+            { _id: 'child2', type: 'person', name: 'Bob Smith', parent: 'PARENT' }
+          ]
+        }
+      });
+
+      extractLineageService.extract.callsFake((contact: any) => {
+        return { _id: contact._id };
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(({ preparedDocs }) => {
+          assert.equal(preparedDocs.length, 3, 'Should have 3 documents');
+          assert.equal(preparedDocs[0]._id, 'household1', 'First doc should be household');
+          assert.equal(preparedDocs[1]._id, 'child1', 'Second doc should be first child');
+          assert.equal(preparedDocs[2]._id, 'child2', 'Third doc should be second child');
+
+          // Should be called twice: once for each child's photo
+          assert.equal(attachmentService.add.callCount, 2, 'AttachmentService.add should be called twice');
+
+          // First child's photo
+          const firstChildCall = attachmentService.add.getCall(0);
+          assert.equal(firstChildCall.args[0]._id, 'child1', 'Should attach first photo to first child document');
+          assert.equal(
+            firstChildCall.args[1],
+            'user-file/household-create/child_data/child[1]/photo',
+            'Should use XPath with repeat index [1] for first child'
+          );
+          assert.equal(firstChildCall.args[2], 'AAAA', 'Should pass first child photo content');
+
+          // Second child's photo
+          const secondChildCall = attachmentService.add.getCall(1);
+          assert.equal(secondChildCall.args[0]._id, 'child2', 'Should attach second photo to second child document');
+          assert.equal(
+            secondChildCall.args[1],
+            'user-file/household-create/child_data/child[2]/photo',
+            'Should use XPath with repeat index [2] for second child'
+          );
+          assert.equal(secondChildCall.args[2], 'BBBB', 'Should pass second child photo content');
+        });
+    });
   });
 });
