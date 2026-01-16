@@ -420,7 +420,7 @@ const PROTECTED_DOCS = [
   'resources',
   'branding',
   'partners',
-  'settings',
+  DOC_IDS.SETTINGS,
   /^form:/,
   /^_design/
 ];
@@ -877,11 +877,18 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const listenForApi = async () => {
-  let retryCount = 180;
+  const totalTries = 180; // 3 minutes
+  let retryCount = totalTries;
   do {
     try {
       console.log(`Checking API, retries left ${retryCount}`);
-      return await request({ path: '/api/info' });
+      await request({ path: '/api/info' });
+      if (retryCount < totalTries) {
+        // if api request failed at least once, make sure that it's stable
+        await delayPromise(1000);
+        await request({ path: '/api/info' });
+      }
+      return;
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
@@ -1119,7 +1126,7 @@ const enableLanguages = async (languageCodes) => {
   await updateSettings({ languages });
 };
 
-const getSettings = () => getDoc('settings').then(settings => settings.settings);
+const getSettings = () => getDoc(DOC_IDS.SETTINGS).then(settings => settings.settings);
 
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scripts', 'build', `${file}.yml.template`);
 

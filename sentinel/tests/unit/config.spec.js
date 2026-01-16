@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const db = require('../../src/db');
 const translationUtils = require('@medic/translation-utils');
 const transitions = require('../../src/transitions');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
 
 const rewire = require('rewire');
 const expect = chai.expect;
@@ -12,7 +12,7 @@ describe('config', () => {
   beforeEach(() => {
     // Ensure modules are re-required with stubs
     sinon.stub(db.medic, 'query').resolves({ rows: [] });
-    sinon.stub(db.medic, 'get').resolves({ _id: 'settings', settings: {} });
+    sinon.stub(db.medic, 'get').resolves({ _id: DOC_IDS.SETTINGS, settings: {} });
     sinon.stub(db.medic, 'changes').returns({
       on: function(event, handler) {
         this['on_' + event] = handler;
@@ -53,12 +53,12 @@ describe('config', () => {
         include_docs: true,
       }
     ]);
-    expect(db.medic.get.calledOnceWith('settings')).to.be.true;
+    expect(db.medic.get.calledOnceWith(DOC_IDS.SETTINGS)).to.be.true;
   });
 
   it('initConfig applies defaults and logs schedule', async () => {
     const config = rewire('../../../sentinel/src/config');
-    db.medic.get.resolves({ _id: 'settings', settings: { loglevel: 'debug' } });
+    db.medic.get.resolves({ _id: DOC_IDS.SETTINGS, settings: { loglevel: 'debug' } });
 
     await config.init();
     const current = config.getAll();
@@ -86,7 +86,7 @@ describe('config', () => {
     const changes = db.medic.changes.returnValues[0];
 
     // settings change
-    changes.on_change({ id: 'settings' });
+    changes.on_change({ id: DOC_IDS.SETTINGS });
 
     // messages change triggers translations reload then initTransitionLib
     db.medic.query.resetHistory();
