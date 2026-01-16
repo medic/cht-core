@@ -77,8 +77,19 @@ export class ContactSaveService {
   }
 
   private prepareRepeatedDocs(doc, repeated) {
-    const childData = repeated?.child_data || [];
-    return childData.map(child => {
+    if (!repeated) {
+      return [];
+    }
+
+    // Flatten all repeat groups into a single array
+    const allRepeats: any[] = [];
+    Object.values(repeated).forEach((repeatGroup: any) => {
+      if (Array.isArray(repeatGroup)) {
+        allRepeats.push(...repeatGroup);
+      }
+    });
+
+    return allRepeats.map(child => {
       child.parent = this.extractLineageService.extract(doc);
       return this.prepare(child);
     });
@@ -128,7 +139,7 @@ export class ContactSaveService {
 
   private buildDocumentBoundaries($record: JQuery<XMLDocument>, preparedDocs: Record<string, any>[]): Record<string, number> {
     // Map XPath prefixes to document indices
-    // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 1 (sibling)
+    // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 3 (sibling after repeats)
     // For repeats: '/data/child_data/child[1]' -> 1, '/data/child_data/child[2]' -> 2
     const boundaries: Record<string, number> = {};
     const rootElement = $record.find(':first')[0];
@@ -136,7 +147,21 @@ export class ContactSaveService {
 
     // Get direct children of root element
     const children = $(rootElement).children();
-    let currentDocIndex = 0;
+
+    // First pass: count total number of repeat instances
+    let totalRepeatCount = 0;
+    children.each((_idx, child) => {
+      const $child = $(child);
+      const repeatedChildren = $child.children();
+      if (repeatedChildren.length > 1 && this.areAllSameTag(repeatedChildren)) {
+        totalRepeatCount += repeatedChildren.length;
+      }
+    });
+
+    // Second pass: assign indices
+    // Document order in preparedDocs: [main (0), repeats (1..n), siblings (n+1..)]
+    let currentRepeatIndex = 0;
+    let currentSiblingIndex = 1 + totalRepeatCount; // Siblings start after all repeats
 
     children.each((idx, child) => {
       const childName = child.nodeName;
@@ -150,17 +175,17 @@ export class ContactSaveService {
 
         // Map each repeat instance to its document
         repeatedChildren.each((repeatIdx, _repeatElement) => {
-          currentDocIndex++;
+          currentRepeatIndex++;
           const repeatXpath = `/${rootName}/${childName}/${repeatedTagName}[${repeatIdx + 1}]`;
-          boundaries[repeatXpath] = currentDocIndex;
+          boundaries[repeatXpath] = currentRepeatIndex; // Repeats start at index 1
         });
       } else if (idx === 0) {
         // First child is main doc (index 0)
         boundaries[`/${rootName}/${childName}`] = 0;
       } else {
-        // Sibling documents appear after repeats in preparedDocs array
-        currentDocIndex++;
-        boundaries[`/${rootName}/${childName}`] = currentDocIndex;
+        // Sibling documents appear after ALL repeats in preparedDocs array
+        boundaries[`/${rootName}/${childName}`] = currentSiblingIndex;
+        currentSiblingIndex++;
       }
     });
 
