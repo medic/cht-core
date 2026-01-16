@@ -398,7 +398,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           change.id === '_design/medic' ||
           change.id === '_design/medic-client' ||
           change.id === DOC_IDS.SERVICE_WORKER_META ||
-          change.id === 'settings'
+          change.id === DOC_IDS.SETTINGS
         );
       },
       callback: (change) => {

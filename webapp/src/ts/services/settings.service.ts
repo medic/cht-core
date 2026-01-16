@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
 import { CacheService } from '@mm-services/cache.service';
+import { DOC_IDS } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SettingsService {
   private cache;
-  private readonly SETTINGS_ID = 'settings';
+  private readonly SETTINGS_ID = DOC_IDS.SETTINGS;
 
   constructor(
     private db: DbService,
