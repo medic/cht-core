@@ -301,5 +301,61 @@ describe('ContactSave service', () => {
           assert.equal(addCall.args[4], true, 'Should indicate content is already base64 encoded');
         });
     });
+
+    it('should attach binary field to sibling document when field is in sibling section', () => {
+      const xmlWithSibling =
+        '<data id="clinic-create">' +
+        '<clinic>' +
+        '<name>Main Health Clinic</name>' +
+        '</clinic>' +
+        '<contact>' +
+        '<name>Dr. Smith</name>' +
+        '<signature type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</signature>' +
+        '</contact>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlWithSibling };
+      const docId = null;
+      const type = 'clinic';
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'clinic1', type: 'clinic', name: 'Main Health Clinic', contact: 'NEW' },
+        siblings: {
+          contact: { _id: 'person1', type: 'person', name: 'Dr. Smith', parent: 'PARENT' }
+        }
+      });
+
+      extractLineageService.extract.callsFake((contact: any) => {
+        return { _id: contact._id };
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(({ preparedDocs }) => {
+          assert.equal(preparedDocs.length, 2, 'Should have 2 documents');
+          assert.equal(preparedDocs[0]._id, 'clinic1', 'First doc should be clinic');
+          assert.equal(preparedDocs[1]._id, 'person1', 'Second doc should be contact person');
+
+          // There's only one binary field (signature in contact section), so should be called once
+          assert.equal(attachmentService.add.callCount, 1, 'AttachmentService.add should be called once');
+
+          const siblingCall = attachmentService.add.getCall(0);
+          assert.equal(siblingCall.args[0]._id, 'person1', 'Should attach to the sibling contact document');
+          assert.equal(
+            siblingCall.args[1],
+            'user-file/clinic-create/contact/signature',
+            'Should use XPath-based attachment name'
+          );
+          assert.equal(
+            siblingCall.args[2],
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            'Should pass the base64 content'
+          );
+          assert.equal(siblingCall.args[3], 'image/png', 'Should use image/png as content type');
+          assert.equal(siblingCall.args[4], true, 'Should indicate content is already base64 encoded');
+        });
+    });
   });
 });
