@@ -137,7 +137,10 @@ export class ContactSaveService {
       });
   }
 
-  private buildDocumentBoundaries($record: JQuery<XMLDocument>, preparedDocs: Record<string, any>[]): Record<string, number> {
+  private buildDocumentBoundaries(
+    $record: any,
+    _preparedDocs: Record<string, any>[]
+  ): Record<string, number> {
     // Map XPath prefixes to document indices
     // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 3 (sibling after repeats)
     // For repeats: '/data/child_data/child[1]' -> 1, '/data/child_data/child[2]' -> 2
@@ -192,7 +195,7 @@ export class ContactSaveService {
     return boundaries;
   }
 
-  private areAllSameTag(elements: JQuery): boolean {
+  private areAllSameTag(elements: any): boolean {
     if (elements.length <= 1) {
       return false;
     }
