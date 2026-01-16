@@ -430,5 +430,122 @@ describe('ContactSave service', () => {
           assert.equal(secondChildCall.args[2], 'BBBB', 'Should pass second child photo content');
         });
     });
+
+    it('should handle complex multi-document forms with attachments in all sections', () => {
+      // Complex scenario: Clinic registration form that creates multiple documents
+      // - Main clinic document with a photo
+      // - Contact person sibling with a signature
+      // - Multiple service records (repeats) each with their own certificate
+      const xmlComplex =
+        '<data id="clinic-registration">' +
+        '<clinic>' +
+        '<name>Central Health Clinic</name>' +
+        '<photo type="binary">CLINIC_PHOTO</photo>' +
+        '</clinic>' +
+        '<contact>' +
+        '<name>Dr. Jane Wilson</name>' +
+        '<signature type="binary">DR_SIGNATURE</signature>' +
+        '</contact>' +
+        '<services_data>' +
+        '<service>' +
+        '<name>Vaccination Service</name>' +
+        '<certificate type="binary">CERT_1</certificate>' +
+        '</service>' +
+        '<service>' +
+        '<name>Laboratory Service</name>' +
+        '<certificate type="binary">CERT_2</certificate>' +
+        '</service>' +
+        '</services_data>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlComplex };
+      const docId = null;
+      const type = 'clinic';
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'clinic1', type: 'clinic', name: 'Central Health Clinic', contact: 'NEW' },
+        siblings: {
+          contact: { _id: 'person1', type: 'person', name: 'Dr. Jane Wilson', parent: 'PARENT' }
+        },
+        repeats: {
+          services_data: [
+            { _id: 'service1', type: 'service', name: 'Vaccination Service', parent: 'PARENT' },
+            { _id: 'service2', type: 'service', name: 'Laboratory Service', parent: 'PARENT' }
+          ]
+        }
+      });
+
+      extractLineageService.extract.callsFake((contact: any) => {
+        return { _id: contact._id };
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(({ preparedDocs }) => {
+          // Verify document structure
+          assert.equal(preparedDocs.length, 4, 'Should have 4 documents: clinic, 2 services, contact');
+          assert.equal(preparedDocs[0]._id, 'clinic1', 'First doc should be clinic');
+          assert.equal(preparedDocs[1]._id, 'service1', 'Second doc should be first service (repeat)');
+          assert.equal(preparedDocs[2]._id, 'service2', 'Third doc should be second service (repeat)');
+          assert.equal(preparedDocs[3]._id, 'person1', 'Fourth doc should be contact person (sibling)');
+
+          // Should be called 4 times: clinic photo, contact signature, 2 service certificates
+          assert.equal(attachmentService.add.callCount, 4, 'AttachmentService.add should be called 4 times');
+
+          // Verify clinic photo
+          const clinicPhotoCall = attachmentService.add.getCall(0);
+          assert.equal(clinicPhotoCall.args[0]._id, 'clinic1', 'Clinic photo should attach to clinic document');
+          assert.equal(
+            clinicPhotoCall.args[1],
+            'user-file/clinic-registration/clinic/photo',
+            'Clinic photo should use correct XPath'
+          );
+          assert.equal(clinicPhotoCall.args[2], 'CLINIC_PHOTO', 'Should pass clinic photo content');
+
+          // Verify contact signature (sibling)
+          const contactSignatureCall = attachmentService.add.getCall(1);
+          assert.equal(
+            contactSignatureCall.args[0]._id,
+            'person1',
+            'Contact signature should attach to contact document'
+          );
+          assert.equal(
+            contactSignatureCall.args[1],
+            'user-file/clinic-registration/contact/signature',
+            'Contact signature should use correct XPath'
+          );
+          assert.equal(contactSignatureCall.args[2], 'DR_SIGNATURE', 'Should pass contact signature content');
+
+          // Verify first service certificate (repeat)
+          const service1CertCall = attachmentService.add.getCall(2);
+          assert.equal(
+            service1CertCall.args[0]._id,
+            'service1',
+            'First service certificate should attach to first service document'
+          );
+          assert.equal(
+            service1CertCall.args[1],
+            'user-file/clinic-registration/services_data/service[1]/certificate',
+            'First service certificate should use correct XPath with [1] index'
+          );
+          assert.equal(service1CertCall.args[2], 'CERT_1', 'Should pass first service certificate content');
+
+          // Verify second service certificate (repeat)
+          const service2CertCall = attachmentService.add.getCall(3);
+          assert.equal(
+            service2CertCall.args[0]._id,
+            'service2',
+            'Second service certificate should attach to second service document'
+          );
+          assert.equal(
+            service2CertCall.args[1],
+            'user-file/clinic-registration/services_data/service[2]/certificate',
+            'Second service certificate should use correct XPath with [2] index'
+          );
+          assert.equal(service2CertCall.args[2], 'CERT_2', 'Should pass second service certificate content');
+        });
+    });
   });
 });
