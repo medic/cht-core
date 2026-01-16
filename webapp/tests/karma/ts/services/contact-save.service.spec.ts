@@ -266,7 +266,9 @@ describe('ContactSave service', () => {
         '<data id="person-create">' +
         '<person>' +
         '<name>Jane Doe</name>' +
-        '<signature type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</signature>' +
+        '<signature type="binary">' +
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' +
+        '</signature>' +
         '</person>' +
         '</data>';
 
@@ -310,7 +312,9 @@ describe('ContactSave service', () => {
         '</clinic>' +
         '<contact>' +
         '<name>Dr. Smith</name>' +
-        '<signature type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==</signature>' +
+        '<signature type="binary">' +
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' +
+        '</signature>' +
         '</contact>' +
         '</data>';
 
