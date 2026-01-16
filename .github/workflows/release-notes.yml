@@ -1,0 +1,27 @@
+name: Release notes generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build release notes from'
+        type: string
+        required: true
+
+jobs:
+  release_notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+      - name: Use Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install Deps & Create Markdown (or error)
+        run: |
+          cd scripts
+          npm ci
+          cd release-notes
+          GH_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js cht-core ${{ github.event.inputs.version }}
