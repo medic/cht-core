@@ -526,12 +526,6 @@ module.exports = defineConfig([
     },
   },
   {
-    files: ['scripts/deploy/**/*'],
-    languageOptions: {
-      sourceType: 'module',
-    }
-  },
-  {
     files: ['shared-libs/cht-datasource/**/*.ts'],
     extends: compat.extends(
       'plugin:@typescript-eslint/strict-type-checked',

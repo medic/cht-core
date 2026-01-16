@@ -5,6 +5,7 @@ const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
+const { DOC_IDS } = require('@medic/constants');
 
 const LOCAL_ONLY_DOC_IDS = ['_design/medic-offline-freetext'];
 
@@ -16,9 +17,9 @@ describe('initial-replication', () => {
 
   const requiredDocs = [
     '_design/medic-client',
-    'settings',
+    DOC_IDS.SETTINGS,
     `org.couchdb.user:${userAllowedDocs.user.username}`,
-    'service-worker-meta',
+    DOC_IDS.SERVICE_WORKER_META,
     'resources',
     'branding',
     userAllowedDocs.user.place,

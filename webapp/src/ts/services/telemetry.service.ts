@@ -1,6 +1,7 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
+import { DOC_IDS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -70,7 +71,7 @@ export class TelemetryService {
       .all([
         this.dbService.get().get('_design/medic-client'),
         this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
-        this.dbService.get().allDocs({ key: 'settings' })
+        this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
       ])
       .then(([ ddoc, formResults, settingsResults ]) => {
         const date = this.getDBDate(dbName);
@@ -211,13 +212,8 @@ export class TelemetryService {
     };
   }
 
-  private async getCurrentTelemetryDB(today: TodayMoment, telemetryDBs) {
-    let currentDB = telemetryDBs?.find(db => db.includes(today.formatted));
-
-    if (!currentDB) {
-      currentDB = this.generateTelemetryDBName(today);
-    }
-
+  private async getCurrentTelemetryDB(today: TodayMoment) {
+    const currentDB = this.generateTelemetryDBName(today);
     return this.windowRef.PouchDB(currentDB); // Avoid angular-pouch as digest isn't necessary here
   }
 
@@ -236,22 +232,29 @@ export class TelemetryService {
       return;
     }
 
-    for (const dbName of telemetryDBs) {
-      if (dbName.includes(today.formatted)) {
-        // Don't submit today's telemetry records
-        continue;
+    this.isAggregationRunning = true;
+    try {
+      for (const dbName of telemetryDBs) {
+        const dbNameParts = dbName.split(this.NAME_DIVIDER);
+        if (dbNameParts.length >= 4) {
+          const datePart = `${dbNameParts[1]}-${dbNameParts[2]}-${dbNameParts[3]}`;
+          
+          // Don't submit today's telemetry records
+          if (datePart === today.formatted) {
+            continue;
+          }
+          
+          try {
+            const db = this.windowRef.PouchDB(dbName);
+            await this.aggregate(db, dbName);
+            await db.destroy();
+          } catch (error) {
+            console.error('Error when aggregating the telemetry records', error);
+          }
+        }
       }
-
-      try {
-        this.isAggregationRunning = true;
-        const db = this.windowRef.PouchDB(dbName);
-        await this.aggregate(db, dbName);
-        await db.destroy();
-      } catch (error) {
-        console.error('Error when aggregating the telemetry records', error);
-      } finally {
-        this.isAggregationRunning = false;
-      }
+    } finally {
+      this.isAggregationRunning = false;
     }
   }
 
@@ -320,7 +323,7 @@ export class TelemetryService {
       const databaseNames = databases?.map(db => db.name) || [];
       const telemetryDBs = await this.getTelemetryDBs(databaseNames);
       await this.submitIfNeeded(today, telemetryDBs);
-      const currentDB = await this.getCurrentTelemetryDB(today, telemetryDBs);
+      const currentDB = await this.getCurrentTelemetryDB(today);
       await this
         .storeIt(currentDB, key, value)
         .finally(() => this.closeDataBase(currentDB));

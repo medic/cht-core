@@ -2,6 +2,7 @@ const _ = require('lodash');
 const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
+const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -19,7 +20,7 @@ let transitionsLib;
 
 const loadTranslations = () => {
   const options = {
-    key: ['translations'],
+    key: [DOC_TYPES.TRANSLATIONS],
     include_docs: true,
   };
   return db.medic
@@ -39,7 +40,7 @@ const initFeed = () => {
   db.medic
     .changes({ live: true, since: 'now' })
     .on('change', change => {
-      if (change.id === 'settings') {
+      if (change.id === DOC_IDS.SETTINGS) {
         logger.info('Reloading configuration');
         initConfig();
       } else if (change.id.startsWith('messages-')) {
@@ -55,7 +56,7 @@ const initFeed = () => {
 
 const initConfig = () => {
   return db.medic
-    .get('settings')
+    .get(DOC_IDS.SETTINGS)
     .then(doc => {
       _.defaults(doc.settings, DEFAULT_CONFIG);
       config = doc.settings;
