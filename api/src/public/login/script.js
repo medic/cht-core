@@ -198,9 +198,14 @@ const isUsingChtAndroidV1 = () => {
   return androidAppVersion.startsWith('v1.');
 };
 
+// It will return true if the browser should be blocked from using the app i.e. Safari
+const shouldBlockBrowser = () => {
+  return isSafariBrowser();
+};
+
 const checkUnsupportedBrowser = () => {
   if (!selectedLocale) {
-    return false;
+    return;
   }
 
   let outdatedComponentKey;
@@ -228,8 +233,6 @@ const checkUnsupportedBrowser = () => {
       document.getElementById('login-fields')?.classList.add('hidden');
     }
   }
-  
-  return isSafari;
 };
 
 const handleLoginButton = () => {
@@ -275,10 +278,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
   handlePasswordToggle();
 
-  const isSafari = checkUnsupportedBrowser();
+  checkUnsupportedBrowser();
 
   if (document.getElementById('tokenLogin')) {
-    if (!isSafari) {
+    if (!shouldBlockBrowser()) {
       requestTokenLogin();
     }
   } else {
