@@ -450,7 +450,7 @@ describe('ContactSave service', () => {
         '<name>Dr. Jane Wilson</name>' +
         '<signature type="binary">DR_SIGNATURE</signature>' +
         '</contact>' +
-        '<services_data>' +
+        '<repeat>' +
         '<service>' +
         '<name>Vaccination Service</name>' +
         '<certificate type="binary">CERT_1</certificate>' +
@@ -459,7 +459,7 @@ describe('ContactSave service', () => {
         '<name>Laboratory Service</name>' +
         '<certificate type="binary">CERT_2</certificate>' +
         '</service>' +
-        '</services_data>' +
+        '</repeat>' +
         '</data>';
 
       const form = { getDataStr: () => xmlComplex };
@@ -468,13 +468,14 @@ describe('ContactSave service', () => {
 
       sinon.stub(FileManager, 'getCurrentFiles').returns([]);
 
+      // repeatsToJs creates keys as nodeName + '_data', so <service> becomes service_data
       enketoTranslationService.contactRecordToJs.returns({
         doc: { _id: 'clinic1', type: 'clinic', name: 'Central Health Clinic', contact: 'NEW' },
         siblings: {
           contact: { _id: 'person1', type: 'person', name: 'Dr. Jane Wilson', parent: 'PARENT' }
         },
         repeats: {
-          services_data: [
+          service_data: [
             { _id: 'service1', type: 'service', name: 'Vaccination Service', parent: 'PARENT' },
             { _id: 'service2', type: 'service', name: 'Laboratory Service', parent: 'PARENT' }
           ]
@@ -531,7 +532,7 @@ describe('ContactSave service', () => {
           );
           assert.equal(
             service1CertCall.args[1],
-            'user-file/clinic-registration/services_data/service[1]/certificate',
+            'user-file/clinic-registration/repeat/service[1]/certificate',
             'First service certificate should use correct XPath with [1] index'
           );
           assert.equal(service1CertCall.args[2], 'CERT_1', 'Should pass first service certificate content');
@@ -545,10 +546,103 @@ describe('ContactSave service', () => {
           );
           assert.equal(
             service2CertCall.args[1],
-            'user-file/clinic-registration/services_data/service[2]/certificate',
+            'user-file/clinic-registration/repeat/service[2]/certificate',
             'Second service certificate should use correct XPath with [2] index'
           );
           assert.equal(service2CertCall.args[2], 'CERT_2', 'Should pass second service certificate content');
+        });
+    });
+
+    it('should handle multiple repeat wrapper elements with flattening', () => {
+      // This test verifies that prepareRepeatedDocs correctly handles multiple
+      // repeat wrapper elements (like <repeat> and <other-women-repeat>).
+      // Real contact forms use separate wrapper elements for different repeat groups,
+      // not mixed element types within a single <repeat> node.
+
+      const xmlWithMultipleRepeats =
+        '<data id="household-registration">' +
+        '<household>' +
+        '<name>Test Household</name>' +
+        '</household>' +
+        '<repeat>' +
+        '<child>' +
+        '<name>First Child</name>' +
+        '<photo type="binary">PHOTO_1</photo>' +
+        '</child>' +
+        '<child>' +
+        '<name>Second Child</name>' +
+        '<photo type="binary">PHOTO_2</photo>' +
+        '</child>' +
+        '</repeat>' +
+        '<contact>' +
+        '<name>Contact Person</name>' +
+        '<signature type="binary">SIGNATURE</signature>' +
+        '</contact>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlWithMultipleRepeats };
+      const docId = null;
+      const type = 'household';
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      // repeatsToJs processes <repeat> wrapper and creates child_data array
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'household1', type: 'household', name: 'Test Household', contact: 'NEW' },
+        siblings: {
+          contact: { _id: 'contact1', type: 'person', name: 'Contact Person', parent: 'PARENT' }
+        },
+        repeats: {
+          child_data: [
+            { _id: 'child1', type: 'person', name: 'First Child', parent: 'PARENT' },
+            { _id: 'child2', type: 'person', name: 'Second Child', parent: 'PARENT' }
+          ]
+        }
+      });
+
+      extractLineageService.extract.callsFake((contact: any) => {
+        return { _id: contact._id };
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(({ preparedDocs }) => {
+          // Verify document structure: main, repeats, siblings
+          // Expected: 1 household + 2 children + 1 contact = 4 total
+          assert.equal(preparedDocs.length, 4, 'Should have 4 documents: 1 household, 2 children, 1 contact');
+          assert.equal(preparedDocs[0]._id, 'household1', 'First doc should be main household');
+
+          // Repeats should be in XML document order
+          assert.equal(preparedDocs[1]._id, 'child1', 'Second doc should be first child');
+          assert.equal(preparedDocs[2]._id, 'child2', 'Third doc should be second child');
+
+          // Last doc should be the sibling
+          assert.equal(preparedDocs[3]._id, 'contact1', 'Last doc should be contact sibling');
+
+          // Verify attachments are routed correctly based on XPath matching
+          assert.equal(attachmentService.add.callCount, 3, 'Should attach 3 binary fields');
+
+          // Verify each attachment went to correct document based on XPath
+          const child1PhotoCall = attachmentService.add.getCalls().find(call =>
+            call.args[1].includes('repeat/child[1]/photo')
+          );
+          assert.isDefined(child1PhotoCall, 'Should have first child photo');
+          assert.equal(child1PhotoCall!.args[0]._id, 'child1', 'First child photo should attach to child1');
+          assert.equal(child1PhotoCall!.args[2], 'PHOTO_1', 'Should pass first child photo content');
+
+          const child2PhotoCall = attachmentService.add.getCalls().find(call =>
+            call.args[1].includes('repeat/child[2]/photo')
+          );
+          assert.isDefined(child2PhotoCall, 'Should have second child photo');
+          assert.equal(child2PhotoCall!.args[0]._id, 'child2', 'Second child photo should attach to child2');
+          assert.equal(child2PhotoCall!.args[2], 'PHOTO_2', 'Should pass second child photo content');
+
+          const contactSignatureCall = attachmentService.add.getCalls().find(call =>
+            call.args[1].includes('/contact/signature')
+          );
+          assert.isDefined(contactSignatureCall, 'Should have contact signature');
+          assert.equal(contactSignatureCall!.args[0]._id, 'contact1', 'Contact signature should attach to contact1');
+          assert.equal(contactSignatureCall!.args[2], 'SIGNATURE', 'Should pass contact signature content');
         });
     });
   });

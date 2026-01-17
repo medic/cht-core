@@ -82,6 +82,8 @@ export class ContactSaveService {
     }
 
     // Flatten all repeat groups into a single array
+    // Real contact forms use wrapper elements like <repeat> and <other-women-repeat>
+    // Each wrapper contains multiple instances of the same element type (e.g., all <child> elements)
     const allRepeats: any[] = [];
     Object.values(repeated).forEach((repeatGroup: any) => {
       if (Array.isArray(repeatGroup)) {
@@ -143,7 +145,7 @@ export class ContactSaveService {
   ): Record<string, number> {
     // Map XPath prefixes to document indices
     // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 3 (sibling after repeats)
-    // For repeats: '/data/child_data/child[1]' -> 1, '/data/child_data/child[2]' -> 2
+    // For repeats: '/data/repeat/child[1]' -> 1, '/data/repeat/child[2]' -> 2
     const boundaries: Record<string, number> = {};
     const rootElement = $record.find(':first')[0];
     const rootName = rootElement.nodeName;
@@ -151,7 +153,7 @@ export class ContactSaveService {
     // Get direct children of root element
     const children = $(rootElement).children();
 
-    // First pass: count total number of repeat instances
+    // First pass: count total number of repeat instances across all wrapper elements
     let totalRepeatCount = 0;
     children.each((_idx, child) => {
       const $child = $(child);
@@ -164,7 +166,7 @@ export class ContactSaveService {
     // Second pass: assign indices
     // Document order in preparedDocs: [main (0), repeats (1..n), siblings (n+1..)]
     let currentRepeatIndex = 0;
-    let currentSiblingIndex = 1 + totalRepeatCount; // Siblings start after all repeats
+    let currentSiblingIndex = 1 + totalRepeatCount;
 
     children.each((idx, child) => {
       const childName = child.nodeName;
@@ -173,14 +175,14 @@ export class ContactSaveService {
       // Check if this child contains repeated elements
       const repeatedChildren = $child.children();
       if (repeatedChildren.length > 1 && this.areAllSameTag(repeatedChildren)) {
-        // This is a repeat group (e.g., child_data containing multiple child elements)
+        // This is a repeat wrapper (e.g., <repeat> containing multiple <child> elements)
         const repeatedTagName = repeatedChildren.first()[0].nodeName;
 
         // Map each repeat instance to its document
         repeatedChildren.each((repeatIdx, _repeatElement) => {
           currentRepeatIndex++;
           const repeatXpath = `/${rootName}/${childName}/${repeatedTagName}[${repeatIdx + 1}]`;
-          boundaries[repeatXpath] = currentRepeatIndex; // Repeats start at index 1
+          boundaries[repeatXpath] = currentRepeatIndex;
         });
       } else if (idx === 0) {
         // First child is main doc (index 0)
