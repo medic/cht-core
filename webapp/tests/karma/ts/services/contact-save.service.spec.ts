@@ -553,13 +553,12 @@ describe('ContactSave service', () => {
         });
     });
 
-    it('should handle multiple repeat wrapper elements with flattening', () => {
-      // This test verifies that prepareRepeatedDocs correctly handles multiple
-      // repeat wrapper elements (like <repeat> and <other-women-repeat>).
-      // Real contact forms use separate wrapper elements for different repeat groups,
-      // not mixed element types within a single <repeat> node.
+    it('should handle multiple repeat wrapper elements with correct document order', () => {
+      // This test is intended to verify that when there are multiple repeat wrapper elements
+      // (like <repeat> and <other-women-repeat>), the documents appear in preparedDocs
+      // in the same order as their wrapper elements appear in the XML.
 
-      const xmlWithMultipleRepeats =
+      const xmlWithMultipleWrappers =
         '<data id="household-registration">' +
         '<household>' +
         '<name>Test Household</name>' +
@@ -574,19 +573,30 @@ describe('ContactSave service', () => {
         '<photo type="binary">PHOTO_2</photo>' +
         '</child>' +
         '</repeat>' +
+        '<other-women-repeat>' +
+        '<women>' +
+        '<name>First Woman</name>' +
+        '<cert type="binary">CERT_1</cert>' +
+        '</women>' +
+        '<women>' +
+        '<name>Second Woman</name>' +
+        '<cert type="binary">CERT_2</cert>' +
+        '</women>' +
+        '</other-women-repeat>' +
         '<contact>' +
         '<name>Contact Person</name>' +
         '<signature type="binary">SIGNATURE</signature>' +
         '</contact>' +
         '</data>';
 
-      const form = { getDataStr: () => xmlWithMultipleRepeats };
+      const form = { getDataStr: () => xmlWithMultipleWrappers };
       const docId = null;
       const type = 'household';
 
       sinon.stub(FileManager, 'getCurrentFiles').returns([]);
 
-      // repeatsToJs processes <repeat> wrapper and creates child_data array
+      // repeatsToJs processes both wrapper elements
+      // The order in this object matters for our flattening logic!
       enketoTranslationService.contactRecordToJs.returns({
         doc: { _id: 'household1', type: 'household', name: 'Test Household', contact: 'NEW' },
         siblings: {
@@ -596,6 +606,10 @@ describe('ContactSave service', () => {
           child_data: [
             { _id: 'child1', type: 'person', name: 'First Child', parent: 'PARENT' },
             { _id: 'child2', type: 'person', name: 'Second Child', parent: 'PARENT' }
+          ],
+          women_data: [
+            { _id: 'woman1', type: 'person', name: 'First Woman', parent: 'PARENT' },
+            { _id: 'woman2', type: 'person', name: 'Second Woman', parent: 'PARENT' }
           ]
         }
       });
@@ -607,38 +621,57 @@ describe('ContactSave service', () => {
       return service
         .save(form, docId, type)
         .then(({ preparedDocs }) => {
-          // Verify document structure: main, repeats, siblings
-          // Expected: 1 household + 2 children + 1 contact = 4 total
-          assert.equal(preparedDocs.length, 4, 'Should have 4 documents: 1 household, 2 children, 1 contact');
+          // Verify document structure: main, repeats (children then women), siblings
+          // The order should match XML wrapper element order
+          // Expected: 1 household + 2 children + 2 women + 1 contact = 6 total
+          assert.equal(preparedDocs.length, 6, 'Should have 6 documents');
           assert.equal(preparedDocs[0]._id, 'household1', 'First doc should be main household');
 
-          // Repeats should be in XML document order
-          assert.equal(preparedDocs[1]._id, 'child1', 'Second doc should be first child');
-          assert.equal(preparedDocs[2]._id, 'child2', 'Third doc should be second child');
+          // Documents should appear in XML wrapper order
+          // XML order: <repeat> (children) comes before <other-women-repeat> (women)
+          assert.equal(preparedDocs[1]._id, 'child1', 'Second doc should be first child (from first wrapper)');
+          assert.equal(preparedDocs[2]._id, 'child2', 'Third doc should be second child (from first wrapper)');
+          assert.equal(preparedDocs[3]._id, 'woman1', 'Fourth doc should be first woman (from second wrapper)');
+          assert.equal(preparedDocs[4]._id, 'woman2', 'Fifth doc should be second woman (from second wrapper)');
 
           // Last doc should be the sibling
-          assert.equal(preparedDocs[3]._id, 'contact1', 'Last doc should be contact sibling');
+          assert.equal(preparedDocs[5]._id, 'contact1', 'Last doc should be contact sibling');
 
           // Verify attachments are routed correctly based on XPath matching
-          assert.equal(attachmentService.add.callCount, 3, 'Should attach 3 binary fields');
+          assert.equal(attachmentService.add.callCount, 5, 'Should attach 5 binary fields');
 
-          // Verify each attachment went to correct document based on XPath
-          const child1PhotoCall = attachmentService.add.getCalls().find(call =>
-            call.args[1].includes('repeat/child[1]/photo')
+          // Child attachments - XPath uses repeat wrapper name and child indices
+          const child1PhotoCall = attachmentService.add.getCalls().find(
+            call => call.args[1].includes('repeat/child[1]/photo')
           );
           assert.isDefined(child1PhotoCall, 'Should have first child photo');
           assert.equal(child1PhotoCall!.args[0]._id, 'child1', 'First child photo should attach to child1');
           assert.equal(child1PhotoCall!.args[2], 'PHOTO_1', 'Should pass first child photo content');
 
-          const child2PhotoCall = attachmentService.add.getCalls().find(call =>
-            call.args[1].includes('repeat/child[2]/photo')
+          const child2PhotoCall = attachmentService.add.getCalls().find(
+            call => call.args[1].includes('repeat/child[2]/photo')
           );
           assert.isDefined(child2PhotoCall, 'Should have second child photo');
           assert.equal(child2PhotoCall!.args[0]._id, 'child2', 'Second child photo should attach to child2');
           assert.equal(child2PhotoCall!.args[2], 'PHOTO_2', 'Should pass second child photo content');
 
-          const contactSignatureCall = attachmentService.add.getCalls().find(call =>
-            call.args[1].includes('/contact/signature')
+          // Women attachments - XPath uses other-women-repeat wrapper name and women indices
+          const woman1CertCall = attachmentService.add.getCalls().find(
+            call => call.args[1].includes('other-women-repeat/women[1]/cert')
+          );
+          assert.isDefined(woman1CertCall, 'Should have first woman cert');
+          assert.equal(woman1CertCall!.args[0]._id, 'woman1', 'First woman cert should attach to woman1');
+          assert.equal(woman1CertCall!.args[2], 'CERT_1', 'Should pass first woman cert content');
+
+          const woman2CertCall = attachmentService.add.getCalls().find(
+            call => call.args[1].includes('other-women-repeat/women[2]/cert')
+          );
+          assert.isDefined(woman2CertCall, 'Should have second woman cert');
+          assert.equal(woman2CertCall!.args[0]._id, 'woman2', 'Second woman cert should attach to woman2');
+          assert.equal(woman2CertCall!.args[2], 'CERT_2', 'Should pass second woman cert content');
+
+          const contactSignatureCall = attachmentService.add.getCalls().find(
+            call => call.args[1].includes('/contact/signature')
           );
           assert.isDefined(contactSignatureCall, 'Should have contact signature');
           assert.equal(contactSignatureCall!.args[0]._id, 'contact1', 'Contact signature should attach to contact1');
