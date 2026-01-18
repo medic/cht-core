@@ -4,6 +4,7 @@ const PouchDB = require('pouchdb-core');
 const { expect } = require('chai');
 const rewire = require('rewire');
 const request = require('@medic/couch-request');
+const { HTTP_HEADERS } = require('@medic/constants');
 
 let db;
 let unitTestEnv;
@@ -421,7 +422,7 @@ describe('db', () => {
       expect(headers.length).to.equal(2);
       headers.forEach((header) => {
         expect(header.get('X-Medic-Service')).to.equal('api');
-        expect(header.get('X-Request-Id')).to.equal('the_id');
+        expect(header.get(HTTP_HEADERS.REQUEST_ID)).to.equal('the_id');
       });
     });
 

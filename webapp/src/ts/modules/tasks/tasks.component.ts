@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
-import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -130,7 +129,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.tasksActions.setTasksList([]);
+    this.tasksActions.clearTaskList();
     this.tasksActions.setTasksLoaded(false);
     this.tasksActions.setSelectedTask(null);
     this.globalActions.unsetSelected();
@@ -139,18 +138,6 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   refreshTaskList() {
     window.location.reload();
-  }
-
-  private hydrateEmissions(taskDocs) {
-    return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
-      const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
-      emission.date = new Date(dueDate.valueOf());
-      emission.overdue = dueDate.isBefore(moment());
-      emission.owner = taskDoc.owner;
-
-      return emission;
-    });
   }
 
   private async refreshTasks() {
@@ -163,16 +150,16 @@ export class TasksComponent implements OnInit, OnDestroy {
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
       this.hasTasks = taskDocs.length > 0;
 
-      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
-      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
+      const emissions = taskDocs.map(taskDoc => taskDoc.emission);
+      const subjects = await this.getLineagesFromTaskDocs(emissions);
       if (subjects?.size) {
         const userLineageLevel = await this.userLineageLevel;
-        hydratedTasks.forEach(task => {
+        emissions.forEach(task => {
           task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
         });
       }
 
-      this.tasksActions.setTasksList(hydratedTasks);
+      this.tasksActions.setTasksList(emissions);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
