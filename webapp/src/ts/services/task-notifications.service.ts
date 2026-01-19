@@ -80,7 +80,6 @@ export class TasksNotificationService implements OnDestroy {
           contentText: this.translateContentText(
             task.emission.title,
             task.emission.contact.name,
-            task.emission.dueDate
           ),
           endDate: moment(task.emission.endDate).valueOf(),
           dueDate: moment(task.emission.dueDate).valueOf()
@@ -108,10 +107,9 @@ export class TasksNotificationService implements OnDestroy {
     return DEFAULT_MAX_NOTIFICATIONS;
   }
 
-  private translateContentText(taskName: string, contact: string, dueDate: string): string {
+  private translateContentText(taskName: string, contact: string): string {
     const key = 'android.notification.tasks.contentText';
-    const due = this.formatDateService.relative(dueDate, { task: true });
-    return this.translateService.instant(key, { taskName, contact, due });
+    return this.translateService.instant(key, { taskName, contact });
   }
 
 }
