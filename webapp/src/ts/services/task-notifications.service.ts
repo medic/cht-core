@@ -8,6 +8,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
+import { orderByDueDateAndPriority } from '@medic/task-utils';
 
 const DEFAULT_MAX_NOTIFICATIONS = 8;
 
@@ -85,7 +86,7 @@ export class TasksNotificationService implements OnDestroy {
           dueDate: moment(task.emission.dueDate).valueOf()
         });
       }
-      notifications = notifications.sort((a, b) => b.readyAt - a.readyAt);
+      notifications = notifications.sort(orderByDueDateAndPriority);
       return notifications.slice(0, 100);
 
     } catch (exception) {

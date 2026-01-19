@@ -147,9 +147,9 @@ describe('TasksNotificationService', () => {
   it('should fetch notifications', async () => {
     const notifications = await service.fetchNotifications();
     expect(notifications).to.be.an('array').that.has.lengthOf(3);
-    expect(notifications[0]._id).to.equal('task3');
+    expect(notifications[0]._id).to.equal('task1');
     expect(notifications[1]._id).to.equal('task2');
-    expect(notifications[2]._id).to.equal('task1');
+    expect(notifications[2]._id).to.equal('task3');
     expect(rulesEngine.fetchTaskDocsForAllContacts.callCount).to.equal(1);
     expect(translateService.instant.callCount).to.equal(3);
     expect(consoleErrorMock.callCount).to.equal(0);
