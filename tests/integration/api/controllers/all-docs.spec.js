@@ -18,7 +18,7 @@ const parentPlace = {
 
 const getIdsForUser = (user) => [
   `org.couchdb.user:${user}`,
-  'settings',
+  DOC_IDS.SETTINGS,
   '_design/medic-client',
   DOC_IDS.SERVICE_WORKER_META
 ];
@@ -96,7 +96,7 @@ const unrestrictedKeys = [
   'org.couchdb.user:offline',
   '_design/medic-client',
   'resources',
-  'settings',
+  DOC_IDS.SETTINGS,
   /^messages-.*$/
 ];
 
