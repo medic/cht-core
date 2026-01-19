@@ -17,4 +17,3 @@ COPY nginx_error_pages/ /usr/share/nginx/nginx_error_pages/
 
 # Final
 FROM base_nginx AS cht-nginx
-LABEL Authors="MEDIC SRE TEAM<devops@medic.org>"
