@@ -70,8 +70,11 @@ export class TasksNotificationService implements OnDestroy {
 
   private async fetchNotifications(): Promise<Notification[]> {
     try {
-      const taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
-      let notifications: Notification[] = [];
+      const notifications: Notification[] = [];
+      let taskDocs = await this.rulesEngineService.fetchTaskDocsForAllContacts();
+      taskDocs = taskDocs
+        .sort((a, b) => orderByDueDateAndPriority(a.emission, b.emission))
+        .slice(0, 100);
 
       for (const task of taskDocs) {
         notifications.push({
@@ -86,8 +89,7 @@ export class TasksNotificationService implements OnDestroy {
           dueDate: moment(task.emission.dueDate).valueOf()
         });
       }
-      notifications = notifications.sort(orderByDueDateAndPriority);
-      return notifications.slice(0, 100);
+      return notifications;
 
     } catch (exception) {
       console.error('fetchNotifications(): Error fetching tasks', exception);
