@@ -1,0 +1,61 @@
+services:
+  couchdb-350:
+    image: couchdb:3.5.0
+    container_name: cht-benchmark-couchdb-350
+    ports:
+      - "6984:5984"
+      - "6986:5986"
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
+    volumes:
+      - couchdb-350-data:/opt/couchdb/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nouveau-350:
+    image: couchdb:3.5.0-nouveau
+    container_name: cht-benchmark-nouveau-350
+    ports:
+      - "6987:5987"
+      - "6988:5988"
+    volumes:
+      - nouveau-350-data:/opt/couchdb/nouveau
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5987/_nouveau || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  couchdb-with-nouveau-350:
+    image: couchdb:3.5.0
+    container_name: cht-benchmark-couchdb-with-nouveau-350
+    ports:
+      - "6985:5984"
+      - "6989:5986"
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
+      - NOUVEAU_ENABLE=true
+      - NOUVEAU_URL=http://nouveau-350:5987
+    volumes:
+      - couchdb-with-nouveau-350-data:/opt/couchdb/data
+    restart: unless-stopped
+    depends_on:
+      - nouveau-350
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  couchdb-350-data:
+  nouveau-350-data:
+  couchdb-with-nouveau-350-data:

@@ -1,0 +1,62 @@
+services:
+  couchdb-351:
+    image: couchdb:3.5.1
+    container_name: cht-benchmark-couchdb-351
+    ports:
+      - "7984:5984"
+      - "7986:5986"
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
+    volumes:
+      - couchdb-351-data:/opt/couchdb/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nouveau-351:
+    image: couchdb:3.5.1-nouveau
+    container_name: cht-benchmark-nouveau-351
+    ports:
+      - "7987:5987"
+      - "7988:5988"
+    volumes:
+      - nouveau-351-data:/opt/nouveau/data
+      - ${PWD}/nouveau-config-351.yaml:/opt/nouveau/etc/nouveau.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5987/_nouveau || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  couchdb-with-nouveau-351:
+    image: couchdb:3.5.1
+    container_name: cht-benchmark-couchdb-with-nouveau-351
+    ports:
+      - "7985:5984"
+      - "7989:5986"
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
+      - NOUVEAU_ENABLE=true
+      - NOUVEAU_URL=http://nouveau-351:5987
+    volumes:
+      - couchdb-with-nouveau-351-data:/opt/couchdb/data
+    restart: unless-stopped
+    depends_on:
+      - nouveau-351
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  couchdb-351-data:
+  nouveau-351-data:
+  couchdb-with-nouveau-351-data:
