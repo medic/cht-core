@@ -284,6 +284,20 @@ describe('Setup utils', () => {
         ]);
       });
 
+      it('should cache local ddoc definitions', async () => {
+        sinon.stub(fs.promises, 'readFile');
+        sinon.stub(resources, 'ddocsPath').value('localDdocs');
+
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        fs.promises.readFile.resolves(genDdocsJson(medicDdocs));
+
+        const result1 = await utils.getDdocDefinitions();
+        const result2 = await utils.getDdocDefinitions();
+
+        expect(result1).to.equal(result2);
+        expect(fs.promises.readFile.callCount).to.equal(5); // Once for each database
+      });
+
       it('should throw error when read fails', async () => {
         sinon.stub(fs.promises, 'readFile');
         sinon.stub(resources, 'ddocsPath').value('localDdocs');
@@ -417,6 +431,48 @@ describe('Setup utils', () => {
         expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
         expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
         expect(result.size).to.equal(2);
+      });
+
+      it('should cache ddoc definitions', async () => {
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const version = 'version_number';
+        db.builds.get.resolves({
+          build_info: buildInfo(version),
+          version: version,
+          _attachments: {
+            'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
+          },
+        });
+
+        const result1 = await utils.getDdocDefinitions(buildInfo(version));
+        const result2 = await utils.getDdocDefinitions(buildInfo(version));
+
+        expect(result1).to.equal(result2);
+        expect(db.builds.get.callCount).to.equal(1);
+      });
+
+      it('should cache ddoc definitions per version', async () => {
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const version1 = 'v1';
+        const version2 = 'v2';
+        db.builds.get.withArgs(`medic:medic:${version1}`, { attachments: true }).resolves({
+          build_info: buildInfo(version1),
+          version: version1,
+          _attachments: { 'ddocs/medic.json': { data: genAttachmentData(medicDdocs) } },
+        });
+        db.builds.get.withArgs(`medic:medic:${version2}`, { attachments: true }).resolves({
+          build_info: buildInfo(version2),
+          version: version2,
+          _attachments: { 'ddocs/medic.json': { data: genAttachmentData(medicDdocs) } },
+        });
+
+        const result1 = await utils.getDdocDefinitions(buildInfo(version1));
+        const result2 = await utils.getDdocDefinitions(buildInfo(version2));
+        const result1Cached = await utils.getDdocDefinitions(buildInfo(version1));
+
+        expect(result1).to.not.equal(result2);
+        expect(result1).to.equal(result1Cached);
+        expect(db.builds.get.callCount).to.equal(2);
       });
 
       it('should throw error when staging doc not found', async () => {
@@ -1120,6 +1176,34 @@ describe('Setup utils', () => {
       expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
       expect(request.get.callCount).to.equal(1);
       expect(request.get.args[0]).to.deep.equal([{ url: 'http://someurl' }]);
+    });
+  });
+
+  describe('getDdocInfo', () => {
+    it('should return view_index info on success', async () => {
+      const database = { name: 'medic' };
+      const ddoc = '_design/medic';
+      const response = { view_index: { sizes: { active: 123 } } };
+      sinon.stub(request, 'get').resolves(response);
+
+      const result = await utils.getDdocInfo(database, ddoc);
+
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0][0].url).to.contain('/medic/_design/medic/_info');
+      expect(result).to.deep.equal(response.view_index);
+    });
+
+    it('should return null and log error on failure', async () => {
+      const database = { name: 'medic' };
+      const ddoc = '_design/medic';
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+      sinon.stub(logger, 'error');
+
+      const result = await utils.getDdocInfo(database, ddoc);
+
+      expect(result).to.equal(null);
+      expect(logger.error.callCount).to.equal(1);
+      expect(logger.error.args[0][0]).to.equal('Error fetching view index info: %o');
     });
   });
 });

@@ -81,6 +81,7 @@ require('./directives/auth');
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
+require('./filters/bytes');
 
 angular.module('inboxFilters', []);
 require('./filters/resource-icon');

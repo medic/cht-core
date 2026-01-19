@@ -30,6 +30,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     let containerWaitPeriodTimeout;
     let apiBuildsUrl;
+    let buildsDb;
 
     const logError = (error, key) => {
       return $translate
@@ -106,7 +107,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         });
     };
 
-    const getBuilds = (buildsDb, options) => {
+    const getBuilds = (options) => {
       options.descending = true;
       options.limit = BUILD_LIST_LIMIT;
 
@@ -124,25 +125,25 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const loadBuilds = () => {
       const minVersion = Version.minimumNextRelease($scope.currentDeploy.version);
-      const buildsDb = pouchDB(apiBuildsUrl || DEFAULT_BUILDS_URL);
+      buildsDb = buildsDb || pouchDB(apiBuildsUrl || DEFAULT_BUILDS_URL);
 
       // NB: Once our build server is on CouchDB 2.0 we can combine these three calls
       //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
       return $q
         .all([
-          getBuilds(buildsDb, {
+          getBuilds({
             startkey: [ 'branch', 'medic', 'medic', {}],
             endkey: [ 'branch', 'medic', 'medic'],
           }),
-          getBuilds(buildsDb, {
+          getBuilds({
             startkey: [ 'beta', 'medic', 'medic', {}],
             endkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
           }),
-          getBuilds(buildsDb, {
+          getBuilds({
             startkey: [ 'release', 'medic', 'medic', {}],
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
           }),
-          $scope.isUsingFeatureRelease ? getBuilds(buildsDb, {
+          $scope.isUsingFeatureRelease ? getBuilds({
             startkey: [ minVersion.featureRelease, 'medic', 'medic', {} ],
             endkey: [
               minVersion.featureRelease,
@@ -157,13 +158,19 @@ angular.module('controllers').controller('UpgradeCtrl',
         ])
         .then(([ branches, betas, releases, featureReleases ]) => {
           $scope.versions = { branches, betas, releases, featureReleases };
-          buildsDb.close();
-        })
-        .catch(err => {
-          buildsDb.close();
-          throw err;
         });
     };
+
+    const loadBuildsCompare = () => {
+      if (!$scope.versions.releases) {
+        return;
+      }
+      let series = Promise.resolve();
+      $scope.versions.releases.forEach(release => series = series.then(() => $scope.compareReleases(release)));
+      $scope.versions.betas.forEach(release => series = series.then(() => $scope.compareReleases(release)));
+      return series;
+    };
+
 
     $scope.setupPromise = $q
       .all([
@@ -187,19 +194,20 @@ angular.module('controllers').controller('UpgradeCtrl',
       .catch((err) => logError(err, 'instance.upgrade.error.version_fetch'))
       .then(() => {
         $scope.loading = false;
-      });
+      })
+      .then(() => loadBuildsCompare());
 
     $scope.potentiallyIncompatible = (release) => {
       // Old builds may not have a base version, which means unless their version
-      // is in the form 1.2.3[-maybe.4] (ie it's a branch) we can't tell and will
+      // is in the form 1.2.3[-maybe.4] (ie it's a branch), we can't tell and will
       // just presume maybe it's bad
       if (!release.base_version && !Version.parse(release.version)) {
         return true;
       }
 
-      const currentVersion = Version.currentVersion($scope.currentDeploy);
+      const currentVersion = Version.parse($scope.currentDeploy.base_version || $scope.currentDeploy.version);
       if (!currentVersion) {
-        // Unable to parse the current version information so all releases are
+        // Unable to parse the current version information, so all releases are
         // potentially incompatible
         return true;
       }
@@ -214,19 +222,24 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     $scope.upgrade = (build, action) => {
       const stageOnly = action === 'stage';
-      const confirmCallback = () => upgrade(build, action);
+      const upgradeBuild = Object.assign({}, build);
+      delete upgradeBuild.compare;
+      delete upgradeBuild.requiresIndexing;
 
-      return Modal({
-        templateUrl: 'templates/upgrade_confirm.html',
-        controller: 'UpgradeConfirmCtrl',
-        model: {
-          stageOnly,
-          before: $scope.currentDeploy.version,
-          after: build.version,
-          confirmCallback,
-          errorKey: 'instance.upgrade.error.deploy'
-        },
-      }).catch(() => {});
+      return $scope
+        .compareReleases(build)
+        .then(() => Modal({
+          templateUrl: 'templates/upgrade_confirm.html',
+          controller: 'UpgradeConfirmCtrl',
+          model: {
+            stageOnly,
+            build,
+            before: $scope.currentDeploy.version,
+            after: build.version,
+            confirmCallback: () => upgrade(upgradeBuild, action),
+            errorKey: 'instance.upgrade.error.compare',
+          }
+        })).catch(() => {});
     };
 
     const waitUntilApiStarts = () => new Promise((resolve) => {
@@ -283,10 +296,28 @@ angular.module('controllers').controller('UpgradeCtrl',
       return $scope.upgrade($scope.upgradeDoc.to, action);
     };
 
+    $scope.compareReleases = (build) => {
+      const url = `${UPGRADE_URL}/compare`;
+      if (build.compare) {
+        return $q.resolve();
+      }
+
+      return $http
+        .post(url, { build })
+        .then(({ data }) => {
+          build.compare = data;
+          build.requiresIndexing = data.some(difference => difference.indexing);
+        })
+        .catch(error => {
+          $log.error('Failed to compare releases', error);
+        });
+    };
+
     const abortUpgrade = () => {
       return $http
         .delete(UPGRADE_URL)
         .then(() => getCurrentUpgrade())
-        .then(() => loadBuilds());
+        .then(() => loadBuilds())
+        .then(() => loadBuildsCompare());
     };
   });
