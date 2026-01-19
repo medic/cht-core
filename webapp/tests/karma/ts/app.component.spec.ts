@@ -51,6 +51,7 @@ import { OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -93,6 +94,7 @@ describe('AppComponent', () => {
   let formService;
   let updateServiceWorkerService;
   let storageInfoService;
+  let tasksNotificationService;
   // End Services
 
   let globalActions;
@@ -100,6 +102,7 @@ describe('AppComponent', () => {
   let originalPouchDB;
   const changesListener:any = {};
   let consoleErrorStub;
+  let originalMedicMobileAndroid;
 
   const getComponent = () => {
     fixture = TestBed.createComponent(AppComponent);
@@ -127,6 +130,7 @@ describe('AppComponent', () => {
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
+    tasksNotificationService = { initOnAndroid: sinon.stub() };
     modalService = {
       show: sinon.stub().returns({
         afterClosed: sinon.stub().returns(of())
@@ -177,6 +181,7 @@ describe('AppComponent', () => {
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
     };
+    originalMedicMobileAndroid = window.medicmobile_android;
     originalPouchDB = window.PouchDB;
     window.PouchDB = {
       fetch: sinon.stub()
@@ -240,6 +245,7 @@ describe('AppComponent', () => {
           { provide: FormService, useValue: formService },
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
+          { provide: TasksNotificationService, useValue: tasksNotificationService },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {
@@ -258,6 +264,7 @@ describe('AppComponent', () => {
     clock && clock.restore();
     window.PouchDB = originalPouchDB;
     window.localStorage.removeItem('medic-last-replicated-date');
+    window.medicmobile_android = originalMedicMobileAndroid;
   });
 
   it('should create component and init services', async () => {
@@ -295,6 +302,14 @@ describe('AppComponent', () => {
     expect(updateServiceWorkerService.update.callCount).to.equal(1);
     // init storage info service
     expect(storageInfoService.init.callCount).to.equal(1);
+    expect(tasksNotificationService.initOnAndroid.callCount).to.equal(0);
+  });
+
+  it('should init task notifications on android', async () => {
+    window.medicmobile_android = { updateTaskNotificationStore: sinon.stub().returns(true) };
+    await getComponent();
+    await component.setupPromise;
+    expect(tasksNotificationService.initOnAndroid.callCount).to.equal(1);
   });
 
   it('should show reload popup when service worker is updated', async () => {
