@@ -4,6 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
+import { DOC_IDS } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -297,9 +298,9 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesUpdateSubscription = this.changesService.subscribe({
       key: 'rules-config-update',
-      filter: change => change.id === 'settings' || userLineage.includes(change.id),
+      filter: change => change.id === DOC_IDS.SETTINGS || userLineage.includes(change.id),
       callback: change => {
-        if (change.id !== 'settings') {
+        if (change.id !== DOC_IDS.SETTINGS) {
           return this.userContactService
             .get()
             .then(updatedUser => {

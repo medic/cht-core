@@ -184,7 +184,6 @@ describe('server', () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
       await utils.listenForApi();
-      await utils.delayPromise(1000);
 
       const forms = await utils.db.allDocs({
         start_key: 'form:',
@@ -207,7 +206,6 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startHaproxy();
       await utils.startApi();
-      await utils.delayPromise(1000);
 
       await utils.request('/');
 
@@ -218,7 +216,6 @@ describe('server', () => {
       await utils.delayPromise(1000);
 
       await utils.listenForApi();
-      await utils.delayPromise(1000);
     });
 
     it('should work after restarting CouchDb @docker', async () => {
@@ -226,7 +223,6 @@ describe('server', () => {
       await utils.startCouchDb();
 
       await utils.listenForApi();
-      await utils.delayPromise(1000);
     });
   });
 

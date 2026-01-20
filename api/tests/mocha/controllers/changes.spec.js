@@ -29,14 +29,14 @@ describe('Changes controller', () => {
         { id: DOC_IDS.SERVICE_WORKER_META },
         { id: '_design/medic-client', },
         { id: 'org.couchdb.user:user', },
-        { id: 'settings' },
+        { id: DOC_IDS.SETTINGS },
       ],
     });
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
       '_design/medic-client',
       DOC_IDS.SERVICE_WORKER_META,
-      'settings',
+      DOC_IDS.SETTINGS,
       'org.couchdb.user:user',
     ] }]]);
     expect(res.json.args).to.deep.equal([[{
@@ -44,7 +44,7 @@ describe('Changes controller', () => {
         { id: DOC_IDS.SERVICE_WORKER_META },
         { id: '_design/medic-client', },
         { id: 'org.couchdb.user:user', },
-        { id: 'settings' },
+        { id: DOC_IDS.SETTINGS },
       ],
     }]]);
   });
