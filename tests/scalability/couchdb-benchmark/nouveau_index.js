@@ -4,6 +4,7 @@ const utils = require('./utils');
 const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 const nouveau = require('@medic/nouveau');
 
+const MAX_KEYS = 1000;
 const scenarios = [
   { limit: 100, include_docs: false },
   { limit: 1000, include_docs: false },
@@ -24,7 +25,11 @@ const ddoc = {
   _id: '_design/index_test',
   nouveau: {
     test: {
-      index: 'function(doc) { index("string", "_id", doc._id, {"store": true}); }'
+      default_analyzer: 'whitespace',
+      field_analyzers: {
+        exact_match: 'keyword'
+      },
+      index: 'function(doc) { index("string", "id", doc._id, {store: true}); }'
     }
   }
 };
@@ -35,9 +40,13 @@ const populateDocIds = (response) => {
     return;
   }
 
-  const desiredLength = scenarios.find(scenario => scenario.keys).limit;
-  if (response.rows.length === desiredLength) {
-    docIds.push(...response.rows.map(row => row.id));
+  const desiredLength = Math.max(
+    ...scenarios
+      .filter(scenario => scenario.keys)
+      .map(scenario => scenario.limit)
+  );
+  if (response.hits.length === desiredLength) {
+    docIds.push(...response.hits.map(row => row.id));
   }
 };
 
@@ -65,22 +74,41 @@ const createAndIndexView = async () => {
 const test = async (params) => {
   const method = 'post';
   const options = {
-    uri: `${utils.db}/${indexPath}`, body: {
+    uri: `${utils.db}/${indexPath}`,
+    body: {
       include_docs: params.include_docs,
-      q: '_id:*',
+      q: '*:*',
+      limit: params.limit,
     }
   };
 
   if (params.keys) {
-    options.body.q = `_id:(${docIds.map(nouveau.escapeKeys).join(' OR ')})`;
+    if (params.limit > MAX_KEYS) {
+      const body = { ...options.body };
+      const docIdsCopy = [...docIds];
+      options.body = [];
+
+      while (docIdsCopy.length) {
+        options.body.push({
+          ...body,
+          q: `id:(${docIdsCopy.splice(0, MAX_KEYS).map(nouveau.escapeKeys).join(' OR ')})`
+        });
+      }
+    } else {
+      options.body.q = `id:(${docIds.slice(0, params.limit).map(nouveau.escapeKeys).join(' OR ')})`;
+    }
   }
 
-  if (params.limit) {
-    options.body.limit = params.limit;
-  }
-
+  let response;
   const start = performance.now();
-  const response = await request[method](options);
+  if (Array.isArray(options.body)) {
+    for (const body of options.body) {
+      response = await request[method]({ ...options, body });
+    }
+  } else {
+    response = await request[method](options);
+  }
+
   const end = performance.now();
 
   populateDocIds(response);
@@ -90,7 +118,6 @@ const test = async (params) => {
 
 module.exports = async () => {
   await createAndIndexView();
-  await populateDocIds();
 
   const results = [];
   for (const scenario of scenarios) {

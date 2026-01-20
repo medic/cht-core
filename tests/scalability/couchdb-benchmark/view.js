@@ -18,6 +18,15 @@ const scenarios = [
   { limit: 10000, keys: true, include_docs: true },
 ];
 
+const ddoc = {
+  _id: '_design/view_test',
+  views: {
+    test: {
+      map: 'function(doc) { emit(doc._id, null); }'
+    }
+  }
+};
+const viewPath = `${ddoc._id}/_view/test`;
 const docIds = [];
 
 const populateDocIds = (response) => {
@@ -33,7 +42,7 @@ const populateDocIds = (response) => {
 
 const waitForIndexing = async () => {
   try {
-    await request.get({ uri: `${utils.db}/_design/view_test/_view/test`, qs: { limit: 1 } });
+    await request.get({ uri: `${utils.db}/${viewPath}`, qs: { limit: 1 } });
   } catch (e) {
     const code = e.error?.code;
     if (code?.toUpperCase().includes('IMEDOUT')) {
@@ -46,15 +55,6 @@ const waitForIndexing = async () => {
 };
 
 const createAndIndexView = async () => {
-  const ddoc = {
-    _id: '_design/view_test',
-    views: {
-      test: {
-        map: 'function(doc) { emit(doc._id, null); }'
-      }
-    }
-  };
-
   const options = { uri: `${utils.db}/${ddoc._id}`, body: ddoc };
   await request.put(options);
   await waitForIndexing();
@@ -66,7 +66,7 @@ const test = async (params) => {
     include_docs: params.include_docs,
   };
   let method = 'get';
-  const options = { uri: `${utils.db}/_design/view_test/_view/test`, qs: queryString };
+  const options = { uri: `${utils.db}/${viewPath}`, qs: queryString };
 
   if (params.keys) {
     options.body = { keys: docIds };
@@ -88,7 +88,6 @@ const test = async (params) => {
 
 module.exports = async () => {
   await createAndIndexView();
-  await populateDocIds();
 
   const results = [];
   for (const scenario of scenarios) {
