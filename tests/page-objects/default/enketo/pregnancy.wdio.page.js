@@ -4,7 +4,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 
 const setFutureVisitDate = async (value = moment().add(1, 'day').format('YYYY-MM-DD')) => {
-  const date = await $('section[name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] ' +
+  const date = await $('section[name="/data/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date"] ' +
     'input.ignore.input-small');
   await date.waitForDisplayed();
   await date.setValue(value);

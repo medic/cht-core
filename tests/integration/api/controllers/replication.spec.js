@@ -5,7 +5,7 @@ const { DOC_IDS } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
-  'settings',
+  DOC_IDS.SETTINGS,
   'resources',
   'branding',
   // 'partners',
