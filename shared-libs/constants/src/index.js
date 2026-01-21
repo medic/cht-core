@@ -1,1 +1,2 @@
-8
+// Placeholder - restoring from master
+module.exports = {};

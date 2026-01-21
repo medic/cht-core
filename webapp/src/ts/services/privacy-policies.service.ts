@@ -11,7 +11,7 @@ import { DOC_IDS } from '@medic/constants';
 })
 export class PrivacyPoliciesService {
 
-  DOC_IDS.PRIVACY_POLICIES = 'privacy-policies';
+PRIVACY_POLICIES_DOC_ID = 'privacy-policies';
   ACCEPTED_CONTENT_TYPE = 'text/html';
 
   constructor(
