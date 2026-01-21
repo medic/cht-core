@@ -47,7 +47,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
-    private readonly performanceService: PerformanceService,
+    private  readonly performanceService: PerformanceService,
     private readonly store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
@@ -93,9 +93,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       .isEnabled()
       .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
-        return isEnabled
-          ? this.rulesEngineService.fetchTargets(this.reportingPeriodFilter)
-          : [];
+        return isEnabled ? this.rulesEngineService.fetchTargets() : [];
       })
       .catch(err => {
         console.error('Error getting targets', err);
@@ -104,42 +102,11 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-        // --- REVIVE FUNCTION FIELDS HERE ---
-        this.targets = targets
-          .filter(target => target.visible !== false)
-          .map(target => {
-            if (typeof target.subtitle_translation_key === 'string' &&
-               target.subtitle_translation_key.includes('=>')) {
-              target.subtitle_translation_key =
-               this.rulesEngineService.deserializeFunction(target.subtitle_translation_key);
-            }
-            return target;
-          });
-
+        this.targets = targets.filter(target => target.visible !== false);
         this.trackPerformance?.stop({
           name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,
         });
       });
-  }
-
-  /**
-  * Returns correct subtitle for each target.
-  */
-  getSubtitleKey(
-    subtitleKey: string | ((period: ReportingPeriod) => string),
-    reportingPeriod: ReportingPeriod
-  ): string {
-    if (!subtitleKey) {
-      return '';
-    }
-
-
-    if (typeof subtitleKey === 'function') {
-      return subtitleKey(reportingPeriod);
-    }
-
-
-    return subtitleKey;
   }
 }

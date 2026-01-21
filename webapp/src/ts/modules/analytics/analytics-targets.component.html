@@ -48,8 +48,8 @@
             <h2 *ngIf="target.translation_key">{{ target.translation_key | translate }}</h2>
             <h2 *ngIf="!target.translation_key">{{ target.name | translateFrom }}</h2>
             <p *ngIf="target.subtitle_translation_key">
-             {{ getSubtitleKey(target.subtitle_translation_key, reportingPeriodFilter) | translate }}
-           </p>
+              {{ target.subtitle_translation_key | translate }}
+            </p>
           </div>
         </div>
       </div>
