@@ -2,6 +2,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
+const { DOC_IDS } = require('@medic/constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const expect = chai.expect;
@@ -17,9 +18,9 @@ const parentPlace = {
 
 const getIdsForUser = (user) => [
   `org.couchdb.user:${user}`,
-  'settings',
+  DOC_IDS.SETTINGS,
   '_design/medic-client',
-  'service-worker-meta'
+  DOC_IDS.SERVICE_WORKER_META
 ];
 
 const users = [
@@ -89,13 +90,13 @@ const restrictedKeys = [
 ];
 
 const unrestrictedKeys = [
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   'fixture:offline',
   'fixture:user:offline',
   'org.couchdb.user:offline',
   '_design/medic-client',
   'resources',
-  'settings',
+  DOC_IDS.SETTINGS,
   /^messages-.*$/
 ];
 

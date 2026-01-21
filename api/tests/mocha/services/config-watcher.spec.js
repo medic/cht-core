@@ -1,6 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
+const { DOC_IDS } = require('@medic/constants');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
@@ -55,8 +56,8 @@ describe('Configuration', () => {
           .expect(viewMapUtils.loadViewMaps.args[0])
           .to.deep.equal([
             { _id: '_design/medic' },
-            'docs_by_replication_key',
-            'contacts_by_depth',
+            ['contacts_by_depth'],
+            ['docs_by_replication_key'],
           ]);
         chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
 
@@ -225,7 +226,7 @@ describe('Configuration', () => {
         sinon.stub(config, 'get').withArgs('roles').returns({ chw: {} });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.SETTINGS }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
@@ -250,7 +251,7 @@ describe('Configuration', () => {
           });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
-        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.SETTINGS }).then(() => {
           chai.expect(settingsService.update.callCount).to.equal(1);
           chai.expect(settingsService.get.callCount).to.equal(1);
           chai.expect(config.set.callCount).to.equal(1);
@@ -270,7 +271,7 @@ describe('Configuration', () => {
         settingsService.get.rejects();
         sinon.stub(process, 'exit');
 
-        return dbWatcher.medic.args[0][0]({ id: 'settings' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.SETTINGS }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });

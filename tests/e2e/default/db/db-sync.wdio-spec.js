@@ -9,6 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const uuid = require('uuid').v4;
+const { DOC_IDS } = require('@medic/constants');
 
 /* global window */
 
@@ -153,7 +154,7 @@ describe('db-sync', () => {
   it('should filter resources, service-worker, forms, translations, branding, partners docs', async () => {
     const docIds = [
       'resources',
-      'service-worker-meta',
+      DOC_IDS.SERVICE_WORKER_META,
       'form:contact:person:edit',
       'messages-en',
     ];

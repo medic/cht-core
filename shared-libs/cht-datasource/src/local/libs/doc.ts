@@ -30,6 +30,23 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[
     .filter((doc): doc is Doc => isDoc(doc));
 };
 
+/** @internal */
+export const getDocUuidsByIdRange = (db: PouchDB.Database<Doc>) => async (
+  startkey: string,
+  endkey: string,
+  limit?: number,
+  skip = 0
+): Promise<string[]> => {
+  const response = await db.allDocs({
+    startkey,
+    endkey,
+    include_docs: false,
+    limit,
+    skip,
+  });
+  return response.rows.map(({ id }) => id);
+};
+
 const queryDocs = (
   db: PouchDB.Database<Doc>,
   view: string,

@@ -1,32 +1,32 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:cht="https://communityhealthtoolkit.org" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:cht="https://communityhealthtoolkit.org">
   <h:head>
     <h:title>Phone Widget</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/phone_widget/phone_widgets/deprecated_phone:jr:constraintMsg">
+          <text id="/data/phone_widgets/deprecated_phone:jr:constraintMsg">
             <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
           </text>
-          <text id="/phone_widget/phone_widgets/deprecated_phone:label">
+          <text id="/data/phone_widgets/deprecated_phone:label">
             <value>Deprecated Phone</value>
           </text>
-          <text id="/phone_widget/phone_widgets/phone:jr:constraintMsg">
+          <text id="/data/phone_widgets/phone:jr:constraintMsg">
             <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
           </text>
-          <text id="/phone_widget/phone_widgets/phone:label">
+          <text id="/data/phone_widgets/phone:label">
             <value>Phone – allow duplicates</value>
           </text>
-          <text id="/phone_widget/phone_widgets/phone_unique:jr:constraintMsg">
+          <text id="/data/phone_widgets/phone_unique:jr:constraintMsg">
             <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
           </text>
-          <text id="/phone_widget/phone_widgets/phone_unique:label">
+          <text id="/data/phone_widgets/phone_unique:label">
             <value>Phone – unique</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <phone_widget delimiter="#" id="phone_widget" prefix="J1!phone_widget!" version="2024-08-16 00:00:00">
+        <data id="phone_widget" version="2024-08-16 00:00:00" prefix="J1!phone_widget!" delimiter="#">
           <phone_widgets>
             <deprecated_phone/>
             <phone/>
@@ -35,25 +35,26 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </phone_widget>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind constraint="true()" jr:constraintMsg="jr:itext('/phone_widget/phone_widgets/deprecated_phone:jr:constraintMsg')" nodeset="/phone_widget/phone_widgets/deprecated_phone" required="true()" type="tel"/>
-      <bind constraint="true()" jr:constraintMsg="jr:itext('/phone_widget/phone_widgets/phone:jr:constraintMsg')" nodeset="/phone_widget/phone_widgets/phone" type="string"/>
-      <bind constraint="true()" jr:constraintMsg="jr:itext('/phone_widget/phone_widgets/phone_unique:jr:constraintMsg')" nodeset="/phone_widget/phone_widgets/phone_unique" required="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/phone_widget/meta/instanceID" readonly="true()" type="string"/>
+      <instance id="user-contact-summary"/>
+      <bind nodeset="/data/phone_widgets/deprecated_phone" type="tel" required="true()" constraint="true()" jr:constraintMsg="jr:itext('/data/phone_widgets/deprecated_phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/phone_widgets/phone" type="string" constraint="true()" jr:constraintMsg="jr:itext('/data/phone_widgets/phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/phone_widgets/phone_unique" type="string" required="true()" constraint="true()" jr:constraintMsg="jr:itext('/data/phone_widgets/phone_unique:jr:constraintMsg')"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/phone_widget/phone_widgets">
-      <input ref="/phone_widget/phone_widgets/deprecated_phone">
-        <label ref="jr:itext('/phone_widget/phone_widgets/deprecated_phone:label')"/>
+    <group appearance="field-list" ref="/data/phone_widgets">
+      <input ref="/data/phone_widgets/deprecated_phone">
+        <label ref="jr:itext('/data/phone_widgets/deprecated_phone:label')"/>
       </input>
-      <input appearance="numbers tel" ref="/phone_widget/phone_widgets/phone">
-        <label ref="jr:itext('/phone_widget/phone_widgets/phone:label')"/>
+      <input ref="/data/phone_widgets/phone" appearance="numbers tel">
+        <label ref="jr:itext('/data/phone_widgets/phone:label')"/>
       </input>
-      <input appearance="numbers tel" ref="/phone_widget/phone_widgets/phone_unique">
-        <label ref="jr:itext('/phone_widget/phone_widgets/phone_unique:label')"/>
+      <input ref="/data/phone_widgets/phone_unique" appearance="numbers tel">
+        <label ref="jr:itext('/data/phone_widgets/phone_unique:label')"/>
       </input>
     </group>
   </h:body>

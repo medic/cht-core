@@ -11,6 +11,10 @@ spec:
       protocol: TCP
       targetPort: 5987
   selector:
-    cht.service: nouveau
+    {{- if .Values.couchdb.clusteredCouchEnabled }}
+    cht.service: couchdb-1
+    {{- else }}
+    cht.service: couchdb
+    {{- end }}
 status:
   loadBalancer: {}

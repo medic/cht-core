@@ -2,12 +2,14 @@ import {
   and,
   byContactType,
   byContactUuid,
+  byContactUuids,
   byFreetext,
   byReportingPeriod,
   byUsername,
   byUuid, FreetextQualifier,
   isContactTypeQualifier,
   isContactUuidQualifier,
+  isContactUuidsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
@@ -228,6 +230,48 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isContactUuidQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byContactUuids', () => {
+    ([
+      ['abc-123'],
+      ['abc-123', 'abc-200']
+    ] as [string, ...string[]][]).forEach((contactUuids) => {
+      it('builds a qualifier for searching by contact UUID', () => {
+        expect(byContactUuids(contactUuids)).to.deep.equal({ contactUuids });
+      });
+    });
+
+    ([
+      null,
+      '',
+      [],
+      [''],
+    ] as [string, ...string[]][]).forEach(contactUuids => {
+      it(`throws an error for ${JSON.stringify(contactUuids)}`, () => {
+        expect(() => byContactUuids(contactUuids)).to.throw(
+          `Invalid contact UUIDs [${contactUuids}].`
+        );
+      });
+    });
+  });
+
+  describe('isContactUuidsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'abc-123', false ],
+      [ { contactUuids: '' }, false ],
+      [ { contactUuids: { } }, false ],
+      [ { contactUuids: [] }, false ],
+      [ { contactUuids: ['abc-123', ''] }, false ],
+      [ { contactUuids: [null, 'abc-123'] }, false ],
+      [ { contactUuids: ['abc-123'] }, true ],
+      [ { contactUuids: ['abc-123', 'abc-123', 'abc-123'] }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isContactUuidsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

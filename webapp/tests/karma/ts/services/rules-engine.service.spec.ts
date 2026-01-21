@@ -1,7 +1,10 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { provideMockStore } from '@ngrx/store/testing';
+import { Store } from '@ngrx/store';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { DOC_IDS } from '@medic/constants';
 
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -50,7 +53,7 @@ describe('RulesEngineService', () => {
   let getTargetInterval;
 
   const settingsDoc = {
-    _id: 'settings',
+    _id: DOC_IDS.SETTINGS,
     tasks: {
       rules: 'rules',
       schedules: ['schedules'],
@@ -136,7 +139,6 @@ describe('RulesEngineService', () => {
     chtDatasourceService.bind.withArgs(TargetInterval.v1.get).returns(getTargetInterval);
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
-
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
     fetchTasksForRecursive = sinon.stub();
@@ -150,7 +152,7 @@ describe('RulesEngineService', () => {
     });
     fetchTasksFor.returns({ on: fetchTasksForRecursive });
 
-    fetchTargetsResult = () => Promise.resolve();
+    fetchTargetsResult = sinon.stub().resolves([]);
     fetchTargets = sinon.stub();
     fetchTargets.events = {};
     fetchTargetsRecursive = sinon.stub();
@@ -185,6 +187,7 @@ describe('RulesEngineService', () => {
       getDirtyContacts: sinon.stub().returns([]),
       fetchTasksBreakdown: sinon.stub(),
       refreshEmissionsFor: refreshEmissionsFor,
+      showTask: sinon.stub().callsFake(doc => doc?.emission?.state === 'Ready'),
     };
     const rulesEngineCoreFactory= { get: () => rulesEngineCoreStubs };
 
@@ -193,6 +196,7 @@ describe('RulesEngineService', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
       ],
       providers: [
+        provideMockStore(),
         ParseProvider,
         ContactTypesService,
         { provide: AuthService, useValue: authService },
@@ -302,7 +306,7 @@ describe('RulesEngineService', () => {
       const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
       const expectedParams = [allContexts.id, emptyContext.id, matchingContext.id];
       const settingsDoc = {
-        _id: 'settings',
+        _id: DOC_IDS.SETTINGS,
         tasks: {
           targets: {
             items: [ allContexts, emptyContext, matchingContext, noMatchingContext ]
@@ -333,7 +337,7 @@ describe('RulesEngineService', () => {
       service = TestBed.inject(RulesEngineService);
 
       const settingsDoc = {
-        _id: 'settings',
+        _id: DOC_IDS.SETTINGS,
         tasks: {
           rules: 'rules',
           isDeclarative: false,
@@ -401,7 +405,7 @@ describe('RulesEngineService', () => {
     });
 
     const cachebustScenarios = [
-      { _id: 'settings', settings: settingsDoc },
+      { _id: DOC_IDS.SETTINGS, settings: settingsDoc },
       userContactDoc,
       userContactGrandparent,
     ];
@@ -789,15 +793,15 @@ describe('RulesEngineService', () => {
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
-    tick(500 * 1000);
+    tick(1000);
 
-    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(1);
-    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(0);
     expect(telemetryService.record.callCount).to.equal(1);
     expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:background-refresh' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   }));
 
   it('should cancel all ensure freshness threads', async () => {
@@ -964,7 +968,7 @@ describe('RulesEngineService', () => {
 
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([undefined]);
-      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:all-contacts' });
     });
@@ -992,11 +996,159 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([['c1', 'c2', 'c3']]);
 
-
-      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:some-contacts' });
     });
+  });
+
+  describe('monitorTaskChanges', () => {
+    it('should subscribe to task document changes', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+
+      // Trigger the background refresh
+      tick(1000);
+
+      await nextTick();
+
+      // Verify that task-doc-update subscription was created
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+    }));
+
+    it('should update overdue tasks when task document changes', fakeAsync(async () => {
+      const store = TestBed.inject(Store);
+      const dispatchSpy = sinon.spy(store, 'dispatch');
+
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription callback
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const callback = taskDocSubscription[0].callback;
+
+      // Simulate a task document change
+      const taskChange = {
+        id: 'task-1',
+        doc: {
+          _id: 'task-1',
+          type: 'task',
+          emission: {
+            _id: 'emission-1',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      callback(taskChange);
+
+      // Verify that setOverdueTasks was dispatched
+      const setOverdueTasksCalls = dispatchSpy.getCalls().filter(
+        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
+      );
+      expect(setOverdueTasksCalls.length).to.be.greaterThan(0);
+      expect((setOverdueTasksCalls[0].args[0] as any).payload.tasks).to.deep.equal([taskChange.doc]);
+    }));
+
+    it('should not update overdue tasks for non-task documents', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const filter = taskDocSubscription[0].filter;
+
+      // Simulate a non-task document change
+      const reportChange = {
+        id: 'report-1',
+        doc: {
+          _id: 'report-1',
+          type: 'data_record',
+          form: 'some-form',
+        },
+      };
+
+      // Verify that the filter rejects non-task documents
+      expect(filter(reportChange)).to.be.false;
+    }));
+
+    it('should not update overdue tasks for tasks that are not in Ready state', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const filter = taskDocSubscription[0].filter;
+
+      // Simulate a task document that is not in Ready state (e.g., Cancelled)
+      const cancelledTaskChange = {
+        id: 'task-cancelled',
+        doc: {
+          _id: 'task-cancelled',
+          type: 'task',
+          state: 'Cancelled',
+          emission: {
+            _id: 'emission-cancelled',
+            state: 'Cancelled',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      // Verify that the filter rejects tasks not in Ready state
+      expect(filter(cancelledTaskChange)).to.be.false;
+
+      // Simulate a task document that is in Ready state
+      const readyTaskChange = {
+        id: 'task-ready',
+        doc: {
+          _id: 'task-ready',
+          type: 'task',
+          state: 'Ready',
+          emission: {
+            _id: 'emission-ready',
+            state: 'Ready',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      // Verify that the filter accepts tasks in Ready state
+      expect(filter(readyTaskChange)).to.be.true;
+    }));
   });
 
   describe('fetchTargets with ReportingPeriod', () => {
@@ -1008,54 +1160,80 @@ describe('RulesEngineService', () => {
       clock && clock.restore();
     });
 
-    it('should fetch current month targets when ReportingPeriod.CURRENT is passed', async () => {
-      fetchTargetsResult = sinon.stub().resolves([{ ...sampleTarget }]);
-      service = TestBed.inject(RulesEngineService);
+    [
+      'current_key',
+      '(interval) => interval + "_key"',
+    ].forEach(subtitleTranslationKey => {
+      it('should fetch current month targets when ReportingPeriod.CURRENT is passed', async () => {
+        fetchTargetsResult = sinon.stub().resolves([{
+          ...sampleTarget,
+          subtitle_translation_key: subtitleTranslationKey
+        }]);
+        service = TestBed.inject(RulesEngineService);
 
-      const actual = await service.fetchTargets(ReportingPeriod.CURRENT);
+        const actual = await service.fetchTargets(ReportingPeriod.CURRENT);
 
-      expect(actual.length).to.eq(1);
-      expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
-      expect(getTargetInterval.called).to.be.false;
+        expect(actual.length).to.eq(1);
+        expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
+        expect(getTargetInterval.called).to.be.false;
+        expect(actual[0].subtitle_translation_key).to.equal('current_key');
+      });
     });
 
-    it('should fetch previous month targets using cht-datasource when ReportingPeriod.PREVIOUS is passed', async () => {
-      const targetIntervalDoc = {
-        _id: 'target~2025-01~user~org.couchdb.user:fred',
-        type: 'target',
-        user: 'org.couchdb.user:fred',
-        owner: 'user',
-        reporting_period: '2025-01',
-        updated_date: Date.now(),
-        targets: [
-          {
-            id: 'target',
-            value: {
-              pass: 5,
-              total: 10
+    [
+      'previous_key',
+      '(interval) => interval + "_key"',
+    ].forEach(subtitleTranslationKey => {
+      it('should fetch previous month targets when ReportingPeriod.PREVIOUS is passed', async () => {
+        const targetIntervalDoc = {
+          _id: 'target~2025-01~user~org.couchdb.user:fred',
+          type: 'target',
+          user: 'org.couchdb.user:fred',
+          owner: 'user',
+          reporting_period: '2025-01',
+          updated_date: Date.now(),
+          targets: [
+            {
+              id: 'target',
+              value: {
+                pass: 5,
+                total: 10
+              }
+            }
+          ]
+        };
+        getTargetInterval.resolves(targetIntervalDoc);
+        service = TestBed.inject(RulesEngineService);
+
+        settingsService.get.resolves({
+          _id: 'settings',
+          tasks: {
+            targets: {
+              items: [
+                { id: 'target', type: 'count', subtitle_translation_key: subtitleTranslationKey },
+              ]
             }
           }
-        ]
-      };
-      getTargetInterval.resolves(targetIntervalDoc);
-      service = TestBed.inject(RulesEngineService);
+        });
 
-      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+        const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.calledOnce).to.be.true;
-      expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+        expect(getTargetInterval.calledOnce).to.be.true;
+        expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
 
-      const qualifier = getTargetInterval.args[0][0];
-      expect(qualifier).to.have.property('reportingPeriod', '2025-01');
-      expect(qualifier).to.have.property('contactUuid', 'user');
-      expect(qualifier).to.have.property('username', 'fred');
+        const qualifier = getTargetInterval.args[0][0];
+        expect(qualifier).to.have.property('reportingPeriod', '2025-01');
+        expect(qualifier).to.have.property('contactUuid', 'user');
+        expect(qualifier).to.have.property('username', 'fred');
 
-      expect(actual.length).to.eq(1);
-      expect(actual[0]).to.include({
-        id: 'target',
-        visible: true
+        expect(actual.length).to.eq(1);
+        expect(actual[0]).to.include({
+          id: 'target',
+          visible: true,
+          subtitle_translation_key: 'previous_key'
+        });
+        expect(actual[0].value).to.deep.eq({ pass: 5, total: 10 });
       });
-      expect(actual[0].value).to.deep.eq({ pass: 5, total: 10 });
     });
 
     it('should return empty targets when username is missing', async () => {

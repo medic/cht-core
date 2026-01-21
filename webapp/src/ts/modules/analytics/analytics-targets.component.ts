@@ -93,7 +93,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       .isEnabled()
       .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
-        return isEnabled ? this.rulesEngineService.fetchTargets(this.reportingPeriodFilter) : [];
+        return isEnabled ? this.rulesEngineService.fetchTargets() : [];
       })
       .catch(err => {
         console.error('Error getting targets', err);

@@ -64,7 +64,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngAfterContentChecked() {
     if (!this.activeModule && this.analyticsModules?.length) {
-      this.setActiveModule(this.route.snapshot?.firstChild?.data?.moduleId);
+      this.setActiveModule(this.getCurrentModuleId());
     }
   }
 
@@ -111,9 +111,19 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   openSidebar() {
     this.isOpen = !this.isOpen;
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
-    if (this.isOpen) {
-      // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
+
+    if (!this.isOpen) {
+      return;
+    }
+
+    const moduleId = this.activeModule? this.activeModule.id: this.getCurrentModuleId();
+
+    if (moduleId === AGGREGATE_TARGETS_ID) {
       this.telemetryService.record('sidebar_filter:analytics:target_aggregates:open');
+    }
+
+    if (moduleId === TARGETS_ID) {
+      this.telemetryService.record('sidebar_filter:analytics:targets:open');
     }
   }
 }

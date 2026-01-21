@@ -4,6 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
+import { DOC_IDS } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -21,8 +22,10 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { Store } from '@ngrx/store';
+import { TasksActions } from '@mm-actions/tasks';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
-import { TargetInterval, Qualifier } from '@medic/cht-datasource';
+import { Qualifier, TargetInterval } from '@medic/cht-datasource';
 
 interface DebounceActive {
   [key: string]: {
@@ -54,7 +57,7 @@ export class RulesEngineCoreFactoryService {
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
-  private readonly ENSURE_FRESHNESS_MILLIS = 120 * 1000;
+  private readonly ENSURE_FRESHNESS_MILLIS = 1000;
   private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
   private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
   private readonly FRESHNESS_KEY = 'freshness';
@@ -63,6 +66,7 @@ export class RulesEngineService implements OnDestroy {
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
+  private readonly taskActions: TasksActions;
   private readonly getTargetInterval: ReturnType<typeof TargetInterval.v1.get>;
 
   constructor(
@@ -82,10 +86,12 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService
+    private chtDatasourceService:CHTDatasourceService,
+    private store: Store
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.taskActions = new TasksActions(this.store);
     this.getTargetInterval = chtDatasourceService.bind(TargetInterval.v1.get);
   }
 
@@ -140,7 +146,7 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
-      this.refreshEmissions();
+      this.fetchOverdueTasksForAllContacts();
     }, this.ENSURE_FRESHNESS_MILLIS);
 
     this.debounceActive[this.FRESHNESS_KEY] = {
@@ -156,6 +162,14 @@ export class RulesEngineService implements OnDestroy {
     trackPerformance?.stop(trackName);
 
     return true;
+  }
+
+  private async fetchOverdueTasksForAllContacts() {
+    const allTasks = await this.fetchTaskDocsForAllContacts();
+    this.ngZone.run(() => {
+      this.taskActions.setTasksList(allTasks.map(task => task.emission));
+    });
+    this.monitorTaskChanges();
   }
 
   private cancelDebounce(entity) {
@@ -281,9 +295,9 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesUpdateSubscription = this.changesService.subscribe({
       key: 'rules-config-update',
-      filter: change => change.id === 'settings' || userLineage.includes(change.id),
+      filter: change => change.id === DOC_IDS.SETTINGS || userLineage.includes(change.id),
       callback: change => {
-        if (change.id !== 'settings') {
+        if (change.id !== DOC_IDS.SETTINGS) {
           return this.userContactService
             .get()
             .then(updatedUser => {
@@ -297,6 +311,19 @@ export class RulesEngineService implements OnDestroy {
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
+  }
+
+  private monitorTaskChanges() {
+    const taskDocSubscription = this.changesService.subscribe({
+      key: 'task-doc-update',
+      filter: change => change.doc.type === 'task' && this.rulesEngineCore.showTask(change.doc),
+      callback: change => {
+        this.ngZone.run(() => {
+          this.taskActions.setOverdueTasks(this.hydrateTaskDocs([change.doc]));
+        });
+      }
+    });
+    this.subscriptions.add(taskDocSubscription);
   }
 
   private monitorChanges(rulesEngineContext) {
@@ -483,10 +510,26 @@ export class RulesEngineService implements OnDestroy {
         return [];
       }
 
-      return this.processTargetDocuments(targetInterval, settings);
+      return this.processTargetDocuments(targetInterval, settings, reportingPeriod);
     } catch (error) {
       console.error('Error fetching previous month targets:', error);
       return [];
+    }
+  }
+
+  private getValueFromFunction(str: string | undefined, ...args: unknown[]) {
+    if (!str) {
+      return str;
+    }
+    try {
+      const fn = new Function(`return (${str})`)();
+      if (typeof fn === 'function') {
+        return fn(...args);
+      }
+      return str;
+    } catch (error) {
+      console.trace('Error evaluating function from string:', error);
+      return str;
     }
   }
 
@@ -516,7 +559,13 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-    return targets;
+    return targets.map((target: Target) => ({
+      ...target,
+      subtitle_translation_key: this.getValueFromFunction(
+        target.subtitle_translation_key,
+        ReportingPeriod.CURRENT
+      )
+    }));
   }
 
   /**
@@ -527,11 +576,11 @@ export class RulesEngineService implements OnDestroy {
     const INTERVAL_TAG_FORMAT = 'YYYY-MM';
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
     const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
-    
+
     if (reportingPeriod === ReportingPeriod.CURRENT) {
       return moment(currentInterval.end).format(INTERVAL_TAG_FORMAT);
     }
-    
+
     // Previous month calculation
     const previousMonthDate = moment(currentInterval.end).subtract(1, 'months');
     const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
@@ -569,7 +618,8 @@ export class RulesEngineService implements OnDestroy {
    */
   private processTargetDocuments(
     targetInterval: TargetInterval.v1.TargetInterval,
-    settings: any
+    settings: any,
+    reportingPeriod: ReportingPeriod
   ): Target[] {
     const targetsConfig = settings?.tasks?.targets?.items || [];
     const processedTargets: Target[] = [];
@@ -583,6 +633,10 @@ export class RulesEngineService implements OnDestroy {
       if (targetConfig && targetConfig.visible !== false) {
         processedTargets.push({
           ...targetConfig,
+          subtitle_translation_key: this.getValueFromFunction(
+            targetConfig.subtitle_translation_key,
+            reportingPeriod
+          ),
           ...targetValue,
           visible: true
         });
@@ -604,7 +658,6 @@ export class RulesEngineService implements OnDestroy {
   private getTelemetryTrackName(...params:string[]) {
     return ['rules-engine', ...params].join(':');
   }
-
 }
 
 export enum TargetType {
@@ -626,4 +679,29 @@ export interface Target {
   subtitle_translation_key: string;
   goal: number;
   value: TargetValue;
+}
+
+export interface Task {
+  _id: string;
+  authoredOn: number;
+  stateHistory: {
+    state: string;
+    timestamp: number;
+  }[],
+  state: string,
+  user: string;
+  requester: string;
+  owner: string;
+  emission: TaskEmission;
+}
+
+export interface TaskEmission {
+  _id: string;
+  title: string;
+  resolved: boolean;
+  actions: any[];
+  dueDate: string;
+  priority: string;
+  priorityLabel: string;
+  overdue: boolean;
 }

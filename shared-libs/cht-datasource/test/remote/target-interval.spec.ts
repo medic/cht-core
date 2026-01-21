@@ -3,15 +3,25 @@ import { expect } from 'chai';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import * as TargetInterval from '../../src/remote/target-interval';
+import {
+  and,
+  byContactUuid,
+  byReportingPeriod,
+  byContactUuids
+} from '../../src/qualifier';
 
 describe('remote target interval', () => {
   const remoteContext = {} as RemoteDataContext;
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
+  let getResourcesInner: SinonStub;
+  let getResourcesOuter: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
+    getResourcesInner = sinon.stub();
+    getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
   });
 
   afterEach(() => sinon.restore());
@@ -48,6 +58,86 @@ describe('remote target interval', () => {
         expect(result).to.be.null;
         expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target-interval');
         expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.uuid);
+      });
+    });
+
+    describe('getPage', () => {
+      const doc = [
+        {
+          type: 'target',
+          user: 'user-1',
+          owner: 'd3f6b91e-b095-48ef-a524-705e29fd9f6d',
+          reporting_period: '2025-01',
+          updated_date: 123,
+          targets: [
+            { id: 'target1', value: { pass: 5, total: 6 } },
+            { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
+          ]
+        },
+        {
+          type: 'target',
+          user: 'user-2',
+          owner: 'c4e6b91e-b095-48ef-b524-805e28fd9c7d',
+          reporting_period: '2025-01',
+          updated_date: 123,
+          targets: [
+            { id: 'target1', value: { pass: 5, total: 6 } },
+            { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
+          ]
+        }
+      ];
+
+      const limit = 3;
+      const cursor = '1';
+
+      it('returns target intervals for multiple contact UUIDs', async () => {
+        const expectedResponse = { data: doc, cursor };
+        getResourcesInner.resolves(expectedResponse);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactUuids([doc[1].owner, doc[0].owner]));
+
+        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_uuids: `${doc[1].owner},${doc[0].owner}`,
+          cursor
+        })).to.be.true;
+      });
+
+      it('returns target intervals for single contact UUID', async () => {
+        const expectedResponse = { data: doc.slice(0, 1), cursor };
+        getResourcesInner.resolves(expectedResponse);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
+
+        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_uuid: doc[0].owner,
+          cursor
+        })).to.be.true;
+      });
+
+      it('returns empty array if docs are not found', async () => {
+        getResourcesInner.resolves([]);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
+
+        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+
+        expect(result).to.deep.equal([]);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_uuid: doc[0].owner,
+          cursor
+        })).to.be.true;
       });
     });
   });

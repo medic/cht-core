@@ -83,6 +83,7 @@ const generateContactsAndTargets = (parent, contactName, targetValuesByContact) 
       .map(target => genTarget(target, contact, targetValuesByContact)),
     owner: contact._id,
     user: 'irrelevant',
+    updated_date: Date.now()
   }));
 
   return {
