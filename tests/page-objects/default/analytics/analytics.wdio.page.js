@@ -7,6 +7,7 @@ const filterOptionLabel = () => $('.filter-option-label');
 const targets = () => $$('.target');
 const targetWrap = () => $('.page .targets');
 const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
+const targetSubtitle = (targetElement) => targetElement.$('.heading .title p');
 const targetGoal = (targetElement) => targetElement.$('.body .count .goal');
 const targetCountNumber = (targetElement) => targetElement.$('.body .count .number');
 const targetCountNumberColor = (targetElement) => targetElement.$('.body .count .number:not(.goal-met)');
@@ -19,10 +20,14 @@ const EMPTY_SELECTION = '.content-pane .item-content.empty-selection';
 const emptySelectionError = () => $(`${EMPTY_SELECTION}.selection-error`);
 const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`);
 
-const getTargetInfo = async (targetElement) => {
+const getTargetInfo = async (targetElement, includeSubtitle) => {
   const target = {
     title: await targetTitle(targetElement).getText()
   };
+
+  if (includeSubtitle && await targetSubtitle(targetElement).isExisting()) {
+    target.subtitle = await targetSubtitle(targetElement).getText();
+  }
 
   if (await targetGoal(targetElement).isExisting()) {
     const fullText = await targetGoalValue(targetElement).getText();
@@ -45,13 +50,13 @@ const getTargetInfo = async (targetElement) => {
   return target;
 };
 
-const getTargets = async () => {
+const getTargets = async ({ includeSubtitle = false } = {}) => {
   await targetWrap().waitForDisplayed();
   const displayedTargets = await targets();
 
   const targetList = [];
   for (const target of displayedTargets) {
-    const info = await getTargetInfo(target);
+    const info = await getTargetInfo(target, includeSubtitle);
     targetList.push(info);
   }
 

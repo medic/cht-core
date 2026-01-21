@@ -14,6 +14,7 @@ const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const constants = require('@constants');
+const { createTargetDoc } = require('./utils/targets-helper-functions');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -216,13 +217,8 @@ describe('Target aggregates', () => {
 
         const targetsForContact = (contact) => {
           return helperFunctions.docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targets[contact.name],
-            owner: contact._id,
-            user: 'irrelevant',
+            ...createTargetDoc(tag, contact._id, { targets: targets[contact.name] }),
             date_updated: `yesterday ${contact.name}`,
-            updated_date: Date.now(),
           }));
         };
         const targetDocs = [
@@ -313,13 +309,8 @@ describe('Target aggregates', () => {
 
         const targetsForContact = (contact) => {
           return helperFunctions.docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targets[contact.name],
-            owner: contact._id,
-            user: 'irrelevant',
+            ...createTargetDoc(tag, contact._id, { targets: targets[contact.name] }),
             date_updated: `yesterday ${contact.name}`,
-            updated_date: Date.now(),
           }));
         };
         const targetDocs = [
