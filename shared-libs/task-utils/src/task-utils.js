@@ -51,7 +51,7 @@ const orderByDueDateAndPriority = (t1, t2) => {
       return numericDate;
     }
     // If not a number, try parsing as date
-    if (typeof dueDate === 'string' && moment(dueDate).isValid()) {
+    if (moment(dueDate).isValid()) {
       return moment(dueDate).valueOf();
     }
     return Number.NaN;
