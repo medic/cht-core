@@ -1206,4 +1206,52 @@ describe('Setup utils', () => {
       expect(logger.error.args[0][0]).to.equal('Error fetching view index info: %o');
     });
   });
+
+  describe('getNouveauInfo', () => {
+    it('should return empty array if ddoc has no nouveau property', async () => {
+      const database = { name: 'medic' };
+      const ddoc = { _id: '_design/medic' };
+      const result = await utils.getNouveauInfo(database, ddoc);
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should return nouveau info for all indexes', async () => {
+      const database = { name: 'medic' };
+      const ddoc = {
+        _id: '_design/medic',
+        nouveau: {
+          idx1: {},
+          idx2: {}
+        }
+      };
+      const response1 = { search_index: { disk_size: 100 } };
+      const response2 = { search_index: { disk_size: 200 } };
+      const getStub = sinon.stub(request, 'get');
+      getStub.onFirstCall().resolves(response1);
+      getStub.onSecondCall().resolves(response2);
+
+      const result = await utils.getNouveauInfo(database, ddoc);
+
+      expect(getStub.callCount).to.equal(2);
+      expect(getStub.args[0][0].url).to.contain('/medic/_design/medic/_nouveau_info/idx1');
+      expect(getStub.args[1][0].url).to.contain('/medic/_design/medic/_nouveau_info/idx2');
+      expect(result).to.deep.equal([response1.search_index, response2.search_index]);
+    });
+
+    it('should return empty array and log error on failure', async () => {
+      const database = { name: 'medic' };
+      const ddoc = {
+        _id: '_design/medic',
+        nouveau: { idx1: {} }
+      };
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+      sinon.stub(logger, 'error');
+
+      const result = await utils.getNouveauInfo(database, ddoc);
+
+      expect(result).to.deep.equal([]);
+      expect(logger.error.callCount).to.equal(1);
+      expect(logger.error.args[0][0]).to.equal('Error fetching view index info: %o');
+    });
+  });
 });

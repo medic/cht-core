@@ -395,6 +395,25 @@ const getDdocInfo = async (database, ddoc) => {
   }
 };
 
+const getNouveauInfo = async (database, ddoc) => {
+  if (!ddoc.nouveau) {
+    return [];
+  }
+  try {
+    const nouveauInfo = [];
+    for (const nouveauIndex of Object.keys(ddoc.nouveau)) {
+      const info = await request.get({
+        url: `${environment.serverUrl}/${database.name}/${ddoc._id}/_nouveau_info/${nouveauIndex}`
+      });
+      nouveauInfo.push(info.search_index);
+    }
+    return nouveauInfo;
+  } catch (err) {
+    logger.error('Error fetching view index info: %o', err);
+    return [];
+  }
+};
+
 module.exports = {
   cleanup,
 
@@ -415,4 +434,5 @@ module.exports = {
   downloadDdocDefinitions,
   getLocalDdocDefinitions,
   getDdocInfo,
+  getNouveauInfo,
 };

@@ -96,13 +96,23 @@ const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
     return [];
   }
 
-  return [{
+  let size = 0;
+  if (types.includes('views') || types.includes('added')) {
+    size += localDdoc.viewInfo?.sizes?.file || 0;
+  }
+  if (types.includes('indexes')) {
+    size += localDdoc.nouveauInfo?.reduce((acc, curr) => acc + (curr.disk_size || 0), 0) || 0;
+  }
+
+  const result = {
     type: types,
     ddoc: localDdoc._id,
     db: database.name,
-    size: localDdoc.info.sizes.active,
+    size,
     indexing: true,
-  }];
+  };
+
+  return result;
 };
 
 const compareRemoteToLocal = (database, remoteDdoc, localDdocs) => {
@@ -129,8 +139,10 @@ const compareBuildVersions = async (buildInfo) => {
     const remoteDdocs = remoteBuild.get(database);
 
     for (const localDdoc of localDdocs) {
-      localDdoc.info = await upgradeUtils.getDdocInfo(database, localDdoc._id);
-      differences.push(...compareLocalToRemote(database, localDdoc, remoteDdocs));
+      localDdoc.viewInfo = await upgradeUtils.getDdocInfo(database, localDdoc._id);
+      localDdoc.nouveauInfo = await upgradeUtils.getNouveauInfo(database, localDdoc);
+
+      differences.push(compareLocalToRemote(database, localDdoc, remoteDdocs));
     }
 
     if (remoteDdocs) {

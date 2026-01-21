@@ -12,7 +12,8 @@ let upgrade;
 describe('upgrade service', () => {
   beforeEach(() => {
     upgrade = rewire('../../../../src/services/setup/upgrade');
-    sinon.stub(upgradeUtils, 'getDdocInfo').resolves({ sizes: { active: 100 } });
+    sinon.stub(upgradeUtils, 'getDdocInfo').resolves({ sizes: { file: 0 } });
+    sinon.stub(upgradeUtils, 'getNouveauInfo').resolves([]);
   });
   afterEach(() => {
     sinon.restore();
@@ -310,7 +311,7 @@ describe('upgrade service', () => {
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
 
       const result = await upgrade.compareBuildVersions({});
-      expect(result).to.deep.equal([{ type: ['added'], ddoc: '_design/b', db: 'medic', indexing: true }]);
+      expect(result).to.deep.equal([{ type: ['added'], indexing: true, ddoc: '_design/b', db: 'medic' }]);
     });
 
     it('should report nothing when local has a ddoc missing remotely', async () => {
@@ -350,7 +351,41 @@ describe('upgrade service', () => {
         type: ['views'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
+        indexing: true
+      }]);
+    });
+
+    it('should report correct size when both views and indexes change', async () => {
+      const local = buildMap(
+        'medic',
+        [{
+          id: 'a',
+          views: { v1: { map: 'emit(1)' } },
+          nouveau: { idx1: { index: 'field1' } }
+        }]
+      );
+      const remote = buildMap(
+        'medic',
+        [{
+          id: 'a',
+          views: { v1: { map: 'emit(2)' } },
+          nouveau: { idx1: { index: 'field2' } }
+        }]
+      );
+
+      upgradeUtils.getDdocInfo.resolves({ sizes: { file: 150 } });
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 200 }, { disk_size: 300 }]);
+
+      sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
+      sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
+
+      const result = await upgrade.compareBuildVersions({});
+      expect(result).to.deep.equal([{
+        type: ['views', 'indexes'],
+        ddoc: '_design/a',
+        db: 'medic',
+        size: 650, // 150 (views) + 200 + 300 (indexes)
         indexing: true
       }]);
     });
@@ -364,6 +399,8 @@ describe('upgrade service', () => {
         'medic',
         [{ id: 'a', nouveau: { idx1: { index: 'field2', field_analyzers: { field1: 'std' } } } }]
       );
+
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 100 }]);
 
       sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
@@ -389,7 +426,7 @@ describe('upgrade service', () => {
         type: ['views'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -405,7 +442,7 @@ describe('upgrade service', () => {
         type: ['views'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -424,7 +461,7 @@ describe('upgrade service', () => {
         type: ['views'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -432,6 +469,8 @@ describe('upgrade service', () => {
     it('should report indexes when local has indexes and remote does not', async () => {
       const local = buildMap('medic', [{ id: 'a', nouveau: { idx1: {} } }]);
       const remote = buildMap('medic', [{ id: 'a' }]);
+
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 100 }]);
 
       sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
@@ -449,6 +488,8 @@ describe('upgrade service', () => {
       const local = buildMap('medic', [{ id: 'a' }]);
       const remote = buildMap('medic', [{ id: 'a', nouveau: { idx1: {} } }]);
 
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 100 }]);
+
       sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
       const result = await upgrade.compareBuildVersions({});
@@ -464,6 +505,8 @@ describe('upgrade service', () => {
     it('should report indexes when index count differs', async () => {
       const local = buildMap('medic', [{ id: 'a', nouveau: { idx1: { index: 'f1' } } }]);
       const remote = buildMap('medic', [{ id: 'a', nouveau: { idx1: { index: 'f1' }, idx2: {} } }]);
+
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 100 }]);
 
       sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
@@ -487,6 +530,8 @@ describe('upgrade service', () => {
         [{ id: 'a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'simple' } } } }]
       );
 
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 100 }]);
+
       sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
       const result = await upgrade.compareBuildVersions({});
@@ -508,6 +553,8 @@ describe('upgrade service', () => {
         'medic',
         [{ id: 'a', nouveau: { idx1: { index: 'f1', field_analyzers: { f1: 'std', f2: 'std' } } } }]
       );
+
+      upgradeUtils.getNouveauInfo.resolves([{ disk_size: 100 }]);
 
       sinon.stub(upgradeUtils, 'getLocalDdocDefinitions').resolves(local);
       sinon.stub(upgradeUtils, 'downloadDdocDefinitions').resolves(remote);
@@ -535,7 +582,7 @@ describe('upgrade service', () => {
         type: ['indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -567,7 +614,7 @@ describe('upgrade service', () => {
         type: ['indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -635,7 +682,7 @@ describe('upgrade service', () => {
         type: ['views'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -668,7 +715,7 @@ describe('upgrade service', () => {
         type: ['indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -691,7 +738,7 @@ describe('upgrade service', () => {
         type: ['indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -711,7 +758,7 @@ describe('upgrade service', () => {
         type: ['indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -777,7 +824,7 @@ describe('upgrade service', () => {
       const result = await upgrade.compareBuildVersions({});
       expect(result).to.have.deep.members([
         { type: ['added'], ddoc: '_design/b', db: 'medic', indexing: true },
-        { type: ['views'], ddoc: '_design/x', db: 'medic-logs', size: 100, indexing: true },
+        { type: ['views'], ddoc: '_design/x', db: 'medic-logs', indexing: true, size: 0, },
       ]);
       expect(result).to.have.length(2);
     });
@@ -808,7 +855,7 @@ describe('upgrade service', () => {
         type: ['views', 'indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -839,7 +886,7 @@ describe('upgrade service', () => {
         type: ['views'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
@@ -870,7 +917,7 @@ describe('upgrade service', () => {
         type: ['indexes'],
         ddoc: '_design/a',
         db: 'medic',
-        size: 100,
+        size: 0,
         indexing: true
       }]);
     });
