@@ -41,28 +41,21 @@ const setTaskState = function(task, state, details, gatewayRef) {
  * 2. Equal priorities sort by due date (earlier = higher priority)
  * 3. Invalid/missing values sort last while maintaining original order
  */
-
 const orderByDueDateAndPriority = (t1, t2) => {
   const getDueDate = dueDate => {
-    if (typeof dueDate === 'number') {
-      return dueDate;
+    if (typeof dueDate !== 'number' && typeof dueDate !== 'string') {
+      return Number.NaN;
     }
-    // Handle string values
-    if (typeof dueDate === 'string') {
-      // Try parsing as number first
-      const numericDate = Number(dueDate);
-      if (!Number.isNaN(numericDate)) {
-        return numericDate;
-      }
-
-      // If not a number, try parsing as date
-      if (moment(dueDate).isValid()) {
-        return moment(dueDate).valueOf();
-      }
+    const numericDate = Number(dueDate);
+    if (!Number.isNaN(numericDate)) {
+      return numericDate;
+    }
+    // If not a number, try parsing as date
+    if (typeof dueDate === 'string' && moment(dueDate).isValid()) {
+      return moment(dueDate).valueOf();
     }
     return Number.NaN;
   };
-
   const getPriorityValue = priority => {
     if (typeof priority === 'number' && priority >= 0) {
       return priority;
