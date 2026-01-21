@@ -77,149 +77,43 @@ export class ContactSaveService {
   }
 
   private prepareRepeatedDocs(doc, repeated) {
-    if (!repeated) {
-      return [];
-    }
-
-    // Flatten all repeat groups into a single array
-    // Real contact forms use wrapper elements like <repeat> and <other-women-repeat>
-    // Each wrapper contains multiple instances of the same element type (e.g., all <child> elements)
-    const allRepeats: any[] = [];
-    Object.values(repeated).forEach((repeatGroup: any) => {
-      if (Array.isArray(repeatGroup)) {
-        allRepeats.push(...repeatGroup);
-      }
-    });
-
-    return allRepeats.map(child => {
+    const childData = repeated?.child_data || [];
+    return childData.map(child => {
       child.parent = this.extractLineageService.extract(doc);
       return this.prepare(child);
     });
   }
 
   private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
-    // Get files from FileManager (uploaded via file widgets)
-    // For now, attach file widgets to the main document (first doc)
-    // TODO: Map file widgets to correct document based on field location
     const mainDoc = preparedDocs[0];
+
+    // Attach files from FileManager (uploaded via file widgets)
     FileManager
       .getCurrentFiles()
       .forEach(file => {
         this.attachmentService.add(mainDoc, `user-file-${file.name}`, file, file.type, false);
       });
 
-    // Process binary fields from XML and map to correct documents
+    // Process binary fields from XML
     if (xmlStr) {
-      this.processBinaryFieldsForAllDocs(preparedDocs, xmlStr);
-    }
-  }
+      const $record = $($.parseXML(xmlStr));
+      const formId = $record.find(':first').attr('id');
 
-  private processBinaryFieldsForAllDocs(preparedDocs: Record<string, any>[], xmlStr: string) {
-    const $record = $($.parseXML(xmlStr));
-    const formId = $record.find(':first').attr('id');
-
-    // Build a map of document boundaries: which XPath prefixes correspond to which documents
-    const docBoundaries = this.buildDocumentBoundaries($record, preparedDocs);
-
-    $record
-      .find('[type=binary]')
-      .each((idx, element) => {
-        const $element = $(element);
-        const content = $element.text();
-        if (content) {
-          const xpath = Xpath.getElementXPath(element);
-          // Replace instance root element node name with form internal ID
-          const filename = 'user-file' +
-            (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
-
-          // Find which document this attachment belongs to based on XPath
-          const targetDoc = this.findTargetDocument(xpath, docBoundaries, preparedDocs);
-          this.attachmentService.add(targetDoc, filename, content, 'image/png', true);
-        }
-      });
-  }
-
-  private buildDocumentBoundaries(
-    $record: any,
-    _preparedDocs: Record<string, any>[]
-  ): Record<string, number> {
-    // Map XPath prefixes to document indices
-    // Example: '/data/clinic' -> 0 (main doc), '/data/contact' -> 3 (sibling after repeats)
-    // For repeats: '/data/repeat/child[1]' -> 1, '/data/repeat/child[2]' -> 2
-    const boundaries: Record<string, number> = {};
-    const rootElement = $record.find(':first')[0];
-    const rootName = rootElement.nodeName;
-
-    // Get direct children of root element
-    const children = $(rootElement).children();
-
-    // First pass: count total number of repeat instances across all wrapper elements
-    let totalRepeatCount = 0;
-    children.each((_idx, child) => {
-      const $child = $(child);
-      const repeatedChildren = $child.children();
-      if (repeatedChildren.length > 1 && this.areAllSameTag(repeatedChildren)) {
-        totalRepeatCount += repeatedChildren.length;
-      }
-    });
-
-    // Second pass: assign indices
-    // Document order in preparedDocs: [main (0), repeats (1..n), siblings (n+1..)]
-    let currentRepeatIndex = 0;
-    let currentSiblingIndex = 1 + totalRepeatCount;
-
-    children.each((idx, child) => {
-      const childName = child.nodeName;
-      const $child = $(child);
-
-      // Check if this child contains repeated elements
-      const repeatedChildren = $child.children();
-      if (repeatedChildren.length > 1 && this.areAllSameTag(repeatedChildren)) {
-        // This is a repeat wrapper (e.g., <repeat> containing multiple <child> elements)
-        const repeatedTagName = repeatedChildren.first()[0].nodeName;
-
-        // Map each repeat instance to its document
-        repeatedChildren.each((repeatIdx, _repeatElement) => {
-          currentRepeatIndex++;
-          const repeatXpath = `/${rootName}/${childName}/${repeatedTagName}[${repeatIdx + 1}]`;
-          boundaries[repeatXpath] = currentRepeatIndex;
+      $record
+        .find('[type=binary]')
+        .each((_idx, element) => {
+          const content = $(element).text();
+          if (content) {
+            const xpath = Xpath.getElementXPath(element);
+            // Replace instance root element node name with form internal ID
+            const filename = 'user-file' +
+              (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
+            this.attachmentService.add(mainDoc, filename, content, 'image/png', true);
+          }
         });
-      } else if (idx === 0) {
-        // First child is main doc (index 0)
-        boundaries[`/${rootName}/${childName}`] = 0;
-      } else {
-        // Sibling documents appear after ALL repeats in preparedDocs array
-        boundaries[`/${rootName}/${childName}`] = currentSiblingIndex;
-        currentSiblingIndex++;
-      }
-    });
-
-    return boundaries;
-  }
-
-  private areAllSameTag(elements: any): boolean {
-    if (elements.length <= 1) {
-      return false;
     }
-    const firstTagName = elements.first()[0].nodeName;
-    return elements.toArray().every(el => el.nodeName === firstTagName);
   }
 
-  private findTargetDocument(
-    xpath: string,
-    docBoundaries: Record<string, number>,
-    preparedDocs: Record<string, any>[]
-  ): Record<string, any> {
-    // Find which document boundary this xpath falls under
-    for (const [boundaryXpath, docIndex] of Object.entries(docBoundaries)) {
-      if (xpath.startsWith(boundaryXpath)) {
-        return preparedDocs[docIndex];
-      }
-    }
-
-    // Default to main document if no match found
-    return preparedDocs[0];
-  }
 
   private extractIfRequired(name, value) {
     return this.CONTACT_FIELD_NAMES.includes(name) ? this.extractLineageService.extract(value) : value;
