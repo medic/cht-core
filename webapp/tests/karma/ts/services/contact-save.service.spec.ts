@@ -319,5 +319,78 @@ describe('ContactSave service', () => {
           assert.equal(addCall.args[4], true, 'Should indicate content is already base64 encoded');
         });
     });
+
+    it('should attach multiple attachments (file widgets and binary fields) to main document', () => {
+      const xmlWithMultipleAttachments =
+        '<data id="contact:person:create">' +
+        '<person>' +
+        '<parent>PARENT</parent>' +
+        '<type>person</type>' +
+        '<name>Dr. Maria Garcia</name>' +
+        '<phone>+254712345680</phone>' +
+        '<sex>female</sex>' +
+        '<photo type="binary">BASE64_PHOTO_DATA</photo>' +
+        '<signature type="binary">BASE64_SIGNATURE_DATA</signature>' +
+        '</person>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlWithMultipleAttachments };
+      const docId = null;
+      const type = 'person';
+
+      const mockFile1 = new File(['certificate content'], 'certificate.pdf', { type: 'application/pdf' });
+      const mockFile2 = new File(['insurance ID content'], 'insurance-id.pdf', { type: 'application/pdf' });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([mockFile1, mockFile2]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'person1', type: 'person', name: 'Dr. Maria Garcia', phone: '+254712345680', sex: 'female' }
+      });
+
+      return service
+        .save(form, docId, type)
+        .then(() => {
+          assert.equal(
+            attachmentService.add.callCount,
+            4,
+            'AttachmentService.add should be called 4 times (2 file widgets + 2 binary fields)'
+          );
+
+          attachmentService.add.getCalls().forEach(call => {
+            assert.equal(call.args[0]._id, 'person1', 'All attachments should attach to the main document');
+          });
+
+          const fileWidget1Call = attachmentService.add.getCall(0);
+          assert.equal(fileWidget1Call.args[1], 'user-file-certificate.pdf', 'First file widget attachment name');
+          assert.equal(fileWidget1Call.args[2], mockFile1, 'First file widget content');
+          assert.equal(fileWidget1Call.args[3], 'application/pdf', 'First file widget content type');
+          assert.equal(fileWidget1Call.args[4], false, 'File widget should not be pre-encoded');
+
+          const fileWidget2Call = attachmentService.add.getCall(1);
+          assert.equal(fileWidget2Call.args[1], 'user-file-insurance-id.pdf', 'Second file widget attachment name');
+          assert.equal(fileWidget2Call.args[2], mockFile2, 'Second file widget content');
+          assert.equal(fileWidget2Call.args[3], 'application/pdf', 'Second file widget content type');
+          assert.equal(fileWidget2Call.args[4], false, 'File widget should not be pre-encoded');
+
+          const photoCall = attachmentService.add.getCall(2);
+          assert.equal(
+            photoCall.args[1],
+            'user-file/contact:person:create/person/photo',
+            'Photo binary field XPath-based name'
+          );
+          assert.equal(photoCall.args[2], 'BASE64_PHOTO_DATA', 'Photo binary field content');
+          assert.equal(photoCall.args[3], 'image/png', 'Binary field content type');
+          assert.equal(photoCall.args[4], true, 'Binary field should be pre-encoded');
+
+          const signatureCall = attachmentService.add.getCall(3);
+          assert.equal(
+            signatureCall.args[1],
+            'user-file/contact:person:create/person/signature',
+            'Signature binary field XPath-based name'
+          );
+          assert.equal(signatureCall.args[2], 'BASE64_SIGNATURE_DATA', 'Signature binary field content');
+          assert.equal(signatureCall.args[3], 'image/png', 'Binary field content type');
+          assert.equal(signatureCall.args[4], true, 'Binary field should be pre-encoded');
+        });
+    });
   });
 });
