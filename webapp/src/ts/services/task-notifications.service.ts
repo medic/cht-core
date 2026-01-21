@@ -110,9 +110,9 @@ export class TasksNotificationService implements OnDestroy {
     return DEFAULT_MAX_NOTIFICATIONS;
   }
 
-  private translateContentText(taskName: string, contact: string): string {
+  private translateContentText(taskTitle: string, contact: string): string {
     const key = 'android.notification.tasks.contentText';
-    return this.translateService.instant(key, { taskName, contact });
+    return this.translateService.instant(key, { taskTitle, contact });
   }
 
 }
