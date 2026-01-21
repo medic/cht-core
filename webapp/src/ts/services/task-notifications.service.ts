@@ -65,7 +65,7 @@ export class TasksNotificationService implements OnDestroy {
   private async updateAndroidStore(): Promise<void> {
     const notifications = await this.fetchNotifications();
     const maxNotifications = await this.getMaxNotificationSettings();
-    window.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications), maxNotifications);
+    globalThis?.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications), maxNotifications);
   }
 
   private async fetchNotifications(): Promise<Notification[]> {
