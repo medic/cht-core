@@ -231,6 +231,7 @@ const checkUnsupportedBrowser = () => {
 
     if (isSafari) {
       document.getElementById('login-fields')?.classList.add('hidden');
+      document.querySelector('.locale-wrapper .loading')?.classList.add('hidden');
     }
   }
 };
