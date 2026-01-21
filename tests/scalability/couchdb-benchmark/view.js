@@ -73,7 +73,7 @@ const test = async (params) => {
   const options = { uri: `${utils.db}/${viewPath}`, qs: queryString };
 
   if (params.keys) {
-    options.body = { keys: docIds };
+    options.body = { keys: docIds.slice(0, params.limit || docIds.length) };
     method = 'post';
   }
 
