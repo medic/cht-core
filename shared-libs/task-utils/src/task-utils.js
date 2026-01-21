@@ -51,7 +51,7 @@ const orderByDueDateAndPriority = (t1, t2) => {
     if (typeof dueDate === 'string') {
       // Try parsing as number first
       const numericDate = Number(dueDate);
-      if (!isNaN(numericDate)) {
+      if (!Number.isNaN(numericDate)) {
         return numericDate;
       }
 
@@ -60,14 +60,14 @@ const orderByDueDateAndPriority = (t1, t2) => {
         return moment(dueDate).valueOf();
       }
     }
-    return NaN;
+    return Number.NaN;
   };
 
   const getPriorityValue = priority => {
     if (typeof priority === 'number' && priority >= 0) {
       return priority;
     }
-    return NaN;
+    return Number.NaN;
   };
 
   const lhsDate = getDueDate(t1?.dueDate);
@@ -77,14 +77,14 @@ const orderByDueDateAndPriority = (t1, t2) => {
 
   const compareDates = () => {
     // Both dates invalid, maintain original order
-    if (isNaN(lhsDate) && isNaN(rhsDate)) {
+    if (Number.isNaN(lhsDate) && Number.isNaN(rhsDate)) {
       return 0;
     }
     // Move tasks without dates to end
-    if (isNaN(lhsDate)) {
+    if (Number.isNaN(lhsDate)) {
       return 1;
     }
-    if (isNaN(rhsDate)) {
+    if (Number.isNaN(rhsDate)) {
       return -1;
     }
     // Sort by date ascending
@@ -92,15 +92,15 @@ const orderByDueDateAndPriority = (t1, t2) => {
   };
 
   // Priority comparison cascade
-  if (isNaN(lhsPriority) && isNaN(rhsPriority)) {
+  if (Number.isNaN(lhsPriority) && Number.isNaN(rhsPriority)) {
     return compareDates(); // Both priorities invalid, sort by date
   }
 
   // Move tasks without valid priorities to end
-  if (isNaN(lhsPriority)) {
+  if (Number.isNaN(lhsPriority)) {
     return 1;
   }
-  if (isNaN(rhsPriority)) {
+  if (Number.isNaN(rhsPriority)) {
     return -1;
   }
 
