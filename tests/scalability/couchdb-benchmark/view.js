@@ -34,7 +34,11 @@ const populateDocIds = (response) => {
     return;
   }
 
-  const desiredLength = scenarios.find(scenario => scenario.keys).limit;
+  const desiredLength = Math.max(
+    ...scenarios
+      .filter(scenario => scenario.keys)
+      .map(scenario => scenario.limit)
+  );
   if (response.rows.length === desiredLength) {
     docIds.push(...response.rows.map(row => row.id));
   }
