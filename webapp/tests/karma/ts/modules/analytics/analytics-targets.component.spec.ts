@@ -135,7 +135,7 @@ describe('AnalyticsTargetsComponent', () => {
     tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
+    expect(rulesEngineService.fetchTargets).to.not.have.been.called;
     expect(component.targetsDisabled).to.equal(true);
     expect(!!component.errorStack).to.be.false;
     expect(stopPerformanceTrackStub.calledOnce).to.be.true;
@@ -158,7 +158,7 @@ describe('AnalyticsTargetsComponent', () => {
       },
     });
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
+    expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(component.targetsDisabled).to.equal(false);
     expect(!!component.errorStack).to.be.false;
     expect(stopPerformanceTrackStub.calledOnce).to.be.true;
@@ -183,7 +183,7 @@ describe('AnalyticsTargetsComponent', () => {
     tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(rulesEngineService.fetchTargets.callCount).to.equal(1);
+    expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(!!component.errorStack).to.be.false;
     expect(component.targets).to.deep.equal([
       { id: 'target1' },
@@ -203,7 +203,7 @@ describe('AnalyticsTargetsComponent', () => {
     tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
+    expect(rulesEngineService.fetchTargets).to.not.have.been.called;
     expect(component.targetsDisabled).to.equal(false);
     expect(!!component.errorStack).to.be.true;
     expect(component.targets).to.deep.equal([]);
@@ -211,4 +211,28 @@ describe('AnalyticsTargetsComponent', () => {
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error getting targets');
   }));
+
+  [
+    ReportingPeriod.CURRENT,
+    ReportingPeriod.PREVIOUS
+  ].forEach(reportingPeriod => {
+    it(`should fetch targets when reporting period set to ${reportingPeriod}`, async () => {
+      sinon.reset();
+      rulesEngineService.isEnabled.resolves(true);
+      rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
+
+      await component.getTargets(reportingPeriod);
+
+      expect(component.reportingPeriodFilter).to.equal(reportingPeriod);
+      expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
+      expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(reportingPeriod);
+      expect(component.targetsDisabled).to.be.false;
+      expect(component.errorStack).to.be.undefined;
+      expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
+        { name: 'analytics:targets:load', recordApdex: true }
+      );
+      expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
+      expect(component.loading).to.be.false;
+    });
+  });
 });
