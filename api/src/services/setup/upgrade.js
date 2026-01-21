@@ -85,7 +85,7 @@ const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
   const remoteDdoc = remoteDdocs?.find(ddoc => localDdoc._id === ddoc._id);
 
   if (!remoteDdoc) {
-    return [];
+    return;
   }
   const types = [
     areViewsDifferent(localDdoc, remoteDdoc) && 'views',
@@ -93,7 +93,7 @@ const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
   ].filter(Boolean);
 
   if (!types.length) {
-    return [];
+    return;
   }
 
   let size = 0;
@@ -118,15 +118,15 @@ const compareLocalToRemote = (database, localDdoc, remoteDdocs) => {
 const compareRemoteToLocal = (database, remoteDdoc, localDdocs) => {
   const localDdoc = localDdocs.find(ddoc => ddoc._id === remoteDdoc._id);
   if (localDdoc) {
-    return [];
+    return;
   }
 
-  return [{
+  return {
     type: ['added'],
     ddoc: remoteDdoc._id,
     db: database.name,
     indexing: !!remoteDdoc.nouveau || !!remoteDdoc.views
-  }];
+  };
 };
 
 const compareBuildVersions = async (buildInfo) => {
@@ -147,12 +147,12 @@ const compareBuildVersions = async (buildInfo) => {
 
     if (remoteDdocs) {
       for (const remoteDdoc of remoteDdocs) {
-        differences.push(...compareRemoteToLocal(database, remoteDdoc, localDdocs));
+        differences.push(compareRemoteToLocal(database, remoteDdoc, localDdocs));
       }
     }
   }
 
-  return differences;
+  return differences.filter(Boolean);
 };
 
 const compareViews = (local, remote) => {
