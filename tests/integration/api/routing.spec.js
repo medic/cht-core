@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
+const { DOC_IDS } = require('@medic/constants');
 const moment = require('moment');
 const semver = require('semver');
 
@@ -777,7 +778,7 @@ describe('routing', () => {
       let settings;
       return utils // this test will update settings that we want successfully reverted afterwards
         .updateSettings({}, { ignoreReload: true })
-        .then(() => utils.getDoc('settings'))
+        .then(() => utils.getDoc(DOC_IDS.SETTINGS))
         .then(result => settings = result.settings)
         .then(() => Promise.all([
           utils.requestOnTestDb(
@@ -840,7 +841,7 @@ describe('routing', () => {
         .then(response => {
           expect(response.status).to.equal(403);
         })
-        .then(() => utils.getDoc('settings'))
+        .then(() => utils.getDoc(DOC_IDS.SETTINGS))
         .then(settings => {
           expect(settings.settings.test_api_v0).to.equal('my value 2');
           expect(settings.settings.medic_api_v0).to.equal('my value 1');

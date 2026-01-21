@@ -484,7 +484,8 @@ describe('CHT Script API - getDatasource', () => {
 
       it('contains expected keys', () => {
         expect(targetInterval).to.have.all.keys([
-          'getByUuid', 'getByReportingPeriodContactUuidUsername'
+          'getByUuid', 'getByReportingPeriodContactUuidUsername',
+          'getPageByReportingPeriodContactUuids', 'getByReportingPeriodContactUuids'
         ]);
       });
 
@@ -520,6 +521,92 @@ describe('CHT Script API - getDatasource', () => {
         expect(returnedTarget).to.equal(expectedTargetInterval);
         expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('getPageByReportingPeriodContactUuids - multiple contact UUIDs', async () => {
+        const expectedTargetInterval = {};
+        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+
+        const returnedTarget = await targetInterval.getPageByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuids,
+          '1',
+          10
+        );
+
+        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getPage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true; 
+      });
+
+      it('getPageByReportingPeriodContactUuids - since contact UUID', async () => {
+        const expectedTargetInterval = {};
+        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuid('my-first-contact-uuid')
+        );
+
+        const returnedTarget = await targetInterval.getPageByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuid,
+          '1',
+          10
+        );
+
+        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getPage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true;
+      });
+      
+      it('getByReportingPeriodContactUuids multiple contact UUIDs', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+        
+        const returnedTarget = targetInterval.getByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuids
+        );
+        
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getAll)).to.be.true;
+      });
+
+      it('getByReportingPeriodContactUuids since contact UUID', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuid('my-first-contact-uuid')
+        );
+
+        const returnedTarget = targetInterval.getByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuid
+        );
+
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getAll)).to.be.true;
       });
     });
   });

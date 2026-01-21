@@ -7,6 +7,7 @@ const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
+const { DOC_IDS } = require('@medic/constants');
 const settingsService = require('./settings');
 const translations = require('../translations');
 const generateXform = require('./generate-xform');
@@ -60,8 +61,8 @@ const loadViewMaps = () => {
     .then(ddoc => {
       viewMapUtils.loadViewMaps(
         ddoc,
-        'docs_by_replication_key',
-        'contacts_by_depth'
+        ['contacts_by_depth'],
+        ['docs_by_replication_key']
       );
     })
     .catch(err => {
@@ -164,7 +165,7 @@ const listen = () => {
       return handleDdocChange();
     }
 
-    if (change.id === settingsService.SETTINGS_DOC_ID) {
+    if (change.id === DOC_IDS.SETTINGS) {
       return handleSettingsChange();
     }
 

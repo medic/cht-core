@@ -280,7 +280,7 @@ describe('AppComponent', () => {
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     // init CHTScriptApiService
     expect(chtDatasourceService.isInitialized.callCount).to.equal(1);
-    // init unread count
+    // init bubble counter
     expect(unreadRecordsService.init.callCount).to.equal(1);
     expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
     // check date service

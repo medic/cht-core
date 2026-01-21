@@ -184,7 +184,6 @@ describe('server', () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
       await utils.listenForApi();
-      await utils.delayPromise(1000);
 
       const forms = await utils.db.allDocs({
         start_key: 'form:',
@@ -207,7 +206,6 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startHaproxy();
       await utils.startApi();
-      await utils.delayPromise(1000);
 
       await utils.request('/');
 
@@ -218,7 +216,6 @@ describe('server', () => {
       await utils.delayPromise(1000);
 
       await utils.listenForApi();
-      await utils.delayPromise(1000);
     });
 
     it('should work after restarting CouchDb @docker', async () => {
@@ -226,7 +223,6 @@ describe('server', () => {
       await utils.startCouchDb();
 
       await utils.listenForApi();
-      await utils.delayPromise(1000);
     });
   });
 
@@ -368,7 +364,7 @@ describe('server', () => {
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
-        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_view/docs_by_replication_key');
+        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_nouveau/docs_by_replication_key');
         expect(haproxyRequests[7]).to.include('/medic-test-purged-cache/purged-docs-');
         expect(haproxyRequests[8]).to.include('/medic-test-purged-role-');
         expect(haproxyRequests[9]).to.include('/medic-test-logs/replication-count-');

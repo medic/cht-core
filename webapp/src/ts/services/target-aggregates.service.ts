@@ -1,9 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as moment from 'moment';
-import { Person } from '@medic/cht-datasource';
-
+import { Person, Qualifier, TargetInterval } from '@medic/cht-datasource';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
-import { DbService } from '@mm-services/db.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { SearchService } from '@mm-services/search.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -15,6 +13,9 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { TranslateService } from '@mm-services/translate.service';
 import { Target, TargetValue } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+
+const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,7 @@ export class TargetAggregatesService {
 
   constructor(
     private uhcSettingsService:UHCSettingsService,
-    private dbService:DbService,
+    chtDatasourceService: CHTDatasourceService,
     private translateService:TranslateService,
     private translateFromService:TranslateFromService,
     private searchService:SearchService,
@@ -34,13 +35,16 @@ export class TargetAggregatesService {
     private settingsService:SettingsService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-  ) { }
+  ) {
+    this.getTargetIntervals = chtDatasourceService.bindGenerator(TargetInterval.v1.getAll);
+  }
 
   private readonly MAX_TARGET_MONTHS = 3;
   private readonly INTERVAL_TAG_FORMAT = 'YYYY-MM';
+  private readonly getTargetIntervals: ReturnType<typeof TargetInterval.v1.getAll>;
 
   private getIntervalTag(targetInterval) {
-    return moment(targetInterval.end).format(this.INTERVAL_TAG_FORMAT);
+    return moment(targetInterval.end).locale('en').format(this.INTERVAL_TAG_FORMAT);
   }
 
   private getCurrentInterval(appSettings) {
@@ -76,36 +80,17 @@ export class TargetAggregatesService {
     return this.getIntervalTag(targetInterval);
   }
 
-  /**
-   * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
-   * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
-   */
-  private async fetchLatestTargetDocs(appSettings, reportingPeriod?: ReportingPeriod) {
-    const tag = this.getTargetIntervalTag(appSettings, reportingPeriod);
-
-    const opts = {
-      start_key: `target~${tag}~`,
-      end_key: `target~${tag}~\ufff0`,
-      include_docs: true,
-    };
-
-    const results = await this.dbService.get().allDocs(opts);
-    return results.rows.map(row => row.doc).filter(doc => doc);
-  }
-
-  private async fetchTargetDocsForInterval(contactUuid, intervalTag):Promise<[]> {
-    const opts = {
-      start_key: `target~${intervalTag}~${contactUuid}~`,
-      end_key: `target~${intervalTag}~${contactUuid}~\ufff0`,
-      include_docs: true
-    };
-
-    const results = await this.dbService.get().allDocs(opts);
-    return results.rows.map(row => row.doc);
+  private async fetchTargetDocsForInterval(contactUuid, intervalTag) {
+    const results: TargetInterval.v1.TargetInterval[] = [];
+    const qualifier = Qualifier.and(byContactUuid(contactUuid), byReportingPeriod(intervalTag));
+    for await (const targetInt of this.getTargetIntervals(qualifier)) {
+      results.push(targetInt);
+    }
+    return results;
   }
 
   private async fetchTargetDocs(appSettings, contactUuid) {
-    const allTargetDocs = [];
+    const allTargetDocs: unknown[] = [];
     for (let monthsOld = 0; monthsOld < this.MAX_TARGET_MONTHS; monthsOld++) {
       const intervalTag = this.getTargetIntervalTag(appSettings, ReportingPeriod.PREVIOUS, monthsOld);
       const intervalTargetDocs = await this.fetchTargetDocsForInterval(contactUuid, intervalTag);
@@ -143,19 +128,25 @@ export class TargetAggregatesService {
     return targetConfig;
   }
 
-  private getRelevantTargetDocs(targetDocs, contacts) {
+  private async getRelevantTargetDocs(intervalTag: string, contacts) {
+    if (!contacts.length) {
+      return [];
+    }
+    const qualifier = Qualifier.and(
+      byReportingPeriod(intervalTag),
+      byContactUuids(contacts.map(({ _id }) => _id))
+    );
+    const targetDocs: TargetInterval.v1.TargetInterval[] = [];
+    for await (const targetInt of this.getTargetIntervals(qualifier)) {
+      targetDocs.push(targetInt);
+    }
+
     return contacts.map(contact => {
-      let targetDoc = targetDocs.find(doc => doc.owner === contact._id);
-
-      if (!targetDoc) {
-        targetDoc = {
-          owner: contact._id,
-          targets: []
-        };
-      }
-
-      targetDoc.contact = contact;
-      return targetDoc;
+      const targetDoc = targetDocs.find(({ owner }) => owner === contact._id);
+      return {
+        ...targetDoc ?? { owner: contact._id, targets: [] },
+        contact
+      };
     });
   }
 
@@ -204,8 +195,8 @@ export class TargetAggregatesService {
     }
   }
 
-  private aggregateTargets(latestTargetDocs, contacts, targetsConfig) {
-    const relevantTargetDocs = this.getRelevantTargetDocs(latestTargetDocs, contacts);
+  private async aggregateTargets(intervalTag: string, contacts, targetsConfig) {
+    const relevantTargetDocs = await this.getRelevantTargetDocs(intervalTag, contacts);
     const aggregates = targetsConfig.map((targetConfig) => this.getAggregate(targetConfig));
 
     relevantTargetDocs.forEach(targetDoc => {
@@ -338,23 +329,17 @@ export class TargetAggregatesService {
     return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
   }
 
-  private _getAggregates(facilityId?, reportingPeriod?: ReportingPeriod): Promise<AggregateTarget[]> {
-    return this.settingsService
-      .get()
-      .then(settings => {
-        const targetsConfig = this.getTargetsConfig(settings, true);
+  private async _getAggregates(facilityId?, reportingPeriod?: ReportingPeriod): Promise<AggregateTarget[]> {
+    const settings = await this.settingsService.get();
+    const targetsConfig = this.getTargetsConfig(settings, true);
 
-        if (!targetsConfig.length) {
-          return [];
-        }
+    if (!targetsConfig.length) {
+      return [];
+    }
 
-        return Promise
-          .all([
-            this.getSupervisedContacts(facilityId),
-            this.fetchLatestTargetDocs(settings, reportingPeriod)
-          ])
-          .then(([ contacts, latestTargetDocs ]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
-      });
+    const contacts = await this.getSupervisedContacts(facilityId);
+    const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
+    return this.aggregateTargets(intervalTag, contacts, targetsConfig);
   }
 
   getAggregateDetails(targetId?, aggregates?) {

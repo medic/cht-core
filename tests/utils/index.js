@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
+const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -52,7 +53,7 @@ const CONTAINER_NAMES = {};
 const originalTranslations = {};
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
-const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
+const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
@@ -412,13 +413,14 @@ const deleteDocs = ids => {
 };
 
 const PROTECTED_DOCS = [
-  'service-worker-meta',
+  DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
+  constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
   'branding',
   'partners',
-  'settings',
+  DOC_IDS.SETTINGS,
   /^form:/,
   /^_design/
 ];
@@ -640,17 +642,6 @@ const revertSettings = async ignoreRefresh => {
   return await watcher.promise;
 };
 
-const seedTestData = (userContactDoc, documents) => {
-  return saveDocs(documents)
-    .then(() => getDoc(constants.USER_CONTACT_ID))
-    .then(existingContactDoc => {
-      if (userContactDoc) {
-        Object.assign(existingContactDoc, userContactDoc);
-        return saveDoc(existingContactDoc);
-      }
-    });
-};
-
 const revertTranslations = async () => {
   const updatedTranslations = Object.keys(originalTranslations);
   if (!updatedTranslations.length) {
@@ -701,23 +692,20 @@ const getDefaultForms = async () => {
   }
 };
 
-const setUserContactDoc = (attempt = 0) => {
-  const {
-    USER_CONTACT_ID: docId,
-    DEFAULT_USER_CONTACT_DOC: defaultDoc
-  } = constants;
-
-  return db
-    .get(docId)
-    .catch(() => ({}))
-    .then(existing => Object.assign(defaultDoc, { _rev: existing?._rev }))
-    .then(newDoc => db.put(newDoc))
-    .catch(err => {
-      if (attempt > 3) {
-        throw err;
-      }
-      return setUserContactDoc(attempt + 1);
-    });
+const setUserContactDoc = async (attempt = 0) => {
+  const docsToSetup = [constants.DEFAULT_USER_CONTACT_DOC, constants.DEFAULT_USER_ADMIN_TRAINING_DOC];
+  try {
+    const existingDocs = await getDocs(docsToSetup.map(doc => doc._id));
+    const finalDocs = existingDocs
+      .map(doc => doc || {})
+      .map((doc, i) => ({ ...doc, ...docsToSetup[i] }));
+    await saveDocs(finalDocs);
+  } catch (err) {
+    if (attempt > 3) {
+      throw err;
+    }
+    return setUserContactDoc(attempt + 1);
+  }
 };
 
 const deleteMetaDbs = async () => {
@@ -889,11 +877,18 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const listenForApi = async () => {
-  let retryCount = 180;
+  const totalTries = 180; // 3 minutes
+  let retryCount = totalTries;
   do {
     try {
       console.log(`Checking API, retries left ${retryCount}`);
-      return await request({ path: '/api/info' });
+      await request({ path: '/api/info' });
+      if (retryCount < totalTries) {
+        // if api request failed at least once, make sure that it's stable
+        await delayPromise(1000);
+        await request({ path: '/api/info' });
+      }
+      return;
     } catch (err) {
       console.log('API check failed, trying again in 1 second');
       console.log(err.message);
@@ -1031,7 +1026,7 @@ const delayPromise = async (promiseFn, interval) => {
 
 const setTransitionSeqToNow = () => {
   return Promise.all([
-    sentinelDb.get('_local/transitions-seq').catch(() => ({ _id: '_local/transitions-seq' })),
+    sentinelDb.get(SENTINEL_METADATA.TRANSITIONS_SEQ).catch(() => ({ _id: SENTINEL_METADATA.TRANSITIONS_SEQ })),
     db.info()
   ]).then(([sentinelMetadata, { update_seq: updateSeq }]) => {
     sentinelMetadata.value = updateSeq;
@@ -1091,7 +1086,7 @@ const addTranslations = (languageCode, translations = {}) => {
       if (err.status === 404) {
         return {
           _id: `messages-${code}`,
-          type: 'translations',
+          type: DOC_TYPES.TRANSLATIONS,
           code: code,
           name: code,
           enabled: true,
@@ -1131,7 +1126,7 @@ const enableLanguages = async (languageCodes) => {
   await updateSettings({ languages });
 };
 
-const getSettings = () => getDoc('settings').then(settings => settings.settings);
+const getSettings = () => getDoc(DOC_IDS.SETTINGS).then(settings => settings.settings);
 
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scripts', 'build', `${file}.yml.template`);
 
@@ -1639,7 +1634,7 @@ const logFeedbackDocs = async (test) => {
     return false;
   }
 
-  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/\s/g, '-');
+  const filename = `feedbackDocs-${test.parent} ${test.title}.json`.replace(/[^\w.-]/g, '-');
   const filePath = path.resolve(__dirname, '..', 'logs', filename);
   fs.writeFileSync(filePath, JSON.stringify(newFeedbackDocs, null, 2));
   existingFeedbackDocIds.push(...newFeedbackDocs.map(doc => doc._id));
@@ -1653,6 +1648,16 @@ const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
+
+const waitForIndexes = async () => {
+  let indexes = [];
+  do {
+    indexes = await request({ path: '/_active_tasks' });
+    if (indexes.length) {
+      await delayPromise(500);
+    }
+  } while (indexes.length);
+};
 
 module.exports = {
   db,
@@ -1685,7 +1690,6 @@ module.exports = {
   deleteAllDocs,
   updateSettings,
   revertSettings,
-  seedTestData,
   revertDb,
   getOrigin,
   getBaseUrl,
@@ -1738,4 +1742,5 @@ module.exports = {
   runCommand,
   deletePurgeDbs,
   saveLogs,
+  waitForIndexes,
 };
