@@ -191,6 +191,7 @@
     "xml-js": "^1.6.11"
   },
   "dependencies": {
+    "@formatjs/icu-messageformat-parser": "^3.5.0",
     "async": "^3.2.6",
     "bikram-sambat": "^1.8.0",
     "body-parser": "^1.20.3",
@@ -242,6 +243,7 @@
     "xmlbuilder": "^15.1.1"
   },
   "overrides": {
-    "node-fetch": "$node-fetch"
+    "node-fetch": "$node-fetch",
+    "intl-messageformat-parser": "npm:@formatjs/icu-messageformat-parser@^3.5.0"
   }
 }
