@@ -1,23 +1,23 @@
 const FORM = 'form[data-form-id="enketo_widgets_test"]';
 
 const selectMultipleDropdown = (formId = FORM) => {
-  return $(`${formId} select[name="/enketo_widgets_test/enketo_test_select/select_spinner"]`);
+  return $(`${formId} select[name="/data/enketo_test_select/select_spinner"]`);
 };
 
 const selectOneDropdown = (formId = FORM) => {
-  return $(`${formId} select[name="/enketo_widgets_test/enketo_test_select/select1_spinner"]`);
+  return $(`${formId} select[name="/data/enketo_test_select/select1_spinner"]`);
 };
 
 const countryDropdown = (formId = FORM) => {
-  return $(`${formId} select[name="/enketo_widgets_test/cascading_widgets/group2/country2"]`);
+  return $(`${formId} select[name="/data/cascading_widgets/group2/country2"]`);
 };
 
 const cityDropdown = (formId = FORM) => {
-  return $(`${formId} select[name="/enketo_widgets_test/cascading_widgets/group2/city2"]`);
+  return $(`${formId} select[name="/data/cascading_widgets/group2/city2"]`);
 };
 
 const neighborhoodDropdown = (formId = FORM) => {
-  return $(`${formId} select[name="/enketo_widgets_test/cascading_widgets/group2/neighborhood2"]`);
+  return $(`${formId} select[name="/data/cascading_widgets/group2/neighborhood2"]`);
 };
 
 const patientNameErrorLabel = (formId = FORM) => $(`${formId} label.invalid-constraint`);

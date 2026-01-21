@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
+if [[ "$#" -ne 2 ]]; then
     echo "Usage: $0 <namespace> <deployment>"
     exit 1
 fi
@@ -12,7 +12,7 @@ get_pv_details() {
     local pvc_name=$1
     local pv_name
     pv_name=$(kubectl get pvc -n "$NAMESPACE" "$pvc_name" -o jsonpath='{.spec.volumeName}' 2>/dev/null)
-    if [ -n "$pv_name" ]; then
+    if [[ -n "$pv_name" ]]; then
         kubectl get pv "$pv_name" -o json 2>/dev/null | jq '{
             pvName: .metadata.name,
             pvSize: .spec.capacity.storage,
@@ -22,10 +22,11 @@ get_pv_details() {
     else
         echo "{}"
     fi
+    return 0
 }
 
 if ! DEPLOYMENT_INFO=$(kubectl get deployment -n "$NAMESPACE" "$DEPLOYMENT" -o json 2>&1); then
-    echo "Error: Failed to get deployment information"
+    echo "Failed to get deployment information"
     echo "$DEPLOYMENT_INFO"
     exit 1
 fi
@@ -57,13 +58,13 @@ echo "$DEPLOYMENT_INFO" | jq --arg namespace "$NAMESPACE" '
     )
   }' | jq -c '.' | while read -r volume_info; do
     claim_name=$(echo "$volume_info" | jq -r '.claimName // empty')
-    if [ -n "$claim_name" ]; then
+    if [[ -n "$claim_name" ]]; then
         pv_info=$(get_pv_details "$claim_name")
         echo "$volume_info" | jq --argjson pv_info "$pv_info" '. + $pv_info'
     else
         echo "$volume_info"
     fi
 done || {
-    echo "Error: Failed to process deployment information"
+    echo "Failed to process deployment information"
     exit 1
 }
