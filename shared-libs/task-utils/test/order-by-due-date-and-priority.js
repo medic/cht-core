@@ -52,9 +52,15 @@ describe('TaskUtils shared lib - orderByDueDateAndPriority function', function (
   });
 
   it('should treat various due date formats correctly', () => {
-    const result1 = taskUtils.orderByDueDateAndPriority(
+    const result0 = taskUtils.orderByDueDateAndPriority(
       { _id: 'task1', dueDate: '2025-05-30', state: 'Ready', overdue: true },
-      { _id: 'task2', dueDate: 1748638800000, state: 'Ready', overdue: true },
+      { _id: 'task2', dueDate: '2025-05-31', state: 'Ready', overdue: true },
+    );
+    expect(result0).to.be.equal(-1000 * 60 * 60 * 24);
+
+    const result1 = taskUtils.orderByDueDateAndPriority(
+      { _id: 'task1', dueDate: '1748552400000', state: 'Ready', overdue: true },
+      { _id: 'task2', dueDate: '1748638800000', state: 'Ready', overdue: true },
     );
     expect(result1).to.be.equal(-1000 * 60 * 60 * 24);
 
