@@ -387,7 +387,12 @@ describe('Target aggregates', () => {
         };
         const asserts = { hasMultipleFacilities: true, contactValues: false };
 
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        await helperFunctions.assertData(
+          context,
+          TARGET_VALUES_BY_CONTACT,
+          targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS,
+          asserts
+        );
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
@@ -413,7 +418,12 @@ describe('Target aggregates', () => {
         await targetAggregatesPage.selectFilterOption(CURRENT_PERIOD);
         context.period = CURRENT_PERIOD;
         context.isCurrentPeriod = true;
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        await helperFunctions.assertData(
+          context,
+          TARGET_VALUES_BY_CONTACT,
+          targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS,
+          asserts
+        );
       });
     });
   });
