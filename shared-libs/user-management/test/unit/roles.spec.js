@@ -81,11 +81,11 @@ describe('roles', () => {
   });
 
   describe('isOffline', () => {
-    it('should return true for an empty array and for roles that are not configured', () => {
+    it('should return false for an empty array and for roles that are not configured', () => {
       config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
-      chai.expect(roles.isOffline([])).to.equal(true);
-      chai.expect(roles.isOffline(['random'])).to.equal(true);
-      chai.expect(roles.isOffline(['role1', 'role2'])).to.equal(true);
+      chai.expect(roles.isOffline([])).to.equal(false);
+      chai.expect(roles.isOffline(['random'])).to.equal(false);
+      chai.expect(roles.isOffline(['role1', 'role2'])).to.equal(false);
     });
 
     it('should return true when at least one role is offline and no mm-online role', () => {
@@ -94,12 +94,28 @@ describe('roles', () => {
       chai.expect(roles.isOffline(['roleA', 'random'])).to.equal(true);
       chai.expect(roles.isOffline(['roleA', 'roleB'])).to.equal(true);
       chai.expect(roles.isOffline(['roleA', 'roleB', 'random'])).to.equal(true);
+      chai.expect(roles.isOffline(['roleB', 'roleA'])).to.equal(true);
     });
 
     it('should return false when none of the configured roles are offline', () => {
       config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(roles.isOffline(['roleB'])).to.equal(false);
       chai.expect(roles.isOffline(['roleB', 'roleC'])).to.equal(false);
+    });
+
+    it('should return false for empty roles', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline([])).to.equal(false);
+    });
+
+    it('should return false for db admins', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline(['_admin'])).to.equal(false);
+    });
+
+    it('should return false for mm-online role', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline(['mm-online'])).to.equal(false);
     });
   });
 
