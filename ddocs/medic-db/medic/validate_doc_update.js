@@ -9,7 +9,13 @@
 */
 function(newDoc, oldDoc, userCtx, secObj) {
 
-  var ADMIN_ONLY_TYPES = [ 'form', 'translations', 'token_login' ];
+  var DOC_TYPES = require('@medic/constants').DOC_TYPES;
+
+  var ADMIN_ONLY_TYPES = [
+    DOC_TYPES.FORM,
+    DOC_TYPES.TRANSLATIONS,
+    DOC_TYPES.TOKEN_LOGIN
+  ];
   var ADMIN_ONLY_IDS = [
     'resources',
     'service-worker-meta',
