@@ -7,13 +7,13 @@ const { USER_ROLES } = require('@medic/constants');
  * replicate or not, without requiring access to server settings.
  */
 const ONLINE_ROLE = USER_ROLES.ONLINE;
-const DB_ADMIN_ROLE = '_admin';
+const DB_ADMIN_ROLES = ['admin', '_admin'];
 
 const hasRole = (userCtx, role) => {
   return _.includes(userCtx && userCtx.roles, role);
 };
 
-const isDbAdmin = userCtx => hasRole(userCtx, DB_ADMIN_ROLE);
+const isDbAdmin = userCtx => DB_ADMIN_ROLES.some(adminRole => hasRole(userCtx, adminRole));
 
 const hasOnlineRole = roles => {
   if (!Array.isArray(roles) || !roles.length) {
@@ -21,7 +21,7 @@ const hasOnlineRole = roles => {
   }
 
   const onlineRoles = [
-    DB_ADMIN_ROLE,
+    ...DB_ADMIN_ROLES,
     ONLINE_ROLE,
   ];
   return roles.some(role => onlineRoles.includes(role));
