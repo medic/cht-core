@@ -57,7 +57,7 @@ const waitForIndexing = async () => {
     const code = e.error?.code;
     if (code?.toUpperCase().includes('IMEDOUT')) {
       await setTimeoutPromise(1000);
-      await createAndIndexView();
+      await waitForIndexing();
     } else {
       throw e;
     }
@@ -73,42 +73,34 @@ const createAndIndexView = async () => {
 
 const test = async (params) => {
   const method = 'post';
-  const options = {
-    uri: `${utils.db}/${indexPath}`,
-    body: {
-      include_docs: params.include_docs,
-      q: '*:*',
-      limit: params.limit,
-    }
+  const body = {
+    include_docs: params.include_docs,
+    limit: params.limit,
+    q: '*:*',
   };
+  const uri = `${utils.db}/${indexPath}`;
+  const requestOptions = [];
 
   if (params.keys) {
     if (params.limit > MAX_KEYS) {
-      const body = { ...options.body };
       const docIdsCopy = [...docIds];
-      options.body = [];
-
       while (docIdsCopy.length) {
-        options.body.push({
-          ...body,
-          q: `id:(${docIdsCopy.splice(0, MAX_KEYS).map(nouveau.escapeKeys).join(' OR ')})`
-        });
+        const q = `id:(${docIdsCopy.splice(0, MAX_KEYS).map(nouveau.escapeKeys).join(' OR ')})`;
+        requestOptions.push({ uri, body: { ...body, q } });
       }
     } else {
-      options.body.q = `id:(${docIds.slice(0, params.limit).map(nouveau.escapeKeys).join(' OR ')})`;
+      const q = `id:(${docIds.slice(0, params.limit).map(nouveau.escapeKeys).join(' OR ')})`;
+      requestOptions.push({ uri, body: { ...body, q } });
     }
+  } else {
+    requestOptions.push({ uri, body });
   }
 
   let response;
   const start = performance.now();
-  if (Array.isArray(options.body)) {
-    for (const body of options.body) {
-      response = await request[method]({ ...options, body });
-    }
-  } else {
+  for (const options of requestOptions) {
     response = await request[method](options);
   }
-
   const end = performance.now();
 
   populateDocIds(response);

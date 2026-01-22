@@ -51,7 +51,7 @@ const waitForIndexing = async () => {
     const code = e.error?.code;
     if (code?.toUpperCase().includes('IMEDOUT')) {
       await setTimeoutPromise(1000);
-      await createAndIndexView();
+      await waitForIndexing();
     } else {
       throw e;
     }
