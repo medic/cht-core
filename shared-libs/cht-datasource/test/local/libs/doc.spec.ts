@@ -343,7 +343,8 @@ describe('local doc lib', () => {
         rows: []
       });
 
-      const result = await queryDocUuidsByRange(db, 'shared-contacts/contacts_by_type')(doc0._id, doc1._id, limit, skip);
+      const queryFn = queryDocUuidsByRange(db, 'shared-contacts/contacts_by_type');
+      const result = await queryFn(doc0._id, doc1._id, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
