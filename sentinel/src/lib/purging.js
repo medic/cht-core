@@ -407,7 +407,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
   // using `db.queryMedic` library because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
   return db
-    .queryMedic('medic-client/contacts_by_type', queryString)
+    .queryMedic('shared-contacts/contacts_by_type', queryString)
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -517,7 +517,7 @@ const purgeTasks = async (roles) => {
   let nextBatch;
 
   // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('medic/tasks_in_terminal_state', {
+  const getBatch = () => db.queryMedic('api/tasks_in_terminal_state', {
     limit: MAX_BATCH_SIZE,
     end_key: JSON.stringify(maximumEmissionEndDate),
     start_key: JSON.stringify(startKey),
@@ -629,7 +629,7 @@ const writePurgeLog = (roles, start, error) => {
 // - reads all user documents from the `_users` database to comprise a list of unique sets of roles
 // - creates a database for each role set with the name `<main db name>-purged-role-<hash>` where `hash` is an md5 of
 // the JSON.Stringify-ed list of roles
-// - iterates over all contacts by querying `medic-client/contacts_by_type` in batches
+// - iterates over all contacts by querying `shared-contacts/contacts_by_type` in batches
 // - for every batch of contacts, queries `docs_by_replication_key` with the resulting `subject_ids`
 // - groups results by contact to generate a list of pairs containing :
 //    a) a contact document

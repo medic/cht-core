@@ -59,7 +59,7 @@ describe('DisplayTranslationsCtrl controller', function() {
 
     chai.expect(queryStub.callCount).to.equal(1);
     chai.expect(queryStub.firstCall.args).to.deep.equal([
-      'medic-client/doc_by_type',
+      'shared/doc_by_type',
       {
         key: [DOC_TYPES.TRANSLATIONS],
         include_docs: true,

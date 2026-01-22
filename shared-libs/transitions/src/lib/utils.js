@@ -80,7 +80,7 @@ const getReportsWithSameParentAndForm = (options={}) => {
     return Promise.reject('Missing required argument `parentId` for match query.');
   }
 
-  return db.medic.query('medic/reports_by_form_and_parent', {
+  return db.medic.query('api/reports_by_form_and_parent', {
     startkey: [formName, parentId],
     endkey: [formName, parentId],
     include_docs: true,
@@ -103,7 +103,7 @@ const getReportsWithinTimeWindow = (
     include_docs: true,
     descending: true, // most recent first
   });
-  return db.medic.query('medic-client/reports_by_date', options)
+  return db.medic.query('shared-reports/reports_by_date', options)
     .then(data => data.rows.map(row => row.doc));
 };
 
@@ -115,7 +115,7 @@ const getContact = (shortCodeId, includeDocs) => {
     key: ['shortcode', shortCodeId],
     include_docs: includeDocs,
   };
-  return db.medic.query('medic-client/contacts_by_reference', viewOpts).then(results => {
+  return db.medic.query('shared-contacts/contacts_by_reference', viewOpts).then(results => {
     if (!results.rows.length) {
       return;
     }
@@ -161,7 +161,7 @@ module.exports = {
       return Promise.resolve([]);
     }
     return db.medic
-      .query('medic-client/registered_patients', viewOptions)
+      .query('shared-contacts/registered_patients', viewOptions)
       .then(data => {
         return data.rows
           .map(row => row.doc)
@@ -187,7 +187,7 @@ module.exports = {
       return Promise.resolve([]);
     }
 
-    return db.medic.query('medic-client/reports_by_subject', viewOptions).then(result => {
+    return db.medic.query('client-reports/reports_by_subject', viewOptions).then(result => {
       const reports = _.uniqBy(result.rows.map(row => row.doc), '_id');
       if (!options.registrations) {
         return reports;

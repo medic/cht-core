@@ -62,7 +62,7 @@ export class GetSummariesService {
     return subject;
   }
 
-  // WARNING: This is a copy of the medic/doc_summaries_by_id view
+  // WARNING: This is a copy of the api/doc_summaries_by_id view
   // with some minor modifications and needs to be kept in sync until
   // this workaround is no longer needed.
   // https://github.com/medic/medic/issues/4666
@@ -108,7 +108,7 @@ export class GetSummariesService {
   private getRemote(ids) {
     return this.dbService
       .get()
-      .query('medic/doc_summaries_by_id', { keys: ids })
+      .query('api/doc_summaries_by_id', { keys: ids })
       .then(response => {
         return response.rows.map(row => {
           row.value._id = row.id;

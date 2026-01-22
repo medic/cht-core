@@ -28,7 +28,7 @@ module.exports = {
     const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
 
     return db.medic
-      .query('medic-client/contacts_by_phone', { key: String(doc.from) })
+      .query('shared-contacts/contacts_by_phone', { key: String(doc.from) })
       .then(result => {
         if (!result.rows || !result.rows.length || !result.rows[0].id) {
           transitionUtils.addRejectionMessage(doc, formConfig, 'sender_not_found');

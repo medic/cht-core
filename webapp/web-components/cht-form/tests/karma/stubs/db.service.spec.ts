@@ -16,8 +16,8 @@ describe('DB Service', () => {
   });
 
   describe('query', () => {
-    it('returns empty rows for medic-client/contacts_by_phone', async () => {
-      const selector = 'medic-client/contacts_by_phone';
+    it('returns empty rows for shared-contacts/contacts_by_phone', async () => {
+      const selector = 'shared-contacts/contacts_by_phone';
 
       const result = await service
         .get()

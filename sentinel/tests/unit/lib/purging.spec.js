@@ -400,7 +400,7 @@ describe('ServerSidePurge', () => {
 
   describe('purgeContacts', () => {
     const getContactsByTypeArgs = ({ limit, id = '', key }) => ([
-      'medic-client/contacts_by_type',
+      'shared-contacts/contacts_by_type',
       {
         limit: limit,
         start_key: JSON.stringify(key || (id ? `key${id}` : '')),
@@ -1814,7 +1814,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(1);
         chai.expect(db.queryMedic.args[0]).to.deep.equal([
-          'medic/tasks_in_terminal_state',
+          'api/tasks_in_terminal_state',
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),
@@ -1850,7 +1850,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(3);
         chai.expect(db.queryMedic.args[0]).to.deep.equal([
-          'medic/tasks_in_terminal_state',
+          'api/tasks_in_terminal_state',
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),
@@ -1860,7 +1860,7 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(db.queryMedic.args[1]).to.deep.equal([
-          'medic/tasks_in_terminal_state',
+          'api/tasks_in_terminal_state',
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),
@@ -1870,7 +1870,7 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(db.queryMedic.args[2]).to.deep.equal([
-          'medic/tasks_in_terminal_state',
+          'api/tasks_in_terminal_state',
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),

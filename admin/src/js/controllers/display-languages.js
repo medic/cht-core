@@ -91,7 +91,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       $scope.loading = true;
       $q
         .all([
-          DB().query('medic-client/doc_by_type', {
+          DB().query('shared/doc_by_type', {
             key: [ DOC_TYPES.TRANSLATIONS ],
             include_docs: true
           }),

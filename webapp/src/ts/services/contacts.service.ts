@@ -30,7 +30,7 @@ export class ContactsService {
             get: (callback) => {
               return this.dbService
                 .get()
-                .query('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: [type.id] })
+                .query('shared-contacts/contacts_by_type', { include_docs: true, reduce: false, key: [type.id] })
                 .then((result) => {
                   callback(null, result.rows.map(row => row.doc));
                 })
@@ -83,7 +83,7 @@ export class ContactsService {
     }
     const results = await this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', {
+      .query('client-contacts/contacts_by_parent', {
         key: [parentId, contactType],
         include_docs: true
       });

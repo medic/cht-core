@@ -24,7 +24,7 @@ module.exports = {
     const doc = change.doc;
 
     return db.medic
-      .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
+      .query('shared-contacts/contacts_by_phone', { key: doc.from, include_docs: true })
       .then(result => {
         const sentBy = result.rows &&
                              result.rows.length &&

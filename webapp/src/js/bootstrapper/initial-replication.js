@@ -126,6 +126,11 @@ const getReplicationLog = async (localDb) => {
 const isReplicationNeeded = async (localDb, userCtx) => {
   const requiredDocs = [
     '_design/medic-client',
+    '_design/client-contacts',
+    '_design/client-reports',
+    '_design/shared-contacts',
+    '_design/shared-reports',
+    '_design/shared',
     DOC_IDS.SETTINGS,
     `org.couchdb.user:${userCtx.name}`,
   ];

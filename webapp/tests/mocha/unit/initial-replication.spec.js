@@ -42,7 +42,16 @@ describe('Initial replication', () => {
       expect(await initialReplication.isReplicationNeeded(localDb, userCtx)).to.equal(true);
 
       expect(localDb.allDocs.args).to.deep.equal([[
-        { keys: ['_design/medic-client', DOC_IDS.SETTINGS, 'org.couchdb.user:Nivea'] },
+        { keys: [
+          '_design/medic-client',
+          '_design/client-contacts',
+          '_design/client-reports',
+          '_design/shared-contacts',
+          '_design/shared-reports',
+          '_design/shared',
+          DOC_IDS.SETTINGS,
+          'org.couchdb.user:Nivea'
+        ] },
       ]]);
     });
 

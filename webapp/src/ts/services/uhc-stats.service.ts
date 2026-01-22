@@ -25,7 +25,7 @@ export class UHCStatsService {
   private async getLastVisitedDate(contactId) {
     const records = await this.dbService
       .get()
-      .query('medic-client/contacts_by_last_visited', { reduce: true, group: true, key: contactId });
+      .query('client-contacts/contacts_by_last_visited', { reduce: true, group: true, key: contactId });
 
     const lastVisitedDateRow = records?.rows?.length ? records.rows[0] : {};
 
@@ -36,7 +36,7 @@ export class UHCStatsService {
     const records = await this.dbService
       .get()
       .query(
-        'medic-client/visits_by_date',
+        'client-contacts/visits_by_date',
         { start_key: [ contactId, dateRange.start ], end_key: [ contactId, dateRange.end ] }
       );
 

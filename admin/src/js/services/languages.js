@@ -11,7 +11,7 @@ angular.module('inboxServices').factory('Languages',
     'ngInject';
     return function() {
       return DB()
-        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
+        .query('shared/doc_by_type', { key: [ 'translations', true ] })
         .then(function(result) {
           return _.map(result.rows, 'value');
         });

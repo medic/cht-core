@@ -93,13 +93,13 @@ angular.module('services').factory('MessageQueue',
       }
 
       return DB({ remote: true })
-        .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
+        .query('shared-contacts/contacts_by_phone', { keys: phoneNumbers })
         .then(function(contactsByPhone) {
           const ids = contactsByPhone.rows.map(function(row) {
             return row.id;
           });
 
-          return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
+          return DB({ remote: true }).query('api/doc_summaries_by_id', { keys: ids });
         })
         .then(function(summaries) {
           messages.forEach(function(message) {
@@ -129,8 +129,8 @@ angular.module('services').factory('MessageQueue',
 
       return $q
         .all([
-          DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
+          DB({ remote: true }).query('shared-contacts/contacts_by_reference', { keys: referenceKeys }),
+          DB({ remote: true }).query('shared-contacts/registered_patients', { keys: shortcodes, include_docs: true }),
         ])
         .then(([contactsByReference, registrations]) => {
           registrations = getValidRegistrations(registrations, settings);

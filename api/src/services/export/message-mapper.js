@@ -119,7 +119,7 @@ const hydrate = records => {
   }
 
   return db.medic
-    .query('medic-client/registered_patients', { keys: patientIds, include_docs: true })
+    .query('shared-contacts/registered_patients', { keys: patientIds, include_docs: true })
     .then(result => {
       const registrations = result.rows.filter(row => {
         return registrationUtils.isValidRegistration(row.doc, config.get());
@@ -138,7 +138,7 @@ module.exports = {
     return lineage.fetchHydratedDocs(ids).then(hydrate);
   },
   getDocIds: (options) => {
-    return db.medic.query('medic/messages_by_state', options)
+    return db.medic.query('medic-sms/messages_by_state', options)
       .then(result => result.rows.map(row => row.id));
   },
   map: (filters, options) => {

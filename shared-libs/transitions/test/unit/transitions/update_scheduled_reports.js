@@ -194,7 +194,7 @@ describe('update_scheduled_reports', () => {
       return transition._getDuplicates(doc).then(result => {
         assert.equal(
           db.medic.query.args[0][0],
-          'medic/reports_by_form_year_week_parent_reported_date'
+          'api/reports_by_form_year_week_parent_reported_date'
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,
@@ -219,7 +219,7 @@ describe('update_scheduled_reports', () => {
       return transition._getDuplicates(doc).then(result => {
         assert.equal(
           db.medic.query.args[0][0],
-          'medic/reports_by_form_year_month_parent_reported_date'
+          'api/reports_by_form_year_month_parent_reported_date'
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,

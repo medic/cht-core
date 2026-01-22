@@ -283,11 +283,11 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
-      query.withArgs('medic-client/contacts_by_phone').resolves({
+      query.withArgs('shared-contacts/contacts_by_phone').resolves({
         rows: [{ id: 'contact1', value: 'contact1', key: 'phone1' }]
       });
 
-      query.withArgs('medic/doc_summaries_by_id').resolves({
+      query.withArgs('api/doc_summaries_by_id').resolves({
         rows: [{ id: 'contact1', value: { name: 'James', phone: 'phone1' } }]
       });
 
@@ -304,12 +304,12 @@ describe('MessageQueue service', function() {
         chai.expect(query.callCount).to.equal(4);
 
         chai.expect(query.args[2]).to.deep.equal([
-          'medic-client/contacts_by_phone',
+          'shared-contacts/contacts_by_phone',
           { keys: ['phone1', 'phone2'] }
         ]);
 
         chai.expect(query.args[3]).to.deep.equal([
-          'medic/doc_summaries_by_id',
+          'api/doc_summaries_by_id',
           { keys: ['contact1'] }
         ]);
 
@@ -407,11 +407,11 @@ describe('MessageQueue service', function() {
         .resolves({ rows: messages });
 
       query
-        .withArgs('medic-client/contacts_by_phone')
+        .withArgs('shared-contacts/contacts_by_phone')
         .resolves({ rows: [ { value: 'contact1', key: 'phone1' }, { value: 'contact2', key: 'phone2' } ] });
 
       query
-        .withArgs('medic/doc_summaries_by_id')
+        .withArgs('api/doc_summaries_by_id')
         .resolves({
           rows: [
             { value: { id: 'contact1', name: 'contact one', phone: 'phone1' } },
@@ -422,7 +422,7 @@ describe('MessageQueue service', function() {
       return service.query('due').then(result => {
         chai.expect(query.callCount).to.equal(4);
         chai.expect(query.args[2]).to.deep.equal([
-          'medic-client/contacts_by_phone', { keys: [ 'phone1', 'phone2' ]}
+          'shared-contacts/contacts_by_phone', { keys: [ 'phone1', 'phone2' ]}
         ]);
 
         chai.expect(result.messages[0].recipient).to.equal('contact one');
@@ -558,7 +558,7 @@ describe('MessageQueue service', function() {
         .resolves({ rows: messages });
 
       query
-        .withArgs('medic-client/contacts_by_reference')
+        .withArgs('shared-contacts/contacts_by_reference')
         .resolves({
           rows: [
             { key: ['shortcode', '1111'], id: 'patient1' },
@@ -569,7 +569,7 @@ describe('MessageQueue service', function() {
           ],
         });
 
-      query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
+      query.withArgs('shared-contacts/registered_patients').resolves({ rows: [] });
 
       utils.lineage.fetchLineageByIds.resolves([
         [{ _id: 'patient1', patient_id: '1111', name: 'patient one' }],
@@ -586,17 +586,17 @@ describe('MessageQueue service', function() {
       }]));
 
       query
-        .withArgs('medic-client/contacts_by_phone')
+        .withArgs('shared-contacts/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient_id', value: 'recipient' }]});
       query
-        .withArgs('medic/doc_summaries_by_id')
+        .withArgs('api/doc_summaries_by_id')
         .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient' }}]});
 
       return service.query('tab').then(result => {
         chai.expect(result.messages.length).to.equal(15);
         chai.expect(query.callCount).to.equal(6);
         chai.expect(query.args[2]).to.deep.equal([
-          'medic-client/contacts_by_reference',
+          'shared-contacts/contacts_by_reference',
           {
             keys: [
               ['shortcode', '1111'], ['shortcode', '2222'], ['shortcode', '3333'],
@@ -606,7 +606,7 @@ describe('MessageQueue service', function() {
           },
         ]);
         chai.expect(query.args[3]).to.deep.equal([
-          'medic-client/registered_patients',
+          'shared-contacts/registered_patients',
           {
             keys: ['1111', '2222', '3333', 'place1111', 'place2222', 'place3333', 'place4444'],
             include_docs: true
@@ -619,7 +619,7 @@ describe('MessageQueue service', function() {
         ]);
 
         chai.expect(query.args[4]).to.deep.equal([
-          'medic-client/contacts_by_phone',
+          'shared-contacts/contacts_by_phone',
           { keys: [ 'recipient' ]}
         ]);
       });
@@ -705,7 +705,7 @@ describe('MessageQueue service', function() {
         .resolves({ rows: messages });
 
       query
-        .withArgs('medic-client/contacts_by_reference')
+        .withArgs('shared-contacts/contacts_by_reference')
         .resolves({
           rows: [
             { key: ['shortcode', '1111'], id: 'patient1' },
@@ -716,7 +716,7 @@ describe('MessageQueue service', function() {
           ]
         });
 
-      query.withArgs('medic-client/registered_patients').resolves({ rows: [
+      query.withArgs('shared-contacts/registered_patients').resolves({ rows: [
         { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
         { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
         { key: '1111', doc: { type: 'invalid', patient_id: '1111' } },
@@ -753,14 +753,14 @@ describe('MessageQueue service', function() {
         .withArgs(sinon.match({ type: 'invalid' })).returns(false);
 
       query
-        .withArgs('medic-client/contacts_by_phone')
+        .withArgs('shared-contacts/contacts_by_phone')
         .resolves({ rows: [
           { key: 'recipient1', id: 'recipient1_id' },
           { key: 'recipient2', id: 'recipient2_id' },
           { key: 'recipient3', id: 'recipient3_id' }
         ]});
       query
-        .withArgs('medic/doc_summaries_by_id')
+        .withArgs('api/doc_summaries_by_id')
         .resolves({ rows: [
           { key: 'recipient1_id', value: { phone: 'recipient1', name: 'recipient 1' }},
           { key: 'recipient2_id', value: { phone: 'recipient2', name: 'recipient 2' }},
@@ -929,8 +929,8 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(query.withArgs('medic-client/contacts_by_phone').callCount).to.equal(1);
-        chai.expect(query.withArgs('medic-client/contacts_by_phone').args[0][1]).to.deep.equal({
+        chai.expect(query.withArgs('shared-contacts/contacts_by_phone').callCount).to.equal(1);
+        chai.expect(query.withArgs('shared-contacts/contacts_by_phone').args[0][1]).to.deep.equal({
           keys: ['recipient1', 'recipient2', 'recipient3']
         });
 
@@ -1043,13 +1043,13 @@ describe('MessageQueue service', function() {
         .resolves({ rows: messages });
 
       query
-        .withArgs('medic-client/contacts_by_reference')
+        .withArgs('shared-contacts/contacts_by_reference')
         .resolves({ rows: [
           { key: ['shortcode', '1111'], id: 'patient1' },
           { key: ['shortcode', '2222'], id: 'patient2' }
         ] });
 
-      query.withArgs('medic-client/registered_patients').resolves({ rows: [
+      query.withArgs('shared-contacts/registered_patients').resolves({ rows: [
         { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
         { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
         { key: '2222', doc: { type: 'valid', patient_id: '2222' } },
@@ -1075,10 +1075,10 @@ describe('MessageQueue service', function() {
         .withArgs(sinon.match({ type: 'invalid' })).returns(false);
 
       query
-        .withArgs('medic-client/contacts_by_phone')
+        .withArgs('shared-contacts/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient1', id: 'recipien_id' }]});
       query
-        .withArgs('medic/doc_summaries_by_id')
+        .withArgs('api/doc_summaries_by_id')
         .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient1', name: 'recipient' }}]});
 
       return service.query('tab').then((result) => {

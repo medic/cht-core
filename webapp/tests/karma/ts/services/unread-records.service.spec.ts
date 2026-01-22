@@ -98,7 +98,7 @@ describe('UnreadRecordsService', () => {
 
       expect(result).to.deep.equal({ report: 10, message: 5 });
       expect(dbInstance.query.callCount).to.equal(2);
-      expect(dbInstance.query.args[0][0]).to.equal('medic-client/data_records_by_type');
+      expect(dbInstance.query.args[0][0]).to.equal('client-reports/data_records_by_type');
       expect(dbInstance.query.args[0][1].group).to.equal(true);
       expect(dbInstance.query.args[1][0]).to.equal('medic-user/read');
       expect(dbInstance.query.args[1][1].group).to.equal(true);

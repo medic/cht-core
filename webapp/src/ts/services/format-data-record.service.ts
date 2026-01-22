@@ -38,7 +38,7 @@ export class FormatDataRecordService {
     };
     return this.dbService
       .get()
-      .query('medic-client/registered_patients', options)
+      .query('shared-contacts/registered_patients', options)
       .then((result) => {
         return result.rows.map(row => row.doc);
       });

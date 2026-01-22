@@ -70,7 +70,7 @@ export class TelemetryService {
     return Promise
       .all([
         this.dbService.get().get('_design/medic-client'),
-        this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
+        this.dbService.get().query('shared/doc_by_type', { key: ['form'], include_docs: true }),
         this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
       ])
       .then(([ ddoc, formResults, settingsResults ]) => {

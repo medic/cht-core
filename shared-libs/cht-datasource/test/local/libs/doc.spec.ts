@@ -178,11 +178,11 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc1._id);
+      const result = await queryDocsByRange(db, 'shared/docs_by_id_lineage')(doc0._id, doc1._id);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
 
-      expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
+      expect(dbQuery.calledOnceWithExactly('shared/docs_by_id_lineage', {
         include_docs: true,
         startkey: doc0._id,
         endkey: doc1._id,
@@ -204,10 +204,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id, limit, skip);
+      const result = await queryDocsByRange(db, 'shared/docs_by_id_lineage')(doc0._id, doc2._id, limit, skip);
 
       expect(result).to.deep.equal([doc0, null, doc2]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
+      expect(dbQuery.calledOnceWithExactly('shared/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc2._id,
         include_docs: true,
@@ -224,10 +224,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(false);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id, limit, skip);
+      const result = await queryDocsByRange(db, 'shared/docs_by_id_lineage')(doc0._id, doc0._id, limit, skip);
 
       expect(result).to.deep.equal([null]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
+      expect(dbQuery.calledOnceWithExactly('shared/docs_by_id_lineage', {
         startkey: doc0._id,
         endkey: doc0._id,
         include_docs: true,
@@ -257,10 +257,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocsByKey(db, 'shared-contacts/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         include_docs: true,
         key: contactType,
         limit,
@@ -274,10 +274,10 @@ describe('local doc lib', () => {
       dbQuery.resolves({ rows: [] });
       isDoc.returns(true);
 
-      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocsByKey(db, 'shared-contacts/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         include_docs: true, key: contactType, limit, skip, reduce: false
       })).to.be.true;
       expect(isDoc.args).to.deep.equal([]);
@@ -293,10 +293,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(false);
 
-      const result = await queryDocsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocsByKey(db, 'shared-contacts/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([null]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         include_docs: true,
         key: contactType,
         limit,
@@ -323,11 +323,11 @@ describe('local doc lib', () => {
         ]
       });
 
-      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0.id, doc1.id);
+      const result = await queryDocUuidsByRange(db, 'shared-contacts/contacts_by_type')(doc0.id, doc1.id);
 
       expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
 
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         include_docs: false,
         startkey: doc0.id,
         endkey: doc1.id,
@@ -343,10 +343,10 @@ describe('local doc lib', () => {
         rows: []
       });
 
-      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc1._id, limit, skip);
+      const result = await queryDocUuidsByRange(db, 'shared-contacts/contacts_by_type')(doc0._id, doc1._id, limit, skip);
 
       expect(result).to.deep.equal([]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         startkey: doc0._id,
         endkey: doc1._id,
         include_docs: false,
@@ -374,10 +374,10 @@ describe('local doc lib', () => {
         ]
       });
 
-      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocUuidsByKey(db, 'shared-contacts/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         include_docs: false,
         key: contactType,
         limit,
@@ -389,10 +389,10 @@ describe('local doc lib', () => {
     it('returns empty array if docs are not found', async () => {
       dbQuery.resolves({ rows: [] });
 
-      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocUuidsByKey(db, 'shared-contacts/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_type', {
         include_docs: false, key: contactType, limit, skip, reduce: false
       })).to.be.true;
     });

@@ -85,7 +85,7 @@ describe.skip('Muting', () => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
-        .query('medic-client/reports_by_date', { descending: true, limit: 1, include_docs: true })
+        .query('shared-reports/reports_by_date', { descending: true, limit: 1, include_docs: true })
         .then(result => callback(result.rows[0].doc))
         .catch(err => callback(err));
     });

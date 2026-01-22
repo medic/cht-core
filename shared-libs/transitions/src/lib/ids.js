@@ -103,7 +103,7 @@ const putIdLengthDoc = (db, idLengthDoc) => {
  */
 const findUnusedId = (db, keys) => {
   return db.medic
-    .query('medic/docs_by_shortcode', { keys })
+    .query('api/docs_by_shortcode', { keys })
     .then(results => {
       if (results.rows.length === keys.length) {
         // there are no unused keys in this batch

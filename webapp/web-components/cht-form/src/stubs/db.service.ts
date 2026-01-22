@@ -10,7 +10,7 @@ export class DbService {
       get: () => Promise.resolve(),
       info: () => Promise.resolve(),
       query: async (selector, options) => {
-        if (selector === 'medic-client/contacts_by_phone') {
+        if (selector === 'shared-contacts/contacts_by_phone') {
           // Used by phone-widget to look for contacts with same phone number
           return { rows: [] };
         }

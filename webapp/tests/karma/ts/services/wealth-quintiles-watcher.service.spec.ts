@@ -107,7 +107,7 @@ describe('WealthQuintilesWatcherService', () => {
     tick();
 
     expect(dbInstance.query.callCount).to.equal(1);
-    expect(dbInstance.query.args[0][0]).to.equal('medic-client/contacts_by_parent');
+    expect(dbInstance.query.args[0][0]).to.equal('client-contacts/contacts_by_parent');
     expect(dbInstance.query.args[0][1]).to.deep.equal({
       startkey: [ '123' ],
       endkey: [ '123', {} ],
@@ -162,7 +162,7 @@ describe('WealthQuintilesWatcherService', () => {
     tick();
 
     expect(dbInstance.query.callCount).to.equal(1);
-    expect(dbInstance.query.args[0][0]).to.equal('medic-client/contacts_by_parent');
+    expect(dbInstance.query.args[0][0]).to.equal('client-contacts/contacts_by_parent');
     expect(dbInstance.query.args[0][1]).to.deep.equal({
       startkey: [ '123' ],
       endkey: [ '123', {} ],
@@ -219,7 +219,7 @@ describe('WealthQuintilesWatcherService', () => {
     tick();
 
     expect(dbInstance.query.callCount).to.equal(1);
-    expect(dbInstance.query.args[0][0]).to.equal('medic-client/contacts_by_parent');
+    expect(dbInstance.query.args[0][0]).to.equal('client-contacts/contacts_by_parent');
     expect(dbInstance.query.args[0][1]).to.deep.equal({
       startkey: [ '123' ],
       endkey: [ '123', {} ],
