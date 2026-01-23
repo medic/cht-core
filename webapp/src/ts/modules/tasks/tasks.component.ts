@@ -13,6 +13,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgIf, NgFor } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -46,7 +47,8 @@ export class TasksComponent implements OnInit, OnDestroy {
     private readonly performanceService: PerformanceService,
     private readonly lineageModelGeneratorService: LineageModelGeneratorService,
     private readonly extractLineageService: ExtractLineageService,
-    private readonly userContactService: UserContactService
+    private readonly userContactService: UserContactService,
+    private readonly telemetryService: TelemetryService
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -79,12 +81,15 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTasksList),
       this.store.select(Selectors.getSelectedTask),
     ]).subscribe(([
-      tasksList = [],
+      tasksList = [] as any[],
       selectedTask,
     ]) => {
       this.selectedTask = selectedTask;
       // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
-      this.tasksList = tasksList.map(task => ({ ...task, selected: task._id === this.selectedTask?._id }));
+      this.tasksList = tasksList.map((task: any) => ({
+        ...task,
+        selected: task._id === (this.selectedTask as any)?._id,
+      }));
     });
     this.subscription.add(taskList$);
   }
@@ -160,6 +165,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       }
 
       this.tasksActions.setTasksList(emissions);
+      this.telemetryService.record('tasks:count', emissions.length);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
@@ -195,7 +201,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [ ...new Set(taskDocs.map(task => task.owner)) ];
+    const ids = [...new Set(taskDocs.map(task => task.owner))];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
