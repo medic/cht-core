@@ -189,15 +189,15 @@ let localDdocDefinitionsCache = null;
  * @return {Map<Database, Array>}
  */
 const getLocalDdocDefinitions = async () => {
-  if (localDdocDefinitionsCache) {
-    return localDdocDefinitionsCache;
+  if (!localDdocDefinitionsCache) {
+    const ddocDefinitions = new Map();
+    for (const database of DATABASES) {
+      ddocDefinitions.set(database, await getBundledDdocs(database));
+    }
+    localDdocDefinitionsCache = ddocDefinitions;
   }
-  const ddocDefinitions = new Map();
-  for (const database of DATABASES) {
-    ddocDefinitions.set(database, await getBundledDdocs(database));
-  }
-  localDdocDefinitionsCache = ddocDefinitions;
-  return ddocDefinitions;
+
+  return new Map(localDdocDefinitionsCache);
 };
 
 const remoteDdocDefinitionsCache = new Map();
