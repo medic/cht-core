@@ -14,6 +14,7 @@ const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const constants = require('@constants');
+const { createTargetDoc } = require('./utils/targets-helper-functions');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -216,13 +217,8 @@ describe('Target aggregates', () => {
 
         const targetsForContact = (contact) => {
           return helperFunctions.docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targets[contact.name],
-            owner: contact._id,
-            user: 'irrelevant',
+            ...createTargetDoc(tag, contact._id, { targets: targets[contact.name] }),
             date_updated: `yesterday ${contact.name}`,
-            updated_date: Date.now(),
           }));
         };
         const targetDocs = [
@@ -313,13 +309,8 @@ describe('Target aggregates', () => {
 
         const targetsForContact = (contact) => {
           return helperFunctions.docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targets[contact.name],
-            owner: contact._id,
-            user: 'irrelevant',
+            ...createTargetDoc(tag, contact._id, { targets: targets[contact.name] }),
             date_updated: `yesterday ${contact.name}`,
-            updated_date: Date.now(),
           }));
         };
         const targetDocs = [
@@ -396,7 +387,12 @@ describe('Target aggregates', () => {
         };
         const asserts = { hasMultipleFacilities: true, contactValues: false };
 
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        await helperFunctions.assertData(
+          context,
+          TARGET_VALUES_BY_CONTACT,
+          targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS,
+          asserts
+        );
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
@@ -422,7 +418,12 @@ describe('Target aggregates', () => {
         await targetAggregatesPage.selectFilterOption(CURRENT_PERIOD);
         context.period = CURRENT_PERIOD;
         context.isCurrentPeriod = true;
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        await helperFunctions.assertData(
+          context,
+          TARGET_VALUES_BY_CONTACT,
+          targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS,
+          asserts
+        );
       });
     });
   });

@@ -125,7 +125,7 @@
     "chai-like": "^1.1.3",
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-things": "^0.2.0",
-    "cht-conf": "^6.0.2",
+    "cht-conf": "github:jkuester/cht-conf#10140_previous-month-targets",
     "cht-conf-test-harness": "^5.0.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",

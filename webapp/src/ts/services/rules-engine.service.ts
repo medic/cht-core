@@ -25,7 +25,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { Store } from '@ngrx/store';
 import { TasksActions } from '@mm-actions/tasks';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
-import { TargetInterval, Qualifier } from '@medic/cht-datasource';
+import { Qualifier, TargetInterval } from '@medic/cht-datasource';
 
 interface DebounceActive {
   [key: string]: {
@@ -510,10 +510,26 @@ export class RulesEngineService implements OnDestroy {
         return [];
       }
 
-      return this.processTargetDocuments(targetInterval, settings);
+      return this.processTargetDocuments(targetInterval, settings, reportingPeriod);
     } catch (error) {
       console.error('Error fetching previous month targets:', error);
       return [];
+    }
+  }
+
+  private getValueFromFunction(str: string | undefined, ...args: unknown[]) {
+    if (!str) {
+      return str;
+    }
+    try {
+      const fn = new Function(`return (${str})`)();
+      if (typeof fn === 'function') {
+        return fn(...args);
+      }
+      return str;
+    } catch (error) {
+      console.trace('Error evaluating function from string:', error);
+      return str;
     }
   }
 
@@ -543,7 +559,13 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-    return targets;
+    return targets.map((target: Target) => ({
+      ...target,
+      subtitle_translation_key: this.getValueFromFunction(
+        target.subtitle_translation_key,
+        ReportingPeriod.CURRENT
+      )
+    }));
   }
 
   /**
@@ -596,7 +618,8 @@ export class RulesEngineService implements OnDestroy {
    */
   private processTargetDocuments(
     targetInterval: TargetInterval.v1.TargetInterval,
-    settings: any
+    settings: any,
+    reportingPeriod: ReportingPeriod
   ): Target[] {
     const targetsConfig = settings?.tasks?.targets?.items || [];
     const processedTargets: Target[] = [];
@@ -610,6 +633,10 @@ export class RulesEngineService implements OnDestroy {
       if (targetConfig && targetConfig.visible !== false) {
         processedTargets.push({
           ...targetConfig,
+          subtitle_translation_key: this.getValueFromFunction(
+            targetConfig.subtitle_translation_key,
+            reportingPeriod
+          ),
           ...targetValue,
           visible: true
         });
@@ -631,7 +658,6 @@ export class RulesEngineService implements OnDestroy {
   private getTelemetryTrackName(...params:string[]) {
     return ['rules-engine', ...params].join(':');
   }
-
 }
 
 export enum TargetType {

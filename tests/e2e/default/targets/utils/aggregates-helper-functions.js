@@ -6,6 +6,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 const targetAggregatesConfig = require('../config/target-aggregates');
 const chtConfUtils = require('@utils/cht-conf');
+const { REPORTING_PERIOD, createTargetDoc } = require('./targets-helper-functions');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
@@ -43,9 +44,9 @@ const generateTargetValuesByContact = (contactNames) => {
 
 const docTags = [
   // current targets
-  moment().format('YYYY-MM'),
+  REPORTING_PERIOD.CURRENT,
   // previous months targets
-  moment().date(10).subtract(1, 'month').format('YYYY-MM'),
+  REPORTING_PERIOD.PREVIOUS,
   // previous months targets
   moment().date(10).subtract(2, 'month').format('YYYY-MM'),
   // previous months targets
@@ -76,14 +77,9 @@ const generateContactsAndTargets = (parent, contactName, targetValuesByContact) 
   });
   place.contact = {_id: contact._id, parent: contact.parent};
 
-  const targets = docTags.map(tag => ({
-    _id: `target~${tag}~${contact._id}~irrelevant`,
-    reporting_period: tag,
+  const targets = docTags.map(tag => createTargetDoc(tag, contact._id, {
     targets: targetAggregatesConfig.TARGETS_DEFAULT_CONFIG
-      .map(target => genTarget(target, contact, targetValuesByContact)),
-    owner: contact._id,
-    user: 'irrelevant',
-    updated_date: Date.now()
+      .map(target => genTarget(target, contact, targetValuesByContact))
   }));
 
   return {
