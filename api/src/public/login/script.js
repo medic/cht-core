@@ -18,7 +18,7 @@ const setTokenState = className => {
   document.getElementById('wrapper').className = `has-error ${className}`;
 };
 
-const submit = function(e) {
+const submit = function (e) {
   e.preventDefault();
   if (document.getElementById('form')?.className === 'loading') {
     // debounce double clicks
@@ -32,7 +32,7 @@ const submit = function(e) {
     redirect: getRedirectUrl(),
     locale: selectedLocale
   });
-  request('POST', url, payload, function(xmlhttp) {
+  request('POST', url, payload, function (xmlhttp) {
     if (xmlhttp.status === 302) {
       // success - redirect to app
       window.location = xmlhttp.response;
@@ -47,7 +47,7 @@ const submit = function(e) {
   });
 };
 
-const requestSSOLogin = function(e){
+const requestSSOLogin = function (e) {
   e.preventDefault();
   if (document.getElementById('form')?.className === 'loading') {
     // debounce double clicks
@@ -68,6 +68,9 @@ const requestSSOLogin = function(e){
 };
 
 const requestTokenLogin = (retry = 20) => {
+  if (isSafariBrowser()) {
+    return;
+  }
   const url = document.getElementById('tokenLogin')?.action;
   const payload = JSON.stringify({ locale: selectedLocale });
   request('POST', url, payload, xmlhttp => {
@@ -99,27 +102,27 @@ const requestTokenLogin = (retry = 20) => {
   });
 };
 
-const focusOnPassword = function(e) {
+const focusOnPassword = function (e) {
   if (e.keyCode === 13) {
     e.preventDefault();
     document.getElementById(PASSWORD_INPUT_ID)?.focus();
   }
 };
 
-const focusOnSubmit = function(e) {
+const focusOnSubmit = function (e) {
   if (e.keyCode === 13) {
     document.getElementById('login')?.focus();
   }
 };
 
-const highlightSelectedLocale = function() {
+const highlightSelectedLocale = function () {
   const locales = document.getElementsByClassName('locale');
   for (const elem of locales) {
     elem.className = (elem.name === selectedLocale) ? 'locale selected' : 'locale';
   }
 };
 
-const handleLocaleSelection = function(e) {
+const handleLocaleSelection = function (e) {
   if (e.target.tagName.toLowerCase() === 'a') {
     e.preventDefault();
     selectedLocale = e.target.name;
@@ -132,11 +135,11 @@ const translate = () => {
   highlightSelectedLocale();
 };
 
-const getUsername = function() {
+const getUsername = function () {
   return document.getElementById('user')?.value.toLowerCase().trim();
 };
 
-const getRedirectUrl = function() {
+const getRedirectUrl = function () {
   const urlParams = new URLSearchParams(window.location.search);
   const usernameQueryParam = urlParams.get('username');
   const usernameEntered = getUsername();
@@ -145,7 +148,7 @@ const getRedirectUrl = function() {
   }
 };
 
-const getSsoError = function() {
+const getSsoError = function () {
   const urlParams = new URLSearchParams(window.location.search);
   const sso_error = urlParams.get('sso_error');
 
@@ -155,7 +158,7 @@ const getSsoError = function() {
   return sso_error;
 };
 
-const checkSession = function() {
+const checkSession = function () {
   if (getCookie('login') === 'force') {
     // require user to login regardless of session state
     return;
@@ -263,7 +266,7 @@ const handleServiceWorker = () => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   translations = parseTranslations();
   selectedLocale = getLocale(translations);
   translate();
