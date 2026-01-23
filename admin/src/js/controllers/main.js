@@ -14,9 +14,9 @@ angular.module('controllers').controller('MainCtrl',
 
     // Override $window.PouchDB.fetch
     const dbFetch = $window.PouchDB.fetch;
-    $window.PouchDB.fetch = function() {
+    $window.PouchDB.fetch = function () {
       return dbFetch.apply(this, arguments)
-        .then(function(response) {
+        .then(function (response) {
           if (response.status === 401) {
             Session.navigateToLogin();
           }
@@ -38,14 +38,10 @@ angular.module('controllers').controller('MainCtrl',
       });
 
     $scope.webAppUrl = Location.path;
-    $scope.logout = function() {
+    $scope.logout = function () {
       Session.logout();
     };
     $scope.checkActive = state => {
-      if (state === 'targets' && $state.is('targets-edit')) {
-        // a special case for a route that doesn't match our usual pattern
-        return true;
-      }
       return $state.includes(state);
     };
   });
