@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const config = require('./libs/config');
 const { USER_ROLES } = require('@medic/constants');
 
@@ -10,7 +9,7 @@ const ONLINE_ROLE = USER_ROLES.ONLINE;
 const DB_ADMIN_ROLES = ['admin', '_admin'];
 
 const hasRole = (userCtx, role) => {
-  return _.includes(userCtx && userCtx.roles, role);
+  return userCtx?.roles?.includes(role);
 };
 
 const isDbAdmin = userCtx => DB_ADMIN_ROLES.some(adminRole => hasRole(userCtx, adminRole));
@@ -32,7 +31,7 @@ const hasPermission = (roles, permission) => {
   if (!rolesWithPermission) {
     return false;
   }
-  return _.some(rolesWithPermission, role => _.includes(roles, role));
+  return rolesWithPermission.some(role => roles.includes(role));
 };
 
 module.exports = {
@@ -41,10 +40,15 @@ module.exports = {
     return userCtx && module.exports.hasOnlineRole(userCtx.roles);
   },
   isOffline: roles => {
+    if (!roles.length) {
+      return false;
+    }
+
     const configured = config.get('roles') || {};
     const configuredRoles = roles.filter(role => configured[role]);
 
-    return !isDbAdmin({ roles }) && configuredRoles?.some(role => configured[role]?.offline);
+    return !module.exports.isOnlineOnly({ roles }) &&
+           (!configuredRoles.length || configuredRoles?.some(role => configured[role]?.offline));
   },
   isDbAdmin,
   ONLINE_ROLE,
@@ -58,10 +62,10 @@ module.exports = {
       return false;
     }
 
-    if (!_.isArray(permissions)) {
+    if (!Array.isArray(permissions)) {
       permissions = [ permissions ];
     }
 
-    return _.every(permissions, _.partial(hasPermission, roles));
+    return permissions.every(permission => hasPermission(roles, permission));
   }
 };

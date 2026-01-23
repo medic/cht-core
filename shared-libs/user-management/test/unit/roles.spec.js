@@ -83,11 +83,15 @@ describe('roles', () => {
   });
 
   describe('isOffline', () => {
-    it('should return false for an empty array and for roles that are not configured', () => {
+    it('should return false empty array', () => {
       config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(roles.isOffline([])).to.equal(false);
-      chai.expect(roles.isOffline(['random'])).to.equal(false);
-      chai.expect(roles.isOffline(['role1', 'role2'])).to.equal(false);
+    });
+
+    it('should return true for roles that are not configured', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline(['random'])).to.equal(true);
+      chai.expect(roles.isOffline(['role1', 'role2'])).to.equal(true);
     });
 
     it('should return true when at least one role is offline and no mm-online role', () => {
