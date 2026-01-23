@@ -1592,7 +1592,7 @@ describe('Users API', () => {
           chai.expect(err).to.deep.include({
             status: 403,
             body: {
-              code: '403',
+              code: 403,
               error: 'Insufficient privileges'
             },
           });
