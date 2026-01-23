@@ -8,6 +8,10 @@ const {
   getField
 } = extras;
 
+const getMonthlySubtitleKey = (reportingPeriod) => reportingPeriod === 'current'
+  ? 'targets.this_month.subtitle'
+  : 'targets.last_month.subtitle';
+
 module.exports = [
 
   {
@@ -16,7 +20,7 @@ module.exports = [
     icon: 'icon-death-general',
     goal: 0,
     translation_key: 'targets.death_reporting.deaths.title',
-    subtitle_translation_key: 'targets.this_month.subtitle',
+    subtitle_translation_key: getMonthlySubtitleKey,
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
@@ -32,7 +36,7 @@ module.exports = [
     icon: 'icon-pregnancy',
     goal: 20,
     translation_key: 'targets.anc.new_pregnancy_registrations.title',
-    subtitle_translation_key: 'targets.this_month.subtitle',
+    subtitle_translation_key: getMonthlySubtitleKey,
     appliesTo: 'reports',
     appliesToType: ['pregnancy'],
     appliesIf: function (contact, report) {
@@ -49,7 +53,7 @@ module.exports = [
     icon: 'icon-infant',
     goal: -1,
     translation_key: 'targets.births.title',
-    subtitle_translation_key: 'targets.this_month.subtitle',
+    subtitle_translation_key: getMonthlySubtitleKey,
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
