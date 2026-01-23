@@ -184,6 +184,16 @@ const getDdocDefinitions = (buildInfo) => {
 };
 
 let localDdocDefinitionsCache = null;
+const remoteDdocDefinitionsCache = new Map();
+
+const deepCopy = (map) => {
+  // Return a deep copy to prevent mutation of cached ddocs
+  const copy = new Map();
+  for (const [key, value] of map) {
+    copy.set(key, value.map(ddoc => ({ ...ddoc })));
+  }
+  return copy;
+};
 /**
  * Returns map of bundled ddoc definitions for every database
  * @return {Map<Database, Array>}
@@ -196,42 +206,40 @@ const getLocalDdocDefinitions = async () => {
     }
     localDdocDefinitionsCache = ddocDefinitions;
   }
-
-  return new Map(localDdocDefinitionsCache);
+  return deepCopy(localDdocDefinitionsCache);
 };
 
-const remoteDdocDefinitionsCache = new Map();
 /**
- * Returns map of bundled ddoc definitions for every database, downloaded from the staging server
+ * Returns map of bundled ddoc definitions for every database for s specific version,
+ * downloaded from the staging server
  * @param {BuildInfo} buildInfo
  * @return {Map<Database, Array>}
  */
 const downloadDdocDefinitions = async (buildInfo) => {
-  if (remoteDdocDefinitionsCache.has(buildInfo.version)) {
-    return remoteDdocDefinitionsCache.get(buildInfo.version);
-  }
+  if (!remoteDdocDefinitionsCache.has(buildInfo.version)) {
 
-  const ddocDefinitions = new Map();
+    const ddocDefinitions = new Map();
 
-  const stagingDoc = await getStagingDoc(buildInfo);
+    const stagingDoc = await getStagingDoc(buildInfo);
 
-  // for simplicity, only ddocs for "known" databases are staged and indexed.
-  // for new databases, the final install will happen in the api preflight check.
-  // since any new database will be empty, the impact of not warming views is minimal.
-  for (const database of DATABASES) {
-    const attachment = stagingDoc._attachments[`ddocs/${database.jsonFileName}`];
-    // a missing attachment means that the database is dropped in this version.
-    // a migration should remove the unnecessary database.
-    if (attachment) {
-      const json = decodeAttachmentData(attachment.data);
-      ddocDefinitions.set(database, getDdocsFromJson(json));
-    } else {
-      logger.warn(`Attachment for ${database.jsonFileName} was not found. Skipping.`);
+    // for simplicity, only ddocs for "known" databases are staged and indexed.
+    // for new databases, the final install will happen in the api preflight check.
+    // since any new database will be empty, the impact of not warming views is minimal.
+    for (const database of DATABASES) {
+      const attachment = stagingDoc._attachments[`ddocs/${database.jsonFileName}`];
+      // a missing attachment means that the database is dropped in this version.
+      // a migration should remove the unnecessary database.
+      if (attachment) {
+        const json = decodeAttachmentData(attachment.data);
+        ddocDefinitions.set(database, getDdocsFromJson(json));
+      } else {
+        logger.warn(`Attachment for ${database.jsonFileName} was not found. Skipping.`);
+      }
     }
+    remoteDdocDefinitionsCache.set(buildInfo.version, ddocDefinitions);
   }
 
-  remoteDdocDefinitionsCache.set(buildInfo.version, ddocDefinitions);
-  return ddocDefinitions;
+  return deepCopy(remoteDdocDefinitionsCache.get(buildInfo.version));
 };
 
 const getDdocJsonContents = async (path) => {

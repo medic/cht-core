@@ -294,7 +294,9 @@ describe('Setup utils', () => {
         const result1 = await utils.getDdocDefinitions();
         const result2 = await utils.getDdocDefinitions();
 
-        expect(result1).to.equal(result2);
+        // Results are copies (not same reference) but structurally equal
+        expect(result1).to.not.equal(result2);
+        expect(result1).to.deep.equal(result2);
         expect(fs.promises.readFile.callCount).to.equal(5); // Once for each database
       });
 
@@ -447,7 +449,8 @@ describe('Setup utils', () => {
         const result1 = await utils.getDdocDefinitions(buildInfo(version));
         const result2 = await utils.getDdocDefinitions(buildInfo(version));
 
-        expect(result1).to.equal(result2);
+        expect(result1).to.deep.equal(result2);
+        expect(result1).to.not.equal(result2); // cached results are deep copied
         expect(db.builds.get.callCount).to.equal(1);
       });
 
@@ -471,7 +474,8 @@ describe('Setup utils', () => {
         const result1Cached = await utils.getDdocDefinitions(buildInfo(version1));
 
         expect(result1).to.not.equal(result2);
-        expect(result1).to.equal(result1Cached);
+        expect(result1).to.deep.equal(result1Cached);
+        expect(result1).to.not.equal(result1Cached); // cached results are deep copied
         expect(db.builds.get.callCount).to.equal(2);
       });
 
@@ -677,6 +681,44 @@ describe('Setup utils', () => {
       }
 
       expect(db.saveDocs.callCount).to.equal(3);
+    });
+
+    it('should not mutate the local ddoc definitions cache', async () => {
+      const genDdocsJson = (ddocs) => JSON.stringify({ docs: ddocs });
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(resources, 'ddocsPath').value('localDdocs');
+
+      const medicDdocs = [
+        { _id: '_design/medic', views: { medic: {} } },
+        { _id: '_design/medic-client', views: { client: {} } },
+      ];
+      const sentinelDdocs = [{ _id: '_design/sentinel', views: { sentinel: {} } }];
+      const logsDdocs = [{ _id: '_design/logs', views: { logs: {} } }];
+      const usersMetaDdocs = [{ _id: '_design/meta', views: { meta: {} } }];
+      const usersDdocs = [{ _id: '_design/users', views: { users: {} } }];
+
+      fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(genDdocsJson(medicDdocs));
+      fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(genDdocsJson(sentinelDdocs));
+      fs.promises.readFile.withArgs('localDdocs/logs.json').resolves(genDdocsJson(logsDdocs));
+      fs.promises.readFile.withArgs('localDdocs/users-meta.json').resolves(genDdocsJson(usersMetaDdocs));
+      fs.promises.readFile.withArgs('localDdocs/users.json').resolves(genDdocsJson(usersDdocs));
+
+      const deployInfo = { user: 'admin', upgrade_log_id: 'theid' };
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
+      sinon.stub(db, 'saveDocs').resolves();
+
+      const ddocDefinitions = await utils.getDdocDefinitions();
+      await utils.saveStagedDdocs(ddocDefinitions);
+      const ddocDefinitionsAfter = await utils.getDdocDefinitions();
+
+      expect(ddocDefinitionsAfter.get(DATABASES[0])[0]._id).to.equal('_design/medic');
+      expect(ddocDefinitionsAfter.get(DATABASES[0])[1]._id).to.equal('_design/medic-client');
+      expect(ddocDefinitionsAfter.get(DATABASES[1])[0]._id).to.equal('_design/sentinel');
+      expect(ddocDefinitionsAfter.get(DATABASES[2])[0]._id).to.equal('_design/logs');
+      expect(ddocDefinitionsAfter.get(DATABASES[3])[0]._id).to.equal('_design/meta');
+      expect(ddocDefinitionsAfter.get(DATABASES[4])[0]._id).to.equal('_design/users');
+
+      expect(ddocDefinitionsAfter.get(DATABASES[0])[0].deploy_info).to.be.undefined;
     });
   });
 
