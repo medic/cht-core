@@ -96,77 +96,152 @@ const applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
-const getRecipient = function(context, recipient) {
+const normalizeRecipient= function(recipient) {
+  const recipientArray = Array.isArray(recipient) ? recipient : [recipient];  
+  const isValid = r => typeof r === 'string' || typeof r === 'number';
+  return recipientArray
+    .map(r => isValid(r) && String(r).trim())
+    .filter(Boolean);
+};
+
+const getRecipient = function(context, recipient, defaultToSender = true) {
   if (!context) {
     return;
   }
-  recipient = recipient && recipient.trim();
-  const from = context.from || (context.contact && context.contact.phone);
-  if (!recipient) {
+
+  const from = context.from || context.contact?.phone;
+  recipient = normalizeRecipient(recipient);
+
+  if (!recipient.length) {
     return from;
   }
-  let phone;
-  if (recipient === 'reporting_unit') {
-    phone = from;
-  } else if (recipient.startsWith('ancestor:')) {
-    const type = recipient.split(':')[1];
-    phone = getParentPhone(context.patient, type) ||
-            getParentPhone(context.place, type) ||
-            getParentPhone(context, type);
-  } else if (recipient.startsWith('link:')) {
-    const tag = recipient.split(':')[1];
-    phone = getLinkedPhone(context.patient, tag) ||
-            getLinkedPhone(context.place, tag) ||
-            getLinkedPhone(context.contact, tag) ||
-            getParentPhone(context.patient, tag) ||
-            getParentPhone(context.place, tag) ||
-            getParentPhone(context.contact, tag);
-  } else if (recipient === 'parent') {
-    const subject = context.patient || context.place || context;
-    const facility = subject.parent ? subject : subject.contact;
-    phone = facility.parent &&
-            facility.parent.parent &&
-            facility.parent.parent.contact &&
-            facility.parent.parent.contact.phone;
-  } else if (recipient === 'grandparent') {
-    const subject = context.patient || context.place || context;
-    const facility = subject.parent ? subject : subject.contact;
-    phone = facility.parent &&
-            facility.parent.parent &&
-            facility.parent.parent.parent &&
-            facility.parent.parent.parent.contact &&
-            facility.parent.parent.parent.contact.phone;
-  } else if (recipient === 'clinic') {
-    phone = getClinicPhone(context.patient) ||
-            getClinicPhone(context.place) ||
-            getClinicPhone(context) ||
-            (context.contact && context.contact.phone);
-  } else if (recipient === 'health_center') {
-    phone = getHealthCenterPhone(context.patient) ||
-            getHealthCenterPhone(context.place) ||
-            getHealthCenterPhone(context);
-  } else if (recipient === 'district') {
-    phone = getDistrictPhone(context.patient) ||
-            getDistrictPhone(context.place) ||
-            getDistrictPhone(context);
-  } else if (context.fields && context.fields[recipient]) {
-    // Try to resolve a specified property/field name
-    phone = context.fields[recipient];
-  } else if (context[recipient]) {
-    // Or directly on the context
-    phone = context[recipient];
-  } else if (recipient.indexOf('.') > -1) {
-    // Or multiple layers by executing it as a statement
-    phone = objectPath.get(context, recipient);
-  } else if (phoneNumber.validate({}, recipient)) {
-    // or a specific phone number
-    phone = recipient;
+
+  const phone = resolveMany(context, recipient);
+  return phone || (defaultToSender && from) || recipient[0];
+};
+
+const resolveMany = (context, recipients) => {
+  for (const recipient of recipients) {
+    const phone = resolveRecipient(context, recipient);
+    if (phone) {
+      return phone;
+    }    
   }
-  return phone || from || recipient;
+};
+
+const resolveRecipient = function(context, recipient) {
+  const resolvers = [
+    {
+      name: 'reporting_unit',
+      match: r => r === 'reporting_unit',
+      resolve: () => context.from || context.contact?.phone,
+    },
+    {
+      name: 'ancestor',
+      match: r => r.startsWith('ancestor:'),
+      resolve: r => {
+        const type = r.split(':')[1];
+        return (
+          getParentPhone(context.patient, type) ||
+          getParentPhone(context.place, type) ||
+          getParentPhone(context, type)
+        );
+      },
+    },
+    {
+      name: 'linked',
+      match: r => r.startsWith('link:'),
+      resolve: r => {
+        const tag = r.split(':')[1];
+        return (
+          getLinkedPhone(context.patient, tag) ||
+          getLinkedPhone(context.place, tag) ||
+          getLinkedPhone(context.contact, tag) ||
+          getParentPhone(context.patient, tag) ||
+          getParentPhone(context.place, tag) ||
+          getParentPhone(context.contact, tag)
+        );
+      },
+    },
+    {
+      name: 'parent',
+      match: r => r === 'parent',
+      resolve: () => resolveAncestor(context, 2),
+    },
+    {
+      name: 'grandparent',
+      match: r => r === 'grandparent',
+      resolve: () => resolveAncestor(context, 3),
+    },
+    {
+      name: 'clinic',
+      match: r => r === 'clinic',
+      resolve: () => getClinicPhone(context.patient) ||
+        getClinicPhone(context.place) ||
+        getClinicPhone(context) ||
+        context.contact?.phone,
+    },
+    {
+      name: 'health_center',
+      match: r => r === 'health_center',
+      resolve: () => getHealthCenterPhone(context.patient) ||
+        getHealthCenterPhone(context.place) ||
+        getHealthCenterPhone(context),
+    },
+    {
+      name: 'district',
+      match: r => r === 'district',
+      resolve: () => getDistrictPhone(context.patient) ||
+        getDistrictPhone(context.place) ||
+        getDistrictPhone(context),
+    },
+    {
+      name: 'field',
+      match: r => context.fields?.[r],
+      resolve: r => context.fields[r],
+    },
+    {
+      name: 'property',
+      match: r => context[r],
+      resolve: r => context[r],
+    },
+    {
+      name: 'object_path',
+      match: r => r.includes('.'),
+      resolve: r => objectPath.get(context, r),
+    },
+    {
+      name: 'phone_number',
+      match: r => phoneNumber.validate({}, r),
+      resolve: r => r,
+    }
+  ];
+
+  for (const rule of resolvers) {
+    if (rule.match(recipient)) {
+      return rule.resolve(recipient);
+    }
+  }
+
+  return null;
+};
+
+const resolveAncestor = function(context, levels) {
+  let node = context.patient || context.place || context;
+  node = node.parent ? node : node.contact;
+
+  while (levels-- >0){
+    node = node?.parent;
+    if (!node){
+      return null;
+    }
+  }
+
+  return node.contact?.phone || null;
 };
 
 const getPhone = function(config, context, recipient) {
-  let phone = getRecipient(context, recipient);
+  let phone = getRecipient(context, recipient, config?.sms?.default_to_sender ?? true);
   phone = applyPhoneReplacement(config, phone);
   return applyPhoneFilters(config, phone);
 };
@@ -274,10 +349,12 @@ const truncateMessage = function(parts, max) {
  * @param {Object} doc The couchdb document this message relates to
  * @param {Object} content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param {String} recipient A string to determine who the message should be sent to.
- *        One of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
- *        the name of a property in `fields` or on the doc, a path to a
+ * @param {String|String[]} recipient A recipient definition. This can be a string or an array of recipients.
+ *        String or String value can be one of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
+ *        the name of a property in `fields` or on the doc, a valid phone number directly, a path to a
  *        property on the doc.
+ *        If an array is provided, each entry is tried in order and the first successfully resolved phone number 
+ *       is used.
  * @param {Object} [extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), `place` (object), `placeRegistrations` (array),

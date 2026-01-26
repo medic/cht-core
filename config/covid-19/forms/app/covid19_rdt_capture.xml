@@ -1,93 +1,94 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>RDT Covid-19 - Capture</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/covid19_rdt_capture/capture/note_continue_1:label">
-            <value>✓ Results captured!</value>
-          </text>
-          <text id="/covid19_rdt_capture/capture/note_continue_2:label">
-            <value>Click "Next" to continue.</value>
-          </text>
-          <text id="/covid19_rdt_capture/capture/rdtoolkit-capture/note_instructions_provision:label">
-            <value>Click on "Launch app" to capture the result of the Covid-19 rapid diagnostic test for this patient.</value>
-          </text>
-          <text id="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state:hint">
-            <value>The status is auto populated once the RDT is provisioned</value>
-          </text>
-          <text id="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state:label">
-            <value>RDT status *</value>
-          </text>
-          <text id="/covid19_rdt_capture/capture:label">
-            <value>Launch</value>
-          </text>
-          <text id="/covid19_rdt_capture/inputs/contact/_id:label">
-            <value>What is the patient's name?</value>
-          </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test/no:label">
-            <value>No</value>
-          </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test:label">
-            <value>Does the patient require to repeat the test?</value>
-          </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test_reason/indeterminate:label">
-            <value>Indeterminate</value>
-          </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test_reason/invalid:label">
+          <text id="repeat_test_reason-0">
             <value>Invalid</value>
           </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test_reason/lost:label">
+          <text id="repeat_test_reason-1">
+            <value>Indeterminate</value>
+          </text>
+          <text id="repeat_test_reason-2">
             <value>Lost</value>
           </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test_reason/other:label">
+          <text id="repeat_test_reason-3">
             <value>Other</value>
           </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test_reason:label">
-            <value>What is the reason?</value>
+          <text id="yes_no-0">
+            <value>Yes</value>
           </text>
-          <text id="/covid19_rdt_capture/repeat-test/repeat_test_reason_other:label">
-            <value>Specify other</value>
+          <text id="yes_no-1">
+            <value>No</value>
           </text>
-          <text id="/covid19_rdt_capture/repeat-test:label">
+          <text id="/data/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/data/capture:label">
+            <value>Launch</value>
+          </text>
+          <text id="/data/capture/rdtoolkit-capture/note_instructions_provision:label">
+            <value>Click on "Launch app" to capture the result of the Covid-19 rapid diagnostic test for this patient.</value>
+          </text>
+          <text id="/data/capture/rdtoolkit-capture/preview_session_state:label">
+            <value>RDT status *</value>
+          </text>
+          <text id="/data/capture/rdtoolkit-capture/preview_session_state:hint">
+            <value>The status is auto populated once the RDT is provisioned</value>
+          </text>
+          <text id="/data/capture/note_continue_1:label">
+            <value>✓ Results captured!</value>
+          </text>
+          <text id="/data/capture/note_continue_2:label">
+            <value>Click "Next" to continue.</value>
+          </text>
+          <text id="/data/repeat-test:label">
             <value>Test Repeat</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_details:label">
-            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          <text id="/data/repeat-test/repeat_test:label">
+            <value>Does the patient require to repeat the test?</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_header:label">
+          <text id="/data/repeat-test/repeat_test_reason:label">
+            <value>What is the reason?</value>
+          </text>
+          <text id="/data/repeat-test/repeat_test_reason_other:label">
+            <value>Specify other</value>
+          </text>
+          <text id="/data/summary/summary_header:label">
             <value>Be sure you submit to complete this action</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_info:label">
+          <text id="/data/summary/summary_details:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/data/summary/summary_name:label">
+            <value> **<output value=" /data/patient_name "/>**
+<output value=" /data/inputs/contact/sex "/>
+<output value=" /data/age "/></value>
+          </text>
+          <text id="/data/summary/summary_info:label">
             <value>RDT Details&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_name:label">
-            <value>**<output value=" /covid19_rdt_capture/patient_name "/>**
-<output value=" /covid19_rdt_capture/inputs/contact/sex "/>
-<output value=" /covid19_rdt_capture/age "/></value></text>
-          <text id="/covid19_rdt_capture/summary/summary_rdt_loinc_long_common_name:label">
+          <text id="/data/summary/summary_rdt_loinc_long_common_name:label">
             <value>SARS-CoV-2 (COVID-19) Ag [Presence] in Respiratory specimen by Rapid immunoassay</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_results:label">
-            <value>**Results:** <output value=" /covid19_rdt_capture/summary/result "/></value>
-          </text>
-          <text id="/covid19_rdt_capture/summary/summary_results_expired:label">
+          <text id="/data/summary/summary_results_expired:label">
             <value>Test expired&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_results_expired_2:label">
+          <text id="/data/summary/summary_results_expired_2:label">
             <value>The rapid diagnostic test has expired. Please be sure it is allowed to continue.</value>
           </text>
-          <text id="/covid19_rdt_capture/summary/summary_results_repeat:label">
-            <value>**Repeat needed:** <output value=" /covid19_rdt_capture/repeat-test/repeat_test_reason "/></value>
+          <text id="/data/summary/summary_results_repeat:label">
+            <value> **Repeat needed:** <output value=" /data/repeat-test/repeat_test_reason "/></value>
+          </text>
+          <text id="/data/summary/summary_results:label">
+            <value> **Results:** <output value=" /data/summary/result "/></value>
           </text>
         </translation>
       </itext>
       <instance>
-        <covid19_rdt_capture id="covid19_rdt_capture" prefix="J1!covid19_rdt_capture!" delimiter="#" version="2025-05-01 22-48">
+        <data id="covid19_rdt_capture" version="2025-05-01 22-48" prefix="J1!covid19_rdt_capture!" delimiter="#">
           <inputs tag="hidden">
             <source>user</source>
             <contact>
@@ -193,207 +194,220 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </covid19_rdt_capture>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/covid19_rdt_capture/inputs" relevant="./source = 'user'"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/source" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/patient_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/first_name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/last_name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/date_of_birth" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/sex" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/phone" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/phone_alternate" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/address" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/address" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/parent/_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/parent/name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/inputs/contact/parent/parent/address" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/covid19_rdt_capture/patient_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/covid19_rdt_capture/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /covid19_rdt_capture/inputs/contact/date_of_birth , today() ) div 12 )"/>
-      <bind nodeset="/covid19_rdt_capture/patient_age_in_months" type="string" calculate="difference-in-months(  /covid19_rdt_capture/inputs/contact/date_of_birth , today() )"/>
-      <bind nodeset="/covid19_rdt_capture/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /covid19_rdt_capture/inputs/contact/date_of_birth ) )"/>
-      <bind nodeset="/covid19_rdt_capture/age" type="string" calculate="if( /covid19_rdt_capture/patient_age_in_days  &lt; 31, 
-concat( /covid19_rdt_capture/patient_age_in_days , ' days old'),
-if( /covid19_rdt_capture/patient_age_in_months  &lt; 12, 
-concat( /covid19_rdt_capture/patient_age_in_months , ' months old'), 
-concat( /covid19_rdt_capture/patient_age_in_years , ' years old')))"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/session_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/administrator_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/administrator_name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/test_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/facility_id" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/facility_name" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/facility_address" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/facility_test_setting" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/other_test_setting" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/test_reason" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/symptoms" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/days_since_symptoms_began" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/specimen_type" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/specimen_type_other" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/rdt_lot" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/rdt_lot_expiry_date" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/test-information/additional_notes" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/action" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/note_instructions_provision" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" type="string" calculate="../../../../test-information/test_id"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state" type="string" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )" readonly="true()" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/capture/note_continue_1" readonly="true()" type="string" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
-      <bind nodeset="/covid19_rdt_capture/capture/note_continue_2" readonly="true()" type="string" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test" type="select1" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason" type="select1" relevant="selected(../repeat_test , 'yes')" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/repeat-test/repeat_test_reason_other" type="string" relevant="selected(../repeat_test_reason , 'other')" required="true()"/>
-      <bind nodeset="/covid19_rdt_capture/summary" relevant=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  != ''"/>
-      <bind nodeset="/covid19_rdt_capture/summary/time_started" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
-      <bind nodeset="/covid19_rdt_capture/summary/time_read" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
-      <bind nodeset="/covid19_rdt_capture/summary/time_expired" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
-      <bind nodeset="/covid19_rdt_capture/summary/results_expired" type="string" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  &gt;  /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired , 'TRUE', 'FALSE')"/>
-      <bind nodeset="/covid19_rdt_capture/summary/result" type="string" calculate="if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_pos', 'Positive', if( /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_neg', 'Negative', 'Invalid result'))"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_header" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_details" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_name" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_info" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_rdt_loinc_long_common_name" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_results_expired" readonly="true()" type="string" relevant=" /covid19_rdt_capture/summary/results_expired  = 'TRUE'"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_results_expired_2" readonly="true()" type="string" relevant=" /covid19_rdt_capture/summary/results_expired  = 'TRUE'"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_results_repeat" readonly="true()" type="string" relevant="selected( /covid19_rdt_capture/repeat-test/repeat_test  , 'yes')"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_results" readonly="true()" type="string"/>
-      <bind nodeset="/covid19_rdt_capture/summary/summary_image" type="string" calculate=" /covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped "/>
-      <bind nodeset="/covid19_rdt_capture/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <instance id="user-contact-summary"/>
+      <instance id="repeat_test_reason">
+        <root>
+          <item>
+            <itextId>repeat_test_reason-0</itextId>
+            <name>invalid</name>
+          </item>
+          <item>
+            <itextId>repeat_test_reason-1</itextId>
+            <name>indeterminate</name>
+          </item>
+          <item>
+            <itextId>repeat_test_reason-2</itextId>
+            <name>lost</name>
+          </item>
+          <item>
+            <itextId>repeat_test_reason-3</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <itextId>yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>yes_no-1</itextId>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/data/inputs/source" type="string"/>
+      <bind nodeset="/data/inputs/contact/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/first_name" type="string"/>
+      <bind nodeset="/data/inputs/contact/last_name" type="string"/>
+      <bind nodeset="/data/inputs/contact/name" type="string"/>
+      <bind nodeset="/data/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/data/inputs/contact/sex" type="string"/>
+      <bind nodeset="/data/inputs/contact/phone" type="string"/>
+      <bind nodeset="/data/inputs/contact/phone_alternate" type="string"/>
+      <bind nodeset="/data/inputs/contact/address" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/name" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/address" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/name" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/address" type="string"/>
+      <bind nodeset="/data/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/data/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/data/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /data/inputs/contact/date_of_birth , today() ) div 12 )"/>
+      <bind nodeset="/data/patient_age_in_months" type="string" calculate="difference-in-months(  /data/inputs/contact/date_of_birth , today() )"/>
+      <bind nodeset="/data/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /data/inputs/contact/date_of_birth ) )"/>
+      <bind nodeset="/data/age" type="string" calculate="if( /data/patient_age_in_days  &lt; 31, &#10;concat( /data/patient_age_in_days , ' days old'),&#10;if( /data/patient_age_in_months  &lt; 12, &#10;concat( /data/patient_age_in_months , ' months old'), &#10;concat( /data/patient_age_in_years , ' years old')))"/>
+      <bind nodeset="/data/test-information/session_id" type="string"/>
+      <bind nodeset="/data/test-information/administrator_id" type="string"/>
+      <bind nodeset="/data/test-information/administrator_name" type="string"/>
+      <bind nodeset="/data/test-information/test_id" type="string"/>
+      <bind nodeset="/data/test-information/facility_id" type="string"/>
+      <bind nodeset="/data/test-information/facility_name" type="string"/>
+      <bind nodeset="/data/test-information/facility_address" type="string"/>
+      <bind nodeset="/data/test-information/facility_test_setting" type="string"/>
+      <bind nodeset="/data/test-information/other_test_setting" type="string"/>
+      <bind nodeset="/data/test-information/test_reason" type="string"/>
+      <bind nodeset="/data/test-information/symptoms" type="string"/>
+      <bind nodeset="/data/test-information/days_since_symptoms_began" type="string"/>
+      <bind nodeset="/data/test-information/specimen_type" type="string"/>
+      <bind nodeset="/data/test-information/specimen_type_other" type="string"/>
+      <bind nodeset="/data/test-information/rdt_lot" type="string"/>
+      <bind nodeset="/data/test-information/rdt_lot_expiry_date" type="string"/>
+      <bind nodeset="/data/test-information/additional_notes" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/action" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/note_instructions_provision" readonly="true()" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" type="string" calculate="../../../../test-information/test_id"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" type="string"/>
+      <bind nodeset="/data/capture/rdtoolkit-capture/preview_session_state" type="string" required="true()" readonly="true()" calculate="if( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  = 'QUEUED', 'COMPLETED',  /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state )"/>
+      <bind nodeset="/data/capture/note_continue_1" readonly="true()" type="string" relevant=" /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
+      <bind nodeset="/data/capture/note_continue_2" readonly="true()" type="string" relevant=" /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  != ''"/>
+      <bind nodeset="/data/repeat-test/repeat_test" type="string" required="true()"/>
+      <bind nodeset="/data/repeat-test/repeat_test_reason" type="string" required="true()" relevant="selected(../repeat_test , 'yes')"/>
+      <bind nodeset="/data/repeat-test/repeat_test_reason_other" type="string" required="true()" relevant="selected(../repeat_test_reason , 'other')"/>
+      <bind nodeset="/data/summary" relevant=" /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state  != ''"/>
+      <bind nodeset="/data/summary/time_started" type="string" calculate="format-date-time(parse-timestamp-to-date( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
+      <bind nodeset="/data/summary/time_read" type="string" calculate="format-date-time(parse-timestamp-to-date( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
+      <bind nodeset="/data/summary/time_expired" type="string" calculate="format-date-time(parse-timestamp-to-date( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%e %b, %Y at %H:%M:%S&quot;)"/>
+      <bind nodeset="/data/summary/results_expired" type="string" calculate="if( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read  &gt;  /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired , 'TRUE', 'FALSE')"/>
+      <bind nodeset="/data/summary/result" type="string" calculate="if( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_pos', 'Positive', if( /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2 ='sars_cov2_neg', 'Negative', 'Invalid result'))"/>
+      <bind nodeset="/data/summary/summary_header" readonly="true()" type="string"/>
+      <bind nodeset="/data/summary/summary_details" readonly="true()" type="string"/>
+      <bind nodeset="/data/summary/summary_name" readonly="true()" type="string"/>
+      <bind nodeset="/data/summary/summary_info" readonly="true()" type="string"/>
+      <bind nodeset="/data/summary/summary_rdt_loinc_long_common_name" readonly="true()" type="string"/>
+      <bind nodeset="/data/summary/summary_results_expired" readonly="true()" type="string" relevant=" /data/summary/results_expired  = 'TRUE'"/>
+      <bind nodeset="/data/summary/summary_results_expired_2" readonly="true()" type="string" relevant=" /data/summary/results_expired  = 'TRUE'"/>
+      <bind nodeset="/data/summary/summary_results_repeat" readonly="true()" type="string" relevant="selected( /data/repeat-test/repeat_test  , 'yes')"/>
+      <bind nodeset="/data/summary/summary_results" readonly="true()" type="string"/>
+      <bind nodeset="/data/summary/summary_image" type="string" calculate=" /data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped "/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group ref="/covid19_rdt_capture/inputs">
-      <group appearance="field-list" ref="/covid19_rdt_capture/inputs/contact">
-        <input appearance="select-contact type-person" ref="/covid19_rdt_capture/inputs/contact/_id">
-          <label ref="jr:itext('/covid19_rdt_capture/inputs/contact/_id:label')"/>
+    <group ref="/data/inputs">
+      <group appearance="field-list" ref="/data/inputs/contact">
+        <input ref="/data/inputs/contact/_id" appearance="select-contact type-person">
+          <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
         </input>
-        <group ref="/covid19_rdt_capture/inputs/contact/parent">
-          <group ref="/covid19_rdt_capture/inputs/contact/parent/parent"/>
+        <group ref="/data/inputs/contact/parent">
+          <group ref="/data/inputs/contact/parent/parent"/>
         </group>
       </group>
     </group>
-    <group ref="/covid19_rdt_capture/test-information"/>
-    <group appearance="field-list" ref="/covid19_rdt_capture/capture">
-      <label ref="jr:itext('/covid19_rdt_capture/capture:label')"/>
-      <group appearance="android-app-launcher" ref="/covid19_rdt_capture/capture/rdtoolkit-capture">
-        <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/action"/>
-        <input ref="/covid19_rdt_capture/capture/rdtoolkit-capture/note_instructions_provision">
-          <label ref="jr:itext('/covid19_rdt_capture/capture/rdtoolkit-capture/note_instructions_provision:label')"/>
+    <group ref="/data/test-information"/>
+    <group appearance="field-list" ref="/data/capture">
+      <label ref="jr:itext('/data/capture:label')"/>
+      <group appearance="android-app-launcher" ref="/data/capture/rdtoolkit-capture">
+        <input ref="/data/capture/rdtoolkit-capture/action" appearance="hidden"/>
+        <input ref="/data/capture/rdtoolkit-capture/note_instructions_provision">
+          <label ref="jr:itext('/data/capture/rdtoolkit-capture/note_instructions_provision:label')"/>
         </input>
-        <group appearance="android-app-inputs" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-inputs">
-          <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id"/>
+        <group appearance="android-app-inputs" ref="/data/capture/rdtoolkit-capture/android-app-inputs">
+          <input ref="/data/capture/rdtoolkit-capture/android-app-inputs/rdt_session_id" appearance="hidden"/>
         </group>
-        <group appearance="android-app-outputs" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs">
-          <group appearance="android-app-object" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle">
-            <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state"/>
-            <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started"/>
-            <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved"/>
-            <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired"/>
-            <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile"/>
-            <group appearance="android-app-object" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle">
-              <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read"/>
-              <group appearance="android-app-object" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images">
-                <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped"/>
+        <group appearance="android-app-outputs" ref="/data/capture/rdtoolkit-capture/android-app-outputs">
+          <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle">
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_state" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_started" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" appearance="hidden"/>
+            <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" appearance="hidden"/>
+            <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle">
+              <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_time_read" appearance="hidden"/>
+              <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images">
+                <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_extra_images/cropped" appearance="hidden"/>
               </group>
-              <group appearance="android-app-object" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map">
-                <input appearance="hidden" ref="/covid19_rdt_capture/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2"/>
+              <group appearance="android-app-object" ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map">
+                <input ref="/data/capture/rdtoolkit-capture/android-app-outputs/rdt_session_bundle/rdt_session_result_bundle/rdt_session_result_map/sars_cov2" appearance="hidden"/>
               </group>
             </group>
           </group>
         </group>
-        <input ref="/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state">
-          <label ref="jr:itext('/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state:label')"/>
-          <hint ref="jr:itext('/covid19_rdt_capture/capture/rdtoolkit-capture/preview_session_state:hint')"/>
+        <input ref="/data/capture/rdtoolkit-capture/preview_session_state">
+          <label ref="jr:itext('/data/capture/rdtoolkit-capture/preview_session_state:label')"/>
+          <hint ref="jr:itext('/data/capture/rdtoolkit-capture/preview_session_state:hint')"/>
         </input>
       </group>
-      <input ref="/covid19_rdt_capture/capture/note_continue_1">
-        <label ref="jr:itext('/covid19_rdt_capture/capture/note_continue_1:label')"/>
+      <input ref="/data/capture/note_continue_1">
+        <label ref="jr:itext('/data/capture/note_continue_1:label')"/>
       </input>
-      <input ref="/covid19_rdt_capture/capture/note_continue_2">
-        <label ref="jr:itext('/covid19_rdt_capture/capture/note_continue_2:label')"/>
-      </input>
-    </group>
-    <group appearance="field-list" ref="/covid19_rdt_capture/repeat-test">
-      <label ref="jr:itext('/covid19_rdt_capture/repeat-test:label')"/>
-      <select1 ref="/covid19_rdt_capture/repeat-test/repeat_test">
-        <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test:label')"/>
-        <item>
-          <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test/no:label')"/>
-          <value>no</value>
-        </item>
-      </select1>
-      <select1 ref="/covid19_rdt_capture/repeat-test/repeat_test_reason">
-        <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test_reason:label')"/>
-        <item>
-          <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test_reason/invalid:label')"/>
-          <value>invalid</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test_reason/indeterminate:label')"/>
-          <value>indeterminate</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test_reason/lost:label')"/>
-          <value>lost</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test_reason/other:label')"/>
-          <value>other</value>
-        </item>
-      </select1>
-      <input ref="/covid19_rdt_capture/repeat-test/repeat_test_reason_other">
-        <label ref="jr:itext('/covid19_rdt_capture/repeat-test/repeat_test_reason_other:label')"/>
+      <input ref="/data/capture/note_continue_2">
+        <label ref="jr:itext('/data/capture/note_continue_2:label')"/>
       </input>
     </group>
-    <group appearance="field-list summary" ref="/covid19_rdt_capture/summary">
-      <input appearance="h2" ref="/covid19_rdt_capture/summary/summary_header">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_header:label')"/>
+    <group appearance="field-list" ref="/data/repeat-test">
+      <label ref="jr:itext('/data/repeat-test:label')"/>
+      <select1 ref="/data/repeat-test/repeat_test">
+        <label ref="jr:itext('/data/repeat-test/repeat_test:label')"/>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select1>
+      <select1 ref="/data/repeat-test/repeat_test_reason">
+        <label ref="jr:itext('/data/repeat-test/repeat_test_reason:label')"/>
+        <itemset nodeset="instance('repeat_test_reason')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
+      </select1>
+      <input ref="/data/repeat-test/repeat_test_reason_other">
+        <label ref="jr:itext('/data/repeat-test/repeat_test_reason_other:label')"/>
       </input>
-      <input appearance="h1 yellow" ref="/covid19_rdt_capture/summary/summary_details">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_details:label')"/>
+    </group>
+    <group appearance="field-list summary" ref="/data/summary">
+      <input ref="/data/summary/summary_header" appearance="h2">
+        <label ref="jr:itext('/data/summary/summary_header:label')"/>
       </input>
-      <input appearance="center" ref="/covid19_rdt_capture/summary/summary_name">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_name:label')"/>
+      <input ref="/data/summary/summary_details" appearance="h1 yellow">
+        <label ref="jr:itext('/data/summary/summary_details:label')"/>
       </input>
-      <input appearance="h1 blue" ref="/covid19_rdt_capture/summary/summary_info">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_info:label')"/>
+      <input ref="/data/summary/summary_name" appearance="center">
+        <label ref="jr:itext('/data/summary/summary_name:label')"/>
       </input>
-      <input appearance="center" ref="/covid19_rdt_capture/summary/summary_rdt_loinc_long_common_name">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_rdt_loinc_long_common_name:label')"/>
+      <input ref="/data/summary/summary_info" appearance="h1 blue">
+        <label ref="jr:itext('/data/summary/summary_info:label')"/>
       </input>
-      <input appearance="h1 red" ref="/covid19_rdt_capture/summary/summary_results_expired">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_results_expired:label')"/>
+      <input ref="/data/summary/summary_rdt_loinc_long_common_name" appearance="center">
+        <label ref="jr:itext('/data/summary/summary_rdt_loinc_long_common_name:label')"/>
       </input>
-      <input appearance="center" ref="/covid19_rdt_capture/summary/summary_results_expired_2">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_results_expired_2:label')"/>
+      <input ref="/data/summary/summary_results_expired" appearance="h1 red">
+        <label ref="jr:itext('/data/summary/summary_results_expired:label')"/>
       </input>
-      <input appearance="center" ref="/covid19_rdt_capture/summary/summary_results_repeat">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_results_repeat:label')"/>
+      <input ref="/data/summary/summary_results_expired_2" appearance="center">
+        <label ref="jr:itext('/data/summary/summary_results_expired_2:label')"/>
       </input>
-      <input appearance="center" ref="/covid19_rdt_capture/summary/summary_results">
-        <label ref="jr:itext('/covid19_rdt_capture/summary/summary_results:label')"/>
+      <input ref="/data/summary/summary_results_repeat" appearance="center">
+        <label ref="jr:itext('/data/summary/summary_results_repeat:label')"/>
       </input>
-      <input appearance="display-base64-image" ref="/covid19_rdt_capture/summary/summary_image"/>
+      <input ref="/data/summary/summary_results" appearance="center">
+        <label ref="jr:itext('/data/summary/summary_results:label')"/>
+      </input>
+      <input ref="/data/summary/summary_image" appearance="display-base64-image"/>
     </group>
   </h:body>
 </h:html>

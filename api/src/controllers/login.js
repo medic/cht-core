@@ -47,6 +47,7 @@ const templates = {
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
       'login.unsupported_browser.outdated_browser',
+      'login.unsupported_browser.safari',
       'online.action.message',
       'User Name',
       'Password',
@@ -64,6 +65,8 @@ const templates = {
       'login.token.loading',
       'login.token.redirect.login.info',
       'login.token.redirect.login',
+      'login.unsupported_browser',
+      'login.unsupported_browser.safari',
       'privacy.policy'
     ],
   },

@@ -427,7 +427,7 @@ module.exports = defineConfig([
 
     languageOptions: {
       parser: tsParser,
-      ecmaVersion: 5,
+      ecmaVersion: 2020,
       sourceType: 'script',
 
       parserOptions: {
@@ -524,12 +524,6 @@ module.exports = defineConfig([
     rules: {
       'no-console': 'off',
     },
-  },
-  {
-    files: ['scripts/deploy/**/*'],
-    languageOptions: {
-      sourceType: 'module',
-    }
   },
   {
     files: ['shared-libs/cht-datasource/**/*.ts'],

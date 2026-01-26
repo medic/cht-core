@@ -14,9 +14,17 @@ import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
-const READ_ONLY_TYPES = ['form', 'translations'];
-const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
+const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS];
+const READ_ONLY_IDS = [
+  'resources',
+  'branding',
+  DOC_IDS.SERVICE_WORKER_META,
+  'zscore-charts',
+  DOC_IDS.SETTINGS,
+  'partners'
+];
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';

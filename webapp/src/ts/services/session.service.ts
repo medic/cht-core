@@ -1,5 +1,3 @@
-const COOKIE_NAME = 'userCtx';
-const ONLINE_ROLE = 'mm-online';
 import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -7,6 +5,10 @@ import { CookieService } from 'ngx-cookie-service';
 import { DOCUMENT } from '@angular/common';
 
 import { LocationService } from '@mm-services/location.service';
+import { USER_ROLES } from '@medic/constants';
+
+const COOKIE_NAME = 'userCtx';
+const ONLINE_ROLE = USER_ROLES.ONLINE;
 
 @Injectable({
   providedIn: 'root'
