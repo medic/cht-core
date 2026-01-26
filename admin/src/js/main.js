@@ -61,8 +61,6 @@ require('./controllers/sms-forms');
 require('./controllers/sms-settings');
 require('./controllers/sms-test');
 require('./controllers/backup');
-require('./controllers/targets');
-require('./controllers/targets-edit');
 require('./controllers/upgrade');
 require('./controllers/upgrade-confirm');
 require('./controllers/users');
@@ -157,7 +155,7 @@ angular.module('adminApp').constant('POUCHDB_OPTIONS', {
   local: { auto_compaction: true },
   remote: {
     skip_setup: true,
-    fetch: function(url, opts) {
+    fetch: function (url, opts) {
       opts.headers.set('Accept', 'application/json');
       opts.credentials = 'same-origin';
       return window.PouchDB.fetch(url, opts);
@@ -165,7 +163,7 @@ angular.module('adminApp').constant('POUCHDB_OPTIONS', {
   }
 });
 
-angular.module('adminApp').config(function(
+angular.module('adminApp').config(function (
   $compileProvider,
   $locationProvider,
   $httpProvider,
@@ -394,19 +392,6 @@ angular.module('adminApp').config(function(
         }
       }
     })
-    .state('targets', {
-      url: '/targets',
-      controller: 'TargetsCtrl',
-      templateUrl: 'templates/targets.html'
-    })
-    .state('targets-edit', {
-      url: '/targets/edit/:id',
-      controller: 'TargetsEditCtrl',
-      templateUrl: 'templates/targets_edit.html',
-      params: {
-        id: null
-      },
-    })
     .state('upgrade', {
       url: '/upgrade',
       controller: 'UpgradeCtrl',
@@ -471,8 +456,8 @@ angular.module('adminApp').config(function(
     });
 });
 
-angular.element(document).ready(function() {
-  angular.bootstrap(document, [ 'adminApp' ], {
+angular.element(document).ready(function () {
+  angular.bootstrap(document, ['adminApp'], {
     strictDi: true
   });
 });
