@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { SettingsService } from '@mm-services/settings.service';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import {
@@ -35,10 +36,12 @@ export class AnalyticsTargetsComponent implements OnInit {
   errorStack;
   trackPerformance;
   direction;
+  hideCountsPastGoal = false;
 
   constructor(
     private rulesEngineService: RulesEngineService,
     private performanceService: PerformanceService,
+    private settingsService: SettingsService,
     private store: Store,
   ) {
     this.trackPerformance = this.performanceService.track();
@@ -48,6 +51,9 @@ export class AnalyticsTargetsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.settingsService.get().then(settings => {
+      this.hideCountsPastGoal = settings.targets_hide_counts_past_goal;
+    });
     this.getTargets();
   }
 
@@ -67,7 +73,7 @@ export class AnalyticsTargetsComponent implements OnInit {
         this.loading = false;
         this.targets = targets.filter(target => target.visible !== false);
         this.trackPerformance?.stop({
-          name: [ 'analytics', 'targets', 'load' ].join(':'),
+          name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,
         });
       });
