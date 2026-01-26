@@ -309,7 +309,7 @@ describe('person', () => {
       });
     });
 
-    describe('createPerson', () => {
+    describe('create', () => {
       let createPersonDoc: SinonStub;
 
       beforeEach(() => {
@@ -351,7 +351,7 @@ describe('person', () => {
       });
     });
 
-    describe('updatePerson', () => {
+    describe('update', () => {
       let updatePersonDoc: SinonStub;
 
       beforeEach(() => {

@@ -7,21 +7,20 @@ import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Core from '../src/libs/core';
+import * as Input from '../src/input';
 
 describe('report', () => {
-  const dataContext = {} as DataContext;
+  const dataContext = { } as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
-  let isRecord: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
-    isRecord = sinon.stub(Core, 'isRecord');
   });
 
   afterEach(() => sinon.restore());
@@ -141,7 +140,7 @@ describe('report', () => {
     });
 
     describe('getUuidsPage', () => {
-      const ids = [ 'report1', 'report2', 'report3' ];
+      const ids = ['report1', 'report2', 'report3'];
       const cursor = '1';
       const pageData = { data: ids, cursor };
       const limit = 3;
@@ -275,7 +274,7 @@ describe('report', () => {
 
     describe('getUuids', () => {
       const freetextQualifier = { freetext: 'freetext' } as const;
-      const reportIds = [ 'report1', 'report2', 'report3' ];
+      const reportIds = ['report1', 'report2', 'report3'];
       const mockGenerator = function* () {
         for (const reportId of reportIds) {
           yield reportId;
@@ -326,46 +325,91 @@ describe('report', () => {
     });
 
     describe('create', () => {
-      it('returns report doc for valid input', async () => {
-        const createReportDoc = sinon.stub();
+      let createReportDoc: SinonStub;
+
+      beforeEach(() => {
+        createReportDoc = sinon.stub();
         adapt.returns(createReportDoc);
+      });
+
+
+      it('returns report doc for valid input', async () => {
         const input = {
           name: 'report-1',
           type: 'data_record',
           contact: 'c1',
           form: 'form'
         };
-        isRecord.returns(true);
-        createReportDoc.resolves(input);
+        const doc = {
+          ...input,
+          _id: 'new-doc'
+        };
+        createReportDoc.resolves(doc);
+
         const result = await Report.v1.create(dataContext)(input);
-        expect(result).to.deep.equal(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.create, Remote.Report.v1.create))
+          .to.be.true;
+        expect(createReportDoc.calledOnceWithExactly(input)).to.be.true;
       });
 
+      it('Throws error is input is not a record', async () => {
+        const input = 'hello' as unknown as Input.v1.ReportInput;
+        await expect(Report.v1.create(dataContext)(input))
+          .to.be.rejectedWith(`Report data not provided.`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.create, Remote.Report.v1.create))
+          .to.be.true;
+        expect(createReportDoc.notCalled).to.be.true;
+      });
     });
+
     describe('update', () => {
+      let updateReportDoc: SinonStub;
+
+      beforeEach(() => {
+        updateReportDoc = sinon.stub();
+        adapt.returns(updateReportDoc);
+      });
+
       it('throws error for invalid input', async () => {
-        const input = 'my-string-report';
-        isRecord.returns(false);
-        await expect(Report.v1.update(dataContext)(input as unknown as Report.v1.Report))
+        const input = 'my-string-report' as unknown as Report.v1.Report;
+
+        await expect(Report.v1.update(dataContext)(input))
           .to.be.rejectedWith(`Invalid report update input`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))
+          .to.be.true;
+        expect(updateReportDoc.notCalled).to.be.true;
       });
 
       it('returns updated report doc for valid input', async() => {
-        const updateReportDoc = sinon.stub();
-        adapt.returns(updateReportDoc);
-        const input: Report.v1.Report = {
-          '_id': 'b8208fa332bf1f09b606e6efd8002a4a',
-          '_rev': '1-9ffca0e670bcc111de86f68ae8f47d3b',
-          'form': 'pregnancy_danger_sign',
-          'type': 'data_record',
-          'contact': { _id: 'c1' },
-          'reported_date': 12312312,
-          'fields': {}
+        const input = {
+          _id: 'b8208fa332bf1f09b606e6efd8002a4a',
+          _rev: '1-9ffca0e670bcc111de86f68ae8f47d3b',
+          form: 'pregnancy_danger_sign',
+          type: 'data_record',
+          contact: { _id: 'c1', name: 'hydrated contact' },
+          reported_date: 12312312,
+          fields: {}
         };
-        isRecord.returns(true);
-        updateReportDoc.resolves(input);
+        const doc = {
+          ...input,
+          contact: { _id: input.contact._id }
+        };
+        updateReportDoc.resolves(doc);
+
         const result = await Report.v1.update(dataContext)(input);
-        expect(result).to.deep.equal(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))
+          .to.be.true;
+        expect(updateReportDoc.calledOnceWithExactly(input)).to.be.true;
       });
     });
   });
