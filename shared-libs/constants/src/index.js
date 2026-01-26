@@ -9,9 +9,8 @@ const DOC_IDS = {
 
 // Document Types
 const DOC_TYPES = {
-  TRANSLATIONS: 'translations',
-  FORM: 'form',
   TOKEN_LOGIN: 'token_login',
+  TRANSLATIONS: 'translations',
 };
 
 // HTTP Headers
