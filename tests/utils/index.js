@@ -1181,12 +1181,41 @@ const generateComposeFiles = async () => {
     couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
+  const INJECT_SERVICES = ['api', 'sentinel'];
+
   for (const file of COMPOSE_FILES) {
     const templatePath = getTemplateComposeFilePath(file);
     const testComposePath = getTestComposeFilePath(file);
 
     const template = await fs.promises.readFile(templatePath, 'utf-8');
-    await fs.promises.writeFile(testComposePath, mustache.render(template, view));
+    let compiled = mustache.render(template, view);
+
+    INJECT_SERVICES.forEach((svc) => {
+      const svcHeader = `\n  ${svc}:`;
+      const start = compiled.indexOf(svcHeader);
+      if (start === -1) {
+        return;
+      }
+      
+      const rest = compiled.slice(start + 1);
+      
+      const nextServiceMatch = rest.search(/\n {2}[a-zA-Z0-9_-]+:/);
+      const block = nextServiceMatch === -1 ? rest : rest.slice(0, nextServiceMatch + 1);
+
+      const envMarker = '\n    environment:\n';
+      const envIdxInBlock = block.indexOf(envMarker);
+
+      if (envIdxInBlock !== -1) {
+        const insertPos = start + 1 + envIdxInBlock + envMarker.length;
+        const logLine = '      - "LOG_LEVEL=${LOG_LEVEL:-debug}"\n';
+        compiled = compiled.slice(0, insertPos) + logLine + compiled.slice(insertPos);
+      } else {
+        const serviceLineEnd = compiled.indexOf('\n', start + 1) + 1;
+        const insertion = '    environment:\n      - "LOG_LEVEL=${LOG_LEVEL:-debug}"\n';
+        compiled = compiled.slice(0, serviceLineEnd) + insertion + compiled.slice(serviceLineEnd);
+      }
+    });
+    await fs.promises.writeFile(testComposePath, compiled);
   }
 };
 
