@@ -9,8 +9,8 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
   ) {
     'use strict';
     'ngInject';
+    const { PRIVACY_POLICIES_DOC_ID } = require('@medic/constants');
 
-    const PRIVACY_POLICIES_DOC_ID = 'privacy-policies';
 
     $scope.allowedContentType = 'text/html';
 
