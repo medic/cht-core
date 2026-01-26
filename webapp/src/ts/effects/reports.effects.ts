@@ -152,7 +152,7 @@ export class ReportsEffects {
       concatMap(action => of(action).pipe(
         withLatestFrom(
           this.store.select(Selectors.getListReport, { id: action?.payload?.id }),
-          this.store.select(Selectors.getUnreadCount),
+          this.store.select(Selectors.getBubbleCounter),
         ),
       )),
       exhaustMap(([action, report, unreadCount]) => {
@@ -161,7 +161,7 @@ export class ReportsEffects {
         }
 
         if (unreadCount) {
-          this.globalActions.updateUnreadCount({ report: unreadCount.report - 1 });
+          this.globalActions.updateBubbleCounter({ report: unreadCount.report - 1 });
         }
 
         // we could be reaching this effect before the list is loaded

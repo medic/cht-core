@@ -9,6 +9,7 @@ const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
 let clock;
 
@@ -177,6 +178,16 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
         signature: '46de1dfc576838494f798264571dc59658db7ea164915dd459a7752c31591ae6',
       },
     },
+    'docs_by_replication_key': {
+      name: '_design/medic/docs_by_replication_key',
+      search_index: { 
+        update_seq: 1263237,
+        purge_seq: 0,
+        num_docs: 1261007,
+        disk_size: 218427370,
+        signature: '779b1288c85ec5019d5d6a86124b99c12aa729b5edc2d145ff0d09d10cd0f3fb' 
+      }
+    }
   },
 };
 
@@ -204,7 +215,7 @@ const setUpMocks = () => {
   });
   sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
     .resolves(dbInfos);
-  sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
+  sinon.stub(db.sentinel, 'get').withArgs(SENTINEL_METADATA.TRANSITIONS_SEQ)
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
   medicQuery.withArgs('medic-admin/message_queue')
@@ -327,6 +338,11 @@ describe('Monitoring service', () => {
               name: 'medic/reports_by_freetext',
               doc_count: 183741,
             },
+            {
+              file_size: 218427370,
+              name: 'medic/docs_by_replication_key',
+              doc_count: 1261007,
+            },
           ],
         },
         sentinel: {
@@ -400,6 +416,10 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
+        [{
+          json: true,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
+        }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -457,6 +477,11 @@ describe('Monitoring service', () => {
               file_size: 157258510,
               name: 'medic/reports_by_freetext',
               doc_count: 183741,
+            },
+            {
+              file_size: 218427370,
+              name: 'medic/docs_by_replication_key',
+              doc_count: 1261007,
             },
           ],
         },
@@ -558,6 +583,10 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
+        [{
+          json: true,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
+        }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -578,7 +607,7 @@ describe('Monitoring service', () => {
     sinon.stub(deployInfo, 'get').rejects();
     sinon.stub(request, 'get').rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
-    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
+    sinon.stub(db.sentinel, 'get').withArgs(SENTINEL_METADATA.TRANSITIONS_SEQ).rejects();
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
@@ -677,6 +706,10 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
+        [{
+          json: true,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
+        }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -689,7 +722,7 @@ describe('Monitoring service', () => {
     sinon.stub(deployInfo, 'get').rejects();
     sinon.stub(request, 'get').rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` })).rejects();
-    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq').rejects();
+    sinon.stub(db.sentinel, 'get').withArgs(SENTINEL_METADATA.TRANSITIONS_SEQ).rejects();
     sinon.stub(db.medic, 'query').rejects();
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
@@ -811,6 +844,10 @@ describe('Monitoring service', () => {
           json: true,
           url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
         }],
+        [{
+          json: true,
+          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
+        }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -826,7 +863,7 @@ describe('Monitoring service', () => {
     request.get.rejects();
     sinon.stub(request, 'post').withArgs(sinon.match({ url: `${environment.serverUrl}/_dbs_info` }))
       .resolves(dbInfos);
-    sinon.stub(db.sentinel, 'get').withArgs('_local/transitions-seq')
+    sinon.stub(db.sentinel, 'get').withArgs(SENTINEL_METADATA.TRANSITIONS_SEQ)
       .resolves({ processed_seq: '50-xyz' });
     sinon.stub(db.medic, 'query')
       .resolves({ rows: [

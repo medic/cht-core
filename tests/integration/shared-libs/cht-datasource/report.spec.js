@@ -1,5 +1,6 @@
 const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const userFactory = require('@factories/cht/users/users');
 const {
   getRemoteDataContext,
@@ -8,9 +9,9 @@ const {
   Input,
   InvalidArgumentError
 } = require('@medic/cht-datasource');
+const { USER_ROLES } = require('@medic/constants');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { expect } = require('chai');
 const { setAuth, removeAuth } = require('./auth');
 const uuid = require('uuid').v4;
 
@@ -112,7 +113,7 @@ describe('cht-datasource Report', () => {
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms', place: place1._id, contact: {
       _id: 'fixture:user:online-no-perms', name: 'Online User',
-    }, roles: [ 'mm-online' ]
+    }, roles: [ USER_ROLES.ONLINE ]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms', place: place0._id, contact: {
@@ -124,10 +125,13 @@ describe('cht-datasource Report', () => {
   const allReports = [ report0, report1, report2, report3, report4, report5, report6, report7, report8 ];
   const dataContext = getRemoteDataContext(utils.getOrigin());
 
+  const excludedProperties = ['_rev', 'reported_date'];
+
   before(async () => {
     setAuth();
     await utils.saveDocs(allDocItems);
     await utils.saveDocs(allReports);
+    await sentinelUtils.waitForSentinel();
     await utils.createUsers([ userNoPerms, offlineUser ]);
   });
 
@@ -143,7 +147,7 @@ describe('cht-datasource Report', () => {
 
       it('should return the report matching the provided UUID', async () => {
         const resReport = await getReport(Qualifier.byUuid(report0._id));
-        expect(resReport).excluding([ '_rev', 'reported_date' ]).to.deep.equal(report0);
+        expect(resReport).excluding(excludedProperties).to.deep.equal(report0);
       });
 
       it('returns null when no report is found for the UUID', async () => {
@@ -170,7 +174,7 @@ describe('cht-datasource Report', () => {
             }
           }
         };
-        expect(resReport).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+        expect(resReport).excludingEvery(excludedProperties).to.deep.equal({
           ...report0,
           contact: {
             ...contact0,
@@ -217,7 +221,7 @@ describe('cht-datasource Report', () => {
 
         const allReports = [ ...firstPage.data, ...secondPage.data ];
 
-        expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
+        expect(allReports).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(expectedReportIds);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(2);
         expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
@@ -296,7 +300,7 @@ describe('cht-datasource Report', () => {
           docs.push(doc);
         }
 
-        expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
+        expect(docs).excluding(excludedProperties).to.deep.equalInAnyOrder(expectedReportIds);
       });
     });
 

@@ -1,196 +1,197 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Replace User</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/replace_user/inputs/contact/_id:label">
-            <value>The user being replaced</value>
+          <text id="select_dob_method-0">
+            <value>Date of birth unknown</value>
           </text>
-          <text id="/replace_user/inputs/contact/parent/_id:label">
-            <value>Parent 1 ID</value>
+          <text id="roles-0">
+            <value>CHW</value>
           </text>
-          <text id="/replace_user/inputs/contact/parent/parent/_id:label">
-            <value>Parent 2 ID</value>
+          <text id="roles-1">
+            <value>CHW Supervisor</value>
           </text>
-          <text id="/replace_user/inputs/contact/parent/parent/parent/_id:label">
-            <value>Parent 3 ID</value>
+          <text id="roles-2">
+            <value>Nurse</value>
           </text>
-          <text id="/replace_user/inputs/contact/role:label">
-            <value>Role</value>
+          <text id="roles-3">
+            <value>Facility Manager</value>
           </text>
-          <text id="/replace_user/inputs/source:label">
+          <text id="roles-4">
+            <value>Patient</value>
+          </text>
+          <text id="roles-5">
+            <value>Other</value>
+          </text>
+          <text id="male_female-0">
+            <value>Male</value>
+          </text>
+          <text id="male_female-1">
+            <value>Female</value>
+          </text>
+          <text id="/data/inputs/source:label">
             <value>Source</value>
           </text>
-          <text id="/replace_user/inputs/source_id:label">
+          <text id="/data/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/replace_user/inputs/user/contact_id:label">
+          <text id="/data/inputs/user/contact_id:label">
             <value>User's Contact ID</value>
           </text>
-          <text id="/replace_user/inputs/user/facility_id:label">
+          <text id="/data/inputs/user/facility_id:label">
             <value>Facility ID</value>
           </text>
-          <text id="/replace_user/inputs/user/name:label">
+          <text id="/data/inputs/user/name:label">
             <value>Username</value>
           </text>
-          <text id="/replace_user/inputs/user/phone:label">
+          <text id="/data/inputs/user/phone:label">
             <value>Phone Number</value>
           </text>
-          <text id="/replace_user/intro/admin_code:hint">
-            <value>The code is '1234'</value>
+          <text id="/data/inputs/contact/_id:label">
+            <value>The user being replaced</value>
           </text>
-          <text id="/replace_user/intro/admin_code:jr:constraintMsg">
-            <value>Invalid code. Contact your administrator if you need access to this form.</value>
+          <text id="/data/inputs/contact/role:label">
+            <value>Role</value>
           </text>
-          <text id="/replace_user/intro/admin_code:label">
-            <value>Admin Code</value>
+          <text id="/data/inputs/contact/parent/_id:label">
+            <value>Parent 1 ID</value>
           </text>
-          <text id="/replace_user/intro/warning:label">
+          <text id="/data/inputs/contact/parent/parent/_id:label">
+            <value>Parent 2 ID</value>
+          </text>
+          <text id="/data/inputs/contact/parent/parent/parent/_id:label">
+            <value>Parent 3 ID</value>
+          </text>
+          <text id="/data/patient_id:label">
+            <value>Assocaite form with original contact</value>
+          </text>
+          <text id="/data/intro/warning_header:label">
+            <value>&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt; Warning</value>
+          </text>
+          <text id="/data/intro/warning:label">
             <value>Users should only be replaced by their supervisors. 
 
 This action can only be taken with the proper admin code.</value>
           </text>
-          <text id="/replace_user/intro/warning_header:label">
-            <value>&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt; Warning</value>
+          <text id="/data/intro/admin_code:jr:constraintMsg">
+            <value>Invalid code. Contact your administrator if you need access to this form.</value>
           </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/age_label:label">
-            <value>**Please enter date of birth**</value>
+          <text id="/data/intro/admin_code:label">
+            <value>Admin Code</value>
           </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg">
-            <value>Months must between 0 and 11</value>
+          <text id="/data/intro/admin_code:hint">
+            <value>The code is '1234'</value>
           </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/age_months:label">
-            <value>Months</value>
-          </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg">
-            <value>Age must be between 0 and 130</value>
-          </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/age_years:label">
-            <value>Years</value>
-          </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/dob_calendar:hint">
-            <value>Date of Birth</value>
-          </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
-            <value>Date must be before today</value>
-          </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/dob_calendar:label">
-            <value>Age</value>
-          </text>
-          <text id="/replace_user/new_contact/ephemeral_dob/dob_debug:label">
-            <value>Months: <output value=" /replace_user/new_contact/ephemeral_dob/ephemeral_months "/>
-Year: <output value=" /replace_user/new_contact/ephemeral_dob/ephemeral_years "/>
-DOB Approx: <output value=" /replace_user/new_contact/ephemeral_dob/dob_approx "/>
-DOB Calendar: <output value=" /replace_user/new_contact/ephemeral_dob/dob_calendar "/>
-DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></value></text>
-          <text id="/replace_user/new_contact/ephemeral_dob/dob_method/approx:label">
-            <value>Date of birth unknown</value>
-          </text>
-          <text id="/replace_user/new_contact/external_id:label">
-            <value>External ID</value>
-          </text>
-          <text id="/replace_user/new_contact/name:label">
-            <value>Full name</value>
-          </text>
-          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
-            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
-          </text>
-          <text id="/replace_user/new_contact/new_phone:label">
-            <value>Phone Number</value>
-          </text>
-          <text id="/replace_user/new_contact/parent/_id:label">
-            <value>Parent 1 ID</value>
-          </text>
-          <text id="/replace_user/new_contact/parent/parent/_id:label">
-            <value>Parent 2 ID</value>
-          </text>
-          <text id="/replace_user/new_contact/parent/parent/parent/_id:label">
-            <value>Parent 3 ID</value>
-          </text>
-          <text id="/replace_user/new_contact/phone:label">
-            <value>Phone Number</value>
-          </text>
-          <text id="/replace_user/new_contact/phone_alternate:jr:constraintMsg">
-            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
-          </text>
-          <text id="/replace_user/new_contact/phone_alternate:label">
-            <value>Alternate Phone Number</value>
-          </text>
-          <text id="/replace_user/new_contact/phone_read_only:hint">
-            <value>Inherited from existing user</value>
-          </text>
-          <text id="/replace_user/new_contact/phone_read_only:label">
-            <value>Phone Number</value>
-          </text>
-          <text id="/replace_user/new_contact/role/chw:label">
-            <value>CHW</value>
-          </text>
-          <text id="/replace_user/new_contact/role/chw_supervisor:label">
-            <value>CHW Supervisor</value>
-          </text>
-          <text id="/replace_user/new_contact/role/manager:label">
-            <value>Facility Manager</value>
-          </text>
-          <text id="/replace_user/new_contact/role/nurse:label">
-            <value>Nurse</value>
-          </text>
-          <text id="/replace_user/new_contact/role/other:label">
-            <value>Other</value>
-          </text>
-          <text id="/replace_user/new_contact/role/patient:label">
-            <value>Patient</value>
-          </text>
-          <text id="/replace_user/new_contact/role:hint">
-            <value>Inherited from existing user</value>
-          </text>
-          <text id="/replace_user/new_contact/role:label">
-            <value>Role</value>
-          </text>
-          <text id="/replace_user/new_contact/sex/female:label">
-            <value>Female</value>
-          </text>
-          <text id="/replace_user/new_contact/sex/male:label">
-            <value>Male</value>
-          </text>
-          <text id="/replace_user/new_contact/sex:label">
-            <value>Sex</value>
-          </text>
-          <text id="/replace_user/new_contact/short_name:hint">
-            <value>Please enter a short name that is preferred by the person.</value>
-          </text>
-          <text id="/replace_user/new_contact/short_name:jr:constraintMsg">
-            <value>Short name can not be more than 10 characters long.</value>
-          </text>
-          <text id="/replace_user/new_contact/short_name:label">
-            <value>Short name</value>
-          </text>
-          <text id="/replace_user/new_contact/type:label">
-            <value>Type</value>
-          </text>
-          <text id="/replace_user/new_contact:label">
+          <text id="/data/new_contact:label">
             <value>New User</value>
           </text>
-          <text id="/replace_user/outro/warning:label">
-            <value>Submitting this form will cause the current user to be *automatically logged after the next sync.*
+          <text id="/data/new_contact/parent/_id:label">
+            <value>Parent 1 ID</value>
+          </text>
+          <text id="/data/new_contact/parent/parent/_id:label">
+            <value>Parent 2 ID</value>
+          </text>
+          <text id="/data/new_contact/parent/parent/parent/_id:label">
+            <value>Parent 3 ID</value>
+          </text>
+          <text id="/data/new_contact/type:label">
+            <value>Type</value>
+          </text>
+          <text id="/data/new_contact/name:label">
+            <value>Full name</value>
+          </text>
+          <text id="/data/new_contact/short_name:jr:constraintMsg">
+            <value>Short name can not be more than 10 characters long.</value>
+          </text>
+          <text id="/data/new_contact/short_name:label">
+            <value>Short name</value>
+          </text>
+          <text id="/data/new_contact/short_name:hint">
+            <value>Please enter a short name that is preferred by the person.</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg">
+            <value>Date must be before today</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/dob_calendar:label">
+            <value>Age</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/dob_calendar:hint">
+            <value>Date of Birth</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/age_label:label">
+            <value>**Please enter date of birth**</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/age_years:jr:constraintMsg">
+            <value>Age must be between 0 and 130</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/age_years:label">
+            <value>Years</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/age_months:jr:constraintMsg">
+            <value>Months must between 0 and 11</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/age_months:label">
+            <value>Months</value>
+          </text>
+          <text id="/data/new_contact/ephemeral_dob/dob_debug:label">
+            <value> Months: <output value=" /data/new_contact/ephemeral_dob/ephemeral_months "/>
+Year: <output value=" /data/new_contact/ephemeral_dob/ephemeral_years "/>
+DOB Approx: <output value=" /data/new_contact/ephemeral_dob/dob_approx "/>
+DOB Calendar: <output value=" /data/new_contact/ephemeral_dob/dob_calendar "/>
+DOB ISO: <output value=" /data/new_contact/ephemeral_dob/dob_iso "/></value>
+          </text>
+          <text id="/data/new_contact/sex:label">
+            <value>Sex</value>
+          </text>
+          <text id="/data/new_contact/phone_read_only:label">
+            <value>Phone Number</value>
+          </text>
+          <text id="/data/new_contact/phone_read_only:hint">
+            <value>Inherited from existing user</value>
+          </text>
+          <text id="/data/new_contact/new_phone:jr:constraintMsg">
+            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
+          </text>
+          <text id="/data/new_contact/new_phone:label">
+            <value>Phone Number</value>
+          </text>
+          <text id="/data/new_contact/phone:label">
+            <value>Phone Number</value>
+          </text>
+          <text id="/data/new_contact/phone_alternate:jr:constraintMsg">
+            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
+          </text>
+          <text id="/data/new_contact/phone_alternate:label">
+            <value>Alternate Phone Number</value>
+          </text>
+          <text id="/data/new_contact/role:label">
+            <value>Role</value>
+          </text>
+          <text id="/data/new_contact/role:hint">
+            <value>Inherited from existing user</value>
+          </text>
+          <text id="/data/new_contact/external_id:label">
+            <value>External ID</value>
+          </text>
+          <text id="/data/outro/warning_header:label">
+            <value>&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt; Warning</value>
+          </text>
+          <text id="/data/outro/warning:label">
+            <value> Submitting this form will cause the current user to be *automatically logged after the next sync.*
 
 This could happen immediately if you are currently connected to the internet.
 
-After the current user is logged out, a SMS message will be sent to **<output value=" /replace_user/new_contact_phone "/>** containing a login link. Open that link to login as **<output value=" /replace_user/new_contact_name "/>**.
+After the current user is logged out, a SMS message will be sent to **<output value=" /data/new_contact_phone "/>** containing a login link. Open that link to login as **<output value=" /data/new_contact_name "/>**.
 
 Please contact your administrator if you do not receive a login link.</value>
-          </text>
-          <text id="/replace_user/outro/warning_header:label">
-            <value>&lt;i class="fa fa-exclamation-triangle"&gt;&lt;/i&gt; Warning</value>
-          </text>
-          <text id="/replace_user/patient_id:label">
-            <value>Assocaite form with original contact</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-11-23 11-51">
+        <data id="replace_user" version="2022-11-23 12-06" prefix="J1!replace_user!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -276,9 +277,9 @@ Please contact your administrator if you do not receive a login link.</value>
               <created_by_person_uuid/>
               <created_by_place_uuid/>
             </meta>
-            <created_by_doc db-doc-ref="/replace_user"/>
+            <created_by_doc db-doc-ref="/data"/>
           </new_contact>
-          <replacement_contact_id db-doc-ref=" /replace_user/new_contact "/>
+          <replacement_contact_id db-doc-ref="/data/new_contact"/>
           <new_contact_name/>
           <new_contact_phone/>
           <outro>
@@ -288,199 +289,222 @@ Please contact your administrator if you do not receive a login link.</value>
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </replace_user>
+        </data>
       </instance>
       <instance id="contact-summary"/>
-      <bind nodeset="/replace_user/inputs" relevant="false()"/>
-      <bind nodeset="/replace_user/inputs/source" type="string"/>
-      <bind nodeset="/replace_user/inputs/source_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/user/contact_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/user/facility_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/user/name" type="string"/>
-      <bind nodeset="/replace_user/inputs/user/phone" type="string"/>
-      <bind nodeset="/replace_user/inputs/contact/_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/contact/role" type="string"/>
-      <bind nodeset="/replace_user/inputs/contact/parent/_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/contact/parent/parent/_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/contact/parent/parent/parent/_id" type="string"/>
-      <bind nodeset="/replace_user/patient_id" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/replace_user/parent_1_id" type="string" calculate="../inputs/contact/parent/_id"/>
-      <bind nodeset="/replace_user/parent_2_id" type="string" calculate="../inputs/contact/parent/parent/_id"/>
-      <bind nodeset="/replace_user/parent_3_id" type="string" calculate="../inputs/contact/parent/parent/parent/_id"/>
-      <bind nodeset="/replace_user/user_phone" type="string" calculate="../inputs/user/phone"/>
-      <bind nodeset="/replace_user/contact_role" type="string" calculate="../inputs/contact/role"/>
-      <bind nodeset="/replace_user/created_by" type="string" calculate="../inputs/user/name"/>
-      <bind nodeset="/replace_user/created_by_person_uuid" type="string" calculate="../inputs/user/contact_id"/>
-      <bind nodeset="/replace_user/created_by_place_uuid" type="string" calculate="../inputs/user/facility_id"/>
-      <bind nodeset="/replace_user/intro/warning_header" readonly="true()" type="string"/>
-      <bind nodeset="/replace_user/intro/warning" readonly="true()" type="string"/>
-      <bind nodeset="/replace_user/intro/admin_code" type="string" constraint=". = '1234'" jr:constraintMsg="jr:itext('/replace_user/intro/admin_code:jr:constraintMsg')" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/parent/_id" type="string" calculate=" /replace_user/parent_1_id "/>
-      <bind nodeset="/replace_user/new_contact/parent/parent" relevant=" /replace_user/parent_2_id  != ''"/>
-      <bind nodeset="/replace_user/new_contact/parent/parent/_id" type="string" calculate=" /replace_user/parent_2_id "/>
-      <bind nodeset="/replace_user/new_contact/parent/parent/parent" relevant=" /replace_user/parent_3_id  != ''"/>
-      <bind nodeset="/replace_user/new_contact/parent/parent/parent/_id" type="string" calculate=" /replace_user/parent_3_id "/>
-      <bind nodeset="/replace_user/new_contact/type" type="string" calculate="&quot;person&quot;"/>
-      <bind nodeset="/replace_user/new_contact/name" type="string" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/short_name" type="string" jr:constraintMsg="jr:itext('/replace_user/new_contact/short_name:jr:constraintMsg')" constraint="string-length(.) &lt;= 10"/>
-      <bind nodeset="/replace_user/new_contact/date_of_birth" type="string" required="true()" calculate=" /replace_user/new_contact/ephemeral_dob/dob_iso "/>
-      <bind nodeset="/replace_user/new_contact/date_of_birth_method" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_method "/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')" required="true()" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')" required="true()" constraint=". &gt;= 0 and . &lt;= 130" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_months" type="int" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 11" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_method" type="select"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  + 12, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months )"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%Y&quot;) -  /replace_user/new_contact/ephemeral_dob/age_years  - 1, format-date-time(today(),&quot;%Y&quot;) - /replace_user/new_contact/ephemeral_dob/age_years )"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_approx" type="string" calculate="concat(string( /replace_user/new_contact/ephemeral_dob/ephemeral_years ),'-',if( /replace_user/new_contact/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /replace_user/new_contact/ephemeral_dob/ephemeral_months )),  /replace_user/new_contact/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')), 
- /replace_user/new_contact/ephemeral_dob/dob_calendar ,
- /replace_user/new_contact/ephemeral_dob/dob_approx )"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time( /replace_user/new_contact/ephemeral_dob/dob_raw ,&quot;%Y-%m-%d&quot;)"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
-      <bind nodeset="/replace_user/new_contact/sex" type="select1" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/phone_read_only" type="string" readonly="true()" calculate=" /replace_user/user_phone " relevant=" /replace_user/user_phone  != ''"/>
-      <bind nodeset="/replace_user/new_contact/new_phone" type="tel" jr:constraintMsg="jr:itext('/replace_user/new_contact/new_phone:jr:constraintMsg')" required="true()" constraint="true()" relevant=" /replace_user/user_phone  = ''"/>
-      <bind nodeset="/replace_user/new_contact/phone" type="string" calculate="coalesce( /replace_user/user_phone ,  /replace_user/new_contact/new_phone )"/>
-      <bind nodeset="/replace_user/new_contact/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone_alternate:jr:constraintMsg')" constraint="true()"/>
-      <bind nodeset="/replace_user/new_contact/role" type="select1" readonly="true()" calculate=" /replace_user/contact_role "/>
-      <bind nodeset="/replace_user/new_contact/external_id" type="string"/>
-      <bind nodeset="/replace_user/new_contact/meta/created_by" type="string" calculate="../../../created_by"/>
-      <bind nodeset="/replace_user/new_contact/meta/created_by_person_uuid" type="string" calculate="../../../created_by_person_uuid"/>
-      <bind nodeset="/replace_user/new_contact/meta/created_by_place_uuid" type="string" calculate="../../../created_by_place_uuid"/>
-      <bind nodeset="/replace_user/new_contact/created_by_doc" type="string" calculate="."/>
-      <bind nodeset="/replace_user/replacement_contact_id" type="string" calculate=" /replace_user/new_contact "/>
-      <bind nodeset="/replace_user/new_contact_name" type="string" calculate="../new_contact/name"/>
-      <bind nodeset="/replace_user/new_contact_phone" type="string" calculate="../new_contact/phone"/>
-      <bind nodeset="/replace_user/outro/warning_header" readonly="true()" type="string"/>
-      <bind nodeset="/replace_user/outro/warning" readonly="true()" type="string"/>
-      <bind nodeset="/replace_user/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <instance id="user-contact-summary"/>
+      <instance id="select_dob_method">
+        <root>
+          <item>
+            <itextId>select_dob_method-0</itextId>
+            <name>approx</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="roles">
+        <root>
+          <item>
+            <itextId>roles-0</itextId>
+            <name>chw</name>
+          </item>
+          <item>
+            <itextId>roles-1</itextId>
+            <name>chw_supervisor</name>
+          </item>
+          <item>
+            <itextId>roles-2</itextId>
+            <name>nurse</name>
+          </item>
+          <item>
+            <itextId>roles-3</itextId>
+            <name>manager</name>
+          </item>
+          <item>
+            <itextId>roles-4</itextId>
+            <name>patient</name>
+          </item>
+          <item>
+            <itextId>roles-5</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <itextId>male_female-0</itextId>
+            <name>male</name>
+          </item>
+          <item>
+            <itextId>male_female-1</itextId>
+            <name>female</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/inputs" relevant="false()"/>
+      <bind nodeset="/data/inputs/source" type="string"/>
+      <bind nodeset="/data/inputs/source_id" type="string"/>
+      <bind nodeset="/data/inputs/user/contact_id" type="string"/>
+      <bind nodeset="/data/inputs/user/facility_id" type="string"/>
+      <bind nodeset="/data/inputs/user/name" type="string"/>
+      <bind nodeset="/data/inputs/user/phone" type="string"/>
+      <bind nodeset="/data/inputs/contact/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/role" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/_id" type="string"/>
+      <bind nodeset="/data/inputs/contact/parent/parent/parent/_id" type="string"/>
+      <bind nodeset="/data/patient_id" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/data/parent_1_id" type="string" calculate="../inputs/contact/parent/_id"/>
+      <bind nodeset="/data/parent_2_id" type="string" calculate="../inputs/contact/parent/parent/_id"/>
+      <bind nodeset="/data/parent_3_id" type="string" calculate="../inputs/contact/parent/parent/parent/_id"/>
+      <bind nodeset="/data/user_phone" type="string" calculate="../inputs/user/phone"/>
+      <bind nodeset="/data/contact_role" type="string" calculate="../inputs/contact/role"/>
+      <bind nodeset="/data/created_by" type="string" calculate="../inputs/user/name"/>
+      <bind nodeset="/data/created_by_person_uuid" type="string" calculate="../inputs/user/contact_id"/>
+      <bind nodeset="/data/created_by_place_uuid" type="string" calculate="../inputs/user/facility_id"/>
+      <bind nodeset="/data/intro/warning_header" readonly="true()" type="string"/>
+      <bind nodeset="/data/intro/warning" readonly="true()" type="string"/>
+      <bind nodeset="/data/intro/admin_code" type="string" required="true()" constraint=". = '1234'" jr:constraintMsg="jr:itext('/data/intro/admin_code:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/parent/_id" type="string" calculate=" /data/parent_1_id "/>
+      <bind nodeset="/data/new_contact/parent/parent" relevant=" /data/parent_2_id  != ''"/>
+      <bind nodeset="/data/new_contact/parent/parent/_id" type="string" calculate=" /data/parent_2_id "/>
+      <bind nodeset="/data/new_contact/parent/parent/parent" relevant=" /data/parent_3_id  != ''"/>
+      <bind nodeset="/data/new_contact/parent/parent/parent/_id" type="string" calculate=" /data/parent_3_id "/>
+      <bind nodeset="/data/new_contact/type" type="string" calculate="&quot;person&quot;"/>
+      <bind nodeset="/data/new_contact/name" type="string" required="true()"/>
+      <bind nodeset="/data/new_contact/short_name" type="string" constraint="string-length(.) &lt;= 10" jr:constraintMsg="jr:itext('/data/new_contact/short_name:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/date_of_birth" type="string" required="true()" calculate=" /data/new_contact/ephemeral_dob/dob_iso "/>
+      <bind nodeset="/data/new_contact/date_of_birth_method" type="string" calculate=" /data/new_contact/ephemeral_dob/dob_method "/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/dob_calendar" type="date" required="true()" relevant="not(selected( /data/new_contact/ephemeral_dob/dob_method ,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="jr:itext('/data/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected( /data/new_contact/ephemeral_dob/dob_method ,'approx')"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/age_years" type="int" required="true()" relevant="selected( /data/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="jr:itext('/data/new_contact/ephemeral_dob/age_years:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/age_months" type="int" relevant="selected( /data/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="jr:itext('/data/new_contact/ephemeral_dob/age_months:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/dob_method" type="string"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /data/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%m&quot;) -  /data/new_contact/ephemeral_dob/age_months  + 12, format-date-time(today(),&quot;%m&quot;) -  /data/new_contact/ephemeral_dob/age_months )"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /data/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%Y&quot;) -  /data/new_contact/ephemeral_dob/age_years  - 1, format-date-time(today(),&quot;%Y&quot;) - /data/new_contact/ephemeral_dob/age_years )"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/dob_approx" type="string" calculate="concat(string( /data/new_contact/ephemeral_dob/ephemeral_years ),'-',if( /data/new_contact/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/new_contact/ephemeral_dob/ephemeral_months )),  /data/new_contact/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /data/new_contact/ephemeral_dob/dob_method ,'approx')), &#10; /data/new_contact/ephemeral_dob/dob_calendar ,&#10; /data/new_contact/ephemeral_dob/dob_approx )"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time( /data/new_contact/ephemeral_dob/dob_raw ,&quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/data/new_contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
+      <bind nodeset="/data/new_contact/sex" type="string" required="true()"/>
+      <bind nodeset="/data/new_contact/phone_read_only" type="string" relevant=" /data/user_phone  != ''" calculate=" /data/user_phone " readonly="true()"/>
+      <bind nodeset="/data/new_contact/new_phone" type="tel" required="true()" relevant=" /data/user_phone  = ''" constraint="true()" jr:constraintMsg="jr:itext('/data/new_contact/new_phone:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/phone" type="string" calculate="coalesce( /data/user_phone ,  /data/new_contact/new_phone )"/>
+      <bind nodeset="/data/new_contact/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/new_contact/phone_alternate:jr:constraintMsg')"/>
+      <bind nodeset="/data/new_contact/role" type="string" calculate=" /data/contact_role " readonly="true()"/>
+      <bind nodeset="/data/new_contact/external_id" type="string"/>
+      <bind nodeset="/data/new_contact/meta/created_by" type="string" calculate="../../../created_by"/>
+      <bind nodeset="/data/new_contact/meta/created_by_person_uuid" type="string" calculate="../../../created_by_person_uuid"/>
+      <bind nodeset="/data/new_contact/meta/created_by_place_uuid" type="string" calculate="../../../created_by_place_uuid"/>
+      <bind nodeset="/data/new_contact/created_by_doc" type="string" calculate="."/>
+      <bind nodeset="/data/replacement_contact_id" type="string" calculate=" /data/new_contact "/>
+      <bind nodeset="/data/new_contact_name" type="string" calculate="../new_contact/name"/>
+      <bind nodeset="/data/new_contact_phone" type="string" calculate="../new_contact/phone"/>
+      <bind nodeset="/data/outro/warning_header" readonly="true()" type="string"/>
+      <bind nodeset="/data/outro/warning" readonly="true()" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/replace_user/inputs">
-      <group ref="/replace_user/inputs/user"/>
-      <group ref="/replace_user/inputs/contact">
-        <input appearance="select-contact type-person" ref="/replace_user/inputs/contact/_id">
-          <label ref="jr:itext('/replace_user/inputs/contact/_id:label')"/>
+    <group appearance="field-list" ref="/data/inputs">
+      <group ref="/data/inputs/user"/>
+      <group ref="/data/inputs/contact">
+        <input ref="/data/inputs/contact/_id" appearance="select-contact type-person">
+          <label ref="jr:itext('/data/inputs/contact/_id:label')"/>
         </input>
-        <group appearance="hidden" ref="/replace_user/inputs/contact/parent">
-          <group ref="/replace_user/inputs/contact/parent/parent">
-            <group ref="/replace_user/inputs/contact/parent/parent/parent"/>
+        <group appearance="hidden" ref="/data/inputs/contact/parent">
+          <group ref="/data/inputs/contact/parent/parent">
+            <group ref="/data/inputs/contact/parent/parent/parent"/>
           </group>
         </group>
       </group>
     </group>
-    <group appearance="field-list summary" ref="/replace_user/intro">
-      <input appearance="h1 red" ref="/replace_user/intro/warning_header">
-        <label ref="jr:itext('/replace_user/intro/warning_header:label')"/>
+    <group appearance="field-list summary" ref="/data/intro">
+      <input ref="/data/intro/warning_header" appearance="h1 red">
+        <label ref="jr:itext('/data/intro/warning_header:label')"/>
       </input>
-      <input ref="/replace_user/intro/warning">
-        <label ref="jr:itext('/replace_user/intro/warning:label')"/>
+      <input ref="/data/intro/warning">
+        <label ref="jr:itext('/data/intro/warning:label')"/>
       </input>
-      <input ref="/replace_user/intro/admin_code">
-        <label ref="jr:itext('/replace_user/intro/admin_code:label')"/>
-        <hint ref="jr:itext('/replace_user/intro/admin_code:hint')"/>
+      <input ref="/data/intro/admin_code">
+        <label ref="jr:itext('/data/intro/admin_code:label')"/>
+        <hint ref="jr:itext('/data/intro/admin_code:hint')"/>
       </input>
     </group>
-    <group appearance="field-list" ref="/replace_user/new_contact">
-      <label ref="jr:itext('/replace_user/new_contact:label')"/>
-      <group appearance="hidden" ref="/replace_user/new_contact/parent">
-        <group appearance="hidden" ref="/replace_user/new_contact/parent/parent">
-          <group ref="/replace_user/new_contact/parent/parent/parent"/>
+    <group appearance="field-list" ref="/data/new_contact">
+      <label ref="jr:itext('/data/new_contact:label')"/>
+      <group appearance="hidden" ref="/data/new_contact/parent">
+        <group appearance="hidden" ref="/data/new_contact/parent/parent">
+          <group ref="/data/new_contact/parent/parent/parent"/>
         </group>
       </group>
-      <input ref="/replace_user/new_contact/name">
-        <label ref="jr:itext('/replace_user/new_contact/name:label')"/>
+      <input ref="/data/new_contact/name">
+        <label ref="jr:itext('/data/new_contact/name:label')"/>
       </input>
-      <input ref="/replace_user/new_contact/short_name">
-        <label ref="jr:itext('/replace_user/new_contact/short_name:label')"/>
-        <hint ref="jr:itext('/replace_user/new_contact/short_name:hint')"/>
+      <input ref="/data/new_contact/short_name">
+        <label ref="jr:itext('/data/new_contact/short_name:label')"/>
+        <hint ref="jr:itext('/data/new_contact/short_name:hint')"/>
       </input>
-      <group ref="/replace_user/new_contact/ephemeral_dob">
-        <input ref="/replace_user/new_contact/ephemeral_dob/dob_calendar">
-          <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:label')"/>
-          <hint ref="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:hint')"/>
+      <group ref="/data/new_contact/ephemeral_dob">
+        <input ref="/data/new_contact/ephemeral_dob/dob_calendar">
+          <label ref="jr:itext('/data/new_contact/ephemeral_dob/dob_calendar:label')"/>
+          <hint ref="jr:itext('/data/new_contact/ephemeral_dob/dob_calendar:hint')"/>
         </input>
-        <input ref="/replace_user/new_contact/ephemeral_dob/age_label">
-          <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/age_label:label')"/>
+        <input ref="/data/new_contact/ephemeral_dob/age_label">
+          <label ref="jr:itext('/data/new_contact/ephemeral_dob/age_label:label')"/>
         </input>
-        <input ref="/replace_user/new_contact/ephemeral_dob/age_years">
-          <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:label')"/>
+        <input ref="/data/new_contact/ephemeral_dob/age_years">
+          <label ref="jr:itext('/data/new_contact/ephemeral_dob/age_years:label')"/>
         </input>
-        <input ref="/replace_user/new_contact/ephemeral_dob/age_months">
-          <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:label')"/>
+        <input ref="/data/new_contact/ephemeral_dob/age_months">
+          <label ref="jr:itext('/data/new_contact/ephemeral_dob/age_months:label')"/>
         </input>
-        <select appearance="horizontal" ref="/replace_user/new_contact/ephemeral_dob/dob_method">
-          <item>
-            <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_method/approx:label')"/>
-            <value>approx</value>
-          </item>
+        <select ref="/data/new_contact/ephemeral_dob/dob_method" appearance="horizontal">
+          <itemset nodeset="instance('select_dob_method')/root/item">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
         </select>
-        <input ref="/replace_user/new_contact/ephemeral_dob/dob_debug">
-          <label ref="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_debug:label')"/>
+        <input ref="/data/new_contact/ephemeral_dob/dob_debug">
+          <label ref="jr:itext('/data/new_contact/ephemeral_dob/dob_debug:label')"/>
         </input>
       </group>
-      <select1 appearance="horizontal" ref="/replace_user/new_contact/sex">
-        <label ref="jr:itext('/replace_user/new_contact/sex:label')"/>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/sex/male:label')"/>
-          <value>male</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/sex/female:label')"/>
-          <value>female</value>
-        </item>
+      <select1 ref="/data/new_contact/sex" appearance="horizontal">
+        <label ref="jr:itext('/data/new_contact/sex:label')"/>
+        <itemset nodeset="instance('male_female')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <input ref="/replace_user/new_contact/phone_read_only">
-        <label ref="jr:itext('/replace_user/new_contact/phone_read_only:label')"/>
-        <hint ref="jr:itext('/replace_user/new_contact/phone_read_only:hint')"/>
+      <input ref="/data/new_contact/phone_read_only">
+        <label ref="jr:itext('/data/new_contact/phone_read_only:label')"/>
+        <hint ref="jr:itext('/data/new_contact/phone_read_only:hint')"/>
       </input>
-      <input ref="/replace_user/new_contact/new_phone">
-        <label ref="jr:itext('/replace_user/new_contact/new_phone:label')"/>
+      <input ref="/data/new_contact/new_phone">
+        <label ref="jr:itext('/data/new_contact/new_phone:label')"/>
       </input>
-      <input ref="/replace_user/new_contact/phone_alternate">
-        <label ref="jr:itext('/replace_user/new_contact/phone_alternate:label')"/>
+      <input ref="/data/new_contact/phone_alternate">
+        <label ref="jr:itext('/data/new_contact/phone_alternate:label')"/>
       </input>
-      <select1 appearance="minimal" ref="/replace_user/new_contact/role">
-        <label ref="jr:itext('/replace_user/new_contact/role:label')"/>
-        <hint ref="jr:itext('/replace_user/new_contact/role:hint')"/>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/role/chw:label')"/>
-          <value>chw</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/role/chw_supervisor:label')"/>
-          <value>chw_supervisor</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/role/nurse:label')"/>
-          <value>nurse</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/role/manager:label')"/>
-          <value>manager</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/role/patient:label')"/>
-          <value>patient</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/replace_user/new_contact/role/other:label')"/>
-          <value>other</value>
-        </item>
+      <select1 ref="/data/new_contact/role" appearance="minimal">
+        <label ref="jr:itext('/data/new_contact/role:label')"/>
+        <hint ref="jr:itext('/data/new_contact/role:hint')"/>
+        <itemset nodeset="instance('roles')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
-      <input ref="/replace_user/new_contact/external_id">
-        <label ref="jr:itext('/replace_user/new_contact/external_id:label')"/>
+      <input ref="/data/new_contact/external_id">
+        <label ref="jr:itext('/data/new_contact/external_id:label')"/>
       </input>
-      <group appearance="hidden" ref="/replace_user/new_contact/meta"/>
+      <group appearance="hidden" ref="/data/new_contact/meta"/>
     </group>
-    <group appearance="field-list summary" ref="/replace_user/outro">
-      <input appearance="h1 red" ref="/replace_user/outro/warning_header">
-        <label ref="jr:itext('/replace_user/outro/warning_header:label')"/>
+    <group appearance="field-list summary" ref="/data/outro">
+      <input ref="/data/outro/warning_header" appearance="h1 red">
+        <label ref="jr:itext('/data/outro/warning_header:label')"/>
       </input>
-      <input ref="/replace_user/outro/warning">
-        <label ref="jr:itext('/replace_user/outro/warning:label')"/>
+      <input ref="/data/outro/warning">
+        <label ref="jr:itext('/data/outro/warning:label')"/>
       </input>
     </group>
   </h:body>

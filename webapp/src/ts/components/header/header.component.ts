@@ -1,5 +1,5 @@
 import { BaseMenuComponent } from '@mm-components/base-menu/base-menu.component';
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
@@ -12,7 +12,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { RouterLink } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
 
 import { TranslatePipe } from '@ngx-translate/core';
@@ -50,7 +50,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   showPrivacyPolicy = false;
   // replicationStatus;
   currentTab;
-  unreadCount = {};
+  bubbleCount = {};
   permittedTabs: HeaderTab[] = [];
 
   constructor(
@@ -75,18 +75,21 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   }
 
   private additionalSubscriptions(){
-    const currentTab = this.store.select(Selectors.getCurrentTab)
+    const currentTab = this.store
+      .select(Selectors.getCurrentTab)
       .subscribe(tab => this.currentTab = tab);
     this.subscriptions.add(currentTab);
 
-    const showPrivacyPolicy = this.store.select(Selectors.getShowPrivacyPolicy)
+    const showPrivacyPolicy = this.store
+      .select(Selectors.getShowPrivacyPolicy)
       .subscribe(show => this.showPrivacyPolicy = show);
     this.subscriptions.add(showPrivacyPolicy);
 
 
-    const unreadCount = this.store.select(Selectors.getUnreadCount)
-      .subscribe(count => this.unreadCount = count);
-    this.subscriptions.add(unreadCount);
+    const bubbleCounterObserver = this.store
+      .select(Selectors.getBubbleCounter)
+      .subscribe(count => this.bubbleCount = count);
+    this.subscriptions.add(bubbleCounterObserver);
   }
 
   private getHeaderTabs() {
