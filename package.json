@@ -185,7 +185,6 @@
     "typescript": "5.7.3",
     "uglify-js": "^3.19.3",
     "util": "^0.12.5",
-    "wdio-chromedriver-service": "^8.1.1",
     "webpack-bundle-analyzer": "^4.9.1",
     "xhr-mock": "^2.5.1",
     "xml-js": "^1.6.11"
