@@ -172,7 +172,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`, `parent`,
      * `type`, `contact_type`
      */
-    const curriedFn = async <T extends Person | PersonWithLineage>(updated: T): Promise<T> => {
+    const curriedFn = async <T extends Input.v1.UpdatePersonInput>(updated: T): Promise<T> => {
       if (!isIdentifiable(updated)) {
         throw new InvalidArgumentError('Updated person data not provided.');
       }

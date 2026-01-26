@@ -1,6 +1,7 @@
 import { Doc, isDoc } from '../libs/doc';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { assertHasRequiredField, DataObject, Nullable, Page } from '../libs/core';
+import * as Qualifier from '../qualifier';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Person from '../person';
 import { createDoc, fetchAndFilter, getDocById, queryDocsByKey, updateDoc } from './libs/doc';
@@ -11,7 +12,6 @@ import { assertFieldsUnchanged, getReportedDateTimestamp, validateCursor } from 
 import * as Input from '../input';
 import { assertHasValidParentType, assertSameParentLineage, fetchHydratedDoc, minifyDoc } from './libs/lineage';
 import { assertPersonInput } from '../libs/parameter-validators';
-import * as Qualifier from '../qualifier';
 
 const DEFAULT_PERSON_TYPE = {
   id: 'person',
@@ -148,7 +148,7 @@ export namespace v1 {
     const getPerson = get(dataContext);
     const minifyLineage = minifyDoc(medicDb);
 
-    return async <T extends Person.v1.Person | Person.v1.PersonWithLineage>(updatedPerson: T): Promise<T> => {
+    return async <T extends Input.v1.UpdatePersonInput>(updatedPerson: T): Promise<T> => {
       if (!isPerson(settings, updatedPerson)) {
         throw new InvalidArgumentError('Valid _id, _rev, and type fields must be provided.');
       }

@@ -88,6 +88,9 @@ export function assertReportInput(data: unknown): asserts data is Input.v1.Repor
   assertHasRequiredField(data, { name: 'contact', type: 'string' }, InvalidArgumentError);
   assertDoesNotHaveField(data, '_id', InvalidArgumentError);
   assertDoesNotHaveField(data, '_rev', InvalidArgumentError);
+  if (data.type && data.type !== 'data_record') {
+    throw new InvalidArgumentError('Report type must be "data_record".');
+  }
 }
 
 /** @internal */

@@ -148,10 +148,6 @@ export namespace v1 {
 
     return async (input: Input.v1.ReportInput): Promise<Report.v1.Report> => {
       assertReportInput(input);
-      if (input.type && input.type !== 'data_record') {
-        throw new InvalidArgumentError('Report type must be "data_record".');
-      }
-
       const [contact, supportedForms] = await Promise.all([
         getMedicDoc(input.contact),
         getForms()
