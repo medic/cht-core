@@ -546,7 +546,7 @@ const missingFields = data => {
   }
 
   const userRoles = getDataRoles(data);
-  if (!userRoles) {
+  if (!userRoles || !userRoles.length) {
     required.push('type or roles');
   } else if (roles.isOffline(userRoles)) {
     required.push('place', 'contact');
@@ -619,7 +619,7 @@ const saveUserSettingsUpdates = async (userSettings) => {
 
 const validateFacilityIsNeeded = (data, user) => {
   const userRoles = data.roles || user?.roles;
-  if (userRoles && roles.isOffline(userRoles)) {
+  if (userRoles && userRoles.length && roles.isOffline(userRoles)) {
     return Promise.reject(error400(
       'Place field is required for offline users',
       'field is required',
@@ -672,7 +672,7 @@ const validateNewContact = (data, user) => {
 
 const validateContactForRoles = (data, user) => {
   const userRoles = data.roles || user?.roles;
-  if (userRoles.roles && roles.isOffline(userRoles.roles)) {
+  if (userRoles.roles && userRoles.roles.length && roles.isOffline(userRoles.roles)) {
     return Promise.reject(error400(
       'Contact field is required for offline users',
       'field is required',
