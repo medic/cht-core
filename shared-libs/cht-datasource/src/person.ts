@@ -6,9 +6,11 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
+import { getPagedGenerator, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import * as Input from './input';
+import { InvalidArgumentError } from './libs/error';
 
 /** */
 export namespace v1 {
@@ -115,5 +117,60 @@ export namespace v1 {
       return getPagedGenerator(getPage, personType);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.create, Remote.Person.v1.create);
+    /**
+     * Creates a new person record.
+     * @param input input fields for creating a person
+     * @returns the created person record
+     * @throws InvalidArgumentError if the input does not contain required fields
+     * @throws InvalidArgumentError if the input's parent field is not one of the allowed parents in the config
+     * @throws InvalidArgumentError if the required fields do not have the expected type
+     * @throws Error if input is not an object
+     * @throws Error if type is not provided or is empty
+     * @throws Error if name is not provided or is empty
+     * @throws Error if parent is not provided or is empty
+     * @throws Error if reported_date is not in a valid format.
+     * Valid formats are 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     */
+    const curriedFn = async (input: Input.v1.PersonInput): Promise<Person> => {
+      return fn(input);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a person from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a person.
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Person.v1.update, Remote.Person.v1.update);
+    /**
+     * Returns the updated Person Doc for the provided updateInput
+     * @param updateInput the Doc containing updated fields
+     * @returns updated person Doc
+     * @throws InvalidArgumentError if updateInput has changes in immutable fields
+     * @throws InvalidArgumentError if updateInput does not contain required fields
+     * @throws InvalidArgumentError if updateInput fields are not of expected type
+     */
+    const curriedFn = async (updateInput: unknown): Promise<Person> => {
+      if (!isRecord(updateInput)) {
+        throw new InvalidArgumentError('Invalid person update input');
+      }
+      return fn(updateInput);
+    };
+    return curriedFn;
   };
 }

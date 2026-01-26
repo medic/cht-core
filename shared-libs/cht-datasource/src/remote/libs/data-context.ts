@@ -83,3 +83,46 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
     throw error;
   }
 };
+
+/** @internal */
+export const postResource = (context: RemoteDataContext, path: string) => async <T>(
+  body: Record<string, unknown>,
+): Promise<T> => {
+  return await requestWithBody(context, path, body, 'POST');
+};
+
+/** @internal */
+export const putResource = (context: RemoteDataContext, path: string) => async <T>(
+  id: string,
+  body: Record<string, unknown>,
+): Promise<T> => {
+  return await requestWithBody(context, `${path}/${id}`, body, 'PUT');
+};
+
+const requestWithBody = async <T>(
+  context: RemoteDataContext,
+  path: string,
+  body: Record<string, unknown>,
+  method: string
+): Promise<T> => {
+  try {
+    const response = await fetch(`${context.url}/${path}`, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
+    });
+    if (response.status === 400) {
+      const errorMessage = await response.text();
+      throw new InvalidArgumentError(errorMessage);
+    } else if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    logger.error(`Failed to ${method} ${JSON.stringify(body)} to ${context.url}/${path}.`, error);
+    throw error;
+  }
+};

@@ -28,7 +28,7 @@ describe('local lineage lib', () => {
 
     expect(result).to.deep.equal([]);
     expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
-    expect(queryFn.calledOnceWithExactly([uuid], [uuid, {}])).to.be.true;
+    expect(queryFn.calledOnceWithExactly([ uuid ], [ uuid, {} ])).to.be.true;
   });
 
   describe('getPrimaryContactIds', () => {
@@ -37,9 +37,9 @@ describe('local lineage lib', () => {
       const place1 = { _id: 'place-1', _rev: 'rev-2', contact: { _id: 'contact-1' } };
       const place2 = { _id: 'place-2', _rev: 'rev-3', contact: { _id: 'contact-2' } };
 
-      const result = Lineage.getPrimaryContactIds([place0, place1, place2]);
+      const result = Lineage.getPrimaryContactIds([ place0, place1, place2 ]);
 
-      expect(result).to.deep.equal([place0.contact._id, place1.contact._id, place2.contact._id]);
+      expect(result).to.deep.equal([ place0.contact._id, place1.contact._id, place2.contact._id ]);
     });
 
     [
@@ -49,7 +49,7 @@ describe('local lineage lib', () => {
       { _id: 'place-0', _rev: 'rev-1', contact: { _id: '' } }
     ].forEach((place) => {
       it(`returns nothing for ${JSON.stringify(place)}`, () => {
-        const result = Lineage.getPrimaryContactIds([place]);
+        const result = Lineage.getPrimaryContactIds([ place ]);
         expect(result).to.be.empty;
       });
     });
@@ -58,7 +58,7 @@ describe('local lineage lib', () => {
   describe('hydratePrimaryContact', () => {
     it('returns a place with its contact hydrated', () => {
       const contact = { _id: 'contact-0', _rev: 'rev-0', type: 'person' };
-      const contacts = [{ _id: 'contact-1', _rev: 'rev-1', type: 'person' }, contact];
+      const contacts = [ { _id: 'contact-1', _rev: 'rev-1', type: 'person' }, contact ];
       const place0 = { _id: 'place-0', _rev: 'rev-1', contact: { _id: 'contact-0' } };
 
       const result = Lineage.hydratePrimaryContact(contacts)(place0);
@@ -125,7 +125,7 @@ describe('local lineage lib', () => {
       const place0 = { _id: 'place-0', _rev: 'rev-1' };
       const place1 = { _id: 'place-1', _rev: 'rev-2' };
       const place2 = { _id: 'place-2', _rev: 'rev-3' };
-      const places = [place0, place1, place2];
+      const places = [ place0, place1, place2 ];
 
       const result = Lineage.hydrateLineage(contact, places);
 
@@ -143,19 +143,21 @@ describe('local lineage lib', () => {
     });
 
     it('fills in missing lineage gaps from contact\'s denormalized parent data', () => {
-      const contact = { _id: 'contact-0', _rev: 'rev-0', type: 'person', parent: {
-        _id: 'place-0',
-        parent: {
-          _id: 'place-1',
+      const contact = {
+        _id: 'contact-0', _rev: 'rev-0', type: 'person', parent: {
+          _id: 'place-0',
           parent: {
-            _id: 'place-2'
+            _id: 'place-1',
+            parent: {
+              _id: 'place-2'
+            }
           }
         }
-      } };
+      };
       const place0 = { _id: 'place-0', _rev: 'rev-1' };
       const place1 = null;
       const place2 = { _id: 'place-2', _rev: 'rev-3' };
-      const places = [place0, place1, place2, null];
+      const places = [ place0, place1, place2, null ];
 
       const result = Lineage.hydrateLineage(contact, places);
 
@@ -218,10 +220,10 @@ describe('local lineage lib', () => {
       const place2 = { _id: 'place2', _rev: 'rev' };
       const contact0 = { _id: 'contact0', _rev: 'rev' };
       const contact1 = { _id: 'contact1', _rev: 'rev' };
-      const lineageContacts = [place0, place1, place2];
+      const lineageContacts = [ place0, place1, place2 ];
 
-      getPrimaryContactIds.returns([contact0._id, contact1._id]);
-      getDocsByIdsInner.resolves([contact0, contact1]);
+      getPrimaryContactIds.returns([ contact0._id, contact1._id ]);
+      getDocsByIdsInner.resolves([ contact0, contact1 ]);
       const place0WithContact = { ...place0, contact: contact0 };
       const place1WithContact = { ...place1, contact: contact1 };
       hydratePrimaryContactInner.withArgs(place0).returns(place0WithContact);
@@ -237,13 +239,13 @@ describe('local lineage lib', () => {
       expect(result).to.equal(copiedContact);
       expect(getPrimaryContactIds.calledOnceWithExactly(lineageContacts)).to.be.true;
       expect(getDocsByIdsOuter.calledOnceWithExactly(medicDb)).to.be.true;
-      expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id])).to.be.true;
-      expect(hydratePrimaryContactOuter.calledOnceWithExactly([contact0, contact1])).to.be.true;
+      expect(getDocsByIdsInner.calledOnceWithExactly([ contact0._id, contact1._id ])).to.be.true;
+      expect(hydratePrimaryContactOuter.calledOnceWithExactly([ contact0, contact1 ])).to.be.true;
       expect(hydratePrimaryContactInner.callCount).to.be.equal(3);
       expect(hydratePrimaryContactInner.calledWith(place0)).to.be.true;
       expect(hydratePrimaryContactInner.calledWith(place1)).to.be.true;
       expect(hydratePrimaryContactInner.calledWith(place2)).to.be.true;
-      expect(hydrateLineage.calledOnceWithExactly(place0WithContact, [place1WithContact, place2])).to.be.true;
+      expect(hydrateLineage.calledOnceWithExactly(place0WithContact, [ place1WithContact, place2 ])).to.be.true;
       expect(deepCopy.calledOnceWithExactly(contactWithLineage)).to.be.true;
     });
 
@@ -254,10 +256,10 @@ describe('local lineage lib', () => {
       const place2 = { _id: 'place2', _rev: 'rev' };
       const contact0 = { _id: 'contact0', _rev: 'rev' };
       const contact1 = { _id: 'contact1', _rev: 'rev' };
-      const lineageContacts = [place0, place1, place2];
+      const lineageContacts = [ place0, place1, place2 ];
 
-      getPrimaryContactIds.returns([contact0._id, contact1._id, person._id]);
-      getDocsByIdsInner.resolves([contact0, contact1]);
+      getPrimaryContactIds.returns([ contact0._id, contact1._id, person._id ]);
+      getDocsByIdsInner.resolves([ contact0, contact1 ]);
       const place0WithContact = { ...place0, contact: contact0 };
       const place1WithContact = { ...place1, contact: contact1 };
       hydratePrimaryContactInner.withArgs(place0).returns(place0WithContact);
@@ -275,13 +277,13 @@ describe('local lineage lib', () => {
       expect(result).to.equal(copiedPerson);
       expect(getPrimaryContactIds.calledOnceWithExactly(lineageContacts)).to.be.true;
       expect(getDocsByIdsOuter.calledOnceWithExactly(medicDb)).to.be.true;
-      expect(getDocsByIdsInner.calledOnceWithExactly([contact0._id, contact1._id])).to.be.true;
-      expect(hydratePrimaryContactOuter.calledOnceWithExactly([person, contact0, contact1])).to.be.true;
+      expect(getDocsByIdsInner.calledOnceWithExactly([ contact0._id, contact1._id ])).to.be.true;
+      expect(hydratePrimaryContactOuter.calledOnceWithExactly([ person, contact0, contact1 ])).to.be.true;
       expect(hydratePrimaryContactInner.callCount).to.be.equal(3);
       expect(hydratePrimaryContactInner.calledWith(place0)).to.be.true;
       expect(hydratePrimaryContactInner.calledWith(place1)).to.be.true;
       expect(hydratePrimaryContactInner.calledWith(place2)).to.be.true;
-      expect(hydrateLineage.calledOnceWithExactly(person, [place0WithContact, place1WithContact, place2])).to.be.true;
+      expect(hydrateLineage.calledOnceWithExactly(person, [ place0WithContact, place1WithContact, place2 ])).to.be.true;
       expect(deepCopy.calledOnceWithExactly(personWithLineage)).to.be.true;
     });
   });

@@ -3,20 +3,20 @@ const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const {expect} = require('chai');
+const { expect } = require('chai');
 const { USER_ROLES } = require('@medic/constants');
 const uuid = require('uuid').v4;
 
 describe('Report API', () => {
   const contact0Id = uuid();
-  const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
-  const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
+  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
+  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
-  const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
+  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
-    contact: {_id: contact0Id},
+    contact: { _id: contact0Id },
     parent: {
       _id: place1._id,
       parent: {
@@ -151,7 +151,7 @@ describe('Report API', () => {
     ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
-          path: `/api/v1/report/${patient._id}`, auth: {username: user.username, password: user.password},
+          path: `/api/v1/report/${patient._id}`, auth: { username: user.username, password: user.password },
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
@@ -176,7 +176,7 @@ describe('Report API', () => {
           }
         }
       };
-      expect(resReport).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+      expect(resReport).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...report0,
         contact: {
           ...contact0,
@@ -196,7 +196,7 @@ describe('Report API', () => {
         qs: { with_lineage: 'false' }
       };
       const resReport = await utils.request(opts);
-      expect(resReport).excluding(['_rev', 'reported_date']).to.deep.equal(report0);
+      expect(resReport).excluding([ '_rev', 'reported_date' ]).to.deep.equal(report0);
     });
 
     it('throws 404 error when no report is found for the UUID with lineage request', async () => {
@@ -208,9 +208,9 @@ describe('Report API', () => {
     });
 
     [
-      ['does not have can_view_reports permission', userNoPerms],
-      ['is not an online user', offlineUser]
-    ].forEach(([description, user]) => {
+      [ 'does not have can_view_reports permission', userNoPerms ],
+      [ 'is not an online user', offlineUser ]
+    ].forEach(([ description, user ]) => {
       it(`throws error when user ${description} for lineage request`, async () => {
         const opts = {
           path: `${endpoint}/${report0._id}`,
@@ -222,7 +222,7 @@ describe('Report API', () => {
       });
     });
   });
-  
+
   describe('GET /api/v1/report/uuid', async () => {
     const freetext = 'report';
     const fourLimit = 4;
@@ -295,7 +295,8 @@ describe('Report API', () => {
       expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
-    it('returns a page of unique report ids for when multiple fields match the same freetext with limit',
+    it(
+      'returns a page of unique report ids for when multiple fields match the same freetext with limit',
       async () => {
         const expectedContactIds = [ report6._id, report7._id, report8._id ];
         // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -316,9 +317,11 @@ describe('Report API', () => {
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.not.equal(emptyNouveauCursor);
-      });
+      }
+    );
 
-    it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+    it(
+      'returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
       async () => {
         const expectedContactIds = [ report6._id, report7._id, report8._id ];
         const qs = {
@@ -339,18 +342,19 @@ describe('Report API', () => {
         expect(responseIds).to.satisfy(subsetArray => {
           return subsetArray.every(item => expectedContactIds.includes(item));
         });
-      });
+      }
+    );
 
     it(`throws error when user does not have can_view_reports permission`, async () => {
       const opts = {
-        path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
+        path: endpoint, auth: { username: userNoPerms.username, password: userNoPerms.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
 
     it(`throws error when user is not an online user`, async () => {
       const opts = {
-        path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
+        path: endpoint, auth: { username: offlineUser.username, password: offlineUser.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
@@ -408,6 +412,162 @@ describe('Report API', () => {
         .to.be.rejectedWith(
           `500 - {"code":500,"error":"Server error"}`
         );
+    });
+  });
+
+  describe('POST /api/v1/report/', () => {
+    it('creates a report doc for valid input', async () => {
+      const input = {
+        form: 'pregnancy_danger_sign_follow_up',
+        reported_date: 11221122,
+        contact: place2._id
+      };
+      const opts = {
+        path: '/api/v1/report',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: input,
+
+      };
+
+      const reportDoc = await utils.request(opts);
+      expect(reportDoc).excluding([ '_rev', '_id', 'contact' ])
+        .to.deep.equal({ ...input, type: 'data_record' });
+    });
+
+    it('throws error for missing report fields', async () => {
+      const input = {
+        form: 'pregnancy_danger_sign_follow_up',
+        reported_date: 11221122
+      };
+      const opts = {
+        path: '/api/v1/report',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: input,
+
+      };
+
+      await expect(utils.request(opts))
+        .to.be.rejectedWith(`400 - ${JSON.stringify({
+          code: 400,
+          error: `Missing or empty required field (contact)`
+        })}`);
+    });
+  });
+
+  describe('PUT /api/v1/report/:uuid', () => {
+    it('updates doc for a valid update input', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'pregnancy_danger_sign_follow_up'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        form: 'undo_death_report'
+      };
+      // Remove _id from body as it will come from URL
+      delete updateInput._id;
+      const updateOpts = {
+        path: `/api/v1/report/${originalReportDoc._id}`,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      const updatedReportDoc = await utils.request(updateOpts);
+      expect(updatedReportDoc).excluding([ '_rev' ])
+        .to.deep.equal({ ...updateInput, _id: originalReportDoc._id });
+    });
+
+    it('throws error on trying to update an immutable field, here contact', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'undo_death_report'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        contact: contact1
+      };
+      // Remove _id from body as it will come from URL
+      delete updateInput._id;
+      const updateOpts = {
+        path: `/api/v1/report/${originalReportDoc._id}`,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      await expect(utils.request(updateOpts))
+        .to.be.rejectedWith(`contact lineage does not match with the lineage of the doc in the db`);
+    });
+
+    it('throws error on trying to update a report that does not exist', async () => {
+      const createInput = {
+        type: 'data_record',
+        contact: contact0._id,
+        form: 'undo_death_report'
+      };
+
+      const createOpts = {
+        path: '/api/v1/report',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: createInput,
+      };
+
+      const originalReportDoc = await utils.request(createOpts);
+      const updateInput = {
+        ...originalReportDoc,
+        form: 'pregnancy_home_visit'
+      };
+      // Remove _id from body as it will come from URL
+      delete updateInput._id;
+      const updateOpts = {
+        path: '/api/v1/report/12312312',
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updateInput,
+      };
+
+      await expect(utils.request(updateOpts))
+        .to.be.rejectedWith(`Report not found`);
     });
   });
 });
