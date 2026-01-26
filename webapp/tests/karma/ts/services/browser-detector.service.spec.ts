@@ -97,7 +97,7 @@ describe('Browser Detector Service', () => {
 
   it('runs with outdated Browser version', () => {
     const chtAndroidVersion = 'v1.0.1-alpha.1';
-    spoofUserAgent(getChtAndroidUserAgent(chtAndroidVersion, '76.0.2743.116'));
+    spoofUserAgent(getChtAndroidUserAgent(chtAndroidVersion, '90.0.2743.116'));
     androidAppVersion.next(chtAndroidVersion);
 
     expect(service.isUsingOutdatedBrowser()).to.be.true;
