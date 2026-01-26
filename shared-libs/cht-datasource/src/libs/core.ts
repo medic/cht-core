@@ -161,7 +161,7 @@ export function assertHasRequiredField <T extends Record<string, unknown>, K ext
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<typeof name, FieldTypeToValue[K]> {
   if (!hasField(value, { name, type }) || !value[name]) {
-    throw new ErrorClass(`The [${String(name)}] field must be valued.`);
+    throw new ErrorClass(`The [${String(name)}] field must have a [${String(type)}] value.`);
   }
 }
 

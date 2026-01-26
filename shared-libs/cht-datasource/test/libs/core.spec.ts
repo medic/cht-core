@@ -2,11 +2,16 @@ import { expect } from 'chai';
 import * as Core from '../../src/libs/core';
 import {
   AbstractDataContext,
+  assertDataObject,
+  assertDoesNotHaveField,
+  assertHasOptionalField,
+  assertHasRequiredField,
   deepCopy,
   findById,
   getLastElement,
   getPagedGenerator,
   hasField,
+  hasStringFieldWithValue,
   isDataObject,
   isIdentifiable,
   isNonEmptyArray,
@@ -66,6 +71,21 @@ describe('core lib', () => {
       it(`evaluates ${JSON.stringify(value)}`, () => {
         expect(isDataObject(value)).to.equal(expected);
       });
+    });
+  });
+
+  describe('assertDataObject', () => {
+    it('does not throw for valid DataObject', () => {
+      expect(() => assertDataObject({ hello: 'world' })).to.not.throw();
+    });
+
+    it('throws for non-DataObject', () => {
+      expect(() => assertDataObject(null)).to.throw(Error, 'Not a valid JSON object value.');
+    });
+
+    it('throws with custom error class', () => {
+      class CustomError extends Error {}
+      expect(() => assertDataObject('invalid', CustomError)).to.throw(CustomError, 'Not a valid JSON object value.');
     });
   });
 
@@ -142,6 +162,8 @@ describe('core lib', () => {
       [ { uuid: 'uuid', other: 1 }, { name: 'other', type: 'string' }, false ],
       [ { uuid: 'uuid', other: 1 }, { name: 'other', type: 'number' }, true ],
       [ { getUuid: () => 'uuid' }, { name: 'getUuid', type: 'function' }, true ],
+      [ { created: new Date() }, { name: 'created', type: 'date' }, true ],
+      [ { created: '2024-01-01' }, { name: 'created', type: 'date' }, false ],
     ] as [ Record<string, unknown>, {
       name: string,
       type: FieldType
@@ -152,6 +174,90 @@ describe('core lib', () => {
     });
   });
 
+  describe('hasStringFieldWithValue', () => {
+    ([
+      [ {}, 'uuid', false ],
+      [ { uuid: 'value' }, 'uuid', true ],
+      [ { uuid: '' }, 'uuid', false ],
+      [ { uuid: '   ' }, 'uuid', false ],
+      [ { uuid: '  trimmed  ' }, 'uuid', true ],
+      [ { uuid: 123 }, 'uuid', false ],
+    ] as [ Record<string, unknown>, string, boolean ][]).forEach(([ record, fieldName, expected ]) => {
+      it(`evaluates ${JSON.stringify(record)} with field "${fieldName}"`, () => {
+        expect(hasStringFieldWithValue(record, fieldName)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('assertDoesNotHaveField', () => {
+    it('does not throw when field is undefined', () => {
+      expect(() => assertDoesNotHaveField({}, 'field')).to.not.throw();
+    });
+
+    it('does not throw when field is null', () => {
+      expect(() => assertDoesNotHaveField({ field: null }, 'field')).to.not.throw();
+    });
+
+    it('throws when field has a value', () => {
+      expect(() => assertDoesNotHaveField({ field: 'value' }, 'field'))
+        .to.throw(Error, 'The [field] field must not be set.');
+    });
+
+    it('throws with custom error class', () => {
+      class CustomError extends Error {}
+      expect(() => assertDoesNotHaveField({ field: 123 }, 'field', CustomError))
+        .to.throw(CustomError, 'The [field] field must not be set.');
+    });
+  });
+
+  describe('assertHasOptionalField', () => {
+    it('does not throw when field is not present', () => {
+      expect(() => assertHasOptionalField({}, { name: 'field', type: 'string' })).to.not.throw();
+    });
+
+    it('does not throw when field has correct type', () => {
+      expect(() => assertHasOptionalField({ field: 'value' }, { name: 'field', type: 'string' })).to.not.throw();
+    });
+
+    it('throws when field has wrong type', () => {
+      expect(() => assertHasOptionalField({ field: 123 }, { name: 'field', type: 'string' }))
+        .to.throw(Error, 'The [field] field must have the type [string].');
+    });
+
+    it('throws with custom error class', () => {
+      class CustomError extends Error {}
+      expect(() => assertHasOptionalField({ field: 'value' }, { name: 'field', type: 'number' }, CustomError))
+        .to.throw(CustomError, 'The [field] field must have the type [number].');
+    });
+  });
+
+  describe('assertHasRequiredField', () => {
+    it('does not throw when field has correct type and value', () => {
+      expect(() => assertHasRequiredField({ field: 'value' }, { name: 'field', type: 'string' })).to.not.throw();
+    });
+
+    it('throws when field is missing', () => {
+      expect(() => assertHasRequiredField({}, { name: 'field', type: 'string' }))
+        .to.throw(Error, 'The [field] field must have a [string] value.');
+    });
+
+    it('throws when field has wrong type', () => {
+      expect(() => assertHasRequiredField({ field: 123 }, { name: 'field', type: 'string' }))
+        .to.throw(Error, 'The [field] field must have a [string] value.');
+    });
+
+    it('throws when field is empty string', () => {
+      expect(() => assertHasRequiredField({ field: '' }, { name: 'field', type: 'string' }))
+        .to.throw(Error, 'The [field] field must have a [string] value.');
+    });
+
+    it('throws with custom error class', () => {
+      class CustomError extends Error {}
+      expect(() => assertHasRequiredField({}, { name: 'field', type: 'string' }, CustomError))
+        .to.throw(CustomError, 'The [field] field must have a [string] value.');
+    });
+  });
+
   describe('isIdentifiable', () => {
     [
       [ null, false ],
@@ -159,6 +265,8 @@ describe('core lib', () => {
       [ { _id: 'uuid' }, true ],
       [ { _id: 'uuid', other: 1 }, true ],
       [ { _id: 'uuid', getUuid: () => 'uuid' }, true ],
+      [ { _id: '' }, false ],
+      [ { _id: '   ' }, false ],
     ].forEach(([ value, expected ]) => {
       it(`evaluates ${JSON.stringify(value)}`, () => {
         expect(isIdentifiable(value)).to.equal(expected);
