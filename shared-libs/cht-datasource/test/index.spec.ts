@@ -55,8 +55,8 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys([ 'getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType',
-          'create', 'update' ]);
+        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType',
+          'create', 'update']);
       });
 
       it('getByUuid', async () => {
@@ -217,7 +217,8 @@ describe('CHT Script API - getDatasource', () => {
           reported_date: 12312312
         };
         const expectedPerson = {
-          ...personInput
+          ...personInput,
+          _rev: '2-def',
         };
         const personUpdate = sinon.stub().resolves(expectedPerson);
         dataContextBind.returns(personUpdate);
@@ -585,7 +586,8 @@ describe('CHT Script API - getDatasource', () => {
           fields: {}
         };
         const expectedReport = {
-          ...reportInput
+          ...reportInput,
+          _rev: '2-def',
         };
         const reportUpdate = sinon.stub().resolves(expectedReport);
         dataContextBind.returns(reportUpdate);
