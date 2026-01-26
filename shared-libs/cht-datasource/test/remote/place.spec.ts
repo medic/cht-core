@@ -81,7 +81,7 @@ describe('remote place', () => {
       };
 
       it('returns places', async () => {
-        const doc = [ { type: 'place' }, { type: 'place' } ];
+        const doc = [{ type: 'place' }, { type: 'place' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
