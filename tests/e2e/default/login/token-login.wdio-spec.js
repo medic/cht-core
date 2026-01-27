@@ -107,7 +107,7 @@ describe('Token login', () => {
     const userDoc = await getUser(response.user.id);
     const url = await getTokenUrl(userDoc);
     await browser.url(url);
-    await commonElements.waitForLoaderToDisappear();
+    await commonElements.waitForPageLoaded();
     expect(await commonElements.isMessagesListPresent()).to.be.true;
   });
 });

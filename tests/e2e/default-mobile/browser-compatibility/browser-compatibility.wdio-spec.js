@@ -5,7 +5,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 describe('Browser Compatibility Modal', () => {
   const ANDROID_VERSION = '13';
   const SUPPORTED_CHROME_VERSION = '118.0.5993.112';
-  const OUTDATED_CHROME_VERSION = '74.0.5993.112';
+  const OUTDATED_CHROME_VERSION = '90.0.5993.112';
 
   const EMULATE_DEVICE_SETTINGS = {
     viewport: {

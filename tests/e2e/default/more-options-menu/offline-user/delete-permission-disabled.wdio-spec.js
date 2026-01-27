@@ -49,10 +49,13 @@ describe('More Options Menu - Offline User - Delete permissions disabled', () =>
     xmlReportId = (await utils.saveDoc(xmlReport)).id;
     smsReportId = (await utils.saveDoc(smsReport)).id;
     await utils.createUsers([offlineUser]);
+    await utils.updatePermissions(
+      offlineUser.roles,
+      [],
+      ['can_delete_contacts', 'can_delete_reports'],
+      { ignoreReload: true }
+    );
     await loginPage.login(offlineUser);
-    await utils.updatePermissions(offlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
-    await commonPage.closeReloadModal();
-    await commonPage.sync();
   });
 
   after(async () => await utils.revertSettings(true));

@@ -94,7 +94,7 @@ const baseConfig = {
     browserName: 'chrome',
     browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
-    'wdio:enforceWebDriverClassic': true,
+    'wdio:enforceWebDriverClassic': false,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
       binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined
@@ -103,7 +103,8 @@ const baseConfig = {
       binary: utils.isMinimumChromeVersion
         ? '/node_modules/chromedriver/bin/chromedriver'
         : undefined
-    }
+    },
+    webSocketUrl: true
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -156,7 +157,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['devtools'],
+  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['lighthouse'],
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -188,11 +189,11 @@ const baseConfig = {
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
-  // specFileRetries: DEBUG ? 0 : 5,
+  specFileRetries: DEBUG ? 0 : 0,
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
-    retries: DEBUG ? 0 : 5,
+    retries: DEBUG ? 0 : 0,
   },
   //
   // =====

@@ -59,8 +59,12 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     return;
   }
 
-  const waitForPartialLoad = privacyPolicy || adminApp;
-  if (waitForPartialLoad) {
+  if (privacyPolicy) {
+    await $('#privacy-policy-wrapper').waitForDisplayed({ timeout: 20000 });
+    return;
+  }
+
+  if (adminApp) {
     await commonPage.waitForLoaders();
     return;
   }

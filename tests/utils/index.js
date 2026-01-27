@@ -21,6 +21,16 @@ const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
+
+// Suppress the warning about NODE_TLS_REJECT_UNAUTHORIZED
+const originalEmitWarning = process.emitWarning;
+process.emitWarning = (warning, ...args) => {
+  if (typeof warning === 'string' && warning.includes('NODE_TLS_REJECT_UNAUTHORIZED')) {
+    return;
+  }
+  originalEmitWarning.call(process, warning, ...args);
+};
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
@@ -1070,7 +1080,7 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
-const addTranslations = (languageCode, translations = {}) => {
+const addTranslations = async (languageCode, translations = {}) => {
   const builtinTranslations = [
     'bm',
     'en',
@@ -1089,7 +1099,6 @@ const addTranslations = (languageCode, translations = {}) => {
           type: DOC_TYPES.TRANSLATIONS,
           code: code,
           name: code,
-          enabled: true,
           generic: {}
         };
       }
@@ -1097,15 +1106,18 @@ const addTranslations = (languageCode, translations = {}) => {
       throw err;
     });
   };
-
-  return getTranslationsDoc(languageCode).then(translationsDoc => {
+  
+  const saveTranslationsDoc = async () => {
+    const translationsDoc = await getTranslationsDoc(languageCode);
     if (builtinTranslations.includes(languageCode)) {
       originalTranslations[languageCode] = _.clone(translationsDoc.generic);
     }
 
     Object.assign(translationsDoc.generic, translations);
     return db.put(translationsDoc);
-  });
+  };
+
+  await saveTranslationsDoc();
 };
 
 const enableLanguage = (languageCode) => enableLanguages([languageCode]);

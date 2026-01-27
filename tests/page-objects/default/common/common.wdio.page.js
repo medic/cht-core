@@ -141,28 +141,25 @@ const hideSnackbar = () => {
   });
 };
 
-const getVisibleLoaders = async () => {
-  const visible = [];
-
-  // Get all loaders in the page
-  const loaders = await $$('.loader').getElements();
-  if (loaders.length) {
-    // Add a small pause to let the DOM stabilize
-    await browser.pause(100);
-    // Instead of iterating through the loaders array, query for each loader individually
-    // This avoids issues with stale references
-    for (let i = 0; i < loaders.length; i++) {
-      // Use a more specific selector to get a fresh reference to each loader
-      // This avoids the index out of bounds issue
-      const loaderSelector = `.loader:nth-of-type(${i + 1})`;
-      const loader = await $(loaderSelector);
-      if (await loader.isExisting() && await loader.isDisplayed({ withinViewport: true })) {
-        visible.push(loader);
+const hasVisibleLoader = async () => {
+  const loaders = await $$('.loader');
+  for (const loader of loaders) {
+    try {
+      // Check if loader exists and is actually visible (not hidden by CSS)
+      const isDisplayed = await loader.isDisplayed();
+      if (isDisplayed) {
+        // Double-check it has actual dimensions (not 0x0)
+        const size = await loader.getSize();
+        if (size.width > 0 && size.height > 0) {
+          console.warn('Loader is visible and has non-zero dimensions', loader.selector, loader.elementId);
+          return true;
+        }
       }
+    } catch {
+      // Ignore stale element errors
     }
   }
-
-  return visible;
+  return false;
 };
 
 const waitForLoaderToDisappear = async (element) => {
@@ -172,14 +169,16 @@ const waitForLoaderToDisappear = async (element) => {
 };
 
 const waitForLoaders = async () => {
-  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
-  // get all loaders.
-  do {
-    await browser.waitUntil(async () => {
-      const visibleLoaders = await getVisibleLoaders();
-      return !visibleLoaders.length;
-    }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
-  } while ((await getVisibleLoaders()).length > 0);
+  await browser.waitUntil(async () => {
+    if (await hasVisibleLoader()) {
+      return false;
+    }
+    // Wait for loaders to settle - another loader might appear
+    await browser.pause(100);
+    return !(await hasVisibleLoader());
+  }, {
+    timeoutMsg: 'Waiting for Loading spinners to hide timed out.'
+  });
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
