@@ -10,6 +10,7 @@ const DOC_IDS = {
 // Document Types
 const DOC_TYPES = {
   TRANSLATIONS: 'translations',
+  HEALTH_CENTER: 'health_center',
 };
 
 // HTTP Headers
