@@ -1,4 +1,4 @@
-import sinon, { SinonFakeTimers, SinonStub } from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
@@ -8,6 +8,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
+import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 
 describe('local person', () => {
@@ -17,10 +18,6 @@ describe('local person', () => {
   let debug: SinonStub;
   let isPerson: SinonStub;
   let isPersonType: SinonStub;
-  let createDocOuter: SinonStub;
-  let createDocInner: SinonStub;
-  let updateDocOuter: SinonStub;
-  let updateDocInner: SinonStub;
 
   beforeEach(() => {
     settingsGetAll = sinon.stub();
@@ -32,10 +29,6 @@ describe('local person', () => {
     debug = sinon.stub(logger, 'debug');
     isPerson = sinon.stub(contactTypeUtils, 'isPerson');
     isPersonType = sinon.stub(contactTypeUtils, 'isPersonType');
-    createDocInner = sinon.stub();
-    createDocOuter = sinon.stub(LocalDoc, 'createDoc');
-    updateDocOuter = sinon.stub(LocalDoc, 'updateDoc');
-    updateDocInner = sinon.stub();
   });
 
   afterEach(() => sinon.restore());
@@ -161,7 +154,7 @@ describe('local person', () => {
       const personIdentifier = 'person';
       const personTypeQualifier = { contactType: personIdentifier } as const;
       const invalidPersonTypeQualifier = { contactType: 'invalid' } as const;
-      const personType = [ { person: true, id: personIdentifier } ] as Record<string, unknown>[];
+      const personType = [{ person: true, id: personIdentifier }] as Record<string, unknown>[];
       let getPersonTypes: SinonStub;
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;
@@ -179,7 +172,7 @@ describe('local person', () => {
 
       it('returns a page of people', async () => {
         const doc = { type: 'person' };
-        const docs = [ doc, doc, doc ];
+        const docs = [doc, doc, doc];
         const expectedResult = {
           cursor: '3',
           data: docs
@@ -205,7 +198,7 @@ describe('local person', () => {
 
       it('returns a page of people when cursor is not null', async () => {
         const doc = { type: 'person' };
-        const docs = [ doc, doc, doc ];
+        const docs = [doc, doc, doc];
         const expectedResult = {
           cursor: '8',
           data: docs
@@ -288,225 +281,36 @@ describe('local person', () => {
     });
 
     describe('createPerson', () => {
+      const minifiedParent = {
+        _id: 'p1',
+        parent: { _id: 'p2' }
+      } as const;
+      const parent = {
+        ...minifiedParent,
+        _rev: '1',
+        type: 'clinic'
+      } as const;
+      const personDoc = { hello: 'world' };
+
       let getDocByIdOuter: SinonStub;
       let getDocByIdInner: SinonStub;
-      let clock: SinonFakeTimers;
+      let createDocOuter: SinonStub;
+      let createDocInner: SinonStub;
+      let getTypeById: SinonStub;
+      let getReportedDateTimestamp: SinonStub;
 
       beforeEach(() => {
-        // Freeze time at a fixed point for deterministic behavior
-        clock = sinon.useFakeTimers(new Date('2024-01-01T00:00:00Z'));
-      
         getDocByIdInner = sinon.stub();
         getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
-        createDocOuter.returns(createDocInner);
-      });
-
-      afterEach(() => {
-        clock.restore();
-      });
-
-      it('throws error if input type is not a part of settings contact_types and also not `person`', async () => {
-        settingsGetAll.returns({
-          contact_types: [ { id: 'animal' }, { id: 'human' } ]
-        });
-        isPerson.returns(false);
-
-        const personInput: Input.v1.PersonInput = {
-          type: 'robot',
-          name: 'user-1',
-          parent: 'p1'
-        };
-        await expect(Person.v1.create(localContext)(personInput))
-          .to.be.rejectedWith('[robot] is not a valid person type.');
-        expect(createDocInner.called).to.be.false;
-      });
-
-      it('creates Person doc for valid input containing parent', async () => {
-        settingsGetAll.returns({
-          contact_types: [ { id: 'animal', parents: [ 'hospital' ], person: true }, { id: 'hospital' } ]
-        });
-        isPerson.returns(true);
+        createDocInner = sinon.stub().resolves(personDoc);
+        createDocOuter = sinon.stub(LocalDoc, 'createDoc').returns(createDocInner);
+        settingsGetAll.returns(settings);
+        getTypeById = sinon.stub(contactTypeUtils, 'getTypeById');
         isPersonType.returns(true);
-        const input = {
-          name: 'user-1',
-          type: 'animal',
-          parent: 'p1',
-          reported_date: new Date().toISOString()
-        };
-        const parentDocReturned = {
-          _id: 'p1',
-          _rev: '1',
-          type: 'contact',
-          contact_type: 'hospital',
-          parent: {
-            _id: 'p2'
-          }
-        };
-        getDocByIdInner.resolves(parentDocReturned);
-        // the parent won't contain extra fields like `type` and `contact_type`
-        const expected_output = {
-          name: 'user-1',
-          reported_date: new Date(input.reported_date).getTime(),
-          type: 'contact',
-          contact_type: 'animal',
-          parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2'
-            }
-          }
-        };
-        // createDoc returns the doc with _id and _rev after saving
-        createDocInner.resolves({ ...expected_output, _id: 'new-person-id', _rev: '1-abc' });
-
-        const person = await Person.v1.create(localContext)(input);
-        expect(Person.v1.isPerson(localContext.settings, person)).to.be.true;
-        expect(createDocInner.args[0][0]).to.deep.equal(expected_output);
-        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        getReportedDateTimestamp = sinon.stub(LocalCore, 'getReportedDateTimestamp');
       });
 
-      it(
-        'creates a Person doc for valid input having a legacy type without _id, reported_date',
-        async () => {
-          settingsGetAll.returns({
-            contact_types: [ { id: 'person', parents: [ 'clinic' ], person: true }, { id: 'clinic' } ]
-          });
-          isPerson.returns(true);
-          isPersonType.returns(true);
-          const input = {
-            name: 'user-1',
-            type: 'person',
-            parent: 'p1',
-          };
-          const parentDocReturned = {
-            _id: 'p1', _rev: '1', type: 'clinic', parent: { _id: 'p2' }
-          };
-          getDocByIdInner.resolves(parentDocReturned);
-          const input_reported_date = new Date().toISOString();
-          // minifyDoc strips out _rev and type, keeping only _id and parent
-          const minifiedParent = {
-            _id: 'p1',
-            parent: { _id: 'p2' }
-          };
-          // When settings has a matching contact_type, the doc gets transformed:
-          // type -> 'contact', contact_type -> input.type
-          const expectedDoc = {
-            name: 'user-1',
-            type: 'contact',
-            contact_type: 'person',
-            reported_date: new Date(input_reported_date).getTime(),
-            parent: minifiedParent
-          };
-          // createDoc returns the doc with _id and _rev after saving
-          createDocInner.resolves({ ...expectedDoc, _id: 'new-person-id', _rev: '1-abc' });
-          const person = await Person.v1.create(localContext)(input);
-          expect(getDocByIdInner.calledOnce).to.be.true;
-          expect(Person.v1.isPerson(localContext.settings, person)).to.be.true;
-          expect(createDocInner.calledOnce).to.be.true;
-          expect(createDocInner.args[0][0]).to.deep.equal(expectedDoc);
-        }
-      );
-
-      it(
-        'throws error invalid parent id that is not present in the db',
-        async () => {
-          isPerson.returns(true);
-          isPersonType.returns(true);
-          const input = {
-            name: 'user-1',
-            type: 'person',
-            parent: 'p1'
-          };
-
-          const parentDocReturned = null;
-          getDocByIdInner.resolves(parentDocReturned);
-          await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Parent contact [${input.parent}] not found.`);
-        }
-      );
-
-      it(
-        'throws error invalid parent id that is not present in the db with custom settings',
-        async () => {
-          settingsGetAll.returns({
-            contact_types: [ { id: 'person', parents: [ 'hospital' ], person: true }, {
-              id: 'hospital',
-              parents: [ 'district_hospital' ]
-            } ]
-          });
-
-          isPerson.returns(true);
-          isPersonType.returns(true);
-          const input = {
-            name: 'user-1',
-            type: 'person',
-            parent: 'p1'
-          };
-
-          getDocByIdInner.resolves(null);
-          await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Parent contact [${input.parent}] not found.`);
-        }
-      );
-
-      it(
-        'throws error if type of person cannot have a parent',
-        async () => {
-          settingsGetAll.returns({
-            contact_types: [ { id: 'person', person: true }, { id: 'hospital', parents: [ 'district_hospital' ] } ]
-          });
-
-          isPerson.returns(true);
-          isPersonType.returns(true);
-          const input = {
-            name: 'user-1',
-            type: 'person',
-            parent: 'p1',
-            reported_date: Date.now()
-          };
-          const parentDoc = {
-            _id: 'p1',
-            _rev: '1',
-            type: 'hospital'
-          };
-          getDocByIdInner.resolves(parentDoc);
-          await expect(Person.v1.create(localContext)(input))
-            .to.be.rejectedWith(`Parent contact of type [hospital] is not allowed for type [person].`);
-        }
-      );
-
-      it(
-        'throws error if type of returned parent doc is not present in allowed parent types',
-        async () => {
-          settingsGetAll.returns({
-            contact_types: [ { id: 'person', parents: [ 'hospital' ], person: true }, {
-              id: 'hospital',
-              parents: [ 'district_hospital' ]
-            } ]
-          });
-
-          isPerson.returns(true);
-          isPersonType.returns(true);
-          const input = {
-            name: 'user-1',
-            type: 'person',
-            parent: 'p1',
-            reported_date: Date.now()
-          };
-          const returnedParentDoc = {
-            _id: 'p1',
-            _rev: '1',
-            contact_type: 'health_center',
-            type: 'contact'
-          };
-          getDocByIdInner.resolves(returnedParentDoc);
-          await expect(Person.v1.create(localContext)(input)).to.be.rejectedWith(
-            `Parent contact of type [${returnedParentDoc.contact_type}] is not allowed for type [${input.type}].`
-          );
-        }
-      );
-
-      it('throws error if `_rev` is passed in', async () => {
+      it('throws error if input validation fails', async () => {
         const input = {
           name: 'user-1',
           type: 'person',
@@ -517,16 +321,158 @@ describe('local person', () => {
         await expect(
           Person.v1.create(localContext)(input as unknown as Input.v1.PersonInput)
         ).to.be.rejectedWith('The [_rev] field must not be set.');
-        expect(createDocInner.called).to.be.false;
+
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(settingsGetAll.notCalled).to.be.true;
+        expect(getTypeById.notCalled).to.be.true;
+        expect(isPersonType.notCalled).to.be.true;
+        expect(getDocByIdInner.notCalled).to.be.true;
+        expect(getReportedDateTimestamp.notCalled).to.be.true;
+        expect(createDocInner.notCalled).to.be.true;
+      });
+
+      [
+        { id: 'not-person' }, // Custom type
+        null // Default type
+      ].forEach((typeData) => {
+        it('throws error if input type is not a `person`', async () => {
+          getTypeById.returns(typeData);
+          isPersonType.returns(false);
+          const personInput = {
+            type: 'not-person',
+            name: 'user-1',
+            parent: 'p1'
+          };
+
+          await expect(Person.v1.create(localContext)(personInput))
+            .to.be.rejectedWith('[not-person] is not a valid person type.');
+
+          expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+          expect(getTypeById.calledOnceWithExactly(settings, personInput.type)).to.be.true;
+          expect(isPersonType.calledOnceWithExactly({ id: 'not-person' })).to.be.true;
+          expect(getDocByIdInner.notCalled).to.be.true;
+          expect(getReportedDateTimestamp.notCalled).to.be.true;
+          expect(createDocInner.notCalled).to.be.true;
+        });
+      });
+
+      it('creates a person with default `person` type', async () => {
+        const input = {
+          name: 'user-1',
+          type: 'person',
+          parent: parent._id,
+        };
+        getDocByIdInner.resolves(parent);
+        const reportedDate = new Date().getTime();
+        getReportedDateTimestamp.returns(reportedDate);
+
+        const person = await Person.v1.create(localContext)(input);
+
+        expect(person).to.equal(personDoc);
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getTypeById.args).to.deep.equal([[settings, input.type], [settings, input.type]]);
+        expect(isPersonType.calledOnceWithExactly({ id: input.type })).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
+        expect(getReportedDateTimestamp.calledOnceWithExactly(undefined)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly({
+          ...input,
+          parent: minifiedParent,
+          reported_date: reportedDate
+        })).to.be.true;
+      });
+
+      it('creates a person with custom `person` type', async () => {
+        const customPersonType = { id: 'custom-person', person: true, parents: [parent.type] };
+        const input = {
+          name: 'user-1',
+          type: customPersonType.id,
+          parent: parent._id,
+          reported_date: 123445566
+        };
+        getTypeById.returns(customPersonType);
+        getDocByIdInner.resolves(parent);
+        const reportedDate = new Date().getTime();
+        getReportedDateTimestamp.returns(reportedDate);
+
+        const person = await Person.v1.create(localContext)(input);
+
+        expect(person).to.equal(personDoc);
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getTypeById.args).to.deep.equal([[settings, input.type], [settings, input.type]]);
+        expect(isPersonType.calledOnceWithExactly(customPersonType)).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
+        expect(getReportedDateTimestamp.calledOnceWithExactly(input.reported_date)).to.be.true;
+        expect(createDocInner.calledOnceWithExactly({
+          ...input,
+          type: 'contact',
+          contact_type: customPersonType.id,
+          parent: minifiedParent,
+          reported_date: reportedDate
+        })).to.be.true;
+      });
+
+      it('throws error when parent doc is not found', async () => {
+        const input = {
+          name: 'user-1',
+          type: 'person',
+          parent: parent._id,
+        };
+        getDocByIdInner.resolves(null);
+
+        await expect(Person.v1.create(localContext)(input))
+          .to.be.rejectedWith(`Parent contact [${input.parent}] not found.`);
+
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getTypeById.calledOnceWithExactly(settings, input.type)).to.be.true;
+        expect(isPersonType.calledOnceWithExactly({ id: input.type })).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
+        expect(getReportedDateTimestamp.notCalled).to.be.true;
+        expect(createDocInner.notCalled).to.be.true;
+      });
+
+      it('throws error when parent type is invalid', async () => {
+        const input = {
+          name: 'user-1',
+          type: 'person',
+          parent: parent._id,
+        };
+        getDocByIdInner.resolves({ ...parent, type: 'person' });
+        const reportedDate = new Date().getTime();
+        getReportedDateTimestamp.returns(reportedDate);
+
+        await expect(Person.v1.create(localContext)(input))
+          .to.be.rejectedWith(`Parent contact of type [person] is not allowed for type [person].`);
+
+        expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getTypeById.args).to.deep.equal([[settings, input.type], [settings, input.type]]);
+        expect(isPersonType.calledOnceWithExactly({ id: input.type })).to.be.true;
+        expect(getDocByIdInner.calledOnceWithExactly(input.parent)).to.be.true;
+        expect(getReportedDateTimestamp.notCalled).to.be.true;
+        expect(createDocInner.notCalled).to.be.true;
       });
     });
 
     describe('updatePerson', () => {
       let getDocByIdInner: SinonStub;
+      let updateDocOuter: SinonStub;
+      let updateDocInner: SinonStub;
 
       beforeEach(() => {
         getDocByIdInner = sinon.stub();
         sinon.stub(Person.v1, 'get').returns(getDocByIdInner);
+        updateDocOuter = sinon.stub(LocalDoc, 'updateDoc');
+        updateDocInner = sinon.stub();
         updateDocOuter.returns(updateDocInner);
       });
 
