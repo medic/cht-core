@@ -70,7 +70,11 @@ const setBuildInfo = () => {
     }
     const ddocs = fs.readdirSync(dbPath);
     ddocs.forEach(ddoc => {
-      copyBuildInfo(path.join(ddocsBuildPath, database, ddoc, 'build_info'));
+      const ddocPath = path.join(ddocsBuildPath, database, ddoc);
+      if (!fs.statSync(ddocPath).isDirectory()) {
+        return;
+      }
+      copyBuildInfo(path.join(ddocPath, 'build_info'));
     });
   });
 };
@@ -203,7 +207,11 @@ const setDdocsVersion = () => {
     }
     const ddocs = fs.readdirSync(dbPath);
     ddocs.forEach(ddoc => {
-      fs.writeFileSync(path.resolve(dbPath, ddoc, 'version'), version);
+      const ddocPath = path.resolve(dbPath, ddoc);
+      if (!fs.lstatSync(ddocPath).isDirectory()) {
+        return;
+      }
+      fs.writeFileSync(path.resolve(ddocPath, 'version'), version);
     });
   });
 };

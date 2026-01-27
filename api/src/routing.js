@@ -56,6 +56,7 @@ const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
+const views = require('./controllers/views');
 const createUserDb = require('./controllers/create-user-db');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
@@ -356,6 +357,9 @@ const UNAUDITED_ENDPOINTS = [
   `${routePrefix}_find`,
   `${routePrefix}_explain`,
 ];
+
+// Intercept view requests to route through view controller
+app.all(`${routePrefix}_design/*ddoc/_view/:view`, jsonParser, views.request);
 
 UNAUDITED_ENDPOINTS.forEach(function(url) {
   // NB: as this evaluates first, it will skip any hooks defined in the rest of
