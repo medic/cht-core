@@ -162,7 +162,7 @@ export namespace v1 {
         assertHasRequiredField(updatedPerson, { name: 'name', type: 'string' }, InvalidArgumentError);
       }
       assertSameParentLineage(originalPerson, updatedPerson);
-      const _rev = await updateMedicDoc(minifyLineage(updatedPerson));
+      const { _rev } = await updateMedicDoc(minifyLineage(updatedPerson));
       return { ...updatedPerson, _rev };
     };
   };

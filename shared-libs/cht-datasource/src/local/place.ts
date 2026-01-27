@@ -212,7 +212,7 @@ export namespace v1 {
         ...updatedPlace,
         contact
       };
-      const _rev = await updateMedicDoc(minifyMedicDoc(updatedPlaceDoc));
+      const { _rev } = await updateMedicDoc(minifyMedicDoc(updatedPlaceDoc));
       return { ...updatedPlaceDoc, _rev };
     };
   };

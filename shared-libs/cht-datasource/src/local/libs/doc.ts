@@ -1,5 +1,5 @@
 import logger from '@medic/logger';
-import { NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
+import { DataObject, NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
@@ -195,21 +195,28 @@ export const fetchAndFilterUuids = (
 };
 
 /** @internal */
-export const createDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
-  const { id, ok } = await db.post(data);
+export const createDoc = (db: PouchDB.Database) => async (data: DataObject): Promise<Doc> => {
+  const { id, rev, ok } = await db.post(data);
   if (!ok) {
     throw new Error('Error creating document.');
   }
-  return getDocById(db as PouchDB.Database<Doc>)(id);
+  return {
+    ...data,
+    _id: id,
+    _rev: rev
+  };
 };
 
 /** @internal */
-export const updateDoc = (db: PouchDB.Database<Doc>) => async (data: Doc): Promise<string> => {
+export const updateDoc = (db: PouchDB.Database<Doc>) => async (data: Doc): Promise<Doc> => {
   const { ok, rev } = await db.put(data);
   if (!ok) {
     throw new Error('Error updating document.');
   }
-  return rev;
+  return {
+    ...data,
+    _rev: rev
+  };
 };
 
 const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {

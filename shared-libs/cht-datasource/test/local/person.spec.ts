@@ -562,7 +562,7 @@ describe('local person', () => {
           ...updateDocInput, name: 'apoorva', parent: { _id: '1', parent: { _id: '2' } }
         };
         getDocByIdInner.resolves(originalDoc);
-        updateDocInner.resolves('2');
+        updateDocInner.resolves({ _rev: '2' });
 
         const result = await Person.v1.update(localContext)(updateDocInput);
 
@@ -611,7 +611,7 @@ describe('local person', () => {
 
         const originalDoc = { ...updateDocInput, hobby: 'skating', sex: 'male' };
         getDocByIdInner.resolves(originalDoc);
-        updateDocInner.resolves('2');
+        updateDocInner.resolves({ _rev: '2' });
 
         const result = await Person.v1.update(localContext)(updateDocInput);
         expect(result).to.deep.equal({ ...updateDocInput, _rev: '2' });

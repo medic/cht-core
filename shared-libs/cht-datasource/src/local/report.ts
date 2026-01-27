@@ -210,7 +210,7 @@ export namespace v1 {
         ...updatedReport,
         contact,
       };
-      const _rev = await updateMedicDoc(minifyMedicDoc(updatedReportDoc));
+      const { _rev } = await updateMedicDoc(minifyMedicDoc(updatedReportDoc));
       return { ...updatedReportDoc, _rev };
     };
   };

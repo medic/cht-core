@@ -949,7 +949,7 @@ describe('local report', () => {
         { _id: '5', parent: { _id: '7' } }
       ]);
       // updateDoc returns the new _rev
-      updateDocInner.resolves('3');
+      updateDocInner.resolves({ _rev: '3' });
       const updatedReport = await Report.v1.update(localContext)(reportInput);
       // When contact lineage is unchanged, getUpdatedContact returns updated.contact directly
       // so extra fields are preserved
