@@ -72,7 +72,7 @@ describe('Navigation tests', () => {
           'can_view_tasks_tab'
         ];
 
-        await utils.updatePermissions(user.roles, [], permissionsToRemove);
+        await utils.updatePermissions(user.roles, [], permissionsToRemove, { ignoreReload: true });
         await loginPage.login(user);
       });
 
