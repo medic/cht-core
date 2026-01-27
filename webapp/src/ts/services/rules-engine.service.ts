@@ -26,6 +26,7 @@ import { Store } from '@ngrx/store';
 import { TasksActions } from '@mm-actions/tasks';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { Qualifier, TargetInterval } from '@medic/cht-datasource';
+import configLib from '../libs/config';
 
 interface DebounceActive {
   [key: string]: {
@@ -561,7 +562,7 @@ export class RulesEngineService implements OnDestroy {
     trackPerformanceRunning?.stop({ name: trackName });
     return targets.map((target: Target) => ({
       ...target,
-      subtitle_translation_key: this.getValueFromFunction(
+      subtitle_translation_key: configLib.getValueFromFunction(
         target.subtitle_translation_key,
         ReportingPeriod.CURRENT
       )
@@ -633,7 +634,7 @@ export class RulesEngineService implements OnDestroy {
       if (targetConfig && targetConfig.visible !== false) {
         processedTargets.push({
           ...targetConfig,
-          subtitle_translation_key: this.getValueFromFunction(
+          subtitle_translation_key: configLib.getValueFromFunction(
             targetConfig.subtitle_translation_key,
             reportingPeriod
           ),
