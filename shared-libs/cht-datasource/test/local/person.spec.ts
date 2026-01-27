@@ -729,7 +729,7 @@ describe('local person', () => {
         // Error message changed to assertHasRequiredField format
         await expect(Person.v1.update(localContext)(updateDocInput as unknown as PersonTypes.v1.Person))
           .to.be
-          .rejectedWith(`The [name] field must be valued.`);
+          .rejectedWith(`The [name] field must have a [string] value.`);
         expect(updateDocInner.called).to.be.false;
       });
 
