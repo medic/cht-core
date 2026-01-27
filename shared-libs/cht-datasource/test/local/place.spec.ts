@@ -786,10 +786,9 @@ describe('local place', () => {
         // updateDoc returns just the new _rev
         updateDocInner.resolves({ _rev: '2' });
         const result = await Place.v1.update(localContext)(updateInput);
-        // When contact lineage matches, getUpdatedContact returns updated.contact directly
-        // so extra fields are preserved
         expect(result).to.deep.equal({
-          ...updateInput,
+          ...originalDoc,
+          contact: contactDoc,
           _rev: '2'
         });
       });

@@ -25,6 +25,7 @@ import { SettingsService } from './data-context';
 import * as LocalContact from '../contact';
 import { InvalidArgumentError } from '../../libs/error';
 import contactTypeUtils from '@medic/contact-types-utils';
+import { isEqual } from 'lodash';
 
 /**
  * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
@@ -199,38 +200,46 @@ export const getContactIdForUpdate = (updated: WithUpdatableContact): string | u
   return isString(updated.contact) ? updated.contact : updated.contact?._id;
 };
 
-/** @internal */
-export const isContactUpdated = (
-  original: Report.v1.Report | Place.v1.Place,
-  updated: WithUpdatableContact,
-): boolean => !!updated.contact && !isSameLineage(original.contact, updated.contact);
-
-/** @internal */
+/**
+ * Returns the `contact` value for the given updated entity. `undefined` will be returned if no value is set
+ * on the updated entity for `contact`. If the `contact` value for the updated entity matches the `contact`
+ * value for the original entity, this value will be returned without being validated. Otherwise, the `contact`
+ * value on the updated entity will be validated and a minified version will be returned.
+ * @internal
+ */
 export const getUpdatedContact = (
   settings: SettingsService,
   medicDb: PouchDB.Database<Doc>
 ) => {
   const minify = minifyLineage(medicDb);
-
   return (
     original: Report.v1.Report | Place.v1.Place,
     updated: WithUpdatableContact,
     contact: Nullable<Doc>
-  ): string | NormalizedParent | undefined => {
-    if (!isContactUpdated(original, updated)) {
-      return updated.contact;
+  ): NormalizedParent | undefined => {
+    // Contact removed (or never set)
+    if (!updated.contact) {
+      return undefined;
     }
+
+    // The contact data did not change
+    if (isEqual(original.contact, updated.contact)) {
+      return original.contact;
+    }
+
+    // Invalid contact data set
     if (!contact || !LocalContact.v1.isContact(settings, contact)) {
       throw new InvalidArgumentError(`No valid contact found for [${getContactIdForUpdate(updated)}].`);
     }
-    if (isString(updated.contact)) {
-      return minify(contact);
-    }
-    if (!isSameLineage(contact, updated.contact)) {
-      throw new InvalidArgumentError('The given contact lineage does not match the current lineage for that contact.');
+
+    // Wrong contact lineage provided on input data
+    if (!isString(updated.contact) && !isSameLineage(contact, updated.contact)) {
+      throw new InvalidArgumentError(
+        'The given contact lineage does not match the current lineage for that contact.'
+      );
     }
 
-    return updated.contact;
+    return minify(contact);
   };
 };
 
