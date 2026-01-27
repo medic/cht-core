@@ -2,6 +2,7 @@ import * as Place from '../src/place';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
+import * as Input from '../src/input';
 import * as Context from '../src/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
@@ -133,7 +134,7 @@ describe('place', () => {
       const pageData = { data: places, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const placeTypeQualifier = {contactType: 'place'} as const;
+      const placeTypeQualifier = { contactType: 'place' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -256,7 +257,7 @@ describe('place', () => {
 
     describe('getAll', () => {
       const placeType = 'place';
-      const placeTypeQualifier = {contactType: placeType} as const;
+      const placeTypeQualifier = { contactType: placeType } as const;
       const firstPlace = { _id: 'place1' } as Place.v1.Place;
       const secondPlace = { _id: 'place2' } as Place.v1.Place;
       const thirdPlace = { _id: 'place3' } as Place.v1.Place;
@@ -280,7 +281,7 @@ describe('place', () => {
         isContactTypeQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Place.v1.getAll(dataContext)(placeTypeQualifier);
+        const generator = Place.v1.getAll(dataContext)(placeTypeQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -307,6 +308,91 @@ describe('place', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(placeGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
+      });
+    });
+
+    describe('create', () => {
+      let createPlaceDoc: SinonStub;
+
+      beforeEach(() => {
+        createPlaceDoc = sinon.stub();
+        adapt.returns(createPlaceDoc);
+      });
+
+
+      it('returns place doc for valid input', async () => {
+        const input = {
+          name: 'place-1',
+          type: 'place',
+        };
+        const doc = {
+          ...input,
+          _id: 'new-doc'
+        };
+        createPlaceDoc.resolves(doc);
+
+        const result = await Place.v1.create(dataContext)(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.create, Remote.Place.v1.create))
+          .to.be.true;
+        expect(createPlaceDoc.calledOnceWithExactly(input)).to.be.true;
+      });
+
+      it('Throws error is input is not a record', async () => {
+        const input = 'hello' as unknown as Input.v1.PlaceInput;
+        await expect(Place.v1.create(dataContext)(input))
+          .to.be.rejectedWith(`Place data not provided.`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.create, Remote.Place.v1.create))
+          .to.be.true;
+        expect(createPlaceDoc.notCalled).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      let updatePlaceDoc: SinonStub;
+
+      beforeEach(() => {
+        updatePlaceDoc = sinon.stub();
+        adapt.returns(updatePlaceDoc);
+      });
+
+      it('returns updated place doc for valid input', async () => {
+        const updateInput = {
+          name: 'place-1',
+          type: 'place',
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312
+        };
+        const expectedDoc = {
+          ...updateInput,
+          _rev: '2.def'
+        };
+        updatePlaceDoc.resolves(expectedDoc);
+
+        const result = await Place.v1.update(dataContext)(updateInput);
+
+        expect(result).to.equal(expectedDoc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.update, Remote.Place.v1.update))
+          .to.be.true;
+        expect(updatePlaceDoc.calledOnceWithExactly(updateInput)).to.be.true;
+      });
+
+      it('throws error for invalid input', async () => {
+        const updateInput = 'my-updated-place';
+
+        await expect(Place.v1.update(dataContext)(updateInput as unknown as Input.v1.UpdatePlaceInput<Place.v1.Place>))
+          .to.be.rejectedWith('Updated place data not provided.');
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.update, Remote.Place.v1.update))
+          .to.be.true;
+        expect(updatePlaceDoc.notCalled).to.be.true;
       });
     });
   });

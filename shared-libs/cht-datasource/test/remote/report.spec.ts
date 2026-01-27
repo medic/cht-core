@@ -1,8 +1,9 @@
+import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
-import * as RemoteEnv from '../../src/remote/libs/data-context';
 import * as Report from '../../src/remote/report';
 import { expect } from 'chai';
+import { InvalidArgumentError } from '../../src';
 
 describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -21,7 +22,7 @@ describe('remote report', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
-    const identifier = {uuid: 'uuid'} as const;
+    const identifier = { uuid: 'uuid' } as const;
 
     describe('get', () => {
       it('returns a report by UUID', async () => {
@@ -48,10 +49,10 @@ describe('remote report', () => {
 
     describe('getWithLineage', () => {
       it('returns a report with lineage by UUID', async () => {
-        const doc = { 
-          type: 'data_record', 
+        const doc = {
+          type: 'data_record',
           form: 'yes',
-          lineage: ['parent1', 'parent2']
+          lineage: [ 'parent1', 'parent2' ]
         };
         getResourceInner.resolves(doc);
 
@@ -72,7 +73,7 @@ describe('remote report', () => {
         expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
       });
     });
-    
+
     describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = '1';
@@ -87,7 +88,7 @@ describe('remote report', () => {
       };
 
       it('returns an array of report identifiers', async () => {
-        const doc = [{ type: 'data_record', form: 'yes' }, {type: 'data_record', form: 'yes'}];
+        const doc = [ { type: 'data_record', form: 'yes' }, { type: 'data_record', form: 'yes' } ];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -107,6 +108,65 @@ describe('remote report', () => {
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
+    });
+
+    describe('create', () => {
+      it('returns a report doc for a valid input', async () => {
+        const input = {
+          form: 'form-1',
+          type: 'report',
+          reported_date: 11223344,
+          contact: 'c1'
+        };
+
+        const innerFn = sinon.stub().resolves(input);
+        const createStub = sinon.stub(Report.v1, 'create').returns(innerFn);
+
+        const reportDoc = await Report.v1.create(remoteContext)(input);
+
+        expect(reportDoc).to.deep.equal(input);
+        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(input)).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      it('returns an updated report doc for a valid input', async () => {
+        const input = {
+          form: 'form-1',
+          type: 'report',
+          reported_date: 11223344,
+          contact: {
+            _id: '3'
+          }, _id: '1', _rev: '2'
+        };
+
+        const innerFn = sinon.stub().resolves(input);
+        const updateStub = sinon.stub(Report.v1, 'update').returns(innerFn);
+
+        const reportDoc = await Report.v1.update(remoteContext)(input);
+
+        expect(reportDoc).to.deep.equal(input);
+        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(input)).to.be.true;
+      });
+
+      it('rejected with an error if report is not found', async () => {
+        const input = {
+          type: 'report',
+          contact: {
+            _id: '2',
+          },
+          _id: '12333', _rev: '2', form: 'hello'
+        };
+
+        const innerFn = sinon.stub().rejects(new InvalidArgumentError('Report not found'));
+        sinon.stub(Report.v1, 'update').returns(innerFn);
+
+        await expect(Report.v1.update(remoteContext)(input))
+          .to.be.rejectedWith('Report not found');
+      });
+
     });
   });
 });

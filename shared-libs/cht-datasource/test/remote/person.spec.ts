@@ -73,7 +73,7 @@ describe('remote person', () => {
       const limit = 3;
       const cursor = '1';
       const personType = 'person';
-      const personTypeQualifier = {contactType: personType};
+      const personTypeQualifier = { contactType: personType };
       const queryParam = {
         limit: limit.toString(),
         type: personType,
@@ -81,7 +81,7 @@ describe('remote person', () => {
       };
 
       it('returns people', async () => {
-        const doc = [{ type: 'person' }, {type: 'person'}];
+        const doc = [ { type: 'person' }, { type: 'person' } ];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -100,6 +100,46 @@ describe('remote person', () => {
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+    });
+
+    describe('createPerson', () => {
+      it('creates a person for a valid input', async () => {
+        const personInput = {
+          type: 'person',
+          name: 'user-1',
+          parent: 'p1'
+        };
+        const expected_doc = { ...personInput, _id: '2', _rev: '1' };
+        const innerFn = sinon.stub().resolves(expected_doc);
+        const createStub = sinon.stub(Person.v1, 'create').returns(innerFn);
+
+        const result = await Person.v1.create(remoteContext)(personInput);
+
+        expect(result).to.deep.equal(expected_doc);
+        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(personInput)).to.be.true;
+      });
+    });
+
+    describe('updatePerson', () => {
+      it('updates a person for a valid input', async () => {
+        const personInput = {
+          type: 'person',
+          name: 'user-1',
+          parent: 'p1',
+          _id: '1-id',
+          rev: '1-rev'
+        };
+        const expected_doc = personInput;
+        const innerFn = sinon.stub().resolves(expected_doc);
+        const updateStub = sinon.stub(Person.v1, 'update').returns(innerFn);
+
+        const result = await Person.v1.update(remoteContext)(personInput);
+
+        expect(result).to.deep.equal(expected_doc);
+        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(personInput)).to.be.true;
       });
     });
   });

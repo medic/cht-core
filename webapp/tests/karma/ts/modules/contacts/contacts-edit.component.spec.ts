@@ -927,7 +927,7 @@ describe('ContactsEdit component', () => {
           name: 'Sibling2',
           parent: { _id: 'parent1' },
           type: 'the_district',
-          reported_date: new Date(1736845534000)
+          reported_date: 1736845534000
         }
       ]));
 

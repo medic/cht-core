@@ -3,10 +3,12 @@ import logger from '@medic/logger';
 import sinon, { SinonStub } from 'sinon';
 import {
   assertRemoteDataContext,
+  getRemoteDataContext,
   getResource,
   getResources,
-  getRemoteDataContext,
   isRemoteDataContext,
+  postResource,
+  putResource,
   RemoteDataContext
 } from '../../../src/remote/libs/data-context';
 import { DataContext, InvalidArgumentError } from '../../../src';
@@ -18,7 +20,7 @@ describe('remote context lib', () => {
   let loggerError: SinonStub;
 
   beforeEach(() => {
-    fetchResponse = { 
+    fetchResponse = {
       ok: true,
       status: 200,
       statusText: 'OK',
@@ -33,10 +35,10 @@ describe('remote context lib', () => {
 
   describe('isRemoteDataContext', () => {
     ([
-      [{ url: 'hello.world' }, true],
-      [{ hello: 'world' }, false],
-      [{ }, false],
-    ] as [DataContext, boolean][]).forEach(([context, expected]) => {
+      [ { url: 'hello.world' }, true ],
+      [ { hello: 'world' }, false ],
+      [ {}, false ],
+    ] as [ DataContext, boolean ][]).forEach(([ context, expected ]) => {
       it(`evaluates ${JSON.stringify(context)}`, () => {
         expect(isRemoteDataContext(context)).to.equal(expected);
       });
@@ -52,7 +54,7 @@ describe('remote context lib', () => {
 
     ([
       { hello: 'world' },
-      { },
+      {},
     ] as DataContext[]).forEach(context => {
       it(`throws an error for ${JSON.stringify(context)}`, () => {
         expect(() => assertRemoteDataContext(context))
@@ -157,7 +159,8 @@ describe('remote context lib', () => {
 
     it('throws an error if the resource fetch resolves an error status', async () => {
       const path = 'path';
-      const resourceId = 'resource';      fetchResponse.ok = false;
+      const resourceId = 'resource';
+      fetchResponse.ok = false;
       fetchResponse.status = 501;
       fetchResponse.statusText = 'Not Implemented';
 
@@ -173,8 +176,208 @@ describe('remote context lib', () => {
     });
   });
 
+  describe('postResource', () => {
+    it('throws InvalidArgumentError if the Bad Request - 400 status is returned', async () => {
+      const path = 'path';
+      const qualifier = {
+        name: 'user-1',
+        contact: {
+          _id: '1',
+          parent: {
+            _id: '2'
+          }
+        }
+      };
+      const errorMsg = `Missing or empty required fields [${JSON.stringify(qualifier)}].`;
+      fetchResponse.ok = false;
+      fetchResponse.status = 400;
+      fetchResponse.statusText = errorMsg;
+
+      fetchResponse.text.resolves(errorMsg);
+      const expectedError = new InvalidArgumentError(errorMsg);
+      await expect(postResource(path)(context)(qualifier)).to.be.rejectedWith(errorMsg);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.called).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to POST resource to ${context.url}/${path}.`,
+        expectedError
+      ]);
+    });
+
+    it('throws an error when the server responds with non-400 error status', async () => {
+      const path = 'path';
+      const qualifier = { name: 'city-1', type: 'place' };
+      fetchResponse.ok = false;
+      fetchResponse.status = 500;
+      fetchResponse.statusText = 'Internal Server Error';
+
+      await expect(postResource(path)(context)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to POST resource to ${context.url}/${path}.`,
+        new Error(fetchResponse.statusText)
+      ]);
+    });
+
+    it('creates a resource for valid req body and path', async () => {
+      const path = 'path';
+      const qualifier = {
+        name: 'city-1',
+        type: 'place'
+      };
+
+      const expected_response = { ...qualifier, _id: '1', _rev: '1', _reported_date: 123123123 };
+      fetchResponse.ok = true;
+      fetchResponse.status = 200;
+      fetchResponse.json.resolves(expected_response);
+
+      const response = await postResource(path)(context)(qualifier);
+
+      expect(response).to.deep.equal(expected_response);
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
+    });
+  });
+
+  describe('putResource', () => {
+    it('throws InvalidArgumentError if the Bad Request - 400 status is returned', async () => {
+      const path = 'path';
+      const input = {
+        _id: '1',
+        name: 'user-1',
+        contact: {
+          _id: '1',
+          parent: {
+            _id: '2'
+          }
+        }
+      };
+      const errorMsg = `Missing or empty required fields [${JSON.stringify(input)}].`;
+      fetchResponse.ok = false;
+      fetchResponse.status = 400;
+      fetchResponse.statusText = errorMsg;
+
+      fetchResponse.text.resolves(errorMsg);
+      const expectedError = new InvalidArgumentError(errorMsg);
+      await expect(putResource(path)(context)(input)).to.be.rejectedWith(errorMsg);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}/${input._id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(input)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.called).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to PUT resource to ${context.url}/${path}/${input._id}.`,
+        expectedError
+      ]);
+    });
+
+    it('throws an error when the server responds with non-400 error status', async () => {
+      const path = 'path';
+      const qualifier = { _id: '1', name: 'city-1', type: 'place' };
+      fetchResponse.ok = false;
+      fetchResponse.status = 502;
+      fetchResponse.statusText = 'Bad Gateway';
+
+      await expect(putResource(path)(context)(qualifier)).to.be.rejectedWith(fetchResponse.statusText);
+
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}/${qualifier._id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.text.notCalled).to.be.true;
+      expect(fetchResponse.json.notCalled).to.be.true;
+      expect(loggerError.calledOnce).to.be.true;
+      expect(loggerError.args[0]).to.deep.equal([
+        `Failed to PUT resource to ${context.url}/${path}/${qualifier._id}.`,
+        new Error(fetchResponse.statusText)
+      ]);
+    });
+
+    it('updates a resource for valid req body and path', async () => {
+      const path = 'path';
+      const qualifier = {
+        _id: '1',
+        name: 'city-1',
+        type: 'place'
+      };
+
+      const expected_response = { ...qualifier, _rev: '1', _reported_date: 123123123 };
+      fetchResponse.ok = true;
+      fetchResponse.status = 200;
+      fetchResponse.json.resolves(expected_response);
+
+      const response = await putResource(path)(context)(qualifier);
+
+      expect(response).to.deep.equal(expected_response);
+      expect(fetchStub.calledOnceWithExactly(
+        `${context.url}/${path}/${qualifier._id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(qualifier)
+        }
+      )).to.be.true;
+
+      expect(fetchResponse.json.calledOnceWithExactly()).to.be.true;
+    });
+  });
+
   describe('getResources', () => {
-    const params = {abc: 'xyz'};
+    const params = { abc: 'xyz' };
     const stringifiedParams = new URLSearchParams(params).toString();
 
     it('fetches a resource with a path', async () => {

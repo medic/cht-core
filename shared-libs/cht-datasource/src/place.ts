@@ -6,9 +6,11 @@ import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import { getPagedGenerator, NormalizedParent, Nullable, Page } from './libs/core';
+import { getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { InvalidArgumentError } from './libs/error';
+import * as Input from './input';
 
 /** */
 export namespace v1 {
@@ -115,5 +117,71 @@ export namespace v1 {
       return getPagedGenerator(getPage, placeType);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a place from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a place.
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Place.v1.create, Remote.Place.v1.create);
+
+    /**
+     * Creates a new place record.
+     * @param input input fields for creating a place
+     * @returns the created place record
+     * @throws InvalidArgumentError if `type` is not provided or is not a supported place contact type
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if `parent` is not provided or is not the identifier of a valid contact. The parent
+     * contact's type must be one of the supported parent contact types for the new place.
+     * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
+     * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact
+     */
+    const curriedFn = async (input: Input.v1.PlaceInput): Promise<Place> => {
+      if (!isRecord(input)) {
+        throw new InvalidArgumentError('Place data not provided.');
+      }
+      return fn(input);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a place from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a place
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Place.v1.update, Remote.Place.v1.update);
+
+    /**
+     * Updates an existing place to have the provided data.
+     * @param updated the updated place data. The complete data for the place must be provided. Existing fields not
+     * included in the updated data will be removed from the place. If the provided parent/contact lineage is
+     * hydrated (e.g. for a {@link PlaceWithLineage}), the lineage will be properly dehydrated before being stored.
+     * @returns the updated place with the new `_rev` value
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id does not identify an existing place contact
+     * @throws InvalidArgumentError if `_rev` is not provided or does not match the place's current `_rev` value
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact
+     * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`, `parent`,
+     * `type`, `contact_type`
+     */
+    const curriedFn = async <T extends Place | PlaceWithLineage>(
+      updated: Input.v1.UpdatePlaceInput<T>
+    ): Promise<T> => {
+      if (!isIdentifiable(updated)) {
+        throw new InvalidArgumentError('Updated place data not provided.');
+      }
+      return fn(updated);
+    };
+    return curriedFn;
   };
 }

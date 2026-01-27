@@ -2,7 +2,11 @@ const reportFactory = require('@factories/cht/reports/generic-report');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const userFactory = require('@factories/cht/users/users');
-const { getRemoteDataContext, Report, Qualifier } = require('@medic/cht-datasource');
+const {
+  getRemoteDataContext,
+  Report,
+  Qualifier,
+} = require('@medic/cht-datasource');
 const { USER_ROLES } = require('@medic/constants');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -11,14 +15,14 @@ const uuid = require('uuid').v4;
 
 describe('cht-datasource Report', () => {
   const contact0Id = uuid();
-  const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
-  const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
+  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
+  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
-  const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
+  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
-    contact: {_id: contact0Id},
+    contact: { _id: contact0Id },
     parent: {
       _id: place1._id,
       parent: {
@@ -118,7 +122,7 @@ describe('cht-datasource Report', () => {
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
   const allReports = [ report0, report1, report2, report3, report4, report5, report6, report7, report8 ];
   const dataContext = getRemoteDataContext(utils.getOrigin());
-  
+
   const excludedProperties = ['_rev', 'reported_date'];
 
   before(async () => {
@@ -187,7 +191,7 @@ describe('cht-datasource Report', () => {
         expect(report).to.be.null;
       });
     });
-    
+
     describe('getUuidsPage', async () => {
       const getUuidsPage = Report.v1.getUuidsPage(dataContext);
       const freetext = 'report';
@@ -232,7 +236,8 @@ describe('cht-datasource Report', () => {
         expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
-      it('returns a page of unique report ids for when multiple fields match the same freetext with limit', 
+      it(
+        'returns a page of unique report ids for when multiple fields match the same freetext with limit',
         async () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -243,9 +248,11 @@ describe('cht-datasource Report', () => {
 
           expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.not.equal(emptyNouveauCursor);
-        });
+        }
+      );
 
-      it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+      it(
+        'returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
         async () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, twoLimit);
@@ -257,13 +264,14 @@ describe('cht-datasource Report', () => {
           expect(responseIds).to.satisfy(subsetArray => {
             return subsetArray.every(item => expectedContactIds.includes(item));
           });
-        });
+        }
+      );
 
       it('throws error when limit is invalid', async () => {
         await expect(
           getUuidsPage(Qualifier.byFreetext(freetext), cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
         );
       });
 
@@ -291,6 +299,90 @@ describe('cht-datasource Report', () => {
         }
 
         expect(docs).excluding(excludedProperties).to.deep.equalInAnyOrder(expectedReportIds);
+      });
+    });
+
+    describe('create', () => {
+      it('creates a report for a valid input', async () => {
+        const input = {
+          form: 'pregnancy_home_visit',
+          type: 'data_record',
+          contact: contact0._id
+        };
+
+        const updatedInput = {
+          ...input, contact: {
+            _id: contact0._id, parent: contact0.parent
+          }
+        };
+        const reportDoc = await Report.v1.create(dataContext)(input);
+        expect(reportDoc).excluding([ '_id', '_rev', 'reported_date', ]).to.deep.equal(updatedInput);
+      });
+
+      it('throws error for missing contact', async () => {
+        const input = {
+          form: 'pregnancy_home_visit',
+          type: 'data_record',
+        };
+        await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
+          `The [contact] field must be valued.`
+        );
+      });
+
+      it('throws error for invalid date format via createReport', async () => {
+        const input = {
+          form: 'pregnancy_home_visit',
+          type: 'data_record',
+          reported_date: '112-9909-123'
+        };
+
+        await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
+          `Invalid reported_date [\\"112-9909-123\\"]. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
+          `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+        );
+      });
+    });
+
+    describe('update', () => {
+      const createInput = {
+        form: 'pregnancy_home_visit',
+        type: 'data_record',
+        contact: contact0._id
+      };
+
+      it('updates report for a valid update input', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput = {
+          ...createdReport, form: 'pnc_danger_sign_follow_up_baby'
+        };
+        const updatedReport = await Report.v1.update(dataContext)(updateInput);
+        expect(updatedReport).excluding([ '_rev' ])
+          .to.deep.equal(updateInput);
+      });
+
+      it('throws error for missing required field', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput = {
+          ...createdReport
+        };
+        delete updateInput.form;
+        await expect(Report.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith(JSON.stringify({
+            code: 400,
+            error: `Valid _id, _rev, form, and type fields must be provided.`
+          }));
+      });
+
+      it('throws error when original report doc does not exist', async () => {
+        const createdReport = await Report.v1.create(dataContext)(createInput);
+        const updateInput = {
+          ...createdReport, _id: '123123123'
+        };
+        await expect(Report.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith(JSON.stringify({
+            code: 404,
+            error: `Report record [123123123] not found.`
+          }));
       });
     });
   });
