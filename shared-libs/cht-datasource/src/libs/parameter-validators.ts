@@ -41,8 +41,8 @@ function assertReportedDate<T extends DataObject>(
 ): asserts data is T & { reported_date?: string | number } {
   if (data.reported_date && !isValidReportedDate(data.reported_date)) {
     throw new InvalidArgumentError(
-      `Invalid reported_date [${JSON.stringify(data.reported_date)}]. Expected format to be ` +
-      '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+      `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
+      '\'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
     );
   }
 }
@@ -82,7 +82,7 @@ export function assertPlaceInput(data: unknown): asserts data is Input.v1.PlaceI
 /** @internal */
 // eslint-disable-next-line func-style
 export function assertReportInput(data: unknown): asserts data is Input.v1.ReportInput {
-  assertDataObject(data);
+  assertDataObject(data, InvalidArgumentError);
   assertHasRequiredField(data, { name: 'form', type: 'string' }, InvalidArgumentError);
   assertReportedDate(data);
   assertHasRequiredField(data, { name: 'contact', type: 'string' }, InvalidArgumentError);
