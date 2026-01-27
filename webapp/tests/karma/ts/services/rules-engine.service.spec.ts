@@ -139,7 +139,6 @@ describe('RulesEngineService', () => {
     chtDatasourceService.bind.withArgs(TargetInterval.v1.get).returns(getTargetInterval);
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
-
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
     fetchTasksForRecursive = sinon.stub();
@@ -153,7 +152,7 @@ describe('RulesEngineService', () => {
     });
     fetchTasksFor.returns({ on: fetchTasksForRecursive });
 
-    fetchTargetsResult = () => Promise.resolve();
+    fetchTargetsResult = sinon.stub().resolves([]);
     fetchTargets = sinon.stub();
     fetchTargets.events = {};
     fetchTargetsRecursive = sinon.stub();
@@ -1161,54 +1160,80 @@ describe('RulesEngineService', () => {
       clock && clock.restore();
     });
 
-    it('should fetch current month targets when ReportingPeriod.CURRENT is passed', async () => {
-      fetchTargetsResult = sinon.stub().resolves([{ ...sampleTarget }]);
-      service = TestBed.inject(RulesEngineService);
+    [
+      'current_key',
+      '(interval) => interval + "_key"',
+    ].forEach(subtitleTranslationKey => {
+      it('should fetch current month targets when ReportingPeriod.CURRENT is passed', async () => {
+        fetchTargetsResult = sinon.stub().resolves([{
+          ...sampleTarget,
+          subtitle_translation_key: subtitleTranslationKey
+        }]);
+        service = TestBed.inject(RulesEngineService);
 
-      const actual = await service.fetchTargets(ReportingPeriod.CURRENT);
+        const actual = await service.fetchTargets(ReportingPeriod.CURRENT);
 
-      expect(actual.length).to.eq(1);
-      expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
-      expect(getTargetInterval.called).to.be.false;
+        expect(actual.length).to.eq(1);
+        expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
+        expect(getTargetInterval.called).to.be.false;
+        expect(actual[0].subtitle_translation_key).to.equal('current_key');
+      });
     });
 
-    it('should fetch previous month targets using cht-datasource when ReportingPeriod.PREVIOUS is passed', async () => {
-      const targetIntervalDoc = {
-        _id: 'target~2025-01~user~org.couchdb.user:fred',
-        type: 'target',
-        user: 'org.couchdb.user:fred',
-        owner: 'user',
-        reporting_period: '2025-01',
-        updated_date: Date.now(),
-        targets: [
-          {
-            id: 'target',
-            value: {
-              pass: 5,
-              total: 10
+    [
+      'previous_key',
+      '(interval) => interval + "_key"',
+    ].forEach(subtitleTranslationKey => {
+      it('should fetch previous month targets when ReportingPeriod.PREVIOUS is passed', async () => {
+        const targetIntervalDoc = {
+          _id: 'target~2025-01~user~org.couchdb.user:fred',
+          type: 'target',
+          user: 'org.couchdb.user:fred',
+          owner: 'user',
+          reporting_period: '2025-01',
+          updated_date: Date.now(),
+          targets: [
+            {
+              id: 'target',
+              value: {
+                pass: 5,
+                total: 10
+              }
+            }
+          ]
+        };
+        getTargetInterval.resolves(targetIntervalDoc);
+        service = TestBed.inject(RulesEngineService);
+
+        settingsService.get.resolves({
+          _id: 'settings',
+          tasks: {
+            targets: {
+              items: [
+                { id: 'target', type: 'count', subtitle_translation_key: subtitleTranslationKey },
+              ]
             }
           }
-        ]
-      };
-      getTargetInterval.resolves(targetIntervalDoc);
-      service = TestBed.inject(RulesEngineService);
+        });
 
-      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+        const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.calledOnce).to.be.true;
-      expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+        expect(getTargetInterval.calledOnce).to.be.true;
+        expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
 
-      const qualifier = getTargetInterval.args[0][0];
-      expect(qualifier).to.have.property('reportingPeriod', '2025-01');
-      expect(qualifier).to.have.property('contactUuid', 'user');
-      expect(qualifier).to.have.property('username', 'fred');
+        const qualifier = getTargetInterval.args[0][0];
+        expect(qualifier).to.have.property('reportingPeriod', '2025-01');
+        expect(qualifier).to.have.property('contactUuid', 'user');
+        expect(qualifier).to.have.property('username', 'fred');
 
-      expect(actual.length).to.eq(1);
-      expect(actual[0]).to.include({
-        id: 'target',
-        visible: true
+        expect(actual.length).to.eq(1);
+        expect(actual[0]).to.include({
+          id: 'target',
+          visible: true,
+          subtitle_translation_key: 'previous_key'
+        });
+        expect(actual[0].value).to.deep.eq({ pass: 5, total: 10 });
       });
-      expect(actual[0].value).to.deep.eq({ pass: 5, total: 10 });
     });
 
     it('should return empty targets when username is missing', async () => {
