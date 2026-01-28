@@ -28,7 +28,8 @@ const isOffline = (configured, roles) => {
 };
 
 const getPurgedId = id => id && `purged:${id}`;
-const extractId = purgedId => purgedId && String(purgedId).replace(/^purged:/, '');
+const getPurgedGroupId = id => id && `purged-group:${id}`;
+const extractId = purgedId => purgedId && String(purgedId).replace(/^purged(?:-group)?:/, '');
 
 module.exports = {
   getRoleHash,
@@ -37,4 +38,5 @@ module.exports = {
   getPurgedId,
   extractId,
   sortedUniqueRoles,
+  getPurgedGroupId,
 };
