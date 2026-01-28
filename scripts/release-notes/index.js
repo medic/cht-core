@@ -4,14 +4,15 @@ const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
 const ExtendedOctokit = Octokit.plugin(paginateGraphql);
 
 
-const token = process.env.GH_TOKEN;
+const TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = 'medic';
 const BOTS = ['dependabot[bot]'];
+const REPO_NAME= 'cht-core';
 
 const argv = minimist(process.argv.slice(2));
 if (argv.help) {
   console.log(`
-  Usage: node index.js [OPTIONS] REPO MILESTONE
+  Usage: node index.js [OPTIONS] MILESTONE
   
   Generates a changelog given a GH report and milestone. Requires a GitHub API token to be configured. 
   See the README for more information.
@@ -19,20 +20,8 @@ if (argv.help) {
   Options:
      --help  Show this help message
      --skip-commit-validation  Skip validation of commits
-     
-  Repository: The name of the repository (e.g. cht-core).
-  
-  Milestone: The name of the milestone (e.g. 2.15.0).
   `);
   process.exit(0);
-}
-
-const [REPO_NAME, MILESTONE_NAME] = argv._;
-if (!REPO_NAME) {
-  throw new Error('You must specify a repo name (eg: "cht-core") as the first argument');
-}
-if (!MILESTONE_NAME) {
-  throw new Error('You must specify a milestone name (eg: "2.15.0") as the second argument');
 }
 
 const WARNINGS = [
@@ -68,11 +57,15 @@ const getIssueNumbers = commitMessage => {
 };
 
 (async() => { // NOSONAR
-  console.log('Logging in to GitHub with token that is', token.length, 'chars...');
+  console.log('Logging in to GitHub with token that is', TOKEN.length, 'chars...');
   const octokit = new ExtendedOctokit({
-    auth: token,
+    auth: TOKEN,
     userAgent: 'cht-release-note-generator',
   });
+
+  const response = await octokit.request('GET /repos/medic/' + REPO_NAME + '/milestones');
+  const MILESTONE_NAME = response.data.sort((a, b) => Number.parseFloat(a.title) - Number.parseFloat(b.title))[0].title;
+  console.log('Using next milestone of', MILESTONE_NAME, 'out of', response.data.length, 'total');
 
   const queryRepo = query => octokit.graphql(getRepoQueryString(query));
 
@@ -316,7 +309,7 @@ description:
 
 ## Known issues
 
-Check the repository for the [latest known issues](https://github.com/medic/cht-core/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE_NAME}%22).
+Check the repository for the [latest known issues](https://github.com/medic/${REPO_NAME}/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE_NAME}%22).
 
 ## Upgrade notes
 
