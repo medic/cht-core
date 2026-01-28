@@ -88,8 +88,8 @@ const cookieLogin = async (options = {}) => {
   };
   const resp = await utils.request(opts);
   const cookieArray = utils.parseCookieResponse(resp.headers.getSetCookie());
+  console.warn(cookieArray);
 
-  await browser.url('/');
   await browser.setCookies(cookieArray);
   if (createUser) {
     await utils.setupUserDoc(username);

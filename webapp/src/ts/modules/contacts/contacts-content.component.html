@@ -18,7 +18,7 @@
     <error-log [errorStack]="summaryErrorStack" [errorFor]="'contacts'"></error-log>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent && !summaryErrorStack">
+  <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent && !summaryErrorStack && selectedContact">
     <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
     <div class="material">
       <div class="body meta">

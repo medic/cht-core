@@ -145,16 +145,7 @@ const hasVisibleLoader = async () => {
   const loaders = await $$('.loader');
   for (const loader of loaders) {
     try {
-      // Check if loader exists and is actually visible (not hidden by CSS)
-      const isDisplayed = await loader.isDisplayed();
-      if (isDisplayed) {
-        // Double-check it has actual dimensions (not 0x0)
-        const size = await loader.getSize();
-        if (size.width > 0 && size.height > 0) {
-          console.warn('Loader is visible and has non-zero dimensions', loader.selector, loader.elementId);
-          return true;
-        }
-      }
+      return await loader.isDisplayed();
     } catch {
       // Ignore stale element errors
     }
@@ -177,7 +168,8 @@ const waitForLoaders = async () => {
     await browser.pause(100);
     return !(await hasVisibleLoader());
   }, {
-    timeoutMsg: 'Waiting for Loading spinners to hide timed out.'
+    timeoutMsg: 'Waiting for Loading spinners to hide timed out.',
+    timeout: 5000
   });
 };
 

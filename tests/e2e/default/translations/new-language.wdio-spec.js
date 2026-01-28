@@ -46,11 +46,8 @@ describe('Adding new language', () => {
   });
 
   describe('webapp', () => {
-    before(async () => {
-      await commonPage.goToBase();
-    });
-
     it('should add new translations', async () => {
+      await commonPage.goToBase();
       await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
       await userSettingsElements.setLanguage(NEW_LANG_CODE);
       await browser.waitUntil(

@@ -51,10 +51,6 @@ describe('Navigation tests', () => {
         await loginPage.cookieLogin();
       });
 
-      after(async () => {
-        await browser.deleteCookies();
-      });
-
       it('should display tab labels, when all tabs are enabled', async () => {
         const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
         expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
@@ -63,6 +59,7 @@ describe('Navigation tests', () => {
 
     describe('as chw', () => {
       before(async () => {
+        await commonPage.reloadSession();
         await utils.saveDocs([...places.values()]);
         await utils.createUsers([user]);
         const permissionsToRemove = [
