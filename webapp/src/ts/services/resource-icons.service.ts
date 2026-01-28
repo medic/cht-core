@@ -9,7 +9,7 @@ import { DOC_IDS } from '@medic/constants';
 })
 export class ResourceIconsService {
   private readonly CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
-  private readonly DOC_IDS = [DOC_IDS.RESOURCES, 'branding', 'partners'];
+  private readonly RESOURCE_DOC_IDS = [DOC_IDS.RESOURCES, 'branding', 'partners'];
 
   private initResources;
 
@@ -32,12 +32,12 @@ export class ResourceIconsService {
     private changes: ChangesService,
     private db: DbService,
   ) {
-    this.DOC_IDS.slice(1).forEach(doc => this.updateResources(doc));
-    this.initResources = this.updateResources(this.DOC_IDS[0]);
+    this.RESOURCE_DOC_IDS.slice(1).forEach(doc => this.updateResources(doc));
+    this.initResources = this.updateResources(this.RESOURCE_DOC_IDS[0]);
 
     this.changes.subscribe({
       key: 'resource-icons',
-      filter: change => this.DOC_IDS.includes(change.id),
+      filter: change => this.RESOURCE_DOC_IDS.includes(change.id),
       callback: change => this.updateResources(change.id),
     });
   }
@@ -56,7 +56,7 @@ export class ResourceIconsService {
           return faPlaceholder ? `<span class="fa ${faPlaceholder}"/>` : '';
         }
         let content;
-        if (icon.content_type === 'image/svg+xml' && i === 'resources') {
+        if (icon.content_type === 'image/svg+xml' && i === DOC_IDS.RESOURCES) {
           // SVG: include the raw data in the page so it can be styled
           content = atob(icon.data);
         } else {
@@ -75,15 +75,15 @@ export class ResourceIconsService {
     const image = this.getHtmlContent(name, docId, faPlaceholder);
     // Handle title attribute for branding doc specially
     // https://github.com/medic/medic/issues/5531
-    const className = this.CSS_CLASS[this.DOC_IDS.indexOf(docId)];
-    const titleAttribute = `${docId === this.DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
+    const className = this.CSS_CLASS[this.RESOURCE_DOC_IDS.indexOf(docId)];
+    const titleAttribute = `${docId === this.RESOURCE_DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
     const faPlaceholderAttribute = faPlaceholder ? `data-fa-placeholder="${faPlaceholder}"` : '';
     return `<span class="${className}" ${titleAttribute} ${faPlaceholderAttribute}>${image}</span>`;
   }
 
   private updateDom ($elem, doc) {
     $elem = $elem || $(document.body);
-    const css = this.CSS_CLASS[this.DOC_IDS.indexOf(doc)];
+    const css = this.CSS_CLASS[this.RESOURCE_DOC_IDS.indexOf(doc)];
     $elem.find(`.${css}`).each((i, child) => {
       const $this = $(child);
       const name = $this.data('title') || $this.attr('title');
@@ -121,12 +121,12 @@ export class ResourceIconsService {
   }
 
   getAppTitle() {
-    return this.db.get().get(this.DOC_IDS[1]).then(doc => doc.title);
+    return this.db.get().get(this.RESOURCE_DOC_IDS[1]).then(doc => doc.title);
   }
 
   replacePlaceholders($elem) {
     return this.initResources.then(() => {
-      this.updateDom($elem, this.DOC_IDS[0]);
+      this.updateDom($elem, this.RESOURCE_DOC_IDS[0]);
     });
   }
 }
