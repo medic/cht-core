@@ -22,12 +22,14 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          GITHUB_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js > ~/release-notes.md
+          GITHUB_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js > ~/release-notes.md 2> ~/release-error.txt
       - uses: actions/upload-artifact@v4
-        id: artifact-upload-step
         with:
           name: release-notes
           path: ~/release-notes.md
           retention-days: 10
-      - name: Output artifact ID
-        run: echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-error
+          path: ~/release-error.txt
+          retention-days: 10
