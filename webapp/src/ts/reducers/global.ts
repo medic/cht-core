@@ -278,5 +278,4 @@ interface NavigationState {
 interface SidebarFilterState {
   isOpen?: boolean;
   filterCount?: Record<string, number>;
-  defaultFilters?: Record<string, any>;
 }

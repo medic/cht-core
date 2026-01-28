@@ -60,6 +60,7 @@
     class="col-sm-3 sidebar-filter-wrapper"
     [showFacilityFilter]="false"
     telemetryKey = "targets"
+    [selectedReportingPeriod]="reportingPeriodFilter"
     (reportingPeriodSelectionChanged)="getTargets($event)">
   </mm-analytics-sidebar-filter>
 </div>

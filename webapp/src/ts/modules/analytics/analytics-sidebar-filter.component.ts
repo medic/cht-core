@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, Input, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Place } from '@medic/cht-datasource';
@@ -22,10 +22,12 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
   @Input() userFacilities: Place.v1.Place[] = [];
+  @Input() selectedFacility?: Place.v1.Place;
+  @Input() selectedReportingPeriod = ReportingPeriod.CURRENT;
   @Input() showFacilityFilter = true;
   @Input() telemetryKey: string = 'target_aggregates';
-  @Output() facilitySelectionChanged = new EventEmitter<string>();
-  @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
+  @Output() facilitySelectionChanged = new EventEmitter<Place.v1.Place>();
+  @Output() reportingPeriodSelectionChanged = new EventEmitter<ReportingPeriod>();
   private readonly globalActions;
   readonly reportingPeriods = [
     { value: ReportingPeriod.CURRENT, label: 'targets.this_month.subtitle' },
@@ -35,8 +37,6 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
   DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
   isOpen = false;
-  selectedReportingPeriod;
-  selectedFacility;
   facilityFilterLabel;
 
   constructor(
@@ -53,6 +53,15 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     this.setFacilityLabel();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['selectedReportingPeriod'] && this.selectedReportingPeriod) {
+      this.fetchAggregateTargetsByReportingPeriod();
+    }
+    if (changes['selectedFacility'] && this.selectedFacility) {
+      this.fetchAggregateTargetsByFacility(this.selectedFacility);
+    }
+  }
+
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
   }
@@ -61,14 +70,9 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => {
-        this.isOpen = filterState?.isOpen ?? false;
-        if (!this.selectedFacility && filterState?.defaultFilters?.facility) {
-          this.selectedFacility = filterState.defaultFilters.facility;
-        }
-
-        if (!this.selectedReportingPeriod && filterState?.defaultFilters?.reportingPeriod) {
-          this.selectedReportingPeriod = filterState.defaultFilters.reportingPeriod;
-        }
+        // TODO add filter count to filter icon (make sure this works in both mobile and desktop modes)
+        // TODO subtitle issue on aggregate targets - check how subtitle getting rendered.
+        this.isOpen = filterState.isOpen ?? false;
       });
 
     this.subscriptions.add(subscription);
@@ -97,7 +101,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     }
   }
 
-  fetchAggregateTargetsByFacility(facility) {
+  fetchAggregateTargetsByFacility(facility: Place.v1.Place) {
     this.selectedFacility = facility;
     this.facilitySelectionChanged.emit(this.selectedFacility);
     this.collectFilterSelectionTelemetry('facility');

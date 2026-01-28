@@ -13,6 +13,7 @@ import { ContentRowListItemComponent } from '@mm-components/content-row-list-ite
 import { RouterOutlet } from '@angular/router';
 import { AnalyticsSidebarFilterComponent, ReportingPeriod } from './analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Place } from '@medic/cht-datasource';
 
 @Component({
   selector: 'analytics-target-aggregates',
@@ -40,8 +41,8 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   error = null;
   userFacilities;
   sidebarFilter;
-  reportingPeriodFilter;
-  facilityFilter;
+  reportingPeriodFilter = ReportingPeriod.CURRENT;
+  facilityFilter?: Place.v1.Place;
 
   constructor(
     private store: Store,
@@ -58,7 +59,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.trackPerformance = this.performanceService.track();
       this.enabled = await this.targetAggregatesService.isEnabled();
       this.subscribeToStore();
-      await this.setDefaultFilters();
+      await this.setDefaultFacilityFilter();
     } catch (error) {
       this.loading = false;
       console.error('Error loading aggregate targets', error);
@@ -144,14 +145,10 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     return aggregate;
   }
 
-  private async setDefaultFilters() {
+  private async setDefaultFacilityFilter() {
     this.userFacilities = await this.userSettingsService.getUserFacilities();
     this.userFacilities.sort((a, b) => a.name.localeCompare(b.name));
-    const defaultFilters = {
-      facility: this.userFacilities.length ? { ...this.userFacilities[0] } : null,
-      reportingPeriod: ReportingPeriod.CURRENT,
-    };
-    this.globalActions.setSidebarFilter({ defaultFilters });
-    await this.getTargetAggregates(defaultFilters.facility, defaultFilters.reportingPeriod);
+    this.facilityFilter = this.userFacilities.length ? { ...this.userFacilities[0] } : null;
+    await this.getTargetAggregates(this.facilityFilter, this.reportingPeriodFilter);
   }
 }

@@ -30,7 +30,7 @@
                   type="radio"
                   name="facility"
                   [value]="facility"
-                  [checked]="facility._id === selectedFacility._id"
+                  [checked]="facility._id === selectedFacility?._id"
                   (change)="fetchAggregateTargetsByFacility(facility)">
                 <span class="filter-option-label">
                   {{ facility.name }}

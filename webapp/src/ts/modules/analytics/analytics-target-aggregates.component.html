@@ -41,6 +41,8 @@
     <mm-analytics-sidebar-filter
       class="col-sm-3 sidebar-filter-wrapper"
       [userFacilities]="userFacilities"
+      [selectedFacility]="facilityFilter"
+      [selectedReportingPeriod]="reportingPeriodFilter"
       (facilitySelectionChanged)="getTargetAggregates($event, reportingPeriodFilter)"
       (reportingPeriodSelectionChanged)="getTargetAggregates(facilityFilter, $event)">
     </mm-analytics-sidebar-filter>
