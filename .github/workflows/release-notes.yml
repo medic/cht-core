@@ -18,11 +18,13 @@ jobs:
         with:
           node-version: 24
       - name: Install Deps & Run Node Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
         run: |
           cd scripts
           npm ci
           cd release-notes
-          GITHUB_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js > ~/release-notes.md 2> ~/release-error.txt
+          GITHUB_TOKEN=$GITHUB_TOKEN node index.js > ~/release-notes.md 2> ~/release-error.txt
       - name: Upload release note artifacts
         uses: actions/upload-artifact@v4
         with:
