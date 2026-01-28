@@ -17,19 +17,22 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Install Deps & Create Markdown (or error)
+      - name: Install Deps & Run Node Script
         run: |
           cd scripts
           npm ci
           cd release-notes
-          GITHUB_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js > ~/release-notes.md 2> ~/release-error.txt
-      - uses: actions/upload-artifact@v4
+          GITHUB_TOKEN=${{ secrets.DEPLOY_TO_GITHUB_PAGES }} node index.js --skip-commit-validation > ~/release-notes.md 2> ~/release-error.txt
+      - name: Upload release note artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: ~/release-notes.md
           retention-days: 10
-      - uses: actions/upload-artifact@v4
+      - name: Upload error artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: release-error
           path: ~/release-error.txt
           retention-days: 10
+          if-no-files-found: ignore
