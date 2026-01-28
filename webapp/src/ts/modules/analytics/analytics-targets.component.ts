@@ -63,6 +63,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToStore();
+    this.getTargets(this.reportingPeriodFilter);
   }
 
   ngOnDestroy(): void {
@@ -86,6 +87,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
         // User pressed the back button in the mobile layout for previous targets
         if (!showContent) {
           this.reportingPeriodFilter = this.DEFAULT_REPORTING_PERIOD;
+          this.getTargets(this.reportingPeriodFilter);
         }
       });
     this.subscriptions.add(backToCurrentSubscription);

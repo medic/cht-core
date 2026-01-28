@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, Input, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Place } from '@medic/cht-datasource';
@@ -7,7 +7,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { NgClass, NgIf, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatAccordion } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
@@ -53,15 +53,6 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     this.setFacilityLabel();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['selectedReportingPeriod'] && this.selectedReportingPeriod) {
-      this.fetchAggregateTargetsByReportingPeriod();
-    }
-    if (changes['selectedFacility'] && this.selectedFacility) {
-      this.fetchAggregateTargetsByFacility(this.selectedFacility);
-    }
-  }
-
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
   }
@@ -71,10 +62,6 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => {
         // TODO add filter count to filter icon (make sure this works in both mobile and desktop modes)
-        // TODO subtitle issue on aggregate targets - check how subtitle getting rendered.
-        // TODO Down in the aggregate detials, when you change the filter, the aggregates are not updated...
-        //      I wonder if we should actually not be showing the filter down here....
-
         this.isOpen = filterState.isOpen ?? false;
       });
 
