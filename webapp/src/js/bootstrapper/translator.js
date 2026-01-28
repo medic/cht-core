@@ -167,6 +167,27 @@ const TRANSLATIONS = {
     SESSION_EXPIRED_DESCRIPTION: 'لقد انتهت جلستك وتم تسجيل خروجك. الرجاء تسجيل الدخول للمتابعة.',
     LOGIN: 'تسجيل الدخول',
   },
+  pt: {
+    FETCH_INFO: ({ count, total }) => `Obtendo informações (${count} de ${total} docs)…`,
+    LOAD_APP: 'Carregando aplicação…',
+    PASSWORD_CHANGE_SUCCESS: 'Senha alterada com sucesso',
+    PURGE_INIT: 'Verificando dados…',
+    PURGE_INFO: ({ count }) => `${count} documentos excluídos…`,
+    PURGE_META: 'Limpando metadados…',
+    STARTING_APP: 'Iniciando aplicação…',
+    DOWNLOAD_APP: 'Baixando aplicação…',
+    ERROR_MESSAGE: 'Erro ao carregar, por favor verifique a conexão',
+    TRY_AGAIN: 'Tentar novamente',
+    POLL_REPLICATION: 'Obtendo dados de replicação…',
+    // eslint-disable-next-line @stylistic/max-len
+    TOO_MANY_DOCS: ({ count, limit }) => `Atenção! Você vai baixar ${count} documentos, o que excede o limite recomendado de ${limit}. Deseja continuar?`,
+    CONTINUE: 'Continuar',
+    ABORT: 'Cancelar',
+    SESSION_EXPIRED_TITLE: 'Sessão expirada',
+    // eslint-disable-next-line @stylistic/max-len
+    SESSION_EXPIRED_DESCRIPTION: 'Sua sessão expirou e você foi desconectado. Por favor, faça login para continuar.',
+    LOGIN: 'Entrar',
+  },
 };
 
 let locale;

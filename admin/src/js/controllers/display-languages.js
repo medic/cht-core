@@ -1,6 +1,7 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
 const DOC_TYPES = constants.DOC_TYPES;
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
@@ -118,7 +119,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const changeListener = Changes({
       key: 'update-languages',
-      filter: change => TranslationLoader.test(change.id) || change.id === 'settings',
+      filter: change => TranslationLoader.test(change.id) || change.id === DOC_IDS.SETTINGS,
       callback: () => getLanguages()
     });
 

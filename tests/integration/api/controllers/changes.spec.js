@@ -225,7 +225,7 @@ describe('changes handler', () => {
     const changesIDs = [
       DOC_IDS.SERVICE_WORKER_META,
       '_design/medic-client',
-      'settings'
+      DOC_IDS.SETTINGS
     ];
 
     beforeEach(async () => {
