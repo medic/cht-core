@@ -1,0 +1,42 @@
+name: Release notes generator
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*-beta.*"
+
+jobs:
+  release_notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+      - name: Use Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install Deps & Run Node Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
+        run: |
+          cd scripts
+          npm ci
+          cd release-notes
+          GITHUB_TOKEN=$GITHUB_TOKEN node index.js > ~/release-notes.md 2> ~/release-error.txt
+      - name: Upload release note artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ~/release-notes.md
+          retention-days: 10
+          compression-level: 0
+      - name: Upload error artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-error
+          path: ~/release-error.txt
+          retention-days: 10
+          if-no-files-found: ignore
+          compression-level: 0
