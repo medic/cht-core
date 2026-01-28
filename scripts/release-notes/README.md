@@ -17,9 +17,9 @@
 
 ### CI
 
-Every time a beta branch is cut, CI should automatically run and save the output of the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml). Each run will have `release-error` and `release-notes` artifacts.  
+Every time a beta branch is cut, CI automatically runs and [saves](https://github.com/actions/upload-artifact) the output of the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml). Each run will have `release-error` and `release-notes` artifacts.  
 
-To manually re-run the CI, use the `gh` command locally:
+To manually re-run the CI, use the `gh` command locally to have the action run on GitHub:
 
 ```shell
 gh workflow run release-notes.yml
@@ -29,7 +29,7 @@ The re-run will show up in the [release note job](https://github.com/medic/cht-c
 
 ### Running locally
 
-Run the script with the following command:
+Ensuring you're logged in to `gh`, call the script locally like so:
 
 ```shell
 GITHUB_TOKEN=$(gh auth token) node index.js
