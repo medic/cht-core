@@ -518,22 +518,6 @@ export class RulesEngineService implements OnDestroy {
     }
   }
 
-  private getValueFromFunction(str: string | undefined, ...args: unknown[]) {
-    if (!str) {
-      return str;
-    }
-    try {
-      const fn = new Function(`return (${str})`)();
-      if (typeof fn === 'function') {
-        return fn(...args);
-      }
-      return str;
-    } catch (error) {
-      console.trace('Error evaluating function from string:', error);
-      return str;
-    }
-  }
-
   private async _fetchCurrentTargets(): Promise<Target[]> {
     const trackName = this.getTelemetryTrackName('targets');
     let trackPerformanceQueueing;

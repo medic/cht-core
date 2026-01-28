@@ -72,6 +72,9 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
       .subscribe((filterState) => {
         // TODO add filter count to filter icon (make sure this works in both mobile and desktop modes)
         // TODO subtitle issue on aggregate targets - check how subtitle getting rendered.
+        // TODO Down in the aggregate detials, when you change the filter, the aggregates are not updated...
+        //      I wonder if we should actually not be showing the filter down here....
+
         this.isOpen = filterState.isOpen ?? false;
       });
 
