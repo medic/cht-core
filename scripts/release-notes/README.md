@@ -1,37 +1,58 @@
 # Release notes generator script
 
-## Usage
+## Prerequisites
+
+### Install
+* `git` [installed](https://git-scm.com/install/)
+* `gh` [installed](https://cli.github.com/)
+* `node` and `npm` [installed](https://nodejs.org/en/download)
 
 ### Setup
+* local clone of [CHT Core repo](https://github.com/medic/cht-core)
+* logged in to `gh` by running `gh auth login`
+* GitHub account has read access to CHT Core Repo
+* Run `npm ci` in the `scripts` directory
 
-Install the required dependencies by running the following from the `scripts` directory:
+## Usage
+
+### CI
+
+Every time a beta branch is cut, CI should automatically run and save the output of the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml). Each run will have `release-error` and `release-notes` artifacts.  
+
+To manually re-run the CI, use the `gh` command locally:
 
 ```shell
-npm ci
+gh workflow run release-notes.yml
 ```
 
-Configure your GitHub API token by generating a token [for your GitHub account](https://github.com/settings/tokens) and saving it in a `scripts/token.json` file with the following format:
+The re-run will show up in the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml) list.
 
-```json
-{ "githubApiToken": "YOUR_TOKEN" }
-```
-
-This token needs at least `read:org` permissions.
-
-### Running the script
+### Running locally
 
 Run the script with the following command:
 
 ```shell
-node index.js [OPTIONS] REPO MILESTONE
+GITHUB_TOKEN=$(gh auth token) node index.js
 ```
 
 Options:
 - `--help` - Show the help message
 - `--skip-commit-validation` - Skip validation of commits
 
-Repository: The name of the repository (e.g. cht-core).
+### Fixing commits
 
-Milestone: The name of the milestone (e.g. 2.15.0).
+Very likely the CI will have saved a bunch of output in `release-error` as shown below. For each of the commits, follow the steps listed to correctly associate the commit with the milestone. Re-run the CI to test if all commits have been fixed
 
-Output will be saved in `release.notes.md` file to be used in docs.
+#### Sample error output
+
+>Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
+> 
+> 1. Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
+> 2. Setting the milestone directly on the commit's PR
+> 3. Setting the milestone on an issue referenced in the commit message (e.g. "fix(#1345): ..."
+> 
+> Commits:
+> 
+> - https://github.com/medic/cht-core/commit/d57ab5 : chore: bump deep-equal-in-any-order from 2.0.6 to 2.1.0 (#10424)
+> - https://github.com/medic/cht-core/commit/f797be : chore: bump globals from 16.3.0 to 16.5.0 (#10431)
+
