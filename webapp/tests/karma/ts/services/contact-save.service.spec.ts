@@ -320,6 +320,248 @@ describe('ContactSave service', () => {
         });
     });
 
+    describe('attachment cleanup', () => {
+      it('should remove orphaned attachment when replaced with new file', () => {
+        const xmlStr =
+          '<data id="contact:person:edit">' +
+          '<person>' +
+          '<parent>PARENT</parent>' +
+          '<type>person</type>' +
+          '<name>John Doe</name>' +
+          '<photo>new-photo.png</photo>' +
+          '</person>' +
+          '</data>';
+
+        const form = { getDataStr: () => xmlStr };
+        const docId = 'person1';
+        const type = 'person';
+
+        const newFile = new File(['new photo content'], 'new-photo.png', { type: 'image/png' });
+        sinon.stub(FileManager, 'getCurrentFiles').returns([newFile]);
+
+        // Existing contact has an old attachment
+        getContact.withArgs(Qualifier.byUuid('person1')).resolves({
+          _id: 'person1',
+          type: 'person',
+          name: 'John Doe',
+          photo: 'old-photo.png',
+          _attachments: {
+            'user-file-old-photo.png': { content_type: 'image/png', data: 'old-data' }
+          }
+        });
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: { _id: 'person1', type: 'person', name: 'John Doe', photo: 'new-photo.png' }
+        });
+
+        return service
+          .save(form, docId, type)
+          .then(() => {
+            assert.isTrue(
+              attachmentService.add.calledWith(sinon.match({ _id: 'person1' }), 'user-file-new-photo.png'),
+              'Should add the new attachment'
+            );
+
+            assert.isTrue(
+              attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-photo.png'),
+              'Should remove the orphaned attachment'
+            );
+          });
+      });
+
+      it('should keep existing attachment when field value still references it', () => {
+        const xmlStr =
+          '<data id="contact:person:edit">' +
+          '<person>' +
+          '<parent>PARENT</parent>' +
+          '<type>person</type>' +
+          '<name>John Updated</name>' +
+          '<photo>existing-photo.png</photo>' +
+          '</person>' +
+          '</data>';
+
+        const form = { getDataStr: () => xmlStr };
+        const docId = 'person1';
+        const type = 'person';
+
+        sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+        getContact.withArgs(Qualifier.byUuid('person1')).resolves({
+          _id: 'person1',
+          type: 'person',
+          name: 'John Doe',
+          photo: 'existing-photo.png',
+          _attachments: {
+            'user-file-existing-photo.png': { content_type: 'image/png', data: 'photo-data' }
+          }
+        });
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: { _id: 'person1', type: 'person', name: 'John Updated', photo: 'existing-photo.png' }
+        });
+
+        return service
+          .save(form, docId, type)
+          .then(() => {
+            assert.isFalse(
+              attachmentService.remove.called,
+              'Should not remove the referenced attachment'
+            );
+          });
+      });
+
+      it('should remove attachment when field is cleared', () => {
+        const xmlStr =
+          '<data id="contact:person:edit">' +
+          '<person>' +
+          '<parent>PARENT</parent>' +
+          '<type>person</type>' +
+          '<name>John Doe</name>' +
+          '<photo/>' +
+          '</person>' +
+          '</data>';
+
+        const form = { getDataStr: () => xmlStr };
+        const docId = 'person1';
+        const type = 'person';
+
+        sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+        getContact.withArgs(Qualifier.byUuid('person1')).resolves({
+          _id: 'person1',
+          type: 'person',
+          name: 'John Doe',
+          photo: 'old-photo.png',
+          _attachments: {
+            'user-file-old-photo.png': { content_type: 'image/png', data: 'photo-data' }
+          }
+        });
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: { _id: 'person1', type: 'person', name: 'John Doe', photo: '' }
+        });
+
+        return service
+          .save(form, docId, type)
+          .then(() => {
+            assert.isTrue(
+              attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-photo.png'),
+              'Should remove the attachment when field is cleared'
+            );
+          });
+      });
+
+      it('should not remove non-user-file attachments', () => {
+        const xmlStr =
+          '<data id="contact:person:edit">' +
+          '<person>' +
+          '<parent>PARENT</parent>' +
+          '<type>person</type>' +
+          '<name>John Doe</name>' +
+          '</person>' +
+          '</data>';
+
+        const form = { getDataStr: () => xmlStr };
+        const docId = 'person1';
+        const type = 'person';
+
+        sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+        getContact.withArgs(Qualifier.byUuid('person1')).resolves({
+          _id: 'person1',
+          type: 'person',
+          name: 'John Doe',
+          _attachments: {
+            'xml': { content_type: 'application/xml', data: '<form/>' },
+            'content': { content_type: 'application/octet-stream', data: 'form-content' }
+          }
+        });
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: { _id: 'person1', type: 'person', name: 'John Doe' }
+        });
+
+        return service
+          .save(form, docId, type)
+          .then(() => {
+            assert.isFalse(
+              attachmentService.remove.called,
+              'Should not remove non-user-file attachments'
+            );
+          });
+      });
+
+      it('should handle multiple attachments with mixed actions', () => {
+        const xmlStr =
+          '<data id="contact:person:edit">' +
+          '<person>' +
+          '<parent>PARENT</parent>' +
+          '<type>person</type>' +
+          '<name>John Doe</name>' +
+          '<photo>keep-photo.png</photo>' +
+          '<document>new-doc.pdf</document>' +
+          '<signature/>' +
+          '</person>' +
+          '</data>';
+
+        const form = { getDataStr: () => xmlStr };
+        const docId = 'person1';
+        const type = 'person';
+
+        const newDocFile = new File(['new doc'], 'new-doc.pdf', { type: 'application/pdf' });
+        sinon.stub(FileManager, 'getCurrentFiles').returns([newDocFile]);
+
+        getContact.withArgs(Qualifier.byUuid('person1')).resolves({
+          _id: 'person1',
+          type: 'person',
+          name: 'John Doe',
+          photo: 'keep-photo.png',
+          document: 'old-doc.pdf',
+          signature: 'old-sig.png',
+          _attachments: {
+            'user-file-keep-photo.png': { content_type: 'image/png', data: 'photo-data' },
+            'user-file-old-doc.pdf': { content_type: 'application/pdf', data: 'doc-data' },
+            'user-file-old-sig.png': { content_type: 'image/png', data: 'sig-data' },
+          }
+        });
+
+        enketoTranslationService.contactRecordToJs.returns({
+          doc: {
+            _id: 'person1',
+            type: 'person',
+            name: 'John Doe',
+            photo: 'keep-photo.png',   // kept (field still references it)
+            document: 'new-doc.pdf',    // replaced (new file uploaded)
+            signature: '',              // cleared
+          }
+        });
+
+        return service
+          .save(form, docId, type)
+          .then(() => {
+            assert.isTrue(
+              attachmentService.add.calledWith(sinon.match({ _id: 'person1' }), 'user-file-new-doc.pdf'),
+              'Should add the new document attachment'
+            );
+
+            assert.isTrue(
+              attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-doc.pdf'),
+              'Should remove the replaced document attachment'
+            );
+
+            assert.isTrue(
+              attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-sig.png'),
+              'Should remove the cleared signature attachment'
+            );
+
+            const removeArgs = attachmentService.remove.getCalls().map(call => call.args[1]);
+            assert.notInclude(removeArgs, 'user-file-keep-photo.png', 'Should not remove the kept photo');
+
+            assert.equal(attachmentService.remove.callCount, 2, 'Should only remove 2 orphaned attachments');
+          });
+      });
+    });
+
     it('should attach multiple attachments (file widgets and binary fields) to main document', () => {
       const xmlWithMultipleAttachments =
         '<data id="contact:person:create">' +

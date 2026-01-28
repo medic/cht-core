@@ -86,12 +86,15 @@ export class ContactSaveService {
 
   private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
     const mainDoc = preparedDocs[0];
+    const newAttachmentNames = new Set<string>();
 
     // Attach files from FileManager (uploaded via file widgets)
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        this.attachmentService.add(mainDoc, `user-file-${file.name}`, file, file.type, false);
+        const attachmentName = `user-file-${file.name}`;
+        newAttachmentNames.add(attachmentName);
+        this.attachmentService.add(mainDoc, attachmentName, file, file.type, false);
       });
 
     // Process binary fields from XML
@@ -108,10 +111,56 @@ export class ContactSaveService {
             // Replace instance root element node name with form internal ID
             const filename = 'user-file' +
               (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
+            newAttachmentNames.add(filename);
             this.attachmentService.add(mainDoc, filename, content, 'image/png', true);
           }
         });
     }
+
+    // Remove orphaned user attachments that are no longer referenced
+    const referencedAttachmentNames = this.findReferencedAttachments(mainDoc);
+    const validAttachmentNames = new Set([...newAttachmentNames, ...referencedAttachmentNames]);
+    this.removeOrphanedAttachments(mainDoc, validAttachmentNames);
+  }
+
+  private findReferencedAttachments(doc: Record<string, any>): Set<string> {
+    const referenced = new Set<string>();
+    if (!doc._attachments) {
+      return referenced;
+    }
+
+    const existingAttachmentNames = Object.keys(doc._attachments);
+
+    const scanValue = (value: any) => {
+      if (typeof value === 'string' && value) {
+        const possibleAttachmentName = `user-file-${value}`;
+        if (existingAttachmentNames.includes(possibleAttachmentName)) {
+          referenced.add(possibleAttachmentName);
+        }
+      } else if (Array.isArray(value)) {
+        value.forEach(scanValue);
+      } else if (value && typeof value === 'object') {
+        Object.values(value).forEach(scanValue);
+      }
+    };
+
+    Object.entries(doc).forEach(([key, value]) => {
+      if (!key.startsWith('_')) {
+        scanValue(value);
+      }
+    });
+
+    return referenced;
+  }
+
+  private removeOrphanedAttachments(doc: Record<string, any>, validAttachmentNames: Set<string>) {
+    if (!doc._attachments) {
+      return;
+    }
+
+    Object.keys(doc._attachments)
+      .filter(name => name.startsWith('user-file-') && !validAttachmentNames.has(name))
+      .forEach(name => this.attachmentService.remove(doc, name));
   }
 
 
