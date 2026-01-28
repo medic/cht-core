@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const { DOC_TYPES } = require('@medic/constants');
 
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
@@ -554,7 +555,7 @@ describe('TokenLogin service', () => {
           })
           .withArgs('token:login:aaa').resolves({
             _id: 'token:login:aaa',
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             user: 'userID',
             tasks: [
               { state: 'pending', messages: [{ message: 'sms1' }] },
@@ -579,7 +580,7 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.put.callCount).to.equal(2);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'token:login:aaa',
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             user: 'userID',
             tasks: [
               {
@@ -626,7 +627,7 @@ describe('TokenLogin service', () => {
           })
           .withArgs('token:login:bbb').resolves({
             _id: 'token:login:bbb',
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             user: 'userID',
             tasks: [
               { state: 'sent', messages: [{ message: 'sms1' }] },
@@ -757,7 +758,7 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.put.callCount).to.equal(2);
           const expectedDoc = {
             _id: `token:login:${token}`,
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             reported_date: 2000,
             user: 'userID',
             tasks: []
@@ -815,7 +816,7 @@ describe('TokenLogin service', () => {
         });
         db.medic.get.withArgs('token:login:oldtoken').resolves({
           _id: 'token:login:oldtoken',
-          type: 'token_login',
+          type: DOC_TYPES.TOKEN_LOGIN,
           reported_date: 1000,
           user: 'my_user',
           tasks: [
@@ -867,7 +868,7 @@ describe('TokenLogin service', () => {
 
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'token:login:oldtoken',
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             reported_date: 1000,
             user: 'my_user',
             tasks: [
@@ -890,7 +891,7 @@ describe('TokenLogin service', () => {
 
           const expectedDoc = {
             _id: `token:login:${token}`,
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             reported_date: 2000,
             user: 'my_user',
             tasks: []
@@ -954,7 +955,7 @@ describe('TokenLogin service', () => {
         });
         db.medic.get.withArgs('token:login:oldtoken').resolves({
           _id: 'token:login:oldtoken',
-          type: 'token_login',
+          type: DOC_TYPES.TOKEN_LOGIN,
           reported_date: 1000,
           user: 'userID',
           tasks: [
@@ -998,7 +999,7 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.put.callCount).to.equal(3);
           chai.expect(db.medic.put.args[0]).to.deep.equal([{
             _id: 'token:login:oldtoken',
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             reported_date: 1000,
             user: 'userID',
             tasks: [
@@ -1018,7 +1019,7 @@ describe('TokenLogin service', () => {
 
           const expectedDoc = {
             _id: `token:login:${token}`,
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
             reported_date: 5000,
             user: 'userID',
             tasks: []
@@ -1098,7 +1099,7 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.put.callCount).to.equal(2);
           chai.expect(db.medic.put.args[0][0]).to.deep.nested.include({
             _id: `token:login:${token}`,
-            type: 'token_login',
+            type: DOC_TYPES.TOKEN_LOGIN,
           });
           chai.expect(db.medic.put.args[1]).to.deep.equal([{
             _id: 'userID',
