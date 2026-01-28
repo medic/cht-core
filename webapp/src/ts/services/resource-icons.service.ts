@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 
 import {ChangesService} from '@mm-services/changes.service';
 import {DbService} from '@mm-services/db.service';
+import { DOC_IDS } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ResourceIconsService {
   private readonly CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
-  private readonly DOC_IDS = ['resources', 'branding', 'partners'];
+  private readonly DOC_IDS = [DOC_IDS.RESOURCES, 'branding', 'partners'];
 
   private initResources;
 
