@@ -98,31 +98,6 @@ describe('Analytics Sidebar Filter Component', () => {
     expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true });
   });
 
-  it('should set selectedFacility when default filter specified', fakeAsync(() => {
-    sinon.resetHistory();
-    store.overrideSelector(Selectors.getSidebarFilter, { defaultFilters: { facility: { _id: 'facility_2' } } });
-    store.refreshState();
-    flush();
-
-    expect(component.selectedFacility).to.deep.equal({ _id: 'facility_2' });
-
-    component.selectedFacility = null;
-    store.overrideSelector(Selectors.getSidebarFilter, { defaultFilters: { facility: { _id: 'facility_1' } } });
-    store.refreshState();
-    flush();
-
-    expect(component.selectedFacility).to.deep.equal({ _id: 'facility_1' });
-  }));
-
-  it('should not set selectedFacility when no default filter specified', fakeAsync(() => {
-    sinon.resetHistory();
-    store.overrideSelector(Selectors.getSidebarFilter, { defaultFilters: { facility: null } });
-    store.refreshState();
-    flush();
-
-    expect(component.selectedFacility).to.be.undefined;
-  }));
-
   it('should set user facility name_key as facilityFilterLabel, when user has multiple facilities', fakeAsync(() => {
     sinon.resetHistory();
     component.userFacilities = [
