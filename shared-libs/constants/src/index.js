@@ -10,6 +10,7 @@ const DOC_IDS = {
 
 // Document Types
 const DOC_TYPES = {
+  TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
 };
 
