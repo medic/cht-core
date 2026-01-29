@@ -17,6 +17,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, GlobalActions.clearSelected());
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: false,
@@ -68,6 +70,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTasksLoaded(true));
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: true,
@@ -119,6 +123,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setSelectedTask(selected));
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: selected,
         loaded: false,
@@ -187,6 +193,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTasksList([]));
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: false,
@@ -616,6 +624,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setLastSubmittedTask(task));
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: false,
@@ -697,6 +707,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTaskGroupContact(contact));
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: false,
@@ -776,6 +788,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTaskGroupContactLoading(true));
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: false,
@@ -823,6 +837,8 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.clearTaskGroup());
       expect(state).to.deep.equal({
         tasksList: [],
+        filteredTasksList: [],
+        filters: {},
         overdue: [],
         selected: null,
         loaded: false,
@@ -948,6 +964,142 @@ describe('Tasks reducer', () => {
       ];
       state = tasksReducer(state, Actions.setOverdueTasks(tasks));
       expect(state.overdue).to.have.deep.members([tasks[1].emission, tasks[2].emission]);
+    });
+  });
+
+  describe('setTasksFilters', () => {
+    it('should set filters and apply them to tasks', () => {
+      state = {
+        tasksList: [
+          { _id: 'task1', overdue: true, resolved: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task2', overdue: false, resolved: 'vaccination', lineageIds: ['contact2', 'facility2'] },
+          { _id: 'task3', overdue: true, resolved: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+        ],
+        filteredTasksList: [],
+        filters: {},
+        overdue: [],
+        selected: null,
+        loaded: true,
+        taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
+      };
+
+      state = tasksReducer(state, Actions.setTasksFilters({ taskOverdue: true }));
+
+      expect(state.filters).to.deep.equal({ taskOverdue: true });
+      expect(state.filteredTasksList.length).to.equal(2);
+      expect(state.filteredTasksList.every(task => task.overdue === true)).to.be.true;
+    });
+
+    it('should filter by task type', () => {
+      state = {
+        tasksList: [
+          { _id: 'task1', resolved: 'follow_up', lineageIds: [] },
+          { _id: 'task2', resolved: 'vaccination', lineageIds: [] },
+          { _id: 'task3', resolved: 'follow_up', lineageIds: [] },
+        ],
+        filteredTasksList: [],
+        filters: {},
+        overdue: [],
+        selected: null,
+        loaded: true,
+        taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
+      };
+
+      state = tasksReducer(state, Actions.setTasksFilters({ taskTypes: { selected: ['follow_up'] } }));
+
+      expect(state.filteredTasksList.length).to.equal(2);
+      expect(state.filteredTasksList.every(task => task.resolved === 'follow_up')).to.be.true;
+    });
+
+    it('should filter by facility using lineageIds', () => {
+      state = {
+        tasksList: [
+          { _id: 'task1', lineageIds: ['contact1', 'facility1', 'district1'] },
+          { _id: 'task2', lineageIds: ['contact2', 'facility2', 'district1'] },
+          { _id: 'task3', lineageIds: ['contact3', 'facility1', 'district1'] },
+        ],
+        filteredTasksList: [],
+        filters: {},
+        overdue: [],
+        selected: null,
+        loaded: true,
+        taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
+      };
+
+      state = tasksReducer(state, Actions.setTasksFilters({ facilities: { selected: ['facility1'] } }));
+
+      expect(state.filteredTasksList.length).to.equal(2);
+      expect(state.filteredTasksList.every(task => task.lineageIds.includes('facility1'))).to.be.true;
+    });
+
+    it('should combine multiple filters', () => {
+      state = {
+        tasksList: [
+          { _id: 'task1', overdue: true, resolved: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task2', overdue: false, resolved: 'follow_up', lineageIds: ['contact2', 'facility1'] },
+          { _id: 'task3', overdue: true, resolved: 'vaccination', lineageIds: ['contact3', 'facility1'] },
+          { _id: 'task4', overdue: true, resolved: 'follow_up', lineageIds: ['contact4', 'facility2'] },
+        ],
+        filteredTasksList: [],
+        filters: {},
+        overdue: [],
+        selected: null,
+        loaded: true,
+        taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
+      };
+
+      state = tasksReducer(state, Actions.setTasksFilters({
+        taskOverdue: true,
+        taskTypes: { selected: ['follow_up'] },
+        facilities: { selected: ['facility1'] },
+      }));
+
+      expect(state.filteredTasksList.length).to.equal(1);
+      expect(state.filteredTasksList[0]._id).to.equal('task1');
+    });
+
+    it('should return all tasks when filters are empty', () => {
+      const tasks = [
+        { _id: 'task1', overdue: true, lineageIds: [] },
+        { _id: 'task2', overdue: false, lineageIds: [] },
+      ];
+      state = {
+        tasksList: tasks,
+        filteredTasksList: [],
+        filters: { taskOverdue: true },
+        overdue: [],
+        selected: null,
+        loaded: true,
+        taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
+      };
+
+      state = tasksReducer(state, Actions.setTasksFilters({}));
+
+      expect(state.filteredTasksList).to.deep.equal(tasks);
+    });
+  });
+
+  describe('setTasksList with existing filters', () => {
+    it('should apply existing filters when setting new tasks', () => {
+      state = {
+        tasksList: [],
+        filteredTasksList: [],
+        filters: { taskOverdue: true },
+        overdue: [],
+        selected: null,
+        loaded: true,
+        taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
+      };
+
+      const tasks = [
+        { _id: 'task1', dueDate: '2025-01-01', overdue: true, lineageIds: [] },
+        { _id: 'task2', dueDate: '2025-07-01', overdue: false, lineageIds: [] },
+      ];
+      state = tasksReducer(state, Actions.setTasksList(tasks));
+
+      expect(state.tasksList.length).to.equal(2);
+      expect(state.filteredTasksList.length).to.equal(1);
+      expect(state.filteredTasksList[0].overdue).to.equal(true);
     });
   });
 });

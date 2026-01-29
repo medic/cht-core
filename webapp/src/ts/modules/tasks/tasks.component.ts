@@ -103,6 +103,18 @@ export class TasksComponent implements OnInit, OnDestroy {
         this.isSidebarFilterOpen = !!sidebarFilter?.isOpen;
       });
     this.subscription.add(sidebarFilter$);
+
+    // Sync global filters to tasks state for reducer-based filtering
+    const filters$ = this.store
+      .select(Selectors.getFilters)
+      .subscribe(filters => {
+        this.tasksActions.setTasksFilters({
+          taskOverdue: filters?.taskOverdue,
+          taskTypes: filters?.taskTypes,
+          facilities: filters?.facilities,
+        });
+      });
+    this.subscription.add(filters$);
   }
 
   toggleFilter() {
@@ -175,7 +187,9 @@ export class TasksComponent implements OnInit, OnDestroy {
       if (subjects?.size) {
         const userLineageLevel = await this.userLineageLevel;
         emissions.forEach(task => {
-          task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
+          const { lineage, lineageIds } = this.getTaskLineage(subjects, task, userLineageLevel);
+          task.lineage = lineage;
+          (task as any).lineageIds = lineageIds;
         });
       }
 
@@ -221,9 +235,16 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getTaskLineage(subjects, task, userLineageLevel) {
-    const lineage = subjects
-      .get(task.owner)
-      ?.map(lineage => lineage?.name);
-    return this.extractLineageService.removeUserFacility(lineage, userLineageLevel);
+    const lineageData = subjects.get(task.owner) || [];
+    const lineageNames = lineageData.map(item => item?.name);
+    const lineageIds = lineageData.map(item => item?._id).filter(Boolean);
+
+    // Include the task owner ID in lineageIds for filtering
+    const allLineageIds = task.owner ? [task.owner, ...lineageIds] : lineageIds;
+
+    return {
+      lineage: this.extractLineageService.removeUserFacility(lineageNames, userLineageLevel),
+      lineageIds: allLineageIds,
+    };
   }
 }

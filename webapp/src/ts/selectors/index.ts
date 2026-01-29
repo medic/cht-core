@@ -131,36 +131,8 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
-  getFilteredTasksList: createSelector(
-    getTasksState,
-    getGlobalState,
-    (tasksState, globalState) => {
-      const tasks = tasksState.tasksList || [];
-      const filters = globalState.filters || {};
-
-      let filtered = tasks;
-
-      // Apply overdue filter
-      if (filters.taskOverdue !== undefined) {
-        filtered = filtered.filter(task => task.overdue === filters.taskOverdue);
-      }
-
-      // Apply task type filter
-      if (filters.taskTypes?.selected?.length) {
-        filtered = filtered.filter(task => {
-          const taskType = task.resolved || task.title || '';
-          return filters.taskTypes.selected.includes(taskType);
-        });
-      }
-
-      // Apply area/facility filter
-      if (filters.facilities?.selected?.length) {
-        filtered = filtered.filter(task => filters.facilities.selected.includes(task.owner));
-      }
-
-      return filtered;
-    }
-  ),
+  getFilteredTasksList: createSelector(getTasksState, (tasksState) => tasksState.filteredTasksList),
+  getTasksFilters: createSelector(getTasksState, (tasksState) => tasksState.filters),
   getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),

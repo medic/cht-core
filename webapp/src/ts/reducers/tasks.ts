@@ -5,9 +5,16 @@ import { Actions } from '@mm-actions/tasks';
 import { TaskEmission } from '@mm-services/rules-engine.service';
 import { orderByDueDateAndPriority } from '@medic/task-utils';
 
+export interface TasksFilters {
+  taskOverdue?: boolean;
+  taskTypes?: { selected: string[] };
+  facilities?: { selected: string[] };
+}
 
 const initialState = {
   tasksList: [] as TaskEmission[],
+  filteredTasksList: [] as TaskEmission[],
+  filters: {} as TasksFilters,
   overdue: [] as TaskEmission[],
   selected: null,
   loaded: false,
@@ -18,6 +25,35 @@ const initialState = {
   },
 };
 
+const applyFilters = (tasks: TaskEmission[], filters: TasksFilters = {}): TaskEmission[] => {
+  let filtered = tasks;
+
+  // Apply overdue filter
+  if (filters?.taskOverdue !== undefined) {
+    filtered = filtered.filter(task => task.overdue === filters.taskOverdue);
+  }
+
+  // Apply task type filter
+  if (filters.taskTypes?.selected?.length) {
+    const selectedTypes = filters.taskTypes.selected;
+    filtered = filtered.filter(task => {
+      const taskType = (task as any).resolved || task.title || '';
+      return selectedTypes.includes(taskType);
+    });
+  }
+
+  // Apply area/facility filter - check if any lineage ID is in selected facilities
+  if (filters.facilities?.selected?.length) {
+    const selectedFacilities = filters.facilities.selected;
+    filtered = filtered.filter(task => {
+      const lineageIds = (task as any).lineageIds || [];
+      return lineageIds.some(id => selectedFacilities.includes(id));
+    });
+  }
+
+  return filtered;
+};
+
 const _tasksReducer = createReducer(
   initialState,
   on(GlobalActions.clearSelected, state => ({ ...state, selected: null })),
@@ -26,11 +62,23 @@ const _tasksReducer = createReducer(
     const taskEmissions = tasks as TaskEmission[];
     const sortedTasks = [...taskEmissions].sort(orderByDueDateAndPriority);
     const overdueTasks = taskEmissions.filter(task => task.overdue);
+    const filteredTasks = applyFilters(sortedTasks, state.filters || {});
 
     return {
       ...state,
       tasksList: sortedTasks,
+      filteredTasksList: filteredTasks,
       overdue: overdueTasks,
+    };
+  }),
+
+  on(Actions.setTasksFilters, (state, { payload: { filters } }) => {
+    const filteredTasks = applyFilters(state.tasksList, filters);
+
+    return {
+      ...state,
+      filters,
+      filteredTasksList: filteredTasks,
     };
   }),
 
@@ -111,6 +159,8 @@ const _tasksReducer = createReducer(
   on(Actions.clearTaskList, state => ({
     ...state,
     tasksList: [],
+    filteredTasksList: [],
+    filters: {},
   }))
 );
 
