@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
@@ -14,13 +14,15 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
-import { NgIf, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { TasksSidebarFilterComponent } from './tasks-sidebar-filter.component';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -28,6 +30,7 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
     ToolBarComponent,
     NgIf,
     NgFor,
+    NgClass,
     RouterLink,
     ErrorLogComponent,
     RouterOutlet,
@@ -35,9 +38,13 @@ import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
     LineagePipe,
     ResourceIconPipe,
     TaskDueDatePipe,
+    SearchBarComponent,
+    TasksSidebarFilterComponent,
   ],
 })
 export class TasksComponent implements OnInit, OnDestroy {
+  @ViewChild(TasksSidebarFilterComponent) tasksSidebarFilter?: TasksSidebarFilterComponent;
+
   constructor(
     private readonly store: Store,
     private readonly changesService: ChangesService,
@@ -65,6 +72,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   loading;
   tasksDisabled;
   userLineageLevel;
+  isSidebarFilterOpen = false;
 
   private tasksLoaded;
   private debouncedReload;
@@ -76,17 +84,29 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscription.add(assignment$);
 
     const taskList$ = combineLatest([
-      this.store.select(Selectors.getTasksList),
+      this.store.select(Selectors.getFilteredTasksList),
       this.store.select(Selectors.getSelectedTask),
     ]).subscribe(([
       tasksList = [],
       selectedTask,
     ]) => {
       this.selectedTask = selectedTask;
-      // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
+      // Make new reference because the one from store is read-only
       this.tasksList = tasksList.map(task => ({ ...task, selected: task._id === this.selectedTask?._id }));
+      this.hasTasks = this.tasksList.length > 0;
     });
     this.subscription.add(taskList$);
+
+    const sidebarFilter$ = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(sidebarFilter => {
+        this.isSidebarFilterOpen = !!sidebarFilter?.isOpen;
+      });
+    this.subscription.add(sidebarFilter$);
+  }
+
+  toggleFilter() {
+    this.tasksSidebarFilter?.toggleSidebarFilter();
   }
 
   private subscribeToChanges() {
@@ -164,7 +184,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
       this.loading = false;

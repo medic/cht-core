@@ -1,0 +1,16 @@
+<div class="mm-task-type-filter" [id]="fieldId">
+  <ul class="filter-options">
+    <li *ngIf="!taskTypes.length" class="no-options">
+      {{ 'tasks.sidebar.filter.type.none' | translate }}
+    </li>
+
+    <li
+      *ngFor="let taskType of taskTypes"
+      [class.selected]="filter?.selected.has(taskType.id)"
+      [class.disabled]="disabled">
+      <a role="menuitem" tabindex="-1" [attr.data-value]="taskType.id" (click)="!disabled && filter?.toggle(taskType.id)">
+        {{ taskType.title }}
+      </a>
+    </li>
+  </ul>
+</div>

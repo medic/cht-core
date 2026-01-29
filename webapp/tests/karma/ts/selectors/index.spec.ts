@@ -499,5 +499,112 @@ describe('Selectors', () => {
     it('should null check overdue tasks', () => {
       expect(Selectors.getOverdueTasks.projector({})).to.equal(undefined);
     });
+
+    describe('getFilteredTasksList', () => {
+      const tasksState = {
+        tasksList: [
+          { _id: 'task1', overdue: true, resolved: 'follow_up', title: 'Follow up', owner: 'contact1' },
+          { _id: 'task2', overdue: false, resolved: 'vaccination', title: 'Vaccination', owner: 'contact2' },
+          { _id: 'task3', overdue: true, resolved: 'follow_up', title: 'Follow up', owner: 'contact1' },
+          { _id: 'task4', overdue: false, resolved: 'assessment', title: 'Assessment', owner: 'contact3' },
+        ],
+      };
+
+      it('should return all tasks when no filters applied', () => {
+        const globalStateNoFilters = { filters: {} };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateNoFilters);
+        expect(result).to.deep.equal(tasksState.tasksList);
+      });
+
+      it('should filter by overdue status (true)', () => {
+        const globalStateOverdue = { filters: { taskOverdue: true } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateOverdue);
+        expect(result.length).to.equal(2);
+        expect(result.every(task => task.overdue === true)).to.be.true;
+      });
+
+      it('should filter by overdue status (false)', () => {
+        const globalStateNotOverdue = { filters: { taskOverdue: false } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateNotOverdue);
+        expect(result.length).to.equal(2);
+        expect(result.every(task => task.overdue === false)).to.be.true;
+      });
+
+      it('should filter by task type', () => {
+        const globalStateType = { filters: { taskTypes: { selected: ['follow_up'] } } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateType);
+        expect(result.length).to.equal(2);
+        expect(result.every(task => task.resolved === 'follow_up')).to.be.true;
+      });
+
+      it('should filter by multiple task types', () => {
+        const globalStateTypes = { filters: { taskTypes: { selected: ['follow_up', 'vaccination'] } } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateTypes);
+        expect(result.length).to.equal(3);
+      });
+
+      it('should filter by facility/area', () => {
+        const globalStateFacility = { filters: { facilities: { selected: ['contact1'] } } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateFacility);
+        expect(result.length).to.equal(2);
+        expect(result.every(task => task.owner === 'contact1')).to.be.true;
+      });
+
+      it('should combine multiple filters', () => {
+        const globalStateCombined = {
+          filters: {
+            taskOverdue: true,
+            taskTypes: { selected: ['follow_up'] },
+          },
+        };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateCombined);
+        expect(result.length).to.equal(2);
+        expect(result.every(task => task.overdue === true && task.resolved === 'follow_up')).to.be.true;
+      });
+
+      it('should handle empty tasks list', () => {
+        const emptyTasksState = { tasksList: [] };
+        const globalStateWithFilters = { filters: { taskOverdue: true } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(emptyTasksState, globalStateWithFilters);
+        expect(result).to.deep.equal([]);
+      });
+
+      it('should handle undefined tasks list', () => {
+        const undefinedTasksState = {};
+        const globalStateNoFilters = { filters: {} };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(undefinedTasksState, globalStateNoFilters);
+        expect(result).to.deep.equal([]);
+      });
+
+      it('should handle undefined filters', () => {
+        const globalStateUndefined = {};
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalStateUndefined);
+        expect(result).to.deep.equal(tasksState.tasksList);
+      });
+
+      it('should use title as fallback for task type when resolved is undefined', () => {
+        const tasksWithoutResolved = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'Follow up', owner: 'contact1' },
+            { _id: 'task2', overdue: false, title: 'Vaccination', owner: 'contact2' },
+          ],
+        };
+        const globalStateType = { filters: { taskTypes: { selected: ['Follow up'] } } };
+        // @ts-ignore
+        const result = Selectors.getFilteredTasksList.projector(tasksWithoutResolved, globalStateType);
+        expect(result.length).to.equal(1);
+        expect(result[0].title).to.equal('Follow up');
+      });
+    });
   });
 });

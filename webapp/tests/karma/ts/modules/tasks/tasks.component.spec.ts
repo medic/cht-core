@@ -19,6 +19,9 @@ import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
+import { SessionService } from '@mm-services/session.service';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -31,6 +34,9 @@ describe('TasksComponent', () => {
   let clock;
   let store;
   let lineageModelGeneratorService;
+  let telemetryService;
+  let sessionService;
+  let placeHierarchyService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -51,6 +57,12 @@ describe('TasksComponent', () => {
     userContactService = {
       getUserLineageToRemove: sinon.stub(),
     };
+    telemetryService = { record: sinon.stub() };
+    sessionService = { isOnlineOnly: sinon.stub().returns(false) };
+    placeHierarchyService = {
+      get: sinon.stub().resolves([]),
+      getDescendants: sinon.stub().resolves([]),
+    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -70,6 +82,9 @@ describe('TasksComponent', () => {
         { provide: NavigationService, useValue: {} },
         { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: SessionService, useValue: sessionService },
+        { provide: PlaceHierarchyService, useValue: placeHierarchyService },
       ],
     });
 
