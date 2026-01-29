@@ -77,8 +77,8 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => {
-        this.isOpen = filterState.isOpen ?? false;
-        this.activeFilters = filterState.filterCount?.total ?? 0;
+        this.isOpen = filterState?.isOpen ?? false;
+        this.activeFilters = filterState?.filterCount?.total ?? 0;
       });
     this.subscriptions.add(subscription);
   }

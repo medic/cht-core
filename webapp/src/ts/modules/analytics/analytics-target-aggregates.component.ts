@@ -107,10 +107,8 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
         );
       }
 
-      const reportingMonth = await this.targetAggregatesService.getReportingMonth(reportingPeriod);
-
       aggregates = aggregates
-        .map(aggregate => this.formatAggregate(aggregate, userFacility, reportingPeriod, reportingMonth));
+        .map(aggregate => this.formatAggregate(aggregate, userFacility, reportingPeriod));
 
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
@@ -127,7 +125,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private formatAggregate(aggregate, userFacility, reportingPeriod, reportingMonth) {
+  private formatAggregate(aggregate, userFacility, reportingPeriod) {
     const filtersToDisplay: string[] = [];
 
     if (this.userFacilities.length > 1 && this.facilityFilter?.name) {
@@ -135,11 +133,8 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       filtersToDisplay.push(this.facilityFilter.name);
     }
 
-    aggregate.reportingMonth = reportingMonth;
     aggregate.reportingPeriod = reportingPeriod;
-    if (aggregate.reportingPeriod === ReportingPeriod.PREVIOUS) {
-      filtersToDisplay.push(aggregate.reportingMonth);
-    }
+    filtersToDisplay.push(aggregate.subtitle);
     aggregate.filtersToDisplay = filtersToDisplay;
 
     return aggregate;

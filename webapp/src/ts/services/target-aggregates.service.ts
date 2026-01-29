@@ -116,20 +116,20 @@ export class TargetAggregatesService {
     return this.translateFromService.get(target.title);
   }
 
+  private getTranslatedSubtitle(target, reportingPeriod: ReportingPeriod) {
+    const subtitleKey = configLib.getValueFromFunction(target.subtitle_translation_key, reportingPeriod);
+    return this.translateService.instant(subtitleKey);
+  }
+
   private getAggregate(originalTargetConfig, reportingPeriod: ReportingPeriod) {
-    const targetConfig = {
-      ...originalTargetConfig,
-      subtitle_translation_key: configLib.getValueFromFunction(
-        originalTargetConfig.subtitle_translation_key,
-        reportingPeriod
-      )
-    };
+    const targetConfig = { ...originalTargetConfig };
 
     targetConfig.values = [];
     targetConfig.hasGoal = targetConfig.goal > 0;
     targetConfig.isPercent = targetConfig.type === 'percent';
     targetConfig.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
     targetConfig.heading = this.getTranslatedTitle(targetConfig);
+    targetConfig.subtitle = this.getTranslatedSubtitle(targetConfig, reportingPeriod);
     targetConfig.aggregateValue = { pass: 0, total: 0 };
 
     return targetConfig;
@@ -318,20 +318,6 @@ export class TargetAggregatesService {
     return !facilityIds || facilityIds.length > 0;
   }
 
-  getReportingMonth(reportingPeriod:ReportingPeriod) {
-    return this.settingsService
-      .get()
-      .then(settings => {
-        const tag = this.getTargetIntervalTag(settings, reportingPeriod);
-        return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
-      })
-      .catch(error => {
-        console.error('Error getting reporting month:', error);
-        return this.translateService.instant('targets.last_month.subtitle');
-      });
-  }
-
-
   getAggregates(facilityId?, reportingPeriod = ReportingPeriod.CURRENT) {
     return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
   }
@@ -391,7 +377,7 @@ export interface AggregateTarget extends Target {
   progressBar: boolean;
   facility?: string;
   reportingPeriod?: ReportingPeriod;
-  reportingMonth?: string;
+  subtitle?: string;
   filtersToDisplay?: (string | ReportingPeriod)[];
   heading: string;
   values: ContactTargetValue[];

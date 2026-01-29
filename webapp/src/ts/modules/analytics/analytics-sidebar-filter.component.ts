@@ -67,7 +67,7 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnCha
   private subscribeToStore() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe((filterState) => this.isOpen = filterState.isOpen ?? false);
+      .subscribe((filterState) => this.isOpen = filterState?.isOpen ?? false);
     this.subscriptions.add(subscription);
   }
 

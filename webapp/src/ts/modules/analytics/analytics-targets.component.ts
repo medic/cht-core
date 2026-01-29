@@ -85,7 +85,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       .select(Selectors.getShowContent)
       .subscribe(showContent => {
         // User pressed the back button in the mobile layout for previous targets
-        if (!showContent) {
+        if (!showContent && this.reportingPeriodFilter !== this.DEFAULT_REPORTING_PERIOD) {
           this.reportingPeriodFilter = this.DEFAULT_REPORTING_PERIOD;
           this.getTargets(this.reportingPeriodFilter);
         }

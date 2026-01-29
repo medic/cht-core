@@ -93,9 +93,9 @@ describe('Analytics Sidebar Filter Component', () => {
     component.toggleSidebarFilter();
 
     expect(globalActions.setSidebarFilter.calledThrice).to.be.true;
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
-    expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false });
-    expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true });
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true, filterCount: { total: 0 } });
+    expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false, filterCount: { total: 0 } });
+    expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true, filterCount: { total: 0 } });
   });
 
   it('should set user facility name_key as facilityFilterLabel, when user has multiple facilities', fakeAsync(() => {

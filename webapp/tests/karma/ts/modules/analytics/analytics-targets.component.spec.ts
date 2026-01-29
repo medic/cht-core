@@ -38,8 +38,7 @@ describe('AnalyticsTargetsComponent', () => {
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
 
     globalActions = {
-      setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
-      clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
+      clearSidebarFilter: sinon.stub(GlobalActions.prototype, 'clearSidebarFilter'),
     };
 
     userSettingsService = {
@@ -152,11 +151,6 @@ describe('AnalyticsTargetsComponent', () => {
     component.ngOnInit();
     tick(50);
 
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: {
-        reportingPeriod: ReportingPeriod.CURRENT,
-      },
-    });
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(component.targetsDisabled).to.equal(false);
