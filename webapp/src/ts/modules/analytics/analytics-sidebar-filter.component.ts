@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Place } from '@medic/cht-datasource';
@@ -19,7 +19,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
   templateUrl: './analytics-sidebar-filter.component.html',
   imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
 })
-export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
+export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnChanges {
 
   @Input() userFacilities: Place.v1.Place[] = [];
   @Input() selectedFacility?: Place.v1.Place;
@@ -57,20 +57,36 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['selectedReportingPeriod'] || changes['selectedFacility']) {
+      // Make sure the filter count is up to date.
+      this.updateSidebarFilterState();
+    }
+  }
+
   private subscribeToStore() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe((filterState) => {
-        // TODO add filter count to filter icon (make sure this works in both mobile and desktop modes)
-        this.isOpen = filterState.isOpen ?? false;
-      });
-
+      .subscribe((filterState) => this.isOpen = filterState.isOpen ?? false);
     this.subscriptions.add(subscription);
+  }
+
+  private getTotalFilterCount() {
+    const reportingPeriodCount = this.selectedReportingPeriod === ReportingPeriod.PREVIOUS ? 1 : 0;
+    const facilityCount = this.userFacilities.length > 1 ? 1 : 0;
+    return reportingPeriodCount + facilityCount;
+  }
+
+  private updateSidebarFilterState() {
+    this.globalActions.setSidebarFilter({
+      isOpen: this.isOpen,
+      filterCount: { total: this.getTotalFilterCount() }
+    });
   }
 
   toggleSidebarFilter() {
     this.isOpen = !this.isOpen;
-    this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
+    this.updateSidebarFilterState();
   }
 
   private async setFacilityLabel() {
@@ -93,11 +109,13 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
   fetchAggregateTargetsByFacility(facility: Place.v1.Place) {
     this.selectedFacility = facility;
+    this.updateSidebarFilterState();
     this.facilitySelectionChanged.emit(this.selectedFacility);
     this.collectFilterSelectionTelemetry('facility');
   }
 
   fetchAggregateTargetsByReportingPeriod() {
+    this.updateSidebarFilterState();
     this.reportingPeriodSelectionChanged.emit(this.selectedReportingPeriod);
     this.collectFilterSelectionTelemetry('reporting-period');
   }
