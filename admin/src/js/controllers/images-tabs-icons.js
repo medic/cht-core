@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 angular.module('controllers').controller('ImagesTabsIconsCtrl',
   function(
     $log,
@@ -23,7 +26,7 @@ angular.module('controllers').controller('ImagesTabsIconsCtrl',
 
     const setupPromise = $q
       .all([
-        ResourceIcons.getDocResourcesByMimeType('resources', 'image/svg+xml'),
+        ResourceIcons.getDocResourcesByMimeType(DOC_IDS.RESOURCES, 'image/svg+xml'),
         Settings(),
       ])
       .then(([ resourceIcons = [], { header_tabs = {} } = {} ]) => {
