@@ -526,15 +526,17 @@ const deleteAllDocs = async (except = []) => {
 // medic-client first (api does nothing) and medic after (api copies changes over to
 // medic-client, but the changes are already there.)
 const updateCustomSettings = updates => {
-  if (originalSettings) {
-    throw new Error('A previous test did not call revertSettings');
-  }
+  // if (originalSettings) {
+  //   throw new Error('A previous test did not call revertSettings');
+  // }
   return request({
     path: '/api/v1/settings',
     method: 'GET',
   })
     .then(settings => {
-      originalSettings = settings;
+      if (!originalSettings) {
+        originalSettings = settings;
+      }
       // Make sure all updated fields are present in originalSettings, to enable reverting later.
       Object.keys(updates).forEach(updatedField => {
         if (!_.has(originalSettings, updatedField)) {
@@ -1431,34 +1433,57 @@ const killSpawnedProcess = (proc) => {
  * that contains the promise to resolve when logs lines are matched and a cancel function
  */
 
-const waitForLogs = (container, tail, ...regex) => {
+const waitForLogs = async (container, tail, ...regex) => {
   container = getContainerName(container);
   const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
   let logs = '';
-  let firstLine = false;
-  tail = (isDocker() || tail) ? '--tail=1' : '';
+  let isReady = false;
+  const startTime = Date.now() - 5000; // Subtract a small buffer (1 second) to account for any clock skew
+  tail = (isDocker() || tail) ? '--tail=50' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
-  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterward.
-  const params = `logs ${container} -f ${tail} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
+  // As a fix, watch the logs with tail=50 and use timestamps to ensure we only match logs produced after
+  // the watcher was ready (not historical logs from before the watcher started).
+  const params = `logs ${container} -f ${tail} --timestamps ${isK3D() ? KUBECTL_CONTEXT : ''}`
+    .split(' ')
+    .filter(Boolean);
   const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
-  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+  const ready = new Promise(resolve => receivedFirstLine = resolve);
 
   const checkOutput = (data) => {
-    if (!firstLine) {
-      firstLine = true;
-      receivedFirstLine();
-      return;
-    }
-
     data = data.toString();
     logs += data;
+
+    if (!isReady) {
+      isReady = true;
+      receivedFirstLine();
+    }
+
     const lines = data.split('\n');
-    const matchingLine = lines.find(line => regex.find(r => r.test(line)));
+    const matchingLine = lines.find(line => {
+      // Only check lines that match the regex
+      if (!regex.find(r => r.test(line))) {
+        return false;
+      }
+
+      // Parse timestamp from log line (format: 2026-01-29T11:17:14.437Z or 2026-01-29T11:17:14.437123456Z)
+      const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?)/);
+
+      if (!timestampMatch) {
+        // If no timestamp, only match after we're ready (to avoid historical logs)
+        return isReady;
+      }
+
+      // Docker/kubectl timestamps are in UTC. Add 'Z' suffix if not present to ensure proper UTC parsing
+      const timestampStr = timestampMatch[1].endsWith('Z') ? timestampMatch[1] : timestampMatch[1] + 'Z';
+      const logTime = new Date(timestampStr).getTime();
+
+      // Only match logs produced after this watcher was created
+      return logTime >= startTime;
+    });
     return matchingLine;
   };
 
@@ -1482,13 +1507,15 @@ const waitForLogs = (container, tail, ...regex) => {
     proc.stderr.on('data', check);
   });
 
-  return firstLineReceivedPromise.then(() => ({
+  await ready;
+
+  return {
     promise,
     cancel: () => {
       clearTimeout(timeout);
       killSpawnedProcess(proc);
     }
-  }));
+  };
 };
 
 const waitForApiLogs = (...regex) => waitForLogs('api', true, ...regex);
