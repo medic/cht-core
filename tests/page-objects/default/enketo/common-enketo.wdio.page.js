@@ -74,7 +74,7 @@ const addFileInputValue = async (question, value, { repeatIndex = 0 } = {}) => {
 const validateSummaryReport = async (textArray) => {
   const element = await getCurrentPageSection();
   for (const text of textArray) {
-    expect(await element.$(`span*=${text}`).isDisplayed()).to.be.true;
+    expect(await element.$(`span*=${text}`).isDisplayed()).to.equal(true, `${text} not found in summary report`);
   }
 };
 
