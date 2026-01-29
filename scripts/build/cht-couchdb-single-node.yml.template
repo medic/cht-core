@@ -14,6 +14,9 @@ services:
     restart: always
     depends_on:
       - nouveau
+    configs:
+      - source: nouveau.ini
+        target: /opt/couchdb/etc/local.d/nouveau.ini
     logging:
       driver: "local"
       options:
@@ -41,3 +44,12 @@ volumes:
 networks:
   cht-net:
     name: ${CHT_NETWORK:-cht-net}
+
+configs:
+  nouveau.ini:
+    content: |
+      [couchdb]
+      single_node=true
+      [nouveau]
+      enable = true
+      url = http://nouveau:5987
