@@ -56,7 +56,6 @@ describe('Target aggregates', () => {
   });
 
   describe('User with one or more places assigned', () => {
-    const CURRENT_PERIOD = 'This month';
     const NAMES_DH1 = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
 
@@ -144,7 +143,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts: expectedContacts,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name
         };
@@ -169,7 +167,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name
         };
@@ -188,7 +185,6 @@ describe('Target aggregates', () => {
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(1);
         await targetAggregatesPage.selectFilterOption('Last month');
 
-        context.period = helperFunctions.getLastMonth();
         context.isCurrentPeriod = false;
         asserts.contactValues = false;
 
@@ -244,7 +240,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts: expectedContacts,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name
         };
@@ -264,7 +259,7 @@ describe('Target aggregates', () => {
         await browser.back();
 
         const firstTargetItem =
-          await targetAggregatesPage.getTargetItem(expectedTargets[0], CURRENT_PERIOD, districtHospital1.name);
+          await targetAggregatesPage.getTargetItem(expectedTargets[0], districtHospital1.name);
         await helperFunctions.assertTitle(firstTargetItem.title, expectedTargets[0].title);
 
         await targetAggregatesPage.openTargetDetails(expectedTargets[1]);
@@ -279,7 +274,7 @@ describe('Target aggregates', () => {
 
         await browser.back();
         const secondTargetItem =
-          await targetAggregatesPage.getTargetItem(expectedTargets[1], CURRENT_PERIOD, districtHospital1.name);
+          await targetAggregatesPage.getTargetItem(expectedTargets[1], districtHospital1.name);
         await helperFunctions.assertTitle(secondTargetItem.title, expectedTargets[1].title);
       });
 
@@ -381,7 +376,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts: contactsDh1,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name,
         };
@@ -401,7 +395,6 @@ describe('Target aggregates', () => {
         expect(telemetry.length).to.equal(1);
 
         await targetAggregatesPage.selectFilterOption('Last month');
-        context.period = helperFunctions.getLastMonth();
         context.isCurrentPeriod = false;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
@@ -415,8 +408,7 @@ describe('Target aggregates', () => {
         context.place = districtHospital2.name;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
-        await targetAggregatesPage.selectFilterOption(CURRENT_PERIOD);
-        context.period = CURRENT_PERIOD;
+        await targetAggregatesPage.selectFilterOption('This month');
         context.isCurrentPeriod = true;
         await helperFunctions.assertData(
           context,

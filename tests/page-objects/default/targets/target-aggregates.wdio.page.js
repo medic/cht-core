@@ -73,13 +73,13 @@ const checkContentDisabled = async () => {
   await $(CONTENT_DISABLED).waitForDisplayed();
 };
 
-const getTargetItem = async (target, period, place) => {
+const getTargetItem = async (target, place) => {
   const item = lineItem(target.id);
   return {
     title: await item.$('h4').getText(),
     counter: await item.$('.aggregate-status span').getText(),
     place: await item.$(`li*=${place}`).isDisplayed(),
-    period: await item.$(`li*=${period}`).isDisplayed(),
+    period: await item.$(`li*=${target.subtitle}`).isDisplayed(),
   };
 };
 

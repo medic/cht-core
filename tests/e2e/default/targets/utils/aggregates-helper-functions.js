@@ -88,13 +88,6 @@ const generateContactsAndTargets = (parent, contactName, targetValuesByContact) 
   };
 };
 
-const getLastMonth = () => {
-  const newDate = new Date();
-  newDate.setDate(1);
-  newDate.setMonth(newDate.getMonth() - 1);
-  return newDate.toLocaleString('default', { month: 'long' });
-};
-
 const assertTitle = async (itemTitle, targetTitle) => {
   expect(itemTitle).to.equal(targetTitle);
   expect(await targetAggregatesPage.targetDetail.title(targetTitle).isDisplayed()).to.be.true;
@@ -120,14 +113,14 @@ const assertData = async (context, targetValuesByContact, expectedTargets, asser
   expect(await targetAggregatesPage.aggregateList().length).to.equal(expectedTargets.length);
 
   for (const target of expectedTargets) {
-    const targetItem = await targetAggregatesPage.getTargetItem(target, context.period, context.place);
+    const targetItem = await targetAggregatesPage.getTargetItem(target, context.place);
     await targetAggregatesPage.openTargetDetails(target);
     await assertTitle(targetItem.title, target.title);
 
     if (context.isCurrentPeriod) {
       await assertCounter(targetItem.counter, target.counter);
     } else {
-      await assertPeriod(targetItem.period, context.period);
+      await assertPeriod(targetItem.period, target.subtitle);
     }
 
     if (asserts.hasMultipleFacilities) {
@@ -196,7 +189,6 @@ module.exports = {
   generateTargetValuesByContact,
   docTags,
   generateContactsAndTargets,
-  getLastMonth,
   assertTitle,
   assertData,
   validateCardFields,
