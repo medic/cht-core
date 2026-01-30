@@ -26,6 +26,8 @@ gh workflow run release-notes.yml
 
 The re-run will show up in the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml) list and clicking into each run, you can again check `release-error` for any errors.  When you've resolved all the errors, the release notes markdown will be in `release-notes`. You can re-run as many times as needed.
 
+When you have a finalized output of the `release-notes`, you can create a new document in the [releases section of the docs](https://docs.communityhealthtoolkit.org/releases/). Be sure to update the `_index.md` in that same `releases` directory to include the new release.
+
 ### Fixing commits
 
 Very likely the CI will have saved a bunch of output in `release-error` as shown below. For each of the commits, follow the steps listed to correctly associate the commit with the milestone. Re-run the CI to test if all commits have been fixed
