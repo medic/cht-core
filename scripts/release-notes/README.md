@@ -2,17 +2,17 @@
 
 **Caution** - Avoid storing your [GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?creating-a-token=#keeping-your-personal-access-tokens-secure) in clear text.  Ideally release notes are only securely created in GitHub Actions as it avoids local tokens use.  Token are [dangerous](https://github.blog/security/hardening-repositories-against-credential-theft/) in the wrong hands.
 
-## Install  & Setup
+## Install & Setup
 
-First, make sure you have the utils installed:
+Make sure you have the utils installed:
 
 * `git` [installed](https://git-scm.com/install/)
 * `gh` [installed](https://cli.github.com/)
 
-After that, make sure you have authenticed:
+After that, make sure you have:
 
-* logged in to `gh` by running `gh auth login`
-* GitHub account has read access to CHT Core Repo
+* Logged in to `gh` by running `gh auth login`
+* A GitHub account with read access to CHT Core Repo
 
 ## Usage
 
