@@ -1,5 +1,7 @@
 # Release notes generator script
 
+**Caution** - Avoid storing your [GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?creating-a-token=#keeping-your-personal-access-tokens-secure) in clear text.  Ideally release notes are only securely created in GitHub Actions as it avoids local tokens use.  Token are [dangerous](https://github.blog/security/hardening-repositories-against-credential-theft/) in the wrong hands.
+
 ## Install  & Setup
 
 First, make sure you have the utils installed:
@@ -41,21 +43,16 @@ Very likely the CI will have saved a bunch of output in `release-error` as shown
 > - https://github.com/medic/cht-core/commit/d57ab5 : chore: bump deep-equal-in-any-order from 2.0.6 to 2.1.0 (#10424)
 > - https://github.com/medic/cht-core/commit/f797be : chore: bump globals from 16.3.0 to 16.5.0 (#10431)
 
-
-
 ## Development
 
+First, get all setup making sure each item is done in order:
 
-* Run `npm ci` in the `scripts` directory
-* 
+1. Have `node` and `npm` [installed](https://nodejs.org/en/download)
+2. Have a local and up to date clone of [CHT Core](https://github.com/medic/cht-core)
+3. Run `npm ci` in the `scripts` directory of CHT Core
+4. Ensure you're logged in to `gh` via  `gh auth login`
 
-To run the script locally to debug or develop:
-
-* Have aocal and up to date clone of [CHT Core](https://github.com/medic/cht-core).  
-* Ensure you're logged in to `gh` via  `gh auth login`
-* Have `node` and `npm` [installed](https://nodejs.org/en/download)
-
-Then you can call the script locally like so:
+Then you can call the script locally when you're in the `scripts/release-notes` directory:
 
 ```shell
 GITHUB_TOKEN=$(gh auth token) node index.js
