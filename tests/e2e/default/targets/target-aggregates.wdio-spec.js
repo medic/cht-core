@@ -188,7 +188,10 @@ describe('Target aggregates', () => {
         context.isCurrentPeriod = false;
         asserts.contactValues = false;
 
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        const previousTargets = expectedTargets.map(target => {
+          return { ...target, subtitle: target.subtitle === 'All time' ? target.subtitle : 'Last month' };
+        });
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
 
       });
 
@@ -359,8 +362,7 @@ describe('Target aggregates', () => {
       });
 
       it('should filter aggregates by place and period', async () => {
-        const expectedTargets = targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS;
-
+        const expectedTargets = targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS;
         await utils.saveDocs(targetDocs);
         await helperFunctions.updateAggregateTargetsSettings(
           targetAggregatesConfig.TARGETS_DEFAULT_CONFIG,
@@ -381,12 +383,7 @@ describe('Target aggregates', () => {
         };
         const asserts = { hasMultipleFacilities: true, contactValues: false };
 
-        await helperFunctions.assertData(
-          context,
-          TARGET_VALUES_BY_CONTACT,
-          targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS,
-          asserts
-        );
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
@@ -396,7 +393,10 @@ describe('Target aggregates', () => {
 
         await targetAggregatesPage.selectFilterOption('Last month');
         context.isCurrentPeriod = false;
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        const previousTargets = expectedTargets.map(target => {
+          return { ...target, subtitle: target.subtitle === 'All time' ? target.subtitle : 'Last month' };
+        });
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
 
         await targetAggregatesPage.selectFilterOption(districtHospital2.name);
         const telemetry2 = await getTelemetry(
@@ -406,16 +406,11 @@ describe('Target aggregates', () => {
         expect(telemetry2.length).to.equal(1);
         context.contacts = contactsDh2;
         context.place = districtHospital2.name;
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
 
         await targetAggregatesPage.selectFilterOption('This month');
         context.isCurrentPeriod = true;
-        await helperFunctions.assertData(
-          context,
-          TARGET_VALUES_BY_CONTACT,
-          targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS,
-          asserts
-        );
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
       });
     });
   });

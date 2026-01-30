@@ -103,9 +103,9 @@ const assertPlace = async (itemPlace, place) => {
   expect(await targetAggregatesPage.targetDetail.place(place).isDisplayed()).to.be.true;
 };
 
-const assertPeriod = async (itemPeriod, period) => {
-  expect(itemPeriod).to.be.true;
-  expect(await targetAggregatesPage.targetDetail.period(period).isDisplayed()).to.be.true;
+const assertSubtitle = async (subtitleDisplayed, subtitle) => {
+  expect(subtitleDisplayed).to.be.true;
+  expect(await targetAggregatesPage.targetDetail.subtitle(subtitle).isDisplayed()).to.be.true;
 };
 
 const assertData = async (context, targetValuesByContact, expectedTargets, asserts) => {
@@ -117,10 +117,9 @@ const assertData = async (context, targetValuesByContact, expectedTargets, asser
     await targetAggregatesPage.openTargetDetails(target);
     await assertTitle(targetItem.title, target.title);
 
-    if (context.isCurrentPeriod) {
-      await assertCounter(targetItem.counter, target.counter);
-    } else {
-      await assertPeriod(targetItem.period, target.subtitle);
+    await assertCounter(targetItem.counter, target.counter);
+    if (target.subtitle) {
+      await assertSubtitle(targetItem.subtitle, target.subtitle);
     }
 
     if (asserts.hasMultipleFacilities) {

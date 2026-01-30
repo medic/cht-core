@@ -1,3 +1,7 @@
+const monthlySubtitleFn = `(reportingPeriod) => reportingPeriod === 'current'
+  ? 'targets.this_month.subtitle'
+  : 'targets.last_month.subtitle'`;
+
 const TARGETS_DEFAULT_CONFIG = [
   {
     id: 'count_no_goal',
@@ -26,14 +30,14 @@ const TARGETS_DEFAULT_CONFIG = [
     type: 'percent',
     title: 'percent with goal',
     aggregate: true, goal: 80,
-    subtitle_translation_key: 'targets.this_month.subtitle'
+    subtitle_translation_key: monthlySubtitleFn
   },
   {
     id: 'percent_achieved',
     type: 'percent',
     title: 'percent achieved',
     aggregate: true, goal: 10,
-    subtitle_translation_key: 'targets.this_month.subtitle'
+    subtitle_translation_key: monthlySubtitleFn
   },
 ];
 
