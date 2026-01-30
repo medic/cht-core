@@ -151,6 +151,25 @@ const getIssueNumbers = commitMessage => {
     return false;
   };
 
+  const commitMadeByDependabot = commit => {
+    let result = false;
+    commit.authors.nodes.forEach((author) => {
+      if (BOTS.includes(author.user.login)) {
+        result = true;
+      }
+    });
+    return result;
+  };
+
+  const getCommitAuthorString = (commit) => {
+    const authors = commit.authors.nodes;
+    let authConcat = '';
+    authors.forEach((author) => {
+      authConcat += ` (${author.user.login})`;
+    });
+    return authConcat.trim();
+  };
+
   const findCommitsWithoutMilestone = async (commitsForRelease) => {
     const commitsWithoutMilestone = [];
     for (const commit of commitsForRelease) {
@@ -158,10 +177,10 @@ const getIssueNumbers = commitMessage => {
         commitHasPRWithMilestone(commit)
         || commitPRHasIssueWithMilestone(commit)
         || (await commitMsgHasIssueWithMilestone(commit))
+        || commitMadeByDependabot(commit)
       ) {
         continue;
       }
-
       commitsWithoutMilestone.push(commit);
     }
     return commitsWithoutMilestone;
@@ -169,7 +188,9 @@ const getIssueNumbers = commitMessage => {
 
   const printCommitError = (commit) => {
     const link = `https://github.com/medic/${REPO_NAME}/commit/`;
-    console.error(`- ${link}${commit.oid.substring(0, 6)} : ${commit.messageHeadline}`);
+    const authors = getCommitAuthorString(commit);
+    const commitLink = `${link}${commit.oid.substring(0, 6)}`;
+    console.error(`- ${commitLink} : ${authors} ${commit.messageHeadline}`);
   };
   const validateCommits = async (commitsForRelease) => {
     if (argv['skip-commit-validation']) {
