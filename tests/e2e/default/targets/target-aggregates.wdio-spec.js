@@ -39,6 +39,7 @@ describe('Target aggregates', () => {
       expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(await targetAggregatesPage.loadingStatus().isDisplayed()).to.be.true;
       expect(await analyticsPage.emptySelectionNoError().isDisplayed()).to.be.true;
+      expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
     });
 
     it('should display an error when there are aggregates but no home place', async () => {
@@ -52,6 +53,7 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.goToTargetAggregates(true);
       expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(await analyticsPage.emptySelectionError().isDisplayed()).to.be.true;
+      expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
     });
   });
 
@@ -152,6 +154,7 @@ describe('Target aggregates', () => {
         await helperFunctions.assertData(
           context, TARGET_VALUES_BY_CONTACT, targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS, asserts
         );
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
       });
 
       it('should display correct data', async () => {
@@ -192,7 +195,7 @@ describe('Target aggregates', () => {
           return { ...target, subtitle: target.subtitle === 'All time' ? target.subtitle : 'Last month' };
         });
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
-
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
       });
 
       it('should route to contact-detail on list item click and display contact summary target card', async () => {
@@ -359,6 +362,7 @@ describe('Target aggregates', () => {
         await commonPage.waitForLoaderToDisappear(emptySelection);
 
         expect(await emptySelection.getText()).to.equal('Target aggregates are disabled');
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
       });
 
       it('should filter aggregates by place and period', async () => {
@@ -384,6 +388,7 @@ describe('Target aggregates', () => {
         const asserts = { hasMultipleFacilities: true, contactValues: false };
 
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
@@ -397,6 +402,7 @@ describe('Target aggregates', () => {
           return { ...target, subtitle: target.subtitle === 'All time' ? target.subtitle : 'Last month' };
         });
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(2);
 
         await targetAggregatesPage.selectFilterOption(districtHospital2.name);
         const telemetry2 = await getTelemetry(
@@ -407,10 +413,12 @@ describe('Target aggregates', () => {
         context.contacts = contactsDh2;
         context.place = districtHospital2.name;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(2);
 
         await targetAggregatesPage.selectFilterOption('This month');
         context.isCurrentPeriod = true;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
       });
     });
   });

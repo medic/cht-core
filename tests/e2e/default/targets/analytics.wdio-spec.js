@@ -102,6 +102,7 @@ describe('Targets', () => {
         countNumberColor: TARGET_MET_COLOR
       },
     ]);
+    expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
   });
 
   it('should display targets from previous month', async () => {
@@ -126,6 +127,7 @@ describe('Targets', () => {
       { title: 'Deaths', subtitle: 'Last month', goal: '0', count: '8', countNumberColor: TARGET_MET_COLOR },
       { title: 'Active pregnancies', subtitle: 'All time', count: '42', countNumberColor: TARGET_MET_COLOR },
     ]);
+    expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
   });
 
   it('should display correct message when no target found', async () => {
