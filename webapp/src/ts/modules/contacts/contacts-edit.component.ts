@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
+import type JQuery from 'jquery';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DuplicatesFoundError, FormService, WebappEnketoFormContext } from '@mm-services/form.service';
@@ -12,6 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
@@ -39,6 +41,8 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly telemetryService: TelemetryService,
     readonly chtDatasourceService: CHTDatasourceService,
     private readonly translateService: TranslateService,
+    private readonly ngZone: NgZone,
+    private readonly fileReaderService: FileReaderService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
@@ -338,7 +342,67 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     this.trackEditDuration = this.performanceService.track();
 
+    if (this.contactId) {
+      await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(this.contactId));
+    }
+
     return formInstance;
+  }
+
+  private getAttachment(docId: string, attachmentName: string) {
+    return this.dbService
+      .get()
+      .getAttachment(docId, attachmentName)
+      .catch(e => {
+        if (e.status === 404) {
+          console.error(`Could not find attachment [${attachmentName}] on doc [${docId}].`);
+        } else {
+          throw e;
+        }
+      });
+  }
+
+  private async getAttachmentForElement(docId: string, $element: JQuery) {
+    const fileName = $element.data('loaded-file-name');
+    if (!fileName) {
+      return null;
+    }
+
+    const attachmentName = `user-file-${fileName}`;
+    return this.getAttachment(docId, attachmentName);
+  }
+
+  private renderAttachmentPreviews(contactId: string) {
+    return Promise
+      .resolve()
+      .then(() => Promise
+        .all($('#contact-form input[type="file"]:not(.draw-widget__load)')
+          .map(async (idx, element) => {
+            const $element = $(element);
+            const $picker = $element
+              .closest('.question')
+              .find('.widget.file-picker');
+
+            $picker
+              .find('.file-feedback')
+              .empty();
+
+            // Currently only support rendering image previews when editing contacts
+            if ($element.attr('accept') !== 'image/*') {
+              return;
+            }
+
+            const attachmentBlob = await this.getAttachmentForElement(contactId, $element);
+            if (!attachmentBlob) {
+              return;
+            }
+
+            const base64 = await this.fileReaderService.base64(attachmentBlob);
+
+            const $preview = $picker.find('.file-preview');
+            $preview.empty();
+            $preview.append('<img src="data:' + base64 + '">');
+          })));
   }
 
   private setEnketoContact(formInstance) {

@@ -1,4 +1,4 @@
-import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
+import { fakeAsync, flushMicrotasks, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Subject } from 'rxjs';
 import { expect } from 'chai';
@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { TranslateService } from '@mm-services/translate.service';
@@ -29,6 +30,7 @@ describe('ContactsEdit component', () => {
   let router;
   let route;
   let dbGet;
+  let dbService;
   let createComponent;
   let fixture;
   let component;
@@ -40,6 +42,7 @@ describe('ContactsEdit component', () => {
   let telemetryService;
   let chtDatasourceService;
   let getContact;
+  let fileReaderService;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
@@ -51,6 +54,13 @@ describe('ContactsEdit component', () => {
     };
     translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
+    dbService = {
+      get: sinon.stub().returns({
+        get: dbGet,
+        getAttachment: sinon.stub()
+      })
+    };
+    fileReaderService = { base64: sinon.stub() };
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
     route = {
@@ -95,7 +105,7 @@ describe('ContactsEdit component', () => {
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
-        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
+        { provide: DbService, useValue: dbService },
         { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
@@ -104,6 +114,7 @@ describe('ContactsEdit component', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: FileReaderService, useValue: fileReaderService },
         { provide: HttpClient, useValue: {} },
       ],
     });
@@ -677,6 +688,168 @@ describe('ContactsEdit component', () => {
           recordApdex: true,
         });
       });
+    });
+  });
+
+  describe('loading attachments', () => {
+    const imageElementName = '/contact_form/photo';
+    const imageAttachmentName = 'photo.jpg';
+    const getFileInputHTML = (accept: string, loadedFileName?: string) => $.parseHTML(`<input
+      type="file"
+      name="${imageElementName}"
+      accept="${accept}"
+      ${loadedFileName ? `data-loaded-file-name="${loadedFileName}"` : ''}
+    >`);
+    const fileInputSelector = '#contact-form input[type="file"]:not(.draw-widget__load)';
+
+    let jqStub;
+    let jqMap;
+    let jqFeedbackElement;
+    let jqPreviewElement;
+    let jqPickerElement;
+    let getAttachment;
+    let mockJQueryElement;
+
+    beforeEach(() => {
+      jqFeedbackElement = { empty: sinon.stub() };
+      jqPreviewElement = { empty: sinon.stub(), append: sinon.stub() };
+      jqPickerElement = { find: sinon.stub() };
+      jqPickerElement.find.withArgs('.file-feedback').returns(jqFeedbackElement);
+      jqPickerElement.find.withArgs('.file-preview').returns(jqPreviewElement);
+
+      jqMap = sinon.stub();
+      jqStub = sinon.stub(window as any, '$');
+      jqStub.parseXML = $.parseXML;
+      jqStub.parseHTML = $.parseHTML;
+      jqStub.withArgs(fileInputSelector).returns({ map: jqMap });
+
+      mockJQueryElement = {
+        attr: sinon.stub().returnsArg(0),
+        data: sinon.stub(),
+        closest: sinon.stub().returns({
+          find: sinon.stub().returns(jqPickerElement)
+        })
+      };
+      jqStub.returns(mockJQueryElement);
+
+      getAttachment = dbService.get().getAttachment;
+    });
+
+    describe('for new contact', () => {
+      it('does not load attachments when creating new contact', fakeAsync(async () => {
+        routeSnapshot.params = { type: 'person' };
+        contactTypesService.getChildren.resolves([{ id: 'person' }]);
+        contactTypesService.get.resolves({
+          create_form: 'person_create_form',
+          create_key: 'person_create_key',
+        });
+        dbGet.resolves({ _id: 'person_create_form', form: true });
+
+        await createComponent();
+        tick();
+
+        expect(getAttachment.notCalled).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+      }));
+    });
+
+    describe('for existing contact', () => {
+      it('loads form with image having loaded file name', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = { _id: 'the_person', type: 'person' };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        dbGet.resolves({ _id: 'person_edit_form', form: true });
+        const attachmentBlob = { attachment: 'blob' };
+        getAttachment.resolves(attachmentBlob);
+        const base64 = 'base64';
+        fileReaderService.base64.resolves(base64);
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('image/*', imageAttachmentName)[0];
+
+        mockJQueryElement.attr.withArgs('accept').returns('image/*');
+        mockJQueryElement.attr.withArgs('name').returns(imageElementName);
+        mockJQueryElement.data.withArgs('loaded-file-name').returns(imageAttachmentName);
+
+        await renderAttachmentPreview(0, inputElement);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
+        expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
+        expect(jqPreviewElement.empty.calledOnce).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+      }));
+
+      it('does not load attachment when the attachment is a non-image attachment', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = { _id: 'the_person', type: 'person' };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        dbGet.resolves({ _id: 'person_edit_form', form: true });
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('video/*', imageAttachmentName)[0];
+        await renderAttachmentPreview(0, inputElement);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.notCalled).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+        expect(jqPreviewElement.empty.notCalled).to.be.true;
+        expect(jqPreviewElement.append.notCalled).to.be.true;
+      }));
+
+      it('loads form successfully when there is an error retrieving the attachment', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = { _id: 'the_person', type: 'person' };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        dbGet.resolves({ _id: 'person_edit_form', form: true });
+        const expectedError = new Error('some error');
+        getAttachment.onFirstCall().rejects(expectedError);
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('image/*', imageAttachmentName)[0];
+
+        mockJQueryElement.attr.withArgs('accept').returns('image/*');
+        mockJQueryElement.attr.withArgs('name').returns(imageElementName);
+        mockJQueryElement.data.withArgs('loaded-file-name').returns(imageAttachmentName);
+
+        await expect(renderAttachmentPreview(0, inputElement)).to.be.rejectedWith(expectedError);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+        expect(jqPreviewElement.empty.notCalled).to.be.true;
+        expect(jqPreviewElement.append.notCalled).to.be.true;
+      }));
     });
   });
 
