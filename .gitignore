@@ -60,4 +60,3 @@ user-password-change.csv
 /scripts/build/helm/tests/integration-k3d-values.yaml
 /tests/e2e/visual/images/*.png
 .envrc
-release.notes.md
