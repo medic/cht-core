@@ -83,7 +83,7 @@ describe('Targets', () => {
     await analyticsPage.goToTargets();
 
     const emptySelection = await analyticsPage.noSelectedTarget();
-    await (emptySelection).waitForDisplayed();
+    await emptySelection.waitForDisplayed();
     await commonPage.waitForLoaderToDisappear(emptySelection);
 
     expect(await emptySelection.getText()).to.equal(

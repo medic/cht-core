@@ -47,7 +47,6 @@ module.exports = [
       }
     ]
   },
-
   {
     name: 'person_create_follow_up',
     icon: 'icon-person',

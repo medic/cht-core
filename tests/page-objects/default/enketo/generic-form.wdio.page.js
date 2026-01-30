@@ -123,8 +123,8 @@ const getDuplicateContactHeadings = async () => {
 
 const getDuplicateContactSummaryField = async (index, fieldName) => {
   const duplicateContact = (await duplicateContacts())[index];
-  const contactSummary = await duplicateContact.$('#contact_summary');
   await duplicateContact.click();
+  const contactSummary = await duplicateContact.$('#contact_summary');
   await contactSummary.waitForDisplayed();
   const field = await contactSummary.$(`.cell.${fieldName}`);
   return (await field.$('p:not(.summary_label)')).getText();

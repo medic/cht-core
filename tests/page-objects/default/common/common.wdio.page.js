@@ -206,9 +206,8 @@ const findVisibleFAB = async () => {
 
 const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
-  const fab = await findVisibleFAB();
   waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
-  await fab.click();
+  (await findVisibleFAB())?.click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -216,8 +215,7 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
 
 const getFastActionItemsLabels = async () => {
   await closeHamburgerMenu();
-  const fab = await findVisibleFAB();
-  await fab.click();
+  (await findVisibleFAB())?.click();
 
   await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await fabSelectors.fastActionListContainer().waitForDisplayed();

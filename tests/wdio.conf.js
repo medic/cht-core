@@ -33,6 +33,8 @@ const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion
     'window-size=1200,900'
   ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
+const { DOWNLOAD_PATH, setupDownloadFolder } = require('@utils/file-download');
+setupDownloadFolder();
 
 const baseConfig = {
   //
@@ -97,7 +99,10 @@ const baseConfig = {
     'wdio:enforceWebDriverClassic': false,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
-      binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined
+      binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined,
+      prefs: {
+        'download.default_directory': DOWNLOAD_PATH
+      }
     },
     'wdio:chromedriverOptions': {
       binary: utils.isMinimumChromeVersion
