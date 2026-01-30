@@ -1,5 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
@@ -18,6 +18,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { Selectors } from '@mm-selectors/index';
 
 describe('AnalyticsTargetsComponent', () => {
   let component: AnalyticsTargetsComponent;
@@ -28,6 +29,7 @@ describe('AnalyticsTargetsComponent', () => {
   let sessionService;
   let userSettingsService;
   let globalActions;
+  let store: MockStore;
 
   beforeEach(waitForAsync(() => {
     rulesEngineService = {
@@ -39,6 +41,8 @@ describe('AnalyticsTargetsComponent', () => {
 
     globalActions = {
       clearSidebarFilter: sinon.stub(GlobalActions.prototype, 'clearSidebarFilter'),
+      setTitle: sinon.stub(GlobalActions.prototype, 'setTitle'),
+      setShowContent: sinon.stub(GlobalActions.prototype, 'setShowContent'),
     };
 
     userSettingsService = {
@@ -103,11 +107,13 @@ describe('AnalyticsTargetsComponent', () => {
       .then(() => {
         fixture = TestBed.createComponent(AnalyticsTargetsComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -134,13 +140,15 @@ describe('AnalyticsTargetsComponent', () => {
     tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(rulesEngineService.fetchTargets).to.not.have.been.called;
+    expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
     expect(component.targetsDisabled).to.equal(true);
     expect(!!component.errorStack).to.be.false;
     expect(stopPerformanceTrackStub.calledOnce).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'analytics:targets:load', recordApdex: true });
     expect(component.targets).to.deep.equal([]);
     expect(component.loading).to.equal(false);
+    expect(globalActions.setTitle.notCalled).to.be.true;
+    expect(globalActions.setShowContent.calledOnceWithExactly(false)).to.be.true;
   }));
 
   it('should fetch targets when rules engine is enabled', fakeAsync(() => {
@@ -151,6 +159,7 @@ describe('AnalyticsTargetsComponent', () => {
     component.ngOnInit();
     tick(50);
 
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(component.targetsDisabled).to.equal(false);
@@ -159,6 +168,8 @@ describe('AnalyticsTargetsComponent', () => {
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'analytics:targets:load', recordApdex: true });
     expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
     expect(component.loading).to.equal(false);
+    expect(globalActions.setTitle.notCalled).to.be.true;
+    expect(globalActions.setShowContent.calledOnceWithExactly(false)).to.be.true;
   }));
 
   it('should filter targets to visible ones', fakeAsync(() => {
@@ -197,7 +208,7 @@ describe('AnalyticsTargetsComponent', () => {
     tick(50);
 
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
-    expect(rulesEngineService.fetchTargets).to.not.have.been.called;
+    expect(rulesEngineService.fetchTargets.callCount).to.equal(0);
     expect(component.targetsDisabled).to.equal(false);
     expect(!!component.errorStack).to.be.true;
     expect(component.targets).to.deep.equal([]);
@@ -206,27 +217,86 @@ describe('AnalyticsTargetsComponent', () => {
     expect(consoleErrorMock.args[0][0]).to.equal('Error getting targets');
   }));
 
-  [
-    ReportingPeriod.CURRENT,
-    ReportingPeriod.PREVIOUS
-  ].forEach(reportingPeriod => {
-    it(`should fetch targets when reporting period set to ${reportingPeriod}`, async () => {
-      sinon.reset();
-      rulesEngineService.isEnabled.resolves(true);
-      rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
+  it(`should fetch targets when reporting period set to CURRENT`, async () => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
 
-      await component.getTargets(reportingPeriod);
+    await component.getTargets(ReportingPeriod.CURRENT);
 
-      expect(component.reportingPeriodFilter).to.equal(reportingPeriod);
-      expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
-      expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(reportingPeriod);
-      expect(component.targetsDisabled).to.be.false;
-      expect(component.errorStack).to.be.undefined;
-      expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
-        { name: 'analytics:targets:load', recordApdex: true }
-      );
-      expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
-      expect(component.loading).to.be.false;
-    });
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
+    expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
+    expect(component.targetsDisabled).to.be.false;
+    expect(component.errorStack).to.be.undefined;
+    expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
+      { name: 'analytics:targets:load', recordApdex: true }
+    );
+    expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
+    expect(component.loading).to.be.false;
+    expect(globalActions.setTitle.notCalled).to.be.true;
+    expect(globalActions.setShowContent.calledOnceWithExactly(false)).to.be.true;
   });
+
+  it(`should fetch targets when reporting period set to PREVIOUS`, async () => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
+
+    await component.getTargets(ReportingPeriod.PREVIOUS);
+
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.PREVIOUS);
+    expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
+    expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.PREVIOUS);
+    expect(component.targetsDisabled).to.be.false;
+    expect(component.errorStack).to.be.undefined;
+    expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
+      { name: 'analytics:targets:load', recordApdex: true }
+    );
+    expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
+    expect(component.loading).to.be.false;
+    expect(globalActions.setTitle.calledOnceWithExactly('targets.last_month.subtitle')).to.be.true;
+    expect(globalActions.setShowContent.calledOnceWithExactly(true)).to.be.true;
+  });
+
+  it(`should reset to the default reporting period when showContent is set to false`, fakeAsync(() => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
+
+    store.overrideSelector(Selectors.getShowContent, false);
+    store.refreshState();
+    tick();
+
+    // Nothing done when CURRENT
+    expect(globalActions.setShowContent.notCalled).to.be.true;
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+
+    component.reportingPeriodFilter = ReportingPeriod.PREVIOUS;
+    store.overrideSelector(Selectors.getShowContent, true);
+    store.refreshState();
+    tick();
+
+    // Nothing done when showContent is true
+    expect(globalActions.setShowContent.notCalled).to.be.true;
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.PREVIOUS);
+
+    store.overrideSelector(Selectors.getShowContent, false);
+    store.refreshState();
+    tick();
+
+    // Targets reset to default
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
+    expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
+    expect(component.targetsDisabled).to.be.false;
+    expect(component.errorStack).to.be.undefined;
+    expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
+      { name: 'analytics:targets:load', recordApdex: true }
+    );
+    expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
+    expect(component.loading).to.be.false;
+    expect(globalActions.setTitle.notCalled).to.be.true;
+    expect(globalActions.setShowContent.calledOnceWithExactly(false)).to.be.true;
+  }));
 });

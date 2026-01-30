@@ -661,9 +661,23 @@ describe('TargetAggregatesService', () => {
 
     it('should calculate every type of target aggregate correctly', async () => {
       const config = { tasks: { targets: { items: [
-        { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
-        { id: 'target2', aggregate: true, type: 'count', goal: 20, translation_key: 'target2' },
-        { id: 'target3', aggregate: true, type: 'percent', goal: -1, title: 'target3' },
+        { id: 'target1', aggregate: true, type: 'count', title: 'target1', subtitle_translation_key: 'sub_trans_key' },
+        {
+          id: 'target2',
+          aggregate: true,
+          type: 'count',
+          goal: 20,
+          translation_key: 'target2',
+          subtitle_translation_key: '() => "sub_trans_key"'
+        },
+        {
+          id: 'target3',
+          aggregate: true,
+          type: 'percent',
+          goal: -1,
+          title: 'target3',
+          subtitle_translation_key: '(reportingPeriod) => reportingPeriod'
+        },
         { id: 'target4', aggregate: true, type: 'percent', goal: 80, translation_key: 'target4' },
         { id: 'target5', aggregate: true, type: 'count', goal: 2, translation_key: 'target5' },
       ] } }};
@@ -728,10 +742,12 @@ describe('TargetAggregatesService', () => {
       const result = await service.getAggregates();
 
       expect(result.length).to.equal(5);
-      expect(translateService.instant.callCount).to.equal(6);
+      expect(translateService.instant.callCount).to.equal(9);
       expect(translateService.instant.withArgs('target2').callCount).to.equal(1);
       expect(translateService.instant.withArgs('target4').callCount).to.equal(1);
       expect(translateService.instant.withArgs('target5').callCount).to.equal(1);
+      expect(translateService.instant.withArgs('sub_trans_key').callCount).to.equal(2);
+      expect(translateService.instant.withArgs('current').callCount).to.equal(1);
       expect(translateService.instant.withArgs(ratioTranslationKey).callCount).to.equal(3);
       expect(translateService.instant.withArgs(ratioTranslationKey)
         .args[0][1]).to.deep.include({ pass: 1, total: 3 });
@@ -745,7 +761,8 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'count',
         title: 'target1',
-        subtitle: undefined,
+        subtitle: 'sub_trans_key',
+        subtitle_translation_key: 'sub_trans_key',
         aggregateValue: { pass: 26, total: 26, hasGoal: false, summary: 26 },
         heading: 'target1',
         hasGoal: false,
@@ -763,7 +780,8 @@ describe('TargetAggregatesService', () => {
         type: 'count',
         goal: 20,
         translation_key: 'target2',
-        subtitle: undefined,
+        subtitle: 'sub_trans_key',
+        subtitle_translation_key: '() => "sub_trans_key"',
         aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target2',
         hasGoal: true,
@@ -781,7 +799,8 @@ describe('TargetAggregatesService', () => {
         type: 'percent',
         goal: -1,
         title: 'target3',
-        subtitle: undefined,
+        subtitle: 'current',
+        subtitle_translation_key: '(reportingPeriod) => reportingPeriod',
         aggregateValue: { pass: 20, total: 51, percent: 39, hasGoal: false, summary: '39%' },
         heading: 'target3',
         hasGoal: false,

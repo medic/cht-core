@@ -145,6 +145,10 @@ describe('Analytics Target Aggregates Component', () => {
     flush();
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(component.facilityFilter).to.deep.equal(
+      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' }
+    );
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.false;
@@ -167,6 +171,10 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
+    expect(component.facilityFilter).to.deep.equal(
+      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' }
+    );
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
     expect(component.enabled).to.be.true;
     expect(component.loading).to.be.false;
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
@@ -196,6 +204,10 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
+    expect(component.facilityFilter).to.deep.equal(
+      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' }
+    );
+    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.true;
@@ -362,12 +374,12 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
   }));
 
-  it('should add Reporting month to filtersToDisplay when ReportingPeriod.PREVIOUS', fakeAsync(() => {
+  it('should add subtitle to filtersToDisplay', fakeAsync(() => {
     sinon.reset();
 
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.isPreviousPeriod.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', subtitle: 'target subtitle' }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
@@ -383,9 +395,10 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal([
       {
         title: 'aggregate-1',
+        subtitle: 'target subtitle',
         facility: 'Facility 1',
         reportingPeriod: ReportingPeriod.PREVIOUS,
-        filtersToDisplay: ['Facility 1'],
+        filtersToDisplay: ['Facility 1', 'target subtitle'],
       },
     ]);
   }));
