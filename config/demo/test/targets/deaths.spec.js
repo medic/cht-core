@@ -27,7 +27,6 @@ describe('Death related targets tests', () => {
       goal: 0,
       icon: 'icon-death-general',
       id: 'deaths-this-month',
-      // subtitle_translation_key: 'targets.this_month.subtitle',
       translation_key: 'targets.death_reporting.deaths.title',
       type: 'count',
       value: {
@@ -50,7 +49,6 @@ describe('Death related targets tests', () => {
       goal: 0,
       icon: 'icon-death-general',
       id: 'deaths-this-month',
-      // subtitle_translation_key: 'targets.this_month.subtitle',
       translation_key: 'targets.death_reporting.deaths.title',
       type: 'count',
       value: {

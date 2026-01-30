@@ -5,16 +5,18 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { FormsModule } from '@angular/forms';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { Selectors } from '@mm-selectors/index';
 import {
-  AnalyticsSidebarFilterComponent, ReportingPeriod
+  AnalyticsSidebarFilterComponent,
+  ReportingPeriod
 } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
+import { SimpleChange } from '@angular/core';
 
 describe('Analytics Sidebar Filter Component', () => {
   let component: AnalyticsSidebarFilterComponent;
@@ -97,6 +99,56 @@ describe('Analytics Sidebar Filter Component', () => {
     expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false, filterCount: { total: 0 } });
     expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true, filterCount: { total: 0 } });
   });
+
+  it('should update the filter count when the selected values change', fakeAsync(() => {
+    sinon.resetHistory();
+    const userFacilities = [
+      { _id: 'id_1', _rev: '1-abc', type: 'district_hospital' },
+      { _id: 'id_2', _rev: '1-def', type: 'district_hospital' },
+    ];
+    component.userFacilities = [userFacilities[0]];
+
+    component.ngOnInit();
+    flush();
+
+    expect(globalActions.setSidebarFilter.notCalled).to.be.true;
+
+    component.selectedFacility = userFacilities[0];
+    component.selectedReportingPeriod = ReportingPeriod.CURRENT;
+    component.ngOnChanges({
+      selectedFacility: new SimpleChange(undefined, userFacilities[0], true),
+      selectedReportingPeriod: new SimpleChange(undefined, ReportingPeriod.CURRENT, true)
+    });
+
+    // No filter value set because only one userFacility and reporting period is CURRENT
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({
+      isOpen: false,
+      filterCount: { total: 0 }
+    })).to.be.true;
+    sinon.resetHistory();
+
+    component.selectedReportingPeriod = ReportingPeriod.PREVIOUS;
+    component.ngOnChanges({
+      selectedReportingPeriod: new SimpleChange(ReportingPeriod.CURRENT, ReportingPeriod.PREVIOUS, false)
+    });
+
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({
+      isOpen: false,
+      filterCount: { total: 1 }
+    })).to.be.true;
+    sinon.resetHistory();
+
+    component.userFacilities = userFacilities;
+    component.selectedFacility = userFacilities[1];
+    component.ngOnChanges({
+      selectedFacility: new SimpleChange(userFacilities[0], userFacilities[1], false),
+    });
+
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({
+      isOpen: false,
+      filterCount: { total: 2 }
+    })).to.be.true;
+  }));
 
   it('should set user facility name_key as facilityFilterLabel, when user has multiple facilities', fakeAsync(() => {
     sinon.resetHistory();

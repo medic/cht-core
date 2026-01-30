@@ -109,13 +109,11 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnCha
 
   fetchAggregateTargetsByFacility(facility: Place.v1.Place) {
     this.selectedFacility = facility;
-    this.updateSidebarFilterState();
     this.facilitySelectionChanged.emit(this.selectedFacility);
     this.collectFilterSelectionTelemetry('facility');
   }
 
   fetchAggregateTargetsByReportingPeriod() {
-    this.updateSidebarFilterState();
     this.reportingPeriodSelectionChanged.emit(this.selectedReportingPeriod);
     this.collectFilterSelectionTelemetry('reporting-period');
   }

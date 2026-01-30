@@ -134,7 +134,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     }
 
     aggregate.reportingPeriod = reportingPeriod;
-    filtersToDisplay.push(aggregate.subtitle);
+    if (aggregate.subtitle) {
+      filtersToDisplay.push(aggregate.subtitle);
+    }
     aggregate.filtersToDisplay = filtersToDisplay;
 
     return aggregate;

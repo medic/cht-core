@@ -176,7 +176,7 @@ describe('Analytics Target Aggregates Component', () => {
       {
         title: 'aggregate-1',
         facility: 'some-facility-1',
-        filtersToDisplay: ['some-facility-1', undefined],
+        filtersToDisplay: ['some-facility-1'],
         reportingPeriod: ReportingPeriod.CURRENT,
       },
     ]);
@@ -206,7 +206,7 @@ describe('Analytics Target Aggregates Component', () => {
       {
         title: 'aggregate-1',
         facility: 'some-facility-1',
-        filtersToDisplay: ['some-facility-1', undefined],
+        filtersToDisplay: ['some-facility-1'],
         reportingPeriod: ReportingPeriod.CURRENT,
       },
     ]);
@@ -257,7 +257,7 @@ describe('Analytics Target Aggregates Component', () => {
     flush();
 
     expect(targetAggregatesActions.setTargetAggregates.args[0][0]).to.deep.equal([
-      { title: 'aggregate-1', reportingPeriod: ReportingPeriod.CURRENT, filtersToDisplay: [undefined], },
+      { title: 'aggregate-1', reportingPeriod: ReportingPeriod.CURRENT, filtersToDisplay: [], },
     ]);
   }));
 
@@ -277,7 +277,7 @@ describe('Analytics Target Aggregates Component', () => {
       {
         title: 'aggregate-1',
         facility: 'some-facility-1',
-        filtersToDisplay: ['some-facility-1', undefined],
+        filtersToDisplay: ['some-facility-1'],
         reportingPeriod: ReportingPeriod.CURRENT,
       },
     ]);
@@ -306,7 +306,7 @@ describe('Analytics Target Aggregates Component', () => {
         title: 'aggregate-1',
         facility: 'Facility 1',
         reportingPeriod: ReportingPeriod.PREVIOUS,
-        filtersToDisplay: ['Facility 1', undefined],
+        filtersToDisplay: ['Facility 1'],
       },
     ]);
   }));
@@ -355,7 +355,7 @@ describe('Analytics Target Aggregates Component', () => {
       {
         title: 'aggregate-1',
         facility: 'A Facility',
-        filtersToDisplay: ['A Facility', undefined],
+        filtersToDisplay: ['A Facility'],
         reportingPeriod: ReportingPeriod.CURRENT,
       },
     ]);
@@ -385,7 +385,7 @@ describe('Analytics Target Aggregates Component', () => {
         title: 'aggregate-1',
         facility: 'Facility 1',
         reportingPeriod: ReportingPeriod.PREVIOUS,
-        filtersToDisplay: ['Facility 1', undefined],
+        filtersToDisplay: ['Facility 1'],
       },
     ]);
   }));
@@ -411,7 +411,7 @@ describe('Analytics Target Aggregates Component', () => {
       {
         title: 'aggregate-1',
         reportingPeriod: ReportingPeriod.PREVIOUS,
-        filtersToDisplay: [undefined],
+        filtersToDisplay: [],
       },
     ]);
   }));
