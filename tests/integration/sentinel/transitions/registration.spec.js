@@ -33,7 +33,11 @@ const contacts = [
     place_id: 'the_clinic',
     parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
-      _id: 'person', parent: { _id: 'clinic', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      _id: 'person',
+      parent: {
+        _id: 'clinic',
+        parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+      }
     },
     reported_date: new Date().getTime()
   },

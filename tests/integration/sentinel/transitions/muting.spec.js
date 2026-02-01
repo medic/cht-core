@@ -778,7 +778,9 @@ describe('muting', () => {
       })
       .then(() => utils.saveDoc(muteHC))
       .then(() => sentinelUtils.waitForSentinel(muteHC._id))
-      .then(() => sentinelUtils.getInfoDocs([muteHC._id, 'person', DOC_IDS.HEALTH_CENTER, 'clinic', 'district_hospital']))
+      .then(() => sentinelUtils.getInfoDocs([
+        muteHC._id, 'person', DOC_IDS.HEALTH_CENTER, 'clinic', 'district_hospital'
+      ]))
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;
@@ -823,7 +825,9 @@ describe('muting', () => {
       })
       .then(() => utils.saveDoc(unmute))
       .then(() => sentinelUtils.waitForSentinel(unmute._id))
-      .then(() => sentinelUtils.getInfoDocs([unmute._id, 'person', DOC_IDS.HEALTH_CENTER, 'clinic', 'district_hospital']))
+      .then(() => sentinelUtils.getInfoDocs([
+        unmute._id, 'person', DOC_IDS.HEALTH_CENTER, 'clinic', 'district_hospital'
+      ]))
       .then(infos => {
         chai.expect(infos[0].transitions).to.be.ok;
         chai.expect(infos[0].transitions.muting).to.be.ok;

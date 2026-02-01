@@ -8,7 +8,6 @@ const path = require('path');
 const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const { DOC_IDS } = require('@medic/constants');
 const args = process.argv.slice(2);
 /**
 * The initial idea was to parallelize this script and use the thread as the district hospital name.

@@ -111,7 +111,10 @@ describe('ContactType Utils', () => {
       chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'person' })).to.equal('person');
       chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'chw' })).to.equal('chw');
       chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'patient' })).to.equal('patient');
-      chai.expect(utils.getTypeId({ type: 'contact', contact_type: DOC_IDS.HEALTH_CENTER })).to.equal(DOC_IDS.HEALTH_CENTER);
+      chai.expect(utils.getTypeId({
+        type: 'contact',
+        contact_type: DOC_IDS.HEALTH_CENTER
+      })).to.equal(DOC_IDS.HEALTH_CENTER);
     });
   });
 

@@ -15,7 +15,12 @@ const userCtx = {
   contact_id: 'contact_id',
   facility_id: ['facility_id'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
-  facility: [{ _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: DOC_IDS.HEALTH_CENTER }],
+  facility: [{
+    _id: 'facility_id',
+    place_id: 'facility_shortcode',
+    name: 'health center',
+    type: DOC_IDS.HEALTH_CENTER
+  }],
   roles: ['user']
 };
 const userCtxMultiFacility = {
