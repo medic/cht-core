@@ -1,9 +1,10 @@
 const Factory = require('rosie').Factory;
+const { DOC_IDS } = require('@medic/constants');
 const phoneNumber = '+12068881234';
 
 const place = {
   _id: 'hc1',
-  type: 'health_center',
+  type: DOC_IDS.HEALTH_CENTER,
   name: 'Health Center 1',
   parent: 'dist1'
 };

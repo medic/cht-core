@@ -1,5 +1,6 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
+const { DOC_IDS } = require('@medic/constants');
 
 const place = () => {
   return new Factory()
@@ -17,7 +18,7 @@ const place = () => {
 };
 
 
-const generatePlaces = (types = ['district_hospital', 'health_center', 'clinic']) => {
+const generatePlaces = (types = ['district_hospital', DOC_IDS.HEALTH_CENTER, 'clinic']) => {
   return types.map((type, index) => {
     return place().build({
       name: `${type.replace('_', ' ')}${index}`,

@@ -12,16 +12,17 @@ const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Tasks', () => {
 
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const healthCenter1 = places.get('health_center');
+  const healthCenter1 = places.get(DOC_IDS.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: 'health_center',
+    type: DOC_IDS.HEALTH_CENTER,
     parent: { _id: districtHospital._id },
   });
   const chwContact = personFactory.build({

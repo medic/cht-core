@@ -3,6 +3,7 @@ const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const sinon = require('sinon');
 const assert = require('chai').assert;
+const { DOC_IDS } = require('@medic/constants');
 
 describe('messages', () => {
   beforeEach(() => config.init({
@@ -89,7 +90,7 @@ describe('messages', () => {
       contact: {
         parent: {
           parent: {
-            type: 'health_center',
+            type: DOC_IDS.HEALTH_CENTER,
             contact: {
               name: 'Jeremy'
             }

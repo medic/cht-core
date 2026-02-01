@@ -5,12 +5,13 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects//default/sms/messages.wdio.page');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Send message', () => {
   const rawNumber = '+50683858585';
   const anotherRawNumber = '+50689232323';
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
   const anne = personFactory.build({
     name: 'Anne',
     phone: '+50683333333',

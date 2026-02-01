@@ -29,7 +29,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:offline',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'Offline place',
       place_id: 'offline_hc_shortcode',
       parent: 'PARENT_PLACE',
@@ -46,7 +46,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'Online place',
       parent: 'PARENT_PLACE',
       place_id: 'online_hc_shortcode',

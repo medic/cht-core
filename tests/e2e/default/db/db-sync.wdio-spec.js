@@ -47,7 +47,7 @@ describe('db-sync', () => {
     }),
     placeFactory.place().build({
       _id: restrictedFacilityId,
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       contact
     }),
     personFactory.build(contact),

@@ -8,10 +8,11 @@ const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const sms = require('@utils/sms');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('More Options Menu - Offline User', () => {
   const places = placeFactory.generateHierarchy();
-  const health_center = places.get('health_center');
+  const health_center = places.get(DOC_IDS.HEALTH_CENTER);
   let xmlReportId;
   let smsReportId;
 

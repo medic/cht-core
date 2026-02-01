@@ -5,11 +5,12 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Reports tab messages', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
 
   const contact = personFactory.build({ phone: '+12068881234', parent: healthCenter });
 

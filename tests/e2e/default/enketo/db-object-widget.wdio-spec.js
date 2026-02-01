@@ -6,15 +6,16 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('DB Object Widget', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
-  const area1 = places.get('health_center');
+  const area1 = places.get(DOC_IDS.HEALTH_CENTER);
   const area2 = placeFactory.place().build({
     _id: 'area2',
     name: 'area 2',
-    type: 'health_center',
+    type: DOC_IDS.HEALTH_CENTER,
     parent: { _id: districtHospital._id }
   });
 

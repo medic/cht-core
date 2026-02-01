@@ -29,7 +29,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:bobville',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'Bobville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:bobville',
@@ -46,7 +46,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:clareville',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'Clareville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:clareville',
@@ -63,7 +63,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chw-bossville',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'CHW Bossville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:chw-bossville',
@@ -108,7 +108,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:steveville',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'Steveville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:steveville',
@@ -125,7 +125,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:managerville',
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       name: 'Managerville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:managerville',

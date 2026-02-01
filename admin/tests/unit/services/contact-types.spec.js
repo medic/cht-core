@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 describe('ContactTypes service', () => {
 
   let service;
@@ -5,7 +8,7 @@ describe('ContactTypes service', () => {
 
   const HARDCODED_TYPES = [
     'district_hospital',
-    'health_center',
+    DOC_IDS.HEALTH_CENTER,
     'clinic',
     'person'
   ];

@@ -6,6 +6,7 @@ const userFactory = require('@factories/cht/users/users');
 const { getRemoteDataContext, Qualifier, Contact } = require('@medic/cht-datasource');
 const { USER_ROLES } = require('@medic/constants');
 const { setAuth, removeAuth } = require('./auth');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('cht-datasource Contact', () => {
   // NOTE: this is a common word added to contacts to fetch them
@@ -30,7 +31,7 @@ describe('cht-datasource Contact', () => {
   }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({
-    ...placeMap.get('health_center'),
+    ...placeMap.get(DOC_IDS.HEALTH_CENTER),
     contact: {_id: contact1._id},
     notes: commonWord
   });

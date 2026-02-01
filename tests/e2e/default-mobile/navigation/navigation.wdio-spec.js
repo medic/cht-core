@@ -10,10 +10,11 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Navigation', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
   const offlineUser = userFactory.build({ username: 'offline-user-nav', roles: [ 'chw' ], place: healthCenter._id });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const reports = [

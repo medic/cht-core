@@ -1,5 +1,6 @@
 const Factory = require('rosie').Factory;
 const fs = require('fs');
+const { DOC_IDS } = require('@medic/constants');
 
 const custom_type_doctor = {
   id: 'doctor',
@@ -10,7 +11,7 @@ const custom_type_doctor = {
   primary_contact_key: 'clinic.field.contact',
   parents: [
     'district_hospital',
-    'health_center',
+    DOC_IDS.HEALTH_CENTER,
     'clinic',
     'ngo',
     'office',

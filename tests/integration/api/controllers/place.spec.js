@@ -3,13 +3,14 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const { USER_ROLES } = require('@medic/constants');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Place API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
   const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw_supervisor' }));
   const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place1 = utils.deepFreeze({ ...placeMap.get(DOC_IDS.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
@@ -48,7 +49,7 @@ describe('Place API', () => {
   }));
   const healthCenter2 = utils.deepFreeze(placeFactory.place().build({
     name: 'healthCenter2',
-    type: 'health_center',
+    type: DOC_IDS.HEALTH_CENTER,
     contact: {}
   }));
 

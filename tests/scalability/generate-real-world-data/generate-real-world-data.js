@@ -2,12 +2,13 @@ const realWorldPlaceFactory = require('../../factories/real-world/contacts/place
 const realWorldPersonFactory = require('../../factories/real-world/contacts/person');
 const realWorldUserFactory = require('../../factories/real-world/users/user');
 const realWorldSurvey = require('../../factories/real-world/reports/survey');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, DOC_IDS } = require('@medic/constants');
 const fs = require('fs');
 const path = require('path');
 const dataConfig = require('./data-config.json');
 const sizeConfig = require('./size-config.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const { DOC_IDS } = require('@medic/constants');
 const args = process.argv.slice(2);
 /**
 * The initial idea was to parallelize this script and use the thread as the district hospital name.
@@ -89,19 +90,19 @@ const renameKey = (obj, oldKey, newKey) => {
 
 const pairPlaceTypesRoles = {
   'district_hospital': 'supervisor',
-  'health_center': 'district_admin',
+  [DOC_IDS.HEALTH_CENTER]: 'district_admin',
   'clinic': null
 };
 
 const pairPlaceTypesNeedsUsers = {
   'district_hospital': true,
-  'health_center': true,
+  [DOC_IDS.HEALTH_CENTER]: true,
   'clinic': false
 };
 
 const pairPlaceTypesPersonSubtype = {
   'district_hospital': 'manager',
-  'health_center': 'chw',
+  [DOC_IDS.HEALTH_CENTER]: 'chw',
   'clinic': 'member_eligible_woman'
 };
 
@@ -212,7 +213,7 @@ const generateData = async () => {
     for (let hc = 0; hc < numberOfHealthCentersPerDistrictHospital; hc++) {
       const healthCenterName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc;
       const healthCenter = await generateHierarchy(
-        'health_center',
+        DOC_IDS.HEALTH_CENTER,
         healthCenterName,
         districtHospital,
         numberOfChwPerHealthCenter

@@ -3,6 +3,7 @@ const utils = require('@utils');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const placeFactory = require('@factories/cht/contacts/place');
 const dataFactory = require('@factories/cht/generate');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('impact', () => {
 
@@ -46,7 +47,7 @@ describe('impact', () => {
           by_type: [
             { type: 'clinic', count: 1 },
             { type: 'district_hospital', count: 1 },
-            { type: 'health_center', count: 1 },
+            { type: DOC_IDS.HEALTH_CENTER, count: 1 },
             { type: 'person', count: 3 }
           ]
         },

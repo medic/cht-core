@@ -2,6 +2,7 @@ const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
+const { DOC_IDS } = require('@medic/constants');
 
 describe('generate_shortcode_on_contacts', () => {
   after(() => utils.revertDb([], true));
@@ -181,7 +182,7 @@ describe('generate_shortcode_on_contacts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'health_center',
+      type: DOC_IDS.HEALTH_CENTER,
       reported_date: new Date().getTime()
     };
 

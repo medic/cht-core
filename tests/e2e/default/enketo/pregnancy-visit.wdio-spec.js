@@ -10,10 +10,11 @@ const personFactory = require('@factories/cht/contacts/person');
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Pregnancy Visit', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),

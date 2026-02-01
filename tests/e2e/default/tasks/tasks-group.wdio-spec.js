@@ -11,12 +11,13 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Tasks group landing page', () => {
   const todayDate = Date.now();
 
-  const places = placeFactory.generateHierarchy(['district_hospital', 'health_center']);
-  const healthCenter = places.get('health_center');
+  const places = placeFactory.generateHierarchy(['district_hospital', DOC_IDS.HEALTH_CENTER]);
+  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
 
   const politiciansClinic = placeFactory.place().build({
     type: 'clinic',

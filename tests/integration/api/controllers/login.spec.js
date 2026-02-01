@@ -3,6 +3,7 @@ chai.use(require('chai-shallow-deep-equal'));
 const utils = require('@utils');
 const mockIdProvider = require('../../../utils/mock-oidc-provider');
 const { DB_NAME } = require('@constants');
+const { DOC_IDS } = require('@medic/constants');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';
@@ -99,7 +100,7 @@ describe('login', () => {
       roles: ['district_admin'],
       place: {
         _id: 'fixture:test',
-        type: 'health_center',
+        type: DOC_IDS.HEALTH_CENTER,
         name: 'TestVille',
         parent: 'PARENT_PLACE'
       },

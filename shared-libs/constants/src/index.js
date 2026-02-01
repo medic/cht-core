@@ -5,12 +5,12 @@
 const DOC_IDS = {
   SERVICE_WORKER_META: 'service-worker-meta',
   SETTINGS: 'settings',
+  HEALTH_CENTER: 'health_center',
 };
 
 // Document Types
 const DOC_TYPES = {
   TRANSLATIONS: 'translations',
-  HEALTH_CENTER: 'health_center',
 };
 
 // HTTP Headers

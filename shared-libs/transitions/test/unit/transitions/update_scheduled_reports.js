@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const db = require('../../../src/db');
 const config = require('../../../src/config');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('update_scheduled_reports', () => {
   let transition;
@@ -12,8 +13,8 @@ describe('update_scheduled_reports', () => {
       getAll: sinon.stub().returns({}),
       get: sinon.stub().returns([
         { id: 'person', parents: ['clinic'], person: true },
-        { id: 'clinic', parents: ['health_center'] },
-        { id: 'health_center' }
+        { id: 'clinic', parents: [DOC_IDS.HEALTH_CENTER] },
+        { id: DOC_IDS.HEALTH_CENTER }
       ]),
     });
     transition = require('../../../src/transitions/update_scheduled_reports');

@@ -1,3 +1,5 @@
+const { DOC_IDS } = require('@medic/constants');
+
 const now = Date.now();
 
 const getPlace = (context, type, nameSuffix) => {
@@ -14,7 +16,7 @@ const getPlace = (context, type, nameSuffix) => {
 };
 
 const getDistrictHospital = context => getPlace(context, 'district_hospital', 'Hospital');
-const getHealthCenter = context => getPlace(context, 'health_center', 'Health Center');
+const getHealthCenter = context => getPlace(context, DOC_IDS.HEALTH_CENTER, 'Health Center');
 const getHousehold = context => getPlace(context, 'clinic', 'Household');
 
 const getPerson = (context, role) => {
