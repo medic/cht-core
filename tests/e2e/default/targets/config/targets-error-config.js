@@ -1,8 +1,8 @@
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_IDS } = require('@medic/constants');
 
 const errorTarget = {
   id: 'muted-this-month',
-  context: `user.parent.type === "${DOC_TYPES.HEALTH_CENTER}"`,
+  context: `user.parent.type === "${DOC_IDS.HEALTH_CENTER}"`,
   type: 'count',
   goal: 0,
   appliesTo: 'contacts',
