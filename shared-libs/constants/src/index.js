@@ -6,10 +6,12 @@ const DOC_IDS = {
   SERVICE_WORKER_META: 'service-worker-meta',
   SETTINGS: 'settings',
   HEALTH_CENTER: 'health_center',
+  RESOURCES: 'resources',
 };
 
 // Document Types
 const DOC_TYPES = {
+  TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
 };
 
