@@ -2,8 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
-const { USER_ROLES } = require('@medic/constants');
-const { DOC_IDS } = require('@medic/constants');
+const { USER_ROLES, DOC_IDS } = require('@medic/constants');
 
 describe('Place API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));

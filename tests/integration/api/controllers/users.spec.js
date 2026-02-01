@@ -6,8 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
-const { USER_ROLES } = require('@medic/constants');
-const { DOC_IDS } = require('@medic/constants');
+const { USER_ROLES, DOC_IDS } = require('@medic/constants');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
