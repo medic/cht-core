@@ -472,8 +472,8 @@ describe('ContactSave service', () => {
           type: 'person',
           name: 'John Doe',
           _attachments: {
-            'xml': { content_type: 'application/xml', data: '<form/>' },
-            'content': { content_type: 'application/octet-stream', data: 'form-content' }
+            xml: { content_type: 'application/xml', data: '<form/>' },
+            content: { content_type: 'application/octet-stream', data: 'form-content' }
           }
         });
 
