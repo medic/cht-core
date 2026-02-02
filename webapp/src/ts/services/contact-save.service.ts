@@ -131,15 +131,26 @@ export class ContactSaveService {
 
     const existingAttachmentNames = Object.keys(doc._attachments);
 
+    const isReferencedAttachment = (value: string): boolean => {
+      if (!value) {
+        return false;
+      }
+      const possibleAttachmentName = `user-file-${value}`;
+      return existingAttachmentNames.includes(possibleAttachmentName);
+    };
+
     const scanValue = (value: any) => {
-      if (typeof value === 'string' && value) {
-        const possibleAttachmentName = `user-file-${value}`;
-        if (existingAttachmentNames.includes(possibleAttachmentName)) {
-          referenced.add(possibleAttachmentName);
-        }
-      } else if (Array.isArray(value)) {
+      if (typeof value === 'string' && isReferencedAttachment(value)) {
+        referenced.add(`user-file-${value}`);
+        return;
+      }
+
+      if (Array.isArray(value)) {
         value.forEach(scanValue);
-      } else if (value && typeof value === 'object') {
+        return;
+      }
+
+      if (value && typeof value === 'object') {
         Object.values(value).forEach(scanValue);
       }
     };
