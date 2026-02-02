@@ -998,11 +998,6 @@ mm-fast-action-button.mobile-only {
       .page {
         max-width: 100%;
       }
-      .page:not(.target-aggregates) {
-        > div {
-          margin: 0 auto;
-        }
-      }
 
       .target-aggregates {
         /* position this absolute div in the horizontal center */
@@ -1018,6 +1013,16 @@ mm-fast-action-button.mobile-only {
         &.sidebar-open {
           margin-right: 0;
           z-index: initial;
+        }
+      }
+
+      .targets-page {
+        &.sidebar-open {
+          display: flex;
+        }
+
+        .sidebar-filter-wrapper {
+          position: inherit;
         }
       }
     }

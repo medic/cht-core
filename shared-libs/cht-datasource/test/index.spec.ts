@@ -6,6 +6,7 @@ import * as Person from '../src/person';
 import * as Place from '../src/place';
 import * as Qualifier from '../src/qualifier';
 import * as Report from '../src/report';
+import * as TargetInterval from '../src/target-interval';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
@@ -41,7 +42,7 @@ describe('CHT Script API - getDatasource', () => {
     beforeEach(() => v1 = datasource.v1);
 
     it('contains expected keys', () => expect(v1).to.have.all.keys([
-      'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report'
+      'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report', 'targetInterval'
     ]));
 
     it('permission', () => {
@@ -473,6 +474,139 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+    });
+
+    describe('targetInterval', () => {
+      let targetInterval: typeof v1.targetInterval;
+
+      beforeEach(() => targetInterval = v1.targetInterval);
+
+      it('contains expected keys', () => {
+        expect(targetInterval).to.have.all.keys([
+          'getByUuid', 'getByReportingPeriodContactUuidUsername',
+          'getPageByReportingPeriodContactUuids', 'getByReportingPeriodContactUuids'
+        ]);
+      });
+
+      it('getByUuid', async () => {
+        const expectedTargetInterval = {};
+        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.byUuid('my-target-uuid');
+
+        const returnedTarget = await targetInterval.getByUuid(qualifier.uuid);
+
+        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('getByReportingPeriodContactUuidUsername', async () => {
+        const expectedTargetInterval = {};
+        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01' ),
+          Qualifier.byContactUuid('my-contact-uuid'),
+          Qualifier.byUsername('my-username')
+        );
+
+        const returnedTarget = await targetInterval.getByReportingPeriodContactUuidUsername(
+          qualifier.reportingPeriod,
+          qualifier.contactUuid,
+          qualifier.username
+        );
+
+        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('getPageByReportingPeriodContactUuids - multiple contact UUIDs', async () => {
+        const expectedTargetInterval = {};
+        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+
+        const returnedTarget = await targetInterval.getPageByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuids,
+          '1',
+          10
+        );
+
+        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getPage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true; 
+      });
+
+      it('getPageByReportingPeriodContactUuids - since contact UUID', async () => {
+        const expectedTargetInterval = {};
+        const reportGet = sinon.stub().resolves(expectedTargetInterval);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuid('my-first-contact-uuid')
+        );
+
+        const returnedTarget = await targetInterval.getPageByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuid,
+          '1',
+          10
+        );
+
+        expect(returnedTarget).to.equal(expectedTargetInterval);
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getPage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true;
+      });
+      
+      it('getByReportingPeriodContactUuids multiple contact UUIDs', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+        
+        const returnedTarget = targetInterval.getByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuids
+        );
+        
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getAll)).to.be.true;
+      });
+
+      it('getByReportingPeriodContactUuids since contact UUID', () => {
+        const mockAsyncGenerator = async function* () {
+          await Promise.resolve();
+          yield [];
+        };
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactUuid('my-first-contact-uuid')
+        );
+
+        const returnedTarget = targetInterval.getByReportingPeriodContactUuids(
+          qualifier.reportingPeriod,
+          qualifier.contactUuid
+        );
+
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(TargetInterval.v1.getAll)).to.be.true;
       });
     });
   });

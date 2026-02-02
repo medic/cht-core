@@ -3,6 +3,7 @@ const path = require('path');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -10,6 +11,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
+const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Targets', () => {
@@ -43,6 +45,11 @@ describe('Targets', () => {
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login(chw);
+  });
+
+  afterEach(async () => {
+    await utils.revertSettings(true);
+    await destroyTelemetryDb(chw.username);
   });
 
   it('should display targets from default config', async () => {
@@ -89,6 +96,16 @@ describe('Targets', () => {
     expect(await emptySelection.getText()).to.equal(
       'Targets are disabled for admin users. If you need to see targets, login as a normal user.'
     );
+  });
+
+  it('should display filter button that opens the sidebar filter', async () => {
+    await analyticsPage.goToTargets();
+    await targetAggregatesPage.openSidebarFilter();
+
+    const filterLabel = await analyticsPage.filterOptionLabel();
+    expect(await filterLabel.getText()).to.equal('This month');
+    const telemetry = await getTelemetry('sidebar_filter:analytics:targets:open', chw.username);
+    expect(telemetry.length).to.equal(1);
   });
 
   it('should show error message for bad config', async () => {
