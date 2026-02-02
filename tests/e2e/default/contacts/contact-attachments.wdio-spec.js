@@ -204,4 +204,59 @@ describe('Contact form attachments', () => {
     expect(attachmentsAfter).to.have.lengthOf(1);
     expect(attachmentsAfter[0]).to.equal(originalAttachments[0]);
   });
+
+  it('should remove attachment when editing contact', async () => {
+    const contactName = 'Person With Photo To Remove';
+
+    await commonPage.goToPeople(healthCenter._id);
+    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
+
+    await commonEnketoPage.setInputValue('Full name', contactName);
+    await commonEnketoPage.addFileInputValue('Photo', imagePath);
+
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const contactId = await contactPage.getCurrentContactId();
+    const contactBefore = await utils.getDoc(contactId);
+    expect(contactBefore._attachments).to.exist;
+    expect(Object.keys(contactBefore._attachments)).to.have.lengthOf(1);
+
+    await commonPage.accessEditOption();
+
+    // Find the photo field and reset button
+    const photoLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/photo"]');
+    const filePicker = await photoLabel.$('.file-picker');
+    const resetButton = await filePicker.$('button.btn-reset');
+
+    await resetButton.click();
+
+    // Handle the browser confirmation alert
+    await browser.waitUntil(async () => {
+      try {
+        const alertText = await browser.getAlertText();
+        return alertText.includes('This will remove the file');
+      } catch (e) {
+        return false;
+      }
+    }, { timeout: 5000, timeoutMsg: 'Alert did not appear' });
+
+    await browser.acceptAlert();
+
+    // Wait for the preview to be removed
+    const filePreview = await filePicker.$('.file-preview img');
+    await filePreview.waitForExist({ reverse: true, timeout: 5000 });
+
+    const fakeInput = await filePicker.$('.fake-file-input');
+    expect(await fakeInput.getValue()).to.equal('');
+
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const contactAfter = await utils.getDoc(contactId);
+    expect(contactAfter.photo).to.equal('');
+    expect(contactAfter._attachments).to.be.undefined;
+  });
 });
