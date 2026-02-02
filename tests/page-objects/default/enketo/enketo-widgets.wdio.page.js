@@ -23,23 +23,23 @@ const neighborhoodDropdown = (formId = FORM) => {
 const patientNameErrorLabel = (formId = FORM) => $(`${formId} label.invalid-constraint`);
 
 const openDropdown = async (element) => {
-  const dropdownButton = element.nextElement().$('.dropdown-toggle');
+  const dropdownButton = await element.nextElement().$('.dropdown-toggle');
   await dropdownButton.click();
 };
 
 const getDropdownValue = async (element) => {
-  const dropdownValue = element.nextElement().$('.dropdown-toggle .selected');
+  const dropdownValue = await element.nextElement().$('.dropdown-toggle .selected');
   await dropdownValue.waitForDisplayed();
   return dropdownValue.getText();
 };
 
 const getDropdownTotalOptions = async (element) => {
-  const dropdownOptions = element.nextElement().$$('.dropdown-menu > li');
+  const dropdownOptions = await element.nextElement().$$('.dropdown-menu > li');
   return await dropdownOptions.length;
 };
 
 const selectDropdownOptions = async (element, type, value) => {
-  const dropdownOption = element.nextElement().$(`.dropdown-menu input[type="${type}"][value="${value}"]`);
+  const dropdownOption = await element.nextElement().$(`.dropdown-menu input[type="${type}"][value="${value}"]`);
   await dropdownOption.click();
 };
 
