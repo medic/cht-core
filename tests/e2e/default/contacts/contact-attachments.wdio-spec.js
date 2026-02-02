@@ -19,8 +19,8 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
  * 4. Attachments are preserved when editing contacts
  */
 describe('Contact form attachments', () => {
-  const imagePath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
-  const documentPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
+  const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
+  const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
 
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
@@ -117,7 +117,7 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', imagePath);
+    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -145,8 +145,8 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', imagePath);
-    await commonEnketoPage.addFileInputValue('Document', documentPath);
+    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
+    await commonEnketoPage.addFileInputValue('Document', layersPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -173,7 +173,7 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', originalName);
-    await commonEnketoPage.addFileInputValue('Photo', imagePath);
+    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -212,7 +212,7 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', imagePath);
+    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -267,7 +267,7 @@ describe('Contact form attachments', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', imagePath);
+    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -306,7 +306,7 @@ describe('Contact form attachments', () => {
     await filePreview.waitForExist({ reverse: true, timeout: 5000 });
 
     // Add the replacement file
-    await commonEnketoPage.addFileInputValue('Photo', documentPath);
+    await commonEnketoPage.addFileInputValue('Photo', layersPngPath);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
