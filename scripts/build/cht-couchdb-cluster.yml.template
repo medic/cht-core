@@ -82,6 +82,9 @@ services:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
       - ${DB1_DATA:-./srv1}/nouveau:/data/nouveau
+    configs:
+      - source: nouveau-config
+        target: /opt/nouveau/etc/nouveau.yaml
     restart: always
     logging:
       driver: "local"
@@ -118,3 +121,5 @@ configs:
       [nouveau]
       enable = true
       url = http://nouveau:5987
+  nouveau-config:
+    file: ./nouveau-config.yaml
