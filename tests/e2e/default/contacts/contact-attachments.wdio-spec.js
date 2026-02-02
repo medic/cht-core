@@ -237,7 +237,7 @@ describe('Contact form attachments', () => {
       try {
         const alertText = await browser.getAlertText();
         return alertText.includes('This will remove the file');
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     }, { timeout: 5000, timeoutMsg: 'Alert did not appear' });
@@ -294,7 +294,7 @@ describe('Contact form attachments', () => {
       try {
         const alertText = await browser.getAlertText();
         return alertText.includes('This will remove the file');
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     }, { timeout: 5000, timeoutMsg: 'Alert did not appear' });
