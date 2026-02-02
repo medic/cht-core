@@ -9,7 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const uuid = require('uuid').v4;
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
 
 /* global window */
 
@@ -47,7 +47,7 @@ describe('db-sync', () => {
     }),
     placeFactory.place().build({
       _id: restrictedFacilityId,
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       contact
     }),
     personFactory.build(contact),

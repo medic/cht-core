@@ -4,7 +4,7 @@ import { assert, expect } from 'chai';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { DOC_IDS } from '@medic/constants';
+import { CONTACT_TYPES } from '@medic/constants';
 
 
 describe('ContactTypes service', () => {
@@ -13,7 +13,7 @@ describe('ContactTypes service', () => {
 
   const HARDCODED_TYPES = [
     'district_hospital',
-    DOC_IDS.HEALTH_CENTER,
+    CONTACT_TYPES.HEALTH_CENTER,
     'clinic',
     'person'
   ];

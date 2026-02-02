@@ -10,11 +10,11 @@ const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Old Navigation', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const offlineUser = userFactory.build({ place: healthCenter._id });
 

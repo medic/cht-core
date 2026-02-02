@@ -6,7 +6,7 @@ const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const utils = require('@utils');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Edit ', () => {
   const CONTACT_NAME = 'Maria Gomez';
@@ -14,7 +14,7 @@ describe('Edit ', () => {
   const PLACE_UPDATED_NAME = 'Updated Health Center';
 
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const offlineUserContact = personFactory.build({ name: CONTACT_NAME, parent: healthCenter });
   const onlineUserContact = personFactory.build({ parent: healthCenter });
@@ -71,7 +71,7 @@ describe('Edit ', () => {
     await loginPage.login(onlineUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
-    await contactPage.editPlace(healthCenter.name, PLACE_UPDATED_NAME, DOC_IDS.HEALTH_CENTER);
+    await contactPage.editPlace(healthCenter.name, PLACE_UPDATED_NAME, CONTACT_TYPES.HEALTH_CENTER);
     await commonPage.waitForPageLoaded();
     await commonPage.logout();
 

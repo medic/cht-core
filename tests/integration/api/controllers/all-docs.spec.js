@@ -2,7 +2,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const expect = chai.expect;
@@ -29,7 +29,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:offline',
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Offline place',
       place_id: 'offline_hc_shortcode',
       parent: 'PARENT_PLACE',
@@ -46,7 +46,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Online place',
       parent: 'PARENT_PLACE',
       place_id: 'online_hc_shortcode',

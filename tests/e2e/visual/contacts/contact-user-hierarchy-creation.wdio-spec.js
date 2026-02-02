@@ -5,7 +5,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const utils = require('@utils');
 const { generateScreenshot } = require('@utils/screenshots');
@@ -46,7 +46,7 @@ describe('Creating and editing contacts and users', () => {
     await browser.pause(150); // Waiting for animation to avoid blurry screenshots
     await generateScreenshot('new-chw-area', 'new-chw-area');
     await commonPage.closeFastActionList();
-    await commonPage.clickFastActionFAB({ actionId: DOC_IDS.HEALTH_CENTER });
+    await commonPage.clickFastActionFAB({ actionId: CONTACT_TYPES.HEALTH_CENTER });
     await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Create a new person');
     await commonEnketoPage.setInputValue('Full Name', 'Jane Doe');
     await commonEnketoPage.selectRadioButton('Set the Primary Contact', 'Create a new person');

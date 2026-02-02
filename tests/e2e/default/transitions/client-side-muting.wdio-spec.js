@@ -8,14 +8,14 @@ const formsUtils = require('./forms');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 /* global window */
 
 describe.skip('Muting', () => {
   const places = placeFactory.generateHierarchy();
   const district = places.get('district_hospital');
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const contact1 = personFactory.build({
     name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });

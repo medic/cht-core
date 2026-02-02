@@ -8,7 +8,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Reports Sidebar Filter', () => {
   const places = placeFactory.generateHierarchy();
@@ -21,7 +21,7 @@ describe('Reports Sidebar Filter', () => {
     contact: districtHospitalContact,
   });
 
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const healthCenterContact = personFactory.build({ parent: healthCenter });
   const healthCenterUser = userFactory.build({
     username: 'user_filter_health_center',

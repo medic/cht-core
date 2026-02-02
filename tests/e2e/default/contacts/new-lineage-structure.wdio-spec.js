@@ -2,7 +2,7 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Create new lineage structure ', () => {
   const centerName = 'Franklin';
@@ -34,7 +34,7 @@ describe('Create new lineage structure ', () => {
 
   it('should create new area', async () => {
     await contactPage.selectLHSRowByText(centerName);
-    await contactPage.addPlace({ type: DOC_IDS.HEALTH_CENTER, placeName: area, contactName: areaContact });
+    await contactPage.addPlace({ type: CONTACT_TYPES.HEALTH_CENTER, placeName: area, contactName: areaContact });
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     expect(await contactPage.getPrimaryContactName()).to.equal(areaContact);
   });

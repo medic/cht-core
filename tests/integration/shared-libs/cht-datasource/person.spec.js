@@ -6,7 +6,7 @@ const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasour
 const { USER_ROLES } = require('@medic/constants');
 const userFactory = require('@factories/cht/users/users');
 const { setAuth, removeAuth } = require('./auth');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('cht-datasource Person', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -14,7 +14,7 @@ describe('cht-datasource Person', () => {
   const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place0 = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact0._id } });
-  const place1 = utils.deepFreeze({ ...placeMap.get(DOC_IDS.HEALTH_CENTER), contact: { _id: contact1._id } });
+  const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
 
   const patient = utils.deepFreeze(personFactory.build({

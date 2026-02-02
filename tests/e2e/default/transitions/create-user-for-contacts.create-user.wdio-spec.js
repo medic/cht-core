@@ -9,7 +9,7 @@ const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page'
 const { BASE_URL } = require('@constants');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Create user when adding contact', () => {
   const NEW_USERS = [];
@@ -109,7 +109,7 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPlace({
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       placeName: 'HC1',
       contactName: CONTACT_NAME,
       phone: '+40755696969'

@@ -7,16 +7,16 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const healthCenter1 = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: DOC_IDS.HEALTH_CENTER,
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id }
   });
 

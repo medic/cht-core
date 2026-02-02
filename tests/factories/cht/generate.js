@@ -6,7 +6,7 @@ const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const immunizationFactory = require('@factories/cht/reports/inmunization');
 const { faker } = require('@faker-js/faker');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 // Fixed collection of real-world data
 const PRIMARY_CONTACT_FIRST_NAMES = [
@@ -210,7 +210,7 @@ const createData = ({ healthCenter, user, nbrClinics, nbrPersons, useRealNames =
 
 const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10, useRealNames = false }) => {
   const hierarchy = placeFactory.generateHierarchy();
-  const healthCenter = hierarchy.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = hierarchy.get(CONTACT_TYPES.HEALTH_CENTER);
   healthCenter.name = `${name}'s Area`;
   const branch = hierarchy.get('district_hospital');
   branch.name = 'Kiambu Branch';

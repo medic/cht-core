@@ -7,7 +7,7 @@ const utils = require('../../../src/lib/utils');
 const transitionsIndex = require('../../../src/transitions/index');
 const dataContext = require('../../../src/data-context');
 const { Qualifier, Report } = require('@medic/cht-datasource');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Muting transition', () => {
   let transitionUtils;
@@ -123,7 +123,12 @@ describe('Muting transition', () => {
 
     it('should return true for new contacts under muted parents', () => {
       config.getAll.returns({
-        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: DOC_IDS.HEALTH_CENTER }, { id: 'district_hospital' } ]
+        contact_types: [
+          { id: 'person' },
+          { id: 'clinic' },
+          { id: CONTACT_TYPES.HEALTH_CENTER },
+          { id: 'district_hospital' }
+        ]
       });
       mutingUtils.isMutedInLineage.returns(true);
       chai.expect(transition.filter({ doc: { muted: false, type: 'person' }, info: { initial_replication_date: 1 } }))
@@ -135,7 +140,7 @@ describe('Muting transition', () => {
         info: {initial_replication_date: 3 }
       })).to.equal(true);
       chai.expect(transition.filter({
-        doc: { muted: false, type: DOC_IDS.HEALTH_CENTER },
+        doc: { muted: false, type: CONTACT_TYPES.HEALTH_CENTER },
         info: { initial_replication_date: 4 }
       })).to.equal(true);
       chai.expect(transition.filter({
@@ -148,14 +153,19 @@ describe('Muting transition', () => {
         [{ muted: false, type: 'person' }, 1],
         [{ muted: false, type: 'clinic' }, 2],
         [{ muted: false, type: 'district_hospital' }, 3],
-        [{ muted: false, type: DOC_IDS.HEALTH_CENTER }, 4],
+        [{ muted: false, type: CONTACT_TYPES.HEALTH_CENTER }, 4],
         [{ muted: false, type: 'clinic', contact_type: 'm' }, 7]
       ]);
     });
 
     it('should return true for contacts muted client_side', () => {
       config.getAll.returns({
-        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: DOC_IDS.HEALTH_CENTER }, { id: 'district_hospital' } ]
+        contact_types: [
+          { id: 'person' },
+          { id: 'clinic' },
+          { id: CONTACT_TYPES.HEALTH_CENTER },
+          { id: 'district_hospital' }
+        ]
       });
       const contactMutedByClient = {
         type: 'person',

@@ -8,7 +8,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
 const userFactory = require('@factories/cht/users/users');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Reports Search', () => {
   // NOTE: this is a search word added to reports for searching purposes
@@ -18,7 +18,7 @@ describe('Reports Search', () => {
   const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: 'district_hospital' });
   const potuHealthCenter = placeFactory.place().build({
     name: 'Potu Health Center',
-    type: DOC_IDS.HEALTH_CENTER,
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: sittuHospital._id }
   });
 

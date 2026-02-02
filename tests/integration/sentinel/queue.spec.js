@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const NBR_DOCS = 300;
 
@@ -13,9 +13,9 @@ const contacts = [
     reported_date: new Date().getTime()
   },
   {
-    _id: DOC_IDS.HEALTH_CENTER,
+    _id: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Health Center',
-    type: DOC_IDS.HEALTH_CENTER,
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
@@ -23,17 +23,17 @@ const contacts = [
     _id: 'clinic',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw',
     type: 'person',
-    parent: { _id: 'clinic', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     reported_date: new Date().getTime()
@@ -43,7 +43,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   }
 ];

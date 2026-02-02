@@ -3,7 +3,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('generate_patient_id_on_people', () => {
   after(() => utils.revertDb([], true));
@@ -119,7 +119,7 @@ describe('generate_patient_id_on_people', () => {
 
     const doc = {
       _id: uuid(),
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       reported_date: new Date().getTime()
     };
 

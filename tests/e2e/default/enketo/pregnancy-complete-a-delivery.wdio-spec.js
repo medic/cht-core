@@ -15,7 +15,7 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const dangerSignPage = require('@page-objects/default/enketo/danger-sign.wdio.page');
 const deliveryReport = require('@page-objects/default/enketo/default-delivery-report.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Contact Delivery Form', () => {
@@ -25,7 +25,7 @@ describe('Contact Delivery Form', () => {
   const pregnantWomanDateOfBirth = moment().subtract(25, 'years').format('YYYY-MM-DD');
 
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
     date_of_birth: pregnantWomanDateOfBirth,

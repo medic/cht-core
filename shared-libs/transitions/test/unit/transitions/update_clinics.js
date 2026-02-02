@@ -5,7 +5,7 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
 const utils = require('../../../src/lib/utils');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 const phone = '+34567890123';
 
 let transition;
@@ -69,7 +69,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -146,7 +146,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -193,7 +193,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -483,7 +483,7 @@ describe('update clinic', () => {
         phone: '+34567890123',
       },
       parent: {
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',

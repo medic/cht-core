@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const reportedDate = moment().valueOf();
 const oneMonthAgo = moment().subtract(1, 'month').toISOString();
@@ -18,12 +18,12 @@ const contacts = [
     reported_date: reportedDate,
   },
   {
-    _id: DOC_IDS.HEALTH_CENTER,
+    _id: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Health Center',
     type: 'contact',
-    contact_type: DOC_IDS.HEALTH_CENTER,
+    contact_type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
-    contact: { _id: 'supervisor1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    contact: { _id: 'supervisor1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,
   },  
   {
@@ -32,10 +32,10 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     place_id: 'the_clinic',
-    parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
     },
     reported_date: reportedDate,
   },
@@ -44,7 +44,7 @@ const contacts = [
     name: 'Chw1',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: '111222',
     reported_date: reportedDate,
   },
@@ -54,7 +54,7 @@ const contacts = [
     name: 'Patient1',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,
   }
 ];
@@ -65,7 +65,7 @@ const reports = [
     type: 'data_record',
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: '', value: 2, patient_uuid: 'patient_1' },
     reported_date: oneMonthAgo,

@@ -9,11 +9,11 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Mute/Unmute contacts using a specific form - ', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });

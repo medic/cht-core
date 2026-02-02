@@ -6,13 +6,13 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const sentinelUtils = require('@utils/sentinel');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 /* global window */
 
 describe('purge', function() {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const contact = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });

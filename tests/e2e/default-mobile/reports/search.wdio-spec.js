@@ -9,7 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Search Reports', () => {
   // NOTE: this is a search word added to reports for searching purposes
@@ -17,8 +17,14 @@ describe('Search Reports', () => {
   // gives double output from the couchdb view
   const searchWord = 'sittu';
   const places = placeFactory.generateHierarchy();
-  const districtHospitalPatient = personFactory.build({ parent: places.get('district_hospital'), patient_id: '1a' });
-  const healthCenterPatient = personFactory.build({ parent: places.get(DOC_IDS.HEALTH_CENTER), patient_id: '2a' });
+  const districtHospitalPatient = personFactory.build({
+    parent: places.get('district_hospital'),
+    patient_id: '1a'
+  });
+  const healthCenterPatient = personFactory.build({
+    parent: places.get(CONTACT_TYPES.HEALTH_CENTER),
+    patient_id: '2a'
+  });
 
   const reports = [
     smsPregnancyFactory.pregnancy().build({

@@ -10,7 +10,7 @@ const cutils = require('../../src/libs/utils');
 const lineage = require('../../src/libs/lineage');
 const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypesUtils = require('@medic/contact-types-utils');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 let examplePlace;
 
@@ -26,7 +26,7 @@ const contactTypes = [
     edit_form: 'form:contact:district_hospital:edit'
   },
   {
-    id: DOC_IDS.HEALTH_CENTER,
+    id: CONTACT_TYPES.HEALTH_CENTER,
     name_key: 'contact.type.health_center',
     group_key: 'contact.type.health_center.plural',
     create_key: 'contact.type.health_center.new',
@@ -42,7 +42,7 @@ const contactTypes = [
     group_key: 'contact.type.clinic.plural',
     create_key: 'contact.type.clinic.new',
     edit_key: 'contact.type.place.edit',
-    parents: [DOC_IDS.HEALTH_CENTER],
+    parents: [CONTACT_TYPES.HEALTH_CENTER],
     icon: 'medic-clinic',
     create_form: 'form:contact:clinic:create',
     edit_form: 'form:contact:clinic:edit',
@@ -55,7 +55,7 @@ const contactTypes = [
     create_key: 'contact.type.person.new',
     edit_key: 'contact.type.person.edit',
     primary_contact_key: 'clinic.field.contact',
-    parents: ['district_hospital', DOC_IDS.HEALTH_CENTER, 'clinic'],
+    parents: ['district_hospital', CONTACT_TYPES.HEALTH_CENTER, 'clinic'],
     icon: 'medic-person',
     create_form: 'form:contact:person:create',
     edit_form: 'form:contact:person:edit',
@@ -151,7 +151,7 @@ describe('places controller', () => {
     it('returns error if health center is missing parent', done => {
       examplePlace._id = 'xyz';
       delete examplePlace.parent;
-      examplePlace.type = DOC_IDS.HEALTH_CENTER;
+      examplePlace.type = CONTACT_TYPES.HEALTH_CENTER;
       controller._validatePlace(examplePlace).catch(err => {
         chai.expect(err.message).to.equal('Place xyz is missing a "parent" property.');
         done();
@@ -161,7 +161,7 @@ describe('places controller', () => {
     it('returns error if health center has wrong parent type', done => {
       const data = {
         _id: 'xyz',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'St. Paul',
         parent: {
           name: 'MoH',
@@ -260,7 +260,7 @@ describe('places controller', () => {
         type: 'clinic',
         parent: {
           name: 'CHP Area One',
-          type: DOC_IDS.HEALTH_CENTER,
+          type: CONTACT_TYPES.HEALTH_CENTER,
           parent: {
             name: 'CHP Branch One',
             type: 'district_hospital'
@@ -301,7 +301,7 @@ describe('places controller', () => {
           return Promise.resolve({
             _id: 'def',
             name: 'CHP Area One',
-            type: DOC_IDS.HEALTH_CENTER,
+            type: CONTACT_TYPES.HEALTH_CENTER,
             parent: {
               _id: 'abc',
               name: 'CHP Branch One',
@@ -317,7 +317,7 @@ describe('places controller', () => {
             parent: {
               _id: 'def',
               name: 'CHP Area One',
-              type: DOC_IDS.HEALTH_CENTER,
+              type: CONTACT_TYPES.HEALTH_CENTER,
               parent: {
                 _id: 'abc',
                 name: 'CHP Branch One',
@@ -338,7 +338,7 @@ describe('places controller', () => {
     it('creates contacts', async () => {
       const place = {
         name: 'CHP Family',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'ad06d137',
         contact: {
           name: 'Jim',
@@ -372,7 +372,7 @@ describe('places controller', () => {
 
       getWithLineage.withArgs(Qualifier.byUuid('hc')).resolves({
         name: 'CHP Family',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: {
           _id: 'ad06d137',
           name: 'CHP Branch One',
@@ -451,7 +451,7 @@ describe('places controller', () => {
     it('supports parents defined as uuids.', async () => {
       const place = {
         name: 'CHP Area One',
-        type: DOC_IDS.HEALTH_CENTER,
+        type: CONTACT_TYPES.HEALTH_CENTER,
         parent: 'ad06d137'
       };
       getWithLineage.resolves({
@@ -462,7 +462,7 @@ describe('places controller', () => {
       db.medic.post.callsFake(doc => {
         // the parent should be created/resolved, parent id should be set.
         chai.expect(doc.name).to.equal('CHP Area One');
-        chai.expect(doc.type).to.equal(DOC_IDS.HEALTH_CENTER);
+        chai.expect(doc.type).to.equal(CONTACT_TYPES.HEALTH_CENTER);
         chai.expect(doc.parent._id).to.equal('ad06d137');
         chai.expect(doc.parent.name).to.equal(undefined); // minified
         chai.expect(doc.parent.type).to.equal(undefined); // minified

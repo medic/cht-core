@@ -10,7 +10,7 @@ const moment = require('moment');
 const toBikramSambatLetters = require('bikram-sambat').toBik_text;
 const phoneNumber = require('@medic/phone-number');
 const logger = require('@medic/logger');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 const SMS_TRUNCATION_SUFFIX = '...';
 const DEFAULT_LOCALE = 'en';
 
@@ -38,7 +38,7 @@ const getClinic = function(doc) {
 };
 
 const getHealthCenter = function(doc) {
-  return doc && getParent(doc, DOC_IDS.HEALTH_CENTER);
+  return doc && getParent(doc, CONTACT_TYPES.HEALTH_CENTER);
 };
 
 const getDistrict = function(doc) {
@@ -183,8 +183,8 @@ const resolveRecipient = function(context, recipient) {
         context.contact?.phone,
     },
     {
-      name: DOC_IDS.HEALTH_CENTER,
-      match: r => r === DOC_IDS.HEALTH_CENTER,
+      name: CONTACT_TYPES.HEALTH_CENTER,
+      match: r => r === CONTACT_TYPES.HEALTH_CENTER,
       resolve: () => getHealthCenterPhone(context.patient) ||
         getHealthCenterPhone(context.place) ||
         getHealthCenterPhone(context),

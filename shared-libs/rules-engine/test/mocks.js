@@ -1,6 +1,6 @@
 const rewire = require('rewire');
 const defaultConfigSettingsDoc = require('../../../config/default/app_settings.json');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
@@ -16,7 +16,7 @@ const chtDocs = {
   place: {
     _id: 'place',
     name: 'cht_mock_place',
-    type: DOC_IDS.HEALTH_CENTER,
+    type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'place_id',
   },
 

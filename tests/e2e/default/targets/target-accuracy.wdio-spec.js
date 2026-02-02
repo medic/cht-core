@@ -12,7 +12,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const compileConfig = async (tasksFileName, targetFileName) => {
   await chtConfUtils.initializeConfigDir();
@@ -26,7 +26,7 @@ const compileConfig = async (tasksFileName, targetFileName) => {
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
-const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 const chwContact = personFactory.build({
   name: 'CHW',
   patient_id: 'CHW',

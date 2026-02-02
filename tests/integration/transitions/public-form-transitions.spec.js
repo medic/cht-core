@@ -2,7 +2,7 @@ const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const apiUtils = require('./utils');
 const { expect } = require('chai');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -12,9 +12,9 @@ const contacts = [
     reported_date: new Date().getTime()
   },
   {
-    _id: DOC_IDS.HEALTH_CENTER,
+    _id: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Health Center',
-    type: DOC_IDS.HEALTH_CENTER,
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
@@ -22,17 +22,17 @@ const contacts = [
     _id: 'clinic1',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw1',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     reported_date: new Date().getTime()
@@ -40,7 +40,7 @@ const contacts = [
   {
     _id: 'chw2',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone2',
     name: 'chw2',
     reported_date: new Date().getTime()
@@ -53,7 +53,7 @@ const patients = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient1',
-    parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   },
   {
@@ -61,7 +61,7 @@ const patients = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient2',
-    parent: { _id: 'clinic1', parent: { _id: DOC_IDS.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   }
 ];

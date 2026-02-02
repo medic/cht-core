@@ -4,7 +4,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';
 const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges"}';
@@ -21,7 +21,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:offline',
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Offline place',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:offline',
@@ -38,7 +38,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: DOC_IDS.HEALTH_CENTER,
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Online place',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:online',

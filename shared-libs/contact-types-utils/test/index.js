@@ -1,6 +1,6 @@
 const utils = require('../src/index');
 const chai = require('chai');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const districtHospitalType = {
   id: 'my_district_hospital',
@@ -74,7 +74,7 @@ const chwType = {
   create_key: 'contact.type.chw.new',
   edit_key: 'contact.type.chw.edit',
   primary_contact_key: 'clinic.field.contact',
-  parents: [ 'district_hospital', DOC_IDS.HEALTH_CENTER ],
+  parents: [ 'district_hospital', CONTACT_TYPES.HEALTH_CENTER ],
   icon: 'medic-person',
   create_form: 'form:contact:chw:create',
   edit_form: 'form:contact:chw:edit',
@@ -103,7 +103,7 @@ describe('ContactType Utils', () => {
     it('should return hardcoded contact type', () => {
       chai.expect(utils.getTypeId({ type: 'person' })).to.equal('person');
       chai.expect(utils.getTypeId({ type: 'district_hospital' })).to.equal('district_hospital');
-      chai.expect(utils.getTypeId({ type: DOC_IDS.HEALTH_CENTER })).to.equal(DOC_IDS.HEALTH_CENTER);
+      chai.expect(utils.getTypeId({ type: CONTACT_TYPES.HEALTH_CENTER })).to.equal(CONTACT_TYPES.HEALTH_CENTER);
       chai.expect(utils.getTypeId({ type: 'whatever' })).to.equal('whatever');
     });
 
@@ -113,8 +113,8 @@ describe('ContactType Utils', () => {
       chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'patient' })).to.equal('patient');
       chai.expect(utils.getTypeId({
         type: 'contact',
-        contact_type: DOC_IDS.HEALTH_CENTER
-      })).to.equal(DOC_IDS.HEALTH_CENTER);
+        contact_type: CONTACT_TYPES.HEALTH_CENTER
+      })).to.equal(CONTACT_TYPES.HEALTH_CENTER);
     });
   });
 
@@ -162,8 +162,8 @@ describe('ContactType Utils', () => {
   describe('isSameContactType', () => {
     it('should return true for hardcoded contacts of the same type', () => {
       chai.expect(utils.isSameContactType([
-        { type: 'contact', contact_type: DOC_IDS.HEALTH_CENTER },
-        { type: 'contact', contact_type: DOC_IDS.HEALTH_CENTER },
+        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
+        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
       ])).to.equal(true);
     });
     it('should return true for configurable contacts of the same type', () => {
@@ -174,25 +174,25 @@ describe('ContactType Utils', () => {
     });
     it('should return true for a mix of hardcoded and configurable types of the same hierarchy', () => {
       chai.expect(utils.isSameContactType([
-        { type: DOC_IDS.HEALTH_CENTER },
-        { type: 'contact', contact_type: DOC_IDS.HEALTH_CENTER },
+        { type: CONTACT_TYPES.HEALTH_CENTER },
+        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
       ])).to.equal(true);
     });
     it('should return false for hardcoded contacts of different type', () => {
       chai.expect(utils.isSameContactType([
-        { type: 'contact', contact_type: DOC_IDS.HEALTH_CENTER },
+        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
         { type: 'contact', contact_type: 'district_hospital' },
       ])).to.equal(false);
     });
     it('should return false for configurable contacts of different type', () => {
       chai.expect(utils.isSameContactType([
         { type: 'my_health_center' },
-        { type: DOC_IDS.HEALTH_CENTER },
+        { type: CONTACT_TYPES.HEALTH_CENTER },
       ])).to.equal(false);
     });
     it('should return true for a mix of hardcoded and configurable types of the same hierarchy', () => {
       chai.expect(utils.isSameContactType([
-        { type: DOC_IDS.HEALTH_CENTER },
+        { type: CONTACT_TYPES.HEALTH_CENTER },
         { type: 'contact', contact_type: 'my_health_center' },
       ])).to.equal(false);
     });
@@ -407,7 +407,7 @@ describe('ContactType Utils', () => {
     it('should return true for hardcoded types', () => {
       chai.expect(utils.isHardcodedType('district_hospital')).to.equal(true);
       chai.expect(utils.isHardcodedType('clinic')).to.equal(true);
-      chai.expect(utils.isHardcodedType(DOC_IDS.HEALTH_CENTER)).to.equal(true);
+      chai.expect(utils.isHardcodedType(CONTACT_TYPES.HEALTH_CENTER)).to.equal(true);
       chai.expect(utils.isHardcodedType('person')).to.equal(true);
     });
 

@@ -5,7 +5,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const phoneNumber = require('@medic/phone-number');
 const uuid = require('uuid').v4;
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const { expect } = chai;
 
@@ -37,7 +37,7 @@ const contacts = [
   },
   {
     _id: 'parent',
-    type: DOC_IDS.HEALTH_CENTER,
+    type: CONTACT_TYPES.HEALTH_CENTER,
     name: 'health center',
     contact: {
       phone: HEALTHCENTER_PHONE        
@@ -105,7 +105,7 @@ describe('Recipient Resolution Integration', () => {
             {
               group: 5,
               offset: '5 days',
-              recipient: ['phone', DOC_IDS.HEALTH_CENTER],
+              recipient: ['phone', CONTACT_TYPES.HEALTH_CENTER],
               message: [{ locale: 'en', content: 'fall back to contact type specified' }],
             },
             {

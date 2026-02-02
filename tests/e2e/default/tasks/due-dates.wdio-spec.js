@@ -7,11 +7,11 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const { DOC_IDS } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Task list due dates', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get(DOC_IDS.HEALTH_CENTER);
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const chw = userFactory.build({ place: healthCenter._id, contact: { _id: 'fixture:user:bob', name: 'Bob' } });
 
   const updateDueDatesSettings = async (updates = {}) => {
