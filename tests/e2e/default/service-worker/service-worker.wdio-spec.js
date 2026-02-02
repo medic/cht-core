@@ -77,7 +77,7 @@ describe('Service worker cache', () => {
   };
 
   const loginIfNeeded = async () => {
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     if (!await isLoggedIn()) {
       await login();
     }
@@ -155,7 +155,7 @@ describe('Service worker cache', () => {
     await waitForLogs.promise;
 
     await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-    await browser.throttle('offline'); // make sure we load the login page from cache
+    await browser.throttleNetwork('offline'); // make sure we load the login page from cache
     await commonPage.logout();
     expect(await browser.getTitle()).to.equal('Not Medic');
   });
@@ -169,7 +169,7 @@ describe('Service worker cache', () => {
     await waitForLogs.promise;
 
     await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-    await browser.throttle('offline'); // make sure we load the login page from cache
+    await browser.throttleNetwork('offline'); // make sure we load the login page from cache
     await commonPage.logout();
 
     expect(await loginPage.labelForUser().getText()).to.equal('NotUsername');
@@ -201,8 +201,7 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-
+    // await commonPage.sync({ expectReload: true, serviceWorkerUpdate: false });
     const cacheDetails = await getCachedRequests(true);
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
@@ -223,10 +222,10 @@ describe('Service worker cache', () => {
   });
 
   it('should load the page while offline', async () => {
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await browser.refresh();
     await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
   });
 
   it('confirm fetch yields cached result', async () => {

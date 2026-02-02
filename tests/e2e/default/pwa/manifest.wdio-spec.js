@@ -62,6 +62,7 @@ describe('manifest.json', () => {
 
   afterEach(async () => {
     await utils.revertSettings(true);
+    await browser.pause(1000);
   });
 
   it('should work without branding doc', async () => {
@@ -106,5 +107,4 @@ describe('manifest.json', () => {
     expect(response).to.deep.equal(expected);
     await assertIconsExist(response);
   });
-
 });

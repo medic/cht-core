@@ -651,7 +651,8 @@ const revertSettings = async ignoreRefresh => {
     return;
   }
 
-  return await watcher.promise;
+  await watcher.promise;
+  return needsRefresh;
 };
 
 const revertTranslations = async () => {
@@ -1439,8 +1440,8 @@ const waitForLogs = async (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let isReady = false;
-  const startTime = Date.now() - 5000; // Subtract a small buffer (1 second) to account for any clock skew
-  tail = (isDocker() || tail) ? '--tail=50' : '';
+  const startTime = Date.now() - 100; // Subtract a small buffer (1 second) to account for any clock skew
+  tail = (isDocker() || tail) ? '--tail=20' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
