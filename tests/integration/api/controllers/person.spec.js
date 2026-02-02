@@ -43,9 +43,9 @@ describe('Person API', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: ['chw']
+    roles: [ 'chw' ]
   }));
-  const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
+  const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
   const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
@@ -85,12 +85,12 @@ describe('Person API', () => {
 
   before(async () => {
     await utils.saveDocs(allDocItems);
-    await utils.createUsers([userNoPerms, offlineUser]);
+    await utils.createUsers([ userNoPerms, offlineUser ]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([userNoPerms, offlineUser]);
+    await utils.deleteUsers([ userNoPerms, offlineUser ]);
   });
 
   describe('GET /api/v1/person/:uuid', async () => {
@@ -101,7 +101,7 @@ describe('Person API', () => {
         path: `${endpoint}/${patient._id}`,
       };
       const person = await utils.request(opts);
-      expect(person).excluding(['_rev', 'reported_date']).to.deep.equal(patient);
+      expect(person).excluding([ '_rev', 'reported_date' ]).to.deep.equal(patient);
     });
 
     it('returns the person with lineage when the withLineage query parameter is provided', async () => {
@@ -112,7 +112,7 @@ describe('Person API', () => {
         }
       };
       const person = await utils.request(opts);
-      expect(person).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
+      expect(person).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
         ...patient,
         parent: {
           ...place0,
@@ -137,9 +137,9 @@ describe('Person API', () => {
     });
 
     [
-      ['does not have can_view_contacts permission', userNoPerms],
-      ['is not an online user', offlineUser]
-    ].forEach(([description, user]) => {
+      [ 'does not have can_view_contacts permission', userNoPerms ],
+      [ 'is not an online user', offlineUser ]
+    ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
           path: `/api/v1/person/${patient._id}`,
@@ -166,7 +166,7 @@ describe('Person API', () => {
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
+      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
       expect(responseCursor).to.be.equal(null);
     });
 
@@ -177,9 +177,9 @@ describe('Person API', () => {
         qs: { type: personType, cursor: firstPage.cursor, limit }
       });
 
-      const allPeople = [...firstPage.data, ...secondPage.data];
+      const allPeople = [ ...firstPage.data, ...secondPage.data ];
 
-      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeople);
+      expect(allPeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
       expect(firstPage.data.length).to.be.equal(4);
       expect(secondPage.data.length).to.be.equal(3);
       expect(firstPage.cursor).to.be.equal('4');
@@ -244,5 +244,139 @@ describe('Person API', () => {
           `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
         );
     });
+  });
+
+  describe('POST /api/v1/person', async () => {
+    const endpoint = `/api/v1/person`;
+    it(`creates a person for valid personInput`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: place0._id
+      };
+      const opts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: personInput
+      };
+      const personDoc = await utils.request(opts);
+      expect(personDoc).excluding([ '_rev', 'reported_date', '_id' ])
+        .to.deep.equal({
+          ...personInput, type: 'contact', contact_type: 'person',
+          parent: { _id: place0._id, parent: place0.parent }
+        });
+    });
+
+    it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        reported_date: 12312312,
+        parent: contact0._id
+      };
+      const opts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: personInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent of type "person" is not allowed for ${JSON.stringify(personInput.type)} type`,
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws 400 error for invalid personInput, here with a missing 'parent'`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        reported_date: 1122334455
+      };
+      const opts = {
+        path: endpoint,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: personInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Missing or empty required field (parent)`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+  });
+
+  describe('PUT /api/v1/person/:uuid', async () => {
+    const endpoint = '/api/v1/person';
+    const createPersonInput = {
+      name: 'apoorva',
+      type: 'person',
+      parent: place0._id
+    };
+    const createOpts = {
+      path: endpoint,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: createPersonInput
+    };
+    const createPersonDoc = await utils.request(createOpts);
+
+    it(`throws error when we try to mutate lineage.`, async () => {
+      const updatePersonInput = {
+        ...createPersonDoc,
+        parent: {
+          _id: place1._id
+        }
+      };
+      // Remove _id from body as it will come from URL
+      delete updatePersonInput._id;
+      const opts = {
+        path: `${endpoint}/${createPersonDoc._id}`,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePersonInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Lineage does not match with the lineage of the doc in the db`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it(`updates a person for valid personInput`, async () => {
+      const updatePersonInput = {
+        ...createPersonDoc,
+        name: 'apoorva 2'
+      };
+      // Remove _id from body as it will come from URL
+      delete updatePersonInput._id;
+      const opts = {
+        path: `${endpoint}/${createPersonDoc._id}`,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: updatePersonInput
+      };
+      const updatePersonDoc = await utils.request(opts);
+      expect(updatePersonDoc).excluding([ '_rev' ])
+        .to.deep.equal({ ...updatePersonInput, _id: createPersonDoc._id });
+    });
+
   });
 });

@@ -1,14 +1,19 @@
-import { getResource, RemoteDataContext, getResources } from './libs/data-context';
+import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
 import { FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
+import * as Input from '../input';
 
 /** @internal */
 export namespace v1 {
   const getReport = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/report');
 
   const getReportUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
-  
+
+  const createReport = (remoteContext: RemoteDataContext) => postResource(remoteContext, 'api/v1/report');
+
+  const updateReport = (remoteContext: RemoteDataContext) => putResource(remoteContext, `api/v1/report`);
+
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
     identifier: UuidQualifier
@@ -26,6 +31,19 @@ export namespace v1 {
       ...(cursor ? { cursor } : {}),
     };
     return getReportUuids(remoteContext)(queryParams);
+  };
+
+  /** @internal */
+  export const create = (remoteContext: RemoteDataContext) => (
+    input: Input.v1.ReportInput
+  ): Promise<Report.v1.Report> => createReport(remoteContext)(input);
+
+  /** @internal */
+  export const update = (remoteContext: RemoteDataContext) => (
+    input: Record<string, unknown>
+  ): Promise<Report.v1.Report> => {
+    const id = input._id as string;
+    return updateReport(remoteContext)(id, input);
   };
 
   /** @internal */

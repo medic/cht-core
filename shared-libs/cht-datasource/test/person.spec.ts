@@ -2,6 +2,7 @@ import * as Person from '../src/person';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
+import * as Input from '../src/input';
 import * as Context from '../src/libs/data-context';
 import * as Core from '../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
@@ -9,17 +10,19 @@ import { expect } from 'chai';
 import { DataContext } from '../src';
 
 describe('person', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
+  let isPersonInput: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
+    isPersonInput = sinon.stub(Input.v1, 'isPersonInput');
   });
 
   afterEach(() => sinon.restore());
@@ -128,12 +131,12 @@ describe('person', () => {
     });
 
     describe('getPage', () => {
-      const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
+      const people = [ { _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' } ] as Person.v1.Person[];
       const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const personTypeQualifier = {contactType: 'person'} as const;
+      const personTypeQualifier = { contactType: 'person' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -254,11 +257,11 @@ describe('person', () => {
 
     describe('getAll', () => {
       const personType = 'person';
-      const personTypeQualifier = {contactType: personType} as const;
+      const personTypeQualifier = { contactType: personType } as const;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
-      const people = [firstPerson, secondPerson, thirdPerson];
+      const people = [ firstPerson, secondPerson, thirdPerson ];
       const mockGenerator = function* () {
         for (const person of people) {
           yield person;
@@ -305,6 +308,46 @@ describe('person', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+    });
+
+    describe('createPerson', () => {
+      it('returns person doc for valid input', async () => {
+        const createPersonDoc = sinon.stub();
+        adapt.returns(createPersonDoc);
+        const input = {
+          name: 'person-1',
+          type: 'person',
+          parent: 'p1'
+        };
+        isPersonInput.returns(true);
+        createPersonDoc.resolves(input);
+        const result = await Person.v1.create(dataContext)(input);
+
+        expect(result).to.deep.equal(input);
+      });
+    });
+
+    describe('updatePerson', () => {
+      it('returns person doc for valid input', async () => {
+        const updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+        const input = {
+          name: 'person-1',
+          type: 'person',
+          parent: 'p1'
+        };
+        updatePersonDoc.resolves(input);
+        const result = await Person.v1.update(dataContext)(input);
+        expect(result).to.deep.equal(input);
+      });
+
+      it('Throws error is input is not a record', async () => {
+        const updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+        const input = 'apoorva';
+        await expect(Person.v1.update(dataContext)(input))
+          .to.be.rejectedWith(`Invalid person update input`);
       });
     });
   });

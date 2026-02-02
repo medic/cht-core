@@ -2,6 +2,7 @@ import * as Place from '../src/place';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
+import * as Input from '../src/input';
 import * as Context from '../src/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
@@ -9,17 +10,19 @@ import { DataContext } from '../src';
 import * as Core from '../src/libs/core';
 
 describe('place', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
+  let isPlaceInput: SinonStub;
 
   beforeEach(() => {
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
+    isPlaceInput = sinon.stub(Input.v1, 'isPlaceInput');
   });
 
   afterEach(() => sinon.restore());
@@ -128,12 +131,12 @@ describe('place', () => {
     });
 
     describe('getPage', () => {
-      const places = [{ _id: 'place1' }, { _id: 'place2' }, { _id: 'place3' }] as Place.v1.Place[];
+      const places = [ { _id: 'place1' }, { _id: 'place2' }, { _id: 'place3' } ] as Place.v1.Place[];
       const cursor = '1';
       const pageData = { data: places, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const placeTypeQualifier = {contactType: 'place'} as const;
+      const placeTypeQualifier = { contactType: 'place' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -256,11 +259,11 @@ describe('place', () => {
 
     describe('getAll', () => {
       const placeType = 'place';
-      const placeTypeQualifier = {contactType: placeType} as const;
+      const placeTypeQualifier = { contactType: placeType } as const;
       const firstPlace = { _id: 'place1' } as Place.v1.Place;
       const secondPlace = { _id: 'place2' } as Place.v1.Place;
       const thirdPlace = { _id: 'place3' } as Place.v1.Place;
-      const places = [firstPlace, secondPlace, thirdPlace];
+      const places = [ firstPlace, secondPlace, thirdPlace ];
       const mockGenerator = function* () {
         for (const place of places) {
           yield place;
@@ -280,7 +283,7 @@ describe('place', () => {
         isContactTypeQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Place.v1.getAll(dataContext)(placeTypeQualifier);
+        const generator = Place.v1.getAll(dataContext)(placeTypeQualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -307,6 +310,48 @@ describe('place', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(placeGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
+      });
+    });
+
+    describe('create', () => {
+      it('returns place doc for valid input', async () => {
+        const createPlaceDoc = sinon.stub();
+        adapt.returns(createPlaceDoc);
+        const input = {
+          name: 'place-1',
+          type: 'place',
+        };
+        isPlaceInput.returns(true);
+        createPlaceDoc.resolves(input);
+        const result = await Place.v1.create(dataContext)(input);
+
+        expect(result).to.deep.equal(input);
+      });
+    });
+
+    describe('update', () => {
+      it('returns updated place doc for valid input', async () => {
+        const updatePlaceDoc = sinon.stub();
+        adapt.returns(updatePlaceDoc);
+        const updateInput = {
+          name: 'place-1',
+          type: 'place'
+        };
+        const expectedDoc = {
+          ...updateInput, reported_date: 12312312
+        };
+        updatePlaceDoc.resolves(expectedDoc);
+        const result = await Place.v1.update(dataContext)(updateInput);
+
+        expect(result).to.deep.equal(expectedDoc);
+      });
+
+      it('throws error for invalid input', async () => {
+        const updatePlaceDoc = sinon.stub();
+        adapt.returns(updatePlaceDoc);
+        const updateInput = 'my-updated-place';
+        await expect(Place.v1.update(dataContext)(updateInput))
+          .to.be.rejectedWith('Invalid place update input');
       });
     });
   });
