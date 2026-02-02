@@ -3,7 +3,6 @@ const { Octokit } = require('@octokit/core');
 const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
 const ExtendedOctokit = Octokit.plugin(paginateGraphql);
 
-
 const TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = 'medic';
 const BOTS = ['dependabot[bot]'];
