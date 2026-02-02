@@ -259,4 +259,74 @@ describe('Contact form attachments', () => {
     expect(contactAfter.photo).to.equal('');
     expect(contactAfter._attachments).to.be.undefined;
   });
+
+  it('should replace attachment when editing contact', async () => {
+    const contactName = 'Person With Photo To Replace';
+
+    await commonPage.goToPeople(healthCenter._id);
+    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
+
+    await commonEnketoPage.setInputValue('Full name', contactName);
+    await commonEnketoPage.addFileInputValue('Photo', imagePath);
+
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const contactId = await contactPage.getCurrentContactId();
+    const contactBefore = await utils.getDoc(contactId);
+    expect(contactBefore._attachments).to.exist;
+    const originalAttachmentNames = Object.keys(contactBefore._attachments);
+    expect(originalAttachmentNames).to.have.lengthOf(1);
+    const originalAttachmentName = originalAttachmentNames[0];
+
+    await commonPage.accessEditOption();
+
+    // Find the photo field and reset button
+    const photoLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/photo"]');
+    const filePicker = await photoLabel.$('.file-picker');
+    const resetButton = await filePicker.$('button.btn-reset');
+
+    await resetButton.click();
+
+    // Handle the browser confirmation alert
+    await browser.waitUntil(async () => {
+      try {
+        const alertText = await browser.getAlertText();
+        return alertText.includes('This will remove the file');
+      } catch (e) {
+        return false;
+      }
+    }, { timeout: 5000, timeoutMsg: 'Alert did not appear' });
+
+    await browser.acceptAlert();
+
+    // Wait for the preview to be removed
+    const filePreview = await filePicker.$('.file-preview img');
+    await filePreview.waitForExist({ reverse: true, timeout: 5000 });
+
+    // Add the replacement file
+    await commonEnketoPage.addFileInputValue('Photo', documentPath);
+
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const contactAfter = await utils.getDoc(contactId);
+    expect(contactAfter._attachments).to.exist;
+
+    const newAttachmentNames = Object.keys(contactAfter._attachments);
+    expect(newAttachmentNames).to.have.lengthOf(1);
+    const newAttachmentName = newAttachmentNames[0];
+
+    // Verify the attachment was replaced (different filename)
+    expect(newAttachmentName).to.not.equal(originalAttachmentName);
+    expect(contactAfter.photo).to.not.equal('');
+    expect(contactAfter.photo).to.not.equal(contactBefore.photo);
+
+    // Positive assertions about the new attachment
+    expect(newAttachmentName).to.match(/^user-file-layers.*\.png$/);
+    expect(contactAfter.photo).to.equal(newAttachmentName.replace('user-file-', ''));
+    expect(contactAfter._attachments[newAttachmentName].content_type).to.equal('image/png');
+  });
 });
