@@ -2,14 +2,15 @@ import sinon, { SinonStub } from 'sinon';
 import contactTypeUtils from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
+import * as Qualifier from '../../src/qualifier';
 import * as Person from '../../src/local/person';
-import * as PersonTypes from '../../src/person';
 import * as LocalDoc from '../../src/local/libs/doc';
 import * as Lineage from '../../src/local/libs/lineage';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
+import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -464,300 +465,167 @@ describe('local person', () => {
     });
 
     describe('updatePerson', () => {
-      let getDocByIdInner: SinonStub;
+      const originalDoc = {
+        _id: 'person-1',
+        _rev: '1-rev',
+        name: 'apoorva',
+        type: 'person',
+        reported_date: 12312312,
+        parent: {
+          _id: 'parent-1',
+          parent: {
+            _id: 'parent-2'
+          }
+        },
+        hello: 'world'
+      } as const;
+
+      let getPersonInner: SinonStub;
+      let getPersonOuter: SinonStub;
       let updateDocOuter: SinonStub;
       let updateDocInner: SinonStub;
+      let assertSameParentLineage: SinonStub;
 
       beforeEach(() => {
-        getDocByIdInner = sinon.stub();
-        sinon.stub(Person.v1, 'get').returns(getDocByIdInner);
+        getPersonInner = sinon.stub();
+        getPersonOuter = sinon.stub(Person.v1, 'get').returns(getPersonInner);
         updateDocOuter = sinon.stub(LocalDoc, 'updateDoc');
         updateDocInner = sinon.stub();
         updateDocOuter.returns(updateDocInner);
-      });
-
-      it('throws error for missing _id or _rev', async () => {
-        settingsGetAll.returns({});
-        const updateDoc = {
-          type: 'person',
-          parent: { _id: 'p1' },
-          name: 'apoorva2'
-        };
-        await expect(Person.v1.update(localContext)(updateDoc as unknown as PersonTypes.v1.Person))
-          .to.be.rejectedWith('Valid _id, _rev, and type fields must be provided.');
+        settingsGetAll.returns(settings);
+        isPerson.returns(true);
+        assertSameParentLineage = sinon.stub(Lineage, 'assertSameParentLineage');
       });
 
       it('updates doc for valid update input', async () => {
-        settingsGetAll.returns({});
-        isPerson.returns(true);
         const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          reported_date: 12312312,
-          parent: {
-            _id: '1', parent: {
-              _id: '2'
-            }
-          },
+          ...originalDoc,
           name: 'apoorva2',
-          _id: '1',
-          _rev: '1'
+          hello: undefined,
+          world: 'hello'
         };
-
-        const originalDoc = {
-          ...updateDocInput, name: 'apoorva', parent: { _id: '1', parent: { _id: '2' } }
-        };
-        getDocByIdInner.resolves(originalDoc);
+        getPersonInner.resolves(originalDoc);
         updateDocInner.resolves({ _rev: '2' });
 
         const result = await Person.v1.update(localContext)(updateDocInput);
 
-        expect(updateDocInner.calledOnce).to.be.true;
-        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(result).to.deep.equal({ ...updateDocInput, name: 'apoorva2', _rev: '2' });
-      });
-
-      it('throws error for non-existent person', async () => {
-        settingsGetAll.returns({});
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          parent: { _id: 'p1' },
-          name: 'apoorva2',
-          _id: '1',
-          _rev: '1',
-          reported_date: new Date(12312312)
-        };
-
-        getDocByIdInner.resolves(null);
-
-        await expect(Person.v1.update(localContext)(updateDocInput as unknown as PersonTypes.v1.Person))
-          .to.be.rejectedWith(`Person record [1] not found.`);
-
-        expect(updateDocOuter.called).to.be.true;
-        expect(updateDocInner.called).to.be.false;
-      });
-
-      it('deletes keys from original doc if they are not required', async () => {
-        settingsGetAll.returns({});
-        isPerson.returns(true);
-        const reportedDate = 12312312;
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          parent: {
-            _id: 'p1'
-          },
-          name: 'apoorva2',
-          _id: '1',
-          _rev: '1',
-          reported_date: reportedDate
-        };
-
-        const originalDoc = { ...updateDocInput, hobby: 'skating', sex: 'male' };
-        getDocByIdInner.resolves(originalDoc);
-        updateDocInner.resolves({ _rev: '2' });
-
-        const result = await Person.v1.update(localContext)(updateDocInput);
         expect(result).to.deep.equal({ ...updateDocInput, _rev: '2' });
-        expect(updateDocInner.calledOnce).to.be.true;
+        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getPersonInner.calledOnceWithExactly(Qualifier.byUuid(originalDoc._id))).to.be.true;
+        expect(assertSameParentLineage.calledOnceWithExactly(originalDoc, updateDocInput)).to.be.true;
+        expect(updateDocInner.calledOnceWithExactly(updateDocInput)).to.be.true;
       });
 
-      it('throw error is _rev does not match with the _rev in the original doc', async () => {
-        settingsGetAll.returns({});
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          reported_date: 12312312,
-          parent: { _id: 'p1' },
-          name: 'apoorva2',
-          _id: '1',
-          _rev: '1',
-        };
+      [
+        { ...originalDoc, _id: undefined },
+        { ...originalDoc, _rev: undefined },
+      ].forEach((updateDocInput) => {
+        it('throws error if input type is not a doc', async () => {
+          await expect(Person.v1.update(localContext)(updateDocInput as unknown as Input.v1.UpdatePersonInput))
+            .to.be.rejectedWith(InvalidArgumentError, 'Valid _id, _rev, and type fields must be provided.');
 
-        const originalDoc = { ...updateDocInput, _rev: '2' };
-        getDocByIdInner.resolves(originalDoc);
+          expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+          expect(settingsGetAll.notCalled).to.be.true;
+          expect(getPersonInner.notCalled).to.be.true;
+          expect(assertSameParentLineage.notCalled).to.be.true;
+          expect(updateDocInner.notCalled).to.be.true;
+        });
+      });
+
+      it('throws error if input does not have a person type', async () => {
+        isPerson.returns(false);
+
+        await expect(Person.v1.update(localContext)(originalDoc))
+          .to.be.rejectedWith(InvalidArgumentError, 'Valid _id, _rev, and type fields must be provided.');
+
+        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getPersonInner.notCalled).to.be.true;
+        expect(assertSameParentLineage.notCalled).to.be.true;
+        expect(updateDocInner.notCalled).to.be.true;
+      });
+
+      it('throws error when no person found', async () => {
+        getPersonInner.resolves(null);
+
+        await expect(Person.v1.update(localContext)(originalDoc))
+          .to.be.rejectedWith(ResourceNotFoundError, `Person record [${originalDoc._id}] not found.`);
+
+        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getPersonInner.calledOnceWithExactly(Qualifier.byUuid(originalDoc._id))).to.be.true;
+        expect(assertSameParentLineage.notCalled).to.be.true;
+        expect(updateDocInner.notCalled).to.be.true;
+      });
+
+      ([
+        ['_rev', { ...originalDoc, _rev: 'updated' }],
+        ['reported_date', { ...originalDoc, reported_date: 'updated' }],
+        ['type', { ...originalDoc, type: 'updated' }],
+        ['contact_type', { ...originalDoc, contact_type: 'updated' }],
+      ] as [string, Input.v1.UpdatePersonInput][]).forEach(([field, updateDocInput]) => {
+        it(`throws error when changing immutable field [${field}]`, async () => {
+          getPersonInner.resolves(originalDoc);
+
+          await expect(Person.v1.update(localContext)(updateDocInput))
+            .to.be.rejectedWith(InvalidArgumentError, `The [${field}] field must not be changed.`);
+
+          expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+          expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+          expect(getPersonInner.calledOnceWithExactly(Qualifier.byUuid(originalDoc._id))).to.be.true;
+          expect(assertSameParentLineage.notCalled).to.be.true;
+          expect(updateDocInner.notCalled).to.be.true;
+        });
+      });
+
+      it('throws error when trying to remove name value', async () => {
+        getPersonInner.resolves(originalDoc);
+        const updateDocInput = { ...originalDoc, name: undefined };
+
         await expect(Person.v1.update(localContext)(updateDocInput))
-          .to.be.rejectedWith('The [_rev] field must not be changed.');
-        expect(updateDocInner.called).to.be.false;
+          .to.be.rejectedWith(InvalidArgumentError, `The [name] field must have a [string] value.`);
+
+        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getPersonInner.calledOnceWithExactly(Qualifier.byUuid(originalDoc._id))).to.be.true;
+        expect(assertSameParentLineage.notCalled).to.be.true;
+        expect(updateDocInner.notCalled).to.be.true;
       });
 
-      it('throw error if parent lineage of input does not match with originalDoc', async () => {
-        settingsGetAll.returns({});
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2'
-            }
-          },
-          name: 'apoorva2',
-          _id: '1',
-          _rev: '1',
-          reported_date: 12312312
-        };
-        const originalDoc = {
-          ...updateDocInput, parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p3'
-            }
-          }
-        };
-        getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.update(localContext)(updateDocInput))
-          .to.be
-          .rejectedWith('Parent lineage does not match.');
-        expect(updateDocInner.called).to.be.false;
-      });
 
-      it('throw error if parent lineage depth of input does not match with originalDoc', async () => {
-        settingsGetAll.returns({});
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          reported_date: 12312312,
-          parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2'
-            }
-          },
-          name: 'apoorva2',
-          _id: '1',
-          _rev: '1',
-        };
-        const originalDoc = {
-          ...updateDocInput, parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2',
-              parent: {
-                _id: 'p3'
-              }
-            }
-          }
-        };
-        getDocByIdInner.resolves(originalDoc);
-        await expect(Person.v1.update(localContext)(updateDocInput))
-          .to.be
-          .rejectedWith('Parent lineage does not match.');
-        expect(updateDocInner.called).to.be.false;
-      });
+      [
+        { name: 'new name' }, // Set name
+        { world: 'hello' } // Set custom value and leave name unset
+      ].forEach(updated => {
+        it('updates person that does not have an existing name value', async () => {
+          const origDocWithoutName = {
+            ...originalDoc,
+            name: undefined
+          };
+          const updateDocInput = {
+            ...origDocWithoutName,
+            ...updated,
+          };
+          getPersonInner.resolves(origDocWithoutName);
+          updateDocInner.resolves({ _rev: '2' });
 
-      it('throw error for missing required mutable fields', async () => {
-        // isPerson must return true to get past initial validation
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          reported_date: new Date(12312312),
-          parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2'
-            }
-          },
-          _id: '1',
-          _rev: '1',
-        };
-        const originalDoc = {
-          ...updateDocInput,
-          name: 'apoorva'
-        };
-        getDocByIdInner.resolves(originalDoc);
-        // Error message changed to assertHasRequiredField format
-        await expect(Person.v1.update(localContext)(updateDocInput as unknown as PersonTypes.v1.Person))
-          .to.be
-          .rejectedWith(`The [name] field must have a [string] value.`);
-        expect(updateDocInner.called).to.be.false;
-      });
+          const result = await Person.v1.update(localContext)(updateDocInput);
 
-      it('throw error for missing required immutable fields other than parent', async () => {
-        // isPerson must return true to get past initial validation
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          name: 'apoorva',
-          parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2'
-            }
-          },
-          _id: '1',
-          _rev: '1'
-        };
-        const originalDoc = {
-          ...updateDocInput,
-          reported_date: new Date(12312312),
-        };
-        getDocByIdInner.resolves(originalDoc);
-        // Missing reported_date is treated as "changed" field
-        await expect(Person.v1.update(localContext)(updateDocInput as unknown as PersonTypes.v1.Person))
-          .to.be
-          .rejectedWith(`The [reported_date] field must not be changed.`);
-        expect(updateDocInner.called).to.be.false;
-      });
-
-      it('throw error for missing required immutable field: parent', async () => {
-        // isPerson must return true to get past initial validation
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          _id: '1',
-          _rev: '1',
-          reported_date: new Date(555)
-        };
-        const originalDoc = {
-          ...updateDocInput,
-          parent: {
-            _id: '-1'
-          },
-        };
-        getDocByIdInner.resolves(originalDoc);
-        // When parent is missing from update but exists in original, lineage check fails
-        await expect(Person.v1.update(localContext)(updateDocInput as unknown as PersonTypes.v1.Person))
-          .to.be
-          .rejectedWith(`Parent lineage does not match.`);
-        expect(updateDocInner.called).to.be.false;
-      });
-
-      it('throw error for updated required immutable fields other than parent', async () => {
-        // isPerson must return true to get past initial validation
-        isPerson.returns(true);
-        const updateDocInput = {
-          type: 'contact',
-          contact_type: 'person',
-          name: 'apoorva',
-          parent: {
-            _id: 'p1',
-            parent: {
-              _id: 'p2'
-            }
-          },
-          _id: '1',
-          _rev: '1',
-          reported_date: 333444555,
-        };
-        const originalDoc = {
-          ...updateDocInput,
-          reported_date: new Date(12312312),
-        };
-        getDocByIdInner.resolves(originalDoc);
-        // Error message changed to use assertFieldsUnchanged format
-        await expect(Person.v1.update(localContext)(updateDocInput))
-          .to.be
-          .rejectedWith(`The [reported_date] field must not be changed.`);
-        expect(updateDocInner.called).to.be.false;
+          expect(result).to.deep.equal({ ...updateDocInput, _rev: '2' });
+          expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+          expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+          expect(getPersonInner.calledOnceWithExactly(Qualifier.byUuid(originalDoc._id))).to.be.true;
+          expect(assertSameParentLineage.calledOnceWithExactly(origDocWithoutName, updateDocInput)).to.be.true;
+          expect(updateDocInner.calledOnceWithExactly(updateDocInput)).to.be.true;
+        });
       });
     });
   });
