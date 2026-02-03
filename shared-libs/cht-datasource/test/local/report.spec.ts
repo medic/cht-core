@@ -730,11 +730,14 @@ describe('local report', () => {
     });
 
     describe('create', () => {
-      const contact = {
+      const minifiedContact = {
         _id: 'contact-1',
+        parent: { _id: 'parent-1' }
+      } as const;
+      const contact = {
+        ...minifiedContact,
         _rev: '1',
         type: 'person',
-        parent: { _id: 'parent-1' }
       } as const;
       const reportDoc = { _id: 'report-1', type: 'data_record', form: 'test-form' } as const;
       const supportedForms = ['test-form', 'other-form'];
@@ -746,8 +749,6 @@ describe('local report', () => {
       let createDocInner: SinonStub;
       let getDocUuidsByIdRangeOuter: SinonStub;
       let getDocUuidsByIdRangeInner: SinonStub;
-      let minifyDocOuter: SinonStub;
-      let minifyDocInner: SinonStub;
       let isContact: SinonStub;
       let getReportedDateTimestamp: SinonStub;
 
@@ -764,10 +765,6 @@ describe('local report', () => {
         getDocUuidsByIdRangeOuter = sinon
           .stub(LocalDoc, 'getDocUuidsByIdRange')
           .returns(getDocUuidsByIdRangeInner);
-        minifyDocInner = sinon.stub().returnsArg(0);
-        minifyDocOuter = sinon
-          .stub(Lineage, 'minifyDoc')
-          .returns(minifyDocInner);
         isContact = sinon
           .stub(LocalContact.v1, 'isContact')
           .returns(true);
@@ -788,7 +785,6 @@ describe('local report', () => {
         expect(result).to.equal(reportDoc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(minifyDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
         expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
@@ -796,11 +792,10 @@ describe('local report', () => {
         expect(getReportedDateTimestamp.calledOnceWithExactly(undefined)).to.be.true;
         const expectedReport = {
           ...input,
-          contact,
+          contact: minifiedContact,
           reported_date: reportedDate,
           type: 'data_record'
         };
-        expect(minifyDocInner.calledOnceWithExactly(expectedReport)).to.be.true;
         expect(createDocInner.calledOnceWithExactly(expectedReport)).to.be.true;
       });
 
@@ -816,7 +811,6 @@ describe('local report', () => {
         expect(result).to.equal(reportDoc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(minifyDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
         expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
@@ -824,11 +818,10 @@ describe('local report', () => {
         expect(getReportedDateTimestamp.calledOnceWithExactly(input.reported_date)).to.be.true;
         const expectedReport = {
           ...input,
-          contact,
+          contact: minifiedContact,
           reported_date: reportedDate,
           type: 'data_record'
         };
-        expect(minifyDocInner.calledOnceWithExactly(expectedReport)).to.be.true;
         expect(createDocInner.calledOnceWithExactly(expectedReport)).to.be.true;
       });
 
@@ -844,13 +837,11 @@ describe('local report', () => {
 
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(minifyDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.notCalled).to.be.true;
         expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
         expect(isContact.notCalled).to.be.true;
         expect(getReportedDateTimestamp.notCalled).to.be.true;
-        expect(minifyDocInner.notCalled).to.be.true;
         expect(createDocInner.notCalled).to.be.true;
       });
 
@@ -865,13 +856,11 @@ describe('local report', () => {
 
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(minifyDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
         expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(isContact.notCalled).to.be.true;
         expect(getReportedDateTimestamp.notCalled).to.be.true;
-        expect(minifyDocInner.notCalled).to.be.true;
         expect(createDocInner.notCalled).to.be.true;
       });
 
@@ -892,13 +881,11 @@ describe('local report', () => {
 
           expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-          expect(minifyDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
           expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
           expect(isContact.calledOnceWithExactly(localContext.settings, invalidContact)).to.be.true;
           expect(getReportedDateTimestamp.notCalled).to.be.true;
-          expect(minifyDocInner.notCalled).to.be.true;
           expect(createDocInner.notCalled).to.be.true;
         });
       });
@@ -920,6 +907,17 @@ describe('local report', () => {
         fields: { hello: 'world' }
       } as const;
       const contactDoc = { _id: 'contact-1', type: 'person' } as const;
+      const newContactMinified = {
+        _id: 'contact-2',
+        parent: {
+          _id: 'parent-1'
+        }
+      };
+      const newContact = {
+        ...newContactMinified,
+        _rev: '1',
+        type: 'person'
+      };
       const supportedForms = ['test-form', 'other-form', 'new-form'];
 
       let getDocsByIdsOuter: SinonStub;
@@ -974,7 +972,6 @@ describe('local report', () => {
         expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
         expect(updateDocInner.calledOnceWithExactly(updateInput)).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
       [
@@ -995,7 +992,6 @@ describe('local report', () => {
           expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
           expect(getUpdatedContactInner.notCalled).to.be.true;
           expect(updateDocInner.notCalled).to.be.true;
-          expect(settingsGetAll.notCalled).to.be.true;
         });
       });
 
@@ -1013,7 +1009,6 @@ describe('local report', () => {
         expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.notCalled).to.be.true;
         expect(updateDocInner.notCalled).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
       it('throws error when trying to remove contact value', async () => {
@@ -1032,7 +1027,6 @@ describe('local report', () => {
         expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, null)).to.be.true;
         expect(updateDocInner.notCalled).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
       it('allows update when original report has no contact', async () => {
@@ -1063,7 +1057,6 @@ describe('local report', () => {
           undefined
         )).to.be.true;
         expect(updateDocInner.calledOnceWithExactly(updateInput)).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
       it('allows setting contact when original report has no contact', async () => {
@@ -1094,7 +1087,6 @@ describe('local report', () => {
           contactDoc
         )).to.be.true;
         expect(updateDocInner.calledOnceWithExactly(updateInput)).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
       ([
@@ -1115,7 +1107,6 @@ describe('local report', () => {
           expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
           expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
           expect(updateDocInner.notCalled).to.be.true;
-          expect(settingsGetAll.notCalled).to.be.true;
         });
       });
 
@@ -1138,7 +1129,6 @@ describe('local report', () => {
         expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
         expect(updateDocInner.calledOnceWithExactly(updateInput)).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
       it('throws error when changing form to an invalid form', async () => {
@@ -1159,39 +1149,37 @@ describe('local report', () => {
         expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
         expect(updateDocInner.notCalled).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
       });
 
-      it('updates report when contact lineage data included', async () => {
-        const updateInput = {
-          ...originalReport,
-          contact: {
-            _id: 'contact-1',
-            name: 'Contact Name',
-            parent: {
-              _id: 'parent-1',
-              name: 'Parent Name'
-            }
-          },
-          fields: { hello: 'updated' }
-        };
-        getUpdatedContactInner.returns(updateInput.contact);
-        updateDocInner.resolves({ _rev: '2-rev' });
+      [
+        newContact, // Full contact
+        newContactMinified, // Contact hierarchy
+        newContact._id // Just Id
+      ].forEach(contact => {
+        it('updates report when new contact', async () => {
+          const updateInput = {
+            ...originalReport,
+            contact
+          };
+          getUpdatedContactInner.returns(newContact);
+          updateDocInner.resolves({ _rev: '2-rev' });
+          getDocsByIdsInner.resolves([originalReport, newContact]);
 
-        const result = await Report.v1.update(localContext)(updateInput);
+          const result = await Report.v1.update(localContext)(updateInput as unknown as typeof originalReport);
 
-        // Full lineage data returned
-        expect(result).to.deep.equal({ ...updateInput, _rev: '2-rev' });
-        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-1'])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
-        expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
-        // Minified lineage set on updated doc
-        expect(updateDocInner.calledOnceWithExactly({ ...updateInput, contact: originalReport.contact })).to.be.true;
-        expect(settingsGetAll.notCalled).to.be.true;
+          // Full lineage data returned
+          expect(result).to.deep.equal({ ...updateInput, contact: newContact,  _rev: '2-rev' });
+          expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
+          expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-2'])).to.be.true;
+          expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+          expect(getUpdatedContactInner.args).to.deep.equal([[originalReport, updateInput, newContact]]);
+          expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, newContact)).to.be.true;
+          // Minified lineage set on updated doc
+          expect(updateDocInner.calledOnceWithExactly({ ...updateInput, contact: newContactMinified })).to.be.true;
+        });
       });
     });
   });
