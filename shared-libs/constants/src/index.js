@@ -8,6 +8,7 @@ const DOC_IDS = {
   RESOURCES: 'resources',
 };
 
+// Contact Types
 const CONTACT_TYPES = {
   HEALTH_CENTER: 'health_center',
 };
