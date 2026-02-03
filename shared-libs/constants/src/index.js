@@ -8,6 +8,11 @@ const DOC_IDS = {
   RESOURCES: 'resources',
 };
 
+// Contact Types
+const CONTACT_TYPES = {
+  HEALTH_CENTER: 'health_center',
+};
+
 // Document Types
 const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
@@ -36,4 +41,5 @@ module.exports = {
   HTTP_HEADERS,
   SENTINEL_METADATA,
   USER_ROLES,
+  CONTACT_TYPES,
 };
