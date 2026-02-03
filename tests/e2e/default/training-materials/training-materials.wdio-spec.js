@@ -31,7 +31,6 @@ describe('Training Materials Page', () => {
 
     expect(await trainingCardsPage.getAllTrainingsText()).to.deep.equal([ trainingTitle ]);
     expect(await trainingCardsPage.isTrainingComplete(trainingId)).to.be.true;
-    await commonPage.logout();
   });
 
   describe('User with contact', () => {
@@ -45,6 +44,7 @@ describe('Training Materials Page', () => {
     const SECOND_TRAINING_ID = `training:${SECOND_TRAINING_NAME}`;
 
     before(async () => {
+      await commonPage.reloadSession();
       const facility = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
       const user = userFactory.build({ roles: [ 'pharmacist', 'chw' ] });
 
