@@ -444,22 +444,22 @@ const syncAndWaitForSuccess = async (timeout = RELOAD_SYNC_TIMEOUT) => {
   throw new Error('Failed to sync after 10 retries');
 };
 
-// const hideModalOverlay = () => {
-//   // hides the modal overlay, so it doesn't intercept all clicks
-//   // this action is temporary, and will be undone with a refresh
-//   return browser.execute(() => {
-//     const style = document.createElement('style');
-//     style.innerHTML = '.cdk-overlay-backdrop { display: none; }';
-//     document.head.appendChild(style);
-//   });
-// };
+const hideModalOverlay = () => {
+  // hides the modal overlay, so it doesn't intercept all clicks
+  // this action is temporary, and will be undone with a refresh
+  return browser.execute(() => {
+    const style = document.createElement('style');
+    style.innerHTML = '.cdk-overlay-backdrop { display: none; }';
+    document.head.appendChild(style);
+  });
+};
 
 const sync = async ({
   reload = false,
   serviceWorkerUpdate = false,
   timeout = RELOAD_SYNC_TIMEOUT
 } = {}) => {
-  // await hideModalOverlay();
+  await hideModalOverlay();
 
   const reloadModalShown = await syncAndWaitForSuccess(timeout);
   // service worker updates require downloading all resources, and then it triggers the update modal.

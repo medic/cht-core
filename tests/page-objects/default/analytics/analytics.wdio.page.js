@@ -2,7 +2,11 @@ const TARGET_MET_COLOR = '#76b0b0';
 const TARGET_UNMET_COLOR = '#000000';
 
 const goToTargets = () => browser.url('/#/analytics/targets');
-const noSelectedTarget = () => $('.empty-selection');
+
+const noTargetFound = () => $('aria/No target found.');
+const noAdminTargets = () => $(
+  'aria/Targets are disabled for admin users. If you need to see targets, login as a normal user.'
+);
 const targets = () => $$('.target');
 const targetWrap = () => $('.page .targets');
 const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
@@ -58,7 +62,8 @@ const getTargets = async () => {
 };
 
 module.exports = {
-  noSelectedTarget,
+  noTargetFound,
+  noAdminTargets,
   goToTargets,
   getTargets,
   emptySelectionError,

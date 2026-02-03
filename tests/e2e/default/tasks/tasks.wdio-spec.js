@@ -66,22 +66,22 @@ describe('Tasks', () => {
     const taskConfig = require(`./config/${CONFIG_PATH}`);
 
     await tasksPage.compileTasks(CONFIG_PATH, true);
-
     await commonPage.goToTasks();
-    let list = await tasksPage.getTasks();
-    expect(list).to.have.length(3);
+    expect(await tasksPage.getTasks()).to.have.length(3);
+
     const task = await tasksPage.getTaskByContactAndForm(patient.name, taskConfig[0].name);
     await task.click();
     await tasksPage.waitForTaskContentLoaded('Home Visit');
     const taskElement = await tasksPage.getOpenTaskElement();
     await genericForm.submitForm();
+
     await taskElement.waitForDisplayed({ reverse: true });
-    list = await tasksPage.getTasks();
-    expect(list).to.have.length(2);
+    await commonPage.sync();
+    expect(await tasksPage.getTasks()).to.have.length(2);
   });
 
   it('should add a task when CHW completes a task successfully, and that task creates another task', async () => {
-    const CONFIG_PATH = 'tasks-breadcrumbs-config.js';
+    const CONFIG_PATH = 'infinite-tasks-config.js';
     const taskConfig = require(`./config/${CONFIG_PATH}`);
 
     await tasksPage.compileTasks(CONFIG_PATH, true);
@@ -130,7 +130,9 @@ describe('Tasks', () => {
   });
 
   it('Should show error message for bad config', async () => {
-    await tasksPage.compileTasks('tasks-error-config.js', true);
+    await commonPage.reloadSession();
+    await tasksPage.compileTasks('tasks-error-config.js', false);
+    await loginPage.login(chw);
 
     await commonPage.goToTasks();
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

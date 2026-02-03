@@ -610,7 +610,7 @@ const updateSettings = async (updates, options = {}) => {
     await watcher.promise;
   }
   if (sync) {
-    await commonElements.sync({ expectReload: true });
+    await commonElements.sync();
   }
   if (refresh) {
     await browser.refresh();
