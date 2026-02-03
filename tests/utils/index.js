@@ -1125,7 +1125,8 @@ const addTranslations = async (languageCode, translations = {}) => {
 
 const enableLanguage = (languageCode) => enableLanguages([languageCode]);
 
-const enableLanguages = async (languageCodes) => {
+const enableLanguages = async (languageCodes, options) => {
+
   const { languages } = await getSettings();
   for (const languageCode of languageCodes) {
     const language = languages.find(language => language.locale === languageCode);
@@ -1138,7 +1139,7 @@ const enableLanguages = async (languageCodes) => {
       });
     }
   }
-  await updateSettings({ languages });
+  await updateSettings({ languages }, options);
 };
 
 const getSettings = () => getDoc(DOC_IDS.SETTINGS).then(settings => settings.settings);

@@ -73,6 +73,7 @@ const isHamburgerMenuOpen = async () => {
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await closeFastActionList();
+    await closeReloadModal(false);
     await hamburgerMenuSelectors.hamburgerMenu().click();
   }
   await hamburgerMenuSelectors.closeSideBarMenu().waitForDisplayed();

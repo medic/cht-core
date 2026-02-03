@@ -93,10 +93,6 @@ describe('Service worker cache', () => {
     await loginIfNeeded();
   });
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
-  });
-
   after(async () => {
     await utils.deleteUsers([chw]);
     await utils.revertDb([/^form:/], true);
@@ -178,7 +174,7 @@ describe('Service worker cache', () => {
 
   it('adding new languages triggers login page refresh', async () => {
     const languageCode = 'ro';
-    await utils.enableLanguage(languageCode);
+    await utils.enableLanguage(languageCode, { ignoreReload: true });
     await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
@@ -201,7 +197,6 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    // await commonPage.sync({ expectReload: true, serviceWorkerUpdate: false });
     const cacheDetails = await getCachedRequests(true);
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
