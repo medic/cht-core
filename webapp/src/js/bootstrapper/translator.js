@@ -184,7 +184,6 @@ const TRANSLATIONS = {
     CONTINUE: 'Continuar',
     ABORT: 'Cancelar',
     SESSION_EXPIRED_TITLE: 'Sessão expirada',
-    // eslint-disable-next-line @stylistic/max-len
     SESSION_EXPIRED_DESCRIPTION: 'Sua sessão expirou e você foi desconectado. Por favor, faça login para continuar.',
     LOGIN: 'Entrar',
   },

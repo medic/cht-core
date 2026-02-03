@@ -14,6 +14,7 @@ const db = require('../../../src/db');
 const chtDatasource = require('@medic/cht-datasource');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
+const { CONTACT_TYPES } = require('@medic/constants');
 const dataContext = require('../../../src/data-context');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 
@@ -435,14 +436,14 @@ describe('ServerSidePurge', () => {
       sinon.stub(db, 'queryMedic');
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: 'district', doc: { _id: 'first' } },
-        { id: 'f1', key: 'health_center', doc: { _id: 'f1' } },
+        { id: 'f1', key: CONTACT_TYPES.HEALTH_CENTER, doc: { _id: 'f1' } },
         { id: 'f2', key: 'person', doc: { _id: 'f2', patient_id: 's2' } },
         { id: 'f3', key: 'person', doc: { _id: 'f3', patient_id: 's3' } },
       ]});
 
       db.queryMedic.onCall(1).resolves({ rows: [
         { id: 'f3', key: 'person', doc: { _id: 'f3', patient_id: 's3', } },
-        { id: 'f4', key: 'health_center', doc: { _id: 'f4' } },
+        { id: 'f4', key: CONTACT_TYPES.HEALTH_CENTER, doc: { _id: 'f4' } },
         { id: 'f5', key: 'clinic', doc: { _id: 'f5', place_id: 's5' } },
       ]});
 
@@ -450,11 +451,11 @@ describe('ServerSidePurge', () => {
         { id: 'f5', key: 'clinic', doc: { _id: 'f5', place_id: 's5' } },
         { id: 'f6', key: 'district', doc: { _id: 'f6' } },
         { id: 'f7', key: 'person', doc: { _id: 'f7', patient_id: 's7' } },
-        { id: 'f8', key: 'health_center', doc: { _id: 'f8', place_id: 's8' } },
+        { id: 'f8', key: CONTACT_TYPES.HEALTH_CENTER, doc: { _id: 'f8', place_id: 's8' } },
       ]});
 
       db.queryMedic.onCall(3).resolves({ rows: [
-        { id: 'f8', key: 'health_center', doc: { _id: 'f8', place_id: 's8' } },
+        { id: 'f8', key: CONTACT_TYPES.HEALTH_CENTER, doc: { _id: 'f8', place_id: 's8' } },
       ]});
 
       sinon.stub(request, 'post').resolves({ hits: [] });
@@ -467,7 +468,7 @@ describe('ServerSidePurge', () => {
           getContactsByTypeArgs({ limit: 1000, id: '', key: '' }),
           getContactsByTypeArgs({ limit: 1001, id: 'f3', key: 'person' }),
           getContactsByTypeArgs({ limit: 1001, id: 'f5', key: 'clinic' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f8', key: 'health_center' }),
+          getContactsByTypeArgs({ limit: 1001, id: 'f8', key: CONTACT_TYPES.HEALTH_CENTER }),
         ]);
       });
     });
@@ -830,7 +831,7 @@ describe('ServerSidePurge', () => {
     it('should get docs_by_replication_key using the retrieved contacts and purge docs', () => {
       sinon.stub(db, 'queryMedic');
       db.queryMedic.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'health_center', doc: { _id: 'first', type: 'district_hospital' } },
+        { id: 'first', key: CONTACT_TYPES.HEALTH_CENTER, doc: { _id: 'first', type: 'district_hospital' } },
         { id: 'f1', key: 'clinic', doc: { _id: 'f1', place_id: 's1', type: 'clinic' } },
         { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
         { id: 'f4', key: 'clinic', doc: { _id: 'f4', place_id: 's4', type: 'clinic' }},

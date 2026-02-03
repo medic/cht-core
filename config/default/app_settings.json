@@ -284,6 +284,10 @@
     "can_default_facility_filter": [],
     "can_have_multiple_places": [],
     "can_skip_password_change": [],
+    "can_get_task_notifications": [
+      "chw",
+      "chw_supervisor"
+    ],
     "can_export_devices_details": [
       "national_admin"
     ]

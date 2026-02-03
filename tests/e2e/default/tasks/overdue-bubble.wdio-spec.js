@@ -9,10 +9,11 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Task overdue bubble counter', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const chwContact = personFactory.build({
     name: 'CHW User',
     phone: '+12068881234',

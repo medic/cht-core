@@ -6,10 +6,11 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const fileDownloadUtils = require('@utils/file-download');
 const utils = require('@utils');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Export Contacts ', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const today = moment();

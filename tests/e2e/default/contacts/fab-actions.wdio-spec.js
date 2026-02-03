@@ -6,10 +6,11 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const { genericForm } = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('FAB actions', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
 
