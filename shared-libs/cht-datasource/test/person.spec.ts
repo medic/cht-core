@@ -4,12 +4,13 @@ import * as Remote from '../src/remote';
 import * as Qualifier from '../src/qualifier';
 import * as Context from '../src/libs/data-context';
 import * as Core from '../src/libs/core';
+import * as Input from '../src/input';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import { DataContext } from '../src';
 
 describe('person', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
@@ -128,12 +129,12 @@ describe('person', () => {
     });
 
     describe('getPage', () => {
-      const people = [{ _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' }] as Person.v1.Person[];
+      const people = [ { _id: 'person1' }, { _id: 'person2' }, { _id: 'person3' } ] as Person.v1.Person[];
       const cursor = '1';
       const pageData = { data: people, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const personTypeQualifier = {contactType: 'person'} as const;
+      const personTypeQualifier = { contactType: 'person' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
@@ -254,11 +255,11 @@ describe('person', () => {
 
     describe('getAll', () => {
       const personType = 'person';
-      const personTypeQualifier = {contactType: personType} as const;
+      const personTypeQualifier = { contactType: personType } as const;
       const firstPerson = { _id: 'person1' } as Person.v1.Person;
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
-      const people = [firstPerson, secondPerson, thirdPerson];
+      const people = [ firstPerson, secondPerson, thirdPerson ];
       const mockGenerator = function* () {
         for (const person of people) {
           yield person;
@@ -305,6 +306,93 @@ describe('person', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(personGetPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+      });
+    });
+
+    describe('create', () => {
+      let createPersonDoc: SinonStub;
+
+      beforeEach(() => {
+        createPersonDoc = sinon.stub();
+        adapt.returns(createPersonDoc);
+      });
+
+
+      it('returns person doc for valid input', async () => {
+        const input = {
+          name: 'person-1',
+          type: 'person',
+          parent: 'p1'
+        };
+        const doc = {
+          ...input,
+          _id: 'new-doc'
+        };
+        createPersonDoc.resolves(doc);
+
+        const result = await Person.v1.create(dataContext)(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.create, Remote.Person.v1.create))
+          .to.be.true;
+        expect(createPersonDoc.calledOnceWithExactly(input)).to.be.true;
+      });
+
+      it('Throws error is input is not a record', async () => {
+        const input = 'hello' as unknown as Input.v1.PersonInput;
+        await expect(Person.v1.create(dataContext)(input))
+          .to.be.rejectedWith(`Person data not provided.`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.create, Remote.Person.v1.create))
+          .to.be.true;
+        expect(createPersonDoc.notCalled).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      let updatePersonDoc: SinonStub;
+
+      beforeEach(() => {
+        updatePersonDoc = sinon.stub();
+        adapt.returns(updatePersonDoc);
+      });
+
+      it('returns person doc for valid input', async () => {
+        const input = {
+          name: 'person-1',
+          type: 'person',
+          parent: { _id: 'p1', name: 'hydrated parent doc' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312
+        };
+        const doc = {
+          ...input,
+          parent: { _id: input.parent._id }
+        };
+        updatePersonDoc.resolves(doc);
+
+        const result = await Person.v1.update(dataContext)(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.update, Remote.Person.v1.update))
+          .to.be.true;
+        expect(updatePersonDoc.calledOnceWithExactly(input)).to.be.true;
+      });
+
+      it('throws error when input is not a record', async () => {
+        const input = 'apoorva' as unknown as Input.v1.UpdatePersonInput;
+
+        await expect(Person.v1.update(dataContext)(input))
+          .to.be.rejectedWith(`Updated person data not provided.`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.update, Remote.Person.v1.update))
+          .to.be.true;
+        expect(updatePersonDoc.notCalled).to.be.true;
       });
     });
   });

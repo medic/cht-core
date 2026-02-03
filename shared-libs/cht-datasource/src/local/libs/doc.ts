@@ -1,5 +1,5 @@
 import logger from '@medic/logger';
-import { NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
+import { DataObject, NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
@@ -19,22 +19,37 @@ export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): P
   });
 
 /** @internal */
-export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[]): Promise<Doc[]> => {
-  const keys = Array.from(new Set(uuids.filter(uuid => uuid.length)));
-  if (!keys.length) {
-    return [];
+export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (
+  uuids: (string | undefined)[]
+): Promise<Nullable<Doc>[]> => {
+  if (!uuids.some(Boolean)) {
+    return Array.from({ length: uuids.length }, () => null);
   }
-  const response = await db.allDocs({ keys, include_docs: true });
+  const response = await db.allDocs({ keys: uuids.map(id => id ?? ''), include_docs: true });
   return response.rows
     .map(({ doc }) => doc)
-    .filter((doc): doc is Doc => isDoc(doc));
+    .map(doc => isDoc(doc) ? doc : null);
 };
 
-const queryDocs = (
+/** @internal */
+export const getDocUuidsByIdRange = (db: PouchDB.Database<Doc>) => async (
+  startkey: string,
+  endkey: string
+): Promise<string[]> => {
+  const response = await db.allDocs({
+    startkey,
+    endkey,
+    include_docs: false,
+  });
+  return response.rows.map(({ id }) => id);
+};
+
+/** @internal */
+export const queryDocs = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
-) => db
+): Promise<Nullable<Doc>[]> => db
   .query(view, options)
   .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
 
@@ -130,7 +145,7 @@ export const fetchAndFilter = <T>(
     const noMoreResults = docs.length < currentLimit;
     const newDocs = docs.filter((doc): doc is T => filterFunction(doc));
     const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
-    const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
+    const totalDocs = [ ...currentDocs, ...newDocs ].slice(0, limit);
 
     if (noMoreResults) {
       return { data: totalDocs, cursor: null };
@@ -180,6 +195,30 @@ export const fetchAndFilterUuids = (
 };
 
 /** @internal */
+export const createDoc = (db: PouchDB.Database) => async (data: DataObject): Promise<Doc> => {
+  const { id, rev, ok } = await db.post(data);
+  if (!ok) {
+    throw new Error('Error creating document.');
+  }
+  return {
+    ...data,
+    _id: id,
+    _rev: rev
+  };
+};
+
+/** @internal */
+export const updateDoc = (db: PouchDB.Database<Doc>) => async (data: Doc): Promise<Doc> => {
+  const { ok, rev } = await db.put(data);
+  if (!ok) {
+    throw new Error('Error updating document.');
+  }
+  return {
+    ...data,
+    _rev: rev
+  };
+};
+
 const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {
   return (
     typeof error === 'object' && error !== null &&

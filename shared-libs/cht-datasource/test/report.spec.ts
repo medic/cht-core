@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Core from '../src/libs/core';
+import * as Input from '../src/input';
 
 describe('report', () => {
   const dataContext = { } as DataContext;
@@ -27,9 +28,9 @@ describe('report', () => {
   describe('v1', () => {
     describe('get', () => {
       const report = { _id: 'report' } as Report.v1.Report;
-      const qualifier = { uuid: report._id} as const;
+      const qualifier = { uuid: report._id } as const;
       let getReport: SinonStub;
-      
+
       beforeEach(() => {
         getReport = sinon.stub();
         adapt.returns(getReport);
@@ -73,7 +74,7 @@ describe('report', () => {
     });
 
     describe('getWithLineage', () => {
-      const report = { 
+      const report = {
         _id: 'report',
         contact: {
           _id: 'contact_id',
@@ -144,8 +145,8 @@ describe('report', () => {
       const pageData = { data: ids, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const freetextQualifier = { freetext: 'freetext'} as const;
-      const invalidFreetextQualifier = { freetext: 'invalid_freetext'} as const;
+      const freetextQualifier = { freetext: 'freetext' } as const;
+      const invalidFreetextQualifier = { freetext: 'invalid_freetext' } as const;
       let getIdsPage: SinonStub;
 
       beforeEach(() => {
@@ -320,6 +321,95 @@ describe('report', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+      });
+    });
+
+    describe('create', () => {
+      let createReportDoc: SinonStub;
+
+      beforeEach(() => {
+        createReportDoc = sinon.stub();
+        adapt.returns(createReportDoc);
+      });
+
+
+      it('returns report doc for valid input', async () => {
+        const input = {
+          name: 'report-1',
+          type: 'data_record',
+          contact: 'c1',
+          form: 'form'
+        };
+        const doc = {
+          ...input,
+          _id: 'new-doc'
+        };
+        createReportDoc.resolves(doc);
+
+        const result = await Report.v1.create(dataContext)(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.create, Remote.Report.v1.create))
+          .to.be.true;
+        expect(createReportDoc.calledOnceWithExactly(input)).to.be.true;
+      });
+
+      it('Throws error is input is not a record', async () => {
+        const input = 'hello' as unknown as Input.v1.ReportInput;
+        await expect(Report.v1.create(dataContext)(input))
+          .to.be.rejectedWith(`Report data not provided.`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.create, Remote.Report.v1.create))
+          .to.be.true;
+        expect(createReportDoc.notCalled).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      let updateReportDoc: SinonStub;
+
+      beforeEach(() => {
+        updateReportDoc = sinon.stub();
+        adapt.returns(updateReportDoc);
+      });
+
+      it('throws error for invalid input', async () => {
+        const input = 'my-string-report' as unknown as Report.v1.Report;
+
+        await expect(Report.v1.update(dataContext)(input))
+          .to.be.rejectedWith(`Invalid report update input`);
+
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))
+          .to.be.true;
+        expect(updateReportDoc.notCalled).to.be.true;
+      });
+
+      it('returns updated report doc for valid input', async() => {
+        const input = {
+          _id: 'b8208fa332bf1f09b606e6efd8002a4a',
+          _rev: '1-9ffca0e670bcc111de86f68ae8f47d3b',
+          form: 'pregnancy_danger_sign',
+          type: 'data_record',
+          contact: { _id: 'c1', name: 'hydrated contact' },
+          reported_date: 12312312,
+          fields: {}
+        };
+        const doc = {
+          ...input,
+          contact: { _id: input.contact._id }
+        };
+        updateReportDoc.resolves(doc);
+
+        const result = await Report.v1.update(dataContext)(input);
+
+        expect(result).to.equal(doc);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))
+          .to.be.true;
+        expect(updateReportDoc.calledOnceWithExactly(input)).to.be.true;
       });
     });
   });

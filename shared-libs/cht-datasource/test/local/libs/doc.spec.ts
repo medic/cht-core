@@ -1,16 +1,24 @@
 import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
+import * as LocalDoc from '../../../src/local/libs/doc';
 import {
+  createDoc,
   ddocExists,
   fetchAndFilter,
   fetchAndFilterUuids,
   getDocById,
   getDocsByIds,
+  getDocUuidsByIdRange,
+  queryDocs,
   queryDocsByKey,
-  queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange, queryNouveauIndex, queryNouveauIndexUuids,
+  queryDocsByRange,
+  queryDocUuidsByKey,
+  queryDocUuidsByRange,
+  updateDoc,
+  queryNouveauIndex,
+  queryNouveauIndexUuids,
 } from '../../../src/local/libs/doc';
-import * as LocalDoc from '../../../src/local/libs/doc';
 import * as RequestUtils from '../../../src/local/libs/request-utils';
 import { expect } from 'chai';
 import { Nullable } from '../../../src';
@@ -20,6 +28,8 @@ describe('local doc lib', () => {
   let dbGet: SinonStub;
   let dbAllDocs: SinonStub;
   let dbQuery: SinonStub;
+  let dbPost: SinonStub;
+  let dbPut: SinonStub;
   let db: PouchDB.Database<Doc.Doc>;
   let isDoc: SinonStub;
   let error: SinonStub;
@@ -28,10 +38,14 @@ describe('local doc lib', () => {
     dbGet = sinon.stub();
     dbAllDocs = sinon.stub();
     dbQuery = sinon.stub();
+    dbPost = sinon.stub();
+    dbPut = sinon.stub();
     db = {
       get: dbGet,
       allDocs: dbAllDocs,
-      query: dbQuery
+      query: dbQuery,
+      post: dbPost,
+      put: dbPut
     } as unknown as PouchDB.Database<Doc.Doc>;
     isDoc = sinon.stub(Doc, 'isDoc');
     error = sinon.stub(logger, 'error');
@@ -113,7 +127,7 @@ describe('local doc lib', () => {
       expect(isDoc.args).to.deep.equal([[doc0], [doc1], [doc2]]);
     });
 
-    it('returns an empty array if no ids are provided', async () => {
+    it('returns an array of nulls if no ids are provided', async () => {
       const result = await getDocsByIds(db)([]);
 
       expect(result).to.deep.equal([]);
@@ -121,15 +135,32 @@ describe('local doc lib', () => {
       expect(isDoc.notCalled).to.be.true;
     });
 
-    it('does not return an entry for a blank id', async () => {
-      const result = await getDocsByIds(db)(['']);
+    it('returns an array of nulls for all blank/undefined ids', async () => {
+      const result = await getDocsByIds(db)([ '', undefined, '' ]);
 
-      expect(result).to.deep.equal([]);
+      expect(result).to.deep.equal([null, null, null]);
       expect(dbAllDocs.notCalled).to.be.true;
       expect(isDoc.notCalled).to.be.true;
     });
 
-    it('does not return an entry that is not a doc', async () => {
+    it('maps undefined ids to empty string for db call', async () => {
+      const doc0 = { _id: 'doc0' };
+      dbAllDocs.resolves({
+        rows: [
+          { doc: doc0 },
+          { doc: null }
+        ]
+      });
+      isDoc.callsFake(doc => doc === doc0);
+
+      const result = await getDocsByIds(db)([doc0._id, undefined]);
+
+      expect(result).to.deep.equal([doc0, null]);
+      expect(dbAllDocs.calledOnceWithExactly({ keys: [doc0._id, ''], include_docs: true })).to.be.true;
+      expect(isDoc.args).to.deep.equal([ [ doc0 ], [ null ] ]);
+    });
+
+    it('returns null for an entry that is not a doc', async () => {
       const doc0 = { _id: 'doc0' };
       const ids = [doc0._id];
       dbAllDocs.resolves({
@@ -141,23 +172,114 @@ describe('local doc lib', () => {
 
       const result = await getDocsByIds(db)(ids);
 
-      expect(result).to.deep.equal([]);
+      expect(result).to.deep.equal([null]);
       expect(dbAllDocs.calledOnceWithExactly({ keys: ids, include_docs: true })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0]]);
     });
 
-    it('returns one entry when duplicate ids are provided', async () => {
+    it('returns entries for duplicate ids as returned by db', async () => {
       const doc0 = { _id: 'doc0' };
       dbAllDocs.resolves({
-        rows: [{ doc: doc0 }]
+        rows: [ { doc: doc0 }, { doc: doc0 } ]
       });
       isDoc.returns(true);
 
       const result = await getDocsByIds(db)([doc0._id, doc0._id]);
 
-      expect(result).to.deep.equal([doc0]);
-      expect(dbAllDocs.calledOnceWithExactly({ keys: [doc0._id], include_docs: true })).to.be.true;
-      expect(isDoc.calledOnceWithExactly(doc0)).to.be.true;
+      expect(result).to.deep.equal([doc0, doc0]);
+      expect(dbAllDocs.calledOnceWithExactly({ keys: [doc0._id, doc0._id], include_docs: true })).to.be.true;
+      expect(isDoc.args).to.deep.equal([[doc0], [doc0]]);
+    });
+  });
+
+  describe('getDocUuidsByIdRange', () => {
+    it('returns doc uuids for the given id range', async () => {
+      const startkey = 'doc0';
+      const endkey = 'doc9';
+      dbAllDocs.resolves({
+        rows: [
+          { id: 'doc0' },
+          { id: 'doc1' },
+          { id: 'doc2' }
+        ]
+      });
+
+      const result = await getDocUuidsByIdRange(db)(startkey, endkey);
+
+      expect(result).to.deep.equal([ 'doc0', 'doc1', 'doc2' ]);
+      expect(dbAllDocs.calledOnceWithExactly({
+        startkey,
+        endkey,
+        include_docs: false,
+      })).to.be.true;
+    });
+
+    it('returns empty array if no docs are found in range', async () => {
+      const startkey = 'doc0';
+      const endkey = 'doc9';
+      dbAllDocs.resolves({
+        rows: []
+      });
+
+      const result = await getDocUuidsByIdRange(db)(startkey, endkey);
+
+      expect(result).to.deep.equal([]);
+      expect(dbAllDocs.calledOnceWithExactly({
+        startkey,
+        endkey,
+        include_docs: false,
+      })).to.be.true;
+    });
+  });
+
+  describe('queryDocs', () => {
+    it('returns docs from a view query', async () => {
+      const doc0 = { _id: 'doc0' };
+      const doc1 = { _id: 'doc1' };
+      dbQuery.resolves({
+        rows: [
+          { doc: doc0 },
+          { doc: doc1 }
+        ]
+      });
+      isDoc.returns(true);
+
+      const options = { include_docs: true, key: 'test-key' };
+      const result = await queryDocs(db, 'medic-client/some_view', options);
+
+      expect(result).to.deep.equal([doc0, doc1]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/some_view', options)).to.be.true;
+      expect(isDoc.args).to.deep.equal([[doc0], [doc1]]);
+    });
+
+    it('returns null for entries that are not docs', async () => {
+      const doc0 = { _id: 'doc0' };
+      const notADoc = { something: 'else' };
+      dbQuery.resolves({
+        rows: [
+          { doc: doc0 },
+          { doc: notADoc }
+        ]
+      });
+      isDoc.callsFake(doc => doc === doc0);
+
+      const options = { include_docs: true };
+      const result = await queryDocs(db, 'medic-client/some_view', options);
+
+      expect(result).to.deep.equal([doc0, null]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/some_view', options)).to.be.true;
+      expect(isDoc.args).to.deep.equal([[doc0], [notADoc]]);
+    });
+
+    it('returns empty array if no rows are returned', async () => {
+      dbQuery.resolves({ rows: [] });
+
+      const options = { include_docs: true };
+      const result = await queryDocs(db, 'medic-client/some_view', options);
+
+      expect(result).to.deep.equal([]);
+      expect(dbQuery.calledOnceWithExactly('medic-client/some_view', options)).to.be.true;
+      expect(isDoc.notCalled).to.be.true;
     });
   });
 
@@ -523,9 +645,11 @@ describe('local doc lib', () => {
           return results;
         });
 
-      const result =  fetchAndFilterUuids(getFunction, 3);
+      const result = fetchAndFilterUuids(getFunction, 3);
 
-      expect(result).to.have.members(['123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000']);
+      expect(result).to.have.members(
+        [ '123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000' ]
+      );
       expect(fetchAndFilterStubFake.calledOnce).to.be.true;
     });
 
@@ -564,7 +688,7 @@ describe('local doc lib', () => {
       const limit = 2;
 
       fetchAndFilterStub
-        .callsFake( (fn, filterFn, passedLimit) => {
+        .callsFake((fn, filterFn, passedLimit) => {
           expect(passedLimit).to.equal(limit);
           return [];
         });
@@ -591,6 +715,60 @@ describe('local doc lib', () => {
       fetchAndFilterStub.throws(error);
 
       expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
+    });
+  });
+
+  describe('createDoc', () => {
+    const doc = {
+      type: 'contact',
+      contact_type: 'person',
+      name: 'Medic User',
+      parent: {
+        _id: '2-id'
+      }
+    };
+
+    it('should create the doc', async () => {
+      const createdDoc = {
+        ...doc,
+        _rev: '1-rev',
+        _id: '1-id',
+      };
+      dbPost.resolves({ id: createdDoc._id, rev: createdDoc._rev, ok: true });
+
+      const result = await createDoc(db)(doc);
+
+      expect(result).to.deep.equal(createdDoc);
+      expect(dbPost.calledOnceWithExactly(doc)).to.be.true;
+    });
+
+    it('throws error when post fails', async () => {
+      dbPost.resolves({ ok: false });
+      await expect(createDoc(db)(doc)).to.be.rejectedWith('Error creating document.');
+      expect(dbPost.calledOnceWithExactly(doc)).to.be.true;
+    });
+  });
+
+  describe('updateDoc', () => {
+    const doc = {
+      _id: '1-id',
+      _rev: '2-rev',
+      name: 'apoorva',
+      type: 'person'
+    };
+    it('should update the doc and return the new rev', async () => {
+      dbPut.resolves({ ok: true, rev: '3-rev' });
+
+      const result = await updateDoc(db)(doc);
+
+      expect(result).to.deep.equal({ ...doc, _rev: '3-rev' });
+      expect(dbPut.calledOnceWithExactly(doc)).to.be.true;
+    });
+
+    it('throws error when put fails', async () => {
+      dbPut.resolves({ ok: false });
+      await expect(updateDoc(db)(doc)).to.be.rejectedWith('Error updating document.');
+      expect(dbPut.calledOnceWithExactly(doc)).to.be.true;
     });
   });
 

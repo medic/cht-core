@@ -81,7 +81,7 @@ describe('remote place', () => {
       };
 
       it('returns places', async () => {
-        const doc = [{ type: 'place' }, {type: 'place'}];
+        const doc = [{ type: 'place' }, { type: 'place' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -100,6 +100,46 @@ describe('remote place', () => {
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+    });
+
+    describe('createPlace', () => {
+      it('creates a place for a valid input', async () => {
+        const placeInput = {
+          type: 'place',
+          name: 'user-1',
+          parent: 'p1'
+        };
+        const expected_doc = { ...placeInput, _id: '2', _rev: '1' };
+        const innerFn = sinon.stub().resolves(expected_doc);
+        const createStub = sinon.stub(Place.v1, 'create').returns(innerFn);
+
+        const result = await Place.v1.create(remoteContext)(placeInput);
+
+        expect(result).to.deep.equal(expected_doc);
+        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(placeInput)).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      it('updates a place for a valid input', async () => {
+        const placeInput = {
+          type: 'place',
+          name: 'user-1',
+          parent: 'p1',
+          _id: '1',
+          _rev: '1'
+        };
+        const expected_doc = { ...placeInput, _id: '1', _rev: '2' };
+        const innerFn = sinon.stub().resolves(expected_doc);
+        const updateStub = sinon.stub(Place.v1, 'update').returns(innerFn);
+
+        const result = await Place.v1.update(remoteContext)(placeInput);
+
+        expect(result).to.deep.equal(expected_doc);
+        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
   });

@@ -1,10 +1,4 @@
-import {
-  DataObject,
-  getPagedGenerator,
-  NormalizedParent,
-  Nullable,
-  Page
-} from './libs/core';
+import { DataObject, getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import * as Local from './local';
@@ -12,6 +6,8 @@ import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import * as Input from './input';
+import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
 
 /** */
@@ -20,9 +16,10 @@ export namespace v1 {
    * A report document.
    */
   export interface Report extends Doc {
-    readonly form: string;
-    readonly reported_date: Date;
-    readonly fields: DataObject;
+    readonly type: string
+    readonly form: string
+    readonly reported_date?: number
+    readonly fields?: DataObject
     readonly contact?: NormalizedParent
   }
 
@@ -121,6 +118,68 @@ export namespace v1 {
       return getPagedGenerator(getPage, qualifier);
     };
     return curriedGen;
+  };
+
+  /**
+   * Returns a function for creating a report from the given data context.
+   * @param context the current data context
+   * @returns a function for creating a report.
+   * @throws Error if a data context is not provided
+   */
+  export const create = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.create, Remote.Report.v1.create);
+
+    /**
+     * Creates a new report record.
+     * @param input input fields for creating a report
+     * @returns the created report record
+     * @throws InvalidArgumentError if `form` is not provided or is not a supported form id
+     * @throws InvalidArgumentError if `contact` is not provided or is not the identifier of a valid contact
+     * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
+     * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     */
+    const curriedFn = async (input: Input.v1.ReportInput): Promise<Report> => {
+      if (!isRecord(input)) {
+        throw new InvalidArgumentError('Report data not provided.');
+      }
+      return fn(input);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for updating a report from the given data context.
+   * @param context the current data context
+   * @returns a function for updating a report
+   * @throws Error if a data context is not provided
+   */
+  export const update = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.update, Remote.Report.v1.update);
+
+    /**
+     * Updates an existing report to have the provided data.
+     * @param updated the updated report data. The complete data for the report must be provided. Existing fields not
+     * included in the updated data will be removed from the report. If the provided parent/patient/place lineage is
+     * hydrated (e.g. for a {@link ReportWithLineage}), the lineage will be properly dehydrated before being stored.
+     * @returns the updated report with the new `_rev` value
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id does not identify an existing report
+     * @throws InvalidArgumentError if `_rev` is not provided or does not match the report's current `_rev` value
+     * @throws InvalidArgumentError if `form` is not provided or is not a supported form id
+     * @throws InvalidArgumentError if `contact` is not provided or is not a valid contact
+     * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`, `type`
+     */
+    const curriedFn = async <T extends Report | ReportWithLineage>(
+      updated: Input.v1.UpdateReportInput<T>
+    ): Promise<T> => {
+      if (!isIdentifiable(updated)) {
+        throw new InvalidArgumentError('Invalid report update input');
+      }
+      return fn(updated);
+    };
+    return curriedFn;
   };
 
   /**
