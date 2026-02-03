@@ -70,8 +70,7 @@ const getMessageContent = async (index = 1) => {
 const searchSelect = async (recipient, option) => {
   await recipientField().setValue(recipient);
   await $('.loading-results').waitForDisplayed({ reverse: true });
-  const selection = $('.select2-results__options').$(`.*=${option}`);
-  await selection.click();
+  await $('.select2-results__options').$(`.*=${option}`).click();
   await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(), 1000);
 };
 
