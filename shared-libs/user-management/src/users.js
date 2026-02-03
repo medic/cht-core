@@ -672,7 +672,7 @@ const validateNewContact = (data, user) => {
 
 const validateContactForRoles = (data, user) => {
   const userRoles = data.roles || user?.roles;
-  if (userRoles.roles && userRoles.roles.length && roles.isOffline(userRoles.roles)) {
+  if (userRoles.roles && roles.isOffline(userRoles.roles)) {
     return Promise.reject(error400(
       'Contact field is required for offline users',
       'field is required',
