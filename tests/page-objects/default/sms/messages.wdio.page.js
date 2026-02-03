@@ -49,6 +49,15 @@ const navigateFromConversationToContact = async () => {
   await commonPage.waitForPageLoaded();
 };
 
+const getLastMessageContent = async () => {
+  const sms = $(`${MESSAGE_CONTENT} li:last-child`);
+  return {
+    content: await sms.$('p[test-id="sms-content"]').getText(),
+    state: await sms.$('.state').getText(),
+    dataId: await sms.getAttribute('data-id'),
+  };
+};
+
 const getMessageContent = async (index = 1) => {
   const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
   await sms.waitForDisplayed();
@@ -141,6 +150,7 @@ module.exports = {
   getMessageInListDetails,
   getMessageHeader,
   getMessageContent,
+  getLastMessageContent,
   sendMessageDesktop,
   sendMessageOnMobile,
   sendReplyNewRecipient,

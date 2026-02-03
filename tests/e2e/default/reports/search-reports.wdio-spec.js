@@ -97,6 +97,9 @@ describe('Reports Search', () => {
       await reportsPage.openReport(sittuPregnancy._id);
       await reportsPage.clickOnCaseId();
       await commonPage.waitForLoaders();
+
+      await browser.waitUntil(async () => (await reportsPage.reportsListDetails()).length > 0);
+
       expect((await reportsPage.reportsListDetails()).length).to.equal(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(sittuPregnancy._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(potuPregnancy._id).isDisplayed()).to.be.true;
@@ -110,6 +113,7 @@ describe('Reports Search', () => {
 
         await searchPage.performSearch('note:sittu');
         await commonPage.waitForLoaders();
+
         expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
         for (const report of filteredReports) {
           expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
@@ -131,6 +135,7 @@ describe('Reports Search', () => {
 
       await searchPage.performSearch(randomWord);
       await commonPage.waitForLoaders();
+
       expect((await reportsPage.reportsListDetails()).length).to.equal(0);
       await searchPage.clearSearch();
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
