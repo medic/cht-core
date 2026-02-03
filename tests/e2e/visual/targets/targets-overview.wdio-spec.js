@@ -8,10 +8,11 @@ const personFactory = require('@factories/cht/contacts/person');
 const deliveryFactory = require('@factories/cht/reports/delivery');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
 const { generateScreenshot } = require('@utils/screenshots');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Targets overview', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const offlineUser = userFactory.build({ username: 'offline-user-nav', roles: [ 'chw' ], place: healthCenter._id });
   const numberOfPatients = 17; 
   const patients =Array.from({ length: numberOfPatients }, () => personFactory.build({ 

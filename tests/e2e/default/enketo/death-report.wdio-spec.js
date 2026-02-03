@@ -12,10 +12,11 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const sentinelUtils = require('@utils/sentinel');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });
 
