@@ -627,6 +627,35 @@ describe('local person', () => {
           expect(updateDocInner.calledOnceWithExactly(updateDocInput)).to.be.true;
         });
       });
+
+      it('updates person when lineage data included', async () => {
+        const updateDocInput = {
+          ...originalDoc,
+          name: 'newName',
+          parent: {
+            _id: 'parent-1',
+            name: 'Parent',
+            parent: {
+              _id: 'parent-2',
+              name: 'Grandparent'
+            }
+          },
+        };
+        getPersonInner.resolves(originalDoc);
+        updateDocInner.resolves({ _rev: '2' });
+
+        const result = await Person.v1.update(localContext)(updateDocInput);
+
+        // Full lineage data returned
+        expect(result).to.deep.equal({ ...updateDocInput, _rev: '2' });
+        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+        expect(getPersonInner.calledOnceWithExactly(Qualifier.byUuid(originalDoc._id))).to.be.true;
+        expect(assertSameParentLineage.calledOnceWithExactly(originalDoc, updateDocInput)).to.be.true;
+        // Minified lineage set on updated doc
+        expect(updateDocInner.calledOnceWithExactly({ ...updateDocInput, parent: originalDoc.parent })).to.be.true;
+      });
     });
   });
 });

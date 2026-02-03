@@ -197,7 +197,7 @@ export namespace v1 {
       if (originalReport.contact && !contact) {
         throw new InvalidArgumentError('A contact is must be provided.');
       }
-      assertFieldsUnchanged(originalReport, updatedReport, ['_rev', 'reported_date', 'type']);
+      assertFieldsUnchanged(originalReport, updatedReport, ['_rev', 'reported_date']);
       if (originalReport.form !== updatedReport.form) {
         assertHasRequiredField(updatedReport, { name: 'form', type: 'string' }, InvalidArgumentError);
         const supportedForms = await getForms();
