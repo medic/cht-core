@@ -166,7 +166,7 @@ const waitForLoaders = async () => {
       return false;
     }
     // Wait for loaders to settle - another loader might appear
-    await browser.pause(100);
+    await browser.pause(200);
     return !(await hasVisibleLoader());
   }, {
     timeoutMsg: 'Waiting for Loading spinners to hide timed out.',
