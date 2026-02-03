@@ -7,6 +7,7 @@ const noTargetFound = () => $('aria/No target found.');
 const noAdminTargets = () => $(
   'aria/Targets are disabled for admin users. If you need to see targets, login as a normal user.'
 );
+const disabledTargetAggregates = () => $('aria/Target aggregates are disabled.');
 const targets = () => $$('.target');
 const targetWrap = () => $('.page .targets');
 const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
@@ -68,6 +69,7 @@ module.exports = {
   getTargets,
   emptySelectionError,
   emptySelectionNoError,
+  disabledTargetAggregates,
   TARGET_MET_COLOR,
   TARGET_UNMET_COLOR
 };
