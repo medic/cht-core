@@ -619,7 +619,7 @@ const saveUserSettingsUpdates = async (userSettings) => {
 
 const validateFacilityIsNeeded = (data, user) => {
   const userRoles = data.roles || user?.roles;
-  if (userRoles && userRoles.length && roles.isOffline(userRoles)) {
+  if (userRoles && roles.isOffline(userRoles)) {
     return Promise.reject(error400(
       'Place field is required for offline users',
       'field is required',
