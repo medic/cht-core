@@ -97,62 +97,6 @@ describe('Tasks Sidebar Filter', () => {
     reported_date: Date.now(),
   });
 
-  const sidebarFilterSelectors = {
-    openBtn: () => $('mm-search-bar .open-filter'),
-    resetBtn: () => $('.sidebar-reset'),
-    overdueAccordionHeader: () => $('#overdue-filter-accordion mat-expansion-panel-header'),
-    overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
-    taskTypeAccordionHeader: () => $('#task-type-filter-accordion mat-expansion-panel-header'),
-    taskTypeAccordionBody: () => $('#task-type-filter-accordion mat-panel-description'),
-    areaAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
-    areaAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
-  };
-
-  const openSidebarFilter = async () => {
-    if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
-      await sidebarFilterSelectors.openBtn().click();
-    }
-    return await sidebarFilterSelectors.resetBtn().waitForDisplayed();
-  };
-
-  const filterByOverdue = async (overdueOption) => {
-    await sidebarFilterSelectors.overdueAccordionHeader().click();
-    await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
-    const option = sidebarFilterSelectors.overdueAccordionBody().$(`a*=${overdueOption}`);
-    await option.waitForDisplayed();
-    await option.click();
-  };
-
-  const filterByTaskType = async (taskType) => {
-    await sidebarFilterSelectors.taskTypeAccordionHeader().click();
-    await sidebarFilterSelectors.taskTypeAccordionBody().waitForDisplayed();
-    const option = sidebarFilterSelectors.taskTypeAccordionBody().$(`a*=${taskType}`);
-    await option.waitForDisplayed();
-    await option.click();
-  };
-
-  const filterByArea = async (parentFacility, facility) => {
-    await sidebarFilterSelectors.areaAccordionHeader().click();
-    await sidebarFilterSelectors.areaAccordionBody().waitForDisplayed();
-
-    const parent = sidebarFilterSelectors.areaAccordionBody().$(`a*=${parentFacility}`);
-    await parent.waitForDisplayed();
-    await parent.click();
-
-    const facilityOption = sidebarFilterSelectors
-      .areaAccordionBody()
-      .$('.mm-dropdown-submenu')
-      .$(`a*=${facility}`);
-    await facilityOption.waitForDisplayed();
-    const checkbox = facilityOption.previousElement();
-    await checkbox.click();
-  };
-
-  const resetFilters = async () => {
-    await sidebarFilterSelectors.resetBtn().click();
-    await commonPage.waitForPageLoaded();
-  };
-
   before(async () => {
     await utils.saveDocs([
       ...places.values(),
@@ -190,8 +134,8 @@ describe('Tasks Sidebar Filter', () => {
       const initialCount = allTasks.length;
       expect(initialCount).to.be.greaterThan(0);
 
-      await openSidebarFilter();
-      await filterByOverdue('Overdue');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByOverdue('Overdue');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -208,8 +152,8 @@ describe('Tasks Sidebar Filter', () => {
       const initialCount = allTasks.length;
       expect(initialCount).to.be.greaterThan(0);
 
-      await openSidebarFilter();
-      await filterByOverdue('Not overdue');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByOverdue('Not overdue');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -225,14 +169,15 @@ describe('Tasks Sidebar Filter', () => {
       const allTasks = await tasksPage.getTasks();
       const initialCount = allTasks.length;
 
-      await openSidebarFilter();
-      await filterByOverdue('Overdue');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByOverdue('Overdue');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
       expect(filteredTasks.length).to.be.lessThan(initialCount);
 
-      await resetFilters();
+      await tasksPage.resetFilters();
+      await commonPage.waitForPageLoaded();
 
       const resetTasks = await tasksPage.getTasks();
       expect(resetTasks.length).to.equal(initialCount);
@@ -247,8 +192,8 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should filter by Home Visit task type', async () => {
-      await openSidebarFilter();
-      await filterByTaskType('Home Visit');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByTaskType('Home Visit');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -261,8 +206,8 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should filter by Assessment task type', async () => {
-      await openSidebarFilter();
-      await filterByTaskType('Assessment');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByTaskType('Assessment');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -275,9 +220,9 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should filter by multiple task types', async () => {
-      await openSidebarFilter();
-      await filterByTaskType('Home Visit');
-      await filterByTaskType('Assessment');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByTaskType('Home Visit');
+      await tasksPage.filterByTaskType('Assessment');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -293,14 +238,15 @@ describe('Tasks Sidebar Filter', () => {
       const allTasks = await tasksPage.getTasks();
       const initialCount = allTasks.length;
 
-      await openSidebarFilter();
-      await filterByTaskType('Home Visit');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByTaskType('Home Visit');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
       expect(filteredTasks.length).to.be.lessThan(initialCount);
 
-      await resetFilters();
+      await tasksPage.resetFilters();
+      await commonPage.waitForPageLoaded();
 
       const resetTasks = await tasksPage.getTasks();
       expect(resetTasks.length).to.equal(initialCount);
@@ -315,9 +261,8 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should display area filter for chw_supervisor role', async () => {
-      await openSidebarFilter();
-      const areaHeader = sidebarFilterSelectors.areaAccordionHeader();
-      expect(await areaHeader.isDisplayed()).to.be.true;
+      await tasksPage.openSidebarFilter();
+      expect(await tasksPage.isAreaFilterDisplayed()).to.be.true;
     });
 
     it('should filter tasks by health center', async () => {
@@ -325,8 +270,8 @@ describe('Tasks Sidebar Filter', () => {
       const initialCount = allTasks.length;
       expect(initialCount).to.be.greaterThan(0);
 
-      await openSidebarFilter();
-      await filterByArea(districtHospital.name, healthCenter2.name);
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByArea(districtHospital.name, healthCenter2.name);
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -342,14 +287,15 @@ describe('Tasks Sidebar Filter', () => {
       const allTasks = await tasksPage.getTasks();
       const initialCount = allTasks.length;
 
-      await openSidebarFilter();
-      await filterByArea(districtHospital.name, healthCenter2.name);
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByArea(districtHospital.name, healthCenter2.name);
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
       expect(filteredTasks.length).to.be.lessThan(initialCount);
 
-      await resetFilters();
+      await tasksPage.resetFilters();
+      await commonPage.waitForPageLoaded();
 
       const resetTasks = await tasksPage.getTasks();
       expect(resetTasks.length).to.equal(initialCount);
@@ -364,17 +310,11 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should not display area filter options for offline CHW user', async () => {
-      await openSidebarFilter();
-      const areaHeader = sidebarFilterSelectors.areaAccordionHeader();
+      await tasksPage.openSidebarFilter();
 
       // Area filter should either be hidden or show "No options available"
-      // depending on implementation
-      if (await areaHeader.isExisting()) {
-        await areaHeader.click();
-        const body = sidebarFilterSelectors.areaAccordionBody();
-        await body.waitForDisplayed();
-        const noOptionsMessage = body.$('*=No options');
-        expect(await noOptionsMessage.isDisplayed()).to.be.true;
+      if (await tasksPage.sidebarFilterSelectors.areaAccordionHeader().isExisting()) {
+        expect(await tasksPage.isAreaFilterNoOptionsDisplayed()).to.be.true;
       }
     });
   });
@@ -387,9 +327,9 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should filter by overdue AND task type', async () => {
-      await openSidebarFilter();
-      await filterByOverdue('Overdue');
-      await filterByTaskType('Home Visit');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByOverdue('Overdue');
+      await tasksPage.filterByTaskType('Home Visit');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -403,9 +343,9 @@ describe('Tasks Sidebar Filter', () => {
     });
 
     it('should filter by not overdue AND task type', async () => {
-      await openSidebarFilter();
-      await filterByOverdue('Not overdue');
-      await filterByTaskType('Assessment');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByOverdue('Not overdue');
+      await tasksPage.filterByTaskType('Assessment');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
@@ -422,15 +362,16 @@ describe('Tasks Sidebar Filter', () => {
       const allTasks = await tasksPage.getTasks();
       const initialCount = allTasks.length;
 
-      await openSidebarFilter();
-      await filterByOverdue('Overdue');
-      await filterByTaskType('Home Visit');
+      await tasksPage.openSidebarFilter();
+      await tasksPage.filterByOverdue('Overdue');
+      await tasksPage.filterByTaskType('Home Visit');
       await commonPage.waitForPageLoaded();
 
       const filteredTasks = await tasksPage.getTasks();
       expect(filteredTasks.length).to.be.lessThan(initialCount);
 
-      await resetFilters();
+      await tasksPage.resetFilters();
+      await commonPage.waitForPageLoaded();
 
       const resetTasks = await tasksPage.getTasks();
       expect(resetTasks.length).to.equal(initialCount);
