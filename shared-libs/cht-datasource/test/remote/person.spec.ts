@@ -81,7 +81,7 @@ describe('remote person', () => {
       };
 
       it('returns people', async () => {
-        const doc = [ { type: 'person' }, { type: 'person' } ];
+        const doc = [{ type: 'person' }, { type: 'person' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 

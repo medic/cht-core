@@ -3,7 +3,6 @@ import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import * as Report from '../../src/remote/report';
 import { expect } from 'chai';
-import { InvalidArgumentError } from '../../src';
 
 describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -52,7 +51,7 @@ describe('remote report', () => {
         const doc = {
           type: 'data_record',
           form: 'yes',
-          lineage: [ 'parent1', 'parent2' ]
+          lineage: ['parent1', 'parent2']
         };
         getResourceInner.resolves(doc);
 
@@ -88,7 +87,7 @@ describe('remote report', () => {
       };
 
       it('returns an array of report identifiers', async () => {
-        const doc = [ { type: 'data_record', form: 'yes' }, { type: 'data_record', form: 'yes' } ];
+        const doc = [{ type: 'data_record', form: 'yes' }, { type: 'data_record', form: 'yes' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -150,23 +149,6 @@ describe('remote report', () => {
         expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
         expect(innerFn.calledOnceWithExactly(input)).to.be.true;
       });
-
-      it('rejected with an error if report is not found', async () => {
-        const input = {
-          type: 'report',
-          contact: {
-            _id: '2',
-          },
-          _id: '12333', _rev: '2', form: 'hello'
-        };
-
-        const innerFn = sinon.stub().rejects(new InvalidArgumentError('Report not found'));
-        sinon.stub(Report.v1, 'update').returns(innerFn);
-
-        await expect(Report.v1.update(remoteContext)(input))
-          .to.be.rejectedWith('Report not found');
-      });
-
     });
   });
 });
