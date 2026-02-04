@@ -85,17 +85,76 @@ export class ContactSaveService {
     });
   }
 
+  /**
+   * Sanitizes a file name by removing special characters.
+   * Only allows letters (a-z, A-Z), numbers (0-9), underscores (_), dashes (-), and dots (.).
+   * All other characters are removed.
+   *
+   * @param fileName - The file name to sanitize
+   * @returns The sanitized file name with special characters removed
+   */
+  private sanitizeFileName(fileName: string): string {
+    return fileName.replace(/[^a-zA-Z0-9_.-]/g, '');
+  }
+
+  /**
+   * Recursively scans through a document and replaces field values that reference
+   * uploaded file names with their sanitized equivalents. Modifies the document in place.
+   *
+   * @param doc - The document to scan and modify
+   * @param fileNameMap - Map of original file names to sanitized file names
+   */
+  private sanitizeFieldValues(doc: Record<string, any>, fileNameMap: Map<string, string>): void {
+    const sanitizeInPlace = (obj: any) => {
+      if (Array.isArray(obj)) {
+        for (let i = 0; i < obj.length; i++) {
+          if (typeof obj[i] === 'string' && fileNameMap.has(obj[i])) {
+            obj[i] = fileNameMap.get(obj[i]);
+          } else if (obj[i] && typeof obj[i] === 'object') {
+            sanitizeInPlace(obj[i]);
+          }
+        }
+      } else if (obj && typeof obj === 'object') {
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            if (typeof obj[key] === 'string' && fileNameMap.has(obj[key])) {
+              obj[key] = fileNameMap.get(obj[key]);
+            } else if (obj[key] && typeof obj[key] === 'object') {
+              sanitizeInPlace(obj[key]);
+            }
+          }
+        }
+      }
+    };
+
+    // Sanitize all non-internal fields (fields not starting with _)
+    Object.keys(doc).forEach(key => {
+      if (!key.startsWith('_')) {
+        if (typeof doc[key] === 'string' && fileNameMap.has(doc[key])) {
+          doc[key] = fileNameMap.get(doc[key]);
+        } else if (doc[key] && typeof doc[key] === 'object') {
+          sanitizeInPlace(doc[key]);
+        }
+      }
+    });
+  }
+
   private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
     const mainDoc = preparedDocs[0];
     const newAttachmentNames = new Set<string>();
+    const fileNameMap = new Map<string, string>(); // Map of original file name -> sanitized file name
 
     // Attach files from FileManager (uploaded via file widgets)
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        const attachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${file.name}`;
+        const sanitizedFileName = this.sanitizeFileName(file.name);
+        const attachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${sanitizedFileName}`;
         newAttachmentNames.add(attachmentName);
         this.attachmentService.add(mainDoc, attachmentName, file, file.type, false);
+
+        // Track the mapping for field value sanitization
+        fileNameMap.set(file.name, sanitizedFileName);
       });
 
     // Process binary fields from XML
@@ -117,6 +176,9 @@ export class ContactSaveService {
           }
         });
     }
+
+    // Sanitize field values in the document to match sanitized attachment names
+    this.sanitizeFieldValues(mainDoc, fileNameMap);
 
     // Remove orphaned user attachments that are no longer referenced
     const referencedAttachmentNames = this.findReferencedAttachments(mainDoc);

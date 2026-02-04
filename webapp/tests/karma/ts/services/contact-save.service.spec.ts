@@ -271,6 +271,110 @@ describe('ContactSave service', () => {
       expect(addCall.args[4], 'Should not be pre-encoded').to.be.false;
     });
 
+    it('should sanitize file names by removing special characters', async () => {
+      const xmlPersonCreate =
+        '<data id="contact:person:create">' +
+        '<person>' +
+        '<parent>PARENT</parent>' +
+        '<type>person</type>' +
+        '<name>John Doe</name>' +
+        '</person>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlPersonCreate };
+      const docId = null;
+      const type = 'person';
+
+      // Test various special characters that should be removed
+      const fileWithSpaces = new File(['content'], 'my photo.png', { type: 'image/png' });
+      const fileWithSpecialChars = new File(['content'], 'photo@#$%^&*().png', { type: 'image/png' });
+      const fileWithParentheses = new File(['content'], 'photo (1).png', { type: 'image/png' });
+      const fileWithAllowedChars = new File(['content'], 'my_photo-123.png', { type: 'image/png' });
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([
+        fileWithSpaces,
+        fileWithSpecialChars,
+        fileWithParentheses,
+        fileWithAllowedChars
+      ]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'person1', type: 'person', name: 'John Doe' }
+      });
+
+      await service.save(form, docId, type);
+
+      expect(attachmentService.add.callCount).to.equal(4);
+
+      // File with spaces: "my photo.png" → "myphoto.png"
+      const call1 = attachmentService.add.getCall(0);
+      expect(call1.args[1], 'Should remove spaces').to.equal('user-file-myphoto.png');
+      expect(call1.args[2]).to.equal(fileWithSpaces);
+
+      // File with special characters: "photo@#$%^&*().png" → "photo.png"
+      const call2 = attachmentService.add.getCall(1);
+      expect(call2.args[1], 'Should remove special characters').to.equal('user-file-photo.png');
+      expect(call2.args[2]).to.equal(fileWithSpecialChars);
+
+      // File with parentheses: "photo (1).png" → "photo1.png"
+      const call3 = attachmentService.add.getCall(2);
+      expect(call3.args[1], 'Should remove parentheses and spaces').to.equal('user-file-photo1.png');
+      expect(call3.args[2]).to.equal(fileWithParentheses);
+
+      // File with allowed characters: "my_photo-123.png" → "my_photo-123.png" (unchanged)
+      const call4 = attachmentService.add.getCall(3);
+      expect(call4.args[1], 'Should keep allowed characters').to.equal('user-file-my_photo-123.png');
+      expect(call4.args[2]).to.equal(fileWithAllowedChars);
+    });
+
+    it('should sanitize field values in document to match sanitized attachment names', async () => {
+      const xmlPersonCreate =
+        '<data id="contact:person:create">' +
+        '<person>' +
+        '<parent>PARENT</parent>' +
+        '<type>person</type>' +
+        '<name>Jane Doe</name>' +
+        '<photo>Gui\'s Dog-13_0_24.png</photo>' +
+        '<document>my file (1).pdf</document>' +
+        '</person>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlPersonCreate };
+      const docId = null;
+      const type = 'person';
+
+      // Files with special characters that need sanitization
+      const photoFile = new File(['photo-content'], 'Gui\'s Dog-13_0_24.png', { type: 'image/png' });
+      const documentFile = new File(['doc-content'], 'my file (1).pdf', { type: 'application/pdf' });
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([photoFile, documentFile]);
+
+      // Form data contains the original unsanitized file names in the fields
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: {
+          _id: 'person2',
+          type: 'person',
+          name: 'Jane Doe',
+          photo: 'Gui\'s Dog-13_0_24.png',    // Original file name with apostrophe
+          document: 'my file (1).pdf'         // Original file name with spaces and parentheses
+        }
+      });
+
+      const result = await service.save(form, docId, type);
+
+      // Verify attachments are created with sanitized names
+      expect(attachmentService.add.callCount).to.equal(2);
+      expect(attachmentService.add.getCall(0).args[1]).to.equal('user-file-GuisDog-13_0_24.png');
+      expect(attachmentService.add.getCall(1).args[1]).to.equal('user-file-myfile1.pdf');
+
+      // Verify field values in the document are also sanitized to match attachment names
+      const savedDoc = result.preparedDocs[0];
+      expect(savedDoc.photo, 'photo field should be sanitized to match attachment name')
+        .to.equal('GuisDog-13_0_24.png');
+      expect(savedDoc.document, 'document field should be sanitized to match attachment name')
+        .to.equal('myfile1.pdf');
+    });
+
     it('should extract and attach binary field data from XML to main document', async () => {
       const xmlWithBinaryField =
         '<data id="contact:person:create">' +
