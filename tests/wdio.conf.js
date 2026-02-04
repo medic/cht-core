@@ -96,7 +96,7 @@ const baseConfig = {
     browserName: 'chrome',
     browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
-    'wdio:enforceWebDriverClassic': false,
+    'wdio:enforceWebDriverClassic': utils.isMinimumChromeVersion,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
       binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined,
@@ -109,7 +109,7 @@ const baseConfig = {
         ? '/node_modules/chromedriver/bin/chromedriver'
         : undefined
     },
-    webSocketUrl: true
+    webSocketUrl: !utils.isMinimumChromeVersion
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -281,6 +281,7 @@ const baseConfig = {
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
   beforeTest: async (test) => {
+    console.warn('running', test.title);
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);
