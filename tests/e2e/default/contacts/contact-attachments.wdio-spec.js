@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -87,6 +88,30 @@ describe('Contact form attachments', () => {
     }
   };
 
+  const createContactWithAttachment = (contactName, imagePath = photoPngPath) => {
+    const imageBuffer = fs.readFileSync(imagePath);
+    const imageBase64 = imageBuffer.toString('base64');
+    const timestamp = new Date().toTimeString().split(' ')[0].replace(/:/g, '_');
+    const filename = path.basename(imagePath, path.extname(imagePath));
+    const extension = path.extname(imagePath);
+    const attachmentKey = `user-file-${filename}-${timestamp}${extension}`;
+    const photoFieldValue = attachmentKey.replace('user-file-', '');
+
+    return personFactory.build({
+      name: contactName,
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+      type: 'contact',
+      contact_type: 'person_with_attachments',
+      photo: photoFieldValue,
+      _attachments: {
+        [attachmentKey]: {
+          content_type: `image/${extension.slice(1)}`,
+          data: imageBase64
+        }
+      }
+    });
+  };
+
   before(async () => {
     await utils.saveDocs([...places.values()]);
     await utils.createUsers([onlineUser]);
@@ -108,6 +133,7 @@ describe('Contact form attachments', () => {
 
   afterEach(async () => {
     await commonPage.goToPeople();
+    await commonPage.waitForPageLoaded();
   });
 
   it('should create contact with image attachment', async () => {
@@ -170,6 +196,7 @@ describe('Contact form attachments', () => {
     const updatedName = 'Person Edited';
 
     await commonPage.goToPeople(healthCenter._id);
+
     await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
 
     await commonEnketoPage.setInputValue('Full name', originalName);
@@ -206,33 +233,22 @@ describe('Contact form attachments', () => {
   });
 
   it('should remove attachment when editing contact', async () => {
-    const contactName = 'Person With Photo To Remove';
+    const contact = createContactWithAttachment('Person With Photo To Remove');
+    await utils.saveDocs([contact]);
 
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
-
-    await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
-
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const contactId = await contactPage.getCurrentContactId();
-    const contactBefore = await utils.getDoc(contactId);
+    const contactBefore = await utils.getDoc(contact._id);
     expect(contactBefore._attachments).to.exist;
     expect(Object.keys(contactBefore._attachments)).to.have.lengthOf(1);
 
-    await commonPage.accessEditOption();
+    await browser.url(`#/contacts/${contact._id}/edit`);
+    await commonPage.waitForPageLoaded();
 
-    // Find the photo field and reset button
     const photoLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/photo"]');
     const filePicker = await photoLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
     await resetButton.click();
 
-    // Handle the browser confirmation alert
     await browser.waitUntil(async () => {
       try {
         const alertText = await browser.getAlertText();
@@ -244,7 +260,6 @@ describe('Contact form attachments', () => {
 
     await browser.acceptAlert();
 
-    // Wait for the preview to be removed
     const filePreview = await filePicker.$('.file-preview img');
     await filePreview.waitForExist({ reverse: true, timeout: 5000 });
 
@@ -252,44 +267,31 @@ describe('Contact form attachments', () => {
     expect(await fakeInput.getValue()).to.equal('');
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
 
-    const contactAfter = await utils.getDoc(contactId);
+    const contactAfter = await utils.getDoc(contact._id);
     expect(contactAfter.photo).to.equal('');
     expect(contactAfter._attachments).to.be.undefined;
   });
 
   it('should replace attachment when editing contact', async () => {
-    const contactName = 'Person With Photo To Replace';
+    const contact = createContactWithAttachment('Person With Photo To Replace');
+    await utils.saveDocs([contact]);
 
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
-
-    await commonEnketoPage.setInputValue('Full name', contactName);
-    await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
-
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const contactId = await contactPage.getCurrentContactId();
-    const contactBefore = await utils.getDoc(contactId);
+    const contactBefore = await utils.getDoc(contact._id);
     expect(contactBefore._attachments).to.exist;
     const originalAttachmentNames = Object.keys(contactBefore._attachments);
     expect(originalAttachmentNames).to.have.lengthOf(1);
     const originalAttachmentName = originalAttachmentNames[0];
 
-    await commonPage.accessEditOption();
+    await browser.url(`#/contacts/${contact._id}/edit`);
+    await commonPage.waitForPageLoaded();
 
-    // Find the photo field and reset button
     const photoLabel = await $('label[data-contains-ref-target="/data/person_with_attachments/photo"]');
     const filePicker = await photoLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
     await resetButton.click();
 
-    // Handle the browser confirmation alert
     await browser.waitUntil(async () => {
       try {
         const alertText = await browser.getAlertText();
@@ -301,30 +303,24 @@ describe('Contact form attachments', () => {
 
     await browser.acceptAlert();
 
-    // Wait for the preview to be removed
     const filePreview = await filePicker.$('.file-preview img');
     await filePreview.waitForExist({ reverse: true, timeout: 5000 });
 
-    // Add the replacement file
     await commonEnketoPage.addFileInputValue('Photo', layersPngPath);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
 
-    const contactAfter = await utils.getDoc(contactId);
+    const contactAfter = await utils.getDoc(contact._id);
     expect(contactAfter._attachments).to.exist;
 
     const newAttachmentNames = Object.keys(contactAfter._attachments);
     expect(newAttachmentNames).to.have.lengthOf(1);
     const newAttachmentName = newAttachmentNames[0];
 
-    // Verify the attachment was replaced (different filename)
     expect(newAttachmentName).to.not.equal(originalAttachmentName);
     expect(contactAfter.photo).to.not.equal('');
     expect(contactAfter.photo).to.not.equal(contactBefore.photo);
 
-    // Positive assertions about the new attachment
     expect(newAttachmentName).to.match(/^user-file-layers.*\.png$/);
     expect(contactAfter.photo).to.equal(newAttachmentName.replace('user-file-', ''));
     expect(contactAfter._attachments[newAttachmentName].content_type).to.equal('image/png');
