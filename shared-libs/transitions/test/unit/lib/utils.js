@@ -47,7 +47,7 @@ describe('utils util', () => {
       return utils.getRegistrations({ id: 'my_id' }).then((result) => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
-        db.medic.query.args[0][0].should.equal('medic-client/registered_patients');
+        db.medic.query.args[0][0].should.equal('shared-contacts/registered_patients');
         db.medic.query.args[0][1].should.deep.equal({
           include_docs: true,
           key: 'my_id'
@@ -62,7 +62,7 @@ describe('utils util', () => {
       return utils.getRegistrations({ ids: ['1', '2', '3'] }).then((result) => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
-        db.medic.query.args[0][0].should.equal('medic-client/registered_patients');
+        db.medic.query.args[0][0].should.equal('shared-contacts/registered_patients');
         db.medic.query.args[0][1].should.deep.equal({
           include_docs: true,
           keys: ['1', '2', '3']
@@ -126,7 +126,7 @@ describe('utils util', () => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
         db.medic.query.args[0]
-          .should.deep.equal(['medic-client/reports_by_subject', { key: '12345', include_docs: true }]);
+          .should.deep.equal(['shared-reports/reports_by_subject', { key: '12345', include_docs: true }]);
       });
     });
 
@@ -138,7 +138,7 @@ describe('utils util', () => {
         result.should.deep.equal([]);
         db.medic.query.callCount.should.equal(1);
         db.medic.query.args[0].should.deep.equal([
-          'medic-client/reports_by_subject',
+          'shared-reports/reports_by_subject',
           { keys: ['a', 'b', 'c', 'd'], include_docs: true }
         ]);
       });

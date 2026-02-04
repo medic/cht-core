@@ -191,7 +191,7 @@ describe('registration', () => {
 
       getContactUuid.callCount.should.equal(1);
       view.callCount.should.equal(1);
-      view.args[0][0].should.equal('medic-client/contacts_by_phone');
+      view.args[0][0].should.equal('shared-contacts/contacts_by_phone');
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
@@ -270,7 +270,7 @@ describe('registration', () => {
 
       getContactUuid.callCount.should.equal(1);
       view.callCount.should.equal(1);
-      view.args[0][0].should.equal('medic-client/contacts_by_phone');
+      view.args[0][0].should.equal('shared-contacts/contacts_by_phone');
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
@@ -413,7 +413,7 @@ describe('registration', () => {
 
       getContactUuid.callCount.should.equal(1);
       view.callCount.should.equal(1);
-      view.args[0][0].should.equal('medic-client/contacts_by_phone');
+      view.args[0][0].should.equal('shared-contacts/contacts_by_phone');
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
@@ -1472,7 +1472,7 @@ describe('registration', () => {
         }]
       };
       sinon.stub(db.medic, 'query')
-        .withArgs('medic-client/contacts_by_phone')
+        .withArgs('shared-contacts/contacts_by_phone')
         .resolves({
           rows: [
             {
@@ -1515,7 +1515,7 @@ describe('registration', () => {
       utils.getContact.callCount.should.equal(0);
       db.medic.query.callCount.should.equal(1);
       db.medic.query.args[0]
-        .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
+        .should.deep.equal(['shared-contacts/contacts_by_phone', { key: '+111222', include_docs: true }]);
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('west_hc')).should.be.true;
       db.medic.post.callCount.should.equal(1);
@@ -1762,7 +1762,7 @@ describe('registration', () => {
         }]
       };
       config.get.withArgs('registrations').returns([eventConfig]);
-      sinon.stub(db.medic, 'query').withArgs('medic-client/contacts_by_phone').resolves({ rows: [] });
+      sinon.stub(db.medic, 'query').withArgs('shared-contacts/contacts_by_phone').resolves({ rows: [] });
 
       sinon.stub(validation, 'validate').resolves();
       sinon.stub(utils, 'getRegistrations').resolves([]);
@@ -1776,7 +1776,7 @@ describe('registration', () => {
       db.medic.post.callCount.should.equal(0);
       db.medic.query.callCount.should.equal(1);
       db.medic.query.args[0]
-        .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
+        .should.deep.equal(['shared-contacts/contacts_by_phone', { key: '+111222', include_docs: true }]);
       dataContext.bind.notCalled.should.be.true;
       getPlace.notCalled.should.be.true;
 

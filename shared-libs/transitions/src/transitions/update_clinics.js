@@ -22,7 +22,7 @@ const getContactByRefid = doc => {
   };
 
   return db.medic
-    .query('medic-client/contacts_by_reference', params)
+    .query('shared-contacts/contacts_by_reference', params)
     .then(data => {
       if (!data.rows.length) {
         return;
@@ -60,7 +60,7 @@ const getContactByPhone = doc => {
 
   const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
   return db.medic
-    .query('medic-client/contacts_by_phone', params)
+    .query('shared-contacts/contacts_by_phone', params)
     .then(data => {
       if (!data.rows.length || !data.rows[0].id) {
         return;

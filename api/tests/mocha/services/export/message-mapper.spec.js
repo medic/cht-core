@@ -27,7 +27,7 @@ describe('Message mapper', () => {
       });
       return service.getDocIds(options).then(result => {
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic/messages_by_state', options ]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-sms/messages_by_state', options ]);
         chai.expect(result).to.deep.equal([1, 1, 1, 2]);
       });
     });
@@ -94,7 +94,7 @@ describe('Message mapper', () => {
           { _id: 4, scheduled_tasks: [{ foo: 'bar' }], patient: { patient_id: 'a' } },
         ];
 
-        db.medic.query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
+        db.medic.query.withArgs('shared-contacts/registered_patients').resolves({ rows: [] });
 
         return service.map().then(({ hydrate }) => {
           return hydrate(records).then(result => {
@@ -121,7 +121,7 @@ describe('Message mapper', () => {
           { _id: 4, scheduled_tasks: [{ foo: 'bar' }], patient: { patient_id: 'd' } },
         ];
 
-        db.medic.query.withArgs('medic-client/registered_patients').resolves({
+        db.medic.query.withArgs('shared-contacts/registered_patients').resolves({
           rows: [
             { key: 'a', doc: { _id: 'r1', patient_id: 'a', valid: false } },
             { key: 'b', doc: { _id: 'r2', patient_id: 'b', valid: true } },

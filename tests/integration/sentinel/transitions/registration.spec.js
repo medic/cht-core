@@ -93,7 +93,7 @@ const nursingHomeType = {
 const getContactsByReference = shortcodes => {
   const keys = shortcodes.map(shortcode => ['shortcode', shortcode]);
   const qs = { keys: JSON.stringify(keys), include_docs: true };
-  return utils.requestOnTestDb({ path: '/_design/medic-client/_view/contacts_by_reference', qs });
+  return utils.requestOnTestDb({ path: '/_design/shared-contacts/_view/contacts_by_reference', qs });
 };
 
 const getIds = docs => docs.map(doc => doc._id);

@@ -6,7 +6,7 @@ import { escapeKeys } from '@medic/nouveau';
 
 const getNouveauPath = (view: string): string => {
   const indexName = isContactsByTypeFreetext(view) ? 'contacts_by_freetext' : view;
-  return `_design/medic/_nouveau/${indexName}`;
+  return `_design/online-user/_nouveau/${indexName}`;
 };
 
 /** @internal */

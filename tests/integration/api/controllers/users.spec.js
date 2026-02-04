@@ -408,8 +408,8 @@ describe('Users API', () => {
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
     const nbrTasks = 20;
-    // _design/medic-client + org.couchdb.user:offline + fixture:offline + OfflineUser
-    let expectedNbrDocs = nbrOfflineDocs + 4;
+    // 5 replicated ddocs + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let expectedNbrDocs = nbrOfflineDocs + 8;
     let docsForAll;
 
     before(async () => {
@@ -427,9 +427,9 @@ describe('Users API', () => {
       })));
       await utils.saveDocs(docs);
       const resp = await utils.requestOnTestDb(
-        '/_design/medic/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
+        '/_design/replication/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
       );
-      docsForAll = resp.hits.length + 2; // _design/medic-client + org.couchdb.user:doc
+      docsForAll = resp.hits.length + 6; // 5 replicated ddocs + org.couchdb.user:doc
       expectedNbrDocs += resp.hits.length;
     });
 

@@ -20,6 +20,7 @@ const extensionLibs = require('./extension-libs');
 const deployInfo = require('./deploy-info');
 
 const MEDIC_DDOC_ID = '_design/medic';
+const REPLICATION_DDOC_ID = '_design/replication';
 
 const loadTranslations = () => {
   const translationCache = {};
@@ -55,19 +56,17 @@ const initTransitionLib = () => {
   config.setTransitionsLib(transitionsLib);
 };
 
-const loadViewMaps = () => {
-  return db.medic
-    .get(MEDIC_DDOC_ID)
-    .then(ddoc => {
-      viewMapUtils.loadViewMaps(
-        ddoc,
-        ['contacts_by_depth'],
-        ['docs_by_replication_key']
-      );
-    })
-    .catch(err => {
-      logger.error('Error loading view maps for medic ddoc: %o', err);
-    });
+const loadViewMaps = async () => {
+  try {
+    const replicationDdoc = await db.medic.get(REPLICATION_DDOC_ID);
+    viewMapUtils.loadViewMaps(
+      replicationDdoc,
+      ['contacts_by_depth'],
+      ['docs_by_replication_key']
+    );
+  } catch (err) {
+    logger.error('Error loading view maps: %o', err);
+  }
 };
 
 const loadSettings = () => {
@@ -161,7 +160,7 @@ const listen = () => {
       return Promise.resolve();
     }
 
-    if (change.id === MEDIC_DDOC_ID) {
+    if (change.id === MEDIC_DDOC_ID || change.id === REPLICATION_DDOC_ID) {
       return handleDdocChange();
     }
 

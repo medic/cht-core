@@ -53,7 +53,7 @@ describe('GetSummaries service', () => {
       ] });
       return service([ 'a', 'b' ]).then(actual => {
         chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.args[0][0]).to.equal('medic/doc_summaries_by_id');
+        chai.expect(query.args[0][0]).to.equal('online-user/doc_summaries_by_id');
         chai.expect(query.args[0][1]).to.deep.equal({ keys: [ 'a', 'b' ] });
         chai.expect(allDocs.callCount).to.equal(0);
         chai.expect(actual).to.deep.equal([

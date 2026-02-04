@@ -290,7 +290,7 @@ describe('docs_by_replication_key', () => {
 
     return await utils
       .requestOnTestDb({
-        path: '/_design/medic/_nouveau/docs_by_replication_key',
+        path: '/_design/replication/_nouveau/docs_by_replication_key',
         method: 'POST',
         body: opts,
       })

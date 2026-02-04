@@ -52,7 +52,7 @@ const reportedDateRequest = (filters) => {
   const to = moment(dateRange.to);
   const from = moment(dateRange.from || 0);
   return {
-    view: 'medic-client/reports_by_date',
+    view: 'shared-reports/reports_by_date',
     params: {
       startkey: [ from.valueOf() ],
       endkey: [ to.valueOf() ]
@@ -62,7 +62,7 @@ const reportedDateRequest = (filters) => {
 
 const formRequest = (filters) => {
   const mapKeysFunc = forms => forms.map(form => [ form.code ]);
-  const req = getRequestForMultidropdown('medic-client/reports_by_form', filters.forms, mapKeysFunc);
+  const req = getRequestForMultidropdown('shared-reports/reports_by_form', filters.forms, mapKeysFunc);
   if (req) {
     req.params.reduce = false;
   }
@@ -70,15 +70,15 @@ const formRequest = (filters) => {
 };
 
 const validityRequest = (filters) => {
-  return getRequestForBooleanKey('medic-client/reports_by_validity', filters.valid);
+  return getRequestForBooleanKey('webapp-reports/reports_by_validity', filters.valid);
 };
 
 const verificationRequest = (filters) => {
-  return getRequestWithMappedKeys('medic-client/reports_by_verification', filters.verified, getKeysArray);
+  return getRequestWithMappedKeys('webapp-reports/reports_by_verification', filters.verified, getKeysArray);
 };
 
 const placeRequest = (filters) => {
-  return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
+  return getRequestForMultidropdown('webapp-reports/reports_by_place', filters.facilities, getKeysArray);
 };
 
 const freetextRequestParams = (word) => {
@@ -111,7 +111,7 @@ const freetextRequest = (filters, view) => {
 
 const subjectRequest = (filters) => {
   const subjectIds = filters.subjectIds;
-  return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds);
+  return getRequestWithMappedKeys('shared-reports/reports_by_subject', subjectIds);
 };
 
 const getContactsByParentRequest = (filters) => {
@@ -121,7 +121,7 @@ const getContactsByParentRequest = (filters) => {
 
   const types = filters?.types?.selected;
   return {
-    view: 'medic-client/contacts_by_parent',
+    view: 'webapp-contacts/contacts_by_parent',
     params: {
       keys: types ? types.map(type => ([ filters.parent, type ])) : [ filters.parent ],
     },
@@ -132,7 +132,7 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
   if (!filters.types) {
     return;
   }
-  const view = 'medic-client/contacts_by_type';
+  const view = 'shared-contacts/contacts_by_type';
   const {selected, options} = filters.types;
   const request= (selected && options)
     ? getRequestForMultidropdown(view, filters.types, getKeysArray)
@@ -157,7 +157,7 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
 
 const defaultReportRequest = () => {
   return {
-    view: 'medic-client/reports_by_date',
+    view: 'shared-reports/reports_by_date',
     ordered: true,
     params: { descending: true }
   };
@@ -165,7 +165,7 @@ const defaultReportRequest = () => {
 
 const defaultContactRequest = () => {
   return {
-    view: 'medic-client/contacts_by_type',
+    view: 'shared-contacts/contacts_by_type',
     params: { reduce: false },
     ordered: true
   };
@@ -173,7 +173,7 @@ const defaultContactRequest = () => {
 
 const sortByLastVisitedDate = () => {
   return {
-    view: 'medic-client/contacts_by_last_visited',
+    view: 'webapp-contacts/contacts_by_last_visited',
     map: (row) => {
       row.id = row.key;
       row.value = row.value.max;

@@ -148,10 +148,10 @@ describe('Contacts Service', () => {
     };
 
     query
-      .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: ['clinic'] })
+      .withArgs('shared-contacts/contacts_by_type', { include_docs: true, reduce: false, key: ['clinic'] })
       .resolves({ rows: [{ doc: clinicA }, { doc: clinicB }] });
     query
-      .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: ['health_center'] })
+      .withArgs('shared-contacts/contacts_by_type', { include_docs: true, reduce: false, key: ['health_center'] })
       .resolves({ rows: [{ doc: healthCenter }] });
 
     return service.get(['clinic']).then(actual => {

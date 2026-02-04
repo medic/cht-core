@@ -107,7 +107,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       });
 
       return DB()
-        .query('medic-client/contacts_by_reference', { keys: uniqReferences })
+        .query('shared-contacts/contacts_by_reference', { keys: uniqReferences })
         .then(function(response) {
           return replaceReferencesWithIds(summaries, response);
         });

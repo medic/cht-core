@@ -141,7 +141,7 @@ const getPlacesWithoutSentForms = (reminder, scheduledDate, placeIds) => {
 
   const keys = placeIds.map(id => [reminder.form, id]);
   return db.medic
-    .query('medic/reports_by_form_and_parent', { keys, group: true })
+    .query('report-transitions/reports_by_form_and_parent', { keys, group: true })
     .then(results => {
       const invalidPlaceIds = [];
       results.rows.forEach(row => {

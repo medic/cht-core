@@ -108,7 +108,8 @@ describe('contacts-by-phone controller', () => {
         chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'aaa' ]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic-client/contacts_by_phone', { key: 'a_normalized' }]);
+        chai.expect(db.medic.query.args[0])
+          .to.deep.equal(['shared-contacts/contacts_by_phone', { key: 'a_normalized' }]);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
         chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['my_doc_id']]);
 
@@ -134,7 +135,7 @@ describe('contacts-by-phone controller', () => {
 
       chai.expect(db.medic.query.callCount).to.equal(1);
       chai.expect(db.medic.query.args[0]).to.deep.equal(
-        ['medic-client/contacts_by_phone', { key: 'normalized_phone' }]
+        ['shared-contacts/contacts_by_phone', { key: 'normalized_phone' }]
       );
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['doc_id']]);
@@ -160,7 +161,7 @@ describe('contacts-by-phone controller', () => {
 
       chai.expect(db.medic.query.callCount).to.equal(1);
       chai.expect(db.medic.query.args[0]).to.deep.equal(
-        ['medic-client/contacts_by_phone', { key: 'normalized_phone' }]
+        ['shared-contacts/contacts_by_phone', { key: 'normalized_phone' }]
       );
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['doc_id']]);
@@ -186,7 +187,7 @@ describe('contacts-by-phone controller', () => {
       chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'phone' ]);
 
       chai.expect(db.medic.query.callCount).to.equal(1);
-      chai.expect(db.medic.query.args[0]).to.deep.equal(['medic-client/contacts_by_phone', { key: 'norm' }]);
+      chai.expect(db.medic.query.args[0]).to.deep.equal(['shared-contacts/contacts_by_phone', { key: 'norm' }]);
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['one', 'two', 'three']]);
 
@@ -215,7 +216,7 @@ describe('contacts-by-phone controller', () => {
 
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal(
-          ['medic-client/contacts_by_phone', { key: 'phn' }]
+          ['shared-contacts/contacts_by_phone', { key: 'phn' }]
         );
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
 

@@ -34,7 +34,11 @@ describe('Changes controller', () => {
     });
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
-      '_design/medic-client',
+      '_design/shared',
+      '_design/shared-contacts',
+      '_design/shared-reports',
+      '_design/webapp-contacts',
+      '_design/webapp-reports',
       DOC_IDS.SERVICE_WORKER_META,
       DOC_IDS.SETTINGS,
       'org.couchdb.user:user',
