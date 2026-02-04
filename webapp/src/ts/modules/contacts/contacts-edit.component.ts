@@ -3,7 +3,6 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
-import type JQuery from 'jquery';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DuplicatesFoundError, FormService, WebappEnketoFormContext } from '@mm-services/form.service';
