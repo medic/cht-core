@@ -105,38 +105,64 @@ export class ContactSaveService {
    * @param fileNameMap - Map of original file names to sanitized file names
    */
   private sanitizeFieldValues(doc: Record<string, any>, fileNameMap: Map<string, string>): void {
-    const sanitizeInPlace = (obj: any) => {
-      if (Array.isArray(obj)) {
-        for (let i = 0; i < obj.length; i++) {
-          if (typeof obj[i] === 'string' && fileNameMap.has(obj[i])) {
-            obj[i] = fileNameMap.get(obj[i]);
-          } else if (obj[i] && typeof obj[i] === 'object') {
-            sanitizeInPlace(obj[i]);
-          }
-        }
-      } else if (obj && typeof obj === 'object') {
-        for (const key in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            if (typeof obj[key] === 'string' && fileNameMap.has(obj[key])) {
-              obj[key] = fileNameMap.get(obj[key]);
-            } else if (obj[key] && typeof obj[key] === 'object') {
-              sanitizeInPlace(obj[key]);
-            }
-          }
+    const shouldSanitizeString = (value: any): boolean => {
+      return typeof value === 'string' && fileNameMap.has(value);
+    };
+
+    const shouldRecurse = (value: any): boolean => {
+      return value && typeof value === 'object';
+    };
+
+    const sanitizeArrayItems = (arr: any[]) => {
+      for (let i = 0; i < arr.length; i++) {
+        if (shouldSanitizeString(arr[i])) {
+          arr[i] = fileNameMap.get(arr[i]);
+        } else if (shouldRecurse(arr[i])) {
+          sanitizeInPlace(arr[i]);
         }
       }
     };
 
-    // Sanitize all non-internal fields (fields not starting with _)
-    Object.keys(doc).forEach(key => {
-      if (!key.startsWith('_')) {
-        if (typeof doc[key] === 'string' && fileNameMap.has(doc[key])) {
-          doc[key] = fileNameMap.get(doc[key]);
-        } else if (doc[key] && typeof doc[key] === 'object') {
-          sanitizeInPlace(doc[key]);
-        }
+    const sanitizeObjectProperty = (obj: Record<string, any>, key: string) => {
+      if (shouldSanitizeString(obj[key])) {
+        obj[key] = fileNameMap.get(obj[key]);
+      } else if (shouldRecurse(obj[key])) {
+        sanitizeInPlace(obj[key]);
       }
-    });
+    };
+
+    const sanitizeObjectProperties = (obj: Record<string, any>) => {
+      for (const key in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+          continue;
+        }
+        sanitizeObjectProperty(obj, key);
+      }
+    };
+
+    const sanitizeInPlace = (obj: any) => {
+      if (Array.isArray(obj)) {
+        sanitizeArrayItems(obj);
+        return;
+      }
+      if (obj && typeof obj === 'object') {
+        sanitizeObjectProperties(obj);
+      }
+    };
+
+    const sanitizeDocumentField = (key: string) => {
+      if (key.startsWith('_')) {
+        return;
+      }
+      if (shouldSanitizeString(doc[key])) {
+        doc[key] = fileNameMap.get(doc[key]);
+      } else if (shouldRecurse(doc[key])) {
+        sanitizeInPlace(doc[key]);
+      }
+    };
+
+    // Sanitize all non-internal fields (fields not starting with _)
+    Object.keys(doc).forEach(sanitizeDocumentField);
   }
 
   private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
