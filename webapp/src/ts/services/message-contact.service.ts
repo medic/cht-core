@@ -37,7 +37,7 @@ export class MessageContactService {
   private getMessages(params) {
     return this.dbService
       .get()
-      .query('medic-client/messages_by_contact_date', params)
+      .query('webapp-reports/messages_by_contact_date', params)
       .then(response => {
         if (!response.rows) {
           return [];

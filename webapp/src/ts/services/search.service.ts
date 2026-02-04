@@ -69,7 +69,7 @@ export class SearchService {
     const getVisitsInInterval = () => {
       return this.dbService
         .get()
-        .query('medic-client/visits_by_date', { start_key: interval.start, end_key: interval.end })
+        .query('webapp-reports/visits_by_date', { start_key: interval.start, end_key: interval.end })
         .then((result) => {
           result.rows.forEach((row) => {
             if (visitStats[row.value]) {
@@ -96,13 +96,13 @@ export class SearchService {
       let query;
       if (this.sessionService.isOnlineOnly()) {
         query = this.dbService.get().query(
-          'medic-client/contacts_by_last_visited',
+          'webapp-contacts/contacts_by_last_visited',
           { reduce: true, group: true, keys: searchResults }
         );
       } else {
         // querying with keys in PouchDB is very unoptimal
         query = this.dbService.get().query(
-          'medic-client/contacts_by_last_visited',
+          'webapp-contacts/contacts_by_last_visited',
           { reduce: true, group: true }
         );
       }

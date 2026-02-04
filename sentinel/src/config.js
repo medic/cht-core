@@ -24,7 +24,7 @@ const loadTranslations = () => {
     include_docs: true,
   };
   return db.medic
-    .query('medic-client/doc_by_type', options)
+    .query('shared/doc_by_type', options)
     .then(result => {
       result.rows.forEach(row => {
         const values = Object.assign(row.doc.generic, row.doc.custom || {});

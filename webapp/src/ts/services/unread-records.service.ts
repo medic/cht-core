@@ -29,7 +29,7 @@ export class UnreadRecordsService implements OnDestroy {
   private getTotal() {
     return this.dbService
       .get()
-      .query('medic-client/data_records_by_type', { group: true });
+      .query('webapp-reports/data_records_by_type', { group: true });
   }
 
   private getRead() {

@@ -560,7 +560,7 @@ describe('patient registration', () => {
       });
 
       db.medic.query
-        .withArgs('medic-client/contacts_by_reference')
+        .withArgs('shared-contacts/contacts_by_reference')
         .resolves({
           rows: [{ key: ['shortcode', 'not_unique'], id: 'some_patient' }]
         });
@@ -577,7 +577,7 @@ describe('patient registration', () => {
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
+        assert.deepEqual(db.medic.query.args[0][0], 'shared-contacts/contacts_by_reference');
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'not_unique'] });
 
         assert.equal(db.medic.post.callCount, 1);
@@ -619,7 +619,7 @@ describe('patient registration', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query
-        .withArgs('medic-client/contacts_by_reference')
+        .withArgs('shared-contacts/contacts_by_reference')
         .resolves({
           rows: []
         });
@@ -635,7 +635,7 @@ describe('patient registration', () => {
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
+        assert.deepEqual(db.medic.query.args[0][0], 'shared-contacts/contacts_by_reference');
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'unique'] });
 
         assert.equal(db.medic.post.callCount, 1);

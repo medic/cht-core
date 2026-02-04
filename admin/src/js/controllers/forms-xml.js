@@ -23,7 +23,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
         key: ['form']
       };
       return DB()
-        .query('medic-client/doc_by_type', options)
+        .query('shared/doc_by_type', options)
         .then(res => res.rows.map(row => row.doc));
     };
 

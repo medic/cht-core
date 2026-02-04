@@ -212,7 +212,7 @@ export class ContactViewModelGeneratorService {
     }
     return this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', options)
+      .query('webapp-contacts/contacts_by_parent', options)
       .then(response => response.rows);
   }
 

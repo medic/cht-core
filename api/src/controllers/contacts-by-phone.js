@@ -26,7 +26,7 @@ module.exports = {
     }
 
     return db.medic
-      .query('medic-client/contacts_by_phone', { key: normalizedPhone })
+      .query('shared-contacts/contacts_by_phone', { key: normalizedPhone })
       .then(result => {
         if (!result || !result.rows || !result.rows.length) {
           res.status(404);

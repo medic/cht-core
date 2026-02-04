@@ -57,7 +57,7 @@ export class XmlFormsService {
       key: ['form']
     };
     return this.dbService.get()
-      .query('medic-client/doc_by_type', options)
+      .query('shared/doc_by_type', options)
       .then((res) => {
         if (!res?.rows) {
           return;

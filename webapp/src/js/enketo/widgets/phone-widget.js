@@ -16,7 +16,7 @@ const isContactPhoneValid = (settings, fieldValue) => {
 
 const getContactIdsForPhone = (phoneNumber) => window.CHTCore.DB
   .get()
-  .query('medic-client/contacts_by_phone', { key: phoneNumber })
+  .query('shared-contacts/contacts_by_phone', { key: phoneNumber })
   .then(results => results.rows.map(row => row.id));
 
 const isContactPhoneUnique = async (settings, fieldValue) => {

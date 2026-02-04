@@ -15,12 +15,20 @@ const DBS_TO_MONITOR = {
 };
 
 const VIEW_INDEXES_TO_MONITOR = {
+  // Note: medic and medic-client ddocs are no longer included as all views have been moved to other ddocs
   medic: [
-    'medic',
     'medic-admin',
-    'medic-client',
     'medic-conflicts',
     'medic-sms',
+    'online-user',
+    'replication',
+    'report-transitions',
+    'sentinel-schedule',
+    'shared',
+    'shared-contacts',
+    'shared-reports',
+    'webapp-contacts',
+    'webapp-reports',
   ],
   sentinel: ['sentinel'],
   usersmeta: ['users-meta'],
@@ -29,10 +37,12 @@ const VIEW_INDEXES_TO_MONITOR = {
 
 const NOUVEAU_INDEXES_TO_MONITOR = {
   medic: {
-    'medic': [
+    'online-user': [
       'contacts_by_freetext',
       'reports_by_freetext',
-      'docs_by_replication_key'
+    ],
+    'replication': [
+      'docs_by_replication_key',
     ],
   },
   sentinel: {},

@@ -115,7 +115,7 @@ export class GetSubjectSummariesService {
     });
 
     return this.dbService.get()
-      .query('medic-client/contacts_by_reference', { keys: uniqueReferences })
+      .query('shared-contacts/contacts_by_reference', { keys: uniqueReferences })
       .then((response) => {
         return this.replaceReferencesWithIds(summaries, response);
       });
