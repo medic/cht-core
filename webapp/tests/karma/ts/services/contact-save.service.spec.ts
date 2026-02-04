@@ -235,7 +235,7 @@ describe('ContactSave service', () => {
   });
 
   describe('file attachments', () => {
-    it('should attach files from FileManager to main contact document', () => {
+    it('should attach files from FileManager to main contact document', async () => {
       // person-create form structure based on config/default/forms/contact/person-create.xml
       const xmlPersonCreate =
         '<data id="contact:person:create">' +
@@ -273,7 +273,7 @@ describe('ContactSave service', () => {
         });
     });
 
-    it('should extract and attach binary field data from XML to main document', () => {
+    it('should extract and attach binary field data from XML to main document', async () => {
       const xmlWithBinaryField =
         '<data id="contact:person:create">' +
         '<person>' +
@@ -321,7 +321,7 @@ describe('ContactSave service', () => {
     });
 
     describe('attachment cleanup', () => {
-      it('should remove orphaned attachment when replaced with new file', () => {
+      it('should remove orphaned attachment when replaced with new file', async () => {
         const xmlStr =
           '<data id="contact:person:edit">' +
           '<person>' +
@@ -369,7 +369,7 @@ describe('ContactSave service', () => {
           });
       });
 
-      it('should keep existing attachment when field value still references it', () => {
+      it('should keep existing attachment when field value still references it', async () => {
         const xmlStr =
           '<data id="contact:person:edit">' +
           '<person>' +
@@ -410,7 +410,7 @@ describe('ContactSave service', () => {
           });
       });
 
-      it('should remove attachment when field is cleared', () => {
+      it('should remove attachment when field is cleared', async () => {
         const xmlStr =
           '<data id="contact:person:edit">' +
           '<person>' +
@@ -451,7 +451,7 @@ describe('ContactSave service', () => {
           });
       });
 
-      it('should not remove non-user-file attachments', () => {
+      it('should not remove non-user-file attachments', async () => {
         const xmlStr =
           '<data id="contact:person:edit">' +
           '<person>' +
@@ -491,7 +491,7 @@ describe('ContactSave service', () => {
           });
       });
 
-      it('should handle multiple attachments with mixed actions', () => {
+      it('should handle multiple attachments with mixed actions', async () => {
         const xmlStr =
           '<data id="contact:person:edit">' +
           '<person>' +
@@ -562,7 +562,7 @@ describe('ContactSave service', () => {
       });
     });
 
-    it('should attach multiple attachments (file widgets and binary fields) to main document', () => {
+    it('should attach multiple attachments (file widgets and binary fields) to main document', async () => {
       const xmlWithMultipleAttachments =
         '<data id="contact:person:create">' +
         '<person>' +
