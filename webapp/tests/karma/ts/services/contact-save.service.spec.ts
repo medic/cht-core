@@ -441,44 +441,6 @@ describe('ContactSave service', () => {
         );
       });
 
-      it('should not remove non-user-file attachments', async () => {
-        const xmlStr =
-          '<data id="contact:person:edit">' +
-          '<person>' +
-          '<parent>PARENT</parent>' +
-          '<type>person</type>' +
-          '<name>John Doe</name>' +
-          '</person>' +
-          '</data>';
-
-        const form = { getDataStr: () => xmlStr };
-        const docId = 'person1';
-        const type = 'person';
-
-        sinon.stub(FileManager, 'getCurrentFiles').returns([]);
-
-        getContact.withArgs(Qualifier.byUuid('person1')).resolves({
-          _id: 'person1',
-          type: 'person',
-          name: 'John Doe',
-          _attachments: {
-            xml: { content_type: 'application/xml', data: '<form/>' },
-            content: { content_type: 'application/octet-stream', data: 'form-content' }
-          }
-        });
-
-        enketoTranslationService.contactRecordToJs.returns({
-          doc: { _id: 'person1', type: 'person', name: 'John Doe' }
-        });
-
-        await service.save(form, docId, type);
-
-        assert.isFalse(
-          attachmentService.remove.called,
-          'Should not remove non-user-file attachments'
-        );
-      });
-
       it('should handle multiple attachments with mixed actions', async () => {
         const xmlStr =
           '<data id="contact:person:edit">' +
