@@ -4,6 +4,11 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 const capitalize = word => word.charAt(0).toUpperCase() + word.slice(1);
+const excludeProps = [
+  '_id',
+  'dob_approx',
+  'reported_date',
+];
 
 describe('cht-form web component - Edit Person Form', () => {
 
@@ -26,8 +31,8 @@ describe('cht-form web component - Edit Person Form', () => {
       role: 'chw',
       external_id: '12345',
       notes: 'Test notes',
-      contact: null,
-      parent: null,
+      contact: undefined,
+      parent: undefined,
       user_for_contact: {
         create: 'true'
       },
@@ -55,7 +60,7 @@ describe('cht-form web component - Edit Person Form', () => {
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
 
     expect(additionalDocs).to.be.empty;
-    expect(doc).excludingEvery(['_id', 'dob_approx', 'reported_date']).to.deep.equal(initialPerson);
+    expect(doc).excludingEvery(excludeProps).to.deep.equal(initialPerson);
 
     await mockConfig.cancelForm();
 
@@ -77,7 +82,7 @@ describe('cht-form web component - Edit Person Form', () => {
       role: 'patient',
       external_id: '54321',
       notes: 'Updated notes',
-      contact: null,
+      contact: undefined,
       parent: '',
       meta: {
         ...initialPerson.meta,
@@ -125,6 +130,6 @@ describe('cht-form web component - Edit Person Form', () => {
     const [updatedDoc, ...updatedAdditionalDocs] = await mockConfig.submitForm();
 
     expect(updatedAdditionalDocs).to.be.empty;
-    expect(updatedDoc).excludingEvery(['_id', 'dob_approx', 'reported_date']).to.deep.equal(updatedPerson);
+    expect(updatedDoc).excludingEvery(excludeProps).to.deep.equal(updatedPerson);
   });
 });

@@ -23,8 +23,7 @@ const neighborhoodDropdown = (formId = FORM) => {
 const patientNameErrorLabel = (formId = FORM) => $(`${formId} label.invalid-constraint`);
 
 const openDropdown = async (element) => {
-  const dropdownButton = await element.nextElement().$('.dropdown-toggle');
-  await dropdownButton.click();
+  await element.parentElement().$('.dropdown-toggle').click();
 };
 
 const getDropdownValue = async (element) => {

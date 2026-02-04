@@ -26,8 +26,8 @@ describe('cht-form web component - Draw Widget', () => {
     expect(doc._attachments).to.have.all.keys(drawAttachmentName, signatureAttachmentName, annotateAttachmentName);
     const contentTypes = Object.values(doc._attachments).map(({ content_type }) => content_type);
     expect(contentTypes).to.deep.equal(['image/png', 'image/png', 'image/png']);
-    expect(doc._attachments[drawAttachmentName].data.size).to.be.closeTo(19600, 2000);
-    expect(doc._attachments[signatureAttachmentName].data.size).to.be.closeTo(12800, 2000);
-    expect(doc._attachments[annotateAttachmentName].data.size).to.be.closeTo(29000, 3000);
+    expect(mockConfig.revertUintToBlob(doc._attachments[drawAttachmentName]).size).to.be.closeTo(19600, 2000);
+    expect(mockConfig.revertUintToBlob(doc._attachments[signatureAttachmentName]).size).to.be.closeTo(12800, 2000);
+    expect(mockConfig.revertUintToBlob(doc._attachments[annotateAttachmentName]).size).to.be.closeTo(29000, 3000);
   });
 });
