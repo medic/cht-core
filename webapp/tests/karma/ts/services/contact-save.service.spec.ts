@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { assert } from 'chai';
+import { assert, expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
@@ -261,14 +261,14 @@ describe('ContactSave service', () => {
 
       await service.save(form, docId, type);
 
-      assert.isTrue(attachmentService.add.calledOnce, 'AttachmentService.add should be called once');
+      expect(attachmentService.add.calledOnce, 'AttachmentService.add should be called once').to.be.true;
 
       const addCall = attachmentService.add.getCall(0);
-      assert.equal(addCall.args[0]._id, 'person1', 'Should attach to the main document');
-      assert.equal(addCall.args[1], 'user-file-test-photo.png', 'Should use correct attachment name pattern');
-      assert.equal(addCall.args[2], mockFile, 'Should pass the file content');
-      assert.equal(addCall.args[3], 'image/png', 'Should pass the file type');
-      assert.equal(addCall.args[4], false, 'Should not be pre-encoded');
+      expect(addCall.args[0]._id, 'Should attach to the main document').to.equal('person1');
+      expect(addCall.args[1], 'Should use correct attachment name pattern').to.equal('user-file-test-photo.png');
+      expect(addCall.args[2], 'Should pass the file content').to.equal(mockFile);
+      expect(addCall.args[3], 'Should pass the file type').to.equal('image/png');
+      expect(addCall.args[4], 'Should not be pre-encoded').to.be.false;
     });
 
     it('should extract and attach binary field data from XML to main document', async () => {
@@ -298,22 +298,20 @@ describe('ContactSave service', () => {
 
       await service.save(form, docId, type);
 
-      assert.isTrue(attachmentService.add.calledOnce, 'AttachmentService.add should be called once');
+      expect(attachmentService.add.calledOnce, 'AttachmentService.add should be called once').to.be.true;
 
       const addCall = attachmentService.add.getCall(0);
-      assert.equal(addCall.args[0]._id, 'person1', 'Should attach to the main document');
-      assert.equal(
+      expect(addCall.args[0]._id, 'Should attach to the main document').to.equal('person1');
+      expect(
         addCall.args[1],
-        'user-file/contact:person:create/person/signature',
         'Should use XPath-based attachment name for binary field'
-      );
-      assert.equal(
+      ).to.equal('user-file/contact:person:create/person/signature');
+      expect(
         addCall.args[2],
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
         'Should pass the base64 content'
-      );
-      assert.equal(addCall.args[3], 'image/png', 'Should use image/png as content type for binary fields');
-      assert.equal(addCall.args[4], true, 'Should indicate content is already base64 encoded');
+      ).to.equal('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
+      expect(addCall.args[3], 'Should use image/png as content type for binary fields').to.equal('image/png');
+      expect(addCall.args[4], 'Should indicate content is already base64 encoded').to.be.true;
     });
 
     describe('attachment cleanup', () => {
@@ -352,15 +350,15 @@ describe('ContactSave service', () => {
 
         await service.save(form, docId, type);
 
-        assert.isTrue(
+        expect(
           attachmentService.add.calledWith(sinon.match({ _id: 'person1' }), 'user-file-new-photo.png'),
           'Should add the new attachment'
-        );
+        ).to.be.true;
 
-        assert.isTrue(
+        expect(
           attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-photo.png'),
           'Should remove the orphaned attachment'
-        );
+        ).to.be.true;
       });
 
       it('should keep existing attachment when field value still references it', async () => {
@@ -396,10 +394,10 @@ describe('ContactSave service', () => {
 
         await service.save(form, docId, type);
 
-        assert.isFalse(
+        expect(
           attachmentService.remove.called,
           'Should not remove the referenced attachment'
-        );
+        ).to.be.false;
       });
 
       it('should remove attachment when field is cleared', async () => {
@@ -435,10 +433,10 @@ describe('ContactSave service', () => {
 
         await service.save(form, docId, type);
 
-        assert.isTrue(
+        expect(
           attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-photo.png'),
           'Should remove the attachment when field is cleared'
-        );
+        ).to.be.true;
       });
 
       it('should handle multiple attachments with mixed actions', async () => {
@@ -488,25 +486,25 @@ describe('ContactSave service', () => {
 
         await service.save(form, docId, type);
 
-        assert.isTrue(
+        expect(
           attachmentService.add.calledWith(sinon.match({ _id: 'person1' }), 'user-file-new-doc.pdf'),
           'Should add the new document attachment'
-        );
+        ).to.be.true;
 
-        assert.isTrue(
+        expect(
           attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-doc.pdf'),
           'Should remove the replaced document attachment'
-        );
+        ).to.be.true;
 
-        assert.isTrue(
+        expect(
           attachmentService.remove.calledWith(sinon.match({ _id: 'person1' }), 'user-file-old-sig.png'),
           'Should remove the cleared signature attachment'
-        );
+        ).to.be.true;
 
         const removeArgs = attachmentService.remove.getCalls().map(call => call.args[1]);
-        assert.notInclude(removeArgs, 'user-file-keep-photo.png', 'Should not remove the kept photo');
+        expect(removeArgs, 'Should not remove the kept photo').to.not.include('user-file-keep-photo.png');
 
-        assert.equal(attachmentService.remove.callCount, 2, 'Should only remove 2 orphaned attachments');
+        expect(attachmentService.remove.callCount, 'Should only remove 2 orphaned attachments').to.equal(2);
       });
     });
 
@@ -538,47 +536,44 @@ describe('ContactSave service', () => {
 
       await service.save(form, docId, type);
 
-      assert.equal(
+      expect(
         attachmentService.add.callCount,
-        4,
         'AttachmentService.add should be called 4 times (2 file widgets + 2 binary fields)'
-      );
+      ).to.equal(4);
 
       attachmentService.add.getCalls().forEach(call => {
-        assert.equal(call.args[0]._id, 'person1', 'All attachments should attach to the main document');
+        expect(call.args[0]._id, 'All attachments should attach to the main document').to.equal('person1');
       });
 
       const fileWidget1Call = attachmentService.add.getCall(0);
-      assert.equal(fileWidget1Call.args[1], 'user-file-certificate.pdf', 'First file widget attachment name');
-      assert.equal(fileWidget1Call.args[2], mockFile1, 'First file widget content');
-      assert.equal(fileWidget1Call.args[3], 'application/pdf', 'First file widget content type');
-      assert.equal(fileWidget1Call.args[4], false, 'File widget should not be pre-encoded');
+      expect(fileWidget1Call.args[1], 'First file widget attachment name').to.equal('user-file-certificate.pdf');
+      expect(fileWidget1Call.args[2], 'First file widget content').to.equal(mockFile1);
+      expect(fileWidget1Call.args[3], 'First file widget content type').to.equal('application/pdf');
+      expect(fileWidget1Call.args[4], 'File widget should not be pre-encoded').to.be.false;
 
       const fileWidget2Call = attachmentService.add.getCall(1);
-      assert.equal(fileWidget2Call.args[1], 'user-file-insurance-id.pdf', 'Second file widget attachment name');
-      assert.equal(fileWidget2Call.args[2], mockFile2, 'Second file widget content');
-      assert.equal(fileWidget2Call.args[3], 'application/pdf', 'Second file widget content type');
-      assert.equal(fileWidget2Call.args[4], false, 'File widget should not be pre-encoded');
+      expect(fileWidget2Call.args[1], 'Second file widget attachment name').to.equal('user-file-insurance-id.pdf');
+      expect(fileWidget2Call.args[2], 'Second file widget content').to.equal(mockFile2);
+      expect(fileWidget2Call.args[3], 'Second file widget content type').to.equal('application/pdf');
+      expect(fileWidget2Call.args[4], 'File widget should not be pre-encoded').to.be.false;
 
       const photoCall = attachmentService.add.getCall(2);
-      assert.equal(
+      expect(
         photoCall.args[1],
-        'user-file/contact:person:create/person/photo',
         'Photo binary field XPath-based name'
-      );
-      assert.equal(photoCall.args[2], 'BASE64_PHOTO_DATA', 'Photo binary field content');
-      assert.equal(photoCall.args[3], 'image/png', 'Binary field content type');
-      assert.equal(photoCall.args[4], true, 'Binary field should be pre-encoded');
+      ).to.equal('user-file/contact:person:create/person/photo');
+      expect(photoCall.args[2], 'Photo binary field content').to.equal('BASE64_PHOTO_DATA');
+      expect(photoCall.args[3], 'Binary field content type').to.equal('image/png');
+      expect(photoCall.args[4], 'Binary field should be pre-encoded').to.be.true;
 
       const signatureCall = attachmentService.add.getCall(3);
-      assert.equal(
+      expect(
         signatureCall.args[1],
-        'user-file/contact:person:create/person/signature',
         'Signature binary field XPath-based name'
-      );
-      assert.equal(signatureCall.args[2], 'BASE64_SIGNATURE_DATA', 'Signature binary field content');
-      assert.equal(signatureCall.args[3], 'image/png', 'Binary field content type');
-      assert.equal(signatureCall.args[4], true, 'Binary field should be pre-encoded');
+      ).to.equal('user-file/contact:person:create/person/signature');
+      expect(signatureCall.args[2], 'Signature binary field content').to.equal('BASE64_SIGNATURE_DATA');
+      expect(signatureCall.args[3], 'Binary field content type').to.equal('image/png');
+      expect(signatureCall.args[4], 'Binary field should be pre-encoded').to.be.true;
     });
   });
 });
