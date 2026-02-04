@@ -362,17 +362,12 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  private async getAttachmentForElement(docId: string, $element: JQuery): Promise<Blob | null | undefined> {
-    const fileName = $element.data('loaded-file-name');
-    if (!fileName) {
-      return null;
+  private async renderAttachmentPreviews(contactId: string): Promise<void> {
+    const doc = await this.dbService.get().get(contactId);
+    if (!doc._attachments) {
+      return;
     }
 
-    const attachmentName = `user-file-${fileName}`;
-    return this.getAttachment(docId, attachmentName);
-  }
-
-  private async renderAttachmentPreviews(contactId: string): Promise<void> {
     const fileInputs = $('#contact-form input[type="file"]:not(.draw-widget__load)');
 
     await Promise.all(
@@ -391,7 +386,18 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           return;
         }
 
-        const attachmentBlob = await this.getAttachmentForElement(contactId, $element);
+        const fileName = $element.data('loaded-file-name');
+        if (!fileName) {
+          return;
+        }
+
+        const attachmentName = `user-file-${fileName}`;
+
+        if (!doc._attachments[attachmentName]) {
+          return;
+        }
+
+        const attachmentBlob = await this.getAttachment(contactId, attachmentName);
         if (!attachmentBlob) {
           return;
         }

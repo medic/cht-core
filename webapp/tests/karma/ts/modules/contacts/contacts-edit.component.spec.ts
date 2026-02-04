@@ -573,14 +573,16 @@ describe('ContactsEdit component', () => {
           create_form: 'patient_create_form',
           edit_key: 'patient_edit_key',
         });
-        dbGet.resolves({ _id: 'patient_edit_form', form: true });
+        dbGet.onCall(0).resolves({ _id: 'patient_edit_form', form: true });
+        dbGet.onCall(1).resolves({ _id: 'the_patient', type: 'patient' });
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['patient']);
-        expect(dbGet.callCount).to.equal(1);
+        expect(dbGet.callCount).to.equal(2);
         expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
+        expect(dbGet.args[1]).to.deep.equal(['the_patient']);
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
@@ -615,14 +617,16 @@ describe('ContactsEdit component', () => {
           create_form: 'a_clinic_type_create_form',
           edit_key: 'edit_key',
         });
-        dbGet.resolves({ _id: 'a_clinic_type_create_form', data: true });
+        dbGet.onCall(0).resolves({ _id: 'a_clinic_type_create_form', data: true });
+        dbGet.onCall(1).resolves({ _id: 'the_clinic', type: 'contact', contact_type: 'a_clinic_type' });
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['a_clinic_type']);
-        expect(dbGet.callCount).to.equal(1);
+        expect(dbGet.callCount).to.equal(2);
         expect(dbGet.args[0]).to.deep.equal(['a_clinic_type_create_form']);
+        expect(dbGet.args[1]).to.deep.equal(['the_clinic']);
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
@@ -659,15 +663,17 @@ describe('ContactsEdit component', () => {
           edit_form: 'the correct_edit_form',
           edit_key: 'edit_key',
         });
-        dbGet.resolves({ _id: 'the correct_edit_form', data: true });
+        dbGet.onCall(0).resolves({ _id: 'the correct_edit_form', data: true });
+        dbGet.onCall(1).resolves({ _id: 'the_clinic', type: 'clinic', contact_type: 'a_clinic_type' });
 
         await createComponent();
         await fixture.whenStable();
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['the correct type']);
-        expect(dbGet.callCount).to.equal(1);
+        expect(dbGet.callCount).to.equal(2);
         expect(dbGet.args[0]).to.deep.equal(['the correct_edit_form']);
+        expect(dbGet.args[1]).to.deep.equal(['the_clinic']);
         expect(formService.render.callCount).to.equal(1);
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
@@ -754,7 +760,7 @@ describe('ContactsEdit component', () => {
     });
 
     describe('for existing contact', () => {
-      it('loads form with image having loaded file name', fakeAsync(async () => {
+      it('renders existing image attachment preview when editing contact', fakeAsync(async () => {
         routeSnapshot.params = { id: 'the_person' };
         const doc = { _id: 'the_person', type: 'person' };
         lineageModelGeneratorService.contact.resolves({ doc });
@@ -762,7 +768,14 @@ describe('ContactsEdit component', () => {
           edit_form: 'person_edit_form',
           edit_key: 'person_edit_key',
         });
-        dbGet.resolves({ _id: 'person_edit_form', form: true });
+        dbGet.onCall(0).resolves({ _id: 'person_edit_form', form: true });
+        dbGet.onCall(1).resolves({
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
+          }
+        });
         const attachmentBlob = { attachment: 'blob' };
         getAttachment.resolves(attachmentBlob);
         const base64 = 'base64';
@@ -798,7 +811,14 @@ describe('ContactsEdit component', () => {
           edit_form: 'person_edit_form',
           edit_key: 'person_edit_key',
         });
-        dbGet.resolves({ _id: 'person_edit_form', form: true });
+        dbGet.onCall(0).resolves({ _id: 'person_edit_form', form: true });
+        dbGet.onCall(1).resolves({
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'video/mp4' }
+          }
+        });
 
         await createComponent();
         tick();
@@ -825,7 +845,14 @@ describe('ContactsEdit component', () => {
           edit_form: 'person_edit_form',
           edit_key: 'person_edit_key',
         });
-        dbGet.resolves({ _id: 'person_edit_form', form: true });
+        dbGet.onCall(0).resolves({ _id: 'person_edit_form', form: true });
+        dbGet.onCall(1).resolves({
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
+          }
+        });
         const expectedError = new Error('some error');
         getAttachment.onFirstCall().rejects(expectedError);
 
