@@ -10,6 +10,7 @@ const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Old Navigation', () => {
   const places = placeFactory.generateHierarchy();
@@ -39,14 +40,13 @@ describe('Old Navigation', () => {
     const permissions = settings.permissions;
     permissions.can_aggregate_targets = offlineUser.roles;
     permissions.can_view_old_navigation = offlineUser.roles;
-    await utils.updateSettings({ tasks, permissions }, true);
+    await utils.updateSettings({ tasks, permissions }, { ignoreReload: true });
 
     await loginPage.login({username: offlineUser.username, password: offlineUser.password, loadPage: false});
     await oldNavigationPage.waitForPageLoaded();
   });
 
   after(async () => {
-    await utils.revertSettings(true);
     await utils.deleteUsers([offlineUser]);
   });
 
@@ -77,6 +77,7 @@ describe('Old Navigation', () => {
   it('should navigate to the Reports section and open the first report listed', async () => {
     await oldNavigationPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.firstReport());
+    await commonPage.waitForLoaders();
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(person.name);
     expect(openReportInfo.reportName).to.equal('Pregnancy registration');
