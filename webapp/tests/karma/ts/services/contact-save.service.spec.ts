@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
@@ -66,10 +66,10 @@ describe('ContactSave service', () => {
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('abc'))).to.be.true;
 
-        assert.equal(savedDocs.length, 1);
-        assert.deepEqual(savedDocs[0].contact, {
+        expect(savedDocs.length).to.equal(1);
+        expect(savedDocs[0].contact).to.deep.equal({
           _id: 'abc',
           parent: {
             _id: 'def'
@@ -92,10 +92,10 @@ describe('ContactSave service', () => {
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('abc'))).to.be.true;
 
-        assert.equal(savedDocs.length, 1);
-        assert.deepEqual(savedDocs[0].contact, {
+        expect(savedDocs.length).to.equal(1);
+        expect(savedDocs[0].contact).to.deep.equal({
           _id: 'abc',
           parent: {
             _id: 'def'
@@ -127,17 +127,17 @@ describe('ContactSave service', () => {
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.equal(savedDocs[0]._id, 'main1');
+        expect(savedDocs[0]._id).to.equal('main1');
 
-        assert.equal(savedDocs[1]._id, 'kid1');
-        assert.equal(savedDocs[1].parent._id, 'main1');
-        assert.equal(savedDocs[1].parent.extracted, true);
+        expect(savedDocs[1]._id).to.equal('kid1');
+        expect(savedDocs[1].parent._id).to.equal('main1');
+        expect(savedDocs[1].parent.extracted).to.be.true;
 
-        assert.equal(savedDocs[2]._id, 'sis1');
-        assert.equal(savedDocs[2].parent._id, 'main1');
-        assert.equal(savedDocs[2].parent.extracted, true);
+        expect(savedDocs[2]._id).to.equal('sis1');
+        expect(savedDocs[2].parent._id).to.equal('main1');
+        expect(savedDocs[2].parent.extracted).to.be.true;
 
-        assert.equal(extractLineageService.extract.callCount, 3);
+        expect(extractLineageService.extract.callCount).to.equal(3);
       });
   });
 
@@ -169,10 +169,10 @@ describe('ContactSave service', () => {
     return service
       .save(form, docId, type, xmlVersion)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.equal(savedDocs.length, 3);
+        expect(savedDocs.length).to.equal(3);
         for (const savedDoc of savedDocs) {
-          assert.equal(savedDoc.form_version.time, 123456);
-          assert.equal(savedDoc.form_version.sha256, '654321');
+          expect(savedDoc.form_version.time).to.equal(123456);
+          expect(savedDoc.form_version.sha256).to.equal('654321');
         }
       });
   });
@@ -214,12 +214,12 @@ describe('ContactSave service', () => {
     return service
       .save(form, docId, type)
       .then(({ preparedDocs: savedDocs }) => {
-        assert.equal(getContact.callCount, 2);
-        assert.deepEqual(getContact.args[0], [Qualifier.byUuid('main1')]);
-        assert.deepEqual(getContact.args[1], [Qualifier.byUuid('contact')]);
+        expect(getContact.callCount).to.equal(2);
+        expect(getContact.args[0]).to.deep.equal([Qualifier.byUuid('main1')]);
+        expect(getContact.args[1]).to.deep.equal([Qualifier.byUuid('contact')]);
 
-        assert.equal(savedDocs.length, 1);
-        assert.deepEqual(savedDocs[0], {
+        expect(savedDocs.length).to.equal(1);
+        expect(savedDocs[0]).to.deep.equal({
           _id: 'main1',
           type: 'contact',
           name: 'Richard',
