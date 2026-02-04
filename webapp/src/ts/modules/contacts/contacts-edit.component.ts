@@ -349,7 +349,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     return formInstance;
   }
 
-  private getAttachment(docId: string, attachmentName: string) {
+  private getAttachment(docId: string, attachmentName: string): Promise<Blob | undefined> {
     return this.dbService
       .get()
       .getAttachment(docId, attachmentName)
@@ -362,7 +362,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  private async getAttachmentForElement(docId: string, $element: JQuery) {
+  private async getAttachmentForElement(docId: string, $element: JQuery): Promise<Blob | null | undefined> {
     const fileName = $element.data('loaded-file-name');
     if (!fileName) {
       return null;
@@ -372,37 +372,37 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.getAttachment(docId, attachmentName);
   }
 
-  private renderAttachmentPreviews(contactId: string) {
-    return Promise
-      .resolve()
-      .then(() => Promise
-        .all($('#contact-form input[type="file"]:not(.draw-widget__load)')
-          .map(async (idx, element) => {
-            const $element = $(element);
-            const $picker = $element
-              .closest('.question')
-              .find('.widget.file-picker');
+  private async renderAttachmentPreviews(contactId: string): Promise<void> {
+    const fileInputs = $('#contact-form input[type="file"]:not(.draw-widget__load)');
 
-            $picker
-              .find('.file-feedback')
-              .empty();
+    await Promise.all(
+      fileInputs.map(async (_idx, element) => {
+        const $element = $(element);
+        const $picker = $element
+          .closest('.question')
+          .find('.widget.file-picker');
 
-            // Currently only support rendering image previews when editing contacts
-            if ($element.attr('accept') !== 'image/*') {
-              return;
-            }
+        $picker
+          .find('.file-feedback')
+          .empty();
 
-            const attachmentBlob = await this.getAttachmentForElement(contactId, $element);
-            if (!attachmentBlob) {
-              return;
-            }
+        // Currently only support rendering image previews when editing contacts
+        if ($element.attr('accept') !== 'image/*') {
+          return;
+        }
 
-            const base64 = await this.fileReaderService.base64(attachmentBlob);
+        const attachmentBlob = await this.getAttachmentForElement(contactId, $element);
+        if (!attachmentBlob) {
+          return;
+        }
 
-            const $preview = $picker.find('.file-preview');
-            $preview.empty();
-            $preview.append('<img src="data:' + base64 + '">');
-          })));
+        const base64 = await this.fileReaderService.base64(attachmentBlob);
+
+        const $preview = $picker.find('.file-preview');
+        $preview.empty();
+        $preview.append('<img src="data:' + base64 + '">');
+      })
+    );
   }
 
   private setEnketoContact(formInstance) {
