@@ -54,7 +54,7 @@ describe('Old Navigation', () => {
     const message = 'Navigations test';
     await messagesPage.sendMessageOnMobile(message, person.name, person.phone );
     await messagesPage.openMessage(person._id);
-
+    await commonPage.waitForLoaders();
     const { name } = await oldNavigationPage.getHeaderTitleOnMobile();
     expect(name).to.equal(person.name);
 
@@ -70,6 +70,7 @@ describe('Old Navigation', () => {
       pregnancyReport._id,
       '~pregnancy-danger-sign-follow-up~anc.pregnancy_danger_sign_followup'
     );
+    await commonPage.waitForLoaders();
     const { name } = await oldNavigationPage.getHeaderTitleOnMobile();
     expect(name).to.equal('Pregnancy danger sign follow-up');
   });
@@ -86,6 +87,7 @@ describe('Old Navigation', () => {
   it('should navigate to the People section and open the created Health Center', async () => {
     await oldNavigationPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
+    await commonPage.waitForLoaders();
     expect(await contactPage.getContactInfoName()).to.equal(healthCenter.name);
   });
 
