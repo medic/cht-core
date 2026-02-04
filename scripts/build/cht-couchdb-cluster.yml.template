@@ -123,9 +123,6 @@ configs:
       url = http://nouveau:5987
   nouveau-config:
     content: |
-      maxIndexesOpen: 3000
-      commitIntervalSeconds: 30
-      idleSeconds: 60
       rootDir: /data/nouveau
       logging:
         level: INFO
