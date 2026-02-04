@@ -382,14 +382,27 @@ describe('ContactSave service', () => {
           _id: 'person1',
           type: 'person',
           name: 'John Doe',
-          photo: 'existing-photo.png',
+          metadata: {
+            images: [
+              { photo: 'existing-photo.png' }
+            ]
+          },
           _attachments: {
             'user-file-existing-photo.png': { content_type: 'image/png', data: 'photo-data' }
           }
         });
 
         enketoTranslationService.contactRecordToJs.returns({
-          doc: { _id: 'person1', type: 'person', name: 'John Updated', photo: 'existing-photo.png' }
+          doc: {
+            _id: 'person1',
+            type: 'person',
+            name: 'John Updated',
+            metadata: {
+              images: [
+                { photo: 'existing-photo.png' }
+              ]
+            }
+          }
         });
 
         await service.save(form, docId, type);
