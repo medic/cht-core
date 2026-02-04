@@ -15,6 +15,7 @@ import FileManager from '../../js/enketo/file-manager';
 })
 export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
+  private readonly USER_FILE_ATTACHMENT_PREFIX = 'user-file-';
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
@@ -92,7 +93,7 @@ export class ContactSaveService {
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        const attachmentName = `user-file-${file.name}`;
+        const attachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${file.name}`;
         newAttachmentNames.add(attachmentName);
         this.attachmentService.add(mainDoc, attachmentName, file, file.type, false);
       });
@@ -109,7 +110,7 @@ export class ContactSaveService {
           if (content) {
             const xpath = Xpath.getElementXPath(element);
             // Replace instance root element node name with form internal ID
-            const filename = 'user-file' +
+            const filename = this.USER_FILE_ATTACHMENT_PREFIX.slice(0, -1) +
               (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
             newAttachmentNames.add(filename);
             this.attachmentService.add(mainDoc, filename, content, 'image/png', true);
@@ -135,13 +136,13 @@ export class ContactSaveService {
       if (!value) {
         return false;
       }
-      const possibleAttachmentName = `user-file-${value}`;
+      const possibleAttachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${value}`;
       return existingAttachmentNames.includes(possibleAttachmentName);
     };
 
     const scanValue = (value: any) => {
       if (typeof value === 'string' && isReferencedAttachment(value)) {
-        referenced.add(`user-file-${value}`);
+        referenced.add(`${this.USER_FILE_ATTACHMENT_PREFIX}${value}`);
         return;
       }
 
@@ -170,7 +171,7 @@ export class ContactSaveService {
     }
 
     Object.keys(doc._attachments)
-      .filter(name => name.startsWith('user-file-') && !validAttachmentNames.has(name))
+      .filter(name => name.startsWith(this.USER_FILE_ATTACHMENT_PREFIX) && !validAttachmentNames.has(name))
       .forEach(name => this.attachmentService.remove(doc, name));
   }
 
