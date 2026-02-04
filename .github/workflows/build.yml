@@ -330,7 +330,7 @@ jobs:
       if: ${{ matrix.chrome-version == '107' }}
       run: |
         sudo dpkg -i "/tmp/chrome107/google-chrome-stable_current_amd64.deb"
-        npm install chromedriver@^107.0.3
+        npm install chromedriver@^107.0.3 wdio-chromedriver-service
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
