@@ -367,8 +367,8 @@ ${formatCommits(commits)} `;
 
   return Promise.all([ getIssues(), getCommits() ])
     .then(([ issues, commits ]) => output(issues, commits))
-  .catch(err => {
-    console.error(err.message);
-    process.exit(1);
-  });
+    .catch(err => {
+      console.error(err.message);
+      process.exit(1);
+    });
 })();
