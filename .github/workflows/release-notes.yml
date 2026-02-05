@@ -2,13 +2,11 @@ name: Release notes generator
 
 on:
   workflow_dispatch:
-    - inputs:
+    inputs:
       milestone:
         description: 'Milestone to build release notes from'
         type: string
         required: true
-  pull_request:
-  push:
 
 jobs:
   release_notes:
