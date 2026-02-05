@@ -2,6 +2,7 @@ const minimist = require('minimist');
 const { Octokit } = require('@octokit/core');
 const { paginateGraphql } = require('@octokit/plugin-paginate-graphql');
 const ExtendedOctokit = Octokit.plugin(paginateGraphql);
+const fs = require('node:fs');
 
 const TOKEN = process.env.GITHUB_TOKEN;
 const OWNER = 'medic';
@@ -57,6 +58,11 @@ const getIssueNumbers = commitMessage => {
 
 (async() => { // NOSONAR
   console.log('Logging in to GitHub with token that is', TOKEN.length, 'chars...');
+  if (argv['skip-commit-validation']) {
+    console.log('Skip commit validation set to TRUE');
+  } else {
+    console.log('Skip commit validation set to FALSE');
+  }
   const octokit = new ExtendedOctokit({
     auth: TOKEN,
     userAgent: 'cht-release-note-generator',
@@ -344,9 +350,8 @@ ${formatGroups(types)}
 Thanks to all who committed changes for this release!
 
 ${formatCommits(commits)} `;
-    console.log('Done! See below');
-    console.log('-------------Everything below this is the release notes markdown-------------');
-    console.log(releaseNotes);
+    fs.writeFileSync('./release-notes.md', releaseNotes);
+    console.log('Done! Check in release-notes.md file');
   };
 
   const getCommits = async () => {
