@@ -9,9 +9,6 @@ on:
 jobs:
   release_notes:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./scripts/release-notes
 
     steps:
       - name: Checkout Code
@@ -24,7 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd .. # we start in  ./scripts/release-notes
+          cd scripts
           npm ci
           cd release-notes
           GITHUB_TOKEN=$GITHUB_TOKEN node index.js --skip-commit-validation
@@ -32,6 +29,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
-          path: ./release-notes.md
+          path: ./scripts/release-notes/release-notes.md
           retention-days: 10
           compression-level: 0
