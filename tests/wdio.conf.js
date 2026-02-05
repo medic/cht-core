@@ -189,7 +189,16 @@ const baseConfig = {
       outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
     }],
-    'spec'
+    [
+      'spec',
+      {
+        addConsoleLogs: true,
+        realtimeReporting: true,
+        passed: '[PASS]',
+        failed: '[FAIL]',
+      },
+    ],
+
   ],
   //
   // Options to be passed to Mocha.
@@ -281,7 +290,6 @@ const baseConfig = {
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
   beforeTest: async (test) => {
-    console.warn('running', test.title);
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);

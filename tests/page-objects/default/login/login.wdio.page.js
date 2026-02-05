@@ -29,18 +29,14 @@ const getPasswordResetErrorMessage = async (errorMsg) => {
 };
 
 const ssoLogin = async () => {
-  if (utils.isMinimumChromeVersion) {
-    await browser.url('/');
-  }
+  await browser.url('/');
   await $('#login-sso').click();
   await commonPage.waitForPageLoaded();
   await commonPage.hideSnackbar();
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
-  if (utils.isMinimumChromeVersion) {
-    await browser.url('/');
-  }
+  await browser.url('/');
   await setPasswordValue(password);
   await setUsernameValue(username);
   await changeLocale(locale);
