@@ -16,34 +16,83 @@ After that, make sure you have:
 
 ## Usage
 
-![artifacts.png](artifacts.png)
-
-Every time a beta branch is cut, CI automatically runs and saves the output of the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml). Each run will have `release-error` and `release-notes` artifacts. You'll need to fix all the commit errors found in `release-error` (see below for a how-to) and then manually re-run the CI. Use the `gh` command locally to re-run the action run on GitHub, passing in the target milestone:
+Start by manually running the CI job, specifying the milestone (`5.2.0` in this case), but using the `gh` command locally on your workstation:
 
 ```shell
 gh workflow run release-notes.yml -f version=5.2.0
 ```
 
-The re-run will show up in the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml) list and clicking into each run, you can again check `release-error` for any errors.  When you've resolved all the errors, the release notes markdown will be in `release-notes`. You can re-run as many times as needed.
+If the job is successful, this text will show in the CI output in the "Install Deps & Run Node Script" section (we'll cover if it failed below):
+
+```
+-------
+Logging in to GitHub with token that is 40 chars
+Targeting CHT Core milestone 5.2.0
+Skip commit validation set to TRUE
+Gathering release note contents...
+Done! See release-notes.md file if local or see artifact if CI
+-------
+```
+
+Below that in the "Upload release note artifacts", you can see the URL to download the release notes markdown file:
+
+```
+Artifact release-notes.zip successfully finalized. Artifact ID 5398446373
+Artifact release-notes has been successfully uploaded! Final size is 2382 bytes. Artifact ID is 5398446373
+Artifact download URL: https://github.com/medic/cht-core/actions/runs/21731472536/artifacts/5398446373
+```
+
+Here's a screenshot with `#1` showing the "Install Deps & Run Node Script" section `#2` showing the  "Upload release note artifacts" section.
+
+![success.png](success.png)
+
+Alternately, at the more high level view for the job, there's a nice GUI linked to the same artifact.
+
+![artifacts.png](artifacts.png)
 
 When you have a finalized output of the `release-notes`, you can create a new document in the [releases section of the docs](https://docs.communityhealthtoolkit.org/releases/). Be sure to update the `_index.md` in that same `releases` directory to include the new release.
 
 ### Fixing commits
 
-Very likely the CI will have saved a bunch of output in `release-error` as shown below. For each of the commits, follow the steps listed to correctly associate the commit with the milestone. Re-run the CI to test if all commits have been fixed
+Very likely the CI will failed with an error in the the "Install Deps & Run Node Script" section and no artifact will be saved. The error will start with `---ERROR--- Some commits included...` as shown below. For each of the commits, follow the steps listed to correctly associate the commit with the milestone.
+
+If all commits have been fixed, run the above `gh` command locally to re-run the action run on GitHub. Check the output of the CI, repeating the fix and re-run cycle as needed.
 
 ### Sample error output
 
->Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
->
-> 1. Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
-> 2. Setting the milestone directly on the commit's PR
-> 3. Setting the milestone on an issue referenced in the commit message (e.g. "fix(#1345): ..."
->
-> Commits:
->
-> - https://github.com/medic/cht-core/commit/d57ab5 : chore: bump deep-equal-in-any-order from 2.0.6 to 2.1.0 (#10424)
-> - https://github.com/medic/cht-core/commit/f797be : chore: bump globals from 16.3.0 to 16.5.0 (#10431)
+Here's the ASCII output:
+
+```
+-------
+Logging in to GitHub with token that is 40 chars
+Targeting CHT Core milestone 5.2.0
+Skip commit validation set to FALSE
+
+---ERROR----
+
+Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
+
+Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
+2. Setting the milestone directly on the commit's PR
+3. Setting the milestone on an issue referenced in the commit message (e.g. "fix(#1345): ..."
+
+Commits:
+
+- https://github.com/medic/cht-core/commit/d57ab5 : chore: bump deep-equal-in-any-order from 2.0.6 to 2.1.0 (#10424)
+- https://github.com/medic/cht-core/commit/f797be : chore: bump globals from 16.3.0 to 16.5.0 (#10431)
+```
+
+And a screenshot of the same:
+
+![commit.fixes.png](commit.fixes.png)
+
+### Skipping commit checks in CI
+
+To force CI to generate the release notes markdown and skip any commit checks, pass in an extra `skip` argument:
+
+```shell
+gh workflow run release-notes.yml -f version=5.2.0 -f skip_commit_checks='--skip-commit-validation'
+```
 
 ## Development
 
@@ -60,7 +109,12 @@ Then you can call the script locally when you're in the `scripts/release-notes` 
 GITHUB_TOKEN=$(gh auth token) node index.js 5.2.0
 ```
 
-Optionally, it can be called with:
-- `--help` - Show the help message
-- `--skip-commit-validation` - Skip validation of commits
+If there were no commit check errors, a file will be created in the `scripts/release-notes` directory called `release-notes.md` with the markdown.
 
+### Skipping commit checks in dev
+
+To force node to generate the release notes markdown and skip any commit checks, pass in an extra `skip` argument:
+
+```shell
+GITHUB_TOKEN=$(gh auth token) node index.js 5.2.0 --skip-commit-validation
+```
