@@ -17,7 +17,7 @@ if (argv.help) {
   Generates a changelog given a GH report and milestone. Requires a GitHub API token to be configured. 
   See the README for more information.
   
-  MILESTONE: The name of the milestone (e.g. 5.1.0).
+  MILESTONE: The name of the milestone (e.g. 5.2.0).
   
   OPTIONS:
      --help  Show this help message

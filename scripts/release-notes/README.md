@@ -18,10 +18,10 @@ After that, make sure you have:
 
 ![artifacts.png](artifacts.png)
 
-Every time a beta branch is cut, CI automatically runs and saves the output of the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml). Each run will have `release-error` and `release-notes` artifacts. You'll need to fix all the commit errors found in `release-error` (see below for a how-to) and then manually re-run the CI. Use the `gh` command locally to re-run the action run on GitHub:
+Every time a beta branch is cut, CI automatically runs and saves the output of the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml). Each run will have `release-error` and `release-notes` artifacts. You'll need to fix all the commit errors found in `release-error` (see below for a how-to) and then manually re-run the CI. Use the `gh` command locally to re-run the action run on GitHub, passing in the target milestone:
 
 ```shell
-gh workflow run release-notes.yml
+gh workflow run release-notes.yml -f version=5.2.0
 ```
 
 The re-run will show up in the [release note job](https://github.com/medic/cht-core/actions/workflows/release-notes.yml) list and clicking into each run, you can again check `release-error` for any errors.  When you've resolved all the errors, the release notes markdown will be in `release-notes`. You can re-run as many times as needed.
@@ -54,13 +54,13 @@ First, get all setup making sure each item is done in order:
 3. Run `npm ci` in the `scripts` directory of CHT Core
 4. Ensure you're logged in to `gh` via  `gh auth login`
 
-Then you can call the script locally when you're in the `scripts/release-notes` directory:
+Then you can call the script locally when you're in the `scripts/release-notes` directory which takes the name of the milestone (e.g. `5.2.0`) as it's argument:
 
 ```shell
-GITHUB_TOKEN=$(gh auth token) node index.js
+GITHUB_TOKEN=$(gh auth token) node index.js 5.2.0
 ```
 
-Options:
+Optionally, it can be called with:
 - `--help` - Show the help message
 - `--skip-commit-validation` - Skip validation of commits
 
