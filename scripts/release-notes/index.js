@@ -17,11 +17,18 @@ if (argv.help) {
   Generates a changelog given a GH report and milestone. Requires a GitHub API token to be configured. 
   See the README for more information.
   
-  Options:
+  MILESTONE: The name of the milestone (e.g. 5.1.0).
+  
+  OPTIONS:
      --help  Show this help message
      --skip-commit-validation  Skip validation of commits
   `);
   process.exit(0);
+}
+
+const [MILESTONE] = argv._;
+if (!MILESTONE) {
+  throw new Error('You must specify a milestone name (eg: "5.2.0")');
 }
 
 const WARNINGS = [
@@ -57,7 +64,8 @@ const getIssueNumbers = commitMessage => {
 };
 
 (async() => { // NOSONAR
-  console.log('Logging in to GitHub with token that is', TOKEN.length, 'chars...');
+  console.log('Logging in to GitHub with token that is', TOKEN.length, 'chars');
+  console.log('Targeting CHT Core milestone', MILESTONE);
   if (argv['skip-commit-validation']) {
     console.log('Skip commit validation set to TRUE');
   } else {
@@ -67,11 +75,7 @@ const getIssueNumbers = commitMessage => {
     auth: TOKEN,
     userAgent: 'cht-release-note-generator',
   });
-
-  const response = await octokit.request('GET /repos/medic/' + REPO_NAME + '/milestones');
-  const MILESTONE_NAME = response.data.sort((a, b) => Number.parseFloat(a.title) - Number.parseFloat(b.title))[0].title;
-  console.log('Using next milestone of', MILESTONE_NAME, 'out of', response.data.length, 'total');
-
+  
   const queryRepo = query => octokit.graphql(getRepoQueryString(query));
 
   const queryRepoPaginated = query => octokit.graphql
@@ -84,7 +88,7 @@ const getIssueNumbers = commitMessage => {
   ).then(({ repository }) => repository.releases.edges[0].node.tagName);
 
   const getMilestoneBranch = async () => {
-    const milestoneBranch = [...MILESTONE_NAME.split('.').slice(0, -1), 'x'].join('.');
+    const milestoneBranch = [...MILESTONE.split('.').slice(0, -1), 'x'].join('.');
     const branchExists = await queryRepo(
       `ref(qualifiedName: "refs/heads/${milestoneBranch}") {
           target { oid }
@@ -220,13 +224,13 @@ Commits:
   };
 
   const getMilestone = async () => queryRepo(
-    `milestones(query: "${MILESTONE_NAME}", first: 1) { nodes { number } }`
+    `milestones(query: "${MILESTONE}", first: 1) { nodes { number } }`
   ).then(({ repository }) => repository.milestones.nodes[0]);
 
   const getMilestoneNumber = async () => {
     const milestone = await getMilestone();
     if (!milestone) {
-      throw new Error(`Could not find milestone with the repo ${REPO_NAME} and name ${MILESTONE_NAME}`);
+      throw new Error(`Could not find milestone ${MILESTONE} in CHT Core repo`);
     }
     return milestone.number;
   };
@@ -321,8 +325,8 @@ Commits:
     const currentDate = new Date().toISOString().split('T')[0];  // Format: YYYY-MM-DD
     const releaseNotes = `
 ---
-title: "${MILESTONE_NAME} release notes"
-linkTitle: "${MILESTONE_NAME}"
+title: "${MILESTONE} release notes"
+linkTitle: "${MILESTONE}"
 sidebar:
   exclude: true
 description: 
@@ -335,7 +339,7 @@ description:
 
 ## Known issues
 
-Check the repository for the [latest known issues](https://github.com/medic/${REPO_NAME}/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE_NAME}%22).
+Check the repository for the [latest known issues](https://github.com/medic/${REPO_NAME}/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE}%22).
 
 ## Upgrade notes
 
