@@ -8,12 +8,11 @@ import { AggregateTarget, TargetAggregatesService } from '@mm-services/target-ag
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { RouterOutlet } from '@angular/router';
-import { AnalyticsSidebarFilterComponent, ReportingPeriod } from './analytics-sidebar-filter.component';
+import { AnalyticsSidebarFilterComponent, AnalyticsSidebarFilterState } from './analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Place } from '@medic/cht-datasource';
 
 @Component({
   selector: 'analytics-target-aggregates',
@@ -40,9 +39,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   selected = null;
   error = null;
   userFacilities;
-  sidebarFilter;
-  reportingPeriodFilter = ReportingPeriod.CURRENT;
-  facilityFilter?: Place.v1.Place;
+  sidebarFilter: AnalyticsSidebarFilterState = {
+    reportingPeriod: AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD
+  };
 
   constructor(
     private store: Store,
@@ -59,7 +58,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.trackPerformance = this.performanceService.track();
       this.enabled = await this.targetAggregatesService.isEnabled();
       this.subscribeToStore();
-      await this.setDefaultFacilityFilter();
+      await this.setDefaultFilters();
     } catch (error) {
       this.loading = false;
       console.error('Error loading aggregate targets', error);
@@ -90,25 +89,26 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
-      this.sidebarFilter = sidebarFilter;
+      if (sidebarFilter) {
+        this.sidebarFilter = sidebarFilter;
+      }
     });
     this.subscriptions.add(selectorsSubscription);
   }
 
-  async getTargetAggregates(userFacility, reportingPeriod) {
+  async getTargetAggregates(facility, reportingPeriod) {
     try {
+      this.globalActions.setSidebarFilter({ facility, reportingPeriod });
       let aggregates: AggregateTarget[] = [];
       this.targetAggregatesActions.setTargetAggregatesLoaded(false);
       if (this.enabled) {
-        this.facilityFilter = userFacility;
-        this.reportingPeriodFilter = reportingPeriod;
         aggregates = await this.targetAggregatesService.getAggregates(
-          this.facilityFilter?._id, this.reportingPeriodFilter
+          facility?._id, reportingPeriod
         );
       }
 
       aggregates = aggregates
-        .map(aggregate => this.formatAggregate(aggregate, userFacility, reportingPeriod));
+        .map(aggregate => this.formatAggregate(aggregate, facility, reportingPeriod));
 
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
@@ -128,9 +128,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   private formatAggregate(aggregate, userFacility, reportingPeriod) {
     const filtersToDisplay: string[] = [];
 
-    if (this.userFacilities.length > 1 && this.facilityFilter?.name) {
+    if (this.userFacilities.length > 1 && userFacility.name) {
       aggregate.facility = userFacility?.name;
-      filtersToDisplay.push(this.facilityFilter.name);
+      filtersToDisplay.push(userFacility.name);
     }
 
     aggregate.reportingPeriod = reportingPeriod;
@@ -142,10 +142,10 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     return aggregate;
   }
 
-  private async setDefaultFacilityFilter() {
+  private async setDefaultFilters() {
     this.userFacilities = await this.userSettingsService.getUserFacilities();
     this.userFacilities.sort((a, b) => a.name.localeCompare(b.name));
-    this.facilityFilter = this.userFacilities.length ? { ...this.userFacilities[0] } : null;
-    await this.getTargetAggregates(this.facilityFilter, this.reportingPeriodFilter);
+    const facility = this.userFacilities.length ? { ...this.userFacilities[0] } : null;
+    await this.getTargetAggregates(facility, AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD);
   }
 }

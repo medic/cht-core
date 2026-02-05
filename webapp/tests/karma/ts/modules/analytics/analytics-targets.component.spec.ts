@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import { GlobalActions } from '@mm-actions/global';
 import { AnalyticsTargetsComponent } from '@mm-modules/analytics/analytics-targets.component';
 import {
-  AnalyticsSidebarFilterComponent,
+  AnalyticsSidebarFilterComponent, AnalyticsSidebarFilterState,
   ReportingPeriod
 } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -43,6 +43,7 @@ describe('AnalyticsTargetsComponent', () => {
       clearSidebarFilter: sinon.stub(GlobalActions.prototype, 'clearSidebarFilter'),
       setTitle: sinon.stub(GlobalActions.prototype, 'setTitle'),
       setShowContent: sinon.stub(GlobalActions.prototype, 'setShowContent'),
+      setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
 
     userSettingsService = {
@@ -159,7 +160,9 @@ describe('AnalyticsTargetsComponent', () => {
     component.ngOnInit();
     tick(50);
 
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({
+      reportingPeriod: ReportingPeriod.CURRENT
+    })).to.be.true;
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(component.targetsDisabled).to.equal(false);
@@ -224,7 +227,9 @@ describe('AnalyticsTargetsComponent', () => {
 
     await component.getTargets(ReportingPeriod.CURRENT);
 
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({
+      reportingPeriod: ReportingPeriod.CURRENT
+    })).to.be.true;
     expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
     expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(component.targetsDisabled).to.be.false;
@@ -245,7 +250,9 @@ describe('AnalyticsTargetsComponent', () => {
 
     await component.getTargets(ReportingPeriod.PREVIOUS);
 
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.PREVIOUS);
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({
+      reportingPeriod: ReportingPeriod.PREVIOUS
+    })).to.be.true;
     expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
     expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.PREVIOUS);
     expect(component.targetsDisabled).to.be.false;
@@ -270,23 +277,29 @@ describe('AnalyticsTargetsComponent', () => {
 
     // Nothing done when CURRENT
     expect(globalActions.setShowContent.notCalled).to.be.true;
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.notCalled).to.be.true;
 
-    component.reportingPeriodFilter = ReportingPeriod.PREVIOUS;
+    store.overrideSelector(Selectors.getSidebarFilter, {
+      reportingPeriod: ReportingPeriod.PREVIOUS
+    } as AnalyticsSidebarFilterState);
     store.overrideSelector(Selectors.getShowContent, true);
     store.refreshState();
     tick();
 
     // Nothing done when showContent is true
     expect(globalActions.setShowContent.notCalled).to.be.true;
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.PREVIOUS);
+    // Filter set from the sidebar, but no reporting period set
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{ filterCount: { total: 1 } }]]);
 
     store.overrideSelector(Selectors.getShowContent, false);
     store.refreshState();
     tick();
 
     // Targets reset to default
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([
+      [{ filterCount: { total: 1 } }],
+      [{ reportingPeriod: ReportingPeriod.CURRENT }]
+    ]);
     expect(rulesEngineService.isEnabled).to.have.been.calledOnceWithExactly();
     expect(rulesEngineService.fetchTargets).to.have.been.calledOnceWithExactly(ReportingPeriod.CURRENT);
     expect(component.targetsDisabled).to.be.false;

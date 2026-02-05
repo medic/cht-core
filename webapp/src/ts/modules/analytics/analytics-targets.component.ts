@@ -11,7 +11,7 @@ import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
 import {
-  AnalyticsSidebarFilterComponent,
+  AnalyticsSidebarFilterComponent, AnalyticsSidebarFilterState,
   ReportingPeriod
 } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -37,7 +37,6 @@ import { TranslateService } from '@mm-services/translate.service';
   ],
 })
 export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
-  private readonly DEFAULT_REPORTING_PERIOD = ReportingPeriod.CURRENT;
   private readonly PREVIOUS_TARGETS_TITLE: string;
   private readonly globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
@@ -47,8 +46,9 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   errorStack;
   trackPerformance;
   direction;
-  sidebarFilter;
-  reportingPeriodFilter = this.DEFAULT_REPORTING_PERIOD;
+  sidebarFilter: AnalyticsSidebarFilterState = {
+    reportingPeriod: AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD
+  };
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
@@ -63,7 +63,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToStore();
-    this.getTargets(this.reportingPeriodFilter);
+    this.getTargets(AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD);
   }
 
   ngOnDestroy(): void {
@@ -76,7 +76,9 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getDirection),
     ]).subscribe(([sidebarFilter, direction]) => {
-      this.sidebarFilter = sidebarFilter;
+      if (sidebarFilter) {
+        this.sidebarFilter = sidebarFilter;
+      }
       this.direction = direction;
     });
     this.subscriptions.add(selectorsSubscription);
@@ -85,16 +87,17 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       .select(Selectors.getShowContent)
       .subscribe(showContent => {
         // User pressed the back button in the mobile layout for previous targets
-        if (!showContent && this.reportingPeriodFilter !== this.DEFAULT_REPORTING_PERIOD) {
-          this.reportingPeriodFilter = this.DEFAULT_REPORTING_PERIOD;
-          this.getTargets(this.reportingPeriodFilter);
+        const returningToDefaultTargets = !showContent
+          && this.sidebarFilter.reportingPeriod !== AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD;
+        if (returningToDefaultTargets) {
+          this.getTargets(AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD);
         }
       });
     this.subscriptions.add(backToCurrentSubscription);
   }
 
   getTargets(reportingPeriod: ReportingPeriod) {
-    this.reportingPeriodFilter = reportingPeriod;
+    this.globalActions.setSidebarFilter({ reportingPeriod });
     // Show the back button in the mobile layout when viewing previous targets
     if (reportingPeriod === ReportingPeriod.PREVIOUS) {
       this.globalActions.setTitle(this.PREVIOUS_TARGETS_TITLE);
@@ -107,7 +110,7 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       .isEnabled()
       .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
-        return isEnabled ? this.rulesEngineService.fetchTargets(this.reportingPeriodFilter) : [];
+        return isEnabled ? this.rulesEngineService.fetchTargets(reportingPeriod) : [];
       })
       .catch(err => {
         console.error('Error getting targets', err);

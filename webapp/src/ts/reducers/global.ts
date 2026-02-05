@@ -275,7 +275,7 @@ interface NavigationState {
   recordTelemetry: null | string;
 }
 
-interface SidebarFilterState {
+export interface SidebarFilterState {
   isOpen?: boolean;
   filterCount?: Record<string, number>;
 }

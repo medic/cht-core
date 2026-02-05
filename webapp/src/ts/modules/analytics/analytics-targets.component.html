@@ -1,9 +1,9 @@
 <div
   class="page scrolling targets-page"
-  [ngClass]="{'sidebar-open': !!sidebarFilter?.isOpen, 'sidebar-closed': !sidebarFilter?.isOpen}">
+  [ngClass]="{'sidebar-open': sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
   <div
     class="targets-content"
-    [ngClass]="{'sidebar-open': !!sidebarFilter?.isOpen, 'sidebar-closed': !sidebarFilter?.isOpen}">
+    [ngClass]="{'sidebar-open': sidebarFilter.isOpen, 'sidebar-closed': !sidebarFilter.isOpen}">
     <div class="item-content empty-selection" *ngIf="targetsDisabled">
       <div>{{ 'targets.disabled' | translate }}</div>
     </div>
@@ -60,7 +60,6 @@
     class="col-sm-3 sidebar-filter-wrapper"
     [showFacilityFilter]="false"
     telemetryKey = "targets"
-    [selectedReportingPeriod]="reportingPeriodFilter"
     (reportingPeriodSelectionChanged)="getTargets($event)">
   </mm-analytics-sidebar-filter>
 </div>

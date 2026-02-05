@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Place } from '@medic/cht-datasource';
@@ -13,17 +13,27 @@ import { MatAccordion } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { SidebarFilterState } from '@mm-reducers/global';
+
+export enum ReportingPeriod {
+  CURRENT = 'current',
+  PREVIOUS = 'previous'
+}
+
+export type AnalyticsSidebarFilterState =  SidebarFilterState & {
+  facility?: Place.v1.Place,
+  reportingPeriod?: ReportingPeriod
+};
 
 @Component({
   selector: 'mm-analytics-sidebar-filter',
   templateUrl: './analytics-sidebar-filter.component.html',
   imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
 })
-export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnChanges {
+export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
+  static readonly DEFAULT_REPORTING_PERIOD = ReportingPeriod.CURRENT;
 
   @Input() userFacilities: Place.v1.Place[] = [];
-  @Input() selectedFacility?: Place.v1.Place;
-  @Input() selectedReportingPeriod = ReportingPeriod.CURRENT;
   @Input() showFacilityFilter = true;
   @Input() telemetryKey: string = 'target_aggregates';
   @Output() facilitySelectionChanged = new EventEmitter<Place.v1.Place>();
@@ -36,8 +46,8 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnCha
 
   DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
-  isOpen = false;
   facilityFilterLabel;
+  filterState: AnalyticsSidebarFilterState = {};
 
   constructor(
     private  readonly store: Store,
@@ -57,36 +67,30 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnCha
     this.subscriptions.unsubscribe();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['selectedReportingPeriod'] || changes['selectedFacility']) {
-      // Make sure the filter count is up to date.
-      this.updateSidebarFilterState();
-    }
-  }
-
   private subscribeToStore() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe((filterState) => this.isOpen = filterState?.isOpen ?? false);
+      .subscribe((filterState) => {
+        if (!filterState) {
+          return;
+        }
+        this.filterState = filterState;
+        const total = this.calculateTotalFilterCount(filterState);
+        if (filterState.filterCount?.total !== total) {
+          this.globalActions.setSidebarFilter({ filterCount: { total } });
+        }
+      });
     this.subscriptions.add(subscription);
   }
 
-  private getTotalFilterCount() {
-    const reportingPeriodCount = this.selectedReportingPeriod === ReportingPeriod.PREVIOUS ? 1 : 0;
+  private calculateTotalFilterCount(filterState: AnalyticsSidebarFilterState) {
+    const reportingPeriodCount = filterState.reportingPeriod === ReportingPeriod.PREVIOUS ? 1 : 0;
     const facilityCount = this.userFacilities.length > 1 ? 1 : 0;
     return reportingPeriodCount + facilityCount;
   }
 
-  private updateSidebarFilterState() {
-    this.globalActions.setSidebarFilter({
-      isOpen: this.isOpen,
-      filterCount: { total: this.getTotalFilterCount() }
-    });
-  }
-
   toggleSidebarFilter() {
-    this.isOpen = !this.isOpen;
-    this.updateSidebarFilterState();
+    this.globalActions.setSidebarFilter({ isOpen: !this.filterState.isOpen });
   }
 
   private async setFacilityLabel() {
@@ -108,22 +112,16 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy, OnCha
   }
 
   fetchAggregateTargetsByFacility(facility: Place.v1.Place) {
-    this.selectedFacility = facility;
-    this.facilitySelectionChanged.emit(this.selectedFacility);
+    this.facilitySelectionChanged.emit(facility);
     this.collectFilterSelectionTelemetry('facility');
   }
 
-  fetchAggregateTargetsByReportingPeriod() {
-    this.reportingPeriodSelectionChanged.emit(this.selectedReportingPeriod);
+  fetchAggregateTargetsByReportingPeriod(reportingPeriod: ReportingPeriod) {
+    this.reportingPeriodSelectionChanged.emit(reportingPeriod);
     this.collectFilterSelectionTelemetry('reporting-period');
   }
 
   private collectFilterSelectionTelemetry(filter) {
     this.telemetryService.record(`sidebar_filter:analytics:${this.telemetryKey}:${filter}:select`);
   }
-}
-
-export enum ReportingPeriod {
-  CURRENT = 'current',
-  PREVIOUS = 'previous'
 }

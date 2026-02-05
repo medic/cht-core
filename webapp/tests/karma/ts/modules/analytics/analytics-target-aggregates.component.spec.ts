@@ -39,6 +39,7 @@ describe('Analytics Target Aggregates Component', () => {
     };
     globalActions = {
       clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
+      setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
     };
     userSettingsService = {
       getUserFacilities: sinon
@@ -92,7 +93,7 @@ describe('Analytics Target Aggregates Component', () => {
     component.ngOnInit();
     flush();
 
-    expect(component.sidebarFilter).to.be.undefined;
+    expect(component.sidebarFilter).to.deep.equal({ reportingPeriod: ReportingPeriod.CURRENT });
     expect(component.enabled).to.be.false;
     expect(component.loading).to.be.false;
     expect(component.aggregates).to.be.undefined;
@@ -145,10 +146,10 @@ describe('Analytics Target Aggregates Component', () => {
     flush();
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(component.facilityFilter).to.deep.equal(
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' }
-    );
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      reportingPeriod: ReportingPeriod.CURRENT
+    }]]);
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.false;
@@ -171,10 +172,10 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(component.facilityFilter).to.deep.equal(
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' }
-    );
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      reportingPeriod: 'current'
+    }]]);
     expect(component.enabled).to.be.true;
     expect(component.loading).to.be.false;
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
@@ -204,10 +205,10 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(component.facilityFilter).to.deep.equal(
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' }
-    );
-    expect(component.reportingPeriodFilter).to.equal(ReportingPeriod.CURRENT);
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      reportingPeriod: 'current'
+    }]]);
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.true;
