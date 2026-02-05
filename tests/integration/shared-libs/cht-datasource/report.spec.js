@@ -8,13 +8,14 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { setAuth, removeAuth } = require('./auth');
 const uuid = require('uuid').v4;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('cht-datasource Report', () => {
   const contact0Id = uuid();
   const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
   const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
+  const place1 = utils.deepFreeze({...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: {_id: contact1._id}});
   const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),

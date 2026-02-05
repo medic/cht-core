@@ -198,19 +198,26 @@ const isUsingChtAndroidV1 = () => {
   return androidAppVersion.startsWith('v1.');
 };
 
+// It will return true if the browser should be blocked from using the app i.e. Safari
+const shouldBlockBrowser = () => {
+  return isSafariBrowser();
+};
+
 const checkUnsupportedBrowser = () => {
   if (!selectedLocale) {
     return;
   }
 
   let outdatedComponentKey;
+  const isSafari = isSafariBrowser();
+  
   if (isUsingChtAndroid()) {
     if (!isUsingChtAndroidV1()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_cht_android';
     } else if (!isUsingSupportedBrowser()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
     }
-  } else if (isSafariBrowser()) {
+  } else if (isSafari) {
     outdatedComponentKey = 'login.unsupported_browser.safari';
   } else if (!isUsingSupportedBrowser()) {
     outdatedComponentKey = 'login.unsupported_browser.outdated_browser';
@@ -222,8 +229,9 @@ const checkUnsupportedBrowser = () => {
       translations[selectedLocale][outdatedComponentKey];
     document.getElementById('unsupported-browser')?.classList.remove('hidden');
 
-    if (isSafariBrowser()) {
+    if (isSafari) {
       document.getElementById('login-fields')?.classList.add('hidden');
+      document.querySelector('.locale-wrapper .loading')?.classList.add('hidden');
     }
   }
 };
@@ -271,8 +279,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('locale')?.addEventListener('click', handleLocaleSelection, false);
   handlePasswordToggle();
 
+  checkUnsupportedBrowser();
+
   if (document.getElementById('tokenLogin')) {
-    requestTokenLogin();
+    if (!shouldBlockBrowser()) {
+      requestTokenLogin();
+    }
   } else {
     checkSession();
     handleLoginButton();
@@ -285,8 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (ssoLoginButton) {
     ssoLoginButton.addEventListener('click', requestSSOLogin, false);
   }
-
-  checkUnsupportedBrowser();
 
 });
 
