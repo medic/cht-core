@@ -141,7 +141,9 @@ const getIssueNumbers = commitMessage => {
 
   const commitHasPRWithMilestone = commit => commit.associatedPullRequests.nodes.find(pr => pr.milestone);
   const prHasIssueWithMilestone = pr => pr.closingIssuesReferences.edges.find(edge => edge.node.milestone);
-  const commitPRHasIssueWithMilestone = commit => commit.associatedPullRequests.nodes.find(prHasIssueWithMilestone);
+  const commitPRHasIssueWithMilestone = commit => commit.associatedPullRequests.nodes.find(
+    (element) => prHasIssueWithMilestone(element)
+  );
 
   const issueHasMilestone = async issueNumber => queryRepo(
     `issueOrPullRequest(number: ${issueNumber}){
@@ -220,7 +222,8 @@ Commits:
   `);
       commitsWithoutMilestone.forEach(commit => printCommitError(commit));
       console.error(''); // adds empty line after last commit URL
-      throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.\n-------\n');
+      throw new Error('Some commits are in an invalid state. ' +
+        'Use --skip-commit-validation to ignore this check.\n-------\n');
     }
   };
 
@@ -265,7 +268,7 @@ Commits:
 
   const validateIssues = issues => {
     const errors = issues
-      .map(validateIssue)
+      .map((element) => validateIssue(element))
       .filter(error => !!error);
     if (errors.length) {
       console.error(JSON.stringify(errors, null, 2));
@@ -299,7 +302,7 @@ Commits:
 
   const format = issue => `- [#${issue.number}](${issue.url}): ${issue.title}\n`;
 
-  const formatAll = issues => issues.length ? issues.map(format).join('') : 'None.\n';
+  const formatAll = issues => issues.length ? issues.map((element) => format(element)).join('') : 'None.\n';
 
   const formatGroups = (groups) => {
     return groups
