@@ -173,7 +173,7 @@ const baseConfig = {
   framework: 'mocha',
   //
   // The number of times to retry the entire specfile when it fails as a whole
-  // specFileRetries: 1,
+  specFileRetries: DEBUG ? 0 : 3,
   //
   // Delay in seconds between the spec file retry attempts
   // specFileRetriesDelay: 0,
@@ -203,7 +203,6 @@ const baseConfig = {
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
-  specFileRetries: DEBUG ? 0 : 3,
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,

@@ -601,18 +601,19 @@ const updateSettings = async (updates, options = {}) => {
   }
 };
 
-const revertCustomSettings = () => {
+const revertCustomSettings = async () => {
   if (!originalSettings) {
-    return Promise.resolve(false);
+    return false;
   }
-  return request({
+
+  const result = await request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then((result) => {
-    originalSettings = null;
-    return result.updated;
   });
+
+  originalSettings = null;
+  return result.updated;
 };
 
 /**
