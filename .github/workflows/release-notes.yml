@@ -8,6 +8,7 @@ on:
         type: string
         required: true
   pull_request:
+  push:
 
 jobs:
   release_notes:
