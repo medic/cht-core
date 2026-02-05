@@ -11,7 +11,7 @@ const update = () => ctx.bind(Report.v1.update);
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_reports' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
       const { uuid } = req.params;
       const report = await getReport(req.query)(Qualifier.byUuid(uuid));
 
@@ -23,7 +23,7 @@ module.exports = {
     }),
 
     getUuids: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_reports' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
 
       const qualifier = Qualifier.byFreetext(req.query.freetext);
 
@@ -33,13 +33,13 @@ module.exports = {
     }),
 
     create: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_reports', 'can_create_records' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_records', 'can_edit'] });
       const reportDoc = await create()(req.body);
       return res.json(reportDoc);
     }),
 
     update: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_reports', 'can_update_records' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_update_reports', 'can_edit'] });
 
       const { uuid } = req.params;
       const updateReportInput = {

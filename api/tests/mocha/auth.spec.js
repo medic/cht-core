@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const auth = require('../../src/auth');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
+const { PermissionError } = require('../../src/errors');
 
 let req;
 
@@ -207,4 +208,114 @@ describe('Auth', () => {
     });
   });
 
+  describe('assertPermissions', () => {
+    const requestOptions = {
+      url: 'http://abc.com/_session',
+      json: true,
+      headers: {
+        host: 'localhost:5988',
+        'user-agent': 'curl/8.6.0',
+        accept: '*/*',
+      },
+    };
+
+    let userCtx;
+
+    beforeEach(() => {
+      userCtx = { name: 'user', roles: ['district_admin'] };
+      sinon.stub(request, 'get').resolves({ userCtx });
+      sinon.stub(config, 'get');
+    });
+
+    it('succeeds when no permissions are required', async () => {
+      const result = await auth.assertPermissions(req, {});
+
+      chai.expect(result).to.deep.equal(userCtx);
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.notCalled).to.be.true;
+    });
+
+    it('succeeds when user has all required permissions', async () => {
+      config.get.returns({
+        can_edit: ['district_admin'],
+        can_view: ['district_admin'],
+      });
+
+      const result = await auth.assertPermissions(req, { hasAll: ['can_edit', 'can_view'] });
+
+      chai.expect(result).to.deep.equal(userCtx);
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.args).to.deep.equal([['permissions'], ['permissions']]);
+    });
+
+    it('succeeds when user has any of the required permissions', async () => {
+      config.get.returns({
+        can_edit: ['national_admin'],
+        can_delete: ['district_admin'],
+      });
+
+      const result = await auth.assertPermissions(req, { hasAny: ['can_edit', 'can_delete'] });
+
+      chai.expect(result).to.deep.equal(userCtx);
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.args).to.deep.equal([['permissions'], ['permissions']]);
+    });
+
+    it('succeeds when user is online and isOnline is required', async () => {
+      userCtx.roles.push('mm-online');
+
+      const result = await auth.assertPermissions(req, { isOnline: true });
+
+      chai.expect(result).to.deep.equal(userCtx);
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.notCalled).to.be.true;
+    });
+
+    it('succeeds for admin user regardless of permissions', async () => {
+      userCtx.roles.push('_admin');
+      config.get.returns({
+        can_edit: ['other_role'],
+      });
+
+      const result = await auth.assertPermissions(req, { hasAll: ['can_edit'] });
+
+      chai.expect(result).to.deep.equal(userCtx);
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.notCalled).to.be.true;
+    });
+
+    it('throws PermissionError when user lacks all required permissions', async () => {
+      config.get.returns({
+        can_edit: ['district_admin'],
+        can_delete: ['national_admin'],
+      });
+
+      await chai.expect(auth.assertPermissions(req, { hasAll: ['can_edit', 'can_delete'] }))
+        .to.be.rejectedWith(PermissionError, 'Insufficient privileges');
+
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.args).to.deep.equal([['permissions'], ['permissions']]);
+    });
+
+    it('throws PermissionError when user lacks any of the required permissions', async () => {
+      config.get.returns({
+        can_delete: ['national_admin'],
+        can_purge: ['national_admin'],
+      });
+
+      await chai.expect(auth.assertPermissions(req, { hasAny: ['can_delete', 'can_purge'] }))
+        .to.be.rejectedWith(PermissionError, 'Insufficient privileges');
+
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.args).to.deep.equal([['permissions'], ['permissions']]);
+    });
+
+    it('throws PermissionError when isOnline is required but user is offline', async () => {
+      await chai.expect(auth.assertPermissions(req, { isOnline: true }))
+        .to.be.rejectedWith(PermissionError, 'Insufficient privileges');
+
+      chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;
+      chai.expect(config.get.notCalled).to.be.true;
+    });
+  });
 });

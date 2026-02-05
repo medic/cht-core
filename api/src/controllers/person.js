@@ -16,7 +16,7 @@ const updatePerson = () => ctx.bind(Person.v1.update);
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
       const { uuid } = req.params;
       const person = await getPerson(req.query)(Qualifier.byUuid(uuid));
       if (!person) {
@@ -25,7 +25,7 @@ module.exports = {
       return res.json(person);
     }),
     getAll: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_contacts' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
 
       const personType = Qualifier.byContactType(req.query.type);
 
@@ -35,14 +35,14 @@ module.exports = {
     }),
 
     create: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_create_people' ], [ 'can_edit' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_people', 'can_edit'] });
 
       const personDoc = await createPerson()(req.body);
       return res.json(personDoc);
     }),
 
     update: serverUtils.doOrError(async (req, res) => {
-      await auth.checkUserPermissions(req, [ 'can_view_contacts', 'can_update_people' ], [ 'can_edit' ]);
+      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_update_people', 'can_edit'] });
 
       const { uuid } = req.params;
       const updatePersonInput = {

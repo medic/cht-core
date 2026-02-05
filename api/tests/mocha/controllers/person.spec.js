@@ -10,12 +10,12 @@ const {PermissionError} = require('../../../src/errors');
 describe('Person Controller', () => {
   let dataContextBind;
   let serverUtilsError;
-  let checkUserPermissions;
+  let assertPermissions;
   let req;
   let res;
 
   beforeEach(() => {
-    checkUserPermissions = sinon.stub(auth, 'checkUserPermissions');
+    assertPermissions = sinon.stub(auth, 'assertPermissions');
     dataContextBind = sinon.stub(dataContext, 'bind');
     serverUtilsError = sinon.stub(serverUtils, 'error');
     res = {
@@ -46,13 +46,16 @@ describe('Person Controller', () => {
       });
 
       it('returns a person', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const person = { name: 'John Doe' };
         personGet.resolves(person);
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -61,14 +64,17 @@ describe('Person Controller', () => {
       });
 
       it('returns a person with lineage when the query parameter is set to "true"', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const person = { name: 'John Doe' };
         personGetWithLineage.resolves(person);
         req.query.with_lineage = 'true';
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
@@ -77,14 +83,17 @@ describe('Person Controller', () => {
       });
 
       it('returns a person without lineage when the query parameter is set something else', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const person = { name: 'John Doe' };
         personGet.resolves(person);
         req.query.with_lineage = '1';
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -93,12 +102,15 @@ describe('Person Controller', () => {
       });
 
       it('returns a 404 error if person is not found', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         personGet.resolves(null);
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
         expect(personGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -112,11 +124,14 @@ describe('Person Controller', () => {
 
       it('returns error if user does not have can_view_contacts permission', async () => {
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(personGet.notCalled).to.be.true;
         expect(personGetWithLineage.notCalled).to.be.true;
@@ -131,7 +146,7 @@ describe('Person Controller', () => {
 
       it('returns error if not an online user', async () => {
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
 
         await controller.v1.get(req, res);
 
@@ -174,12 +189,15 @@ describe('Person Controller', () => {
       });
 
       it('returns a page of people with correct query params', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         personGetPageByType.resolves(people);
 
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
@@ -189,10 +207,13 @@ describe('Person Controller', () => {
 
       it('returns error if user does not have can_view_contacts permission', async () => {
         const privilegeError = new PermissionError('Insufficient privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(personGetPageByType.notCalled).to.be.true;
@@ -207,7 +228,7 @@ describe('Person Controller', () => {
 
       it('returns error if not an online user', async () => {
         const privilegeError = new PermissionError('Insufficient privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
 
         await controller.v1.getAll(req, res);
 
@@ -225,12 +246,15 @@ describe('Person Controller', () => {
 
       it('returns 400 error when personType is invalid', async () => {
         const err = new InvalidArgumentError(`Invalid contact type: [${invalidPersonType}]`);
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         personGetPageByType.throws(err);
 
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
@@ -240,12 +264,15 @@ describe('Person Controller', () => {
 
       it('rethrows error in case of other errors', async () => {
         const err = new Error('error');
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         personGetPageByType.throws(err);
 
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
         expect(personGetPageByType.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
@@ -275,13 +302,16 @@ describe('Person Controller', () => {
             ...input
           }
         };
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
         createPerson.resolves(createdPersonDoc);
          
         await controller.v1.create(req, res);
-        expect(checkUserPermissions
-          .calledWith(req, ['can_view_contacts', 'can_create_people'], ['can_edit'])).to.be.true;
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_create_people', 'can_edit'] }
+        )).to.be.true;
         expect(createPerson.calledOnce).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
@@ -315,13 +345,15 @@ describe('Person Controller', () => {
             ...input
           }
         };
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const updatePersonDoc = {...input, _id: '123', rev: '1-rev'}; 
         updatePerson.resolves(updatePersonDoc);
          
         await controller.v1.update(req, res);
-        expect(checkUserPermissions
-          .calledWith(req, ['can_view_contacts', 'can_update_people'], ['can_edit'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_update_people', 'can_edit'] }
+        )).to.be.true;
         expect(updatePerson.calledOnce).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;

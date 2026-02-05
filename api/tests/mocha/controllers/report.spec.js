@@ -10,14 +10,14 @@ const {PermissionError} = require('../../../src/errors');
 describe('Report Controller Tests', () => {
   let dataContextBind;
   let serverUtilsError;
-  let checkUserPermissions;
+  let assertPermissions;
   let req;
   let res;
 
   beforeEach(() => {
     dataContextBind = sinon.stub(dataContext, 'bind');
     serverUtilsError = sinon.stub(serverUtils, 'error');
-    checkUserPermissions = sinon.stub(auth, 'checkUserPermissions');
+    assertPermissions = sinon.stub(auth, 'assertPermissions');
     res = {
       json: sinon.stub(),
     };
@@ -46,19 +46,17 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
         reportGet.resolves(report);
 
         await controller.v1.get(req, res);
        
 
-        expect(
-          checkUserPermissions.calledOnceWithExactly(
-            req,
-            sinon.match(['can_view_reports'])
-          )
-        ).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.calledOnceWithExactly(report)).to.be.true;
@@ -66,19 +64,17 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report with lineage when the query parameter is set to "true"', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
         reportGetWithLineage.resolves(report);
         req.query.with_lineage = 'true';
 
         await controller.v1.get(req, res);
 
-        expect(
-          checkUserPermissions.calledOnceWithExactly(
-            req,
-            sinon.match(['can_view_reports'])
-          )
-        ).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
         expect(reportGet.notCalled).to.be.true;
         expect(reportGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
@@ -87,19 +83,17 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report without lineage when the query parameter is set something else', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
         reportGet.resolves(report);
         req.query.with_lineage = '1';
 
         await controller.v1.get(req, res);
 
-        expect(
-          checkUserPermissions.calledOnceWithExactly(
-            req,
-            sinon.match(['can_view_reports'])
-          )
-        ).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(reportGetWithLineage.notCalled).to.be.true;
@@ -109,15 +103,13 @@ describe('Report Controller Tests', () => {
 
       it('returns a 404 error if report is not found', async () => {
         reportGet.resolves(null);
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         await controller.v1.get(req, res);
 
-        expect(
-          checkUserPermissions.calledOnceWithExactly(
-            req,
-            sinon.match(['can_view_reports'])
-          )
-        ).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(res.json.notCalled).to.be.true;
@@ -130,7 +122,7 @@ describe('Report Controller Tests', () => {
 
       it('returns error if user does not have can_view_reports permission', async () => {
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         await controller.v1.get(req, res);
 
         expect(dataContextBind.notCalled).to.be.true;
@@ -146,7 +138,7 @@ describe('Report Controller Tests', () => {
 
       it('returns error if not an online user', async () => {
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         await controller.v1.get(req, res);
 
         expect(dataContextBind.notCalled).to.be.true;
@@ -194,12 +186,15 @@ describe('Report Controller Tests', () => {
             limit,
           }
         };
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         reportGetIdsPage.resolves(reports);
 
         await controller.v1.getUuids(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetexQualifier, cursor, limit)).to.be.true;
@@ -214,12 +209,15 @@ describe('Report Controller Tests', () => {
             cursor,
           }
         };
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         reportGetIdsPage.resolves(reports);
 
         await controller.v1.getUuids(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetexQualifier, cursor, undefined)).to.be.true;
@@ -237,11 +235,14 @@ describe('Report Controller Tests', () => {
         };
         const err = new InvalidArgumentError(`The limit must be a positive integer: [NaN].`);
         reportGetIdsPage.throws(err);
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
 
         await controller.v1.getUuids(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetexQualifier, cursor, null)).to.be.true;
@@ -258,10 +259,13 @@ describe('Report Controller Tests', () => {
           }
         };
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         await controller.v1.getUuids(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
@@ -281,7 +285,7 @@ describe('Report Controller Tests', () => {
           }
         };
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
 
         await controller.v1.getUuids(req, res);
 
@@ -305,11 +309,14 @@ describe('Report Controller Tests', () => {
         };
         const err = new InvalidArgumentError(`Invalid freetext: [${invalidFreetext}]`);
         reportGetIdsPage.throws(err);
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
 
         await controller.v1.getUuids(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetexQualifier, cursor, limit)).to.be.true;
@@ -326,12 +333,15 @@ describe('Report Controller Tests', () => {
           }
         };
         const err = new Error('error');
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         reportGetIdsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
         expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
         expect(reportGetIdsPage.calledOnceWithExactly(freetexQualifier, cursor, limit)).to.be.true;
@@ -351,7 +361,7 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report doc on valid report input', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const input = {
           type: 'report',
           reported_date: 12312312,
@@ -383,7 +393,7 @@ describe('Report Controller Tests', () => {
       });
 
       it('updates report for valid update input', async() => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const updateInput = {
           type: 'report',
           reported_date: 12312312,
@@ -412,7 +422,7 @@ describe('Report Controller Tests', () => {
 
       it('throws error when the user is not an online user', async() => {
         const privilegeError = new PermissionError('Insufficient Privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         const updateInput = {
           type: 'report',
           reported_date: 12312312, 
@@ -458,12 +468,15 @@ describe('Report Controller Tests', () => {
         };
 
         const err = new Error('error');
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         updateReport.throws(err);
 
         await controller.v1.update(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_reports', 'can_update_records'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_update_reports', 'can_edit'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Report.v1.update)).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;

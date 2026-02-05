@@ -8,14 +8,14 @@ const serverUtils = require('../../../src/server-utils');
 const {PermissionError} = require('../../../src/errors');
 
 describe('Place Controller', () => {
-  let checkUserPermissions;
+  let assertPermissions;
   let dataContextBind;
   let serverUtilsError;
   let req;
   let res;
 
   beforeEach(() => {
-    checkUserPermissions = sinon.stub(auth, 'checkUserPermissions');
+    assertPermissions = sinon.stub(auth, 'assertPermissions');
     dataContextBind = sinon.stub(dataContext, 'bind');
     serverUtilsError = sinon.stub(serverUtils, 'error');
     res = {
@@ -46,13 +46,16 @@ describe('Place Controller', () => {
       });
 
       it('returns a place', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const place = { name: 'John Doe Castle' };
         placeGet.resolves(place);
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -61,14 +64,17 @@ describe('Place Controller', () => {
       });
 
       it('returns a place with lineage when the query parameter is set to "true"', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const place = { name: 'John Doe Castle' };
         placeGetWithLineage.resolves(place);
         req.query.with_lineage = 'true';
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
@@ -77,14 +83,17 @@ describe('Place Controller', () => {
       });
 
       it('returns a place without lineage when the query parameter is set something else', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const place = { name: 'John Doe Castle' };
         placeGet.resolves(place);
         req.query.with_lineage = '1';
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -93,12 +102,15 @@ describe('Place Controller', () => {
       });
 
       it('returns a 404 error if place is not found', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         placeGet.resolves(null);
 
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.get)).to.be.true;
         expect(placeGet.calledOnceWithExactly(Qualifier.byUuid(req.params.uuid))).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -112,10 +124,13 @@ describe('Place Controller', () => {
 
       it('returns error if user does not have can_view_contacts permission', async () => {
         const privilegeError = new PermissionError('Insufficient privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         await controller.v1.get(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(placeGet.notCalled).to.be.true;
         expect(placeGetWithLineage.notCalled).to.be.true;
@@ -130,7 +145,7 @@ describe('Place Controller', () => {
 
       it('returns error if not an online user', async () => {
         const privilegeError = new PermissionError('Insufficient privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
 
         await controller.v1.get(req, res);
 
@@ -173,12 +188,15 @@ describe('Place Controller', () => {
       });
 
       it('returns a page of places with correct query params', async () => {
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         placeGetPageByType.resolves(places);
 
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
@@ -188,10 +206,13 @@ describe('Place Controller', () => {
 
       it('returns error if user does not have can_view_contacts permission', async () => {
         const privilegeError = new PermissionError('Insufficient privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(dataContextBind.notCalled).to.be.true;
         expect(qualifierByContactType.notCalled).to.be.true;
         expect(placeGetPageByType.notCalled).to.be.true;
@@ -206,7 +227,7 @@ describe('Place Controller', () => {
 
       it('returns error if not an online user', async () => {
         const privilegeError = new PermissionError('Insufficient privileges');
-        checkUserPermissions.rejects(privilegeError);
+        assertPermissions.rejects(privilegeError);
 
         await controller.v1.getAll(req, res);
 
@@ -224,12 +245,15 @@ describe('Place Controller', () => {
 
       it('returns 400 error when placeType is invalid', async () => {
         const err = new InvalidArgumentError(`Invalid contact type: [${invalidPlaceType}].`);
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         placeGetPageByType.throws(err);
 
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
@@ -239,12 +263,15 @@ describe('Place Controller', () => {
 
       it('rethrows error in case of other errors', async () => {
         const err = new Error('error');
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         placeGetPageByType.throws(err);
 
         await controller.v1.getAll(req, res);
 
-        expect(checkUserPermissions.calledOnceWithExactly(req, ['can_view_contacts'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
         expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
         expect(dataContextBind.calledOnceWithExactly(Place.v1.getPage)).to.be.true;
         expect(placeGetPageByType.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
@@ -273,7 +300,7 @@ describe('Place Controller', () => {
             ...input
           }
         };
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const expected_doc = {
           ...input,
           _id: '1',
@@ -282,8 +309,11 @@ describe('Place Controller', () => {
         placeCreate.resolves(expected_doc);
 
         await controller.v1.create(req, res);
-        expect(checkUserPermissions
-          .calledWith(req, ['can_view_contacts', 'can_create_places'], ['can_edit'])).to.be.true;
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_create_places', 'can_edit'] }
+        )).to.be.true;
         expect(placeCreate.calledOnceWithExactly(input)).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
         expect(res.json.calledOnceWithExactly(expected_doc)).to.be.true;
@@ -317,12 +347,14 @@ describe('Place Controller', () => {
             ...input
           }
         };
-        checkUserPermissions.resolves();
+        assertPermissions.resolves();
         const updatePlaceDoc = {...input, _id: '123', rev: '2-rev'}; 
         updatePlace.resolves(updatePlaceDoc);
         await controller.v1.update(req, res);
-        expect(checkUserPermissions
-          .calledWith(req, ['can_view_contacts', 'can_update_places'], ['can_edit'])).to.be.true;
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_update_places', 'can_edit'] }
+        )).to.be.true;
         expect(updatePlace.calledOnce).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(dataContextBind.calledOnce).to.be.true;
