@@ -32,6 +32,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private globalActions;
   activeModule;
+  activeFilters = 0;
   subscriptions: Subscription = new Subscription();
   showFilterButton;
   isOpen = false;
@@ -75,7 +76,10 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   private subscribeToStore() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe((filterState) => this.isOpen = filterState?.isOpen ?? false);
+      .subscribe((filterState) => {
+        this.isOpen = filterState?.isOpen ?? false;
+        this.activeFilters = filterState?.filterCount?.total ?? 0;
+      });
     this.subscriptions.add(subscription);
   }
 

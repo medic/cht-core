@@ -14,7 +14,6 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 
 describe('AnalyticsTargetAggregatesDetailComponent', () => {
   let component: AnalyticsTargetAggregatesDetailComponent;
@@ -211,29 +210,4 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
       heading: 'translated title 1 updated',
     });
   }));
-
-  it('should return reporting period text without month when ReportingPeriod.CURRENT', () => {
-    sinon.reset();
-    component.selected = {
-      subtitle_translation_key: 'targets.this_month.subtitle',
-      reportingPeriod: ReportingPeriod.CURRENT
-    };
-    translateService.instant = sinon.stub().returns('This month');
-
-    const result = (component as any).getReportingPeriodText(component.selected);
-    expect(result).to.equal('This month');
-  });
-
-  it('should return month name as reporting period text when ReportingPeriod.PREVIOUS', () => {
-    sinon.reset();
-    component.selected = {
-      subtitle_translation_key: 'targets.this_month.subtitle',
-      reportingPeriod: ReportingPeriod.PREVIOUS,
-      reportingMonth: 'April'
-    };
-    translateService.instant = sinon.stub().returns('This month');
-
-    const result = (component as any).getReportingPeriodText(component.selected);
-    expect(result).to.equal('April');
-  });
 });

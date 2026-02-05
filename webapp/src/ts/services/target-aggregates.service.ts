@@ -14,6 +14,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { Target, TargetValue } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import configLib from '../libs/config';
 
 const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
 
@@ -69,9 +70,9 @@ export class TargetAggregatesService {
    * @returns A string representing the interval tag in YYYY-MM format
    */
 
-  private getTargetIntervalTag(appSettings, reportingPeriod?:ReportingPeriod, monthsAgo = 1) {
+  private getTargetIntervalTag(appSettings, reportingPeriod: ReportingPeriod, monthsAgo = 1) {
     const { uhcMonthStartDate, targetInterval: currentInterval } = this.getCurrentInterval(appSettings);
-    if (!reportingPeriod || reportingPeriod === ReportingPeriod.CURRENT) {
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
       return this.getIntervalTag(currentInterval);
     }
 
@@ -115,7 +116,12 @@ export class TargetAggregatesService {
     return this.translateFromService.get(target.title);
   }
 
-  private getAggregate(originalTargetConfig) {
+  private getTranslatedSubtitle(target, reportingPeriod: ReportingPeriod) {
+    const subtitleKey = configLib.getValueFromFunction(target.subtitle_translation_key, reportingPeriod);
+    return this.translateService.instant(subtitleKey);
+  }
+
+  private getAggregate(originalTargetConfig, reportingPeriod: ReportingPeriod) {
     const targetConfig = { ...originalTargetConfig };
 
     targetConfig.values = [];
@@ -123,6 +129,7 @@ export class TargetAggregatesService {
     targetConfig.isPercent = targetConfig.type === 'percent';
     targetConfig.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
     targetConfig.heading = this.getTranslatedTitle(targetConfig);
+    targetConfig.subtitle = this.getTranslatedSubtitle(targetConfig, reportingPeriod);
     targetConfig.aggregateValue = { pass: 0, total: 0 };
 
     return targetConfig;
@@ -195,9 +202,9 @@ export class TargetAggregatesService {
     }
   }
 
-  private async aggregateTargets(intervalTag: string, contacts, targetsConfig) {
+  private async aggregateTargets(intervalTag: string, reportingPeriod: ReportingPeriod, contacts, targetsConfig) {
     const relevantTargetDocs = await this.getRelevantTargetDocs(intervalTag, contacts);
-    const aggregates = targetsConfig.map((targetConfig) => this.getAggregate(targetConfig));
+    const aggregates = targetsConfig.map((targetConfig) => this.getAggregate(targetConfig, reportingPeriod));
 
     relevantTargetDocs.forEach(targetDoc => {
       aggregates.forEach(aggregate => {
@@ -311,25 +318,11 @@ export class TargetAggregatesService {
     return !facilityIds || facilityIds.length > 0;
   }
 
-  getReportingMonth(reportingPeriod:ReportingPeriod) {
-    return this.settingsService
-      .get()
-      .then(settings => {
-        const tag = this.getTargetIntervalTag(settings, reportingPeriod);
-        return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
-      })
-      .catch(error => {
-        console.error('Error getting reporting month:', error);
-        return this.translateService.instant('targets.last_month.subtitle');
-      });
-  }
-
-
-  getAggregates(facilityId?, reportingPeriod?: ReportingPeriod) {
+  getAggregates(facilityId?, reportingPeriod = ReportingPeriod.CURRENT) {
     return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
   }
 
-  private async _getAggregates(facilityId?, reportingPeriod?: ReportingPeriod): Promise<AggregateTarget[]> {
+  private async _getAggregates(facilityId, reportingPeriod: ReportingPeriod): Promise<AggregateTarget[]> {
     const settings = await this.settingsService.get();
     const targetsConfig = this.getTargetsConfig(settings, true);
 
@@ -339,7 +332,7 @@ export class TargetAggregatesService {
 
     const contacts = await this.getSupervisedContacts(facilityId);
     const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
-    return this.aggregateTargets(intervalTag, contacts, targetsConfig);
+    return this.aggregateTargets(intervalTag, reportingPeriod, contacts, targetsConfig);
   }
 
   getAggregateDetails(targetId?, aggregates?) {
@@ -384,7 +377,7 @@ export interface AggregateTarget extends Target {
   progressBar: boolean;
   facility?: string;
   reportingPeriod?: ReportingPeriod;
-  reportingMonth?: string;
+  subtitle?: string;
   filtersToDisplay?: (string | ReportingPeriod)[];
   heading: string;
   values: ContactTargetValue[];

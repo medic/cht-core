@@ -8,9 +8,7 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
-
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
@@ -42,7 +40,6 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   subscriptions: Subscription = new Subscription();
   selected: any = null;
   error: any = null;
-  reportingPeriod;
   direction;
   private aggregates = null;
   private viewInited = new Subject();
@@ -82,9 +79,6 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
       this.selected = selected;
       this.error = error;
       this.direction = direction;
-      if (this.selected) {
-        this.reportingPeriod = this.getReportingPeriodText(this.selected);
-      }
     });
     this.subscriptions.add(subscriptionStore);
   }
@@ -129,13 +123,5 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     const title = this.translateService.instant('analytics.target.aggregates');
     this.globalActions.setTitle(title);
     this.targetAggregatesActions.setSelectedTargetAggregate(aggregateDetails);
-  }
-
-  private getReportingPeriodText(aggregate) {
-    if (aggregate.reportingPeriod === ReportingPeriod.CURRENT) {
-      return this.translateService.instant(this.selected.subtitle_translation_key);
-    }
-
-    return this.selected.reportingMonth;
   }
 }

@@ -15,7 +15,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
-import { TargetInterval, Qualifier } from '@medic/cht-datasource';
+import { Qualifier, TargetInterval } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
@@ -606,6 +606,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'count',
         title: 'target1',
+        subtitle: undefined,
         values: [],
         hasGoal: false,
         isPercent: false,
@@ -618,6 +619,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'count',
         title: 'target3',
+        subtitle: undefined,
         goal: 20,
         values: [],
         hasGoal: true,
@@ -632,6 +634,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'percent',
         translation_key: 'target4',
+        subtitle: undefined,
         goal: -1,
         values: [],
         hasGoal: false,
@@ -646,6 +649,7 @@ describe('TargetAggregatesService', () => {
         type: 'percent',
         goal: 80,
         title: 'target5',
+        subtitle: undefined,
         values: [],
         hasGoal: true,
         isPercent: true,
@@ -657,9 +661,23 @@ describe('TargetAggregatesService', () => {
 
     it('should calculate every type of target aggregate correctly', async () => {
       const config = { tasks: { targets: { items: [
-        { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
-        { id: 'target2', aggregate: true, type: 'count', goal: 20, translation_key: 'target2' },
-        { id: 'target3', aggregate: true, type: 'percent', goal: -1, title: 'target3' },
+        { id: 'target1', aggregate: true, type: 'count', title: 'target1', subtitle_translation_key: 'sub_trans_key' },
+        {
+          id: 'target2',
+          aggregate: true,
+          type: 'count',
+          goal: 20,
+          translation_key: 'target2',
+          subtitle_translation_key: '() => "sub_trans_key"'
+        },
+        {
+          id: 'target3',
+          aggregate: true,
+          type: 'percent',
+          goal: -1,
+          title: 'target3',
+          subtitle_translation_key: '(reportingPeriod) => reportingPeriod'
+        },
         { id: 'target4', aggregate: true, type: 'percent', goal: 80, translation_key: 'target4' },
         { id: 'target5', aggregate: true, type: 'count', goal: 2, translation_key: 'target5' },
       ] } }};
@@ -724,10 +742,12 @@ describe('TargetAggregatesService', () => {
       const result = await service.getAggregates();
 
       expect(result.length).to.equal(5);
-      expect(translateService.instant.callCount).to.equal(6);
+      expect(translateService.instant.callCount).to.equal(9);
       expect(translateService.instant.withArgs('target2').callCount).to.equal(1);
       expect(translateService.instant.withArgs('target4').callCount).to.equal(1);
       expect(translateService.instant.withArgs('target5').callCount).to.equal(1);
+      expect(translateService.instant.withArgs('sub_trans_key').callCount).to.equal(2);
+      expect(translateService.instant.withArgs('current').callCount).to.equal(1);
       expect(translateService.instant.withArgs(ratioTranslationKey).callCount).to.equal(3);
       expect(translateService.instant.withArgs(ratioTranslationKey)
         .args[0][1]).to.deep.include({ pass: 1, total: 3 });
@@ -741,6 +761,8 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'count',
         title: 'target1',
+        subtitle: 'sub_trans_key',
+        subtitle_translation_key: 'sub_trans_key',
         aggregateValue: { pass: 26, total: 26, hasGoal: false, summary: 26 },
         heading: 'target1',
         hasGoal: false,
@@ -758,6 +780,8 @@ describe('TargetAggregatesService', () => {
         type: 'count',
         goal: 20,
         translation_key: 'target2',
+        subtitle: 'sub_trans_key',
+        subtitle_translation_key: '() => "sub_trans_key"',
         aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target2',
         hasGoal: true,
@@ -775,6 +799,8 @@ describe('TargetAggregatesService', () => {
         type: 'percent',
         goal: -1,
         title: 'target3',
+        subtitle: 'current',
+        subtitle_translation_key: '(reportingPeriod) => reportingPeriod',
         aggregateValue: { pass: 20, total: 51, percent: 39, hasGoal: false, summary: '39%' },
         heading: 'target3',
         hasGoal: false,
@@ -791,6 +817,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'percent',
         translation_key: 'target4',
+        subtitle: undefined,
         goal: 80,
         aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target4',
@@ -809,6 +836,7 @@ describe('TargetAggregatesService', () => {
         type: 'count',
         goal: 2,
         translation_key: 'target5',
+        subtitle: undefined,
         aggregateValue: { pass: 3, total: 3, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target5',
         hasGoal: true,
@@ -872,6 +900,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
+        subtitle: undefined,
         aggregateValue: { pass: 19, total: 19, hasGoal: false, summary: 19 },
         heading: undefined,
         hasGoal: false,
@@ -939,6 +968,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
+        subtitle: undefined,
         aggregateValue: { pass: 27, total: 27, hasGoal: false, summary: 27 },
         heading: undefined,
         hasGoal: false,
@@ -955,6 +985,7 @@ describe('TargetAggregatesService', () => {
         id: 'target2',
         aggregate: true,
         type: 'percent',
+        subtitle: undefined,
         aggregateValue: { pass: 10, total: 15, percent: 67, hasGoal: false, summary: '67%' },
         heading: undefined,
         hasGoal: false,
@@ -1029,6 +1060,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
+        subtitle: undefined,
         aggregateValue: { pass: 10, total: 10, hasGoal: false, summary: 10 },
         heading: undefined,
         hasGoal: false,
@@ -1043,6 +1075,7 @@ describe('TargetAggregatesService', () => {
         id: 'target2',
         aggregate: true,
         type: 'percent',
+        subtitle: undefined,
         aggregateValue: { pass: 0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
         heading: undefined,
         hasGoal: false,
@@ -1113,6 +1146,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
+        subtitle: undefined,
         aggregateValue: { pass: 25, total: 25, hasGoal: false, summary: 25 },
         heading: undefined,
         hasGoal: false,
@@ -1128,6 +1162,7 @@ describe('TargetAggregatesService', () => {
         id: 'target2',
         aggregate: true,
         type: 'percent',
+        subtitle: undefined,
         aggregateValue: { pass: 17, total: 17, percent: 100, hasGoal: false, summary: '100%' },
         heading: undefined,
         hasGoal: false,
@@ -1142,86 +1177,6 @@ describe('TargetAggregatesService', () => {
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
-    });
-  });
-
-  describe('getReportingMonth', () => {
-    it('should return the correct month for the current reporting period', async () => {
-      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
-      settingsService.get.resolves(config);
-
-      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
-      getDataRecordsService.get.resolves([]);
-      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
-      contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
-      searchService.search.resolves([]);
-      uhcSettingsService.getMonthStartDate.returns(1);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2024-08-01').valueOf(),
-        end: moment('2024-08-31').valueOf(),
-      });
-
-      const result = await service.getReportingMonth(ReportingPeriod.CURRENT);
-
-      expect(result).to.equal('August');
-      expect(settingsService.get.callCount).to.equal(1);
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
-      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
-    });
-
-    it('should return the correct month for the previous reporting period', async () => {
-      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
-      settingsService.get.resolves(config);
-
-      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
-      getDataRecordsService.get.resolves([]);
-      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
-      contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
-      searchService.search.resolves([]);
-      uhcSettingsService.getMonthStartDate.returns(1);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2024-08-01').valueOf(),
-        end: moment('2024-08-31').valueOf(),
-      });
-      calendarIntervalService.getInterval.returns({
-        start: moment('2024-07-01').valueOf(),
-        end: moment('2024-07-31').valueOf(),
-      });
-
-      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
-
-      expect(result).to.equal('July');
-      expect(settingsService.get.callCount).to.equal(1);
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
-      expect(calendarIntervalService.getInterval.callCount).to.equal(1);
-      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2024-07-31').valueOf()]);
-    });
-
-    it('should return "Last month" when getIntervalTag fails to get the correct month name', async () => {
-      const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
-      settingsService.get.resolves(config);
-
-      userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
-      getDataRecordsService.get.resolves([]);
-      getDataRecordsService.get.withArgs(['home']).resolves([{ _id: 'home' }]);
-      contactTypesService.getTypeId.returns('home_type');
-      contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
-      searchService.search.resolves([]);
-      translateService.instant = sinon.stub().returns('Last month');
-      settingsService.get.rejects({ some: 'err' });
-      uhcSettingsService.getMonthStartDate.returns(1);
-      calendarIntervalService.getPrevious.returns({
-        start: moment('2024-07-01').valueOf(),
-        end: moment('2024-07-31').valueOf(),
-      });
-
-      const result = await service.getReportingMonth(ReportingPeriod.PREVIOUS);
-
-      expect(result).to.equal('Last month');
-      expect(translateService.instant.calledWith('targets.last_month.subtitle')).to.be.true;
     });
   });
 
