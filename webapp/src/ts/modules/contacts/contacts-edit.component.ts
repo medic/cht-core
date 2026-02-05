@@ -342,7 +342,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.trackEditDuration = this.performanceService.track();
 
     if (this.contactId) {
-      await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(this.contactId));
+      await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(this.contact));
     }
 
     return formInstance;
@@ -361,8 +361,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  private async renderAttachmentPreviews(contactId: string): Promise<void> {
-    const doc = await this.dbService.get().get(contactId);
+  private async renderAttachmentPreviews(doc: any): Promise<void> {
     if (!doc._attachments) {
       return;
     }
@@ -396,7 +395,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
           return;
         }
 
-        const attachmentBlob = await this.getAttachment(contactId, attachmentName);
+        const attachmentBlob = await this.getAttachment(doc._id, attachmentName);
         if (!attachmentBlob) {
           return;
         }
