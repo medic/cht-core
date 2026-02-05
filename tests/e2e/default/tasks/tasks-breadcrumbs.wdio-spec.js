@@ -152,7 +152,8 @@ describe('Tasks tab breadcrumbs', () => {
     it('should open task with expression', async () => {
       await loginPage.login(chw);
       await commonPage.goToTasks();
-      await tasksPage.getTaskByContactAndForm('patient1', 'person_create').click();
+      const task = await tasksPage.getTaskByContactAndForm('patient1', 'person_create');
+      await task.click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
     });
   });

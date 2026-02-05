@@ -431,7 +431,6 @@ const PROTECTED_DOCS = [
   'branding',
   'partners',
   DOC_IDS.SETTINGS,
-  /^form:/,
   /^_design/
 ];
 
@@ -495,6 +494,7 @@ const deleteSentinelDocs = async (docsToKeep) => {
  * @return     {Promise}  completion promise
  */
 const deleteAllDocs = async (except = []) => {
+  await getDefaultForms();
   const filters = createDocumentFilters(except);
   const { rows } = await db.allDocs({ include_docs: true });
 
@@ -678,7 +678,7 @@ const getDefaultForms = async () => {
   const docName = '_local/default-forms';
   try {
     const doc = await db.get(docName);
-    return doc.forms;
+    PROTECTED_DOCS.push(...doc.forms);
   } catch {
     const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
     const doc = {
@@ -686,7 +686,7 @@ const getDefaultForms = async () => {
       forms: result.rows.map(row => row.id),
     };
     await db.put(doc);
-    return doc.forms;
+    PROTECTED_DOCS.push(...doc.forms);
   }
 };
 
@@ -720,7 +720,7 @@ const deleteMetaDbs = async () => {
  *                         everything will be deleted from the config, including all the enketo forms.
  * @param {boolean} ignoreRefresh
  */
-const revertDb = async (except, ignoreRefresh) => { //NOSONAR
+const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
