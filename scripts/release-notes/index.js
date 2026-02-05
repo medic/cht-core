@@ -322,7 +322,7 @@ Commits:
   };
 
   const output = async ({warnings, types}, commits) => {
-    console.log('Gathering release note contents...');
+    console.log('Gathering release note contents');
     const currentDate = new Date().toISOString().split('T')[0];  // Format: YYYY-MM-DD
     const releaseNotes = `
 ---
