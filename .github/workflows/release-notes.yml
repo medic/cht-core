@@ -3,8 +3,10 @@ name: Release notes generator
 on:
   workflow_dispatch:
     - inputs:
-      tags:
-        description: 'Milestone'
+      milestone:
+        description: 'Milestone to build release notes from'
+        type: string
+        required: true
 
 jobs:
   release_notes:
@@ -24,7 +26,7 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          GITHUB_TOKEN=$GITHUB_TOKEN node index.js ${{ github.event.inputs.Milestone }}
+          GITHUB_TOKEN=$GITHUB_TOKEN node index.js ${{ github.event.inputs.milestone }}
       - name: Upload release note artifacts
         uses: actions/upload-artifact@v4
         with:
