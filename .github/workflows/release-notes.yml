@@ -24,19 +24,11 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          GITHUB_TOKEN=$GITHUB_TOKEN node index.js > ~/release-notes.md 2> ~/release-error.txt
+          GITHUB_TOKEN=$GITHUB_TOKEN node index.js > ~/release-notes.md
       - name: Upload release note artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: ~/release-notes.md
           retention-days: 10
-          compression-level: 0
-      - name: Upload error artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-error
-          path: ~/release-error.txt
-          retention-days: 10
-          if-no-files-found: ignore
           compression-level: 0
