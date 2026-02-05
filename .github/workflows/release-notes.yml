@@ -9,7 +9,6 @@ on:
         required: true
       skip_commit_checks:
         description: 'Skip commit checks - empty string means run checks'
-        required: true
         default: ''
         type: choice
         options:
