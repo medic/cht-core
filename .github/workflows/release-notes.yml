@@ -9,6 +9,9 @@ on:
 jobs:
   release_notes:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts/release-notes
 
     steps:
       - name: Checkout Code
