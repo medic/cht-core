@@ -19,7 +19,7 @@ jobs:
           node-version: 24
       - name: Install Deps & Run Node Script
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd scripts
           npm ci
