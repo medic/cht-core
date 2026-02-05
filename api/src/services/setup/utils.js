@@ -183,44 +183,63 @@ const getDdocDefinitions = (buildInfo) => {
   return downloadDdocDefinitions(buildInfo);
 };
 
+let localDdocDefinitionsCache = null;
+const remoteDdocDefinitionsCache = new Map();
+
+const deepCopy = (map) => {
+  // Return a deep copy to prevent mutation of cached ddocs
+  const copy = new Map();
+  for (const [key, value] of map) {
+    copy.set(key, value.map(ddoc => ({ ...ddoc })));
+  }
+  return copy;
+};
 /**
  * Returns map of bundled ddoc definitions for every database
  * @return {Map<Database, Array>}
  */
 const getLocalDdocDefinitions = async () => {
-  const ddocDefinitions = new Map();
-  for (const database of DATABASES) {
-    ddocDefinitions.set(database, await getBundledDdocs(database));
+  if (!localDdocDefinitionsCache) {
+    const ddocDefinitions = new Map();
+    for (const database of DATABASES) {
+      ddocDefinitions.set(database, await getBundledDdocs(database));
+    }
+    localDdocDefinitionsCache = ddocDefinitions;
   }
-  return ddocDefinitions;
+  return deepCopy(localDdocDefinitionsCache);
 };
 
 /**
- * Returns map of bundled ddoc definitions for every database, downloaded from the staging server
+ * Returns map of bundled ddoc definitions for every database for s specific version,
+ * downloaded from the staging server
  * @param {BuildInfo} buildInfo
  * @return {Map<Database, Array>}
  */
 const downloadDdocDefinitions = async (buildInfo) => {
-  const ddocDefinitions = new Map();
+  if (!remoteDdocDefinitionsCache.has(buildInfo.version)) {
 
-  const stagingDoc = await getStagingDoc(buildInfo);
+    const ddocDefinitions = new Map();
 
-  // for simplicity, only ddocs for "known" databases are staged and indexed.
-  // for new databases, the final install will happen in the api preflight check.
-  // since any new database will be empty, the impact of not warming views is minimal.
-  for (const database of DATABASES) {
-    const attachment = stagingDoc._attachments[`ddocs/${database.jsonFileName}`];
-    // a missing attachment means that the database is dropped in this version.
-    // a migration should remove the unnecessary database.
-    if (attachment) {
-      const json = decodeAttachmentData(attachment.data);
-      ddocDefinitions.set(database, getDdocsFromJson(json));
-    } else {
-      logger.warn(`Attachment for ${database.jsonFileName} was not found. Skipping.`);
+    const stagingDoc = await getStagingDoc(buildInfo);
+
+    // for simplicity, only ddocs for "known" databases are staged and indexed.
+    // for new databases, the final install will happen in the api preflight check.
+    // since any new database will be empty, the impact of not warming views is minimal.
+    for (const database of DATABASES) {
+      const attachment = stagingDoc._attachments[`ddocs/${database.jsonFileName}`];
+      // a missing attachment means that the database is dropped in this version.
+      // a migration should remove the unnecessary database.
+      if (attachment) {
+        const json = decodeAttachmentData(attachment.data);
+        ddocDefinitions.set(database, getDdocsFromJson(json));
+      } else {
+        logger.warn(`Attachment for ${database.jsonFileName} was not found. Skipping.`);
+      }
     }
+    remoteDdocDefinitionsCache.set(buildInfo.version, ddocDefinitions);
   }
 
-  return ddocDefinitions;
+  return deepCopy(remoteDdocDefinitionsCache.get(buildInfo.version));
 };
 
 const getDdocJsonContents = async (path) => {
@@ -374,6 +393,35 @@ const upgradeResponseSuccess = (payload, response) => {
   return !!sucessfullyUpdatedFiles.length || !!successfullyUpdatedContainers.length;
 };
 
+const getDdocInfo = async (database, ddoc) => {
+  try {
+    const response = await request.get({ url: `${environment.serverUrl}/${database.name}/${ddoc}/_info` });
+    return response.view_index;
+  } catch (err) {
+    logger.error('Error fetching view index info: %o', err);
+    return null;
+  }
+};
+
+const getNouveauInfo = async (database, ddoc) => {
+  if (!ddoc.nouveau) {
+    return [];
+  }
+  try {
+    const nouveauInfo = [];
+    for (const nouveauIndex of Object.keys(ddoc.nouveau)) {
+      const info = await request.get({
+        url: `${environment.serverUrl}/${database.name}/${ddoc._id}/_nouveau_info/${nouveauIndex}`
+      });
+      nouveauInfo.push(info.search_index);
+    }
+    return nouveauInfo;
+  } catch (err) {
+    logger.error('Error fetching view index info: %o', err);
+    return [];
+  }
+};
+
 module.exports = {
   cleanup,
 
@@ -391,4 +439,8 @@ module.exports = {
   getUpgradeServicePayload,
   makeUpgradeRequest,
   isDockerUpgradeServiceRunning,
+  downloadDdocDefinitions,
+  getLocalDdocDefinitions,
+  getDdocInfo,
+  getNouveauInfo,
 };

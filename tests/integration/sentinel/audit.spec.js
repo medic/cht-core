@@ -4,6 +4,7 @@ const moment = require('moment/moment');
 const testForm = require('./transitions/test-stubs');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -15,10 +16,10 @@ const contacts = [
     reported_date: new Date().getTime()
   },
   {
-    _id: 'health_center',
+    _id: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Health Center',
     type: 'contact',
-    contact_type: 'health_center',
+    contact_type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'the_health_center',
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
@@ -29,9 +30,13 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     place_id: 'the_clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
-      _id: 'person', parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      _id: 'person',
+      parent: {
+        _id: 'clinic',
+        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+      }
     },
     reported_date: new Date().getTime()
   },
@@ -41,7 +46,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   },
@@ -105,7 +110,7 @@ describe('auditing', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
       }
     };
 
