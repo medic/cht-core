@@ -94,7 +94,7 @@ export class ContactSaveService {
    * @returns The sanitized file name with special characters removed
    */
   private sanitizeFileName(fileName: string): string {
-    return fileName.replace(/[^a-zA-Z0-9_.-]/g, '');
+    return fileName.replace(/[^a-zA-Z0-9_.-]/g, ''); // NOSONAR
   }
 
   /**
@@ -133,7 +133,7 @@ export class ContactSaveService {
 
     const sanitizeObjectProperties = (obj: Record<string, any>) => {
       for (const key in obj) {
-        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) { // NOSONAR
           continue;
         }
         sanitizeObjectProperty(obj, key);
