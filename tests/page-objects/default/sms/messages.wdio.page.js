@@ -25,12 +25,11 @@ const openMessage = async (identifier) => {
 };
 
 const getMessageInListDetails = async (identifier) => {
-  const sms = messageInList(identifier);
-  const lineageValue = await sms.$('.horizontal.lineage').isExisting() ?
-    await sms.$('.horizontal.lineage').getText() : '';
+  const lineageValue = await messageInList(identifier).$('.horizontal.lineage').isExisting() ?
+    await messageInList(identifier).$('.horizontal.lineage').getText() : '';
   return {
-    heading: await sms.$('.heading h4').getText(),
-    summary: await sms.$('.summary').getText(),
+    heading: await messageInList(identifier).$('.heading h4').getText(),
+    summary: await messageInList(identifier).$('.summary').getText(),
     lineage: lineageValue,
   };
 };
@@ -59,7 +58,6 @@ const getLastMessageContent = async () => {
 
 const getMessageContent = async (index = 1) => {
   const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
-  await sms.waitForDisplayed();
   return {
     content: await sms.$('p[test-id="sms-content"]').getText(),
     state: await sms.$('.state').getText(),

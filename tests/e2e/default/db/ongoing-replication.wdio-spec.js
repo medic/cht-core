@@ -23,6 +23,9 @@ describe('ongoing replication', function() {
   this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
 
   before(async () => {
+    // due to the high number of generated docs, many tasks would also be generated
+    // this makes the sync feature slower, and unpredictable
+    // disabling tasks fixes this _and_ makes the test faster
     await utils.updatePermissions(
       userAllowedDocs.user.roles,
       [],

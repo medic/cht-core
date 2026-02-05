@@ -60,11 +60,6 @@ describe('manifest.json', () => {
     }
   };
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
-    await browser.pause(1000);
-  });
-
   it('should work without branding doc', async () => {
     await updateBranding();
     const response = await utils.request('/manifest.json');

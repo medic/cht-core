@@ -520,37 +520,21 @@ const deleteAllDocs = async (except = []) => {
   await deleteSentinelDocs(docsToKeep);
 };
 
+const updateCustomSettings = async (updates) => {
+  const settings = await request({ path: '/api/v1/settings' });
+  originalSettings = originalSettings || settings;
+  // Make sure all updated fields are present in originalSettings, to enable reverting later.
+  Object.keys(updates).forEach(updatedField => {
+    if (!_.has(originalSettings, updatedField)) {
+      originalSettings[updatedField] = null;
+    }
+  });
 
-// Update both ddocs, to avoid instability in tests.
-// Note that API will be copying changes to medic over to medic-client, so change
-// medic-client first (api does nothing) and medic after (api copies changes over to
-// medic-client, but the changes are already there.)
-const updateCustomSettings = updates => {
-  // if (originalSettings) {
-  //   throw new Error('A previous test did not call revertSettings');
-  // }
-  return request({
-    path: '/api/v1/settings',
-    method: 'GET',
-  })
-    .then(settings => {
-      if (!originalSettings) {
-        originalSettings = settings;
-      }
-      // Make sure all updated fields are present in originalSettings, to enable reverting later.
-      Object.keys(updates).forEach(updatedField => {
-        if (!_.has(originalSettings, updatedField)) {
-          originalSettings[updatedField] = null;
-        }
-      });
-    })
-    .then(() => {
-      return request({
-        path: '/api/v1/settings?replace=1',
-        method: 'PUT',
-        body: updates,
-      });
-    });
+  return await request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: updates,
+  });
 };
 
 const waitForSettingsUpdateLogs = (type) => {
@@ -1441,12 +1425,12 @@ const waitForLogs = async (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let isReady = false;
-  const startTime = Date.now() - 100; // Subtract a small buffer (1 second) to account for any clock skew
+  const startTime = Date.now() - 100; // Subtract a small buffer to account for any clock skew
   tail = (isDocker() || tail) ? '--tail=20' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
-  // As a fix, watch the logs with tail=50 and use timestamps to ensure we only match logs produced after
+  // As a fix, watch the logs with tail=20 and use timestamps to ensure we only match logs produced after
   // the watcher was ready (not historical logs from before the watcher started).
   const params = `logs ${container} -f ${tail} --timestamps ${isK3D() ? KUBECTL_CONTEXT : ''}`
     .split(' ')
@@ -1466,7 +1450,6 @@ const waitForLogs = async (container, tail, ...regex) => {
 
     const lines = data.split('\n');
     const matchingLine = lines.find(line => {
-      // Only check lines that match the regex
       if (!regex.find(r => r.test(line))) {
         return false;
       }
@@ -1475,17 +1458,15 @@ const waitForLogs = async (container, tail, ...regex) => {
       const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?)/);
 
       if (!timestampMatch) {
-        // If no timestamp, only match after we're ready (to avoid historical logs)
         return isReady;
       }
 
       // Docker/kubectl timestamps are in UTC. Add 'Z' suffix if not present to ensure proper UTC parsing
       const timestampStr = timestampMatch[1].endsWith('Z') ? timestampMatch[1] : timestampMatch[1] + 'Z';
       const logTime = new Date(timestampStr).getTime();
-
-      // Only match logs produced after this watcher was created
       return logTime >= startTime;
     });
+
     return matchingLine;
   };
 

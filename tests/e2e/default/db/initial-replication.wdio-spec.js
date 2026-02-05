@@ -120,6 +120,9 @@ describe('initial-replication', () => {
 
   before(async () => {
     await utils.toggleSentinelTransitions();
+    // due to the high number of generated docs, many tasks would also be generated
+    // this makes the sync feature slower, and unpredictable
+    // disabling tasks fixes this _and_ makes the test faster
     await utils.updatePermissions(
       userAllowedDocs.user.roles,
       [],

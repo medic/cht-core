@@ -55,10 +55,12 @@ const submitForm = async () => {
       const myForm = document.getElementById('myform');
       myForm.addEventListener('onSubmit', async (e) => {
         const doc = e.detail[0];
+        // data that gets sent through the BiDi protocol gets serialized,
+        // and serializing blobs results in empty objects
+        // https://github.com/webdriverio/webdriverio/issues/15082
         if (doc._attachments) {
           for (const [ , attachment ] of Object.entries(doc._attachments)) {
             if (attachment.data instanceof Blob) {
-              // Get as ArrayBuffer (works for binary and text)
               const arrayBuffer = await attachment.data.arrayBuffer();
               attachment.data = Array.from(new Uint8Array(arrayBuffer));
             }

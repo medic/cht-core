@@ -12,9 +12,7 @@ describe('Browser Compatibility Modal', () => {
   });
 
   afterEach(async () => {
-    await browser.reloadSession();
-    await browser.deleteCookies();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   it('should not display the browser compatibility modal for updated Chrome version', async () => {

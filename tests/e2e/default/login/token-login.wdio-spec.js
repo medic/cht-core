@@ -110,7 +110,7 @@ describe('Token login', () => {
       await commonElements.waitForPageLoaded();
 
       await browser.url(getUrl('this is a random string'));
-      await commonElements.waitForLoaderToDisappear();
+      await commonElements.waitForPageLoaded();
       expect(await commonElements.isMessagesListPresent()).to.be.true;
     });
   });

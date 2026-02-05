@@ -422,6 +422,8 @@ const syncAndWaitForSuccess = async (timeout = RELOAD_SYNC_TIMEOUT) => {
                (await modalPage.isDisplayed());
       }, { timeout });
 
+      // there are some animations happening and a race condition where the previous wait finishes, but the modal is
+      // still not displayed, but appears later and interferes.
       await browser.pause(500);
       if (await modalPage.isDisplayed()) {
         reloadModalShown = true;
