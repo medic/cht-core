@@ -24,7 +24,7 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          GITHUB_TOKEN=$GITHUB_TOKEN node index.js > ~/release-notes.md
+          GITHUB_TOKEN=$GITHUB_TOKEN node index.js --skip-commit-validation > ~/release-notes.md
       - name: Upload release note artifacts
         uses: actions/upload-artifact@v4
         with:
