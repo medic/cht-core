@@ -166,7 +166,7 @@ const waitForLoaders = async () => {
       return false;
     }
     // Wait for loaders to settle - another loader might appear
-    await browser.pause(200);
+    await browser.pause(100);
     return !(await hasVisibleLoader());
   }, {
     timeoutMsg: 'Waiting for Loading spinners to hide timed out.',
@@ -424,7 +424,7 @@ const syncAndWaitForSuccess = async (timeout = RELOAD_SYNC_TIMEOUT) => {
 
       // there are some animations happening and a race condition where the previous wait finishes, but the modal is
       // still not displayed, but appears later and interferes.
-      await browser.pause(500);
+      await browser.pause(200);
       if (await modalPage.isDisplayed()) {
         reloadModalShown = true;
         await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);

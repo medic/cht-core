@@ -714,6 +714,16 @@ const deleteMetaDbs = async () => {
   }
 };
 
+const deleteCredentials = async () => {
+  const credentials = await request({ path: `/${constants.DB_NAME}-vault/_all_docs` });
+  const credentialsToDelete = credentials.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await request({
+    path: `/${constants.DB_NAME}-vault/_bulk_docs`,
+    method: 'POST',
+    body: { docs: credentialsToDelete }
+  });
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -738,6 +748,7 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   }
 
   await deleteMetaDbs();
+  await deleteCredentials();
 
   await setUserContactDoc();
 };
