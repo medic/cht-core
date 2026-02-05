@@ -7,15 +7,15 @@ on:
         description: 'Milestone to build release notes from'
         type: string
         required: true
-      skip:
+      skip_commit_checks:
         description: 'Skip commit checks - empty string means run checks'
         required: true
-        default: '''
+        default: ''
         type: choice
         options:
           - ''
           - '--skip-commit-validation'
-          
+
 jobs:
   release_notes:
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
           cd scripts
           npm ci
           cd release-notes
-          node index.js ${{ github.event.inputs.milestone }} ${{ github.event.inputs.skip }}
+          node index.js ${{ github.event.inputs.milestone }} ${{ github.event.inputs.skip_commit_checks }}
       - name: Upload release note artifacts
         uses: actions/upload-artifact@v4
         with:
