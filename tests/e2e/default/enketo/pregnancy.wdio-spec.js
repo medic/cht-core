@@ -82,6 +82,7 @@ describe('Pregnancy registration', () => {
     await commonEnketoPage.validateSummaryReport(summaryTexts);
     await genericForm.submitForm();
 
+    await contactPage.pregnancyCardSelectors.pregnancyCard().waitForDisplayed();
     expect(await contactPage.pregnancyCardSelectors.pregnancyCard().isDisplayed()).to.be.true;
 
     // Validate pregnancy card and its information

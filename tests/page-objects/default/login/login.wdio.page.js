@@ -32,8 +32,7 @@ const ssoLogin = async () => {
   if (utils.isMinimumChromeVersion) {
     await browser.url('/');
   }
-  const button = await $('#login-sso');
-  await button.click();
+  await $('#login-sso').click();
   await commonPage.waitForPageLoaded();
   await commonPage.hideSnackbar();
 };
@@ -89,10 +88,7 @@ const cookieLogin = async (options = {}) => {
   const resp = await utils.request(opts);
   const cookieArray = utils.parseCookieResponse(resp.headers.getSetCookie());
 
-  if (utils.isMinimumChromeVersion) {
-    await browser.url('/');
-  }
-
+  await browser.url('/');
   await browser.setCookies(cookieArray);
   if (createUser) {
     await utils.setupUserDoc(username);

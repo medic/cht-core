@@ -6,11 +6,19 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
+const laxCookie = utils.isMinimumChromeVersion ? 'Lax': 'lax';
+
 describe('Login page functionality tests', () => {
   const auth = {
     username: constants.USERNAME,
     password: constants.PASSWORD
   };
+
+  before(async () => {
+    if (utils.isMinimumChromeVersion) {
+      await browser.url('/');
+    }
+  });
 
   afterEach(async () => {
     await commonPage.reloadSession();
@@ -86,7 +94,7 @@ describe('Login page functionality tests', () => {
       const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
       expect(authSessionCookie).to.include({
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: laxCookie,
         domain: 'localhost',
         secure: false,
         path: '/'
@@ -95,7 +103,7 @@ describe('Login page functionality tests', () => {
 
       const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
       expect(userCtxCookie).to.include({
-        sameSite: 'lax',
+        sameSite: laxCookie,
         domain: 'localhost',
         path: '/',
         secure: false,
@@ -106,7 +114,7 @@ describe('Login page functionality tests', () => {
 
       const localeCookie = cookies.find(cookie => cookie.name === 'locale');
       expect(localeCookie).to.include({
-        sameSite: 'lax',
+        sameSite: laxCookie,
         domain: 'localhost',
         path: '/',
         secure: false,
