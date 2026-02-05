@@ -64,7 +64,7 @@ const getIssueNumbers = commitMessage => {
 };
 
 (async() => { // NOSONAR
-  console.log('Logging in to GitHub with token that is', TOKEN.length, 'chars');
+  console.log('\n-------\nLogging in to GitHub with token that is', TOKEN.length, 'chars');
   console.log('Targeting CHT Core milestone', MILESTONE);
   if (argv['skip-commit-validation']) {
     console.log('Skip commit validation set to TRUE');
@@ -208,7 +208,8 @@ const getIssueNumbers = commitMessage => {
     const commitsWithoutMilestone = await findCommitsWithoutMilestone(commitsForRelease);
 
     if (commitsWithoutMilestone.length) {
-      console.error(`
+      console.error(`\n\n---ERROR----
+
 Some commits included in the release are not associated with a milestone. Commits can be associated with a milestone by:
 
   1. Setting the milestone on an issue closed by the commit's PR (issue must be listed in the PR's "Development" links)
@@ -219,7 +220,7 @@ Commits:
   `);
       commitsWithoutMilestone.forEach(commit => printCommitError(commit));
       console.error(''); // adds empty line after last commit URL
-      throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.');
+      throw new Error('Some commits are in an invalid state. Use --skip-commit-validation to ignore this check.\n-------\n');
     }
   };
 
@@ -230,7 +231,7 @@ Commits:
   const getMilestoneNumber = async () => {
     const milestone = await getMilestone();
     if (!milestone) {
-      throw new Error(`Could not find milestone ${MILESTONE} in CHT Core repo`);
+      throw new Error(`Could not find milestone ${MILESTONE} in CHT Core repo\n-------\n`);
     }
     return milestone.number;
   };
@@ -355,7 +356,7 @@ Thanks to all who committed changes for this release!
 
 ${formatCommits(commits)} `;
     fs.writeFileSync('./release-notes.md', releaseNotes);
-    console.log('Done! Check in release-notes.md file');
+    console.log('Done! See release-notes.md file if local or see artifact if CI\n-------\n');
   };
 
   const getCommits = async () => {
