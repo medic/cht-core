@@ -9,7 +9,6 @@ const db = require('../db');
 const dataContext = require('../data-context');
 const request = require('@medic/couch-request');
 const nouveau = require('@medic/nouveau');
-const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
@@ -61,28 +60,34 @@ const closePurgeDbs = () => {
   });
 };
 
-const getRoles = async () => {
-  const dedupedByRoles = new Map();
-  const rolesByHash = {};
+const getRoles = () => {
+  const list = {};
+  const roles = {};
 
-  const { rows } = await db.users.allDocs({ include_docs: true });
+  return db.users
+    .allDocs({ include_docs: true })
+    .then(result => {
+      result.rows.forEach(row => {
+        if (!row.doc ||
+            !row.doc.roles ||
+            !Array.isArray(row.doc.roles) ||
+            !row.doc.roles.length ||
+            !serverSidePurgeUtils.isOffline(config.get('roles'), row.doc.roles)
+        ) {
+          return;
+        }
 
-  for (const { doc } of rows) {
-    const userRoles = doc?.roles;
+        const rolesString = serverSidePurgeUtils.sortedUniqueRoles(row.doc.roles);
+        list[JSON.stringify(rolesString)] = rolesString;
+      });
 
-    if (!Array.isArray(userRoles) || !userRoles.length || !roles.isOffline(userRoles)) {
-      continue;
-    }
+      Object.values(list).forEach(list => {
+        const hash = serverSidePurgeUtils.getRoleHash(list);
+        roles[hash] = list;
+      });
 
-    const rolesList = serverSidePurgeUtils.sortedUniqueRoles(userRoles);
-    dedupedByRoles.set(JSON.stringify(rolesList), rolesList);
-  }
-
-  for (const rolesList of dedupedByRoles.values()) {
-    rolesByHash[serverSidePurgeUtils.getRoleHash(rolesList)] = rolesList;
-  }
-
-  return rolesByHash;
+      return roles;
+    });
 };
 
 // provided a list of roles hashes and doc ids, will return the list of existent purged docs per role hash:

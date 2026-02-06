@@ -546,7 +546,7 @@ const missingFields = data => {
   }
 
   const userRoles = getDataRoles(data);
-  if (!userRoles || !userRoles.length) {
+  if (!userRoles) {
     required.push('type or roles');
   } else if (roles.isOffline(userRoles)) {
     required.push('place', 'contact');

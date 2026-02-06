@@ -81,7 +81,6 @@ describe('Users service', () => {
       contact: { 'parent': 'x' },
       type: 'national-manager'
     };
-    config.get.withArgs('roles').returns({ 'national-manager': { offline: true } });
     clock = sinon.useFakeTimers();
   });
 
@@ -2179,7 +2178,6 @@ describe('Users service', () => {
   describe('createMultiFacilityUser', () => {
     it('returns error if missing fields', async () => {
       const pwd = 'medic.123456';
-      config.get.withArgs('roles').returns({ user: { offline: true } });
       await chai.expect(service.createMultiFacilityUser({}))
         .to.be.eventually.rejectedWith(Error).and.have.property('code', 400);
       await chai.expect(service.createMultiFacilityUser({ password: 'x', place: 'x', contact: 'y' }))
@@ -3097,8 +3095,7 @@ describe('Users service', () => {
         phone: '123',
         known: false
       });
-      config.get.withArgs('roles').returns({ chp: { offline: true } });
-      config.get.withArgs('permissions').returns({});
+      config.get.returns({ chp: { offline: true } });
       sinon.stub(places, 'placesExist').resolves();
       db.medic.put.resolves({});
       db.users.put.resolves({});
@@ -3405,7 +3402,7 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin', 'mm-online'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
           ]);
         });
     });
@@ -3423,11 +3420,11 @@ describe('Users service', () => {
           chai.expect(err).to.deep.equal({ some: 'err' });
           chai.expect(db.users.put.callCount).to.equal(1);
           chai.expect(db.users.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user', roles: ['admin', 'mm-online'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
           ]);
           chai.expect(db.medic.put.callCount).to.equal(1);
           chai.expect(db.medic.put.args[0]).to.deep.equal([
-            { name: 'agatha', type: 'user-settings', roles: ['admin', 'mm-online'], _id: 'org.couchdb.user:agatha' }
+            { name: 'agatha', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:agatha' }
           ]);
         });
     });
@@ -3456,11 +3453,11 @@ describe('Users service', () => {
       return service.createAdmin({ name: 'perseus' }).then(() => {
         chai.expect(db.users.put.callCount).to.equal(1);
         chai.expect(db.users.put.args[0]).to.deep.equal([
-          { name: 'perseus', type: 'user', roles: ['admin', 'mm-online'], _id: 'org.couchdb.user:perseus' }
+          { name: 'perseus', type: 'user', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
         ]);
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0]).to.deep.equal([
-          { name: 'perseus', type: 'user-settings', roles: ['admin', 'mm-online'], _id: 'org.couchdb.user:perseus' }
+          { name: 'perseus', type: 'user-settings', roles: ['admin'], _id: 'org.couchdb.user:perseus' }
         ]);
       });
     });

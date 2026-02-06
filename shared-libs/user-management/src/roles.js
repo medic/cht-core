@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const config = require('./libs/config');
 const { USER_ROLES } = require('@medic/constants');
 
@@ -6,13 +7,13 @@ const { USER_ROLES } = require('@medic/constants');
  * replicate or not, without requiring access to server settings.
  */
 const ONLINE_ROLE = USER_ROLES.ONLINE;
-const DB_ADMIN_ROLES = ['admin', '_admin'];
+const DB_ADMIN_ROLE = '_admin';
 
 const hasRole = (userCtx, role) => {
-  return userCtx?.roles?.includes(role);
+  return _.includes(userCtx && userCtx.roles, role);
 };
 
-const isDbAdmin = userCtx => DB_ADMIN_ROLES.some(adminRole => hasRole(userCtx, adminRole));
+const isDbAdmin = userCtx => hasRole(userCtx, DB_ADMIN_ROLE);
 
 const hasOnlineRole = roles => {
   if (!Array.isArray(roles) || !roles.length) {
@@ -20,7 +21,7 @@ const hasOnlineRole = roles => {
   }
 
   const onlineRoles = [
-    ...DB_ADMIN_ROLES,
+    DB_ADMIN_ROLE,
     ONLINE_ROLE,
   ];
   return roles.some(role => onlineRoles.includes(role));
@@ -31,7 +32,7 @@ const hasPermission = (roles, permission) => {
   if (!rolesWithPermission) {
     return false;
   }
-  return rolesWithPermission.some(role => roles.includes(role));
+  return _.some(rolesWithPermission, role => _.includes(roles, role));
 };
 
 module.exports = {
@@ -40,15 +41,10 @@ module.exports = {
     return userCtx && module.exports.hasOnlineRole(userCtx.roles);
   },
   isOffline: roles => {
-    if (!roles.length) {
-      return false;
-    }
-
     const configured = config.get('roles') || {};
-    const configuredRoles = roles.filter(role => configured[role]);
-
-    return !module.exports.isOnlineOnly({ roles }) &&
-           (!configuredRoles.length || configuredRoles?.some(role => configured[role]?.offline));
+    const configuredRole = roles.some(role => configured[role]);
+    return !isDbAdmin({ roles }) &&
+      (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
   },
   isDbAdmin,
   ONLINE_ROLE,
@@ -62,10 +58,10 @@ module.exports = {
       return false;
     }
 
-    if (!Array.isArray(permissions)) {
+    if (!_.isArray(permissions)) {
       permissions = [ permissions ];
     }
 
-    return permissions.every(permission => hasPermission(roles, permission));
+    return _.every(permissions, _.partial(hasPermission, roles));
   }
 };
