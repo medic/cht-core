@@ -291,6 +291,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       xmlReportForms: this.relevantReportForms,
       childContactTypes: this.childContactTypes,
       parentFacilityId: this.selectedContact.doc?._id,
+      parentContact: this.selectedContact.doc,
       communicationContext: {
         sendTo: this.selectedContact?.type?.person && this.selectedContact?.doc,
         callbackOpenSendMessage: (sendTo) => this.openSendMessageModal(sendTo),

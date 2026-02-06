@@ -94,6 +94,7 @@
     "can_create_users": ["national_admin"],
     "can_create_people": [],
     "can_create_places": [],
+    "can_create_contacts_under_muted_places": [],
     "can_view_tasks": [],
     "can_view_tasks_tab": [],
     "can_view_tasks_group": [],
