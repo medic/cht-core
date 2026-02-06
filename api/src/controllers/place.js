@@ -3,23 +3,19 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 
-
-const getPlace = ({ with_lineage }) => ctx.bind(
-  with_lineage === 'true'
-    ? Place.v1.getWithLineage
-    : Place.v1.get
-);
-
-const getPageByType = () => ctx.bind(Place.v1.getPage);
-const create = () => ctx.bind(Place.v1.create);
-const update = () => ctx.bind(Place.v1.update);
+const getPlace = ctx.bind(Place.v1.get);
+const getPlaceWithLineage = ctx.bind(Place.v1.getWithLineage);
+const getPageByType = ctx.bind(Place.v1.getPage);
+const create = ctx.bind(Place.v1.create);
+const update = ctx.bind(Place.v1.update);
 
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      const { uuid } = req.params;
-      const place = await getPlace(req.query)(Qualifier.byUuid(uuid));
+      const { params: { uuid }, query: { with_lineage } } = req;
+      const getPlaceRecord = with_lineage === 'true' ? getPlaceWithLineage : getPlace;
+      const place = await getPlaceRecord(Qualifier.byUuid(uuid));
       if (!place) {
         return serverUtils.error({ status: 404, message: 'Place not found' }, req, res);
       }
@@ -28,29 +24,25 @@ module.exports = {
 
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-
       const placeType = Qualifier.byContactType(req.query.type);
-
-      const docs = await getPageByType()(placeType, req.query.cursor, req.query.limit);
-
+      const docs = await getPageByType(placeType, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
 
     create: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_places', 'can_edit'] });
-      const placeDoc = await create()(req.body);
+      const placeDoc = await create(req.body);
       return res.json(placeDoc);
     }),
 
     update: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_update_places', 'can_edit'] });
-
-      const { uuid } = req.params;
+      const { params: { uuid }, body } = req;
       const updatePlaceInput = {
-        ...req.body,
+        ...body,
         _id: uuid,
       };
-      const updatedPlaceDoc = await update()(updatePlaceInput);
+      const updatedPlaceDoc = await update(updatePlaceInput);
       return res.json(updatedPlaceDoc);
     })
   }
