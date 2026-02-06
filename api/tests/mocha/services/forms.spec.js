@@ -61,7 +61,8 @@ describe('forms service', () => {
       sinon.stub(logger, 'error');
       const result = await service.getAttachment(fakeDoc._id, fakeName);
 
-      expect(result).to.be.undefined;
+      expect(result).to.be.null;
+      expect(logger.error.calledOnceWith(notFoundError)).to.be.true;
     });
 
     it('should throw error for non-404 errors', async () => {

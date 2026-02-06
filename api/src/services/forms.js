@@ -4,6 +4,8 @@
 const db = require('../db');
 const FORM_DOC_ID_PREFIX = 'form:';
 const DOC_TYPE = 'form';
+const logger = require('@medic/logger');
+
 
 module.exports = {
 
@@ -30,9 +32,11 @@ module.exports = {
     try {
       return await db.medic.getAttachment(docId, name);
     } catch (error) {
-      if (error.status !== 404) {
-        throw error;
+      if (error.status === 404) {
+        logger.error(error);
+        return null;
       }
+      throw error;
     }
   },
   /**
