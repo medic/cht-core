@@ -56,11 +56,11 @@ get_compose_download_url() {
 }
 
 get_all_known_versions() {
-  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending=true |  tr -d \\n | grep -o "medic\:medic\:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending=true |  tr -d \\n | grep -o "medic:medic:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
 }
 
 get_latest_version_string() {
-  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit=1\&descending=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*' | cut -f3 -d:
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit=1\&descending=true |  tr -d \\n | grep -o 'medic:medic:[0-9\.]*' | cut -f3 -d:
 }
 
 create_compose_files() {

@@ -12,6 +12,10 @@
 <div class="center">
   <div id="wrapper">
     <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+    <p id="unsupported-browser" class="hidden">
+      <span translate="login.unsupported_browser"></span>
+      <span id="unsupported-browser-update"></span>
+    </p>
     <div class="locale-wrapper">
       <div class="loading">
         <p translate="login.token.loading"></p>
@@ -40,6 +44,7 @@
   </div>
 </div>
 <form id="tokenLogin" action="{{tokenUrl}}"></form>
+<script src="/login/lib-bowser.js"></script>
 <script src="/login/auth-utils.js"></script>
 <script src="/login/script.js"></script>
 </body>
