@@ -277,7 +277,11 @@ describe('Auth', () => {
         can_edit: ['other_role'],
       });
 
-      const result = await auth.assertPermissions(req, { hasAll: ['can_edit'] });
+      const result = await auth.assertPermissions(req, {
+        isOnline: true,
+        hasAll: ['can_edit'],
+        hasAny: ['can_delete']
+      });
 
       chai.expect(result).to.deep.equal(userCtx);
       chai.expect(request.get.calledOnceWithExactly(requestOptions)).to.be.true;

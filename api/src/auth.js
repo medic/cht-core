@@ -36,7 +36,9 @@ const assertPermissions = async (req, { isOnline = false, hasAll = [], hasAny = 
   const userCtx = await module.exports.getUserCtx(req);
   const onlineUserPass = isOnline === false || roles.isOnlineOnly(userCtx);
   const hasAllPass = hasAll.length === 0 || module.exports.hasAllPermissions(userCtx, hasAll);
-  const hasAnyPass = hasAny.length === 0 || hasAny.some(perm => hasPermission(userCtx, perm));
+  const hasAnyPass = hasAny.length === 0
+    || roles.isDbAdmin(userCtx)
+    || hasAny.some(perm => hasPermission(userCtx, perm));
   if (!(onlineUserPass && hasAllPass && hasAnyPass)) {
     throw new PermissionError('Insufficient privileges');
   }
