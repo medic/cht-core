@@ -1,10 +1,10 @@
-const { DOC_IDS } = require('@medic/constants');
+const constants = require('@medic/constants');
 
 describe('Display Privacy Policies controller', function() {
 
   'use strict';
 
-  const PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
+  const PRIVACY_POLICIES_DOC_ID = constants.DOC_IDS.PRIVACY_POLICIES;
 
   let createController;
   let scope;

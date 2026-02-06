@@ -1,3 +1,5 @@
+const constants = require('@medic/constants');
+
 angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
   function (
     $log,
@@ -9,9 +11,8 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
   ) {
     'use strict';
     'ngInject';
-    const { DOC_IDS } = require('@medic/constants');
 
-    const PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
+    const PRIVACY_POLICIES_DOC_ID = constants.DOC_IDS.PRIVACY_POLICIES;
 
     $scope.allowedContentType = 'text/html';
 
