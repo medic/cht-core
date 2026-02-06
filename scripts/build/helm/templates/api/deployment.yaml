@@ -19,6 +19,8 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - env:
+            - name: LOG_LEVEL
+              value: '{{ .Values.api.log_level | default "info" }}'
             - name: BUILDS_URL
               value: {{ .Values.upstream_servers.builds_url | default "https://staging.dev.medicmobile.org/_couch/builds_4" }}
             - name: COUCH_URL
