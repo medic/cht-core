@@ -5,6 +5,8 @@ const constants = require('@constants');
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 const RELOAD_SYNC_TIMEOUT = 10000;
 
+const getGenericAria = (text) => $(`aria/${text}`);
+
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
   messagesTab: () => $('#messages-tab'),
@@ -652,4 +654,5 @@ module.exports = {
   getErrorLog,
   createFormDoc,
   reloadSession,
+  getGenericAria,
 };

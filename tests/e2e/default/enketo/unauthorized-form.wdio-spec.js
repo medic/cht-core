@@ -40,7 +40,7 @@ describe('Unauthorized form', () => {
     await browser.url('/#/reports/add/pregnancy');
     await commonPage.waitForPageLoaded();
 
-    expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
+    expect(await commonPage.getGenericAria(EXPECTED_UNAUTHORIZED_MESSAGE).isDisplayed()).to.equal(true);
   });
 
   it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
@@ -50,7 +50,7 @@ describe('Unauthorized form', () => {
     await commonPage.goToUrl(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();
 
-    expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
+    expect(await commonPage.getGenericAria(EXPECTED_UNAUTHORIZED_MESSAGE).isDisplayed()).to.equal(true);
   });
 
   it('should not display unauthorized error message in contacts tab when user has the form permission', async () => {
