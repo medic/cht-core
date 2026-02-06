@@ -13,6 +13,7 @@ import {
   hasField,
   hasStringFieldWithValue,
   isDataObject,
+  isDateTimeString,
   isIdentifiable,
   isNonEmptyArray,
   isNormalizedParent,
@@ -137,6 +138,25 @@ describe('core lib', () => {
     });
   });
 
+  describe('isDateTimeString', () => {
+    [
+      [ '2024-01-01', true ],
+      [ '2024-01-01T00:00:00Z', true ],
+      [ '2024-01-01T00:00:00.000Z', true ],
+      [ 'not-a-date', false ],
+      [ 'yesterday', false ],
+      [ '', false ],
+      [ 123, false ],
+      [ null, false ],
+      [ undefined, false ],
+      [ {}, false ],
+    ].forEach(([ value, expected ]) => {
+      it(`evaluates ${JSON.stringify(value)}`, () => {
+        expect(isDateTimeString(value)).to.equal(expected);
+      });
+    });
+  });
+
   describe('isRecord', () => {
     [
       [ null, false ],
@@ -153,7 +173,7 @@ describe('core lib', () => {
   });
 
   describe('hasField', () => {
-    type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'function' | 'object';
+    type FieldType = 'string' | 'number' | 'boolean' | 'function' | 'object';
     ([
       [ {}, { name: 'uuid', type: 'string' }, false ],
       [ { uuid: 'uuid' }, { name: 'uuid', type: 'string' }, true ],
@@ -162,8 +182,8 @@ describe('core lib', () => {
       [ { uuid: 'uuid', other: 1 }, { name: 'other', type: 'string' }, false ],
       [ { uuid: 'uuid', other: 1 }, { name: 'other', type: 'number' }, true ],
       [ { getUuid: () => 'uuid' }, { name: 'getUuid', type: 'function' }, true ],
-      [ { created: new Date() }, { name: 'created', type: 'date' }, true ],
-      [ { created: '2024-01-01' }, { name: 'created', type: 'date' }, false ],
+      [ { created: { year: 2024 } }, { name: 'created', type: 'object' }, true ],
+      [ { created: 'not-object' }, { name: 'created', type: 'object' }, false ],
     ] as [ Record<string, unknown>, {
       name: string,
       type: FieldType

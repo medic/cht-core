@@ -1,4 +1,4 @@
-import { DataObject } from './libs/core';
+import { DataObject, DateTimeString } from './libs/core';
 import * as Place from './place';
 import * as Report from './report';
 import * as Person from './person';
@@ -13,7 +13,7 @@ export namespace v1 {
     readonly type: string
     readonly contact_type?: string
     readonly name: string
-    readonly reported_date?: string | number
+    readonly reported_date?: DateTimeString | number
     readonly _id?: never
     readonly _rev?: never
   }
@@ -24,7 +24,7 @@ export namespace v1 {
   export interface ReportInput extends DataObject {
     readonly type?: string
     readonly form: string
-    readonly reported_date?: string | number
+    readonly reported_date?: DateTimeString | number
     readonly contact: string
     readonly _id?: never
     readonly _rev?: never
@@ -42,7 +42,7 @@ export namespace v1 {
    */
   export interface PersonInput extends ContactInput {
     readonly parent: string
-    readonly date_of_birth?: Date
+    readonly date_of_birth?: DateTimeString | Date
     readonly phone?: string
     readonly patient_id?: string
     readonly sex?: string

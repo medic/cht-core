@@ -214,10 +214,13 @@ describe('libs parameter-validators', () => {
       { ...personInput, reported_date: 1769526124 },
       { ...personInput, reported_date: '2026-01-27T14:34:48.333Z' },
       { ...personInput, reported_date: '2026-01-27T14:34:48Z' },
+      { ...personInput, date_of_birth: '2000-06-15' },
+      { ...personInput, date_of_birth: '2000-06-15T00:00:00Z' },
+      { ...personInput, date_of_birth: new Date() },
       {
         ...personInput,
         reported_date: 1769526124,
-        date_of_birth: new Date(),
+        date_of_birth: '2000-06-15',
         phone: '1234567890',
         patient_id: '444',
         sex: 'female',
@@ -273,7 +276,6 @@ describe('libs parameter-validators', () => {
     });
 
     ([
-      ['date_of_birth', 'date', 'yesterday'],
       ['phone', 'string', 1],
       ['patient_id', 'string', new Date()],
       ['sex', 'string', true],
@@ -283,6 +285,21 @@ describe('libs parameter-validators', () => {
         expect(() => assertPersonInput(input)).to.throw(
           InvalidArgumentError,
           `The [${requiredField}] field must have the type [${type}].`
+        );
+      });
+    });
+
+    [
+      'yesterday',
+      'not-a-date',
+      123,
+      true,
+    ].forEach((value) => {
+      it(`throws error for date_of_birth with invalid value [${JSON.stringify(value)}]`, () => {
+        const input = { ...personInput, date_of_birth: value };
+        expect(() => assertPersonInput(input)).to.throw(
+          InvalidArgumentError,
+          'The [date_of_birth] field must have a [date] value.'
         );
       });
     });

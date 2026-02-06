@@ -6,7 +6,15 @@ import * as Local from './local';
 import * as Place from './place';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
+import {
+  DateTimeString,
+  getPagedGenerator,
+  isIdentifiable,
+  isRecord,
+  NormalizedParent,
+  Nullable,
+  Page
+} from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import * as Input from './input';
@@ -18,7 +26,7 @@ export namespace v1 {
    * Immutable data about a person contact.
    */
   export interface Person extends Contact.v1.Contact {
-    readonly date_of_birth?: Date;
+    readonly date_of_birth?: DateTimeString;
     readonly phone?: string;
     readonly patient_id?: string;
     readonly sex?: string;

@@ -12,7 +12,7 @@ import {
   assertDoesNotHaveField,
   assertHasOptionalField,
   assertHasRequiredField,
-  DataObject,
+  DataObject, isDateTimeString,
   Nullable
 } from './core';
 import * as Input from '../input';
@@ -63,10 +63,12 @@ function assertContactInput(data: unknown): asserts data is Input.v1.ContactInpu
 export function assertPersonInput(data: unknown): asserts data is Input.v1.PersonInput {
   assertContactInput(data);
   assertHasRequiredField(data, { name: 'parent', type: 'string' }, InvalidArgumentError);
-  assertHasOptionalField(data, { name: 'date_of_birth', type: 'date' }, InvalidArgumentError);
   assertHasOptionalField(data, { name: 'phone', type: 'string' }, InvalidArgumentError);
   assertHasOptionalField(data, { name: 'patient_id', type: 'string' }, InvalidArgumentError);
   assertHasOptionalField(data, { name: 'sex', type: 'string' }, InvalidArgumentError);
+  if (data.date_of_birth && !(data.date_of_birth instanceof Date || isDateTimeString(data.date_of_birth))) {
+    throw new InvalidArgumentError(`The [date_of_birth] field must have a [date] value.`);
+  }
 }
 
 

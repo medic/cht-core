@@ -9,6 +9,21 @@ export type Nullable<T> = T | null;
 export const isNotNull = <T>(value: T | null): value is T => value !== null;
 
 /**
+ * A string representation of a date value (optionally including the time). Valid values are supported parameters
+ * for the `Date.parse()` function and the `Date()` constructor.
+ * @see https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date-time-string-format
+ */
+export type DateTimeString = string; // NOSONAR
+
+/** @internal */
+export const isDateTimeString = (value: unknown): value is DateTimeString => {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  return !Number.isNaN(Date.parse(value));
+};
+
+/**
  * An array that is guaranteed to have at least one element.
  */
 export type NonEmptyArray<T> = [T, ...T[]];
@@ -95,39 +110,32 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
-type FieldType = 'string' | 'number' | 'boolean' | 'date' | 'function' | 'object';
+type FieldType = 'string' | 'number' | 'boolean' | 'function' | 'object';
 interface FieldTypeToValue {
   string: string
   number: number
   boolean: boolean
-  date: Date,
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   function: Function,
   object: object
 }
-interface FieldDescriptor<K extends FieldType> {
-  name: string;
+interface FieldDescriptor<N extends string, K extends FieldType> {
+  name: N;
   type: K;
 }
 
 /** @internal */
-export const hasField = <T extends Record<string, unknown>, K extends FieldType>(
+export const hasField = <T extends Record<string, unknown>, N extends string, K extends FieldType>(
   value: T,
-  { name, type }: FieldDescriptor<K>
-): value is T & Record<typeof name, FieldTypeToValue[K]> => {
-  const fieldValue = value[name];
-  if (type === 'date') {
-    return fieldValue instanceof Date;
-  }
-  return typeof fieldValue === type;
-};
+  { name, type }: FieldDescriptor<N, K>
+): value is T & Record<N, FieldTypeToValue[K]> => typeof value[name] === type;
 
 /** @internal */
-export const hasStringFieldWithValue = <T extends Record<string, unknown>>(
+export const hasStringFieldWithValue = <T extends Record<string, unknown>, N extends string>(
   value: T,
-  fieldName: string
-): value is T & Record<typeof fieldName, string> => {
-  return hasField(value, { name: fieldName, type: 'string' }) && !!(value[fieldName].trim());
+  fieldName: N
+): value is T & Record<N, string> => {
+  return hasField(value, { name: fieldName, type: 'string' }) && !!((value[fieldName] as string).trim());
 };
 
 /** @internal */
@@ -143,11 +151,11 @@ export const assertDoesNotHaveField = (
 
 /** @internal */
 // eslint-disable-next-line func-style
-export function assertHasOptionalField <T extends Record<string, unknown>, K extends FieldType>(
+export function assertHasOptionalField <T extends Record<string, unknown>, N extends string, K extends FieldType>(
   value: T,
-  { name, type }: FieldDescriptor<K>,
+  { name, type }: FieldDescriptor<N, K>,
   ErrorClass: new (message: string) => Error = Error
-): asserts value is T & Record<typeof name, FieldTypeToValue[K] | undefined> {
+): asserts value is T & Record<N, FieldTypeToValue[K] | undefined> {
   if (name in value && !hasField(value, { name, type })) {
     throw new ErrorClass(`The [${String(name)}] field must have the type [${String(type)}].`);
   }
@@ -155,11 +163,11 @@ export function assertHasOptionalField <T extends Record<string, unknown>, K ext
 
 /** @internal */
 // eslint-disable-next-line func-style
-export function assertHasRequiredField <T extends Record<string, unknown>, K extends FieldType>(
+export function assertHasRequiredField <T extends Record<string, unknown>, N extends string, K extends FieldType>(
   value: T,
-  { name, type }: FieldDescriptor<K>,
+  { name, type }: FieldDescriptor<N, K>,
   ErrorClass: new (message: string) => Error = Error
-): asserts value is T & Record<typeof name, FieldTypeToValue[K]> {
+): asserts value is T & Record<N, FieldTypeToValue[K]> {
   if (!hasField(value, { name, type }) || !value[name]) {
     throw new ErrorClass(`The [${String(name)}] field must have a [${String(type)}] value.`);
   }
