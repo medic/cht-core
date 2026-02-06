@@ -1,6 +1,10 @@
+const { DOC_IDS } = require('@medic/constants');
+
 describe('Display Privacy Policies controller', function() {
 
   'use strict';
+
+  const PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
 
   let createController;
   let scope;
@@ -39,7 +43,7 @@ describe('Display Privacy Policies controller', function() {
   describe('loading', () => {
     it('should load privacy policy doc', () => {
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'the_en_attachment'
         },
@@ -54,7 +58,7 @@ describe('Display Privacy Policies controller', function() {
       const controller = createController();
       return controller.setupPromise.then(() => {
         chai.expect(db.get.callCount).to.equal(1);
-        chai.expect(db.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+        chai.expect(db.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
         chai.expect(scope.privacyPolicies).to.deep.equal({
           en: {
             content_type: 'html',
@@ -71,7 +75,7 @@ describe('Display Privacy Policies controller', function() {
       const controller = createController();
       return controller.setupPromise.then(() => {
         chai.expect(db.get.callCount).to.equal(1);
-        chai.expect(db.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+        chai.expect(db.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
         chai.expect(scope.privacyPolicies).to.deep.equal({
           en: {},
           sw: {},
@@ -86,7 +90,7 @@ describe('Display Privacy Policies controller', function() {
         { code: 'fr', name: 'French' },
       ]);
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'not_en',
           fr: 'not_fr',
@@ -126,7 +130,7 @@ describe('Display Privacy Policies controller', function() {
       const controller = createController();
       return controller.setupPromise.then(() => {
         chai.expect(db.get.callCount).to.equal(1);
-        chai.expect(db.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+        chai.expect(db.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
         chai.expect(scope.privacyPolicies).to.deep.equal({
           en: {},
           fr: {},
@@ -148,7 +152,7 @@ describe('Display Privacy Policies controller', function() {
         { code: 'es', name: 'Espanol' },
       ]);
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
           fr: 'the_fr',
@@ -204,7 +208,7 @@ describe('Display Privacy Policies controller', function() {
   describe('update preview', () => {
     it('should do nothing for no update', () => {
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
         },
@@ -232,7 +236,7 @@ describe('Display Privacy Policies controller', function() {
       ]);
 
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
         },
@@ -280,7 +284,7 @@ describe('Display Privacy Policies controller', function() {
       ]);
 
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
           es: 'es.html',
@@ -339,7 +343,7 @@ describe('Display Privacy Policies controller', function() {
       ]);
 
       db.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
           es: 'es.html',
@@ -380,8 +384,8 @@ describe('Display Privacy Policies controller', function() {
       ]);
 
       db.get
-        .withArgs('privacy-policies', { attachments: true }).resolves({
-          _id: 'privacy-policies',
+        .withArgs(PRIVACY_POLICIES_DOC_ID, { attachments: true }).resolves({
+          _id: PRIVACY_POLICIES_DOC_ID,
           privacy_policies: {
             en: 'en',
             es: 'es',
@@ -399,8 +403,8 @@ describe('Display Privacy Policies controller', function() {
             },
           },
         })
-        .withArgs('privacy-policies', { attachments: false }).resolves({
-          _id: 'privacy-policies',
+        .withArgs(PRIVACY_POLICIES_DOC_ID, { attachments: false }).resolves({
+          _id: PRIVACY_POLICIES_DOC_ID,
           privacy_policies: {
             en: 'en',
             es: 'es',
@@ -440,8 +444,8 @@ describe('Display Privacy Policies controller', function() {
       ]);
 
       db.get
-        .withArgs('privacy-policies', { attachments: true }).onCall(0).resolves({
-          _id: 'privacy-policies',
+        .withArgs(PRIVACY_POLICIES_DOC_ID, { attachments: true }).onCall(0).resolves({
+          _id: PRIVACY_POLICIES_DOC_ID,
           privacy_policies: {
             en: 'en.htm',
             fr: 'fr.html',
@@ -471,8 +475,8 @@ describe('Display Privacy Policies controller', function() {
             },
           },
         })
-        .withArgs('privacy-policies', { attachments: true }).onCall(1).resolves({
-          _id: 'privacy-policies',
+        .withArgs(PRIVACY_POLICIES_DOC_ID, { attachments: true }).onCall(1).resolves({
+          _id: PRIVACY_POLICIES_DOC_ID,
           privacy_policies: {
             en: 'en.htm',
             fr: 'new_fr',
@@ -502,8 +506,8 @@ describe('Display Privacy Policies controller', function() {
             },
           },
         })
-        .withArgs('privacy-policies', { attachments: false }).resolves({
-          _id: 'privacy-policies',
+        .withArgs(PRIVACY_POLICIES_DOC_ID, { attachments: false }).resolves({
+          _id: PRIVACY_POLICIES_DOC_ID,
           _rev: '3-lala',
           privacy_policies: {
             en: 'en.htm',
@@ -550,11 +554,12 @@ describe('Display Privacy Policies controller', function() {
         })
         .then(() => {
           chai.expect(db.get.callCount).to.equal(3);
-          chai.expect(db.get.args[1]).to.deep.equal(['privacy-policies', { attachments: false }]);
-          chai.expect(db.get.args[2]).to.deep.equal(['privacy-policies', { attachments: true }]); // scope refreshed
+          chai.expect(db.get.args[1]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: false }]);
+          // scope refreshed
+          chai.expect(db.get.args[2]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
           chai.expect(db.put.callCount).to.equal(1);
           chai.expect(db.put.args[0]).to.deep.equal([{
-            _id: 'privacy-policies',
+            _id: PRIVACY_POLICIES_DOC_ID,
             _rev: '3-lala',
             privacy_policies: {
               en: 'en.htm',

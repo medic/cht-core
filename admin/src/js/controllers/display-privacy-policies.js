@@ -11,6 +11,7 @@ angular.module('controllers').controller('DisplayPrivacyPoliciesCtrl',
     'ngInject';
     const { DOC_IDS } = require('@medic/constants');
 
+    const PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
 
     $scope.allowedContentType = 'text/html';
 

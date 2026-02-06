@@ -11,7 +11,7 @@ import { DOC_IDS } from '@medic/constants';
 })
 export class PrivacyPoliciesService {
 
-  DOC_IDS.PRIVACY_POLICIES = 'privacy-policies';
+  private PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
   ACCEPTED_CONTENT_TYPE = 'text/html';
 
   constructor(
@@ -43,7 +43,7 @@ export class PrivacyPoliciesService {
   private getPrivacyPolicies(attachments = false) {
     return this.dbService
       .get() // Getting DB.
-      .get(this.DOC_IDS.PRIVACY_POLICIES, { attachments }) // Querying.
+      .get(this.PRIVACY_POLICIES_DOC_ID, { attachments }) // Querying.
       .catch(err => {
         if (err.status === 404) {
           return {};

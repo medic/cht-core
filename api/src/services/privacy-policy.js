@@ -23,7 +23,8 @@ const getDoc = (options=({})) => {
     .then(doc => {
       const policies = doc.privacy_policies;
       if (!policies || !Object.keys(policies).length) { // invalid doc
-        throw new NotFoundError(`Invalid ${DOC_IDS.PRIVACY_POLICIES} doc: missing required "privacy_policies" property`);
+        const docId = DOC_IDS.PRIVACY_POLICIES;
+        throw new NotFoundError(`Invalid ${docId} doc: missing required "privacy_policies" property`);
       }
       return doc;
     })
