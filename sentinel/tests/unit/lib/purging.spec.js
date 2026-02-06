@@ -15,6 +15,8 @@ const chtDatasource = require('@medic/cht-datasource');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
 const { CONTACT_TYPES } = require('@medic/constants');
+const dataContext = require('../../../src/data-context');
+const { roles } = require('@medic/user-management')(config, db, dataContext);
 
 let service;
 let clock;
@@ -90,7 +92,7 @@ describe('ServerSidePurge', () => {
     });
 
     it('should return all unique role groups', () => {
-      sinon.stub(purgingUtils, 'isOffline').returns(true);
+      sinon.stub(roles, 'isOffline').returns(true);
       sinon.stub(purgingUtils, 'getRoleHash').callsFake(roles => JSON.stringify(roles));
       db.users.allDocs.resolves({ rows: [
         { id: 'user1', doc: { roles: ['a', 'b'], name: 'user1' }},
