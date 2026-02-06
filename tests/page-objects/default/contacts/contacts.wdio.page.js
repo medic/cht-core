@@ -237,10 +237,11 @@ const addPerson = async (
   await commonEnketoPage.setInputValue('External ID', externalIDValue);
   await commonEnketoPage.setTextareaValue('Notes', notesValue);
   await genericForm.submitForm({ waitForPageLoaded: waitForComplete });
-  if (waitForSentinel) {
-    await sentinelUtils.waitForSentinel();
-  }
   if (waitForComplete) {
+    if (waitForSentinel) {
+      await sentinelUtils.waitForSentinel();
+    }
+
     await contactCardSelectors.contactCardIcon(type).waitForDisplayed();
     return contactCardSelectors.contactCardName().getText();
   }

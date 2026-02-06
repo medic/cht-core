@@ -33,6 +33,8 @@ const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion
     'window-size=1200,900'
   ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
+const { DOWNLOAD_PATH, setupDownloadFolder } = require('@utils/file-download');
+setupDownloadFolder();
 
 const baseConfig = {
   //
@@ -94,16 +96,20 @@ const baseConfig = {
     browserName: 'chrome',
     browserVersion: utils.isMinimumChromeVersion ? CHROME_VERSION : undefined,
     acceptInsecureCerts: true,
-    'wdio:enforceWebDriverClassic': true,
+    'wdio:enforceWebDriverClassic': utils.isMinimumChromeVersion,
     'goog:chromeOptions': {
       args: DEBUG ? CHROME_OPTIONS_ARGS_DEBUG : CHROME_OPTIONS_ARGS,
-      binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined
+      binary: utils.isMinimumChromeVersion ? '/usr/bin/google-chrome-stable' : undefined,
+      prefs: {
+        'download.default_directory': DOWNLOAD_PATH
+      }
     },
     'wdio:chromedriverOptions': {
       binary: utils.isMinimumChromeVersion
         ? '/node_modules/chromedriver/bin/chromedriver'
         : undefined
-    }
+    },
+    webSocketUrl: !utils.isMinimumChromeVersion
     // If outputDir is provided WebdriverIO can capture driver session logs
     // it is possible to configure which logTypes to include/exclude.
     // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
@@ -156,7 +162,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['devtools'],
+  services: utils.isMinimumChromeVersion ? ['chromedriver'] : ['lighthouse'],
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -167,7 +173,7 @@ const baseConfig = {
   framework: 'mocha',
   //
   // The number of times to retry the entire specfile when it fails as a whole
-  // specFileRetries: 1,
+  specFileRetries: DEBUG ? 0 : 3,
   //
   // Delay in seconds between the spec file retry attempts
   // specFileRetriesDelay: 0,
@@ -183,16 +189,24 @@ const baseConfig = {
       outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
     }],
-    'spec'
+    [
+      'spec',
+      {
+        addConsoleLogs: true,
+        realtimeReporting: true,
+        passed: '[PASS]',
+        failed: '[FAIL]',
+      },
+    ],
+
   ],
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
-  // specFileRetries: DEBUG ? 0 : 5,
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
-    retries: DEBUG ? 0 : 5,
+    retries: 0
   },
   //
   // =====
@@ -340,8 +354,8 @@ const baseConfig = {
     if (users.length) {
       await utils.deleteUsers(users);
     }
-    const forms = await utils.getDefaultForms();
-    await utils.revertDb(forms, true);
+
+    await utils.revertDb();
   },
   /**
    * Gets executed right after terminating the webdriver session.
