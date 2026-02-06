@@ -309,7 +309,7 @@ describe('Person API', () => {
       };
       const expectedError = `400 - ${JSON.stringify({
         code: 400,
-        error: `The [parent] field must be valued.`
+        error: `The [parent] field must have a [string] value.`
       })}`;
 
       await expect(utils.request(opts)).to.be.rejectedWith(expectedError);

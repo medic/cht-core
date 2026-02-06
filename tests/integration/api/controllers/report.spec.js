@@ -457,7 +457,7 @@ describe('Report API', () => {
       await expect(utils.request(opts))
         .to.be.rejectedWith(`400 - ${JSON.stringify({
           code: 400,
-          error: `The [contact] field must be valued.`
+          error: `The [contact] field must have a [string] value.`
         })}`);
     });
   });

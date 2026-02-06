@@ -325,7 +325,7 @@ describe('cht-datasource Report', () => {
           type: 'data_record',
         };
         await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
-          `The [contact] field must be valued.`
+          `The [contact] field must have a [string] value.`
         );
       });
 
@@ -337,7 +337,7 @@ describe('cht-datasource Report', () => {
         };
 
         await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
-          `Invalid reported_date [\\"112-9909-123\\"]. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
+          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
           `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
         );
       });
