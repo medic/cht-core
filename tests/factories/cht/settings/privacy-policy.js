@@ -1,4 +1,5 @@
 const Factory = require('rosie').Factory;
+const { DOC_IDS } = require('@medic/constants');
 const privacyPolicyHtml = ({ header, paragraph }) => {
   return `
 <div>
@@ -32,7 +33,7 @@ const attachments = [
 
 const privacyPolicy = () => {
   return new Factory()
-    .attr('_id', 'privacy-policies')
+    .attr('_id', DOC_IDS.PRIVACY_POLICIES)
     .attr('privacy_policies', { en: 'en.attachment', fr: 'fr.html', es: 'es.html' })
     .option('attachments', attachments)
     .attr('_attachments', ['attachments'], (attachments) => {
