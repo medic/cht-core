@@ -130,16 +130,15 @@ export interface Page<T> {
 
 /** @internal */
 export const getPagedGenerator = async function* <S, T>(
-  fetchFunction: (args: S, s: Nullable<string>, l: number) => Promise<Page<T>>,
+  fetchFunction: (args: S, s: Nullable<string>, l?: number) => Promise<Page<T>>,
   fetchFunctionArgs: S
 ): AsyncGenerator<T, null> {
-  const limit = 100;
   let cursor: Nullable<string> =  null;
   let docs: Page<T>;
   const getDocsDataLength = (docs: Page<T>) => docs.data.length;
 
   do {
-    docs = await fetchFunction(fetchFunctionArgs, cursor, limit);
+    docs = await fetchFunction(fetchFunctionArgs, cursor);
 
     for (const doc of docs.data) {
       yield doc;

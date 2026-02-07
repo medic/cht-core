@@ -214,7 +214,6 @@ describe('core lib', () => {
 
   describe('getPagedGenerator', () => {
     let fetchFunctionStub: SinonStub;
-    const limit = 100;
     const cursor = null;
 
     beforeEach(() => {
@@ -236,7 +235,7 @@ describe('core lib', () => {
       }
 
       expect(results).to.deep.equal(mockDocs);
-      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, cursor, limit)).to.be.true;
+      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, cursor)).to.be.true;
     });
 
     it('should handle multiple pages',  async () => {
@@ -259,8 +258,8 @@ describe('core lib', () => {
 
       expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
       expect(fetchFunctionStub.callCount).to.equal(2);
-      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, cursor, limit]);
-      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, (Number(cursor) + limit).toString(), limit]);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, cursor]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, mockPage1.cursor]);
     });
 
     it('should handle empty result', async () => {
