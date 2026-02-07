@@ -22,7 +22,7 @@ export class LanguagesService {
 
     const result = await this.dbService
       .get()
-      .query('medic-client/doc_by_type', { key: [DOC_TYPES.TRANSLATIONS], include_docs: true });
+      .query('shared/doc_by_type', { key: [DOC_TYPES.TRANSLATIONS], include_docs: true });
 
     return result.rows
       .filter(row => enabledLanguages.includes(row.doc.code) || !enabledLanguages.length)

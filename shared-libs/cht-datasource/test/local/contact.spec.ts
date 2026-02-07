@@ -198,7 +198,7 @@ describe('local contact', () => {
         queryDocUuidsByKeyOuter.withArgs(
           localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext'
         ).returns(getByExactMatchFreetext);
-        queryDocUuidsByKeyOuter.withArgs(localContext.medicDb, 'medic-client/contacts_by_type').returns(getByType);
+        queryDocUuidsByKeyOuter.withArgs(localContext.medicDb, 'shared-contacts/contacts_by_type').returns(getByType);
         // end comment
         // comment to encapsulate assigning of "StartsWith" functions
         queryDocUuidsByRangeOuter = sinon.stub(LocalDoc, 'queryDocUuidsByRange');
@@ -251,7 +251,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -313,7 +313,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -374,7 +374,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -437,7 +437,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -500,7 +500,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -565,7 +565,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -629,7 +629,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -692,7 +692,7 @@ describe('local contact', () => {
         ).to.deep.equal([ localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext' ]);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([ localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([ localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -759,7 +759,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -816,7 +816,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -877,7 +877,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -938,7 +938,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -999,7 +999,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1060,7 +1060,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1123,7 +1123,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -1187,7 +1187,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -1250,7 +1250,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1315,7 +1315,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1356,7 +1356,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1401,7 +1401,7 @@ describe('local contact', () => {
           ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
           expect(
             queryDocUuidsByKeyOuter.getCall(2).args
-          ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+          ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
           expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
           expect(
             queryDocUuidsByRangeOuter.getCall(0).args
@@ -1448,7 +1448,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1498,7 +1498,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args
@@ -1538,7 +1538,7 @@ describe('local contact', () => {
         ).to.deep.equal([localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext']);
         expect(
           queryDocUuidsByKeyOuter.getCall(2).args
-        ).to.deep.equal([localContext.medicDb, 'medic-client/contacts_by_type']);
+        ).to.deep.equal([localContext.medicDb, 'shared-contacts/contacts_by_type']);
         expect(queryDocUuidsByRangeOuter.callCount).to.be.equal(2);
         expect(
           queryDocUuidsByRangeOuter.getCall(0).args

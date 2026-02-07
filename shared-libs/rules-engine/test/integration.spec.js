@@ -67,14 +67,14 @@ const reportByPatientIdOnly = {
 };
 
 const expectedQueriesForAllFreshData = [
-  'medic-client/contacts_by_type',
-  'medic-client/reports_by_subject',
-  'medic-client/tasks_by_contact'
+  'shared-contacts/contacts_by_type',
+  'shared-reports/reports_by_subject',
+  'shared-reports/tasks_by_contact'
 ];
 const expectedQueriesForFreshData = [
-  'medic-client/reports_by_subject',
-  'medic-client/tasks_by_contact',
-  'medic-client/tasks_by_contact',
+  'shared-reports/reports_by_subject',
+  'shared-reports/tasks_by_contact',
+  'shared-reports/tasks_by_contact',
 ];
 
 const fetchTargets = async (interval) => {
@@ -455,7 +455,7 @@ describe(`Rules Engine Integration Tests`, () => {
       const tasksAfterPurge = await rulesEngine.fetchTasksFor();
       expect(tasksAfterPurge).to.have.property('length', 0);
 
-      const allTasks = await db.query('medic-client/tasks_by_contact');
+      const allTasks = await db.query('shared-reports/tasks_by_contact');
       expect(allTasks.total_rows).to.eq(0);
     });
 
@@ -484,8 +484,8 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(secondTasks).to.deep.eq(firstTasks);
       expect(db.query.args.map(args => args[0])).to.deep.eq([
         ...expectedQueriesForAllFreshData,
-        'medic-client/tasks_by_contact',
-        'medic-client/contacts_by_reference',
+        'shared-reports/tasks_by_contact',
+        'shared-contacts/contacts_by_reference',
         ...expectedQueriesForFreshData
       ]);
     });
@@ -515,7 +515,7 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(secondTasks).to.deep.eq(firstTasks);
       expect(db.query.args.map(args => args[0])).to.deep.eq([
         ...expectedQueriesForFreshData,
-        'medic-client/contacts_by_reference',
+        'shared-contacts/contacts_by_reference',
         ...expectedQueriesForFreshData
       ]);
     });
@@ -542,7 +542,7 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(rulesEmitter.getEmissionsFor.args).excludingEvery(['_rev', 'state', 'stateHistory'])
         .to.deep.eq([[[], [headlessReport, headlessReport2], [taskEmittedByHeadless2]]]);
       expect(db.query.args.map(args => args[0]))
-        .to.deep.eq([...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']);
+        .to.deep.eq([...expectedQueriesForAllFreshData, 'shared-reports/tasks_by_contact']);
       expect(firstResult).excludingEvery('_rev').to.deep.eq([taskOwnedByHeadless]);
       expect(db.bulkDocs.callCount).to.eq(2); // taskEmittedByHeadless2 gets cancelled
 
@@ -770,7 +770,7 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   const tasks = await rulesEngine.fetchTasksFor(selectBy);
   expect(tasks).to.have.property('length', 1);
   expect(db.query.args.map(args => args[0])).to.deep.eq(
-    selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']
+    selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'shared-reports/tasks_by_contact']
   );
   expect(db.bulkDocs.callCount).to.eq(2);
   expect(tasks[0]).to.deep.include({

@@ -193,7 +193,7 @@ describe('Search service', () => {
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
       searchStub.resolves({ docIds: ['1', '2', '3', '4'] });
       db.query
-        .withArgs('medic-client/contacts_by_last_visited')
+        .withArgs('webapp-contacts/contacts_by_last_visited')
         .resolves({
           rows: [
             { key: '1', value: { max: moment('2018-08-10').valueOf() } },
@@ -208,7 +208,7 @@ describe('Search service', () => {
         });
 
       db.query
-        .withArgs('medic-client/visits_by_date')
+        .withArgs('webapp-reports/visits_by_date')
         .resolves({
           rows: [
             { key: moment('2018-08-01').valueOf(), value: '1' },
@@ -235,14 +235,14 @@ describe('Search service', () => {
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, { sortByLastVisitedDate: undefined }]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
-            'medic-client/visits_by_date',
+            'webapp-reports/visits_by_date',
             {
               start_key: moment('2018-08-01').startOf('day').valueOf(),
               end_key: moment('2018-08-01').endOf('month').valueOf()
             }
           ]);
           expect(db.query.args[1]).to.deep.equal([
-            'medic-client/contacts_by_last_visited',
+            'webapp-contacts/contacts_by_last_visited',
             { reduce: true, group: true }
           ]);
 
@@ -283,7 +283,7 @@ describe('Search service', () => {
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }]);
       searchStub.resolves({ docIds: ['1', '2', '3'] });
       db.query
-        .withArgs('medic-client/contacts_by_last_visited')
+        .withArgs('webapp-contacts/contacts_by_last_visited')
         .resolves({
           rows: [
             { key: '1', value: { max: moment('2018-08-10').valueOf() } },
@@ -296,7 +296,7 @@ describe('Search service', () => {
         });
 
       db.query
-        .withArgs('medic-client/visits_by_date')
+        .withArgs('webapp-reports/visits_by_date')
         .resolves({
           rows: [
             { key: moment('2018-07-25').valueOf(), value: '3' },
@@ -326,14 +326,14 @@ describe('Search service', () => {
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
-            'medic-client/visits_by_date',
+            'webapp-reports/visits_by_date',
             {
               start_key: moment('2018-07-25').startOf('day').valueOf(),
               end_key: moment('2018-08-24').endOf('day').valueOf()
             }
           ]);
           expect(db.query.args[1])
-            .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: true, group: true }]);
+            .to.deep.equal([ 'webapp-contacts/contacts_by_last_visited', { reduce: true, group: true }]);
 
           expect(result).to.deep.equal([
             {
@@ -365,7 +365,7 @@ describe('Search service', () => {
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }]);
       searchStub.resolves({ docIds: ['1', '2'] });
       db.query
-        .withArgs('medic-client/contacts_by_last_visited')
+        .withArgs('webapp-contacts/contacts_by_last_visited')
         .resolves({
           rows: [
             { key: '1', value: { max: moment('2018-08-12 00:01:00').valueOf() } },
@@ -377,7 +377,7 @@ describe('Search service', () => {
           ]
         });
       db.query
-        .withArgs('medic-client/visits_by_date')
+        .withArgs('webapp-reports/visits_by_date')
         .resolves({
           rows: [
             { key: moment('2018-08-01').valueOf(), value: '3' },
@@ -428,7 +428,7 @@ describe('Search service', () => {
       searchStub.resolves({ docIds: ['1', '2', '3'] });
       session.isOnlineOnly.returns(true);
       db.query
-        .withArgs('medic-client/contacts_by_last_visited')
+        .withArgs('webapp-contacts/contacts_by_last_visited')
         .resolves({
           rows: [
             { key: '1', value: { max: moment('2018-08-10').valueOf() } },
@@ -438,7 +438,7 @@ describe('Search service', () => {
         });
 
       db.query
-        .withArgs('medic-client/visits_by_date')
+        .withArgs('webapp-reports/visits_by_date')
         .resolves({
           rows: [
             { key: moment('2018-07-25').valueOf(), value: '3' },
@@ -468,14 +468,14 @@ describe('Search service', () => {
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
-            'medic-client/visits_by_date',
+            'webapp-reports/visits_by_date',
             {
               start_key: moment('2018-07-25').startOf('day').valueOf(),
               end_key: moment('2018-08-24').endOf('day').valueOf()
             }
           ]);
           expect(db.query.args[1]).to.deep.equal([
-            'medic-client/contacts_by_last_visited',
+            'webapp-contacts/contacts_by_last_visited',
             { reduce: true, group: true, keys: ['1', '2', '3'] }
           ]);
 
@@ -510,7 +510,7 @@ describe('Search service', () => {
       searchStub.resolves({ docIds: ['1', '2', '3'] });
       session.isOnlineOnly.returns(true);
       db.query
-        .withArgs('medic-client/contacts_by_last_visited')
+        .withArgs('webapp-contacts/contacts_by_last_visited')
         .resolves({
           rows: [
             { key: '1', value: { max: 0 } },
@@ -520,7 +520,7 @@ describe('Search service', () => {
         });
 
       db.query
-        .withArgs('medic-client/visits_by_date')
+        .withArgs('webapp-reports/visits_by_date')
         .resolves({
           rows: [
             { key: moment('2018-07-25').valueOf(), value: '3' },
@@ -547,14 +547,14 @@ describe('Search service', () => {
             .to.deep.equal(['contacts', {}, { limit: 50, skip: 0 }, extensions]);
           expect(db.query.callCount).to.equal(2);
           expect(db.query.args[0]).to.deep.equal([
-            'medic-client/visits_by_date',
+            'webapp-reports/visits_by_date',
             {
               start_key: moment('2018-07-25').startOf('day').valueOf(),
               end_key: moment('2018-08-24').endOf('day').valueOf()
             }
           ]);
           expect(db.query.args[1]).to.deep.equal([
-            'medic-client/contacts_by_last_visited',
+            'webapp-contacts/contacts_by_last_visited',
             { reduce: true, group: true, keys: ['1', '2', '3'] }
           ]);
 
@@ -600,7 +600,7 @@ describe('Search service', () => {
       });
       GetDataRecords.resolves([{ _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }]);
       db.query
-        .withArgs('medic-client/visits_by_date')
+        .withArgs('webapp-reports/visits_by_date')
         .resolves({
           rows: [
             { key: moment('2018-08-01').valueOf(), value: '1' },
@@ -631,7 +631,7 @@ describe('Search service', () => {
           ]);
           expect(db.query.callCount).to.equal(1);
           expect(db.query.args[0]).to.deep.equal([
-            'medic-client/visits_by_date',
+            'webapp-reports/visits_by_date',
             {
               start_key: moment('2018-08-01').startOf('day').valueOf(),
               end_key: moment('2018-08-01').endOf('month').valueOf()
@@ -709,9 +709,9 @@ describe('Search service', () => {
         { _id: '1' }, { _id: '2' }, { _id: '3' }, { _id: '4' }
       ]);
 
-      db.query.withArgs('medic-client/visits_by_date').resolves({ rows: []});
+      db.query.withArgs('webapp-reports/visits_by_date').resolves({ rows: []});
       db.query
-        .withArgs('medic-client/contacts_by_last_visited')
+        .withArgs('webapp-contacts/contacts_by_last_visited')
         .resolves({
           rows: [
             { key: '1', value: { max: 1 } },
@@ -728,11 +728,11 @@ describe('Search service', () => {
         expect(GetDataRecords.args[0][0]).to.deep.equal(['1', '2', '3', '4']);
         expect(db.query.callCount).to.equal(2);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/visits_by_date',
+          'webapp-reports/visits_by_date',
           { start_key: moment().startOf('month').valueOf(), end_key: moment().endOf('month').valueOf() }
         ]);
         expect(db.query.args[1])
-          .to.deep.equal([ 'medic-client/contacts_by_last_visited', { reduce: true, group: true } ]);
+          .to.deep.equal([ 'webapp-contacts/contacts_by_last_visited', { reduce: true, group: true } ]);
 
         expect(results).to.deep.equal([
           { _id: '1', lastVisitedDate: 1, visitCount: 0, visitCountGoal: undefined, sortByLastVisitedDate: undefined },

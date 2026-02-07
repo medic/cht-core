@@ -59,7 +59,7 @@ module.exports = {
   },
   isIdUnique: (id) => {
     return db.medic
-      .query('medic-client/contacts_by_reference', { key: ['shortcode', id] })
+      .query('shared-contacts/contacts_by_reference', { key: ['shortcode', id] })
       .then(results => !(results && results.rows && results.rows.length));
   },  
   addUniqueId: (doc) => {

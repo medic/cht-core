@@ -52,7 +52,7 @@ describe('Display Languages controller', function() {
 
   it('should display error when language settings are invalid', async () => {
     settings.resolves({});
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.query.withArgs('shared/doc_by_type').resolves({
       rows: [
         {
           id: 'messages-en',
@@ -83,7 +83,7 @@ describe('Display Languages controller', function() {
 
   it('should not mutate the language object', async () => {
     settings.resolves({ languages: [{ locale: 'en', locale_outgoing: 'sw' }] });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.query.withArgs('shared/doc_by_type').resolves({
       rows: [
         {
           id: 'messages-en',
@@ -160,7 +160,7 @@ describe('Display Languages controller', function() {
         { locale: 'sw', enabled: true },
       ],
     });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.query.withArgs('shared/doc_by_type').resolves({
       rows: [
         {
           id: 'messages-en',
@@ -205,7 +205,7 @@ describe('Display Languages controller', function() {
         { locale: 'sw', enabled: false },
       ],
     });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.query.withArgs('shared/doc_by_type').resolves({
       rows: [
         {
           id: 'messages-en',
@@ -267,7 +267,7 @@ describe('Display Languages controller', function() {
       locale: 'en',
       locale_outgoing: 'sw',
     });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.query.withArgs('shared/doc_by_type').resolves({
       rows: [
         {
           id: 'messages-en',

@@ -402,7 +402,7 @@ describe('provider-wireup integration tests', () => {
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(db.query.callCount).to.eq(3);
-      expect(db.query.args[2][0]).to.eq('medic-client/tasks_by_contact');
+      expect(db.query.args[2][0]).to.eq('shared-reports/tasks_by_contact');
       expect(db.query.args[2][1]).to.not.have.property('keys');
     });
 

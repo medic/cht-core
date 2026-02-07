@@ -56,7 +56,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
 
     const updateTranslations = function() {
       return DB()
-        .query('medic-client/doc_by_type', {
+        .query('shared/doc_by_type', {
           key: [ DOC_TYPES.TRANSLATIONS ],
           include_docs: true
         })

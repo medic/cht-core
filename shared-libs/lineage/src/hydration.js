@@ -217,7 +217,7 @@ module.exports = function(Promise, DB) {
       .filter(shortcode => shortcode)
       .map(shortcode => [ 'shortcode', shortcode ]);
 
-    return DB.query('medic-client/contacts_by_reference', { keys })
+    return DB.query('shared-contacts/contacts_by_reference', { keys })
       .then(function(results) {
         const findIdWithKey = key => {
           const matchingRow = results.rows.find(row => row.key[1] === key);
@@ -234,7 +234,7 @@ module.exports = function(Promise, DB) {
       endkey: [id, {}],
       include_docs: true
     };
-    return DB.query('medic-client/docs_by_id_lineage', options)
+    return DB.query('shared/docs_by_id_lineage', options)
       .then(function(result) {
         return result.rows.map(function(row) {
           return row.doc;

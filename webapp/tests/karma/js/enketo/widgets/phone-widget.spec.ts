@@ -202,7 +202,7 @@ describe('Enketo: Phone Widget', () => {
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.notCalled).to.be.true;
     });
 
@@ -232,7 +232,7 @@ describe('Enketo: Phone Widget', () => {
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.calledOnceWithExactly(`phone number not unique: "${DENORMALIZED_NUMBER}"`)).to.be.true;
     });
 
@@ -249,7 +249,7 @@ describe('Enketo: Phone Widget', () => {
       expect(phoneNumberValidate.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(phoneNumberNormalize.calledOnceWithExactly(SETTINGS, DENORMALIZED_NUMBER)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
-      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
+      expect(dbQuery.calledOnceWithExactly('shared-contacts/contacts_by_phone', { key: NORMALIZED_NUMBER })).to.be.true;
       expect(consoleError.notCalled).to.be.true;
     });
   });

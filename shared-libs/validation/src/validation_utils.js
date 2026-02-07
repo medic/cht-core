@@ -143,7 +143,7 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  const results = await db.medic.query('medic-client/contacts_by_phone', { key: value });
+  const results = await db.medic.query('shared-contacts/contacts_by_phone', { key: value });
   return !results?.rows?.length;
 };
 

@@ -319,7 +319,7 @@ describe('TelemetryService', () => {
       });
 
       expect(medicDb.query.calledTwice).to.be.true;
-      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
+      expect(medicDb.query.args[0][0]).to.equal('shared/doc_by_type');
       expect(medicDb.query.args[0][1]).to.deep.equal({ key: [ 'form' ], include_docs: true });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
       expect(telemetryDb.close.notCalled).to.be.true;

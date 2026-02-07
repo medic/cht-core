@@ -23,7 +23,7 @@ angular.module('controllers').controller('UsersCtrl',
     $scope.updateList = function() {
       $scope.loading = true;
       const params = { include_docs: true, key: ['user-settings'] };
-      DB().query('medic-client/doc_by_type', params)
+      DB().query('shared/doc_by_type', params)
         .then(function(settings) {
           $scope.users = _.map(settings.rows, 'doc');
           $scope.loading = false;

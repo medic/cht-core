@@ -44,7 +44,7 @@ describe('request-utils', () => {
 
       // Assert
       expect(
-        dbFetchStub.calledOnceWithExactly('_design/medic/_nouveau/reports', { headers: headers, ...options})
+        dbFetchStub.calledOnceWithExactly('_design/online-user/_nouveau/reports', { headers: headers, ...options})
       ).to.be.true;
       expect(result).to.equal(mockResponse);
     });
@@ -63,7 +63,7 @@ describe('request-utils', () => {
       // Assert
       expect(
         dbFetchStub.calledOnceWithExactly(
-          '_design/medic/_nouveau/contacts_by_freetext',
+          '_design/online-user/_nouveau/contacts_by_freetext',
           { headers: headers, ...options}
         )
       ).to.be.true;
@@ -120,8 +120,8 @@ describe('request-utils', () => {
 
       // Assert
       expect(dbFetchStub.calledTwice).to.be.true;
-      expect(dbFetchStub.firstCall.args[0]).to.equal('_design/medic/_nouveau/reports');
-      expect(dbFetchStub.secondCall.args[0]).to.equal('_design/medic/_nouveau/reports');
+      expect(dbFetchStub.firstCall.args[0]).to.equal('_design/online-user/_nouveau/reports');
+      expect(dbFetchStub.secondCall.args[0]).to.equal('_design/online-user/_nouveau/reports');
     });
   });
 
