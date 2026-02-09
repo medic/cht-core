@@ -180,6 +180,16 @@ describe('Contact form attachments', () => {
 
     const attachmentNames = Object.keys(createdContact._attachments);
     expect(attachmentNames).to.have.lengthOf(2);
+
+    const photoAttachment = attachmentNames.find(name => name.match(/^user-file-photo-for-upload-form.*\.png$/));
+    const documentAttachment = attachmentNames.find(name => name.match(/^user-file-layers.*\.png$/));
+
+    expect(photoAttachment, 'Photo attachment should exist').to.exist;
+    expect(documentAttachment, 'Document attachment should exist').to.exist;
+    expect(photoAttachment, 'Photo and document should be different attachments').to.not.equal(documentAttachment);
+
+    expect(createdContact._attachments[photoAttachment].content_type).to.equal('image/png');
+    expect(createdContact._attachments[documentAttachment].content_type).to.equal('image/png');
   });
 
   it('should preserve attachments when editing contact', async () => {
