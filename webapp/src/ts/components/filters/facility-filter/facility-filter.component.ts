@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Output, Input, OnInit, AfterViewInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
 import { sortBy as _sortBy } from 'lodash-es';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -8,7 +7,6 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { Filter } from '@mm-components/filters/filter';
-import { Selectors } from '@mm-selectors/index';
 import { NgFor, NgTemplateOutlet, NgClass, NgIf, AsyncPipe } from '@angular/common';
 
 @Component({
@@ -25,7 +23,6 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit {
 
   private totalFacilitiesDisplayed = 0;
   private togglingFacilities = false;
-  private subscriptions: Subscription = new Subscription();
 
   @Input() disabled;
   @Input() fieldId;
@@ -47,18 +44,8 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.subscribeToSidebarStore();
-  }
-
-  private subscribeToSidebarStore() {
-    const subscription = this.store
-      .select(Selectors.getSidebarFilter)
-      .subscribe(sidebarFilter => {
-        if (sidebarFilter?.isOpen && !this.facilities?.length) {
-          return this.loadFacilities();
-        }
-      });
-    this.subscriptions.add(subscription);
+    // Load facilities eagerly so we can determine if the filter should be shown
+    this.loadFacilities();
   }
 
   // this method is called on dropdown open

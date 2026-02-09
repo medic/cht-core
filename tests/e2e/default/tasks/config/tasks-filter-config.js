@@ -28,7 +28,7 @@ module.exports = [
       {
         id: 'home-visit-overdue',
         start: 10,
-        end: 0,
+        end: 10,
         dueDate: function () {
           // Due date in the past = overdue
           return Date.now() - (5 * oneDay);
@@ -59,7 +59,7 @@ module.exports = [
     events: [
       {
         id: 'home-visit-not-overdue',
-        start: 0,
+        start: 10,
         end: 10,
         dueDate: function () {
           // Due date in the future = not overdue
@@ -92,7 +92,7 @@ module.exports = [
       {
         id: 'assessment-overdue',
         start: 10,
-        end: 0,
+        end: 10,
         dueDate: function () {
           return Date.now() - (3 * oneDay);
         }
@@ -122,7 +122,7 @@ module.exports = [
     events: [
       {
         id: 'assessment-not-overdue',
-        start: 0,
+        start: 10,
         end: 10,
         dueDate: function () {
           return Date.now() + (7 * oneDay);
@@ -154,7 +154,7 @@ module.exports = [
       {
         id: 'follow-up-overdue',
         start: 10,
-        end: 0,
+        end: 10,
         dueDate: function () {
           return Date.now() - (2 * oneDay);
         }

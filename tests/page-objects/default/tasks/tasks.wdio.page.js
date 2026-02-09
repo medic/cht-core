@@ -15,9 +15,8 @@ const sidebarFilterSelectors = {
   overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
   taskTypeAccordionHeader: () => $('#task-type-filter-accordion mat-expansion-panel-header'),
   taskTypeAccordionBody: () => $('#task-type-filter-accordion mat-panel-description'),
-  areaAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
-  areaAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
-  noOptionsMessage: () => $('#place-filter-accordion mat-panel-description').$('*=No options'),
+  areaAccordionHeader: () => $('#area-filter-accordion mat-expansion-panel-header'),
+  areaAccordionBody: () => $('#area-filter-accordion mat-panel-description'),
 };
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
@@ -123,32 +122,38 @@ const openSidebarFilter = async () => {
 };
 
 const filterByOverdue = async (overdueOption) => {
-  await sidebarFilterSelectors.overdueAccordionHeader().click();
-  await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
+  if (!await sidebarFilterSelectors.overdueAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.overdueAccordionHeader().click();
+    await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
+  }
+
   const option = sidebarFilterSelectors.overdueAccordionBody().$(`a*=${overdueOption}`);
-  await option.waitForDisplayed();
   await option.click();
 };
 
 const filterByTaskType = async (taskType) => {
-  await sidebarFilterSelectors.taskTypeAccordionHeader().click();
-  await sidebarFilterSelectors.taskTypeAccordionBody().waitForDisplayed();
+  if (!await sidebarFilterSelectors.taskTypeAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.taskTypeAccordionHeader().click();
+    await sidebarFilterSelectors.taskTypeAccordionBody().waitForDisplayed();
+  }
+
   const option = sidebarFilterSelectors.taskTypeAccordionBody().$(`a*=${taskType}`);
-  await option.waitForDisplayed();
   await option.click();
 };
 
-const filterByArea = async (parentFacility, facility) => {
-  await sidebarFilterSelectors.areaAccordionHeader().click();
-  await sidebarFilterSelectors.areaAccordionBody().waitForDisplayed();
+const filterByArea = async (facility, parentFacility) => {
+  if (!await sidebarFilterSelectors.areaAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.areaAccordionHeader().click();
+    await sidebarFilterSelectors.areaAccordionBody().waitForDisplayed();
+  }
 
-  const parent = sidebarFilterSelectors.areaAccordionBody().$(`a*=${parentFacility}`);
-  await parent.waitForDisplayed();
-  await parent.click();
+  if (parentFacility) {
+    const parent = sidebarFilterSelectors.areaAccordionBody().$(`a*=${parentFacility}`);
+    await parent.click();
+  }
 
   const facilityOption = sidebarFilterSelectors
     .areaAccordionBody()
-    .$('.mm-dropdown-submenu')
     .$(`a*=${facility}`);
   await facilityOption.waitForDisplayed();
   const checkbox = facilityOption.previousElement();
@@ -161,12 +166,6 @@ const resetFilters = async () => {
 
 const isAreaFilterDisplayed = async () => {
   return await sidebarFilterSelectors.areaAccordionHeader().isDisplayed();
-};
-
-const isAreaFilterNoOptionsDisplayed = async () => {
-  await sidebarFilterSelectors.areaAccordionHeader().click();
-  await sidebarFilterSelectors.areaAccordionBody().waitForDisplayed();
-  return await sidebarFilterSelectors.noOptionsMessage().isDisplayed();
 };
 
 module.exports = {
@@ -189,5 +188,4 @@ module.exports = {
   filterByArea,
   resetFilters,
   isAreaFilterDisplayed,
-  isAreaFilterNoOptionsDisplayed,
 };

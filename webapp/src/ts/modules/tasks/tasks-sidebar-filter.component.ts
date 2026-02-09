@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NgClass, NgTemplateOutlet, NgIf } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import {
@@ -36,34 +37,61 @@ type FilterComponent = OverdueFilterComponent | TaskTypeFilterComponent | Facili
     FacilityFilterComponent,
   ]
 })
-export class TasksSidebarFilterComponent implements AfterViewInit, OnDestroy {
+export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDestroy {
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
   @ViewChild(OverdueFilterComponent) overdueFilter!: OverdueFilterComponent;
   @ViewChild(TaskTypeFilterComponent) taskTypeFilter!: TaskTypeFilterComponent;
-  @ViewChild(FacilityFilterComponent) facilityFilter!: FacilityFilterComponent;
+  @ViewChild(FacilityFilterComponent) facilityFilter?: FacilityFilterComponent;
 
   private globalActions;
   private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
   filterCount: any = {};
+  showAreaFilter = false;
 
   constructor(
     private store: Store,
     private telemetryService: TelemetryService,
+    private placeHierarchyService: PlaceHierarchyService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
+  ngOnInit() {
+    this.placeHierarchyService
+      .get()
+      .then((hierarchy = []) => {
+        this.showAreaFilter = this.hasMultiplePlaces(hierarchy);
+        // Re-initialize filters after view updates to include facility filter if shown
+        setTimeout(() => this.initFilters());
+      })
+      .catch(err => console.error('Error loading facilities for filter visibility', err));
+  }
+
+  private hasMultiplePlaces(hierarchy: any[]): boolean {
+    if (hierarchy.length > 1) {
+      return true;
+    }
+    if (hierarchy.length === 1 && hierarchy[0].children?.length) {
+      return true;
+    }
+    return false;
+  }
+
   ngAfterViewInit() {
+    this.initFilters();
+  }
+
+  private initFilters() {
     this.filters = [
       this.overdueFilter,
       this.taskTypeFilter,
       this.facilityFilter,
-    ];
+    ].filter(filter => filter) as FilterComponent[];
   }
 
   applyFilters() {

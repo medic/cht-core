@@ -56,8 +56,8 @@
           </mat-panel-description>
         </mat-expansion-panel>
 
-        <!-- 3. Area (Place) -->
-        <mat-expansion-panel id="area-filter-accordion">
+        <!-- 3. Area (Place) - hidden when only one facility -->
+        <mat-expansion-panel id="area-filter-accordion" *ngIf="showAreaFilter">
           <mat-expansion-panel-header>
             <ng-container
               [ngTemplateOutlet]="headerTemplate"
