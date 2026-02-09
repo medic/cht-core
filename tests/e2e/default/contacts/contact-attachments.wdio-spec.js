@@ -195,7 +195,8 @@ describe('Contact form attachments', () => {
     expect(createdContact._attachments[photoAttachment].length, 'Photo should have a valid size').to.be.greaterThan(0);
 
     expect(createdContact._attachments[documentAttachment].content_type).to.equal('image/png');
-    expect(createdContact._attachments[documentAttachment].length, 'Document should have a valid size').to.be.greaterThan(0);
+    expect(createdContact._attachments[documentAttachment].length, 'Document should have a valid size')
+      .to.be.greaterThan(0);
   });
 
   it('should preserve attachments when editing contact', async () => {
