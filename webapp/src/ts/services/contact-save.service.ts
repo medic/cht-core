@@ -1,6 +1,7 @@
 import { v4 as uuidV4 } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
+import * as objectPath from 'object-path';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
@@ -98,6 +99,47 @@ export class ContactSaveService {
   }
 
   /**
+   * Finds all paths in a document that match a given filter predicate.
+   * Returns paths in dot notation (e.g., 'photo', 'metadata.images.0.photo').
+   *
+   * Always skips keys starting with underscore (CouchDB internal fields like _id, _rev, _attachments).
+   *
+   * @param doc - The document to search
+   * @param filter - Predicate function that returns true for values we want to find
+   * @returns Array of paths in dot notation
+   */
+  private findPaths(
+    doc: Record<string, any>,
+    filter: (value: any) => boolean
+  ): string[] {
+    const paths: string[] = [];
+
+    const traverse = (current: any, currentPath: string[] = []) => {
+      if (filter(current)) {
+        paths.push(currentPath.join('.'));
+      }
+
+      if (Array.isArray(current)) {
+        current.forEach((item, idx) => traverse(item, [...currentPath, idx.toString()]));
+      } else if (current && typeof current === 'object') {
+        Object.entries(current).forEach(([key, value]) => {
+          if (!key.startsWith('_')) {
+            traverse(value, [...currentPath, key]);
+          }
+        });
+      }
+    };
+
+    Object.entries(doc).forEach(([key, value]) => {
+      if (!key.startsWith('_')) {
+        traverse(value, [key]);
+      }
+    });
+
+    return paths;
+  }
+
+  /**
    * Recursively scans through a document and replaces field values that reference
    * uploaded file names with their sanitized equivalents. Modifies the document in place.
    *
@@ -105,64 +147,15 @@ export class ContactSaveService {
    * @param fileNameMap - Map of original file names to sanitized file names
    */
   private sanitizeFieldValues(doc: Record<string, any>, fileNameMap: Map<string, string>): void {
-    const shouldSanitizeString = (value: any): boolean => {
-      return typeof value === 'string' && fileNameMap.has(value);
-    };
+    const pathsToUpdate = this.findPaths(
+      doc,
+      value => typeof value === 'string' && fileNameMap.has(value)
+    );
 
-    const shouldRecurse = (value: any): boolean => {
-      return value && typeof value === 'object';
-    };
-
-    const sanitizeArrayItems = (arr: any[]) => {
-      for (let i = 0; i < arr.length; i++) {
-        if (shouldSanitizeString(arr[i])) {
-          arr[i] = fileNameMap.get(arr[i]);
-        } else if (shouldRecurse(arr[i])) {
-          sanitizeInPlace(arr[i]);
-        }
-      }
-    };
-
-    const sanitizeObjectProperty = (obj: Record<string, any>, key: string) => {
-      if (shouldSanitizeString(obj[key])) {
-        obj[key] = fileNameMap.get(obj[key]);
-      } else if (shouldRecurse(obj[key])) {
-        sanitizeInPlace(obj[key]);
-      }
-    };
-
-    const sanitizeObjectProperties = (obj: Record<string, any>) => {
-      for (const key in obj) {
-        if (!Object.prototype.hasOwnProperty.call(obj, key)) { // NOSONAR
-          continue;
-        }
-        sanitizeObjectProperty(obj, key);
-      }
-    };
-
-    const sanitizeInPlace = (obj: any) => {
-      if (Array.isArray(obj)) {
-        sanitizeArrayItems(obj);
-        return;
-      }
-      if (obj && typeof obj === 'object') {
-        sanitizeObjectProperties(obj);
-      }
-    };
-
-    const sanitizeDocumentField = (key: string) => {
-      if (key.startsWith('_')) {
-        return;
-      }
-      if (shouldSanitizeString(doc[key])) {
-        doc[key] = fileNameMap.get(doc[key]);
-      } else if (shouldRecurse(doc[key])) {
-        sanitizeInPlace(doc[key]);
-      }
-    };
-
-    // Sanitize all non-internal fields (fields not starting with _)
-    Object.keys(doc).forEach(sanitizeDocumentField);
+    pathsToUpdate.forEach(path => {
+      const currentValue = objectPath.get(doc, path);
+      objectPath.set(doc, path, fileNameMap.get(currentValue));
+    });
   }
 
   private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
@@ -220,34 +213,19 @@ export class ContactSaveService {
 
     const existingAttachmentNames = Object.keys(doc._attachments);
 
-    const isReferencedAttachment = (value: string): boolean => {
-      if (!value) {
+    const isReferencedAttachment = (value: any): boolean => {
+      if (typeof value !== 'string' || !value) {
         return false;
       }
       const possibleAttachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${value}`;
       return existingAttachmentNames.includes(possibleAttachmentName);
     };
 
-    const scanValue = (value: any) => {
-      if (typeof value === 'string' && isReferencedAttachment(value)) {
-        referenced.add(`${this.USER_FILE_ATTACHMENT_PREFIX}${value}`);
-        return;
-      }
+    const referencedPaths = this.findPaths(doc, isReferencedAttachment);
 
-      if (Array.isArray(value)) {
-        value.forEach(scanValue);
-        return;
-      }
-
-      if (value && typeof value === 'object') {
-        Object.values(value).forEach(scanValue);
-      }
-    };
-
-    Object.entries(doc).forEach(([key, value]) => {
-      if (!key.startsWith('_')) {
-        scanValue(value);
-      }
+    referencedPaths.forEach(path => {
+      const value = objectPath.get(doc, path);
+      referenced.add(`${this.USER_FILE_ATTACHMENT_PREFIX}${value}`);
     });
 
     return referenced;
