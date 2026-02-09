@@ -4,13 +4,13 @@ import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
-import { NgClass, NgTemplateOutlet, NgIf } from '@angular/common';
+import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import {
   MatAccordion,
   MatExpansionPanel,
-  MatExpansionPanelHeader,
-  MatExpansionPanelDescription
+  MatExpansionPanelDescription,
+  MatExpansionPanelHeader
 } from '@angular/material/expansion';
 import { TranslatePipe } from '@ngx-translate/core';
 import { OverdueFilterComponent } from '@mm-components/filters/overdue-filter/overdue-filter.component';
@@ -51,7 +51,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   isResettingFilters = false;
   isOpen = false;
   filterCount: any = {};
-  showAreaFilter = false;
+  showAreaFilter = true;
 
   constructor(
     private store: Store,
@@ -66,8 +66,6 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
       .get()
       .then((hierarchy = []) => {
         this.showAreaFilter = this.hasMultiplePlaces(hierarchy);
-        // Re-initialize filters after view updates to include facility filter if shown
-        setTimeout(() => this.initFilters());
       })
       .catch(err => console.error('Error loading facilities for filter visibility', err));
   }
@@ -90,8 +88,10 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
     this.filters = [
       this.overdueFilter,
       this.taskTypeFilter,
-      this.facilityFilter,
-    ].filter(filter => filter) as FilterComponent[];
+    ];
+    if (this.facilityFilter) {
+      this.filters.push(this.facilityFilter);
+    }
   }
 
   applyFilters() {
