@@ -10,15 +10,6 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 
-/**
- * E2E tests for contact forms with file attachments.
- *
- * These tests verify the full workflow:
- * 1. Contact form with upload fields renders correctly
- * 2. Files can be uploaded via the form
- * 3. Contact is created with attachments saved to the database
- * 4. Attachments are preserved when editing contacts
- */
 describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
