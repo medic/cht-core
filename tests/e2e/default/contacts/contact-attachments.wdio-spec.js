@@ -152,7 +152,10 @@ describe('Contact form attachments', () => {
     const attachmentNames = Object.keys(createdContact._attachments);
     expect(attachmentNames).to.have.lengthOf(1);
     expect(attachmentNames[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
-    expect(createdContact._attachments[attachmentNames[0]].content_type).to.equal('image/png');
+
+    const attachment = createdContact._attachments[attachmentNames[0]];
+    expect(attachment.content_type).to.equal('image/png');
+    expect(attachment.length, 'Attachment should have a valid size').to.be.greaterThan(0);
   });
 
   it('should create contact with multiple attachments (image + document)', async () => {
@@ -189,7 +192,10 @@ describe('Contact form attachments', () => {
     expect(photoAttachment, 'Photo and document should be different attachments').to.not.equal(documentAttachment);
 
     expect(createdContact._attachments[photoAttachment].content_type).to.equal('image/png');
+    expect(createdContact._attachments[photoAttachment].length, 'Photo should have a valid size').to.be.greaterThan(0);
+
     expect(createdContact._attachments[documentAttachment].content_type).to.equal('image/png');
+    expect(createdContact._attachments[documentAttachment].length, 'Document should have a valid size').to.be.greaterThan(0);
   });
 
   it('should preserve attachments when editing contact', async () => {
@@ -231,6 +237,8 @@ describe('Contact form attachments', () => {
     const attachmentsAfter = Object.keys(contactAfter._attachments);
     expect(attachmentsAfter).to.have.lengthOf(1);
     expect(attachmentsAfter[0]).to.equal(originalAttachments[0]);
+    expect(contactAfter._attachments[attachmentsAfter[0]].length, 'Preserved attachment should have a valid size')
+      .to.be.greaterThan(0);
   });
 
   it('should remove attachment when editing contact', async () => {
@@ -325,5 +333,7 @@ describe('Contact form attachments', () => {
     expect(newAttachmentName).to.match(/^user-file-layers.*\.png$/);
     expect(contactAfter.photo).to.equal(newAttachmentName.replace('user-file-', ''));
     expect(contactAfter._attachments[newAttachmentName].content_type).to.equal('image/png');
+    expect(contactAfter._attachments[newAttachmentName].length, 'Replaced attachment should have a valid size')
+      .to.be.greaterThan(0);
   });
 });
