@@ -15,8 +15,8 @@ const sidebarFilterSelectors = {
   overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
   taskTypeAccordionHeader: () => $('#task-type-filter-accordion mat-expansion-panel-header'),
   taskTypeAccordionBody: () => $('#task-type-filter-accordion mat-panel-description'),
-  areaAccordionHeader: () => $('#area-filter-accordion mat-expansion-panel-header'),
-  areaAccordionBody: () => $('#area-filter-accordion mat-panel-description'),
+  placeAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
+  placeAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
 };
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
@@ -141,19 +141,19 @@ const filterByTaskType = async (taskType) => {
   await option.click();
 };
 
-const filterByArea = async (facility, parentFacility) => {
-  if (!await sidebarFilterSelectors.areaAccordionBody().isDisplayed()) {
-    await sidebarFilterSelectors.areaAccordionHeader().click();
-    await sidebarFilterSelectors.areaAccordionBody().waitForDisplayed();
+const filterByPlace = async (facility, parentFacility) => {
+  if (!await sidebarFilterSelectors.placeAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.placeAccordionHeader().click();
+    await sidebarFilterSelectors.placeAccordionBody().waitForDisplayed();
   }
 
   if (parentFacility) {
-    const parent = sidebarFilterSelectors.areaAccordionBody().$(`a*=${parentFacility}`);
+    const parent = sidebarFilterSelectors.placeAccordionBody().$(`a*=${parentFacility}`);
     await parent.click();
   }
 
   const facilityOption = sidebarFilterSelectors
-    .areaAccordionBody()
+    .placeAccordionBody()
     .$(`a*=${facility}`);
   await facilityOption.waitForDisplayed();
   const checkbox = facilityOption.previousElement();
@@ -164,8 +164,8 @@ const resetFilters = async () => {
   await sidebarFilterSelectors.resetBtn().click();
 };
 
-const isAreaFilterDisplayed = async () => {
-  return await sidebarFilterSelectors.areaAccordionHeader().isDisplayed();
+const isPlaceFilterDisplayed = async () => {
+  return await sidebarFilterSelectors.placeAccordionHeader().isDisplayed();
 };
 
 module.exports = {
@@ -185,7 +185,7 @@ module.exports = {
   openSidebarFilter,
   filterByOverdue,
   filterByTaskType,
-  filterByArea,
+  filterByPlace,
   resetFilters,
-  isAreaFilterDisplayed,
+  isPlaceFilterDisplayed,
 };

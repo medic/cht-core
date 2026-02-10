@@ -43,6 +43,26 @@ describe('TaskTypeFilterComponent', () => {
     expect(component).to.exist;
   });
 
+  it('should not render filter when there are no task types', () => {
+    store.overrideSelector(Selectors.getTasksList, []);
+    store.refreshState();
+    fixture.detectChanges();
+
+    const filterElement = fixture.nativeElement.querySelector('.mm-task-type-filter');
+    expect(filterElement).to.be.null;
+  });
+
+  it('should render filter when there are task types', () => {
+    store.overrideSelector(Selectors.getTasksList, [
+      { _id: '1', title: 'Follow up' },
+    ]);
+    store.refreshState();
+    fixture.detectChanges();
+
+    const filterElement = fixture.nativeElement.querySelector('.mm-task-type-filter');
+    expect(filterElement).to.exist;
+  });
+
   it('should extract task types from tasks list', () => {
     store.overrideSelector(Selectors.getTasksList, [
       { _id: '1', title: 'Follow up', resolved: 'follow_up' },

@@ -51,7 +51,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   isResettingFilters = false;
   isOpen = false;
   filterCount: any = {};
-  showAreaFilter = true;
+  showPlaceFilter = true;
 
   constructor(
     private readonly store: Store,
@@ -65,7 +65,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
     this.placeHierarchyService
       .get()
       .then((hierarchy = []) => {
-        this.showAreaFilter = this.hasMultiplePlaces(hierarchy);
+        this.showPlaceFilter = this.hasMultiplePlaces(hierarchy);
       })
       .catch(err => console.error('Error loading facilities for filter visibility', err));
   }

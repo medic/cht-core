@@ -131,7 +131,7 @@ module.exports = [
     ]
   },
 
-  // Task type: follow_up, overdue (for area filter testing with different parent)
+  // Task type: follow_up, overdue (for place filter testing with different parent)
   {
     name: 'follow_up_overdue',
     icon: 'icon-followup',

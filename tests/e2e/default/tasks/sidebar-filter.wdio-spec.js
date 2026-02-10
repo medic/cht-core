@@ -123,7 +123,7 @@ describe('Tasks Sidebar Filter', () => {
     await utils.deleteUsers([chw, chw2, supervisor]);
   });
 
-  describe('For chws who do not see area filter', () => {
+  describe('For chws who do not see place filter', () => {
     before(async () => {
       await loginPage.login(chw);
     });
@@ -253,8 +253,8 @@ describe('Tasks Sidebar Filter', () => {
       });
     });
 
-    describe('Area filter (CHW user)', () => {
-      it('should not display area filter options for offline CHW user', async () => {
+    describe('Place filter (CHW user)', () => {
+      it('should not display place filter options for offline CHW user', async () => {
         await tasksPage.openSidebarFilter();
         expect(await tasksPage.sidebarFilterSelectors.areaAccordionHeader().isExisting()).to.equal(false);
       });
@@ -314,7 +314,7 @@ describe('Tasks Sidebar Filter', () => {
     });
   });
 
-  describe('For chws who do see area filter', () => {
+  describe('For chws who do see place filter', () => {
     before(async () => {
       await loginPage.login(chw2);
     });
@@ -327,17 +327,17 @@ describe('Tasks Sidebar Filter', () => {
       await commonPage.reloadSession();
     });
 
-    describe('Area filter', () => {
-      it('should display area filter', async () => {
+    describe('Place filter', () => {
+      it('should display place filter', async () => {
         expect((await tasksPage.getTasks()).length).to.be.greaterThan(0);
 
         await tasksPage.openSidebarFilter();
-        expect(await tasksPage.isAreaFilterDisplayed()).to.be.true;
+        expect(await tasksPage.isPlaceFilterDisplayed()).to.be.true;
       });
 
       it('should filter tasks by health center', async () => {
         await tasksPage.openSidebarFilter();
-        await tasksPage.filterByArea(healthCenter2.name);
+        await tasksPage.filterByPlace(healthCenter2.name);
         await commonPage.waitForPageLoaded();
 
         const filteredTasks = await tasksPage.getTasks();
@@ -351,7 +351,7 @@ describe('Tasks Sidebar Filter', () => {
     });
   });
 
-  describe('For supervisors who do see area filter', () => {
+  describe('For supervisors who do see place filter', () => {
     before(async () => {
       await loginPage.login(supervisor);
     });
@@ -360,17 +360,17 @@ describe('Tasks Sidebar Filter', () => {
       await commonPage.goToTasks();
     });
 
-    describe('Area filter', () => {
-      it('should display area filter', async () => {
+    describe('Place filter', () => {
+      it('should display place filter', async () => {
         expect((await tasksPage.getTasks()).length).to.be.greaterThan(0);
 
         await tasksPage.openSidebarFilter();
-        expect(await tasksPage.isAreaFilterDisplayed()).to.be.true;
+        expect(await tasksPage.isPlaceFilterDisplayed()).to.be.true;
       });
 
       it('should filter tasks by health center', async () => {
         await tasksPage.openSidebarFilter();
-        await tasksPage.filterByArea(healthCenter2.name, districtHospital.name);
+        await tasksPage.filterByPlace(healthCenter2.name, districtHospital.name);
         await commonPage.waitForPageLoaded();
 
         const filteredTasks = await tasksPage.getTasks();
@@ -382,12 +382,12 @@ describe('Tasks Sidebar Filter', () => {
         });
       });
 
-      it('should reset area filter', async () => {
+      it('should reset place filter', async () => {
         const allTasks = await tasksPage.getTasks();
         const initialCount = allTasks.length;
 
         await tasksPage.openSidebarFilter();
-        await tasksPage.filterByArea(healthCenter2.name, districtHospital.name);
+        await tasksPage.filterByPlace(healthCenter2.name, districtHospital.name);
         await commonPage.waitForPageLoaded();
 
         const filteredTasks = await tasksPage.getTasks();

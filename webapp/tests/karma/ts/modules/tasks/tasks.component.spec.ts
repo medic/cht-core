@@ -18,9 +18,10 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { TelemetryService } from '@mm-services/telemetry.service';
-import { SessionService } from '@mm-services/session.service';
+import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -32,9 +33,6 @@ describe('TasksComponent', () => {
   let clock;
   let store;
   let lineageModelGeneratorService;
-  let telemetryService;
-  let sessionService;
-  let placeHierarchyService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -52,12 +50,6 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
-    telemetryService = { record: sinon.stub() };
-    sessionService = { isOnlineOnly: sinon.stub().returns(false) };
-    placeHierarchyService = {
-      get: sinon.stub().resolves([]),
-      getDescendants: sinon.stub().resolves([]),
-    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -65,6 +57,7 @@ describe('TasksComponent', () => {
         RouterTestingModule,
         MatIconModule,
         TasksComponent,
+        TasksSidebarFilterComponent,
         NavigationComponent,
         ToolBarComponent,
       ],
@@ -76,9 +69,11 @@ describe('TasksComponent', () => {
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: PlaceHierarchyService, useValue: placeHierarchyService },
+        // Needed because of facility filter
+        { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves([]) } },
+        // Needed because of Tasks Sidebar Filter
+        { provide: SessionService, useValue: { isOnlineOnly: sinon.stub().returns(false) } },
+        { provide: DbService, useValue: { get: sinon.stub().resolves() } },
       ],
     });
 

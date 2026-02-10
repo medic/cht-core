@@ -1,9 +1,5 @@
-<div class="mm-task-type-filter" [id]="fieldId">
+<div class="mm-task-type-filter" [id]="fieldId" *ngIf="taskTypes.length">
   <ul class="filter-options">
-    <li *ngIf="!taskTypes.length" class="no-options">
-      {{ 'tasks.sidebar.filter.type.none' | translate }}
-    </li>
-
     <li
       *ngFor="let taskType of taskTypes"
       [class.selected]="filter?.selected.has(taskType)"

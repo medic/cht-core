@@ -971,9 +971,9 @@ describe('Tasks reducer', () => {
     it('should set filters and apply them to tasks', () => {
       state = {
         tasksList: [
-          { _id: 'task1', overdue: true, resolved: 'follow_up', lineageIds: ['contact1', 'facility1'] },
-          { _id: 'task2', overdue: false, resolved: 'vaccination', lineageIds: ['contact2', 'facility2'] },
-          { _id: 'task3', overdue: true, resolved: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task1', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task2', overdue: false, title: 'vaccination', lineageIds: ['contact2', 'facility2'] },
+          { _id: 'task3', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
         ],
         filteredTasksList: [],
         filters: {},
@@ -986,8 +986,10 @@ describe('Tasks reducer', () => {
       state = tasksReducer(state, Actions.setTasksFilters({ taskOverdue: true }));
 
       expect(state.filters).to.deep.equal({ taskOverdue: true });
-      expect(state.filteredTasksList.length).to.equal(2);
-      expect(state.filteredTasksList.every(task => task.overdue === true)).to.be.true;
+      expect(state.filteredTasksList).to.deep.equal([
+        { _id: 'task1', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+        { _id: 'task3', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+      ]);
     });
 
     it('should filter by task type', () => {
@@ -1007,8 +1009,10 @@ describe('Tasks reducer', () => {
 
       state = tasksReducer(state, Actions.setTasksFilters({ taskTypes: { selected: ['Follow up'] } }));
 
-      expect(state.filteredTasksList.length).to.equal(2);
-      expect(state.filteredTasksList.every(task => task.title === 'Follow up')).to.be.true;
+      expect(state.filteredTasksList).to.deep.equal([
+        { _id: 'task1', title: 'Follow up', lineageIds: [] },
+        { _id: 'task3', title: 'Follow up', lineageIds: [] },
+      ]);
     });
 
     it('should filter by facility using lineageIds', () => {
@@ -1028,8 +1032,10 @@ describe('Tasks reducer', () => {
 
       state = tasksReducer(state, Actions.setTasksFilters({ facilities: { selected: ['facility1'] } }));
 
-      expect(state.filteredTasksList.length).to.equal(2);
-      expect(state.filteredTasksList.every(task => task.lineageIds.includes('facility1'))).to.be.true;
+      expect(state.filteredTasksList).to.deep.equal([
+        { _id: 'task1', lineageIds: ['contact1', 'facility1', 'district1'] },
+        { _id: 'task3', lineageIds: ['contact3', 'facility1', 'district1'] },
+      ]);
     });
 
     it('should combine multiple filters', () => {
@@ -1054,8 +1060,9 @@ describe('Tasks reducer', () => {
         facilities: { selected: ['facility1'] },
       }));
 
-      expect(state.filteredTasksList.length).to.equal(1);
-      expect(state.filteredTasksList[0]._id).to.equal('task1');
+      expect(state.filteredTasksList).to.deep.equal([
+        { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: ['contact1', 'facility1'] }
+      ]);
     });
 
     it('should return all tasks when filters are empty', () => {
@@ -1097,9 +1104,10 @@ describe('Tasks reducer', () => {
       ];
       state = tasksReducer(state, Actions.setTasksList(tasks));
 
-      expect(state.tasksList.length).to.equal(2);
-      expect(state.filteredTasksList.length).to.equal(1);
-      expect(state.filteredTasksList[0].overdue).to.equal(true);
+      expect(state.tasksList).to.deep.equal(tasks);
+      expect(state.filteredTasksList).to.deep.equal([
+        { _id: 'task1', dueDate: '2025-01-01', overdue: true, lineageIds: [] },
+      ]);
     });
   });
 });

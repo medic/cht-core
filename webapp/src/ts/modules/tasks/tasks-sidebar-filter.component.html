@@ -56,22 +56,22 @@
           </mat-panel-description>
         </mat-expansion-panel>
 
-        <!-- 3. Area (Place) - hidden when only one facility -->
-        <mat-expansion-panel id="area-filter-accordion" *ngIf="showAreaFilter">
+        <!-- 3. Place - hidden when only one facility -->
+        <mat-expansion-panel id="place-filter-accordion" *ngIf="showPlaceFilter">
           <mat-expansion-panel-header>
             <ng-container
               [ngTemplateOutlet]="headerTemplate"
               [ngTemplateOutletContext]="{
-                numSelected: filterCount.areaFilter,
-                label: 'tasks.sidebar.filter.area',
-                filters: [ 'areaFilter' ]
+                numSelected: filterCount.placeFilter,
+                label: 'tasks.sidebar.filter.place',
+                filters: [ 'placeFilter' ]
               }">
             </ng-container>
           </mat-expansion-panel-header>
           <mat-panel-description>
             <mm-facility-filter
               class="filter"
-              fieldId="areaFilter"
+              fieldId="placeFilter"
               (search)="applyFilters()"
               [disabled]="disabled">
             </mm-facility-filter>
