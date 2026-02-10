@@ -10,16 +10,17 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const userSettingsFactory = require('@factories/cht/users/user-settings');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Reports tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const healthCenter1 = places.get('health_center');
+  const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
 
   const healthCenter2 = placeFactory.place().build({
     name: 'health_center_2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospital._id },
   });
 

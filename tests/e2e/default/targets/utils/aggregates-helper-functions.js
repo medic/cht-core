@@ -6,6 +6,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
 const targetAggregatesConfig = require('../config/target-aggregates');
 const chtConfUtils = require('@utils/cht-conf');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
@@ -68,7 +69,7 @@ const genTarget = (target, contact, targetValuesByContact) => {
 };
 
 const generateContactsAndTargets = (parent, contactName, targetValuesByContact) => {
-  const place = placeFactory.place().build({type: 'health_center', parent: {_id: parent._id}});
+  const place = placeFactory.place().build({type: CONTACT_TYPES.HEALTH_CENTER, parent: {_id: parent._id}});
 
   const contact = personFactory.build({
     name: contactName,

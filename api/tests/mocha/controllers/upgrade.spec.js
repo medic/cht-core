@@ -199,4 +199,53 @@ describe('Upgrade controller', () => {
       expect(serverUtils.error.args[0][0]).to.deep.equal({ some: 'error' });
     });
   });
+
+  describe('compare', () => {
+    beforeEach(() => {
+      sinon.stub(service, 'compareBuildVersions').resolves([{ type: 'add', ddoc: '_design/foo', db: 'medic' }]);
+    });
+
+    it('should require auth', async () => {
+      auth.check.rejects({ some: 'auth error' });
+
+      await controller.compare(req, res);
+
+      expect(auth.check.calledOnceWith(req, ['can_upgrade'])).to.be.true;
+      expect(service.compareBuildVersions.called).to.be.false;
+      expect(serverUtils.error.calledOnce).to.be.true;
+      expect(serverUtils.error.args[0][0]).to.deep.equal({ some: 'auth error' });
+    });
+
+    it('should return 400 when build is missing', async () => {
+      auth.check.resolves();
+      const json = sinon.stub();
+
+      await controller.compare({ body: {} }, { json });
+
+      expect(auth.check.calledOnce).to.be.true;
+      expect(service.compareBuildVersions.called).to.be.false;
+      expect(serverUtils.error.calledOnce).to.be.true;
+      expect(serverUtils.error.args[0][0].status).to.equal(400);
+    });
+
+    it('should return differences from service', async () => {
+      auth.check.resolves();
+
+      await controller.compare(req, res);
+
+      expect(service.compareBuildVersions.calledOnceWith({ version: '4.0.0' })).to.be.true;
+      expect(res.json.calledOnceWith([{ type: 'add', ddoc: '_design/foo', db: 'medic' }])).to.be.true;
+      expect(serverUtils.error.called).to.be.false;
+    });
+
+    it('should handle service errors', async () => {
+      auth.check.resolves();
+      service.compareBuildVersions.rejects({ boom: true });
+
+      await controller.compare(req, res);
+
+      expect(serverUtils.error.calledOnce).to.be.true;
+      expect(serverUtils.error.args[0][0]).to.deep.equal({ boom: true });
+    });
+  });
 });
