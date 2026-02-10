@@ -256,7 +256,7 @@ describe('Tasks Sidebar Filter', () => {
     describe('Place filter (CHW user)', () => {
       it('should not display place filter options for offline CHW user', async () => {
         await tasksPage.openSidebarFilter();
-        expect(await tasksPage.sidebarFilterSelectors.areaAccordionHeader().isExisting()).to.equal(false);
+        expect(await tasksPage.sidebarFilterSelectors.placeAccordionHeader().isExisting()).to.equal(false);
       });
     });
 
