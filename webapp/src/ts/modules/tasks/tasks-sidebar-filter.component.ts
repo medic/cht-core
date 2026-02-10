@@ -71,13 +71,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private hasMultiplePlaces(hierarchy: any[]): boolean {
-    if (hierarchy.length > 1) {
-      return true;
-    }
-    if (hierarchy.length === 1 && hierarchy[0].children?.length) {
-      return true;
-    }
-    return false;
+    return hierarchy.length > 1 || (hierarchy.length === 1 && hierarchy[0].children?.length > 0);
   }
 
   ngAfterViewInit() {

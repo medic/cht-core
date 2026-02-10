@@ -18,7 +18,6 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { UserContactService } from '@mm-services/user-contact.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { SessionService } from '@mm-services/session.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
@@ -30,7 +29,6 @@ describe('TasksComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let contactTypesService;
-  let userContactService;
   let clock;
   let store;
   let lineageModelGeneratorService;
@@ -54,9 +52,6 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
-    userContactService = {
-      getUserLineageToRemove: sinon.stub(),
-    };
     telemetryService = { record: sinon.stub() };
     sessionService = { isOnlineOnly: sinon.stub().returns(false) };
     placeHierarchyService = {
@@ -80,7 +75,6 @@ describe('TasksComponent', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
-        { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: SessionService, useValue: sessionService },
@@ -364,7 +358,7 @@ describe('TasksComponent', () => {
       },
     ];
 
-    it('should not remove the lineage when user lineage level is undefined', async () => {
+    it('should set lineage data on tasks', async () => {
       const expectedTasks = [
         {
           _id: 'e1',
@@ -385,7 +379,6 @@ describe('TasksComponent', () => {
           owner: 'b',
         },
       ];
-      userContactService.getUserLineageToRemove.resolves(undefined);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 
@@ -394,41 +387,6 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(await component.userLineageLevel).to.be.undefined;
-      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
-    });
-
-    it('should remove lineage when user lineage level is defined', async () => {
-      const expectedTasks = [
-        {
-          _id: 'e1',
-          date: moment('2020-10-20').toDate(),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          lineageIds: ['a'],
-          overdue: true,
-          owner: 'a',
-        },
-        {
-          _id: 'e2',
-          date: moment('2020-10-20').toDate(),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          lineageIds: ['b'],
-          overdue: true,
-          owner: 'b',
-        },
-      ];
-      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
-      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
-
-      await new Promise(resolve => {
-        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
-        getComponent();
-      });
-
-      expect(await component.userLineageLevel).to.equal('CHW Bettys Area');
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
   });

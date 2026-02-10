@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -28,13 +28,7 @@ export class OverdueFilterComponent {
   }
 
   applyFilter(selected) {
-    let overdueFilter;
-
-    if (selected.length === 1) {
-      overdueFilter = selected.includes('overdue') ? true : false;
-    }
-
-    this.globalActions.setFilter({ taskOverdue: overdueFilter });
+    this.globalActions.setFilter({ taskOverdue: selected?.includes('overdue') });
     this.search.emit();
   }
 

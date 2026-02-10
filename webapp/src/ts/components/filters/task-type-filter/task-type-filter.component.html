@@ -6,10 +6,10 @@
 
     <li
       *ngFor="let taskType of taskTypes"
-      [class.selected]="filter?.selected.has(taskType.id)"
+      [class.selected]="filter?.selected.has(taskType)"
       [class.disabled]="disabled">
-      <a role="menuitem" tabindex="-1" [attr.data-value]="taskType.id" (click)="!disabled && filter?.toggle(taskType.id)">
-        {{ taskType.title }}
+      <a role="menuitem" tabindex="-1" [attr.data-value]="taskType" (click)="!disabled && filter?.toggle(taskType)">
+        {{ taskType | translate }}
       </a>
     </li>
   </ul>

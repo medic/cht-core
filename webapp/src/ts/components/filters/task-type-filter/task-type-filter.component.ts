@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -7,11 +7,6 @@ import { Filter } from '@mm-components/filters/filter';
 import { Selectors } from '@mm-selectors/index';
 import { NgFor, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
-
-interface TaskType {
-  id: string;
-  title: string;
-}
 
 @Component({
   selector: 'mm-task-type-filter',
@@ -27,7 +22,7 @@ export class TaskTypeFilterComponent implements OnDestroy {
   private globalActions: GlobalActions;
   private subscriptions: Subscription = new Subscription();
   filter: Filter;
-  taskTypes: TaskType[] = [];
+  taskTypes: string[] = [];
 
   constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
@@ -45,35 +40,12 @@ export class TaskTypeFilterComponent implements OnDestroy {
   }
 
   private extractTaskTypes(tasksList) {
-    const typeMap = new Map<string, TaskType>();
-
-    tasksList.forEach(task => {
-      const typeId = this.getTaskTypeId(task);
-      if (typeId && !typeMap.has(typeId)) {
-        typeMap.set(typeId, {
-          id: typeId,
-          title: task.title || typeId
-        });
-      }
-    });
-
-    this.taskTypes = Array.from(typeMap.values()).sort((a, b) => a.title.localeCompare(b.title));
-  }
-
-  private getTaskTypeId(task): string {
-    // Use the task's resolved property or form name to identify type
-    // This can be refined based on actual task structure
-    return task.resolved || task.emission?.resolved || task.title || '';
+    const taskTypes: string[] = tasksList.map(task => task.title);
+    this.taskTypes = [...new Set(taskTypes)].sort((a, b) => a.localeCompare(b));
   }
 
   applyFilter(selected) {
-    let taskTypeFilter;
-
-    if (selected.length > 0) {
-      taskTypeFilter = { selected };
-    }
-
-    this.globalActions.setFilter({ taskTypes: taskTypeFilter });
+    this.globalActions.setFilter({ taskTypes: selected.length ? { selected } : undefined });
     this.search.emit();
   }
 

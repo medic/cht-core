@@ -41,7 +41,9 @@ export const Selectors = {
 
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
   getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState.userFacilityIds),
+  getUserFacilities: createSelector(getGlobalState, (globalState) => globalState.userFacilities),
   getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
+  getIsOnlineOnly: createSelector(getGlobalState, (globalState) => globalState.isOnlineOnly),
   getTrainingCardFormId: createSelector(getGlobalState, (globalState) => globalState.trainingCard?.formId),
   getTrainingCard: createSelector(getGlobalState, (globalState) => globalState.trainingCard),
   getLanguage: createSelector(getGlobalState, (globalState) => globalState.language),

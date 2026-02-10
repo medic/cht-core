@@ -1,9 +1,11 @@
 import { Injectable, Pipe, PipeTransform } from '@angular/core';
 import * as _ from 'lodash-es';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Store } from '@ngrx/store';
 
 import { FormatProvider } from '@mm-providers/format.provider';
 import { TranslateService } from '@mm-services/translate.service';
+import { Selectors } from '@mm-selectors/index';
 
 const getFormName = (record, forms) => {
   const form = _.find(forms, { code: record.form });
@@ -94,12 +96,46 @@ export class ClinicPipe implements PipeTransform {
   providedIn: 'root'
 })
 export class LineagePipe implements PipeTransform {
-  constructor(
-    private formatProvider:FormatProvider,
-    private sanitizer:DomSanitizer,
-  ) {}
+  private userFacilityName: string | null = null;
+  private isOnlineOnly = false;
 
-  transform(entity) {
-    return this.sanitizer.bypassSecurityTrustHtml(this.formatProvider.lineage(entity));
+  constructor(
+    private formatProvider: FormatProvider,
+    private sanitizer: DomSanitizer,
+    private store: Store,
+  ) {
+    this.store.select(Selectors.getIsOnlineOnly).subscribe(isOnlineOnly => {
+      this.isOnlineOnly = isOnlineOnly;
+    });
+    this.store.select(Selectors.getUserFacilities).subscribe(facilities => {
+      this.userFacilityName = facilities?.length === 1 ? facilities[0]?.name : null;
+    });
+  }
+
+  transform(lineage) {
+    const filtered = this.removeUserFacility(lineage);
+    return this.sanitizer.bypassSecurityTrustHtml(this.formatProvider.lineage(filtered));
+  }
+
+  private removeUserFacility(lineage) {
+    if (this.isOnlineOnly || !this.userFacilityName) {
+      return lineage;
+    }
+
+    if (Array.isArray(lineage)) {
+      lineage = lineage.filter(item => item);
+      if (!lineage.length) {
+        return lineage;
+      }
+
+      const lastItem = lineage[lineage.length - 1];
+      const lastName = typeof lastItem === 'string' ? lastItem : lastItem?.name;
+      if (lastName === this.userFacilityName) {
+        lineage.pop();
+      }
+      return lineage;
+    }
+
+    return lineage;
   }
 }

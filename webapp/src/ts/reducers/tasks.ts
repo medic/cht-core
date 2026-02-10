@@ -28,26 +28,18 @@ const initialState = {
 const applyFilters = (tasks: TaskEmission[], filters: TasksFilters = {}): TaskEmission[] => {
   let filtered = tasks;
 
-  // Apply overdue filter
   if (filters?.taskOverdue !== undefined) {
     filtered = filtered.filter(task => task.overdue === filters.taskOverdue);
   }
 
-  // Apply task type filter
   if (filters.taskTypes?.selected?.length) {
     const selectedTypes = filters.taskTypes.selected;
-    filtered = filtered.filter(task => {
-      const taskType = (task as any).resolved || task.title || '';
-      return selectedTypes.includes(taskType);
-    });
+    filtered = filtered.filter(task => selectedTypes.includes(task.title));
   }
 
-  // Apply area/facility filter - check if any lineage ID is in selected facilities
   if (filters.facilities?.selected?.length) {
-    const selectedFacilities = filters.facilities.selected;
     filtered = filtered.filter(task => {
-      const lineageIds = (task as any).lineageIds || [];
-      return lineageIds.some(id => selectedFacilities.includes(id));
+      return task.lineageIds.some(id => filters.facilities?.selected.includes(id));
     });
   }
 

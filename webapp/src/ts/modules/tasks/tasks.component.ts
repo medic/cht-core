@@ -11,8 +11,6 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { UserContactService } from '@mm-services/user-contact.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -52,8 +50,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     private readonly rulesEngineService: RulesEngineService,
     private readonly performanceService: PerformanceService,
     private readonly lineageModelGeneratorService: LineageModelGeneratorService,
-    private readonly extractLineageService: ExtractLineageService,
-    private readonly userContactService: UserContactService
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -71,7 +67,6 @@ export class TasksComponent implements OnInit, OnDestroy {
   hasTasks;
   loading;
   tasksDisabled;
-  userLineageLevel;
   isSidebarFilterOpen = false;
 
   private tasksLoaded;
@@ -155,7 +150,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
-    this.userLineageLevel = this.userContactService.getUserLineageToRemove();
     this.refreshTasks();
   }
 
@@ -185,11 +179,8 @@ export class TasksComponent implements OnInit, OnDestroy {
       const emissions = taskDocs.map(taskDoc => taskDoc.emission);
       const subjects = await this.getLineagesFromTaskDocs(emissions);
       if (subjects?.size) {
-        const userLineageLevel = await this.userLineageLevel;
         emissions.forEach(task => {
-          const { lineage, lineageIds } = this.getTaskLineage(subjects, task, userLineageLevel);
-          task.lineage = lineage;
-          (task as any).lineageIds = lineageIds;
+          Object.assign(task, this.getTaskLineage(subjects, task));
         });
       }
 
@@ -198,6 +189,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
+      this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
       this.loading = false;
@@ -234,17 +226,14 @@ export class TasksComponent implements OnInit, OnDestroy {
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
   }
 
-  private getTaskLineage(subjects, task, userLineageLevel) {
+  private getTaskLineage(subjects, task) {
     const lineageData = subjects.get(task.owner) || [];
     const lineageNames = lineageData.map(item => item?.name);
-    const lineageIds = lineageData.map(item => item?._id).filter(Boolean);
-
-    // Include the task owner ID in lineageIds for filtering
-    const allLineageIds = task.owner ? [task.owner, ...lineageIds] : lineageIds;
+    const lineageIds = lineageData.map(item => item?._id);
 
     return {
-      lineage: this.extractLineageService.removeUserFacility(lineageNames, userLineageLevel),
-      lineageIds: allLineageIds,
+      lineage: lineageNames,
+      lineageIds: [task.owner, ...lineageIds],
     };
   }
 }
