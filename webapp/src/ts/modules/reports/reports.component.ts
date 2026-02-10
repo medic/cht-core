@@ -272,11 +272,19 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.expanded = false;
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
-      report.lineage = report.subject && report.subject.lineage || report.lineage;
+      report.lineage = this.filterLineage(report.subject?.lineage || report.lineage);
       report.unread = !report.read;
 
       return report;
     });
+  }
+
+  private filterLineage(lineage) {
+    if (!Array.isArray(lineage)) {
+      return lineage;
+    }
+    const filtered = lineage.filter(Boolean);
+    return filtered.length ? filtered : undefined;
   }
 
   private query(opts?) {

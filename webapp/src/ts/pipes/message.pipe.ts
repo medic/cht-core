@@ -102,7 +102,7 @@ export class LineagePipe implements PipeTransform {
   constructor(
     private formatProvider: FormatProvider,
     private sanitizer: DomSanitizer,
-    private store: Store,
+    private readonly store: Store,
   ) {
     this.store.select(Selectors.getIsOnlineOnly).subscribe(isOnlineOnly => {
       this.isOnlineOnly = isOnlineOnly;
@@ -118,24 +118,23 @@ export class LineagePipe implements PipeTransform {
   }
 
   private removeUserFacility(lineage) {
-    if (this.isOnlineOnly || !this.userFacilityName) {
+    if (!this.shouldFilterLineage(lineage)) {
       return lineage;
     }
 
-    if (Array.isArray(lineage)) {
-      lineage = lineage.filter(item => item);
-      if (!lineage.length) {
-        return lineage;
-      }
-
-      const lastItem = lineage[lineage.length - 1];
-      const lastName = typeof lastItem === 'string' ? lastItem : lastItem?.name;
-      if (lastName === this.userFacilityName) {
-        lineage.pop();
-      }
-      return lineage;
+    lineage = lineage.filter(Boolean);
+    if (lineage.length && this.getLastItem(lineage) === this.userFacilityName) {
+      lineage.pop();
     }
-
     return lineage;
+  }
+
+  private shouldFilterLineage(lineage) {
+    return !this.isOnlineOnly && this.userFacilityName && Array.isArray(lineage);
+  }
+
+  private getLastItem(lineage) {
+    const lastItem = lineage[lineage.length - 1];
+    return typeof lastItem === 'string' ? lastItem : lastItem?.name;
   }
 }

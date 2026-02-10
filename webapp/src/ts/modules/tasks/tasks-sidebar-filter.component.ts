@@ -46,7 +46,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   @ViewChild(TaskTypeFilterComponent) taskTypeFilter!: TaskTypeFilterComponent;
   @ViewChild(FacilityFilterComponent) facilityFilter?: FacilityFilterComponent;
 
-  private globalActions;
+  private readonly globalActions: GlobalActions;
   private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
@@ -54,9 +54,9 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   showAreaFilter = true;
 
   constructor(
-    private store: Store,
-    private telemetryService: TelemetryService,
-    private placeHierarchyService: PlaceHierarchyService,
+    private readonly store: Store,
+    private readonly telemetryService: TelemetryService,
+    private readonly placeHierarchyService: PlaceHierarchyService,
   ) {
     this.globalActions = new GlobalActions(store);
   }

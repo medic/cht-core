@@ -53,7 +53,7 @@ describe('TaskTypeFilterComponent', () => {
     fixture.detectChanges();
 
     expect(component.taskTypes.length).to.equal(2);
-    expect(component.taskTypes.map(t => t.id)).to.include.members(['follow_up', 'vaccination']);
+    expect(component.taskTypes).to.include.members(['Follow up', 'Vaccination']);
   });
 
   it('should apply filter when task types are selected', () => {

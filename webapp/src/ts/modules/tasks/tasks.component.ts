@@ -227,9 +227,9 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getTaskLineage(subjects, task) {
-    const lineageData = subjects.get(task.owner) || [];
-    const lineageNames = lineageData.map(item => item?.name);
-    const lineageIds = lineageData.map(item => item?._id);
+    const lineageData = (subjects.get(task.owner) || []).filter(Boolean);
+    const lineageNames = lineageData.map(item => item?.name).filter(Boolean);
+    const lineageIds = lineageData.map(item => item?._id).filter(Boolean);
 
     return {
       lineage: lineageNames,

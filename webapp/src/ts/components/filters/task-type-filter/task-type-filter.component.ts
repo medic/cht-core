@@ -19,12 +19,12 @@ export class TaskTypeFilterComponent implements OnDestroy {
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
 
-  private globalActions: GlobalActions;
-  private subscriptions: Subscription = new Subscription();
+  private readonly globalActions: GlobalActions;
+  private readonly subscriptions: Subscription = new Subscription();
   filter: Filter;
   taskTypes: string[] = [];
 
-  constructor(private store: Store) {
+  constructor(private readonly store: Store) {
     this.globalActions = new GlobalActions(store);
     this.filter = new Filter(this.applyFilter.bind(this));
     this.subscribeToStore();

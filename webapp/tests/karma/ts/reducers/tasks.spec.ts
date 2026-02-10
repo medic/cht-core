@@ -993,9 +993,9 @@ describe('Tasks reducer', () => {
     it('should filter by task type', () => {
       state = {
         tasksList: [
-          { _id: 'task1', resolved: 'follow_up', lineageIds: [] },
-          { _id: 'task2', resolved: 'vaccination', lineageIds: [] },
-          { _id: 'task3', resolved: 'follow_up', lineageIds: [] },
+          { _id: 'task1', title: 'Follow up', lineageIds: [] },
+          { _id: 'task2', title: 'Vaccination', lineageIds: [] },
+          { _id: 'task3', title: 'Follow up', lineageIds: [] },
         ],
         filteredTasksList: [],
         filters: {},
@@ -1005,10 +1005,10 @@ describe('Tasks reducer', () => {
         taskGroup: { lastSubmittedTask: null, contact: null, loadingContact: null },
       };
 
-      state = tasksReducer(state, Actions.setTasksFilters({ taskTypes: { selected: ['follow_up'] } }));
+      state = tasksReducer(state, Actions.setTasksFilters({ taskTypes: { selected: ['Follow up'] } }));
 
       expect(state.filteredTasksList.length).to.equal(2);
-      expect(state.filteredTasksList.every(task => task.resolved === 'follow_up')).to.be.true;
+      expect(state.filteredTasksList.every(task => task.title === 'Follow up')).to.be.true;
     });
 
     it('should filter by facility using lineageIds', () => {
@@ -1035,10 +1035,10 @@ describe('Tasks reducer', () => {
     it('should combine multiple filters', () => {
       state = {
         tasksList: [
-          { _id: 'task1', overdue: true, resolved: 'follow_up', lineageIds: ['contact1', 'facility1'] },
-          { _id: 'task2', overdue: false, resolved: 'follow_up', lineageIds: ['contact2', 'facility1'] },
-          { _id: 'task3', overdue: true, resolved: 'vaccination', lineageIds: ['contact3', 'facility1'] },
-          { _id: 'task4', overdue: true, resolved: 'follow_up', lineageIds: ['contact4', 'facility2'] },
+          { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task2', overdue: false, title: 'Follow up', lineageIds: ['contact2', 'facility1'] },
+          { _id: 'task3', overdue: true, title: 'Vaccination', lineageIds: ['contact3', 'facility1'] },
+          { _id: 'task4', overdue: true, title: 'Follow up', lineageIds: ['contact4', 'facility2'] },
         ],
         filteredTasksList: [],
         filters: {},
@@ -1050,7 +1050,7 @@ describe('Tasks reducer', () => {
 
       state = tasksReducer(state, Actions.setTasksFilters({
         taskOverdue: true,
-        taskTypes: { selected: ['follow_up'] },
+        taskTypes: { selected: ['Follow up'] },
         facilities: { selected: ['facility1'] },
       }));
 

@@ -17,18 +17,20 @@ export class OverdueFilterComponent {
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() search: EventEmitter<any> = new EventEmitter();
 
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   filter: Filter;
 
   statuses = ['overdue', 'not_overdue'];
 
-  constructor(private store: Store) {
+  constructor(private readonly store: Store) {
     this.globalActions = new GlobalActions(store);
     this.filter = new Filter(this.applyFilter.bind(this));
   }
 
   applyFilter(selected) {
-    this.globalActions.setFilter({ taskOverdue: selected?.includes('overdue') });
+    const taskOverdue = selected.length === 1 ? selected[0] === 'overdue' : undefined;
+
+    this.globalActions.setFilter({ taskOverdue });
     this.search.emit();
   }
 
