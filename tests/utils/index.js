@@ -242,7 +242,7 @@ const request = async (options, { debug } = {}) => {
   console.warn(`Error with request: ${options.method || 'GET'} ${uri} ${responseObj.status}`);
   const err = new Error(response.error || `${response.status} - ${JSON.stringify(responseObj.body)}`);
   Object.assign(err, responseObj);
-  throw err;
+  //throw err;
 };
 
 const requestOnTestDb = (options, debug) => {

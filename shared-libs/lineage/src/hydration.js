@@ -229,16 +229,36 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
-        });
+    return DB.get(id)
+      .then(function(doc) {
+        const isReport = utils.isReport(doc) && doc.form;
+        const lineageStart = isReport ? doc.contact : doc;
+
+        // Collect IDs from the denormalized parent chain
+        const parentIds = [];
+        let current = isReport ? lineageStart : (lineageStart && lineageStart.parent);
+        while (current && current._id) {
+          parentIds.push(current._id);
+          current = current.parent;
+        }
+
+        if (!parentIds.length) {
+          return [doc];
+        }
+
+        return DB.allDocs({ keys: parentIds, include_docs: true })
+          .then(function(result) {
+            const parentDocs = result.rows.map(function(row) {
+              return row.doc;
+            });
+            return [doc].concat(parentDocs);
+          });
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return [];
+        }
+        throw err;
       });
   };
 

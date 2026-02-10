@@ -11,8 +11,8 @@ import {
   NonEmptyArray, NormalizedParent,
   Nullable
 } from '../../libs/core';
-import { Doc } from '../../libs/doc';
-import { getDocsByIds, queryDocsByRange } from './doc';
+import { Doc, isDoc } from '../../libs/doc';
+import { getDocById, getDocsByIds } from './doc';
 import logger from '@medic/logger';
 import lineageFactory from '@medic/lineage';
 
@@ -22,8 +22,32 @@ import lineageFactory from '@medic/lineage';
  * @internal
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
-  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
-  return (id: string) => fn([id], [id, {}]);
+  const getDoc = getDocById(medicDb);
+  return async (id: string) => {
+    const doc = await getDoc(id);
+    if (!doc) {
+      return [];
+    }
+
+    const isReport = doc.type === 'data_record' && (doc as Record<string, unknown>).form;
+    const lineageStart = isReport ? (doc as Record<string, unknown>).contact as Nullable<Doc> : doc;
+
+    // Collect parent IDs from the denormalized parent chain
+    const parentIds: string[] = [];
+    let current: unknown = isReport ? lineageStart : (lineageStart as Record<string, unknown>).parent;
+    while (current && isIdentifiable(current)) {
+      parentIds.push(current._id);
+      current = (current as Record<string, unknown>).parent;
+    }
+
+    if (!parentIds.length) {
+      return [doc];
+    }
+
+    const response = await medicDb.allDocs({ keys: parentIds, include_docs: true });
+    const parentDocs = response.rows.map(({ doc: parentDoc }) => isDoc(parentDoc) ? parentDoc : null);
+    return [doc, ...parentDocs];
+  };
 };
 
 /** @internal */

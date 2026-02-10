@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "@medic/constants": "file:../shared-libs/constants",
+    "@medic/doc-summaries": "file:../shared-libs/doc-summaries",
     "@uirouter/angularjs": "^1.1.2",
     "angular": "^1.8.3",
     "angular-cookie": "^4.1.0",

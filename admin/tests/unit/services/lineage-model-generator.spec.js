@@ -3,16 +3,16 @@ describe('LineageModelGenerator service', () => {
   'use strict';
 
   let service;
-  let dbQuery;
+  let dbGet;
   let dbAllDocs;
 
   beforeEach(() => {
     module('adminApp');
     module($provide => {
-      dbQuery = sinon.stub();
+      dbGet = sinon.stub();
       dbAllDocs = sinon.stub();
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery, allDocs: dbAllDocs }));
+      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet, allDocs: dbAllDocs }));
     });
     inject(_LineageModelGenerator_ => service = _LineageModelGenerator_);
   });
@@ -20,7 +20,7 @@ describe('LineageModelGenerator service', () => {
   describe('contact', () => {
 
     it('handles not found', done => {
-      dbQuery.returns(Promise.resolve({ rows: [] }));
+      dbGet.returns(Promise.reject({ status: 404 }));
       service.contact('a')
         .then(() => {
           done(new Error('expected error to be thrown'));
@@ -34,9 +34,7 @@ describe('LineageModelGenerator service', () => {
 
     it('handles no lineage', () => {
       const contact = { _id: 'a', _rev: '1' };
-      dbQuery.returns(Promise.resolve({ rows: [
-        { doc: contact }
-      ] }));
+      dbGet.resolves(contact);
       return service.contact('a').then(model => {
         chai.expect(model._id).to.equal('a');
         chai.expect(model.doc).to.deep.equal(contact);
@@ -44,22 +42,19 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage', () => {
-      const contact = { _id: 'a', _rev: '1' };
+      const contact = { _id: 'a', _rev: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1' };
       const grandparent = { _id: 'c', _rev: '1' };
-      dbQuery.returns(Promise.resolve({ rows: [
-        { doc: contact },
-        { doc: parent },
-        { doc: grandparent }
-      ] }));
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { doc: grandparent }
+        ]
+      });
       return service.contact('a').then(model => {
-        chai.expect(dbQuery.callCount).to.equal(1);
-        chai.expect(dbQuery.args[0][0]).to.equal('medic-client/docs_by_id_lineage');
-        chai.expect(dbQuery.args[0][1]).to.deep.equal({
-          startkey: [ 'a' ],
-          endkey: [ 'a', {} ],
-          include_docs: true
-        });
+        chai.expect(dbGet.callCount).to.equal(1);
+        chai.expect(dbGet.args[0][0]).to.equal('a');
         chai.expect(model._id).to.equal('a');
         chai.expect(model.doc).to.deep.equal(contact);
         chai.expect(model.lineage).to.deep.equal([ parent, grandparent ]);
@@ -67,20 +62,24 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds contacts', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const contactsContact = { _id: 'd', name: 'dave' };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'e' } };
       const parentsContact = { _id: 'e', name: 'eliza' };
       const grandparent = { _id: 'c', _rev: '1' };
-      dbQuery.returns(Promise.resolve({ rows: [
-        { doc: contact },
-        { doc: parent },
-        { doc: grandparent }
-      ] }));
-      dbAllDocs.returns(Promise.resolve({ rows: [
-        { doc: contactsContact },
-        { doc: parentsContact }
-      ] }));
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { doc: grandparent }
+        ]
+      });
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'd', 'e' ] })).resolves({
+        rows: [
+          { doc: contactsContact },
+          { doc: parentsContact }
+        ]
+      });
       return service.contact('a', { merge: true }).then(model => {
         chai.expect(model._id).to.equal('a');
         chai.expect(model.doc.contact.name).to.equal('dave');
@@ -89,23 +88,27 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' } };
       const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const parentContact = { _id: 'd', name: 'donny' };
       const grandparentContact = { _id: 'e', name: 'erica' };
-      dbQuery.returns(Promise.resolve({ rows: [
-        { doc: contact },
-        { doc: parent },
-        { doc: grandparent }
-      ] }));
-      dbAllDocs.returns(Promise.resolve({ rows: [
-        { doc: parentContact },
-        { doc: grandparentContact }
-      ] }));
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { doc: grandparent }
+        ]
+      });
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'x', 'd', 'e' ] })).resolves({
+        rows: [
+          { doc: parentContact },
+          { doc: grandparentContact }
+        ]
+      });
       return service.contact('a').then(model => {
-        chai.expect(dbAllDocs.callCount).to.equal(1);
-        chai.expect(dbAllDocs.args[0][0]).to.deep.equal({
+        chai.expect(dbAllDocs.callCount).to.equal(2);
+        chai.expect(dbAllDocs.args[1][0]).to.deep.equal({
           keys: [ 'x', 'd', 'e' ],
           include_docs: true
         });
@@ -147,11 +150,13 @@ describe('LineageModelGenerator service', () => {
           }
         ]
       };
-      dbQuery.returns(Promise.resolve({ rows: [
-        { doc: contact },
-        { doc: parent },
-        { doc: grandparent }
-      ] }));
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { doc: grandparent }
+        ]
+      });
       return service.contact('a', { merge: true }).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
       });
@@ -160,8 +165,13 @@ describe('LineageModelGenerator service', () => {
     it('should merge lineage with undefined members', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
-      dbQuery.resolves({ rows:
-        [{ doc: contact, key: ['a', 0] }, { doc: parent,  key: ['a', 1] }, { key: ['a', 2] }, { key: ['a', 3] }]
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c', 'd' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { key: 'c', error: 'not_found' },
+          { key: 'd', error: 'not_found' }
+        ]
       });
       const expected = {
         _id: 'a',
@@ -170,7 +180,7 @@ describe('LineageModelGenerator service', () => {
           name: '1',
           parent: { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }
         },
-        lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, undefined]
+        lineage: [{ _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, null, null]
       };
       return service.contact('a', { merge: true }).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
@@ -180,12 +190,14 @@ describe('LineageModelGenerator service', () => {
     it('should merge lineage with undefined members v2', () => {
       const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c', parent: { _id: 'd' } } } };
       const parent = { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } };
-      dbQuery.resolves({ rows: [
-        { doc: contact, key: ['a', 0] },
-        { doc: parent,  key: ['a', 1] },
-        { key: ['a', 2] },
-        { key: ['a', 3], doc: { _id: 'd', name: '4' } }
-      ] });
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c', 'd' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { key: 'c', error: 'not_found' },
+          { doc: { _id: 'd', name: '4' } }
+        ]
+      });
       const expected = {
         _id: 'a',
         doc: {
@@ -194,7 +206,7 @@ describe('LineageModelGenerator service', () => {
           parent: { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd', name: '4' } } },
         },
         lineage: [
-          { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, undefined, { _id: 'd', name: '4' }
+          { _id: 'b', name: '2', parent: { _id: 'c', parent: { _id: 'd' } } }, null, { _id: 'd', name: '4' }
         ]
       };
       return service.contact('a', { merge: true }).then(actual => {
@@ -229,11 +241,13 @@ describe('LineageModelGenerator service', () => {
           }
         ]
       };
-      dbQuery.returns(Promise.resolve({ rows: [
-        { doc: contact },
-        { doc: parent },
-        { doc: grandparent }
-      ] }));
+      dbGet.resolves(contact);
+      dbAllDocs.withArgs(sinon.match({ keys: [ 'b', 'c' ] })).resolves({
+        rows: [
+          { doc: parent },
+          { doc: grandparent }
+        ]
+      });
       return service.contact('a').then(actual => {
         chai.expect(actual).to.deep.equal(expected);
       });

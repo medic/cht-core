@@ -1,6 +1,7 @@
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
+const summarise = require('@medic/doc-summaries');
 
 angular.module('services').factory('MessageQueueUtils',
   function(
@@ -99,9 +100,21 @@ angular.module('services').factory('MessageQueue',
             return row.id;
           });
 
-          return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
+          return DB({ remote: true }).allDocs({ keys: ids, include_docs: true });
         })
-        .then(function(summaries) {
+        .then(function(result) {
+          const summaries = {
+            rows: result.rows
+              .filter(function(row) {
+                return row.doc;
+              })
+              .map(function(row) {
+                return { id: row.id, value: summarise(row.doc) };
+              })
+              .filter(function(row) {
+                return row.value;
+              })
+          };
           messages.forEach(function(message) {
             message.recipient = findSummary(summaries, message);
           });
