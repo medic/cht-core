@@ -214,8 +214,6 @@ describe('core lib', () => {
 
   describe('getPagedGenerator', () => {
     let fetchFunctionStub: SinonStub;
-    const limit = 100;
-    const cursor = null;
 
     beforeEach(() => {
       fetchFunctionStub = sinon.stub();
@@ -223,7 +221,7 @@ describe('core lib', () => {
 
     it('yields document one by one', async () => {
       const mockDocs = [{ id: 1 }, { id: 2 }, { id: 3 }];
-      const mockPage = { data: mockDocs, cursor };
+      const mockPage = { data: mockDocs, cursor: null };
       const extraArg = 'value';
       fetchFunctionStub.resolves(mockPage);
 
@@ -236,7 +234,7 @@ describe('core lib', () => {
       }
 
       expect(results).to.deep.equal(mockDocs);
-      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, cursor, limit)).to.be.true;
+      expect(fetchFunctionStub.calledOnceWithExactly(extraArg, null)).to.be.true;
     });
 
     it('should handle multiple pages',  async () => {
@@ -244,7 +242,7 @@ describe('core lib', () => {
       const mockDocs1 = Array.from({ length: 100 }, () => ({ ...mockDoc }));
       const mockPage1 = { data: mockDocs1, cursor: '100' };
       const mockDocs2 = [{ id: 101 }];
-      const mockPage2 = { data: mockDocs2, cursor };
+      const mockPage2 = { data: mockDocs2, cursor: null };
       const extraArg = 'value';
 
       fetchFunctionStub.onFirstCall().resolves(mockPage1);
@@ -259,14 +257,14 @@ describe('core lib', () => {
 
       expect(results).to.deep.equal([...mockDocs1, ...mockDocs2]);
       expect(fetchFunctionStub.callCount).to.equal(2);
-      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, cursor, limit]);
-      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, (Number(cursor) + limit).toString(), limit]);
+      expect(fetchFunctionStub.firstCall.args).to.deep.equal([extraArg, null]);
+      expect(fetchFunctionStub.secondCall.args).to.deep.equal([extraArg, mockPage1.cursor]);
     });
 
     it('should handle empty result', async () => {
-      fetchFunctionStub.resolves({ data: [], cursor });
+      fetchFunctionStub.resolves({ data: [], cursor: null });
 
-      const generator = getPagedGenerator(fetchFunctionStub, { limit: 10, cursor });
+      const generator = getPagedGenerator(fetchFunctionStub, { limit: 10 });
 
       const result = await generator.next();
 
