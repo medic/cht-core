@@ -1,0 +1,55 @@
+name: Fix Dependabot lockfile
+
+on:
+  pull_request:
+    paths:
+      - 'package-lock.json'
+      - 'webapp/package-lock.json'
+      - 'admin/package-lock.json'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-lockfile:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Use Node.js 22.15
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.15'
+
+      - name: Regenerate lockfiles
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD | while read file; do
+            case "$file" in
+              package-lock.json)
+                echo "Regenerating root lockfile"
+                npm install --package-lock-only --ignore-scripts
+                ;;
+              webapp/package-lock.json)
+                echo "Regenerating webapp lockfile"
+                npm install --package-lock-only --ignore-scripts --prefix webapp
+                ;;
+              admin/package-lock.json)
+                echo "Regenerating admin lockfile"
+                npm install --package-lock-only --ignore-scripts --prefix admin
+                ;;
+            esac
+          done
+
+      - name: Commit updated lockfiles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json webapp/package-lock.json admin/package-lock.json
+          git diff --cached --quiet || git commit -m "fix: regenerate package-lock.json"
+          git push
