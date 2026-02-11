@@ -533,17 +533,73 @@ describe('Selectors', () => {
         expect(result).to.deep.equal(tasksState.tasksList);
       });
 
-      it('should filter tasks using global filters', () => {
+      it('should filter by overdue', () => {
         const tasksState = {
           tasksList: [
-            { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: [] },
-            { _id: 'task2', overdue: false, title: 'Vaccination', lineageIds: [] },
+            { _id: 'task1', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+            { _id: 'task2', overdue: false, title: 'vaccination', lineageIds: ['contact2', 'facility2'] },
+            { _id: 'task3', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
           ],
         };
         const globalState = { filters: { taskOverdue: true } } as any;
         const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
         expect(result).to.deep.equal([
-          { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: [] },
+          { _id: 'task1', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+          { _id: 'task3', overdue: true, title: 'follow_up', lineageIds: ['contact1', 'facility1'] },
+        ]);
+      });
+
+      it('should filter by task type', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', lineageIds: [] },
+            { _id: 'task2', title: 'Vaccination', lineageIds: [] },
+            { _id: 'task3', title: 'Follow up', lineageIds: [] },
+          ],
+        };
+        const globalState = { filters: { taskTypes: { selected: ['Follow up'] } } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', title: 'Follow up', lineageIds: [] },
+          { _id: 'task3', title: 'Follow up', lineageIds: [] },
+        ]);
+      });
+
+      it('should filter by facility using lineageIds', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', lineageIds: ['contact1', 'facility1', 'district1'] },
+            { _id: 'task2', lineageIds: ['contact2', 'facility2', 'district1'] },
+            { _id: 'task3', lineageIds: ['contact3', 'facility1', 'district1'] },
+          ],
+        };
+        const globalState = { filters: { facilities: { selected: ['facility1'] } } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', lineageIds: ['contact1', 'facility1', 'district1'] },
+          { _id: 'task3', lineageIds: ['contact3', 'facility1', 'district1'] },
+        ]);
+      });
+
+      it('should combine multiple filters', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: ['contact1', 'facility1'] },
+            { _id: 'task2', overdue: false, title: 'Follow up', lineageIds: ['contact2', 'facility1'] },
+            { _id: 'task3', overdue: true, title: 'Vaccination', lineageIds: ['contact3', 'facility1'] },
+            { _id: 'task4', overdue: true, title: 'Follow up', lineageIds: ['contact4', 'facility2'] },
+          ],
+        };
+        const globalState = {
+          filters: {
+            taskOverdue: true,
+            taskTypes: { selected: ['Follow up'] },
+            facilities: { selected: ['facility1'] },
+          }
+        } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: ['contact1', 'facility1'] }
         ]);
       });
 

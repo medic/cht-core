@@ -5,12 +5,6 @@ import { Actions } from '@mm-actions/tasks';
 import { TaskEmission } from '@mm-services/rules-engine.service';
 import { orderByDueDateAndPriority } from '@medic/task-utils';
 
-export interface TasksFilters {
-  taskOverdue?: boolean;
-  taskTypes?: { selected: string[] };
-  facilities?: { selected: string[] };
-}
-
 const initialState = {
   tasksList: [] as TaskEmission[],
   overdue: [] as TaskEmission[],
@@ -21,27 +15,6 @@ const initialState = {
     contact: null,
     loadingContact: null as any,
   },
-};
-
-export const applyFilters = (tasks: TaskEmission[], filters: TasksFilters = {}): TaskEmission[] => {
-  let filtered = tasks;
-
-  if (filters?.taskOverdue !== undefined) {
-    filtered = filtered.filter(task => task.overdue === filters.taskOverdue);
-  }
-
-  if (filters.taskTypes?.selected?.length) {
-    const selectedTypes = filters.taskTypes.selected;
-    filtered = filtered.filter(task => selectedTypes.includes(task.title));
-  }
-
-  if (filters.facilities?.selected?.length) {
-    filtered = filtered.filter(task => {
-      return task.lineageIds.some(id => filters.facilities?.selected.includes(id));
-    });
-  }
-
-  return filtered;
 };
 
 const _tasksReducer = createReducer(
