@@ -124,6 +124,11 @@ describe('Tasks Sidebar Filter', () => {
   });
 
   describe('For chws who do not see place filter', () => {
+    const checkTasks = async () => {
+      const allTasks = await tasksPage.getTasks();
+      expect(allTasks.length).to.equal(25);
+    };
+
     before(async () => {
       await loginPage.login(chw);
     });
@@ -137,8 +142,7 @@ describe('Tasks Sidebar Filter', () => {
 
     describe('Overdue filter', () => {
       it('should filter to show only overdue tasks', async () => {
-        const allTasks = await tasksPage.getTasks();
-        expect(allTasks.length).to.be.greaterThan(0);
+        await checkTasks();
 
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByOverdue('Overdue');
@@ -147,16 +151,17 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should be overdue
+        expect(filteredInfos.length).to.equal(15);
         filteredInfos.forEach(info => {
           expect(info.overdue).to.be.true;
         });
+
+        await tasksPage.resetFilters();
+        await checkTasks();
       });
 
       it('should filter to show only not overdue tasks', async () => {
-        const allTasks = await tasksPage.getTasks();
-        const initialCount = allTasks.length;
-        expect(initialCount).to.be.greaterThan(0);
+        await checkTasks();
 
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByOverdue('Not overdue');
@@ -165,33 +170,19 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should not be overdue
         filteredInfos.forEach(info => {
           expect(info.overdue).to.be.false;
         });
-      });
-
-      it('should reset overdue filter', async () => {
-        const allTasks = await tasksPage.getTasks();
-        const initialCount = allTasks.length;
-
-        await tasksPage.openSidebarFilter();
-        await tasksPage.filterByOverdue('Overdue');
-        await commonPage.waitForPageLoaded();
-
-        const filteredTasks = await tasksPage.getTasks();
-        expect(filteredTasks.length).to.be.lessThan(initialCount);
 
         await tasksPage.resetFilters();
-        await commonPage.waitForPageLoaded();
-
-        const resetTasks = await tasksPage.getTasks();
-        expect(resetTasks.length).to.equal(initialCount);
+        await checkTasks();
       });
     });
 
     describe('Task type filter', () => {
       it('should filter by Home Visit task type', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByTaskType('Home Visit');
         await commonPage.waitForPageLoaded();
@@ -199,13 +190,18 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should be Home Visit type
+        expect(filteredInfos.length).to.equal(10);
         filteredInfos.forEach(info => {
           expect(info.formTitle).to.equal('Home Visit');
         });
+
+        await tasksPage.resetFilters();
+        await checkTasks();
       });
 
       it('should filter by Assessment task type', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByTaskType('Assessment');
         await commonPage.waitForPageLoaded();
@@ -213,13 +209,18 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should be Assessment type
+        expect(filteredInfos.length).to.equal(10);
         filteredInfos.forEach(info => {
           expect(info.formTitle).to.equal('Assessment');
         });
+
+        await tasksPage.resetFilters();
+        await checkTasks();
       });
 
       it('should filter by multiple task types', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByTaskType('Home Visit');
         await tasksPage.filterByTaskType('Assessment');
@@ -228,28 +229,13 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should be either Home Visit or Assessment
+        expect(filteredInfos.length).to.equal(20);
         filteredInfos.forEach(info => {
           expect(['Home Visit', 'Assessment']).to.include(info.formTitle);
         });
-      });
-
-      it('should reset task type filter', async () => {
-        const allTasks = await tasksPage.getTasks();
-        const initialCount = allTasks.length;
-
-        await tasksPage.openSidebarFilter();
-        await tasksPage.filterByTaskType('Home Visit');
-        await commonPage.waitForPageLoaded();
-
-        const filteredTasks = await tasksPage.getTasks();
-        expect(filteredTasks.length).to.be.lessThan(initialCount);
 
         await tasksPage.resetFilters();
-        await commonPage.waitForPageLoaded();
-
-        const resetTasks = await tasksPage.getTasks();
-        expect(resetTasks.length).to.equal(initialCount);
+        await checkTasks();
       });
     });
 
@@ -262,6 +248,8 @@ describe('Tasks Sidebar Filter', () => {
 
     describe('Combined filters', () => {
       it('should filter by overdue AND task type', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByOverdue('Overdue');
         await tasksPage.filterByTaskType('Home Visit');
@@ -270,14 +258,19 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should be overdue AND Home Visit type
+        expect(filteredInfos.length).to.equal(5);
         filteredInfos.forEach(info => {
           expect(info.overdue).to.be.true;
           expect(info.formTitle).to.equal('Home Visit');
         });
+
+        await tasksPage.resetFilters();
+        await checkTasks();
       });
 
       it('should filter by not overdue AND task type', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByOverdue('Not overdue');
         await tasksPage.filterByTaskType('Assessment');
@@ -286,35 +279,24 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // All displayed tasks should be not overdue AND Assessment type
+        expect(filteredInfos.length).to.equal(5);
         filteredInfos.forEach(info => {
           expect(info.overdue).to.be.false;
           expect(info.formTitle).to.equal('Assessment');
         });
-      });
-
-      it('should clear all filters at once', async () => {
-        const allTasks = await tasksPage.getTasks();
-        const initialCount = allTasks.length;
-
-        await tasksPage.openSidebarFilter();
-        await tasksPage.filterByOverdue('Overdue');
-        await tasksPage.filterByTaskType('Home Visit');
-        await commonPage.waitForPageLoaded();
-
-        const filteredTasks = await tasksPage.getTasks();
-        expect(filteredTasks.length).to.be.lessThan(initialCount);
 
         await tasksPage.resetFilters();
-        await commonPage.waitForPageLoaded();
-
-        const resetTasks = await tasksPage.getTasks();
-        expect(resetTasks.length).to.equal(initialCount);
+        await checkTasks();
       });
     });
   });
 
   describe('For chws who do see place filter', () => {
+    const checkTasks = async () => {
+      const allTasks = await tasksPage.getTasks();
+      expect(allTasks.length).to.equal(30);
+    };
+
     before(async () => {
       await loginPage.login(chw2);
     });
@@ -329,13 +311,15 @@ describe('Tasks Sidebar Filter', () => {
 
     describe('Place filter', () => {
       it('should display place filter', async () => {
-        expect((await tasksPage.getTasks()).length).to.be.greaterThan(0);
+        await checkTasks();
 
         await tasksPage.openSidebarFilter();
         expect(await tasksPage.isPlaceFilterDisplayed()).to.be.true;
       });
 
       it('should filter tasks by health center', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByPlace(healthCenter2.name);
         await commonPage.waitForPageLoaded();
@@ -343,15 +327,23 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // Should only show tasks for patients in Health Center 2
+        expect(filteredInfos.length).to.equal(5);
         filteredInfos.forEach(info => {
           expect(info.contactName).to.equal('Patient Filter 5');
         });
+
+        await tasksPage.resetFilters();
+        await checkTasks();
       });
     });
   });
 
   describe('For supervisors who do see place filter', () => {
+    const checkTasks = async () => {
+      const allTasks = await tasksPage.getTasks();
+      expect(allTasks.length).to.equal(35);
+    };
+
     before(async () => {
       await loginPage.login(supervisor);
     });
@@ -362,13 +354,15 @@ describe('Tasks Sidebar Filter', () => {
 
     describe('Place filter', () => {
       it('should display place filter', async () => {
-        expect((await tasksPage.getTasks()).length).to.be.greaterThan(0);
+        await checkTasks();
 
         await tasksPage.openSidebarFilter();
         expect(await tasksPage.isPlaceFilterDisplayed()).to.be.true;
       });
 
       it('should filter tasks by health center', async () => {
+        await checkTasks();
+
         await tasksPage.openSidebarFilter();
         await tasksPage.filterByPlace(healthCenter2.name, districtHospital.name);
         await commonPage.waitForPageLoaded();
@@ -376,28 +370,23 @@ describe('Tasks Sidebar Filter', () => {
         const filteredTasks = await tasksPage.getTasks();
         const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
 
-        // Should only show tasks for patients in Health Center 2
+        expect(filteredInfos.length).to.equal(5);
         filteredInfos.forEach(info => {
           expect(info.contactName).to.equal('Patient Filter 5');
         });
-      });
-
-      it('should reset place filter', async () => {
-        const allTasks = await tasksPage.getTasks();
-        const initialCount = allTasks.length;
-
-        await tasksPage.openSidebarFilter();
-        await tasksPage.filterByPlace(healthCenter2.name, districtHospital.name);
-        await commonPage.waitForPageLoaded();
-
-        const filteredTasks = await tasksPage.getTasks();
-        expect(filteredTasks.length).to.be.lessThan(initialCount);
 
         await tasksPage.resetFilters();
+        await checkTasks();
+      });
+
+      it('should filter by district hospital and show all tasks', async () => {
+        await checkTasks();
+
+        await tasksPage.openSidebarFilter();
+        await tasksPage.filterByPlace(districtHospital.name);
         await commonPage.waitForPageLoaded();
 
-        const resetTasks = await tasksPage.getTasks();
-        expect(resetTasks.length).to.equal(initialCount);
+        await checkTasks();
       });
     });
   });

@@ -521,31 +521,37 @@ describe('Selectors', () => {
     });
 
     describe('getFilteredTasksList', () => {
-      it('should return filtered tasks list from state', () => {
-        const tasksStateWithFiltered = {
-          tasksList: [{ _id: 'task1' }, { _id: 'task2' }],
-          filteredTasksList: [{ _id: 'task1' }],
+      it('should return all tasks when no global filters are set', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: [] },
+            { _id: 'task2', overdue: false, title: 'Vaccination', lineageIds: [] },
+          ],
         };
-        const result = Selectors.getFilteredTasksList.projector(tasksStateWithFiltered);
-        expect(result).to.deep.equal(tasksStateWithFiltered.filteredTasksList);
+        const globalState = { filters: {} } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal(tasksState.tasksList);
       });
 
-      it('should return undefined for empty state', () => {
-        expect(Selectors.getFilteredTasksList.projector({})).to.equal(undefined);
-      });
-    });
-
-    describe('getTasksFilters', () => {
-      it('should return tasks filters from state', () => {
-        const tasksStateWithFilters = {
-          filters: { taskOverdue: true, taskTypes: { selected: ['follow_up'] } },
+      it('should filter tasks using global filters', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: [] },
+            { _id: 'task2', overdue: false, title: 'Vaccination', lineageIds: [] },
+          ],
         };
-        const result = Selectors.getTasksFilters.projector(tasksStateWithFilters);
-        expect(result).to.deep.equal(tasksStateWithFilters.filters);
+        const globalState = { filters: { taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([
+          { _id: 'task1', overdue: true, title: 'Follow up', lineageIds: [] },
+        ]);
       });
 
-      it('should return undefined for empty state', () => {
-        expect(Selectors.getTasksFilters.projector({})).to.equal(undefined);
+      it('should return empty array for empty tasks list', () => {
+        const tasksState = { tasksList: [] };
+        const globalState = { filters: { taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([]);
       });
     });
   });

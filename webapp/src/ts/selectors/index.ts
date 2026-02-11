@@ -1,5 +1,6 @@
 import { createSelector } from '@ngrx/store';
 import { GlobalState } from '@mm-reducers/global';
+import { applyFilters } from '@mm-reducers/tasks';
 
 const getGlobalState = (state): GlobalState => state.global || {};
 const getServicesState = (state) => state.services || {};
@@ -133,8 +134,9 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
-  getFilteredTasksList: createSelector(getTasksState, (tasksState) => tasksState.filteredTasksList),
-  getTasksFilters: createSelector(getTasksState, (tasksState) => tasksState.filters),
+  getFilteredTasksList: createSelector(getTasksState, getGlobalState, (tasksState, globalState) => {
+    return applyFilters(tasksState.tasksList, globalState.filters);
+  }),
   getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),

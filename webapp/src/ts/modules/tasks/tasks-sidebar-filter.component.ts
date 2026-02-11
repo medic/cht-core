@@ -44,7 +44,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
 
   @ViewChild(OverdueFilterComponent) overdueFilter!: OverdueFilterComponent;
   @ViewChild(TaskTypeFilterComponent) taskTypeFilter!: TaskTypeFilterComponent;
-  @ViewChild(FacilityFilterComponent) facilityFilter?: FacilityFilterComponent;
+  @ViewChild(FacilityFilterComponent) facilityFilter!: FacilityFilterComponent;
 
   private readonly globalActions: GlobalActions;
   private filters: FilterComponent[] = [];
@@ -82,10 +82,8 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
     this.filters = [
       this.overdueFilter,
       this.taskTypeFilter,
+      this.facilityFilter,
     ];
-    if (this.facilityFilter) {
-      this.filters.push(this.facilityFilter);
-    }
   }
 
   applyFilters() {

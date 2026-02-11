@@ -98,18 +98,6 @@ export class TasksComponent implements OnInit, OnDestroy {
         this.isSidebarFilterOpen = !!sidebarFilter?.isOpen;
       });
     this.subscription.add(sidebarFilter$);
-
-    // Sync global filters to tasks state for reducer-based filtering
-    const filters$ = this.store
-      .select(Selectors.getFilters)
-      .subscribe(filters => {
-        this.tasksActions.setTasksFilters({
-          taskOverdue: filters?.taskOverdue,
-          taskTypes: filters?.taskTypes,
-          facilities: filters?.facilities,
-        });
-      });
-    this.subscription.add(filters$);
   }
 
   toggleFilter() {

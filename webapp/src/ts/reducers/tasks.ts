@@ -13,8 +13,6 @@ export interface TasksFilters {
 
 const initialState = {
   tasksList: [] as TaskEmission[],
-  filteredTasksList: [] as TaskEmission[],
-  filters: {} as TasksFilters,
   overdue: [] as TaskEmission[],
   selected: null,
   loaded: false,
@@ -25,7 +23,7 @@ const initialState = {
   },
 };
 
-const applyFilters = (tasks: TaskEmission[], filters: TasksFilters = {}): TaskEmission[] => {
+export const applyFilters = (tasks: TaskEmission[], filters: TasksFilters = {}): TaskEmission[] => {
   let filtered = tasks;
 
   if (filters?.taskOverdue !== undefined) {
@@ -54,23 +52,11 @@ const _tasksReducer = createReducer(
     const taskEmissions = tasks as TaskEmission[];
     const sortedTasks = [...taskEmissions].sort(orderByDueDateAndPriority);
     const overdueTasks = taskEmissions.filter(task => task.overdue);
-    const filteredTasks = applyFilters(sortedTasks, state.filters || {});
 
     return {
       ...state,
       tasksList: sortedTasks,
-      filteredTasksList: filteredTasks,
       overdue: overdueTasks,
-    };
-  }),
-
-  on(Actions.setTasksFilters, (state, { payload: { filters } }) => {
-    const filteredTasks = applyFilters(state.tasksList, filters);
-
-    return {
-      ...state,
-      filters,
-      filteredTasksList: filteredTasks,
     };
   }),
 
@@ -151,8 +137,6 @@ const _tasksReducer = createReducer(
   on(Actions.clearTaskList, state => ({
     ...state,
     tasksList: [],
-    filteredTasksList: [],
-    filters: {},
   }))
 );
 
