@@ -312,6 +312,11 @@ app.get(`${routePrefix}login/oidc/authorize`, login.oidcAuthorize);
 app.get(`${routePrefix}login/oidc`, login.oidcLogin);
 app.get(`${routePrefix}privacy-policy`, privacyPolicyController.get);
 
+// Rewrite old view URLs (/_design/medic/_view/... and /_design/medic-client/_view/...)
+// to the new design documents. This supports external projects that haven't updated yet.
+const { rewriteDeprecatedViewUrl } = require('./middleware/deprecated-view-rewrite');
+app.use(rewriteDeprecatedViewUrl);
+
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [
   '_design/*db/_list/*list',
