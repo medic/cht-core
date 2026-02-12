@@ -1,9 +1,14 @@
 import { createSelector } from '@ngrx/store';
-import { GlobalState } from '@mm-reducers/global';
+import { GlobalState, TasksFilters } from '@mm-reducers/global';
+import { TaskEmission } from '@mm-services/rules-engine.service';
+
+interface TaskWithLineage extends TaskEmission {
+  lineageIds: string[];
+}
 
 const getGlobalState = (state): GlobalState => state.global || {};
 
-const applyTasksFilters = (tasks, filters: Record<string, any> = {}) => {
+const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
   let filtered = tasks;
 
   if (filters?.taskOverdue !== undefined) {
@@ -23,6 +28,7 @@ const applyTasksFilters = (tasks, filters: Record<string, any> = {}) => {
 
   return filtered;
 };
+
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};

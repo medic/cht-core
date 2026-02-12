@@ -50,7 +50,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
-  filterCount: any = {};
+  filterCount: { total: number } & Record<string, number> = { total: 0 };
   showPlaceFilter = true;
 
   constructor(

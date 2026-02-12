@@ -166,13 +166,11 @@ export class TasksComponent implements OnInit, OnDestroy {
 
       const emissions = taskDocs.map(taskDoc => taskDoc.emission);
       const subjects = await this.getLineagesFromTaskDocs(emissions);
-      if (subjects?.size) {
-        emissions.forEach(task => {
-          Object.assign(task, this.getTaskLineage(subjects, task));
-        });
-      }
-
-      this.tasksActions.setTasksList(emissions);
+      const tasksWithLineage = emissions.map(task => ({
+        ...task,
+        ...this.getTaskLineage(subjects, task)
+      }));
+      this.tasksActions.setTasksList(tasksWithLineage);
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);

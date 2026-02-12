@@ -191,6 +191,8 @@ describe('TasksComponent', () => {
         overdue: false,
         date: new Date(futureDate.valueOf()),
         owner: 'a',
+        lineage: [],
+        lineageIds: ['a'],
       },
       {
         _id: 'e2',
@@ -198,6 +200,8 @@ describe('TasksComponent', () => {
         overdue: true,
         date: new Date(pastDate.valueOf()),
         owner: 'b',
+        lineage: [],
+        lineageIds: ['b'],
       },
     ];
 

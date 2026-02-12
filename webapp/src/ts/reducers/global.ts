@@ -289,3 +289,9 @@ interface SidebarFilterState {
   filterCount?: Record<string, number>;
   defaultFilters?: Record<string, any>;
 }
+
+export interface TasksFilters {
+  taskOverdue?: boolean;
+  taskTypes?: { selected: string[] };
+  facilities?: { selected: string[] };
+}
