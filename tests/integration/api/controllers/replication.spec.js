@@ -1209,6 +1209,25 @@ describe('replication', () => {
       ];
       assertDocIds(response, ...steveClaresIds, ...expectedReports);
     });
+
+    it('should be able to retrieve large purged docs cache documents', async () => {
+      const nbrPurgedDocs = 100000;
+      const uuids = Array.from({ length: nbrPurgedDocs }).map(() => uuid());
+
+      const allowedBob = createSomeContacts(5, 'fixture:bobville');
+      uuids.push(...allowedBob.map(c => c._id));
+
+      await utils.requestOnTestDb({
+        method: 'PUT',
+        path: `-purged-cache/purged-docs-bob`,
+        body: {
+          _id: 'purged-docs-bob',
+          docs_ids: uuids,
+        }
+      });
+      const response = await requestDocs('bob');
+      assertDocIds(response, ...bobsIds);
+    });
   });
 
   describe('get-deletes', () => {
