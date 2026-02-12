@@ -170,6 +170,63 @@ describe('Purged docs cache', () => {
     });
   });
 
+  describe('getCacheDoc retry', () => {
+    it('should retry on ECONNRESET and succeed', async () => {
+      purgedDbObj.get
+        .onFirstCall().rejects({ code: 'ECONNRESET' })
+        .onSecondCall().resolves({ doc_ids: [1, 2] });
+
+      const result = await purgedDocsCache.get('user1');
+      expect(result).to.deep.equal([1, 2]);
+      expect(purgedDbObj.get.callCount).to.equal(2);
+    });
+
+    it('should retry up to 3 times on ECONNRESET', async () => {
+      purgedDbObj.get
+        .onCall(0).rejects({ code: 'ECONNRESET' })
+        .onCall(1).rejects({ code: 'ECONNRESET' })
+        .onCall(2).rejects({ code: 'ECONNRESET' })
+        .onCall(3).resolves({ doc_ids: [5] });
+
+      const result = await purgedDocsCache.get('user2');
+      expect(result).to.deep.equal([5]);
+      expect(purgedDbObj.get.callCount).to.equal(4);
+    });
+
+    it('should throw ECONNRESET after retries are exhausted', async () => {
+      const econnreset = { code: 'ECONNRESET' };
+      purgedDbObj.get.rejects(econnreset);
+
+      await expect(purgedDocsCache.get('user3')).to.be.rejectedWith(econnreset);
+      expect(purgedDbObj.get.callCount).to.equal(4);
+    });
+
+    it('should not retry on non-ECONNRESET errors', async () => {
+      purgedDbObj.get.rejects(new Error('something else'));
+
+      await expect(purgedDocsCache.get('user4')).to.be.rejectedWith('something else');
+      expect(purgedDbObj.get.callCount).to.equal(1);
+    });
+
+    it('should not retry on 404 errors', async () => {
+      purgedDbObj.get.rejects({ status: 404 });
+
+      const result = await purgedDocsCache.get('user5');
+      expect(result).to.equal(undefined);
+      expect(purgedDbObj.get.callCount).to.equal(1);
+    });
+
+    it('should retry ECONNRESET then handle 404', async () => {
+      purgedDbObj.get
+        .onFirstCall().rejects({ code: 'ECONNRESET' })
+        .onSecondCall().rejects({ status: 404 });
+
+      const result = await purgedDocsCache.get('user6');
+      expect(result).to.equal(undefined);
+      expect(purgedDbObj.get.callCount).to.equal(2);
+    });
+  });
+
   describe('getCacheDatabase', () => {
     it('should get db when not set', async () => {
       const result = await purgedDocsCache.__get__('getCacheDatabase')();

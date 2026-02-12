@@ -4,12 +4,7 @@ const logger = require('@medic/logger');
 
 let purgeDb;
 let destroyPromise = null;
-
-const catchDocNotFoundError = (err) => {
-  if (err?.status !== 404) {
-    throw err;
-  }
-};
+const ECONNRESET = 'ECONNRESET';
 
 const catchDocConflictError = (err) => {
   if (err?.status !== 409) {
@@ -48,12 +43,17 @@ const wipe = async () => {
   destroyPromise = null;
 };
 
-const getCacheDoc = async (username) => {
+const getCacheDoc = async (username, retry = 3) => {
   try {
     const database = await getCacheDatabase();
     return await database.get(getCacheDocId(username));
   } catch (err) {
-    catchDocNotFoundError(err);
+    if (err?.code === ECONNRESET && retry > 0) {
+      return await getCacheDoc(username, --retry);
+    }
+    if (err?.status !== 404) {
+      throw err;
+    }
   }
 };
 
