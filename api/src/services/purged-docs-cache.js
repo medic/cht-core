@@ -43,19 +43,23 @@ const wipe = async () => {
   destroyPromise = null;
 };
 
+const handleNotFoundError = (err) => {
+  if (err?.status === 404) {
+    return;
+  }
+  throw err;
+};
+
 const getCacheDoc = async (username, retry = 3) => {
   try {
     const database = await getCacheDatabase();
     return await database.get(getCacheDocId(username));
   } catch (err) {
-    if (err?.status === 404) {
-      return;
-    }
     if (err?.code === ECONNRESET && retry > 0) {
       logger.warn('Retrying getCacheDoc for user %s after ECONNRESET', username);
       return await getCacheDoc(username, --retry);
     }
-    throw err;
+    handleNotFoundError(err);
   }
 };
 
