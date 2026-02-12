@@ -1216,13 +1216,14 @@ describe('replication', () => {
 
       const allowedBob = createSomeContacts(5, 'fixture:bobville');
       uuids.push(...allowedBob.map(c => c._id));
+      await utils.saveDocs(allowedBob);
 
       await utils.requestOnTestDb({
         method: 'PUT',
         path: `-purged-cache/purged-docs-bob`,
         body: {
           _id: 'purged-docs-bob',
-          docs_ids: uuids,
+          doc_ids: uuids,
         }
       });
       const response = await requestDocs('bob');

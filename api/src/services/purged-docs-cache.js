@@ -48,13 +48,14 @@ const getCacheDoc = async (username, retry = 3) => {
     const database = await getCacheDatabase();
     return await database.get(getCacheDocId(username));
   } catch (err) {
+    if (err?.status === 404) {
+      return;
+    }
     if (err?.code === ECONNRESET && retry > 0) {
       logger.warn('Retrying getCacheDoc for user %s after ECONNRESET', username);
       return await getCacheDoc(username, --retry);
     }
-    if (err?.status !== 404) {
-      throw err;
-    }
+    throw err;
   }
 };
 
