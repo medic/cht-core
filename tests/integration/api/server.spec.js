@@ -221,6 +221,7 @@ describe('server', () => {
     it('should work after restarting CouchDb @docker', async () => {
       await utils.stopCouchDb();
       await utils.startCouchDb();
+      await utils.delayPromise(1000);
 
       await utils.listenForApi();
     });
