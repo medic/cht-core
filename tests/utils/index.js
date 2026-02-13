@@ -1251,14 +1251,23 @@ const createCluster = async (dataDir) => {
   const match = port.trim().match(/:(\d+)$/);
   K3D_REGISTRY_PORT = match[1];
 
-  await runCommand(`echo '{"insecure-registries":["${K3D_REPO()}"]}' | sudo tee /etc/docker/daemon.json`);
-  await runCommand('sudo systemctl restart docker');
+  // Create registries config file for k3d
+  const registriesConfig = `/tmp/k3d-registries.yaml`;
+  await runCommand(
+    `cat <<EOF > ${registriesConfig}
+mirrors:
+  "${K3D_REPO()}":
+    endpoint:
+      - http://${K3D_REPO()}
+EOF`
+  );
 
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
     `--port ${hostPort}:443@loadbalancer ` +
     `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false ` +
-    `--registry-use ${K3D_REPO()}`
+    `--registry-use ${K3D_REPO()} ` +
+    `--registry-config ${registriesConfig}`
   );
 };
 
