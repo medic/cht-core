@@ -1258,14 +1258,15 @@ const createCluster = async (dataDir) => {
     endpoint:
       - http://${K3D_REPO()}
 `;
+  console.log('Registry URL:', K3D_REPO());
+  console.log('Config content:', configContent);
   await fs.writeFile(registriesConfig, configContent);
 
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
     `--port ${hostPort}:443@loadbalancer ` +
     `--volume ${dataDir}:${K3D_DATA_PATH} --kubeconfig-switch-context=false ` +
-    `--registry-use ${K3D_REPO()} ` +
-    `--registry-config ${registriesConfig}`
+    `--registry-use ${K3D_REPO()} `
   );
 };
 
