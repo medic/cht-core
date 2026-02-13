@@ -189,6 +189,12 @@ jobs:
       - run: mkdir tests/logs
       - run: npm install -g cht-conf
       - run: npm ci
+      
+      - name: Fix Docker 29 insecure registry handling
+        run: |
+          echo '{"features":{"containerd-snapshotter":false}}' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+          sleep 2
 
       - uses: nolar/setup-k3d-k3s@v1
       - uses: azure/setup-helm@v4.1.0
@@ -204,7 +210,7 @@ jobs:
             allure-report
             tests/logs
             tests/results/
-        if: ${{ failure() }}
+        if: ${{ failure() }} 
 
   translations:
     needs: build
