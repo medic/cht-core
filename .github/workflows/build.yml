@@ -187,7 +187,7 @@ jobs:
         if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
       - run: mkdir tests/logs
-      - run: npm install -g github:jkuester/cht-conf#10140_previous-month-targets
+      - run: npm install -g cht-conf
       - run: npm ci
 
       - uses: nolar/setup-k3d-k3s@v1
@@ -308,7 +308,7 @@ jobs:
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install cht-conf
-      run:  npm install -g github:jkuester/cht-conf#10140_previous-month-targets
+      run:  npm install -g cht-conf
     - run: npm ci
 
     - name: Cache Chrome 90 Installer
