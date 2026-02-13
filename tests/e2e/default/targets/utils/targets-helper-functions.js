@@ -13,6 +13,12 @@ module.exports = {
     targets,
     updated_date: Date.now(),
     user,
-  })
+  }),
+  getLastMonth: () => {
+    const newDate = new Date();
+    newDate.setDate(1);
+    newDate.setMonth(newDate.getMonth() - 1);
+    return newDate.toLocaleString('default', { month: 'long' });
+  }
 };
 

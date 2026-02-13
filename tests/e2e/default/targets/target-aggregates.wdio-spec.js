@@ -14,7 +14,7 @@ const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const constants = require('@constants');
-const { createTargetDoc } = require('./utils/targets-helper-functions');
+const { createTargetDoc, getLastMonth } = require('./utils/targets-helper-functions');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -58,6 +58,7 @@ describe('Target aggregates', () => {
   });
 
   describe('User with one or more places assigned', () => {
+    const CURRENT_PERIOD = 'This month';
     const NAMES_DH1 = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
     const NAMES_DH2 = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
 
@@ -191,9 +192,7 @@ describe('Target aggregates', () => {
         context.isCurrentPeriod = false;
         asserts.contactValues = false;
 
-        const previousTargets = expectedTargets.map(target => {
-          return { ...target, subtitle: target.subtitle === 'All time' ? target.subtitle : 'Last month' };
-        });
+        const previousTargets = expectedTargets.map(target => ({ ...target, period: getLastMonth() }));
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
         expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
       });
@@ -279,8 +278,7 @@ describe('Target aggregates', () => {
         await helperFunctions.validateCardFields(['yesterday Prometheus', moment().format('YYYY-MM'), '18', '15%']);
 
         await browser.back();
-        const secondTargetItem =
-          await targetAggregatesPage.getTargetItem(expectedTargets[1], districtHospital1.name);
+        const secondTargetItem = await targetAggregatesPage.getTargetItem(expectedTargets[1], districtHospital1.name);
         await helperFunctions.assertTitle(secondTargetItem.title, expectedTargets[1].title);
       });
 
@@ -398,9 +396,7 @@ describe('Target aggregates', () => {
 
         await targetAggregatesPage.selectFilterOption('Last month');
         context.isCurrentPeriod = false;
-        const previousTargets = expectedTargets.map(target => {
-          return { ...target, subtitle: target.subtitle === 'All time' ? target.subtitle : 'Last month' };
-        });
+        const previousTargets = expectedTargets.map(target => ({ ...target, period: getLastMonth() }));
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
         expect(await targetAggregatesPage.getFilterCount()).to.equal(2);
 
@@ -415,7 +411,7 @@ describe('Target aggregates', () => {
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
         expect(await targetAggregatesPage.getFilterCount()).to.equal(2);
 
-        await targetAggregatesPage.selectFilterOption('This month');
+        await targetAggregatesPage.selectFilterOption(CURRENT_PERIOD);
         context.isCurrentPeriod = true;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
         expect(await targetAggregatesPage.getFilterCount()).to.equal(1);

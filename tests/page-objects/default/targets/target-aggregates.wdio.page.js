@@ -24,7 +24,7 @@ const targetDetail = {
   title: (titleValue) => $(TARGET_DETAIL).$(`h2=${titleValue}`),
   counter: () => $(`${TARGET_DETAIL} .cell p`),
   place: (value) => $(TARGET_DETAIL).$(`span*=${value}`),
-  subtitle: (subtitleValue) => $('.aggregate-detail .action-header').$(`h3*=${subtitleValue}`),
+  period: (periodValue) => $('.aggregate-detail .action-header').$(`h3*=${periodValue}`),
 };
 
 const aggregateDetailContactItem = (contactId) => {
@@ -80,7 +80,7 @@ const getTargetItem = async (target, place) => {
     title: await item.$('h4').getText(),
     counter: await item.$('.aggregate-status span').getText(),
     place: await item.$(`li*=${place}`).isDisplayed(),
-    subtitle: await item.$(`li*=${target.subtitle}`).isDisplayed(),
+    period: await item.$(`li*=${target.period}`).isDisplayed(),
   };
 };
 

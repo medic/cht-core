@@ -12,7 +12,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
 const chtDbUtils = require('@utils/cht-db');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
-const { createTargetDoc, REPORTING_PERIOD } = require('./utils/targets-helper-functions');
+const { createTargetDoc, REPORTING_PERIOD, getLastMonth } = require('./utils/targets-helper-functions');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Targets', () => {
@@ -124,8 +124,8 @@ describe('Targets', () => {
     expect(telemetryReportingPeriod.length).to.equal(1);
     const targets = await analyticsPage.getTargets({ includeSubtitle: true });
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', subtitle: 'Last month', goal: '0', count: '8', countNumberColor: TARGET_MET_COLOR },
-      { title: 'Active pregnancies', subtitle: 'All time', count: '42', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Deaths', subtitle: getLastMonth(), goal: '0', count: '8', countNumberColor: TARGET_MET_COLOR },
+      { title: 'Active pregnancies', subtitle: getLastMonth(), count: '42', countNumberColor: TARGET_MET_COLOR },
     ]);
     expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
   });

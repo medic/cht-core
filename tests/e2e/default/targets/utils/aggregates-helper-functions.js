@@ -103,9 +103,10 @@ const assertPlace = async (itemPlace, place) => {
   expect(await targetAggregatesPage.targetDetail.place(place).isDisplayed()).to.be.true;
 };
 
-const assertSubtitle = async (subtitleDisplayed, subtitle) => {
-  expect(subtitleDisplayed).to.be.true;
-  expect(await targetAggregatesPage.targetDetail.subtitle(subtitle).isDisplayed()).to.be.true;
+const assertPeriod = async (itemPeriod, period) => {
+  const shouldBeDisplayed = !! period;
+  expect(itemPeriod).to.equal(shouldBeDisplayed);
+  expect(await targetAggregatesPage.targetDetail.period(period).isDisplayed()).to.equal(shouldBeDisplayed);
 };
 
 const assertData = async (context, targetValuesByContact, expectedTargets, asserts) => {
@@ -118,9 +119,7 @@ const assertData = async (context, targetValuesByContact, expectedTargets, asser
     await assertTitle(targetItem.title, target.title);
 
     await assertCounter(targetItem.counter, target.counter);
-    if (target.subtitle) {
-      await assertSubtitle(targetItem.subtitle, target.subtitle);
-    }
+    await assertPeriod(targetItem.period, target.period);
 
     if (asserts.hasMultipleFacilities) {
       await assertPlace(targetItem.place, context.place);
