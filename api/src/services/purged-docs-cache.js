@@ -1,6 +1,7 @@
 const db = require('../db');
 const environment = require('@medic/environment');
 const logger = require('@medic/logger');
+const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 
 let purgeDb;
 let destroyPromise = null;
@@ -57,6 +58,7 @@ const getCacheDoc = async (username, retry = 3) => {
   } catch (err) {
     if (err?.code === ECONNRESET && retry > 0) {
       logger.warn('Retrying getCacheDoc for user %s after ECONNRESET', username);
+      await setTimeoutPromise(1000);
       return await getCacheDoc(username, --retry);
     }
     handleNotFoundError(err);

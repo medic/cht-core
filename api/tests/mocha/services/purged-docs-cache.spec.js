@@ -8,6 +8,7 @@ const environment = require('@medic/environment');
 
 let purgedDocsCache;
 let purgedDbObj;
+let setTimeoutPromiseStub;
 
 describe('Purged docs cache', () => {
   beforeEach(() => {
@@ -20,6 +21,8 @@ describe('Purged docs cache', () => {
     sinon.stub(db, 'get').returns(purgedDbObj);
     sinon.stub(environment, 'db').value('medic');
     purgedDocsCache = rewire('../../../src/services/purged-docs-cache');
+    setTimeoutPromiseStub = sinon.stub().resolves();
+    purgedDocsCache.__set__('setTimeoutPromise', setTimeoutPromiseStub);
   });
 
   afterEach(() => {
@@ -179,6 +182,8 @@ describe('Purged docs cache', () => {
       const result = await purgedDocsCache.get('user1');
       expect(result).to.deep.equal([1, 2]);
       expect(purgedDbObj.get.callCount).to.equal(2);
+      expect(setTimeoutPromiseStub.callCount).to.equal(1);
+      expect(setTimeoutPromiseStub.args[0]).to.deep.equal([1000]);
     });
 
     it('should retry up to 3 times on ECONNRESET', async () => {
@@ -191,6 +196,8 @@ describe('Purged docs cache', () => {
       const result = await purgedDocsCache.get('user2');
       expect(result).to.deep.equal([5]);
       expect(purgedDbObj.get.callCount).to.equal(4);
+      expect(setTimeoutPromiseStub.callCount).to.equal(3);
+      expect(setTimeoutPromiseStub.alwaysCalledWith(1000)).to.equal(true);
     });
 
     it('should throw ECONNRESET after retries are exhausted', async () => {
@@ -199,6 +206,8 @@ describe('Purged docs cache', () => {
 
       await expect(purgedDocsCache.get('user3')).to.be.rejectedWith(econnreset);
       expect(purgedDbObj.get.callCount).to.equal(4);
+      expect(setTimeoutPromiseStub.callCount).to.equal(3);
+      expect(setTimeoutPromiseStub.alwaysCalledWith(1000)).to.equal(true);
     });
 
     it('should not retry on non-ECONNRESET errors', async () => {
@@ -206,6 +215,7 @@ describe('Purged docs cache', () => {
 
       await expect(purgedDocsCache.get('user4')).to.be.rejectedWith('something else');
       expect(purgedDbObj.get.callCount).to.equal(1);
+      expect(setTimeoutPromiseStub.callCount).to.equal(0);
     });
 
     it('should not retry on 404 errors', async () => {
@@ -214,6 +224,7 @@ describe('Purged docs cache', () => {
       const result = await purgedDocsCache.get('user5');
       expect(result).to.equal(undefined);
       expect(purgedDbObj.get.callCount).to.equal(1);
+      expect(setTimeoutPromiseStub.callCount).to.equal(0);
     });
 
     it('should retry ECONNRESET then handle 404', async () => {
@@ -224,6 +235,8 @@ describe('Purged docs cache', () => {
       const result = await purgedDocsCache.get('user6');
       expect(result).to.equal(undefined);
       expect(purgedDbObj.get.callCount).to.equal(2);
+      expect(setTimeoutPromiseStub.callCount).to.equal(1);
+      expect(setTimeoutPromiseStub.args[0]).to.deep.equal([1000]);
     });
   });
 
