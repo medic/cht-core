@@ -1251,16 +1251,12 @@ const createCluster = async (dataDir) => {
   const match = port.trim().match(/:(\d+)$/);
   K3D_REGISTRY_PORT = match[1];
 
-  // Create registries config file for k3d
   const registriesConfig = `/tmp/k3d-registries.yaml`;
-  await runCommand(
-    `cat <<EOF > ${registriesConfig}
-mirrors:
+  const configContent = `mirrors:
   "${K3D_REPO()}":
     endpoint:
-      - http://${K3D_REPO()}
-EOF`
-  );
+      - http://${K3D_REPO()}`;
+  await fs.writeFile(registriesConfig, configContent);
 
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
