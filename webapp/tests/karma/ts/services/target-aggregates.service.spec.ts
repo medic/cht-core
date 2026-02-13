@@ -2,18 +2,16 @@ import { TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
-import * as moment from 'moment';
 
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { UHCSettingsService } from '@mm-services/uhc-settings.service';
 import { SearchService } from '@mm-services/search.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { Qualifier, TargetInterval } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
@@ -22,7 +20,6 @@ const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
-  let uhcSettingsService;
   let translateFromService;
   let searchService;
   let getDataRecordsService;
@@ -30,13 +27,14 @@ describe('TargetAggregatesService', () => {
   let contactTypesService;
   let authService;
   let settingsService;
-  let calendarIntervalService;
+  let rulesEngineService;
   let translateService;
   let getTargetIntervals;
 
   const randomString = (length?) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
   const ratioTranslationKey = 'analytics.target.aggregates.ratio';
-  const baseReportingPeriodQualifier = byReportingPeriod(moment(0).format('YYYY-MM'));
+  const defaultIntervalTag = '1970-01';
+  const baseReportingPeriodQualifier = byReportingPeriod(defaultIntervalTag);
 
   beforeEach(() => {
     authService = {has: sinon.stub()};
@@ -52,12 +50,10 @@ describe('TargetAggregatesService', () => {
       get: sinon.stub(),
       getUserFacilities: sinon.stub(),
     };
-    uhcSettingsService = {getMonthStartDate: sinon.stub()};
     translateFromService = {get: sinon.stub()};
-    calendarIntervalService = {
-      getCurrent: sinon.stub().returns({ end: 100 }),
-      getInterval: sinon.stub().returns({ end: 100 }),
-      getPrevious: sinon.stub().returns({ end: 100 }),
+    rulesEngineService = {
+      getTargetIntervalTag: sinon.stub().returns(defaultIntervalTag),
+      getReportingMonth: sinon.stub().returns('January'),
     };
     getTargetIntervals = sinon.stub();
     const chtDatasourceService = { bindGenerator: sinon.stub() };
@@ -74,9 +70,8 @@ describe('TargetAggregatesService', () => {
         {provide: GetDataRecordsService, useValue: getDataRecordsService},
         {provide: SearchService, useValue: searchService},
         {provide: UserSettingsService, useValue: userSettingsService},
-        {provide: UHCSettingsService, useValue: uhcSettingsService},
         {provide: TranslateFromService, useValue: translateFromService},
-        {provide: CalendarIntervalService, useValue: calendarIntervalService},
+        {provide: RulesEngineService, useValue: rulesEngineService},
         {provide: CHTDatasourceService, useValue: chtDatasourceService }
       ]
     });
@@ -497,11 +492,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('district');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'health_center' }]);
       searchService.search.resolves([]);
-      uhcSettingsService.getMonthStartDate.returns(12);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2019-05-12').valueOf(),
-        end: moment('2019-06-11').valueOf(),
-      });
 
       const result = await service.getAggregates(facilityId);
 
@@ -511,10 +501,7 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.callCount).to.equal(2);
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[facilityId]]);
       expect(getTargetIntervals.notCalled).to.be.true;
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
-      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
-      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([12]);
+      expect(rulesEngineService.getTargetIntervalTag.calledOnceWithExactly(config, ReportingPeriod.CURRENT)).to.be.true;
     });
 
     it('should fetch correct latest target docs', async () => {
@@ -527,11 +514,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('home_type');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       searchService.search.resolves([]);
-      uhcSettingsService.getMonthStartDate.returns(12);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2019-05-12').valueOf(),
-        end: moment('2019-06-11').valueOf(),
-      });
 
       const result = await service.getAggregates();
 
@@ -540,16 +522,14 @@ describe('TargetAggregatesService', () => {
       expect(result[0].values.length).to.equal(0);
 
       expect(getTargetIntervals.notCalled).to.be.true;
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
-      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(1);
-      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([12]);
+      expect(rulesEngineService.getTargetIntervalTag.calledOnceWithExactly(config, ReportingPeriod.CURRENT)).to.be.true;
     });
 
     it('should fetch correct latest target docs when getAggregates is called with previous period', async () => {
       const facilityId = 'facility123';
       const config = { tasks: { targets: { items: [{ id: 'target', aggregate: true, type: 'count' }] } } };
       settingsService.get.resolves(config);
+      rulesEngineService.getTargetIntervalTag.returns('2019-07');
 
       userSettingsService.getUserFacilities.resolves([{ _id: 'facility-1', name: 'Facility 1' }]);
       getDataRecordsService.get.resolves([]);
@@ -557,15 +537,6 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getTypeId.returns('district');
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'health_center' }]);
       searchService.search.resolves([]);
-      uhcSettingsService.getMonthStartDate.returns(1);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2019-08-01').valueOf(),
-        end: moment('2019-08-31').valueOf(),
-      });
-      calendarIntervalService.getInterval.returns({
-        start: moment('2019-07-01').valueOf(),
-        end: moment('2019-07-31').valueOf(),
-      });
 
       const result = await service.getAggregates(facilityId, ReportingPeriod.PREVIOUS);
 
@@ -574,10 +545,9 @@ describe('TargetAggregatesService', () => {
       expect(result[0].values.length).to.equal(0);
 
       expect(getTargetIntervals.notCalled).to.be.true;
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(1);
-      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
-      expect(calendarIntervalService.getInterval.callCount).to.equal(1);
-      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2019-07-31').valueOf()]);
+      expect(rulesEngineService.getTargetIntervalTag.calledOnceWithExactly(config, ReportingPeriod.PREVIOUS))
+        .to.be.true;
+      expect(rulesEngineService.getReportingMonth.calledOnceWithExactly(config, ReportingPeriod.PREVIOUS)).to.be.true;
     });
 
     it('should exclude non-aggregable targets and hydrate aggregates', async () => {
@@ -606,7 +576,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'count',
         title: 'target1',
-        subtitle: undefined,
+        reportingMonth: 'January',
         values: [],
         hasGoal: false,
         isPercent: false,
@@ -619,7 +589,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'count',
         title: 'target3',
-        subtitle: undefined,
+        reportingMonth: 'January',
         goal: 20,
         values: [],
         hasGoal: true,
@@ -634,7 +604,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'percent',
         translation_key: 'target4',
-        subtitle: undefined,
+        reportingMonth: 'January',
         goal: -1,
         values: [],
         hasGoal: false,
@@ -649,7 +619,7 @@ describe('TargetAggregatesService', () => {
         type: 'percent',
         goal: 80,
         title: 'target5',
-        subtitle: undefined,
+        reportingMonth: 'January',
         values: [],
         hasGoal: true,
         isPercent: true,
@@ -742,12 +712,10 @@ describe('TargetAggregatesService', () => {
       const result = await service.getAggregates();
 
       expect(result.length).to.equal(5);
-      expect(translateService.instant.callCount).to.equal(9);
+      expect(translateService.instant.callCount).to.equal(6);
       expect(translateService.instant.withArgs('target2').callCount).to.equal(1);
       expect(translateService.instant.withArgs('target4').callCount).to.equal(1);
       expect(translateService.instant.withArgs('target5').callCount).to.equal(1);
-      expect(translateService.instant.withArgs('sub_trans_key').callCount).to.equal(2);
-      expect(translateService.instant.withArgs('current').callCount).to.equal(1);
       expect(translateService.instant.withArgs(ratioTranslationKey).callCount).to.equal(3);
       expect(translateService.instant.withArgs(ratioTranslationKey)
         .args[0][1]).to.deep.include({ pass: 1, total: 3 });
@@ -755,13 +723,14 @@ describe('TargetAggregatesService', () => {
         .args[1][1]).to.deep.include({ pass: 1, total: 3 });
       expect(translateFromService.get.callCount).to.equal(2);
       expect(translateFromService.get.args).to.deep.equal([['target1'], ['target3']]);
+      expect(rulesEngineService.getReportingMonth.calledOnceWithExactly(config, ReportingPeriod.CURRENT)).to.be.true;
 
       expect(result[0]).to.deep.equal({
         id: 'target1',
         aggregate: true,
         type: 'count',
         title: 'target1',
-        subtitle: 'sub_trans_key',
+        reportingMonth: 'January',
         subtitle_translation_key: 'sub_trans_key',
         aggregateValue: { pass: 26, total: 26, hasGoal: false, summary: 26 },
         heading: 'target1',
@@ -780,7 +749,7 @@ describe('TargetAggregatesService', () => {
         type: 'count',
         goal: 20,
         translation_key: 'target2',
-        subtitle: 'sub_trans_key',
+        reportingMonth: 'January',
         subtitle_translation_key: '() => "sub_trans_key"',
         aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target2',
@@ -799,7 +768,7 @@ describe('TargetAggregatesService', () => {
         type: 'percent',
         goal: -1,
         title: 'target3',
-        subtitle: 'current',
+        reportingMonth: 'January',
         subtitle_translation_key: '(reportingPeriod) => reportingPeriod',
         aggregateValue: { pass: 20, total: 51, percent: 39, hasGoal: false, summary: '39%' },
         heading: 'target3',
@@ -817,7 +786,7 @@ describe('TargetAggregatesService', () => {
         aggregate: true,
         type: 'percent',
         translation_key: 'target4',
-        subtitle: undefined,
+        reportingMonth: 'January',
         goal: 80,
         aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target4',
@@ -836,7 +805,7 @@ describe('TargetAggregatesService', () => {
         type: 'count',
         goal: 2,
         translation_key: 'target5',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 3, total: 3, goalMet: true, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target5',
         hasGoal: true,
@@ -900,7 +869,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 19, total: 19, hasGoal: false, summary: 19 },
         heading: undefined,
         hasGoal: false,
@@ -968,7 +937,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 27, total: 27, hasGoal: false, summary: 27 },
         heading: undefined,
         hasGoal: false,
@@ -985,7 +954,7 @@ describe('TargetAggregatesService', () => {
         id: 'target2',
         aggregate: true,
         type: 'percent',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 10, total: 15, percent: 67, hasGoal: false, summary: '67%' },
         heading: undefined,
         hasGoal: false,
@@ -1060,7 +1029,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 10, total: 10, hasGoal: false, summary: 10 },
         heading: undefined,
         hasGoal: false,
@@ -1075,7 +1044,7 @@ describe('TargetAggregatesService', () => {
         id: 'target2',
         aggregate: true,
         type: 'percent',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 0, total: 0, percent: 0, hasGoal: false, summary: '0%' },
         heading: undefined,
         hasGoal: false,
@@ -1146,7 +1115,7 @@ describe('TargetAggregatesService', () => {
         id: 'target1',
         aggregate: true,
         type: 'count',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 25, total: 25, hasGoal: false, summary: 25 },
         heading: undefined,
         hasGoal: false,
@@ -1162,7 +1131,7 @@ describe('TargetAggregatesService', () => {
         id: 'target2',
         aggregate: true,
         type: 'percent',
-        subtitle: undefined,
+        reportingMonth: 'January',
         aggregateValue: { pass: 17, total: 17, percent: 100, hasGoal: false, summary: '100%' },
         heading: undefined,
         hasGoal: false,
@@ -1240,24 +1209,10 @@ describe('TargetAggregatesService', () => {
       ] } } };
       settingsService.get.resolves(config);
       contactTypesService.isPerson.resolves(true);
-      uhcSettingsService.getMonthStartDate.returns(20);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2020-01-20').valueOf(),
-        end: moment('2020-02-20').valueOf(),
-      });
-      calendarIntervalService.getInterval
-        .onCall(0).returns({
-          start: moment('2020-01-20').valueOf(),
-          end: moment('2020-02-20').valueOf()
-        })
-        .onCall(1).returns({
-          start: moment('2019-12-20').valueOf(),
-          end: moment('2020-01-20').valueOf()
-        })
-        .onCall(2).returns({
-          start: moment('2019-11-20').valueOf(),
-          end: moment('2019-12-20').valueOf()
-        });
+      rulesEngineService.getTargetIntervalTag
+        .onCall(0).returns('2020-02')
+        .onCall(1).returns('2020-01')
+        .onCall(2).returns('2019-12');
 
       const targetDoc = {
         _id: 'target~2020-02~uuid~username',
@@ -1301,15 +1256,12 @@ describe('TargetAggregatesService', () => {
 
       expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3]);
 
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(3);
-      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
       expect(contactTypesService.isPerson.args[0]).to.deep.equal([{ _id: 'uuid' }]);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(3);
-      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([20]);
-      expect(calendarIntervalService.getInterval.callCount).to.equal(3);
-      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([20, moment('2020-02-20').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([20, moment('2020-01-20').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([20, moment('2019-12-20').valueOf()]);
+      expect(rulesEngineService.getTargetIntervalTag.args).to.deep.equal([
+        [config, ReportingPeriod.PREVIOUS, 0],
+        [config, ReportingPeriod.PREVIOUS, 1],
+        [config, ReportingPeriod.PREVIOUS, 2]
+      ]);
       expect(getTargetIntervals.callCount).to.equal(3);
       expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-02'),
@@ -1331,24 +1283,10 @@ describe('TargetAggregatesService', () => {
       ] } } };
       settingsService.get.resolves(config);
       contactTypesService.isPerson.resolves(false);
-      uhcSettingsService.getMonthStartDate.returns(1);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2023-07-01').valueOf(),
-        end: moment('2023-08-01').valueOf(),
-      });
-      calendarIntervalService.getInterval
-        .onCall(0).returns({
-          start: moment('2023-07-01').valueOf(),
-          end: moment('2023-08-01').valueOf()
-        })
-        .onCall(1).returns({
-          start: moment('2023-06-01').valueOf(),
-          end: moment('2023-07-01').valueOf()
-        })
-        .onCall(2).returns({
-          start: moment('2023-05-01').valueOf(),
-          end: moment('2023-06-01').valueOf()
-        });
+      rulesEngineService.getTargetIntervalTag
+        .onCall(0).returns('2023-08')
+        .onCall(1).returns('2023-07')
+        .onCall(2).returns('2023-06');
 
       const targetDoc = {
         _id: 'target~2023-07~usercontact~username',
@@ -1391,14 +1329,11 @@ describe('TargetAggregatesService', () => {
       const result = await service.getTargetDocs({ _id: 'facility' }, ['facility'], 'usercontact');
 
       expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3]);
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(3);
-      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(3);
-      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
-      expect(calendarIntervalService.getInterval.callCount).to.equal(3);
-      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2023-08-01').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([1, moment('2023-07-01').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([1, moment('2023-06-01').valueOf()]);
+      expect(rulesEngineService.getTargetIntervalTag.args).to.deep.equal([
+        [config, ReportingPeriod.PREVIOUS, 0],
+        [config, ReportingPeriod.PREVIOUS, 1],
+        [config, ReportingPeriod.PREVIOUS, 2],
+      ]);
       expect(getTargetIntervals.callCount).to.equal(3);
       expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
@@ -1420,24 +1355,10 @@ describe('TargetAggregatesService', () => {
       ] } } };
       settingsService.get.resolves(config);
       contactTypesService.isPerson.resolves(false);
-      uhcSettingsService.getMonthStartDate.returns(1);
-      calendarIntervalService.getCurrent.returns({
-        start: moment('2023-07-01').valueOf(),
-        end: moment('2023-08-01').valueOf(),
-      });
-      calendarIntervalService.getInterval
-        .onCall(0).returns({
-          start: moment('2023-07-01').valueOf(),
-          end: moment('2023-08-01').valueOf()
-        })
-        .onCall(1).returns({
-          start: moment('2023-06-01').valueOf(),
-          end: moment('2023-07-01').valueOf()
-        })
-        .onCall(2).returns({
-          start: moment('2023-05-01').valueOf(),
-          end: moment('2023-06-01').valueOf()
-        });
+      rulesEngineService.getTargetIntervalTag
+        .onCall(0).returns('2023-08')
+        .onCall(1).returns('2023-07')
+        .onCall(2).returns('2023-06');
 
       const targetDoc = {
         _id: 'target~2023-07~usercontact~username',
@@ -1480,14 +1401,11 @@ describe('TargetAggregatesService', () => {
       const result = await service.getTargetDocs({ _id: 'facility2' }, ['facility1', 'facility2'], 'usercontact');
 
       expect(result).to.deep.equal([targetDoc, targetDoc2, targetDoc3]);
-      expect(uhcSettingsService.getMonthStartDate.callCount).to.equal(3);
-      expect(uhcSettingsService.getMonthStartDate.args[0]).to.deep.equal([config]);
-      expect(calendarIntervalService.getCurrent.callCount).to.equal(3);
-      expect(calendarIntervalService.getCurrent.args[0]).to.deep.equal([1]);
-      expect(calendarIntervalService.getInterval.callCount).to.equal(3);
-      expect(calendarIntervalService.getInterval.args[0]).to.deep.equal([1, moment('2023-08-01').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[1]).to.deep.equal([1, moment('2023-07-01').valueOf()]);
-      expect(calendarIntervalService.getInterval.args[2]).to.deep.equal([1, moment('2023-06-01').valueOf()]);
+      expect(rulesEngineService.getTargetIntervalTag.args).to.deep.equal([
+        [config, ReportingPeriod.PREVIOUS, 0],
+        [config, ReportingPeriod.PREVIOUS, 1],
+        [config, ReportingPeriod.PREVIOUS, 2],
+      ]);
       expect(getTargetIntervals.callCount).to.equal(3);
       expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),

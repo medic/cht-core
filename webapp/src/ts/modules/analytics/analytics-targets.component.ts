@@ -119,7 +119,14 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-        this.targets = targets.filter(target => target.visible !== false);
+        this.targets = targets
+          .filter(target => target.visible !== false)
+          .map(target => {
+            if (reportingPeriod === ReportingPeriod.PREVIOUS) {
+              return { ...target, subtitle_translation_key: target.reportingMonth };
+            }
+            return target;
+          });
         this.trackPerformance?.stop({
           name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,

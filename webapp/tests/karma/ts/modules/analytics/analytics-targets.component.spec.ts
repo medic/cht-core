@@ -223,7 +223,10 @@ describe('AnalyticsTargetsComponent', () => {
   it(`should fetch targets when reporting period set to CURRENT`, async () => {
     sinon.reset();
     rulesEngineService.isEnabled.resolves(true);
-    rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', reportingMonth: 'July', subtitle_translation_key: 'my_translation_key' },
+      { id: 'target2', reportingMonth: 'July', subtitle_translation_key: 'my_translation_key' }
+    ]);
 
     await component.getTargets(ReportingPeriod.CURRENT);
 
@@ -237,8 +240,10 @@ describe('AnalyticsTargetsComponent', () => {
     expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
       { name: 'analytics:targets:load', recordApdex: true }
     );
-    expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
-    expect(component.loading).to.be.false;
+    expect(component.targets).to.deep.equal([
+      { id: 'target1', reportingMonth: 'July', subtitle_translation_key: 'my_translation_key' },
+      { id: 'target2', reportingMonth: 'July', subtitle_translation_key: 'my_translation_key' }
+    ]);    expect(component.loading).to.be.false;
     expect(globalActions.setTitle.notCalled).to.be.true;
     expect(globalActions.setShowContent.calledOnceWithExactly(false)).to.be.true;
   });
@@ -246,7 +251,10 @@ describe('AnalyticsTargetsComponent', () => {
   it(`should fetch targets when reporting period set to PREVIOUS`, async () => {
     sinon.reset();
     rulesEngineService.isEnabled.resolves(true);
-    rulesEngineService.fetchTargets.resolves([{ id: 'target1' }, { id: 'target2' }]);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', reportingMonth: 'July', subtitle_translation_key: 'my_translation_key' },
+      { id: 'target2', reportingMonth: 'July', subtitle_translation_key: 'my_translation_key' }
+    ]);
 
     await component.getTargets(ReportingPeriod.PREVIOUS);
 
@@ -260,7 +268,10 @@ describe('AnalyticsTargetsComponent', () => {
     expect(stopPerformanceTrackStub).to.have.been.calledOnceWithExactly(
       { name: 'analytics:targets:load', recordApdex: true }
     );
-    expect(component.targets).to.deep.equal([{ id: 'target1' }, { id: 'target2' }]);
+    expect(component.targets).to.deep.equal([
+      { id: 'target1', reportingMonth: 'July', subtitle_translation_key: 'July' },
+      { id: 'target2', reportingMonth: 'July', subtitle_translation_key: 'July' }
+    ]);
     expect(component.loading).to.be.false;
     expect(globalActions.setTitle.calledOnceWithExactly('targets.last_month.subtitle')).to.be.true;
     expect(globalActions.setShowContent.calledOnceWithExactly(true)).to.be.true;

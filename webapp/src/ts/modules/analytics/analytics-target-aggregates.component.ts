@@ -11,7 +11,11 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { RouterOutlet } from '@angular/router';
-import { AnalyticsSidebarFilterComponent, AnalyticsSidebarFilterState } from './analytics-sidebar-filter.component';
+import {
+  AnalyticsSidebarFilterComponent,
+  AnalyticsSidebarFilterState,
+  ReportingPeriod
+} from './analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -134,8 +138,8 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     }
 
     aggregate.reportingPeriod = reportingPeriod;
-    if (aggregate.subtitle) {
-      filtersToDisplay.push(aggregate.subtitle);
+    if (aggregate.reportingPeriod === ReportingPeriod.PREVIOUS) {
+      filtersToDisplay.push(aggregate.reportingMonth);
     }
     aggregate.filtersToDisplay = filtersToDisplay;
 
