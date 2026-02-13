@@ -6,6 +6,7 @@ const DOC_IDS = {
   SERVICE_WORKER_META: 'service-worker-meta',
   SETTINGS: 'settings',
   RESOURCES: 'resources',
+  PARTNERS: 'partners',
 };
 
 // Contact Types
