@@ -1252,7 +1252,7 @@ const createCluster = async (dataDir) => {
   K3D_REGISTRY_PORT = match[1];
 
   await runCommand(`echo '{"insecure-registries":["${K3D_REPO()}"]}' | sudo tee /etc/docker/daemon.json`);
-  await runCommand('systemctl restart docker');
+  await runCommand('sudo systemctl restart docker');
 
   await runCommand(
     `k3d cluster create ${PROJECT_NAME} ` +
