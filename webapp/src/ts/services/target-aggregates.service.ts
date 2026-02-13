@@ -21,16 +21,16 @@ export class TargetAggregatesService {
 
   constructor(
     chtDatasourceService: CHTDatasourceService,
-    private translateService:TranslateService,
-    private translateFromService:TranslateFromService,
-    private searchService:SearchService,
-    private getDataRecordsService:GetDataRecordsService,
-    private userSettingsService:UserSettingsService,
-    private contactTypesService:ContactTypesService,
-    private authService:AuthService,
-    private settingsService:SettingsService,
-    private rulesEngineService: RulesEngineService,
-    private ngZone:NgZone,
+    private readonly translateService:TranslateService,
+    private readonly translateFromService:TranslateFromService,
+    private readonly searchService:SearchService,
+    private readonly getDataRecordsService:GetDataRecordsService,
+    private readonly userSettingsService:UserSettingsService,
+    private readonly contactTypesService:ContactTypesService,
+    private readonly authService:AuthService,
+    private readonly settingsService:SettingsService,
+    private readonly rulesEngineService: RulesEngineService,
+    private readonly ngZone:NgZone,
   ) {
     this.getTargetIntervals = chtDatasourceService.bindGenerator(TargetInterval.v1.getAll);
   }
