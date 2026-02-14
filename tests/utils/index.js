@@ -896,7 +896,10 @@ const listenForApi = async () => {
     }
   } while (--retryCount > 0);
   console.log('=== DEBUG: Pod descriptions ===');
-  await runCommand('kubectl describe pods -n cht-e2e --context k3d-cht-e2e | grep -A10 "State\\|Image\\|Warning\\|Error\\|Back-off\\|Reason" || true');
+  await runCommand(
+    'kubectl describe pods -n cht-e2e --context k3d-cht-e2e'
+    + ' | grep -A10 "State\\|Image\\|Warning\\|Error\\|Back-off\\|Reason" || true'
+  );
   console.log('=== DEBUG: Images in k3s node ===');
   await runCommand('docker exec k3d-cht-e2e-server-0 crictl images || true');
   console.log('=== DEBUG: API pod logs ===');
