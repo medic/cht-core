@@ -895,6 +895,17 @@ const listenForApi = async () => {
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
+  console.log('=== DEBUG: Pod descriptions ===');
+  await runCommand('kubectl describe pods -n cht-e2e --context k3d-cht-e2e | grep -A10 "State\\|Image\\|Warning\\|Error\\|Back-off\\|Reason" || true');
+  console.log('=== DEBUG: Images in k3s node ===');
+  await runCommand('docker exec k3d-cht-e2e-server-0 crictl images || true');
+  console.log('=== DEBUG: API pod logs ===');
+  await runCommand('kubectl logs -n cht-e2e --context k3d-cht-e2e -l cht.service=api --tail=80 || true');
+  console.log('=== DEBUG: HAProxy pod logs ===');
+  await runCommand('kubectl logs -n cht-e2e --context k3d-cht-e2e -l cht.service=haproxy --tail=80 || true');
+  console.log('=== DEBUG: CouchDB pod logs ===');
+  await runCommand('kubectl logs -n cht-e2e --context k3d-cht-e2e -l cht.service=couchdb --tail=80 || true');
+
   throw new Error('API failed to start after 3 minutes');
 };
 
