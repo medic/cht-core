@@ -211,7 +211,7 @@ jobs:
             allure-report
             tests/logs
             tests/results/
-        if: ${{ failure() }} 
+        if: ${{ failure() }}
 
   translations:
     needs: build
