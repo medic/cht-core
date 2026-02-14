@@ -192,7 +192,8 @@ jobs:
       
       - name: Fix Docker 29 insecure registry handling
         run: |
-          echo '{"features":{"containerd-snapshotter":false}}' | sudo tee /etc/docker/daemon.json
+          EXISTING=$(cat /etc/docker/daemon.json 2>/dev/null || echo '{}')
+          echo "$EXISTING" | jq '. + {"features":{"containerd-snapshotter":false}}' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker
           sleep 2
 
@@ -201,19 +202,6 @@ jobs:
       - uses: azure/setup-kubectl@v4
       - name: Run tests
         run: npm run ${{ matrix.cmd }}
-      - name: Debug k3d cluster state
-        if: ${{ failure() }}
-        run: |
-          echo "=== Pod Status ==="
-          kubectl get pods -n cht-e2e --context k3d-cht-e2e -o wide || true
-          echo "=== Pod Events & State ==="
-          kubectl describe pods -n cht-e2e --context k3d-cht-e2e | grep -A5 "State\|Image\|Warning\|Error\|Back-off" || true
-          echo "=== Images in k3s node ==="
-          docker exec k3d-cht-e2e-server-0 crictl images 2>/dev/null | head -20 || true
-          echo "=== Pod Logs (api) ==="
-          kubectl logs -n cht-e2e --context k3d-cht-e2e -l cht.service=api --tail=50 || true
-          echo "=== Pod Logs (haproxy) ==="
-          kubectl logs -n cht-e2e --context k3d-cht-e2e -l cht.service=haproxy --tail=50 || true
       - name: Archive Results
         uses: actions/upload-artifact@v4
         with:
