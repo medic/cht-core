@@ -29,19 +29,14 @@ const getPasswordResetErrorMessage = async (errorMsg) => {
 };
 
 const ssoLogin = async () => {
-  if (utils.isMinimumChromeVersion) {
-    await browser.url('/');
-  }
-  const button = await $('#login-sso');
-  await button.click();
+  await browser.url('/');
+  await $('#login-sso').click();
   await commonPage.waitForPageLoaded();
   await commonPage.hideSnackbar();
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
-  if (utils.isMinimumChromeVersion) {
-    await browser.url('/');
-  }
+  await browser.url('/');
   await setPasswordValue(password);
   await setUsernameValue(username);
   await changeLocale(locale);
@@ -59,8 +54,12 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     return;
   }
 
-  const waitForPartialLoad = privacyPolicy || adminApp;
-  if (waitForPartialLoad) {
+  if (privacyPolicy) {
+    await $('#privacy-policy-wrapper').waitForDisplayed({ timeout: 20000 });
+    return;
+  }
+
+  if (adminApp) {
     await commonPage.waitForLoaders();
     return;
   }

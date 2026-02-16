@@ -21,6 +21,16 @@ const { setTimeout: setTimeoutPromise } = require('node:timers/promises');
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
+
+// Suppress the warning about NODE_TLS_REJECT_UNAUTHORIZED
+const originalEmitWarning = process.emitWarning;
+process.emitWarning = (warning, ...args) => {
+  if (typeof warning === 'string' && warning.includes('NODE_TLS_REJECT_UNAUTHORIZED')) {
+    return;
+  }
+  originalEmitWarning.call(process, warning, ...args);
+};
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self signed certificates
 const DEBUG = process.env.DEBUG;
 
@@ -60,7 +70,7 @@ const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 const auditDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-audit`, { auth });
 const existingFeedbackDocIds = [];
-const MINIMUM_BROWSER_VERSION = '90';
+const MINIMUM_BROWSER_VERSION = '107';
 const KUBECTL_CONTEXT = `-n ${PROJECT_NAME} --context k3d-${PROJECT_NAME}`;
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
@@ -421,7 +431,6 @@ const PROTECTED_DOCS = [
   'branding',
   'partners',
   DOC_IDS.SETTINGS,
-  /^form:/,
   /^_design/
 ];
 
@@ -485,6 +494,7 @@ const deleteSentinelDocs = async (docsToKeep) => {
  * @return     {Promise}  completion promise
  */
 const deleteAllDocs = async (except = []) => {
+  await getDefaultForms();
   const filters = createDocumentFilters(except);
   const { rows } = await db.allDocs({ include_docs: true });
 
@@ -510,35 +520,21 @@ const deleteAllDocs = async (except = []) => {
   await deleteSentinelDocs(docsToKeep);
 };
 
+const updateCustomSettings = async (updates) => {
+  const settings = await request({ path: '/api/v1/settings' });
+  originalSettings = originalSettings || settings;
+  // Make sure all updated fields are present in originalSettings, to enable reverting later.
+  Object.keys(updates).forEach(updatedField => {
+    if (!_.has(originalSettings, updatedField)) {
+      originalSettings[updatedField] = null;
+    }
+  });
 
-// Update both ddocs, to avoid instability in tests.
-// Note that API will be copying changes to medic over to medic-client, so change
-// medic-client first (api does nothing) and medic after (api copies changes over to
-// medic-client, but the changes are already there.)
-const updateCustomSettings = updates => {
-  if (originalSettings) {
-    throw new Error('A previous test did not call revertSettings');
-  }
-  return request({
-    path: '/api/v1/settings',
-    method: 'GET',
-  })
-    .then(settings => {
-      originalSettings = settings;
-      // Make sure all updated fields are present in originalSettings, to enable reverting later.
-      Object.keys(updates).forEach(updatedField => {
-        if (!_.has(originalSettings, updatedField)) {
-          originalSettings[updatedField] = null;
-        }
-      });
-    })
-    .then(() => {
-      return request({
-        path: '/api/v1/settings?replace=1',
-        method: 'PUT',
-        body: updates,
-      });
-    });
+  return await request({
+    path: '/api/v1/settings?replace=1',
+    method: 'PUT',
+    body: updates,
+  });
 };
 
 const waitForSettingsUpdateLogs = (type) => {
@@ -598,25 +594,26 @@ const updateSettings = async (updates, options = {}) => {
     await watcher.promise;
   }
   if (sync) {
-    await commonElements.sync({ expectReload: true });
+    await commonElements.sync();
   }
   if (refresh) {
     await browser.refresh();
   }
 };
 
-const revertCustomSettings = () => {
+const revertCustomSettings = async () => {
   if (!originalSettings) {
-    return Promise.resolve(false);
+    return false;
   }
-  return request({
+
+  const result = await request({
     path: '/api/v1/settings?replace=1',
     method: 'PUT',
     body: originalSettings,
-  }).then((result) => {
-    originalSettings = null;
-    return result.updated;
   });
+
+  originalSettings = null;
+  return result.updated;
 };
 
 /**
@@ -639,7 +636,8 @@ const revertSettings = async ignoreRefresh => {
     return;
   }
 
-  return await watcher.promise;
+  await watcher.promise;
+  return needsRefresh;
 };
 
 const revertTranslations = async () => {
@@ -680,7 +678,7 @@ const getDefaultForms = async () => {
   const docName = '_local/default-forms';
   try {
     const doc = await db.get(docName);
-    return doc.forms;
+    PROTECTED_DOCS.push(...doc.forms);
   } catch {
     const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
     const doc = {
@@ -688,7 +686,7 @@ const getDefaultForms = async () => {
       forms: result.rows.map(row => row.id),
     };
     await db.put(doc);
-    return doc.forms;
+    PROTECTED_DOCS.push(...doc.forms);
   }
 };
 
@@ -716,13 +714,23 @@ const deleteMetaDbs = async () => {
   }
 };
 
+const deleteCredentials = async () => {
+  const credentials = await request({ path: `/${constants.DB_NAME}-vault/_all_docs` });
+  const credentialsToDelete = credentials.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await request({
+    path: `/${constants.DB_NAME}-vault/_bulk_docs`,
+    method: 'POST',
+    body: { docs: credentialsToDelete }
+  });
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
  *                         everything will be deleted from the config, including all the enketo forms.
  * @param {boolean} ignoreRefresh
  */
-const revertDb = async (except, ignoreRefresh) => { //NOSONAR
+const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
@@ -740,6 +748,7 @@ const revertDb = async (except, ignoreRefresh) => { //NOSONAR
   }
 
   await deleteMetaDbs();
+  await deleteCredentials();
 
   await setUserContactDoc();
 };
@@ -1070,7 +1079,7 @@ const getDefaultSettings = () => {
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
-const addTranslations = (languageCode, translations = {}) => {
+const addTranslations = async (languageCode, translations = {}) => {
   const builtinTranslations = [
     'bm',
     'en',
@@ -1089,7 +1098,6 @@ const addTranslations = (languageCode, translations = {}) => {
           type: DOC_TYPES.TRANSLATIONS,
           code: code,
           name: code,
-          enabled: true,
           generic: {}
         };
       }
@@ -1097,20 +1105,24 @@ const addTranslations = (languageCode, translations = {}) => {
       throw err;
     });
   };
-
-  return getTranslationsDoc(languageCode).then(translationsDoc => {
+  
+  const saveTranslationsDoc = async () => {
+    const translationsDoc = await getTranslationsDoc(languageCode);
     if (builtinTranslations.includes(languageCode)) {
       originalTranslations[languageCode] = _.clone(translationsDoc.generic);
     }
 
     Object.assign(translationsDoc.generic, translations);
     return db.put(translationsDoc);
-  });
+  };
+
+  await saveTranslationsDoc();
 };
 
 const enableLanguage = (languageCode) => enableLanguages([languageCode]);
 
-const enableLanguages = async (languageCodes) => {
+const enableLanguages = async (languageCodes, options) => {
+
   const { languages } = await getSettings();
   for (const languageCode of languageCodes) {
     const language = languages.find(language => language.locale === languageCode);
@@ -1123,7 +1135,7 @@ const enableLanguages = async (languageCodes) => {
       });
     }
   }
-  await updateSettings({ languages });
+  await updateSettings({ languages }, options);
 };
 
 const getSettings = () => getDoc(DOC_IDS.SETTINGS).then(settings => settings.settings);
@@ -1419,34 +1431,54 @@ const killSpawnedProcess = (proc) => {
  * that contains the promise to resolve when logs lines are matched and a cancel function
  */
 
-const waitForLogs = (container, tail, ...regex) => {
+const waitForLogs = async (container, tail, ...regex) => {
   container = getContainerName(container);
   const cmd = isDocker() ? 'docker' : 'kubectl';
   let timeout;
   let logs = '';
-  let firstLine = false;
-  tail = (isDocker() || tail) ? '--tail=1' : '';
+  let isReady = false;
+  const startTime = Date.now() - 100; // Subtract a small buffer to account for any clock skew
+  tail = (isDocker() || tail) ? '--tail=20' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
-  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterward.
-  const params = `logs ${container} -f ${tail} ${isK3D() ? KUBECTL_CONTEXT : ''}`.split(' ').filter(Boolean);
+  // As a fix, watch the logs with tail=20 and use timestamps to ensure we only match logs produced after
+  // the watcher was ready (not historical logs from before the watcher started).
+  const params = `logs ${container} -f ${tail} --timestamps ${isK3D() ? KUBECTL_CONTEXT : ''}`
+    .split(' ')
+    .filter(Boolean);
   const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
-  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+  const ready = new Promise(resolve => receivedFirstLine = resolve);
 
   const checkOutput = (data) => {
-    if (!firstLine) {
-      firstLine = true;
-      receivedFirstLine();
-      return;
-    }
-
     data = data.toString();
     logs += data;
+
+    if (!isReady) {
+      isReady = true;
+      receivedFirstLine();
+    }
+
     const lines = data.split('\n');
-    const matchingLine = lines.find(line => regex.find(r => r.test(line)));
+    const matchingLine = lines.find(line => {
+      if (!regex.find(r => r.test(line))) {
+        return false;
+      }
+
+      // Parse timestamp from log line (format: 2026-01-29T11:17:14.437Z or 2026-01-29T11:17:14.437123456Z)
+      const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?)/);
+
+      if (!timestampMatch) {
+        return isReady;
+      }
+
+      // Docker/kubectl timestamps are in UTC. Add 'Z' suffix if not present to ensure proper UTC parsing
+      const timestampStr = timestampMatch[1].endsWith('Z') ? timestampMatch[1] : timestampMatch[1] + 'Z';
+      const logTime = new Date(timestampStr).getTime();
+      return logTime >= startTime;
+    });
+
     return matchingLine;
   };
 
@@ -1470,13 +1502,15 @@ const waitForLogs = (container, tail, ...regex) => {
     proc.stderr.on('data', check);
   });
 
-  return firstLineReceivedPromise.then(() => ({
+  await ready;
+
+  return {
     promise,
     cancel: () => {
       clearTimeout(timeout);
       killSpawnedProcess(proc);
     }
-  }));
+  };
 };
 
 const waitForApiLogs = (...regex) => waitForLogs('api', true, ...regex);

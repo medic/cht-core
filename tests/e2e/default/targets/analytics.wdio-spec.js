@@ -65,36 +65,28 @@ describe('Targets', () => {
 
   it('should display correct message when no target found', async () => {
     const settings = await compileTargets();
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
+    await utils.updateSettings(settings, { ignoreReload: true, sync: true, refresh: true, revert: true  });
 
     await analyticsPage.goToTargets();
+    await commonPage.waitForLoaders();
 
-    const emptySelection = await analyticsPage.noSelectedTarget();
-    await (emptySelection).waitForDisplayed();
-    await commonPage.waitForLoaderToDisappear(emptySelection);
-
-    expect(await emptySelection.getText()).to.equal('No target found.');
+    await browser.waitUntil(async () => (await analyticsPage.noTargetFound().isDisplayed()) === true);
   });
 
   it('should display correct message when targets are disabled', async () => {
     const tasks = {
       targets: { enabled: false }
     };
-    await utils.updateSettings({ tasks }, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
+    await utils.updateSettings({ tasks }, { ignoreReload: true, sync: true, refresh: true, revert: true  });
     await analyticsPage.goToTargets();
+    await commonPage.waitForLoaders();
 
-    const emptySelection = await analyticsPage.noSelectedTarget();
-    await (emptySelection).waitForDisplayed();
-    await commonPage.waitForLoaderToDisappear(emptySelection);
-
-    expect(await emptySelection.getText()).to.equal(
-      'Targets are disabled for admin users. If you need to see targets, login as a normal user.'
-    );
+    await browser.waitUntil(async () => (await analyticsPage.noAdminTargets().isDisplayed()) === true);
   });
 
   it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
-    await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
+    await utils.updateSettings(settings, { ignoreReload: true, sync: true, refresh: true, revert: true  });
     await analyticsPage.goToTargets();
 
     const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

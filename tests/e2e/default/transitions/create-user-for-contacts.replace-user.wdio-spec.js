@@ -202,8 +202,8 @@ describe('Create user for contacts', () => {
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
-        basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1], { include_docs: true });
+        basicReports.forEach((report) => expect(report.doc.contact._id).to.equal(replacementContactId));
         // Existing report not re-parented
         const existingBasicReport = await chtDbUtils.getDoc(existingBasicReportId);
         expect(existingBasicReport.contact._id).to.equal(originalContactId);
@@ -242,7 +242,7 @@ describe('Create user for contacts', () => {
 
         // Basic form reports were successfully synced to the server
         const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
-        basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index]));
+        basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index].doc));
 
         // Open the texted link
         await browser.url(loginLink);
@@ -396,8 +396,8 @@ describe('Create user for contacts', () => {
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId0 } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
-        basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId0));
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1], { include_docs: true });
+        basicReports.forEach((report) => expect(report.doc.contact._id).to.equal(replacementContactId0));
         // Original contact updated to PENDING
         let originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId0, 'PENDING');
@@ -422,8 +422,8 @@ describe('Create user for contacts', () => {
         const { replacement_contact_id: replacementContactId1 } = replaceUserReport1.fields;
         assertReplaceUserReport(replaceUserReport, originalContactId);
         // Basic form reports re-parented
-        const basicReports1 = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
-        basicReports1.forEach((report) => expect(report.contact._id).to.equal(replacementContactId1));
+        const basicReports1 = await chtDbUtils.getDocs([basicReportId2, basicReportId3], { include_docs: true });
+        basicReports1.forEach((report) => expect(report.doc.contact._id).to.equal(replacementContactId1));
         // Original contact updated to have new replacement contact id
         originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId1, 'PENDING');
@@ -469,7 +469,7 @@ describe('Create user for contacts', () => {
 
         // Basic form reports were successfully synced to the server
         const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
-        basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index]));
+        basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index].doc));
 
         await assertFeedbackDocs();
       });
@@ -582,8 +582,8 @@ describe('Create user for contacts', () => {
         const basicReportId0 = await createUserForContactsPage.submitBasicForm();
         const basicReportId1 = await createUserForContactsPage.submitBasicForm();
         // Basic form reports re-parented
-        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
-        basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1], {include_docs: true});
+        basicReports.forEach((report) => expect(report.doc.contact._id).to.equal(replacementContactId));
 
         // Logout before syncing
         await commonPage.logout();
@@ -720,8 +720,8 @@ describe('Create user for contacts', () => {
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
-        basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1], {include_docs: true});
+        basicReports.forEach((report) => expect(report.doc.contact._id).to.equal(replacementContactId));
         // Original contact updated to PENDING
         const originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
@@ -774,8 +774,11 @@ describe('Create user for contacts', () => {
         await commonPage.goToReports();
         const basicReportId2 = await createUserForContactsPage.submitBasicForm();
         const basicReportId3 = await createUserForContactsPage.submitBasicForm();
-        const subsequentBasicReports = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
-        subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
+        const subsequentBasicReports = await chtDbUtils.getDocs(
+          [basicReportId2, basicReportId3],
+          { include_docs: true }
+        );
+        subsequentBasicReports.forEach((report) => expect(report.doc.contact._id).to.equal(originalContactId));
 
         await assertFeedbackDocs();
       });

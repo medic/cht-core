@@ -23,6 +23,15 @@ describe('ongoing replication', function() {
   this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
 
   before(async () => {
+    // due to the high number of generated docs, many tasks would also be generated
+    // this makes the sync feature slower, and unpredictable
+    // disabling tasks fixes this _and_ makes the test faster
+    await utils.updatePermissions(
+      userAllowedDocs.user.roles,
+      [],
+      ['can_view_tasks', 'can_view_analytics'],
+      { ignoreReload: true }
+    );
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
@@ -40,11 +49,6 @@ describe('ongoing replication', function() {
 
   afterEach(async () => {
     await browser.throttle('online');
-    const isRevertingSettings = utils.revertSettings(true);
-    if (isRevertingSettings) {
-      await isRevertingSettings;
-      await commonPage.sync({ expectReload: true, timeout: 30000 });
-    }
   });
 
   it('should download new documents ', async () => {
@@ -95,17 +99,17 @@ describe('ongoing replication', function() {
   });
 
   it('should handle updates to existing documents', async () => {
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
 
     const serverDocs = await utils.getDocs(dataFactory.ids(userAllowedDocs.reports));
     serverDocs.forEach(doc => doc.updated = 'yes');
     await utils.saveDocs(serverDocs);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
 
-    const localDocs = await chtDbUtils.getDocs(dataFactory.ids(userAllowedDocs.reports));
-    expect(localDocs.every(doc => doc.updated === 'yes')).to.equal(true);
+    const localDocs = await chtDbUtils.getDocs(dataFactory.ids(userAllowedDocs.reports), { include_docs: true });
+    expect(localDocs.every(doc => doc.doc.updated === 'yes')).to.equal(true);
   });
 
   it('should download new forms and update forms', async () => {
@@ -116,16 +120,17 @@ describe('ongoing replication', function() {
     await waitForForms.promise();
 
     await commonPage.sync();
-    const [form] = await chtDbUtils.getDocs([FORM_ID]);
+    const form = await chtDbUtils.getDoc(FORM_ID);
     expect(form._attachments).to.have.keys('xml', 'form.html', 'model.xml');
 
-    form.updated = true;
-    await utils.saveDoc(form);
+    const serverForm = await utils.getDoc(FORM_ID);
+    serverForm.updated = true;
+    await utils.saveDoc(serverForm);
 
     await commonPage.sync();
 
-    const [updatedForm] = await chtDbUtils.getDocs([FORM_ID]);
-    expect(updatedForm.updated).to.equal(form.updated);
+    const updatedForm = await chtDbUtils.getDoc(FORM_ID);
+    expect(updatedForm.updated).to.equal(serverForm.updated);
   });
 
   it('should download new languages and language updates', async () => {
@@ -133,8 +138,8 @@ describe('ongoing replication', function() {
     await utils.addTranslations('rnd', {});
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true });
-    const [rnd] = await chtDbUtils.getDocs(['messages-rnd']);
+    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    const rnd = await chtDbUtils.getDoc('messages-rnd');
     expect(rnd).to.include({
       type: DOC_TYPES.TRANSLATIONS,
       code: 'rnd',
@@ -145,9 +150,17 @@ describe('ongoing replication', function() {
     await utils.saveDoc(rnd);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true });
-    const [updatedRnd] = await chtDbUtils.getDocs(['messages-rnd']);
+    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
+    const updatedRnd = await chtDbUtils.getDoc('messages-rnd');
     expect(updatedRnd.updated).to.equal(rnd.updated);
+  });
+
+  it('should download settings updates', async () => {
+    await commonPage.sync();
+    await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
+    await commonPage.sync({ expectReload: true, reload: true });
+    const settings = await chtDbUtils.getDoc(DOC_IDS.SETTINGS);
+    expect(settings.settings.test).to.equal(true);
   });
 
   it('should handle deletes', async () => {
@@ -162,19 +175,11 @@ describe('ongoing replication', function() {
     await utils.deleteDocs(docIdsToDelete);
     await waitForServiceWorker.promise;
 
-    await commonPage.sync({ expectReload: true });
+    await commonPage.sync({ expectReload: true, reload: true, serviceWorkerUpdate: true });
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = dataFactory.ids(localDocsPostSync);
 
     expect(_.intersection(localDocIds, docIdsToDelete)).to.deep.equal([]);
-  });
-
-  it('should download settings updates', async () => {
-    await commonPage.sync();
-    await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
-    await commonPage.sync({ expectReload: true });
-    const [settings] = await chtDbUtils.getDocs([DOC_IDS.SETTINGS]);
-    expect(settings.settings.test).to.equal(true);
   });
 
   it('should handle conflicts', async () => {
@@ -190,14 +195,14 @@ describe('ongoing replication', function() {
 
     const docId = docs.persons[0]._id;
     //create conflict
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await chtDbUtils.updateDoc(docId, { local_update: 1 });
     await chtDbUtils.updateDoc(docId, { local_update: 2 });
     let serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 1;
     await utils.saveDoc(serverDoc);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
 
     let localDoc = await chtDbUtils.getDoc(docId);
@@ -205,7 +210,7 @@ describe('ongoing replication', function() {
     expect(localDoc._conflicts).to.be.undefined;
     expect(localDoc.local_update).to.equal(2);
 
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await chtDbUtils.updateDoc(docId, { local_update: 3 });
     serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 2;
@@ -215,7 +220,7 @@ describe('ongoing replication', function() {
     serverDoc.remote_update = 3;
     await utils.saveDoc(serverDoc);
 
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     await commonPage.sync();
 
     localDoc = await chtDbUtils.getDoc(docId);

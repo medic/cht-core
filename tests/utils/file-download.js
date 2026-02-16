@@ -59,10 +59,6 @@ const waitForDownload = (term) => {
 
 const setupDownloadFolder = () => {
   createDownloadDirectory();
-  browser.cdp('Page', 'setDownloadBehavior', {
-    behavior: 'allow',
-    downloadPath: DOWNLOAD_PATH,
-  });
 };
 
 module.exports = {
@@ -71,4 +67,5 @@ module.exports = {
   getFileContent,
   waitForDownload,
   setupDownloadFolder,
+  DOWNLOAD_PATH,
 };

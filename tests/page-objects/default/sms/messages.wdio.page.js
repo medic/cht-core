@@ -21,17 +21,15 @@ const submitReplyBtn = () => replyMessageActions().$('.submit');
 const messages = () => $$(`${MESSAGE_CONTENT} li`);
 
 const openMessage = async (identifier) => {
-  const message = messageInList(identifier);
-  await message.click();
+  await messageInList(identifier).click();
 };
 
 const getMessageInListDetails = async (identifier) => {
-  const sms = messageInList(identifier);
-  const lineageValue = await sms.$('.horizontal.lineage').isExisting() ?
-    await sms.$('.horizontal.lineage').getText() : '';
+  const lineageValue = await messageInList(identifier).$('.horizontal.lineage').isExisting() ?
+    await messageInList(identifier).$('.horizontal.lineage').getText() : '';
   return {
-    heading: await sms.$('.heading h4').getText(),
-    summary: await sms.$('.summary').getText(),
+    heading: await messageInList(identifier).$('.heading h4').getText(),
+    summary: await messageInList(identifier).$('.summary').getText(),
     lineage: lineageValue,
   };
 };
@@ -49,9 +47,17 @@ const navigateFromConversationToContact = async () => {
   await commonPage.waitForPageLoaded();
 };
 
+const getLastMessageContent = async () => {
+  const sms = $(`${MESSAGE_CONTENT} li:last-child`);
+  return {
+    content: await sms.$('p[test-id="sms-content"]').getText(),
+    state: await sms.$('.state').getText(),
+    dataId: await sms.getAttribute('data-id'),
+  };
+};
+
 const getMessageContent = async (index = 1) => {
   const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
-  await sms.waitForDisplayed();
   return {
     content: await sms.$('p[test-id="sms-content"]').getText(),
     state: await sms.$('.state').getText(),
@@ -62,8 +68,7 @@ const getMessageContent = async (index = 1) => {
 const searchSelect = async (recipient, option) => {
   await recipientField().setValue(recipient);
   await $('.loading-results').waitForDisplayed({ reverse: true });
-  const selection = $('.select2-results__options').$(`.*=${option}`);
-  await selection.click();
+  await $('.select2-results__options').$(`.*=${option}`).click();
   await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(), 1000);
 };
 
@@ -141,6 +146,7 @@ module.exports = {
   getMessageInListDetails,
   getMessageHeader,
   getMessageContent,
+  getLastMessageContent,
   sendMessageDesktop,
   sendMessageOnMobile,
   sendReplyNewRecipient,

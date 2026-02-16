@@ -47,4 +47,34 @@ module.exports = [
       }
     ]
   },
+  {
+    name: 'person_create_follow_up',
+    icon: 'icon-person',
+    title: 'person_create_follow_up',
+    appliesTo: 'reports',
+    appliesToType: ['home_visit'],
+    appliesIf: function () {
+      return true;
+    },
+    resolvedIf: function (contact) {
+      return isFormArraySubmittedInWindow(contact.reports, ['home_visit'], contact.contact.reported_date);
+    },
+    actions: [
+      {
+        type: 'report',
+        form: 'home_visit'
+      }
+    ],
+    events: [
+      {
+        id: 'person-creation-follow-up',
+        start: 3,
+        end: 1,
+        dueDate: function (event, contact) {
+          return contact.contact.reported_date;
+        }
+      }
+    ]
+  },
+  
 ];

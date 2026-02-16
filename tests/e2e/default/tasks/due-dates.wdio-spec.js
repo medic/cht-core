@@ -20,7 +20,7 @@ describe('Task list due dates', () => {
 
     const { tasks } = await chtConfUtils.compileConfig({ tasks: tasksFilePath });
     updates.tasks = tasks;
-    await utils.updateSettings(updates, { ignoreReload: 'api', sync: true, refresh: true });
+    await utils.updateSettings(updates, { sync: true, refresh: true });
   };
 
   before(async () => {

@@ -5,7 +5,6 @@ const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 
 const OFFLINE_USER_ROLE = 'chw';
-const USERNAME = 'jackuser';
 
 const places = placeFactory.generateHierarchy();
 const districtHospital = places.get('district_hospital');
@@ -16,22 +15,6 @@ const districtHospital2 = placeFactory.place().build({
 });
 
 const person = personFactory.build({ parent: districtHospital, roles: [OFFLINE_USER_ROLE] });
-
-const user = {
-  username: USERNAME,
-  place: [
-    districtHospital._id
-  ],
-  roles: [
-    OFFLINE_USER_ROLE
-  ],
-  contact: person._id,
-  oidc_username: `${USERNAME}@ssollinc.com`
-};
-
-const createUser = () => {
-  utils.createUsers([user]);
-};
 
 const createHierarchy = async () => {
   await utils.saveDocs([...places.values(), person, districtHospital2]);
@@ -64,9 +47,6 @@ describe('User Test Cases ->', () => {
   });
 
   beforeEach(async () => {
-    if (await usersAdminPage.addUserDialog().isDisplayed()) {
-      await usersAdminPage.closeAddUserDialog();
-    }
     await usersAdminPage.goToAdminUser();
   });
 
@@ -237,25 +217,25 @@ describe('User Test Cases ->', () => {
   });
 
   describe('Editing User ->', () => {
-
-    after(async () => await utils.deleteUsers([{ username: user.username }]));
+    after(async () => await utils.deleteUsers([{ username: USERNAME }]));
 
     it('should render user details', async () => {
-      await createUser();
-
-      await usersAdminPage.openEditUserDialog(user.username);
+      await utils.createUsers([{
+        username: USERNAME,
+        place: [ districtHospital._id ],
+        roles: [ OFFLINE_USER_ROLE ],
+        contact: person._id,
+        oidc_username: `${USERNAME}@ssollinc.com`
+      }]);
+      await usersAdminPage.goToAdminUser();
+      await usersAdminPage.openEditUserDialog(USERNAME);
 
       const userDetails = await usersAdminPage.editUserDialogDetails();
-
-      expect(userDetails.usernameText).to.equal(user.username);
-
+      expect(userDetails.usernameText).to.equal(USERNAME);
       expect(userDetails.chwIsSelected).to.be.true;
-
       expect(userDetails.place).to.equal(districtHospital._id);
-
       expect(userDetails.contact).to.equal(person._id);
-
-      expect(userDetails.ssoEmail).to.equal(user.oidc_username);
+      expect(userDetails.ssoEmail).to.equal(`${USERNAME}@ssollinc.com`);
     });
   });
 });
