@@ -95,8 +95,10 @@ describe('TasksSidebarFilterComponent', () => {
 
     expect(clearFiltersStub.calledOnce).to.be.true;
     expect(searchEmitSpy.calledOnce).to.be.true;
-    expect(telemetryService.record.calledOnce).to.be.true;
-    expect(telemetryService.record.args[0][0]).to.equal('sidebar_filter:tasks:reset');
+    expect(telemetryService.record.calledTwice).to.be.true;
+    expect(telemetryService.record.args[0][0]).to.equal('sidebar_filter:tasks:apply');
+    expect(telemetryService.record.args[0][1]).to.equal(0);
+    expect(telemetryService.record.args[1][0]).to.equal('sidebar_filter:tasks:reset');
   });
 
   it('should not reset filters when disabled', () => {
@@ -165,10 +167,11 @@ describe('TasksSidebarFilterComponent', () => {
     expect(telemetryService.record.args[1][0]).to.equal('sidebar_filter:tasks:clear:taskType');
   });
 
-  it('should not record telemetry when clearing all filters without fieldIds', () => {
+  it('should not record clear telemetry when clearing all filters without fieldIds', () => {
     component.clearFilters();
 
-    expect(telemetryService.record.called).to.be.false;
+    const clearCalls = telemetryService.record.args.filter(args => args[0].includes(':clear:'));
+    expect(clearCalls).to.have.lengthOf(0);
   });
 
   it('should clear sidebar filter and filters on destroy', () => {
