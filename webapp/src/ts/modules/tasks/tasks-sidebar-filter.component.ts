@@ -136,28 +136,28 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
 
   private recordToggleTelemetry() {
     if (this.isOpen) {
-      this.telemetryService.record('sidebar_filter:tasks:open');
+      this.telemetryService.record('tasks:filter:open');
     } else {
-      this.telemetryService.record('sidebar_filter:tasks:close');
+      this.telemetryService.record('tasks:filter:close');
     }
   }
 
   private recordApplyTelemetry() {
-    this.telemetryService.record('sidebar_filter:tasks:apply', this.filterCount.total);
+    this.telemetryService.record('tasks:filter:apply', this.filterCount.total);
     this.filters.forEach(filter => {
       const count = this.filterCount[filter.fieldId] || 0;
       if (count > 0) {
-        this.telemetryService.record(`sidebar_filter:tasks:apply:${filter.fieldId}`, count);
+        this.telemetryService.record(`tasks:filter:apply:${filter.fieldId}`, count);
       }
     });
   }
 
   private recordResetTelemetry() {
-    this.telemetryService.record('sidebar_filter:tasks:reset');
+    this.telemetryService.record('tasks:filter:reset');
   }
 
   private recordClearTelemetry(fieldIds: string[]) {
-    fieldIds.forEach(fieldId => this.telemetryService.record(`sidebar_filter:tasks:clear:${fieldId}`));
+    fieldIds.forEach(fieldId => this.telemetryService.record(`tasks:filter:clear:${fieldId}`));
   }
 
   ngOnDestroy() {
