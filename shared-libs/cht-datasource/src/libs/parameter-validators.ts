@@ -2,10 +2,10 @@ import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
+  UuidQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
   isUuidQualifier,
-  UuidQualifier,
 } from '../qualifier';
 import { Nullable } from './core';
 
