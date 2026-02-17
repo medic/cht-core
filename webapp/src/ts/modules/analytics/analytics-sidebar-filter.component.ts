@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { Place } from '@medic/cht-datasource';
@@ -7,12 +7,23 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { NgClass, NgIf, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatAccordion } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { type SidebarFilterState } from '@mm-reducers/global';
+
+export enum ReportingPeriod {
+  CURRENT = 'current',
+  PREVIOUS = 'previous'
+}
+
+export type AnalyticsSidebarFilterState =  SidebarFilterState & {
+  facility?: Place.v1.Place,
+  reportingPeriod?: ReportingPeriod
+};
 
 @Component({
   selector: 'mm-analytics-sidebar-filter',
@@ -20,12 +31,13 @@ import { TelemetryService } from '@mm-services/telemetry.service';
   imports: [NgClass, MatIcon, MatAccordion, NgIf, NgFor, FormsModule, TranslatePipe]
 })
 export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
+  static readonly DEFAULT_REPORTING_PERIOD = ReportingPeriod.CURRENT;
 
   @Input() userFacilities: Place.v1.Place[] = [];
   @Input() showFacilityFilter = true;
   @Input() telemetryKey: string = 'target_aggregates';
-  @Output() facilitySelectionChanged = new EventEmitter<string>();
-  @Output() reportingPeriodSelectionChanged = new EventEmitter<string>();
+  @Output() facilitySelectionChanged = new EventEmitter<Place.v1.Place>();
+  @Output() reportingPeriodSelectionChanged = new EventEmitter<ReportingPeriod>();
   private readonly globalActions;
   readonly reportingPeriods = [
     { value: ReportingPeriod.CURRENT, label: 'targets.this_month.subtitle' },
@@ -34,10 +46,8 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
 
   DEFAULT_FACILITY_LABEL = 'Facility';
   subscriptions: Subscription = new Subscription();
-  isOpen = false;
-  selectedReportingPeriod;
-  selectedFacility;
   facilityFilterLabel;
+  filterState: AnalyticsSidebarFilterState = {};
 
   constructor(
     private  readonly store: Store,
@@ -61,22 +71,26 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
       .subscribe((filterState) => {
-        this.isOpen = filterState?.isOpen ?? false;
-        if (!this.selectedFacility && filterState?.defaultFilters?.facility) {
-          this.selectedFacility = filterState.defaultFilters.facility;
+        if (!filterState) {
+          return;
         }
-
-        if (!this.selectedReportingPeriod && filterState?.defaultFilters?.reportingPeriod) {
-          this.selectedReportingPeriod = filterState.defaultFilters.reportingPeriod;
+        this.filterState = filterState;
+        const total = this.calculateTotalFilterCount(filterState);
+        if (filterState.filterCount?.total !== total) {
+          this.globalActions.setSidebarFilter({ filterCount: { total } });
         }
       });
-
     this.subscriptions.add(subscription);
   }
 
+  private calculateTotalFilterCount(filterState: AnalyticsSidebarFilterState) {
+    const reportingPeriodCount = filterState.reportingPeriod === ReportingPeriod.PREVIOUS ? 1 : 0;
+    const facilityCount = this.userFacilities.length > 1 ? 1 : 0;
+    return reportingPeriodCount + facilityCount;
+  }
+
   toggleSidebarFilter() {
-    this.isOpen = !this.isOpen;
-    this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
+    this.globalActions.setSidebarFilter({ isOpen: !this.filterState.isOpen });
   }
 
   private async setFacilityLabel() {
@@ -97,23 +111,17 @@ export class AnalyticsSidebarFilterComponent implements OnInit, OnDestroy {
     }
   }
 
-  fetchAggregateTargetsByFacility(facility) {
-    this.selectedFacility = facility;
-    this.facilitySelectionChanged.emit(this.selectedFacility);
+  fetchAggregateTargetsByFacility(facility: Place.v1.Place) {
+    this.facilitySelectionChanged.emit(facility);
     this.collectFilterSelectionTelemetry('facility');
   }
 
-  fetchAggregateTargetsByReportingPeriod() {
-    this.reportingPeriodSelectionChanged.emit(this.selectedReportingPeriod);
+  fetchAggregateTargetsByReportingPeriod(reportingPeriod: ReportingPeriod) {
+    this.reportingPeriodSelectionChanged.emit(reportingPeriod);
     this.collectFilterSelectionTelemetry('reporting-period');
   }
 
   private collectFilterSelectionTelemetry(filter) {
     this.telemetryService.record(`sidebar_filter:analytics:${this.telemetryKey}:${filter}:select`);
   }
-}
-
-export enum ReportingPeriod {
-  CURRENT = 'current',
-  PREVIOUS = 'previous'
 }

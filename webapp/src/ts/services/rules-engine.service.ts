@@ -26,7 +26,6 @@ import { Store } from '@ngrx/store';
 import { TasksActions } from '@mm-actions/tasks';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { Qualifier, TargetInterval } from '@medic/cht-datasource';
-import configLib from '../libs/config';
 
 interface DebounceActive {
   [key: string]: {
@@ -62,6 +61,7 @@ export class RulesEngineService implements OnDestroy {
   private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
   private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
   private readonly FRESHNESS_KEY = 'freshness';
+  private readonly INTERVAL_TAG_FORMAT = 'YYYY-MM';
   private subscriptions: Subscription = new Subscription();
   private initialized;
   private uhcMonthStartDate;
@@ -544,32 +544,46 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-    return targets.map((target: Target) => ({
-      ...target,
-      subtitle_translation_key: configLib.getValueFromFunction(
-        target.subtitle_translation_key,
-        ReportingPeriod.CURRENT
-      )
-    }));
+    return targets;
   }
 
   /**
-   * Get target interval tag for a specific reporting period
-   * Follows same pattern as TargetAggregatesService.getTargetIntervalTag
+   * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
+   * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
+   * @param settings - The application settings containing uhcMonthStartDate
+   * @param reportingPeriod - ReportingPeriod enum value (CURRENT or PREVIOUS)
+   * @param monthsAgo - Number of reporting periods ago (default: 1)
+   * @returns A string representing the interval tag in YYYY-MM format
    */
-  private getTargetIntervalTag(settings: any, reportingPeriod: ReportingPeriod): string {
-    const INTERVAL_TAG_FORMAT = 'YYYY-MM';
+  getTargetIntervalTag(
+    settings: Record<string, unknown>,
+    reportingPeriod: ReportingPeriod,
+    monthsAgo = 1
+  ): string {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
     const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
 
     if (reportingPeriod === ReportingPeriod.CURRENT) {
-      return moment(currentInterval.end).format(INTERVAL_TAG_FORMAT);
+      return moment(currentInterval.end)
+        .locale('en')
+        .format(this.INTERVAL_TAG_FORMAT);
     }
 
-    // Previous month calculation
-    const previousMonthDate = moment(currentInterval.end).subtract(1, 'months');
+    const previousMonthDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
     const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
-    return moment(previousInterval.end).format(INTERVAL_TAG_FORMAT);
+    return moment(previousInterval.end)
+      .locale('en')
+      .format(this.INTERVAL_TAG_FORMAT);
+  }
+
+  getReportingMonth(settings: Record<string, unknown>, reportingPeriod:ReportingPeriod) {
+    try {
+      const tag = this.getTargetIntervalTag(settings, reportingPeriod);
+      return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
+    } catch (error) {
+      console.error('Error getting reporting month:', error);
+      return this.translateService.instant('targets.last_month.subtitle');
+    }
   }
 
   /**
@@ -618,10 +632,7 @@ export class RulesEngineService implements OnDestroy {
       if (targetConfig && targetConfig.visible !== false) {
         processedTargets.push({
           ...targetConfig,
-          subtitle_translation_key: configLib.getValueFromFunction(
-            targetConfig.subtitle_translation_key,
-            reportingPeriod
-          ),
+          reportingMonth: this.getReportingMonth(settings, reportingPeriod),
           ...targetValue,
           visible: true
         });

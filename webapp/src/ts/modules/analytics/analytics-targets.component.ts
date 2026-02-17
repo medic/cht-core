@@ -1,22 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
-import { AnalyticsSidebarFilterComponent } from './analytics-sidebar-filter.component';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import {
+  AnalyticsSidebarFilterComponent, AnalyticsSidebarFilterState,
+  ReportingPeriod
+} from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { Selectors } from '@mm-selectors/index';
+import { TranslateService } from '@mm-services/translate.service';
 
 @Component({
   templateUrl: './analytics-targets.component.html',
@@ -34,6 +37,7 @@ import { Selectors } from '@mm-selectors/index';
   ],
 })
 export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
+  private readonly PREVIOUS_TARGETS_TITLE: string;
   private readonly globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
   targets: any[] = [];
@@ -42,22 +46,24 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
   errorStack;
   trackPerformance;
   direction;
-  sidebarFilter;
-  reportingPeriodFilter;
+  sidebarFilter: AnalyticsSidebarFilterState = {
+    reportingPeriod: AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD
+  };
 
   constructor(
     private readonly rulesEngineService: RulesEngineService,
-    private  readonly performanceService: PerformanceService,
+    private readonly performanceService: PerformanceService,
+    translateService: TranslateService,
     private readonly store: Store
   ) {
     this.trackPerformance = this.performanceService.track();
     this.globalActions = new GlobalActions(store);
+    this.PREVIOUS_TARGETS_TITLE = translateService.instant('targets.last_month.subtitle');
   }
 
   ngOnInit(): void {
     this.subscribeToStore();
-    this.getTargets();
-    this.setDefaultFilters();
+    this.getTargets(AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD);
   }
 
   ngOnDestroy(): void {
@@ -70,30 +76,41 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getDirection),
     ]).subscribe(([sidebarFilter, direction]) => {
-      this.sidebarFilter = sidebarFilter;
+      if (sidebarFilter) {
+        this.sidebarFilter = sidebarFilter;
+      }
       this.direction = direction;
     });
     this.subscriptions.add(selectorsSubscription);
+
+    const backToCurrentSubscription = this.store
+      .select(Selectors.getShowContent)
+      .subscribe(showContent => {
+        // User pressed the back button in the mobile layout for previous targets
+        const returningToDefaultTargets = !showContent
+          && this.sidebarFilter.reportingPeriod !== AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD;
+        if (returningToDefaultTargets) {
+          this.getTargets(AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD);
+        }
+      });
+    this.subscriptions.add(backToCurrentSubscription);
   }
 
-  private setDefaultFilters() {
-    const defaultFilters = {
-      reportingPeriod: ReportingPeriod.CURRENT,
-    };
-    this.globalActions.setSidebarFilter({ defaultFilters });
-    this.reportingPeriodFilter = defaultFilters.reportingPeriod;
-  }
-
-  getTargets(reportingPeriod?) {
-    if (reportingPeriod) {
-      this.reportingPeriodFilter = reportingPeriod;
+  getTargets(reportingPeriod: ReportingPeriod) {
+    this.globalActions.setSidebarFilter({ reportingPeriod });
+    // Show the back button in the mobile layout when viewing previous targets
+    if (reportingPeriod === ReportingPeriod.PREVIOUS) {
+      this.globalActions.setTitle(this.PREVIOUS_TARGETS_TITLE);
+      this.globalActions.setShowContent(true);
+    } else {
+      this.globalActions.setShowContent(false);
     }
 
     return this.rulesEngineService
       .isEnabled()
       .then(isEnabled => {
         this.targetsDisabled = !isEnabled;
-        return isEnabled ? this.rulesEngineService.fetchTargets() : [];
+        return isEnabled ? this.rulesEngineService.fetchTargets(reportingPeriod) : [];
       })
       .catch(err => {
         console.error('Error getting targets', err);
@@ -102,7 +119,14 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
       })
       .then((targets: any[] = []) => {
         this.loading = false;
-        this.targets = targets.filter(target => target.visible !== false);
+        this.targets = targets
+          .filter(target => target.visible !== false)
+          .map(target => {
+            if (reportingPeriod === ReportingPeriod.PREVIOUS) {
+              return { ...target, subtitle_translation_key: target.reportingMonth };
+            }
+            return target;
+          });
         this.trackPerformance?.stop({
           name: ['analytics', 'targets', 'load'].join(':'),
           recordApdex: true,

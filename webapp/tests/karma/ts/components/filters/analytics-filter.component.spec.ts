@@ -94,6 +94,7 @@ describe('Analytics Filter Component', () => {
 
     expect(component.showFilterButton).to.be.true;
     expect(sessionService.isAdmin.callCount).to.equal(1);
+    expect(component.activeFilters).to.equal(0);
   }));
 
   it('should open and close sidebar filter', () => {
@@ -109,6 +110,26 @@ describe('Analytics Filter Component', () => {
     expect(telemetryService.record.calledTwice).to.be.true;
     expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:target_aggregates:open']);
   });
+
+  it('should display total active filter count', fakeAsync(() => {
+    sinon.resetHistory();
+    sessionService.isAdmin.returns(false);
+    route.snapshot.firstChild.data.moduleId = 'target-aggregates';
+
+    component.ngOnInit();
+    flush();
+
+
+    expect(component.activeFilters).to.equal(0);
+
+    store.overrideSelector(Selectors.getSidebarFilter, {
+      isOpen: false,
+      filterCount: { total: 5 }
+    });
+    store.refreshState();
+
+    expect(component.activeFilters).to.equal(5);
+  }));
 
   it('should collect telemetry when open sidebar filter', fakeAsync(() => {
     sinon.resetHistory();

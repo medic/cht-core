@@ -5,11 +5,12 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { FormsModule } from '@angular/forms';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { Selectors } from '@mm-selectors/index';
 import {
-  AnalyticsSidebarFilterComponent, ReportingPeriod
+  AnalyticsSidebarFilterComponent,
+  ReportingPeriod
 } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -76,7 +77,7 @@ describe('Analytics Sidebar Filter Component', () => {
 
   it('should create component', fakeAsync(() => {
     expect(component).to.exist;
-    expect(component.isOpen).to.be.false;
+    expect(component.filterState).to.deep.equal({});
   }));
 
   it('should unsubscribe from observables on component destroy', () => {
@@ -89,38 +90,69 @@ describe('Analytics Sidebar Filter Component', () => {
 
   it('should toggle sidebar filter', () => {
     component.toggleSidebarFilter();
-    component.toggleSidebarFilter();
+
+    store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true, filterCount: { total: 0 } });
+    store.refreshState();
+
     component.toggleSidebarFilter();
 
-    expect(globalActions.setSidebarFilter.calledThrice).to.be.true;
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
-    expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false });
-    expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true });
+    store.overrideSelector(Selectors.getSidebarFilter, { isOpen: false, filterCount: { total: 0 } });
+    store.refreshState();
+
+    component.toggleSidebarFilter();
+
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([
+      [{ filterCount: { total: 0 } }],
+      [{ isOpen: true }],
+      [{ isOpen: false }],
+      [{ isOpen: true }]
+    ]);
   });
 
-  it('should set selectedFacility when default filter specified', fakeAsync(() => {
+  it('should update the filter count when the selected values change', fakeAsync(() => {
     sinon.resetHistory();
-    store.overrideSelector(Selectors.getSidebarFilter, { defaultFilters: { facility: { _id: 'facility_2' } } });
-    store.refreshState();
+    const userFacilities = [
+      { _id: 'id_1', _rev: '1-abc', type: 'district_hospital' },
+      { _id: 'id_2', _rev: '1-def', type: 'district_hospital' },
+    ];
+    component.userFacilities = [userFacilities[0]];
+
+    component.ngOnInit();
     flush();
 
-    expect(component.selectedFacility).to.deep.equal({ _id: 'facility_2' });
-
-    component.selectedFacility = null;
-    store.overrideSelector(Selectors.getSidebarFilter, { defaultFilters: { facility: { _id: 'facility_1' } } });
-    store.refreshState();
-    flush();
-
-    expect(component.selectedFacility).to.deep.equal({ _id: 'facility_1' });
-  }));
-
-  it('should not set selectedFacility when no default filter specified', fakeAsync(() => {
+    expect(globalActions.setSidebarFilter.calledOnceWithExactly({ filterCount: { total: 0 } })).to.be.true;
     sinon.resetHistory();
-    store.overrideSelector(Selectors.getSidebarFilter, { defaultFilters: { facility: null } });
-    store.refreshState();
-    flush();
 
-    expect(component.selectedFacility).to.be.undefined;
+    store.overrideSelector(Selectors.getSidebarFilter, {
+      reportingPeriod: ReportingPeriod.CURRENT,
+      facility: userFacilities[0],
+      filterCount: { total: 0 }
+    });
+    store.refreshState();
+
+    // No filter value set because filter value did not change
+    expect(globalActions.setSidebarFilter.notCalled).to.be.true;
+    sinon.resetHistory();
+
+    store.overrideSelector(Selectors.getSidebarFilter, {
+      reportingPeriod: ReportingPeriod.PREVIOUS,
+      facility: userFacilities[0],
+      filterCount: { total: 11 }
+    });
+    store.refreshState();
+
+    expect(globalActions.setSidebarFilter.calledWithExactly({ filterCount: { total: 1 } })).to.be.true;
+    sinon.resetHistory();
+
+    component.userFacilities = userFacilities;
+    store.overrideSelector(Selectors.getSidebarFilter, {
+      reportingPeriod: ReportingPeriod.PREVIOUS,
+      facility: userFacilities[1],
+      filterCount: { total: 1 }
+    });
+    store.refreshState();
+
+    expect(globalActions.setSidebarFilter.calledWithExactly({ filterCount: { total: 2 } })).to.be.true;
   }));
 
   it('should set user facility name_key as facilityFilterLabel, when user has multiple facilities', fakeAsync(() => {
@@ -203,33 +235,21 @@ describe('Analytics Sidebar Filter Component', () => {
 
     component.fetchAggregateTargetsByFacility(facility);
 
-    expect(component.selectedFacility).to.deep.equal(facility);
     expect(spyFacility.callCount).to.equal(1);
     expect(spyFacility.firstCall.args[0]).to.deep.equal(facility);
     expect(telemetryService.record.args[0])
       .to.deep.equal(['sidebar_filter:analytics:target_aggregates:facility:select']);
   });
 
-  it('should emit default current reporting period when fetchAggregateTargetsByReportingPeriod is called', () => {
+  it('should emit reporting period when toggled', () => {
     const spyReportingPeriod = sinon.spy(component.reportingPeriodSelectionChanged, 'emit');
 
-    component.selectedReportingPeriod = ReportingPeriod.CURRENT;
-    component.fetchAggregateTargetsByReportingPeriod();
-
-    expect(spyReportingPeriod.callCount).to.equal(1);
-    expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.CURRENT);
-    expect(telemetryService.record.args[0])
-      .to.deep.equal(['sidebar_filter:analytics:target_aggregates:reporting-period:select']);
-  });
-
-  it('should emit previous reporting period when toggled', () => {
-    const spyReportingPeriod = sinon.spy(component.reportingPeriodSelectionChanged, 'emit');
-
-    component.selectedReportingPeriod = ReportingPeriod.PREVIOUS;
-    component.fetchAggregateTargetsByReportingPeriod();
+    component.fetchAggregateTargetsByReportingPeriod(ReportingPeriod.PREVIOUS);
 
     expect(spyReportingPeriod.callCount).to.equal(1);
     expect(spyReportingPeriod.firstCall.args[0]).to.equal(ReportingPeriod.PREVIOUS);
+    expect(telemetryService.record.args[0])
+      .to.deep.equal(['sidebar_filter:analytics:target_aggregates:reporting-period:select']);
   });
 
   it('should collect telemetry when fetchAggregateTargetsByFacility is called', () => {
@@ -242,15 +262,13 @@ describe('Analytics Sidebar Filter Component', () => {
 
     component.fetchAggregateTargetsByFacility(facility);
 
-    expect(component.selectedFacility).to.deep.equal(facility);
     expect(telemetryService.record.args[0])
       .to.deep.equal(['sidebar_filter:analytics:targets:facility:select']);
   });
 
   it('should collect telemetry when fetchAggregateTargetsByReportingPeriod is called', () => {
     component.telemetryKey = 'targets';
-    component.selectedReportingPeriod = ReportingPeriod.CURRENT;
-    component.fetchAggregateTargetsByReportingPeriod();
+    component.fetchAggregateTargetsByReportingPeriod(ReportingPeriod.CURRENT);
 
     expect(telemetryService.record.args[0])
       .to.deep.equal(['sidebar_filter:analytics:targets:reporting-period:select']);

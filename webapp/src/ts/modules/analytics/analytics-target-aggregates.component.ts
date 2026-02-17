@@ -8,10 +8,14 @@ import { AggregateTarget, TargetAggregatesService } from '@mm-services/target-ag
 import { PerformanceService } from '@mm-services/performance.service';
 import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { RouterOutlet } from '@angular/router';
-import { AnalyticsSidebarFilterComponent, ReportingPeriod } from './analytics-sidebar-filter.component';
+import {
+  AnalyticsSidebarFilterComponent,
+  AnalyticsSidebarFilterState,
+  ReportingPeriod
+} from './analytics-sidebar-filter.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -39,9 +43,9 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   selected = null;
   error = null;
   userFacilities;
-  sidebarFilter;
-  reportingPeriodFilter;
-  facilityFilter;
+  sidebarFilter: AnalyticsSidebarFilterState = {
+    reportingPeriod: AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD
+  };
 
   constructor(
     private store: Store,
@@ -89,27 +93,26 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;
-      this.sidebarFilter = sidebarFilter;
+      if (sidebarFilter) {
+        this.sidebarFilter = sidebarFilter;
+      }
     });
     this.subscriptions.add(selectorsSubscription);
   }
 
-  async getTargetAggregates(userFacility, reportingPeriod) {
+  async getTargetAggregates(facility, reportingPeriod) {
     try {
+      this.globalActions.setSidebarFilter({ facility, reportingPeriod });
       let aggregates: AggregateTarget[] = [];
       this.targetAggregatesActions.setTargetAggregatesLoaded(false);
       if (this.enabled) {
-        this.facilityFilter = userFacility;
-        this.reportingPeriodFilter = reportingPeriod;
         aggregates = await this.targetAggregatesService.getAggregates(
-          this.facilityFilter?._id, this.reportingPeriodFilter
+          facility?._id, reportingPeriod
         );
       }
 
-      const reportingMonth = await this.targetAggregatesService.getReportingMonth(reportingPeriod);
-
       aggregates = aggregates
-        .map(aggregate => this.formatAggregate(aggregate, userFacility, reportingPeriod, reportingMonth));
+        .map(aggregate => this.formatAggregate(aggregate, facility, reportingPeriod));
 
       this.targetAggregatesActions.setTargetAggregates(aggregates);
       this.targetAggregatesActions.setTargetAggregatesLoaded(true);
@@ -126,15 +129,14 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private formatAggregate(aggregate, userFacility, reportingPeriod, reportingMonth) {
+  private formatAggregate(aggregate, userFacility, reportingPeriod) {
     const filtersToDisplay: string[] = [];
 
-    if (this.userFacilities.length > 1 && this.facilityFilter?.name) {
+    if (this.userFacilities.length > 1 && userFacility.name) {
       aggregate.facility = userFacility?.name;
-      filtersToDisplay.push(this.facilityFilter.name);
+      filtersToDisplay.push(userFacility.name);
     }
 
-    aggregate.reportingMonth = reportingMonth;
     aggregate.reportingPeriod = reportingPeriod;
     if (aggregate.reportingPeriod === ReportingPeriod.PREVIOUS) {
       filtersToDisplay.push(aggregate.reportingMonth);
@@ -147,11 +149,7 @@ export class AnalyticsTargetAggregatesComponent implements OnInit, OnDestroy {
   private async setDefaultFilters() {
     this.userFacilities = await this.userSettingsService.getUserFacilities();
     this.userFacilities.sort((a, b) => a.name.localeCompare(b.name));
-    const defaultFilters = {
-      facility: this.userFacilities.length ? { ...this.userFacilities[0] } : null,
-      reportingPeriod: ReportingPeriod.CURRENT,
-    };
-    this.globalActions.setSidebarFilter({ defaultFilters });
-    await this.getTargetAggregates(defaultFilters.facility, defaultFilters.reportingPeriod);
+    const facility = this.userFacilities.length ? { ...this.userFacilities[0] } : null;
+    await this.getTargetAggregates(facility, AnalyticsSidebarFilterComponent.DEFAULT_REPORTING_PERIOD);
   }
 }

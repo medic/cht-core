@@ -30,7 +30,6 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService = {
       isEnabled: sinon.stub(),
       getAggregates: sinon.stub(),
-      getReportingMonth: sinon.stub(),
       isPreviousPeriod: sinon.stub(),
     };
     targetAggregatesActions = {
@@ -39,8 +38,8 @@ describe('Analytics Target Aggregates Component', () => {
       setTargetAggregatesLoaded: sinon.stub(TargetAggregatesActions.prototype, 'setTargetAggregatesLoaded'),
     };
     globalActions = {
-      setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
       clearSidebarFilter: sinon.spy(GlobalActions.prototype, 'clearSidebarFilter'),
+      setSidebarFilter: sinon.spy(GlobalActions.prototype, 'setSidebarFilter'),
     };
     userSettingsService = {
       getUserFacilities: sinon
@@ -94,7 +93,7 @@ describe('Analytics Target Aggregates Component', () => {
     component.ngOnInit();
     flush();
 
-    expect(component.sidebarFilter).to.be.undefined;
+    expect(component.sidebarFilter).to.deep.equal({ reportingPeriod: ReportingPeriod.CURRENT });
     expect(component.enabled).to.be.false;
     expect(component.loading).to.be.false;
     expect(component.aggregates).to.be.undefined;
@@ -147,13 +146,10 @@ describe('Analytics Target Aggregates Component', () => {
     flush();
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
-    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: {
-        facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-        reportingPeriod: ReportingPeriod.CURRENT
-      },
-    });
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      reportingPeriod: ReportingPeriod.CURRENT
+    }]]);
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.false;
@@ -166,8 +162,7 @@ describe('Analytics Target Aggregates Component', () => {
   it('should set aggregates', fakeAsync(() => {
     sinon.reset();
     targetAggregatesService.isEnabled.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves('July');
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
@@ -177,13 +172,10 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: {
-        facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-        reportingPeriod: ReportingPeriod.CURRENT
-      },
-    });
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      reportingPeriod: 'current'
+    }]]);
     expect(component.enabled).to.be.true;
     expect(component.loading).to.be.false;
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
@@ -208,20 +200,16 @@ describe('Analytics Target Aggregates Component', () => {
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
     ]);
     targetAggregatesService.isEnabled.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves('July');
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     component.ngOnInit();
     flush();
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: {
-        facility: { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-        reportingPeriod: ReportingPeriod.CURRENT
-      },
-    });
+    expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      reportingPeriod: 'current'
+    }]]);
 
     expect(component.loading).to.be.false;
     expect(component.enabled).to.be.true;
@@ -275,8 +263,7 @@ describe('Analytics Target Aggregates Component', () => {
   it('should not set facility name when user has only one facility', fakeAsync(() => {
     sinon.reset();
     targetAggregatesService.isEnabled.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves('July');
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
     ]);
@@ -292,8 +279,7 @@ describe('Analytics Target Aggregates Component', () => {
   it('should set facility name when user has more than one facility', fakeAsync(() => {
     sinon.reset();
     targetAggregatesService.isEnabled.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves('July');
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
@@ -319,8 +305,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.isPreviousPeriod.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves(REPORTING_MONTH);
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: REPORTING_MONTH }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
@@ -354,13 +339,6 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: {
-        facility: null,
-        reportingPeriod: ReportingPeriod.CURRENT
-      },
-    });
     expect(component.enabled).to.be.true;
     expect(component.loading).to.be.false;
     expect(targetAggregatesService.getAggregates.callCount).to.equal(1);
@@ -376,21 +354,13 @@ describe('Analytics Target Aggregates Component', () => {
     ];
 
     targetAggregatesService.isEnabled.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves('July');
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves(unsortedFacilities);
     component.ngOnInit();
     flush();
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
-    expect(globalActions.setSidebarFilter.callCount).to.equal(1);
-    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({
-      defaultFilters: {
-        facility: { _id: 'facility_1', name: 'A Facility', type: 'health_center' },
-        reportingPeriod: ReportingPeriod.CURRENT
-      },
-    });
     expect(component.userFacilities).to.deep.equal([
       { _id: 'facility_1', name: 'A Facility', type: 'health_center' },
       { _id: 'facility_2', name: 'B Facility', type: 'health_center' },
@@ -417,8 +387,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.isPreviousPeriod.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves(REPORTING_MONTH);
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: REPORTING_MONTH }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
       { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
@@ -448,8 +417,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.isPreviousPeriod.resolves(true);
-    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1' }]);
-    targetAggregatesService.getReportingMonth.resolves(REPORTING_MONTH);
+    targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: REPORTING_MONTH }]);
     userSettingsService.getUserFacilities.resolves([
       { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
     ]);
