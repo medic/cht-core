@@ -57,7 +57,7 @@ const EXPECTED_TARGETS_NO_PROGRESS = [
   { id: 'count_with_goal', title: 'count with goal', counter: '0 of 5', progressBar: true, goal: 20 },
   { id: 'percent_no_goal', title: 'percent no goal', counter: '0%', progressBar: true, goal: false },
   { id: 'percent_with_goal', title: 'percent with goal', counter: '0 of 5', progressBar: true, goal: '80%' },
-  { id: 'percent_achieved', title: 'percent achieved', counter: '0 of 5', progressBar: true, goal: '10%', },
+  { id: 'percent_achieved', title: 'percent achieved', counter: '0 of 5', progressBar: true, goal: '10%',  },
 ];
 
 module.exports = {
