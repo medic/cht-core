@@ -119,6 +119,7 @@
     "browserify": "^17.0.1",
     "browserify-ngannotate": "^2.0.0",
     "chai": "^4.3.8",
+    "chokidar": "^4.0.3",
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
     "chai-like": "^1.1.3",
