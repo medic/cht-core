@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-shutdown -P +60
+shutdown -P +90
 mkdir -p /cht
 chmod 777 /cht;
 

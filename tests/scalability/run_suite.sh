@@ -5,7 +5,7 @@ readonly CHT_BASE_DIR="/cht"
 # Fail job when script errors
 set -e
 
-shutdown -P +60
+shutdown -P +90
 
 updateSystem() {
   apt-get update
