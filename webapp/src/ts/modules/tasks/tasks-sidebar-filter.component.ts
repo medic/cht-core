@@ -92,6 +92,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
     }
     this.search.emit();
     this.countSelected();
+    this.recordApplyTelemetry();
   }
 
   clearFilters(fieldIds?) {
@@ -100,6 +101,9 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
     }
     const filters = fieldIds ? this.filters.filter(filter => fieldIds.includes(filter.fieldId)) : this.filters;
     filters.forEach(filter => filter.clear());
+    if (fieldIds) {
+      this.recordClearTelemetry(fieldIds);
+    }
   }
 
   countSelected() {
@@ -121,15 +125,39 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
     this.clearFilters();
     this.isResettingFilters = false;
     this.applyFilters();
+    this.recordResetTelemetry();
   }
 
   toggleSidebarFilter() {
     this.isOpen = !this.isOpen;
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
+    this.recordToggleTelemetry();
+  }
 
+  private recordToggleTelemetry() {
     if (this.isOpen) {
-      this.telemetryService.record('sidebar_filter:tasks:open');
+      this.telemetryService.record('tasks:filter:open');
+    } else {
+      this.telemetryService.record('tasks:filter:close');
     }
+  }
+
+  private recordApplyTelemetry() {
+    this.telemetryService.record('tasks:filter:apply', this.filterCount.total);
+    this.filters.forEach(filter => {
+      const count = this.filterCount[filter.fieldId] || 0;
+      if (count > 0) {
+        this.telemetryService.record(`tasks:filter:apply:${filter.fieldId}`, count);
+      }
+    });
+  }
+
+  private recordResetTelemetry() {
+    this.telemetryService.record('tasks:filter:reset');
+  }
+
+  private recordClearTelemetry(fieldIds: string[]) {
+    fieldIds.forEach(fieldId => this.telemetryService.record(`tasks:filter:clear:${fieldId}`));
   }
 
   ngOnDestroy() {

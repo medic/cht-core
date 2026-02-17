@@ -71,10 +71,10 @@ describe('TasksSidebarFilterComponent', () => {
     expect(setSidebarFilterStub.calledOnce).to.be.true;
     expect(setSidebarFilterStub.args[0][0]).to.deep.equal({ isOpen: true });
     expect(telemetryService.record.calledOnce).to.be.true;
-    expect(telemetryService.record.args[0][0]).to.equal('sidebar_filter:tasks:open');
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:open');
   });
 
-  it('should toggle sidebar filter closed without recording telemetry', () => {
+  it('should toggle sidebar filter closed and record telemetry', () => {
     component.isOpen = true;
     const setSidebarFilterStub = sinon.stub(GlobalActions.prototype, 'setSidebarFilter');
 
@@ -83,10 +83,11 @@ describe('TasksSidebarFilterComponent', () => {
     expect(component.isOpen).to.be.false;
     expect(setSidebarFilterStub.calledOnce).to.be.true;
     expect(setSidebarFilterStub.args[0][0]).to.deep.equal({ isOpen: false });
-    expect(telemetryService.record.called).to.be.false;
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:close');
   });
 
-  it('should reset filters', () => {
+  it('should reset filters and record telemetry', () => {
     const clearFiltersStub = sinon.stub(GlobalActions.prototype, 'clearFilters');
     const searchEmitSpy = sinon.spy(component.search, 'emit');
 
@@ -94,6 +95,10 @@ describe('TasksSidebarFilterComponent', () => {
 
     expect(clearFiltersStub.calledOnce).to.be.true;
     expect(searchEmitSpy.calledOnce).to.be.true;
+    expect(telemetryService.record.calledTwice).to.be.true;
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:apply');
+    expect(telemetryService.record.args[0][1]).to.equal(0);
+    expect(telemetryService.record.args[1][0]).to.equal('tasks:filter:reset');
   });
 
   it('should not reset filters when disabled', () => {
@@ -105,7 +110,7 @@ describe('TasksSidebarFilterComponent', () => {
     expect(clearFiltersStub.called).to.be.false;
   });
 
-  it('should apply filters and emit search', () => {
+  it('should apply filters, emit search, and record telemetry', () => {
     const setSidebarFilterStub = sinon.stub(GlobalActions.prototype, 'setSidebarFilter');
     const searchEmitSpy = sinon.spy(component.search, 'emit');
 
@@ -113,6 +118,27 @@ describe('TasksSidebarFilterComponent', () => {
 
     expect(searchEmitSpy.calledOnce).to.be.true;
     expect(setSidebarFilterStub.calledOnce).to.be.true;
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:apply');
+    expect(telemetryService.record.args[0][1]).to.equal(0);
+  });
+
+  it('should record per-filter telemetry when filters are active', () => {
+    sinon.stub(GlobalActions.prototype, 'setSidebarFilter');
+    component.filterCount = { total: 3, overdueFilter: 1, taskTypeFilter: 2, placeFilter: 0 };
+    // Mock filters with fieldIds matching filterCount keys
+    (component as any).filters = [
+      { fieldId: 'overdueFilter', countSelected: () => 1 },
+      { fieldId: 'taskTypeFilter', countSelected: () => 2 },
+      { fieldId: 'placeFilter', countSelected: () => 0 },
+    ];
+
+    component.applyFilters();
+
+    expect(telemetryService.record.calledThrice).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['tasks:filter:apply', 3]);
+    expect(telemetryService.record.args[1]).to.deep.equal(['tasks:filter:apply:overdueFilter', 1]);
+    expect(telemetryService.record.args[2]).to.deep.equal(['tasks:filter:apply:taskTypeFilter', 2]);
   });
 
   it('should not apply filters when disabled', () => {
@@ -131,6 +157,21 @@ describe('TasksSidebarFilterComponent', () => {
     component.applyFilters();
 
     expect(searchEmitSpy.called).to.be.false;
+  });
+
+  it('should record telemetry when clearing filters', () => {
+    component.clearFilters(['overdue', 'taskType']);
+
+    expect(telemetryService.record.calledTwice).to.be.true;
+    expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:clear:overdue');
+    expect(telemetryService.record.args[1][0]).to.equal('tasks:filter:clear:taskType');
+  });
+
+  it('should not record clear telemetry when clearing all filters without fieldIds', () => {
+    component.clearFilters();
+
+    const clearCalls = telemetryService.record.args.filter(args => args[0].includes(':clear:'));
+    expect(clearCalls).to.have.lengthOf(0);
   });
 
   it('should clear sidebar filter and filters on destroy', () => {
