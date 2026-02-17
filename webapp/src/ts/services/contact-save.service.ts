@@ -91,11 +91,25 @@ export class ContactSaveService {
    * Only allows letters (a-z, A-Z), numbers (0-9), underscores (_), dashes (-), and dots (.).
    * All other characters are removed.
    *
+   * If sanitizing removes all characters from the file stem (e.g. a file name written entirely
+   * in a non-Latin script like Devanagari), a UUID is used as the stem to ensure a valid file name.
+   *
    * @param fileName - The file name to sanitize
-   * @returns The sanitized file name with special characters removed
+   * @returns The sanitized file name with special characters removed, or a UUID-based name if
+   *          the stem becomes empty after sanitization
    */
   private sanitizeFileName(fileName: string): string {
-    return fileName.replace(/[^a-zA-Z0-9_.-]/g, ''); // NOSONAR
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const hasExtension = lastDotIndex > 0;
+
+    if (!hasExtension) {
+      return fileName.replace(/[^a-zA-Z0-9_.-]/g, '') || uuidV4(); // NOSONAR
+    }
+
+    const stem = fileName.slice(0, lastDotIndex);
+    const extension = fileName.slice(lastDotIndex);
+    const sanitizedStem = stem.replace(/[^a-zA-Z0-9_.-]/g, ''); // NOSONAR
+    return (sanitizedStem || uuidV4()) + extension;
   }
 
   /**

@@ -327,6 +327,41 @@ describe('ContactSave service', () => {
       expect(call4.args[2]).to.equal(fileWithAllowedChars);
     });
 
+    it('should use a UUID as the file name when all characters are stripped from the file name', async () => {
+      const xmlPersonCreate =
+        '<data id="contact:person:create">' +
+        '<person>' +
+        '<parent>PARENT</parent>' +
+        '<type>person</type>' +
+        '<name>John Doe</name>' +
+        '<photo>श्रीधर.png</photo>' +
+        '</person>' +
+        '</data>';
+
+      const form = { getDataStr: () => xmlPersonCreate };
+      const docId = null;
+      const type = 'person';
+
+      const devanagariFile = new File(['content'], 'श्रीधर.png', { type: 'image/png' });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([ devanagariFile ]);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'person1', type: 'person', name: 'John Doe', photo: 'श्रीधर.png' }
+      });
+
+      const result = await service.save(form, docId, type);
+
+      expect(attachmentService.add.callCount).to.equal(1);
+      const attachmentName = attachmentService.add.getCall(0).args[1];
+      const uuidRegex = /^user-file-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.png$/i;
+      expect(attachmentName, 'Should use a UUID when all non-extension characters are stripped').to.match(uuidRegex);
+
+      const savedDoc = result.preparedDocs[0];
+      const expectedFileName = attachmentName.replace('user-file-', '');
+      expect(savedDoc.photo, 'photo field should be updated to match the UUID-based attachment name')
+        .to.equal(expectedFileName);
+    });
+
     it('should sanitize field values in document to match sanitized attachment names', async () => {
       const xmlPersonCreate =
         '<data id="contact:person:create">' +
