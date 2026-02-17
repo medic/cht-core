@@ -74,7 +74,7 @@ describe('Reports Search', () => {
       expect((await reportsPage.reportsListDetails()).length).to.equal(allReports.length);
 
       await searchPage.performSearch('sittu');
-      await commonPage.waitForLoaders();
+      await browser.waitUntil(async () => (await reportsPage.reportsListDetails()).length > 0);
       expect((await reportsPage.reportsListDetails()).length).to.equal(filteredReports.length);
       for (const report of filteredReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;

@@ -1,0 +1,17 @@
+maxIndexesOpen: 3000
+commitIntervalSeconds: 30
+idleSeconds: 60
+rootDir: /data/nouveau
+
+server:
+  applicationConnectors:
+    - type: h2c
+      bindHost: 0.0.0.0
+      port: 5987
+      useDateHeader: false
+  adminConnectors:
+    - type: http
+      bindHost: 0.0.0.0
+      port: 5988
+      useDateHeader: false
+

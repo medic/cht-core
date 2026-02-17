@@ -14,9 +14,6 @@ services:
     restart: always
     depends_on:
       - nouveau
-    configs:
-      - source: nouveau.ini
-        target: /opt/couchdb/etc/local.d/nouveau.ini
     logging:
       driver: "local"
       options:
@@ -29,9 +26,6 @@ services:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
       - ${COUCHDB_DATA:-./srv}/nouveau:/data/nouveau
-    configs:
-      - source: nouveau-config
-        target: /opt/nouveau/etc/nouveau.yaml
     restart: always
     logging:
       driver: "local"
@@ -47,36 +41,3 @@ volumes:
 networks:
   cht-net:
     name: ${CHT_NETWORK:-cht-net}
-
-configs:
-  nouveau.ini:
-    content: |
-      [couchdb]
-      single_node=true
-      [nouveau]
-      enable = true
-      url = http://nouveau:5987
-  nouveau-config:
-    content: |
-      rootDir: /data/nouveau
-      logging:
-        level: INFO
-      server:
-        applicationConnectors:
-          - type: h2c
-            bindHost: 0.0.0.0
-            port: 5987
-            useDateHeader: false
-        adminConnectors:
-          - type: http
-            bindHost: 0.0.0.0
-            port: 5988
-            useDateHeader: false
-        gzip:
-          includedMethods:
-            - GET
-            - POST
-        requestLog:
-          appenders:
-            - type: console
-              target: stderr

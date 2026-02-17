@@ -47,7 +47,7 @@ const SERVICES = {
   api: 'api',
   sentinel: 'sentinel',
   'haproxy-healthcheck': 'healthcheck',
-  'couchdb-nouveau': 'couchdb-nouveau',
+  'nouveau': 'nouveau',
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
