@@ -69,7 +69,7 @@ const createAndIndexView = async () => {
   await request.put(options);
   const start = performance.now();
   await waitForIndexing();
-  return performance.now() - start;
+  return parseInt(performance.now() - start);
 };
 
 
