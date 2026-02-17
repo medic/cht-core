@@ -1,5 +1,4 @@
 const chai = require('chai');
-const { USER_ROLES } = require('@medic/constants');
 const utils = require('../src/index');
 
 describe('Purging Utils', () => {
@@ -20,37 +19,6 @@ describe('Purging Utils', () => {
       chai.expect(utils.getRoleHash([3, 3, 4, 4, 2])).to.equal(hash2);
       chai.expect(utils.getRoleHash([3, 2, 1, 4])).to.equal(hash3);
       chai.expect(utils.getRoleHash([1, 2])).not.to.equal(hash);
-    });
-  });
-
-  describe('isOffline', () => {
-    it('should return true for an empty array and for roles that are not configured', () => {
-      const config = { roleA: { offline: true }, roleB: { offline: false }};
-      chai.expect(utils.isOffline(config, [])).to.equal(true);
-      chai.expect(utils.isOffline(config, ['random'])).to.equal(true);
-      chai.expect(utils.isOffline(config, ['role1', 'role2'])).to.equal(true);
-    });
-
-    it('should return true when at least one role is offline', () => {
-      const config = { roleA: { offline: true }, roleB: { offline: false }};
-      chai.expect(utils.isOffline(config, ['roleA'])).to.equal(true);
-      chai.expect(utils.isOffline(config, ['roleA', 'random'])).to.equal(true);
-      chai.expect(utils.isOffline(config, ['roleA', 'roleB'])).to.equal(true);
-      chai.expect(utils.isOffline(config, ['roleA', 'roleB', 'random'])).to.equal(true);
-    });
-
-    it('should return false when none of the configured roles are offline', () => {
-      const config = { roleA: { offline: true }, roleB: { offline: false }};
-      chai.expect(utils.isOffline(config, ['roleB'])).to.equal(false);
-      chai.expect(utils.isOffline(config, ['roleB', 'roleC'])).to.equal(false);
-    });
-
-    it('should return false when user has admin or online role role', () => {
-      const config = { roleA: { offline: true }};
-      chai.expect(utils.isOffline(config, ['roleA', '_admin'])).to.equal(false);
-      chai.expect(utils.isOffline(config, ['roleB', '_admin'])).to.equal(false);
-      chai.expect(utils.isOffline(config, [USER_ROLES.ONLINE, 'roleA'])).to.equal(false);
-      chai.expect(utils.isOffline(config, [USER_ROLES.ONLINE, 'roleB'])).to.equal(false);
     });
   });
 

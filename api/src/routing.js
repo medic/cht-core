@@ -426,6 +426,7 @@ app.post('/api/v2/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v2/upgrade/complete', jsonParser, upgrade.complete);
 app.delete('/api/v2/upgrade', jsonParser, upgrade.abort);
 app.all('/api/v2/upgrade/service-worker', upgrade.serviceWorker);
+app.all('/api/v2/upgrade/compare', jsonParser, upgrade.compare);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);

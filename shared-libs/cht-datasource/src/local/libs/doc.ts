@@ -1,9 +1,6 @@
 import logger from '@medic/logger';
-import { NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
+import { Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
-import { QueryParams } from './core';
-import { getAuthenticatedFetch, getRequestBody } from './request-utils';
-import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
 
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
@@ -194,82 +191,4 @@ export const fetchAndFilterUuids = (
     filterFn,
     limit
   );
-};
-
-/** @internal */
-const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {
-  return (
-    typeof error === 'object' && error !== null &&
-    'status' in error && (error as { status: number }).status === 404
-  );
-};
-
-/** @internal */
-export const ddocExists = async (db: PouchDB.Database<Doc>, ddocId: string): Promise<boolean> => {
-  try {
-    await db.get(ddocId);
-    return true;
-  } catch (err) {
-    if (isPouchDBNotFoundError(err)) {
-      return false;
-    }
-
-    logger.error(`Unexpected error while checking ddoc ${ddocId}:`, err);
-    return false;
-  }
-};
-
-/**
- * Similar to {@link fetchAndFilter} but by requesting nouveau endpoint
- * @internal
- */
-export const queryNouveauIndex = (
-  db: PouchDB.Database<Doc>,
-  viewName: string,
-): typeof recursionInner => {
-  const fetch = getAuthenticatedFetch(db, viewName);
-  const recursionInner = async (
-    params: QueryParams,
-    currentResults: NouveauHit[] = [],
-    bookmark: Nullable<string> = null
-  ): Promise<Page<NouveauHit>> => {
-    const response = await fetch({
-      method: 'POST',
-      body: getRequestBody(viewName, params, bookmark)
-    });
-
-    if (!response.ok) {
-      throw new Error(response.statusText);
-    }
-
-    const responseData = await response.json() as NouveauResponse;
-    const newResults = responseData.hits;
-
-    const results = [...currentResults, ...newResults];
-    // Keep querying until we have all the results
-    if (newResults.length === DEFAULT_IDS_PAGE_LIMIT) {
-      return recursionInner(params, results, responseData.bookmark);
-    }
-    return {
-      data: results,
-      cursor: responseData.bookmark
-    };
-  };
-  return recursionInner;
-};
-
-/** @internal */
-export const queryNouveauIndexUuids = (
-  db: PouchDB.Database<Doc>,
-  viewName: string,
-) => {
-  return async (params: QueryParams): Promise<Page<string>> => {
-    const res = await queryNouveauIndex(db, viewName)(params);
-    const resWithIds = res.data.map(doc => doc.id);
-
-    return {
-      data: resWithIds,
-      cursor: res.cursor
-    };
-  };
 };

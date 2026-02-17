@@ -65,6 +65,8 @@ const templates = {
       'login.token.loading',
       'login.token.redirect.login.info',
       'login.token.redirect.login',
+      'login.unsupported_browser',
+      'login.unsupported_browser.safari',
       'privacy.policy'
     ],
   },

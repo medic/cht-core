@@ -7,11 +7,12 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const appSettings = require('./config/test-app_settings');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Reports Subject', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const clinic = places.get('clinic');
   const user = userFactory.build({ place: clinic._id });
 

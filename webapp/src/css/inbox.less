@@ -1046,6 +1046,14 @@ mm-search-bar {
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.8);
 
+    &.filter-only {
+      background-color: transparent;
+
+      .btn.open-filter {
+        margin-left: auto;
+      }
+    }
+
     *, *:active, *:focus {
       outline: none !important;
       box-shadow: none;

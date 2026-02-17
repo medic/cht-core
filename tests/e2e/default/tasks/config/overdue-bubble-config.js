@@ -30,6 +30,10 @@ const createTask = function(name, dueDays) {
     appliesToType: ['person'],
     appliesIf: returnsTrue,
     resolvedIf: function (contact) {
+      if (dueDays > 0) {
+        return false;
+      }
+
       return isFormArraySubmittedInWindow(contact.reports, ['home_visit'], contact.contact.reported_date);
     },
     actions: [{ type: 'report', form: 'home_visit' }],
