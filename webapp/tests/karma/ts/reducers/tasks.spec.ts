@@ -950,4 +950,5 @@ describe('Tasks reducer', () => {
       expect(state.overdue).to.have.deep.members([tasks[1].emission, tasks[2].emission]);
     });
   });
+
 });
