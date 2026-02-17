@@ -338,6 +338,28 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ userFacilityIds: ['others'] });
   });
 
+  it('should set userFacilities in state', () => {
+    const facility = { _id: 'facility_id', name: 'Test Facility' };
+    state = globalReducer(state, Actions.setUserFacilities(facility));
+    expect(state).to.deep.equal({ userFacilities: [facility] });
+
+    const otherFacility = { _id: 'other', name: 'Other Facility' };
+    state = globalReducer(state, Actions.setUserFacilities(otherFacility));
+    expect(state).to.deep.equal({ userFacilities: [otherFacility] });
+
+    const facilities = [{ _id: 'f1', name: 'Facility 1' }, { _id: 'f2', name: 'Facility 2' }];
+    state = globalReducer(state, Actions.setUserFacilities(facilities));
+    expect(state).to.deep.equal({ userFacilities: facilities });
+  });
+
+  it('should set isOnlineOnly in state', () => {
+    state = globalReducer(state, Actions.setIsOnlineOnly(true));
+    expect(state).to.deep.equal({ isOnlineOnly: true });
+
+    state = globalReducer(state, Actions.setIsOnlineOnly(false));
+    expect(state).to.deep.equal({ isOnlineOnly: false });
+  });
+
   it('should set userContactId in state', () => {
     state = globalReducer(state, Actions.setUserContactId('contact_id'));
     expect(state).to.deep.equal({ userContactId: 'contact_id' });

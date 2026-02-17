@@ -6,10 +6,11 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Report - Send message action', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const clinic = places.get('clinic');
 
   const chwContact = personFactory.build({
