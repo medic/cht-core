@@ -631,23 +631,9 @@ describe('TargetAggregatesService', () => {
 
     it('should calculate every type of target aggregate correctly', async () => {
       const config = { tasks: { targets: { items: [
-        { id: 'target1', aggregate: true, type: 'count', title: 'target1', subtitle_translation_key: 'sub_trans_key' },
-        {
-          id: 'target2',
-          aggregate: true,
-          type: 'count',
-          goal: 20,
-          translation_key: 'target2',
-          subtitle_translation_key: '() => "sub_trans_key"'
-        },
-        {
-          id: 'target3',
-          aggregate: true,
-          type: 'percent',
-          goal: -1,
-          title: 'target3',
-          subtitle_translation_key: '(reportingPeriod) => reportingPeriod'
-        },
+        { id: 'target1', aggregate: true, type: 'count', title: 'target1' },
+        { id: 'target2', aggregate: true, type: 'count', goal: 20, translation_key: 'target2' },
+        { id: 'target3', aggregate: true, type: 'percent', goal: -1, title: 'target3' },
         { id: 'target4', aggregate: true, type: 'percent', goal: 80, translation_key: 'target4' },
         { id: 'target5', aggregate: true, type: 'count', goal: 2, translation_key: 'target5' },
       ] } }};
@@ -731,7 +717,6 @@ describe('TargetAggregatesService', () => {
         type: 'count',
         title: 'target1',
         reportingMonth: 'January',
-        subtitle_translation_key: 'sub_trans_key',
         aggregateValue: { pass: 26, total: 26, hasGoal: false, summary: 26 },
         heading: 'target1',
         hasGoal: false,
@@ -750,7 +735,6 @@ describe('TargetAggregatesService', () => {
         goal: 20,
         translation_key: 'target2',
         reportingMonth: 'January',
-        subtitle_translation_key: '() => "sub_trans_key"',
         aggregateValue: { pass: 1, total: 3, goalMet: false, hasGoal: true, summary: ratioTranslationKey },
         heading: 'target2',
         hasGoal: true,
@@ -769,7 +753,6 @@ describe('TargetAggregatesService', () => {
         goal: -1,
         title: 'target3',
         reportingMonth: 'January',
-        subtitle_translation_key: '(reportingPeriod) => reportingPeriod',
         aggregateValue: { pass: 20, total: 51, percent: 39, hasGoal: false, summary: '39%' },
         heading: 'target3',
         hasGoal: false,

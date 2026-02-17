@@ -13,7 +13,7 @@ import { MatAccordion } from '@angular/material/expansion';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { SidebarFilterState } from '@mm-reducers/global';
+import { type SidebarFilterState } from '@mm-reducers/global';
 
 export enum ReportingPeriod {
   CURRENT = 'current',
