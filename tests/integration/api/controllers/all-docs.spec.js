@@ -98,7 +98,11 @@ const unrestrictedKeys = [
   'fixture:offline',
   'fixture:user:offline',
   'org.couchdb.user:offline',
-  '_design/medic-client',
+  '_design/shared',
+  '_design/shared-contacts',
+  '_design/shared-reports',
+  '_design/webapp-contacts',
+  '_design/webapp-reports',
   'resources',
   DOC_IDS.SETTINGS,
   /^messages-.*$/

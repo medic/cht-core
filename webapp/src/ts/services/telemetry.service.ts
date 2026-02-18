@@ -69,7 +69,7 @@ export class TelemetryService {
   private generateMetadataSection(dbName) {
     return Promise
       .all([
-        this.dbService.get().get('_design/medic-client'),
+        this.dbService.get().get('_design/shared'),
         this.dbService.get().query('shared/doc_by_type', { key: ['form'], include_docs: true }),
         this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
       ])

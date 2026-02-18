@@ -766,7 +766,7 @@ describe('UpgradeCtrl controller', () => {
         .onCall(0).resolves({ data: { upgradeDoc: undefined  } })
         .onCall(1).resolves({ data: { upgradeDoc: { up: 'grade' }, indexers: [] } })
         .onCall(2).resolves({ data: { upgradeDoc: undefined, indexers: [] } });
-      const compareResponse = [{ ddoc: '_design/medic-client', db: 'medic' }];
+      const compareResponse = [{ ddoc: '_design/shared', db: 'medic' }];
       http.post.withArgs('/api/v2/upgrade/compare').resolves({ data: compareResponse });
       http.post.withArgs('/api/v2/upgrade').resolves();
       http.get.withArgs('/api/v2/upgrade/can-upgrade').resolves({ data: { ok: true } });

@@ -59,7 +59,7 @@ describe('Bikram Sambat date display', () => {
 
   const getReports = async () => {
     const options = {
-      path: '/_design/medic-client/_view/reports_by_date',
+      path: '/_design/shared-reports/_view/reports_by_date',
       qs: { include_docs: true },
     };
     const response = await utils.requestOnMedicDb(options);

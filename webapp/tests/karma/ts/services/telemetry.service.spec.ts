@@ -228,9 +228,9 @@ describe('TelemetryService', () => {
       medicDb.info.resolves({ some: 'stats' });
       metaDb.put.resolves();
       medicDb.get
-        .withArgs('_design/medic-client')
+        .withArgs('_design/shared')
         .resolves({
-          _id: '_design/medic-client',
+          _id: '_design/shared',
           build_info: { version: '3.0.0' }
         });
       medicDb.query.resolves({
@@ -450,8 +450,8 @@ describe('TelemetryService', () => {
       medicDb.info.resolves({ some: 'stats' });
       metaDb.put.onFirstCall().rejects({ status: 409 });
       metaDb.put.onSecondCall().resolves();
-      medicDb.get.withArgs('_design/medic-client').resolves({
-        _id: '_design/medic-client',
+      medicDb.get.withArgs('_design/shared').resolves({
+        _id: '_design/shared',
         build_info: {
           version: '3.0.0'
         }

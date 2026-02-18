@@ -2510,7 +2510,7 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnTestDb(_.defaults({ path: '/_design/shared' }, request, offlineRequestOptions))
             .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
             .catch(err => err),
@@ -2534,7 +2534,7 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnTestDb(_.defaults({ path: '/_design/shared' }, request, offlineRequestOptions))
             .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
             .catch(err => err),
@@ -2542,7 +2542,7 @@ describe('db-doc handler', () => {
             .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnMedicDb(_.defaults({ path: '/_design/shared' }, request, offlineRequestOptions))
             .catch(err => err),
           utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
             .catch(err => err),

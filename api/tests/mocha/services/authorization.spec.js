@@ -927,7 +927,7 @@ describe('Authorization service', () => {
   });
 
   describe('filterAllowedDocIds', () => {
-    it('should return medic-client and user-settings doc', () => {
+    it('should return replicated ddocs and user-settings doc', () => {
       const authCtx = { userCtx: { name: 'joe' } };
       service.filterAllowedDocIds(authCtx, []).should.deep.equal([
         '_design/shared',
@@ -1072,10 +1072,10 @@ describe('Authorization service', () => {
         .should.equal(true);
     });
 
-    it('returns true when it is main ddoc or user contact', () => {
+    it('returns true when it is replicated ddoc or user contact', () => {
       service
         .allowedDoc(
-          '_design/medic-client',
+          '_design/shared',
           { userCtx },
           { docsByReplicationKey: { key: '_all' }, contactsByDepth: null}
         )

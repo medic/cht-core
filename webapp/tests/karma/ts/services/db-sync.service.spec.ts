@@ -1164,7 +1164,7 @@ describe('DBSync service', () => {
     });
 
     it('does not replicate the ddoc', () => {
-      const actual = filterFunction({ _id: '_design/medic-client' });
+      const actual = filterFunction({ _id: '_design/shared' });
       expect(actual).to.equal(false);
     });
 
