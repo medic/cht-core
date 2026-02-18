@@ -99,16 +99,17 @@ export class ContactSaveService {
    *          the stem becomes empty after sanitization
    */
   private sanitizeFileName(fileName: string): string {
+    const disallowedChars = /[^a-zA-Z0-9_.-]/g;
     const lastDotIndex = fileName.lastIndexOf('.');
     const hasExtension = lastDotIndex > 0;
 
     if (!hasExtension) {
-      return fileName.replace(/[^a-zA-Z0-9_.-]/g, '') || uuidV4(); // NOSONAR
+      return fileName.replace(disallowedChars, '') || uuidV4(); // NOSONAR
     }
 
     const stem = fileName.slice(0, lastDotIndex);
     const extension = fileName.slice(lastDotIndex);
-    const sanitizedStem = stem.replace(/[^a-zA-Z0-9_.-]/g, ''); // NOSONAR
+    const sanitizedStem = stem.replace(disallowedChars, ''); // NOSONAR
     return (sanitizedStem || uuidV4()) + extension;
   }
 
