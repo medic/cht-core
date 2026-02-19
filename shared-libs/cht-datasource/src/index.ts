@@ -35,7 +35,7 @@ import * as Place from './place';
 import * as Qualifier from './qualifier';
 import { and, byContactUuid, byContactUuids, byReportingPeriod } from './qualifier';
 import * as Report from './report';
-import * as TargetInterval from './target-interval';
+import * as Target from './target-interval';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT, } from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
@@ -48,7 +48,7 @@ export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
 export * as Report from './report';
-export * as TargetInterval from './target-interval';
+export * as Target from './target-interval';
 
 /**
  * Returns the source for CHT data.
@@ -321,41 +321,41 @@ export const getDatasource = (ctx: DataContext) => {
           qualifier: string,
         ) => ctx.bind(Report.v1.getUuids)(Qualifier.byFreetext(qualifier)),
       },
-      targetInterval: {
+      target: {
         /**
-         * Returns a target interval by UUID.
-         * @param uuid the UUID of the target interval to retrieve
-         * @returns the target interval or `null` if no target interval is found for the UUID
+         * Returns a target by UUID.
+         * @param uuid the UUID of the target to retrieve
+         * @returns the target or `null` if no target is found for the UUID
          * @throws InvalidArgumentError if no UUID is provided
          */
-        getByUuid: (uuid: string) => ctx.bind(TargetInterval.v1.get)(Qualifier.byUuid(uuid)),
+        getByUuid: (uuid: string) => ctx.bind(Target.v1.get)(Qualifier.byUuid(uuid)),
 
         /**
-         * Returns the target interval for the given username and reporting period.
-         * @param reportingPeriod the reporting period for the target interval
-         * @param contactUuid the contact UUID of the user for the target interval
-         * @param username the username (without the "org.couchdb.user:" prefix) of the user for the target interval
-         * @returns the target interval or `null` if no target interval is found
+         * Returns the target for the given username and reporting period.
+         * @param reportingPeriod the reporting period for the target
+         * @param contactUuid the contact UUID of the user for the target
+         * @param username the username (without the "org.couchdb.user:" prefix) of the user for the target
+         * @returns the target or `null` if no target is found
          * @throws InvalidArgumentError if no reporting period, contact UUID, and/or username is provided
          */
         getByReportingPeriodContactUuidUsername: (
           reportingPeriod: string,
           contactUuid: string,
           username: string
-        ) => ctx.bind(TargetInterval.v1.get)(and(
+        ) => ctx.bind(Target.v1.get)(and(
           Qualifier.byReportingPeriod(reportingPeriod),
           Qualifier.byContactUuid(contactUuid),
           Qualifier.byUsername(username)
         )),
 
         /**
-         * Returns an array of target intervals for the provided page specifications.
-         * @param reportingPeriod the reporting period for the target intervals
-         * @param contactUuids the contact UUIDs for the target intervals
+         * Returns an array of targets for the provided page specifications.
+         * @param reportingPeriod the reporting period for the targets
+         * @param contactUuids the contact UUIDs for the targets
          * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
          * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
-         * @param limit the maximum number of target intervals to return. Default is 100.
-         * @returns a page of target intervals for the provided specifications
+         * @param limit the maximum number of targets to return. Default is 100.
+         * @returns a page of targets for the provided specifications
          * @throws InvalidArgumentError if no reporting period is provided
          * @throws InvalidArgumentError if no contact UUIDs are provided
          * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
@@ -368,7 +368,7 @@ export const getDatasource = (ctx: DataContext) => {
           contactUuids: string | [string, ...string[]],
           cursor: Nullable<string> = null,
           limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
-        ) => ctx.bind(TargetInterval.v1.getPage)(
+        ) => ctx.bind(Target.v1.getPage)(
           and(
             byReportingPeriod(reportingPeriod),
             Array.isArray(contactUuids) ? byContactUuids(contactUuids) : byContactUuid(contactUuids)
@@ -376,17 +376,17 @@ export const getDatasource = (ctx: DataContext) => {
         ),
 
         /**
-         * Returns a generator for fetching all target intervals in the reporting period for the given contact UUIDs.
-         * @param reportingPeriod the reporting period for the target intervals
-         * @param contactUuids the contact UUIDs for the target intervals
-         * @returns a generator for fetching all target intervals with the given type
+         * Returns a generator for fetching all targets in the reporting period for the given contact UUIDs.
+         * @param reportingPeriod the reporting period for the targets
+         * @param contactUuids the contact UUIDs for the targets
+         * @returns a generator for fetching all targets with the given type
          * @throws InvalidArgumentError if no reporting period is provided
          * @throws InvalidArgumentError if no contact UUIDs are provided
          */
         getByReportingPeriodContactUuids: (
           reportingPeriod: string, 
           contactUuids: string | [string, ...string[]]
-        ) => ctx.bind(TargetInterval.v1.getAll)(and(
+        ) => ctx.bind(Target.v1.getAll)(and(
           byReportingPeriod(reportingPeriod),
           Array.isArray(contactUuids) ? byContactUuids(contactUuids) : byContactUuid(contactUuids)
         ))

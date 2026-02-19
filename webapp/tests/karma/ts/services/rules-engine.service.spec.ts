@@ -21,7 +21,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { TargetInterval } from '@medic/cht-datasource';
+import { Target } from '@medic/cht-datasource';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 
 describe('RulesEngineService', () => {
@@ -50,7 +50,7 @@ describe('RulesEngineService', () => {
   let fetchTargetsResult;
   let refreshEmissionsFor;
   let refreshEmissionsForRecursive;
-  let getTargetInterval;
+  let getTarget;
 
   const settingsDoc = {
     _id: DOC_IDS.SETTINGS,
@@ -132,12 +132,12 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
-    getTargetInterval = sinon.stub();
+    getTarget = sinon.stub();
     chtDatasourceService = {
       get: sinon.stub().returns(chtScriptApi),
       bind: sinon.stub().returnsArg(0)
     };
-    chtDatasourceService.bind.withArgs(TargetInterval.v1.get).returns(getTargetInterval);
+    chtDatasourceService.bind.withArgs(Target.v1.get).returns(getTarget);
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     fetchTasksResult = () => Promise.resolve();
@@ -1169,11 +1169,11 @@ describe('RulesEngineService', () => {
 
       expect(actual).to.deep.equal([sampleTarget]);
       expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
-      expect(getTargetInterval.called).to.be.false;
+      expect(getTarget.called).to.be.false;
     });
 
     it('should fetch previous month targets when ReportingPeriod.PREVIOUS is passed', async () => {
-      const targetIntervalDoc = {
+      const targetDoc = {
         _id: 'target~2025-01~user~org.couchdb.user:fred',
         type: 'target',
         user: 'org.couchdb.user:fred',
@@ -1190,7 +1190,7 @@ describe('RulesEngineService', () => {
           }
         ]
       };
-      getTargetInterval.resolves(targetIntervalDoc);
+      getTarget.resolves(targetDoc);
       service = TestBed.inject(RulesEngineService);
 
       settingsService.get.resolves({
@@ -1206,10 +1206,10 @@ describe('RulesEngineService', () => {
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.calledOnce).to.be.true;
+      expect(getTarget.calledOnce).to.be.true;
       expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
 
-      const qualifier = getTargetInterval.args[0][0];
+      const qualifier = getTarget.args[0][0];
       expect(qualifier).to.have.property('reportingPeriod', '2025-01');
       expect(qualifier).to.have.property('contactUuid', 'user');
       expect(qualifier).to.have.property('username', 'fred');
@@ -1229,7 +1229,7 @@ describe('RulesEngineService', () => {
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.called).to.be.false;
+      expect(getTarget.called).to.be.false;
       expect(actual).to.deep.eq([]);
     });
 
@@ -1239,32 +1239,32 @@ describe('RulesEngineService', () => {
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.called).to.be.false;
+      expect(getTarget.called).to.be.false;
       expect(actual).to.deep.eq([]);
     });
 
-    it('should return empty array when target interval is not found', async () => {
-      getTargetInterval.resolves(null);
+    it('should return empty array when target is not found', async () => {
+      getTarget.resolves(null);
       service = TestBed.inject(RulesEngineService);
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.calledOnce).to.be.true;
+      expect(getTarget.calledOnce).to.be.true;
       expect(actual).to.deep.eq([]);
     });
 
     it('should handle errors and return empty array', async () => {
-      getTargetInterval.rejects(new Error('Database error'));
+      getTarget.rejects(new Error('Database error'));
       service = TestBed.inject(RulesEngineService);
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.calledOnce).to.be.true;
+      expect(getTarget.calledOnce).to.be.true;
       expect(actual).to.deep.eq([]);
     });
 
     it('should calculate correct reporting period for previous month', async () => {
-      const targetIntervalDoc = {
+      const targetDoc = {
         _id: 'target~2025-01~user~org.couchdb.user:fred',
         type: 'target',
         user: 'org.couchdb.user:fred',
@@ -1273,19 +1273,19 @@ describe('RulesEngineService', () => {
         updated_date: Date.now(),
         targets: []
       };
-      getTargetInterval.resolves(targetIntervalDoc);
+      getTarget.resolves(targetDoc);
       service = TestBed.inject(RulesEngineService);
 
       await service.fetchTargets(ReportingPeriod.PREVIOUS);
 
-      expect(getTargetInterval.calledOnce).to.be.true;
-      const qualifier = getTargetInterval.args[0][0];
+      expect(getTarget.calledOnce).to.be.true;
+      const qualifier = getTarget.args[0][0];
       // Current interval ends in Feb 2025, so previous month should be 2025-01
       expect(qualifier.reportingPeriod).to.eq('2025-01');
     });
 
-    it('should process multiple targets from target interval', async () => {
-      const targetIntervalDoc = {
+    it('should process multiple targets', async () => {
+      const targetDoc = {
         _id: 'target~2025-01~user~org.couchdb.user:fred',
         type: 'target',
         user: 'org.couchdb.user:fred',
@@ -1314,7 +1314,7 @@ describe('RulesEngineService', () => {
         }
       };
       settingsService.get.resolves(settingsWithMultipleTargets);
-      getTargetInterval.resolves(targetIntervalDoc);
+      getTarget.resolves(targetDoc);
       service = TestBed.inject(RulesEngineService);
 
       const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);

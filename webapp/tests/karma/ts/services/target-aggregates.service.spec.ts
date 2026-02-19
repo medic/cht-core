@@ -13,7 +13,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
-import { Qualifier, TargetInterval } from '@medic/cht-datasource';
+import { Qualifier, Target } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
@@ -29,7 +29,7 @@ describe('TargetAggregatesService', () => {
   let settingsService;
   let rulesEngineService;
   let translateService;
-  let getTargetIntervals;
+  let getTargets;
 
   const randomString = (length?) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
   const ratioTranslationKey = 'analytics.target.aggregates.ratio';
@@ -55,9 +55,9 @@ describe('TargetAggregatesService', () => {
       getTargetIntervalTag: sinon.stub().returns(defaultIntervalTag),
       getReportingMonth: sinon.stub().returns('January'),
     };
-    getTargetIntervals = sinon.stub();
+    getTargets = sinon.stub();
     const chtDatasourceService = { bindGenerator: sinon.stub() };
-    chtDatasourceService.bindGenerator.withArgs(TargetInterval.v1.getAll).returns(getTargetIntervals);
+    chtDatasourceService.bindGenerator.withArgs(Target.v1.getAll).returns(getTargets);
 
     TestBed.configureTestingModule({
       imports: [
@@ -199,7 +199,7 @@ describe('TargetAggregatesService', () => {
 
       expect(result.length).to.equal(0);
       expect(searchService.search.callCount).to.equal(0);
-      expect(getTargetIntervals.notCalled).to.be.true;
+      expect(getTargets.notCalled).to.be.true;
     });
 
     it('should search for contacts by type', async () => {
@@ -308,7 +308,7 @@ describe('TargetAggregatesService', () => {
           { id: 'target', value: { pass: 0, total: 0 } },
         ],
       }));
-      getTargetIntervals.returns((async function* () {
+      getTargets.returns((async function* () {
         for (const doc of targetDocs) {
           yield doc;
         }
@@ -347,7 +347,7 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[1]).to.deep.equal([places.slice(0, 100).map(place => place.contact)]);
       expect(getDataRecordsService.get.args[2]).to.deep.equal([places.slice(100, 200).map(place => place.contact)]);
       expect(getDataRecordsService.get.args[3]).to.deep.equal([places.slice(200, 300).map(place => place.contact)]);
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -377,7 +377,7 @@ describe('TargetAggregatesService', () => {
       const oneDifferentPlace = { contact: '', lineage: [] };
       // at least one place will be discarded
       const places = Array.from({ length: 265 }).map((a, i) => i && genPlace(i) || oneDifferentPlace);
-      getTargetIntervals.returns((async function* () {})());
+      getTargets.returns((async function* () {})());
 
       searchService.search.onCall(0).resolves(places.slice(0, 100));
       searchService.search.onCall(1).resolves(places.slice(100, 200));
@@ -429,7 +429,7 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[3]).to.deep.equal([
         places.slice(200, 300).filter(isRelevantPlace).map(place => place.contact)
       ]);
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -500,7 +500,7 @@ describe('TargetAggregatesService', () => {
 
       expect(getDataRecordsService.get.callCount).to.equal(2);
       expect(getDataRecordsService.get.args[0]).to.deep.equal([[facilityId]]);
-      expect(getTargetIntervals.notCalled).to.be.true;
+      expect(getTargets.notCalled).to.be.true;
       expect(rulesEngineService.getTargetIntervalTag.calledOnceWithExactly(config, ReportingPeriod.CURRENT)).to.be.true;
     });
 
@@ -521,7 +521,7 @@ describe('TargetAggregatesService', () => {
       expect(result[0].id).to.equal('target');
       expect(result[0].values.length).to.equal(0);
 
-      expect(getTargetIntervals.notCalled).to.be.true;
+      expect(getTargets.notCalled).to.be.true;
       expect(rulesEngineService.getTargetIntervalTag.calledOnceWithExactly(config, ReportingPeriod.CURRENT)).to.be.true;
     });
 
@@ -544,7 +544,7 @@ describe('TargetAggregatesService', () => {
       expect(result[0].id).to.equal('target');
       expect(result[0].values.length).to.equal(0);
 
-      expect(getTargetIntervals.notCalled).to.be.true;
+      expect(getTargets.notCalled).to.be.true;
       expect(rulesEngineService.getTargetIntervalTag.calledOnceWithExactly(config, ReportingPeriod.PREVIOUS))
         .to.be.true;
       expect(rulesEngineService.getReportingMonth.calledOnceWithExactly(config, ReportingPeriod.PREVIOUS)).to.be.true;
@@ -687,7 +687,7 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
-      getTargetIntervals.returns((async function* () {
+      getTargets.returns((async function* () {
         for (const doc of targetDocs) {
           yield doc;
         }
@@ -800,7 +800,7 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[2], value: { pass: 7, total: 7, percent: 350, goalMet: true } },
         ],
       });
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -839,7 +839,7 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
-      getTargetIntervals.returns((async function* () {
+      getTargets.returns((async function* () {
         for (const doc of targetDocs) {
           yield doc;
         }
@@ -863,7 +863,7 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[1], value: { pass: 9, total: 9, percent: 0 } },
         ]
       });
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -907,7 +907,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      getTargetIntervals.returns((async function* () {
+      getTargets.returns((async function* () {
         for (const doc of targetDocs) {
           yield doc;
         }
@@ -949,7 +949,7 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[2], value: { pass: 10, total: 15, percent: 67 } },
         ]
       });
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -999,7 +999,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      getTargetIntervals.returns((async function* () {
+      getTargets.returns((async function* () {
         for (const doc of targetDocs) {
           yield doc;
         }
@@ -1037,7 +1037,7 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[0], value: { pass: 0, total: 0, percent: 0, placeholder: true } },
         ]
       });
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -1085,7 +1085,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      getTargetIntervals.returns((async function* () {
+      getTargets.returns((async function* () {
         for (const doc of targetDocs) {
           yield doc;
         }
@@ -1125,7 +1125,7 @@ describe('TargetAggregatesService', () => {
           { contact: contacts[1], value: { pass: 7, total: 7, percent: 100 } },
         ]
       });
-      expect(getTargetIntervals.args).to.deep.equal([[Qualifier.and(
+      expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
         byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
@@ -1225,13 +1225,13 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      getTargetIntervals.onCall(0).returns((async function* () {
+      getTargets.onCall(0).returns((async function* () {
         yield targetDoc;
       })());
-      getTargetIntervals.onCall(1).returns((async function* () {
+      getTargets.onCall(1).returns((async function* () {
         yield targetDoc2;
       })());
-      getTargetIntervals.onCall(2).returns((async function* () {
+      getTargets.onCall(2).returns((async function* () {
         yield targetDoc3;
       })());
 
@@ -1245,16 +1245,16 @@ describe('TargetAggregatesService', () => {
         [config, ReportingPeriod.PREVIOUS, 1],
         [config, ReportingPeriod.PREVIOUS, 2]
       ]);
-      expect(getTargetIntervals.callCount).to.equal(3);
-      expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
+      expect(getTargets.callCount).to.equal(3);
+      expect(getTargets.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-02'),
         byContactUuid('uuid')
       )]);
-      expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
+      expect(getTargets.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-01'),
         byContactUuid('uuid')
       )]);
-      expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
+      expect(getTargets.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2019-12'),
         byContactUuid('uuid')
       )]);
@@ -1299,13 +1299,13 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      getTargetIntervals.onCall(0).returns((async function* () {
+      getTargets.onCall(0).returns((async function* () {
         yield targetDoc;
       })());
-      getTargetIntervals.onCall(1).returns((async function* () {
+      getTargets.onCall(1).returns((async function* () {
         yield targetDoc2;
       })());
-      getTargetIntervals.onCall(2).returns((async function* () {
+      getTargets.onCall(2).returns((async function* () {
         yield targetDoc3;
       })());
 
@@ -1317,16 +1317,16 @@ describe('TargetAggregatesService', () => {
         [config, ReportingPeriod.PREVIOUS, 1],
         [config, ReportingPeriod.PREVIOUS, 2],
       ]);
-      expect(getTargetIntervals.callCount).to.equal(3);
-      expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
+      expect(getTargets.callCount).to.equal(3);
+      expect(getTargets.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
         byContactUuid('usercontact')
       )]);
-      expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
+      expect(getTargets.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-07'),
         byContactUuid('usercontact')
       )]);
-      expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
+      expect(getTargets.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-06'),
         byContactUuid('usercontact')
       )]);
@@ -1371,13 +1371,13 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      getTargetIntervals.onCall(0).returns((async function* () {
+      getTargets.onCall(0).returns((async function* () {
         yield targetDoc;
       })());
-      getTargetIntervals.onCall(1).returns((async function* () {
+      getTargets.onCall(1).returns((async function* () {
         yield targetDoc2;
       })());
-      getTargetIntervals.onCall(2).returns((async function* () {
+      getTargets.onCall(2).returns((async function* () {
         yield targetDoc3;
       })());
 
@@ -1389,16 +1389,16 @@ describe('TargetAggregatesService', () => {
         [config, ReportingPeriod.PREVIOUS, 1],
         [config, ReportingPeriod.PREVIOUS, 2],
       ]);
-      expect(getTargetIntervals.callCount).to.equal(3);
-      expect(getTargetIntervals.args[0]).to.deep.equal([Qualifier.and(
+      expect(getTargets.callCount).to.equal(3);
+      expect(getTargets.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
         byContactUuid('usercontact')
       )]);
-      expect(getTargetIntervals.args[1]).to.deep.equal([Qualifier.and(
+      expect(getTargets.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-07'),
         byContactUuid('usercontact')
       )]);
-      expect(getTargetIntervals.args[2]).to.deep.equal([Qualifier.and(
+      expect(getTargets.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-06'),
         byContactUuid('usercontact')
       )]);
@@ -1435,11 +1435,11 @@ describe('TargetAggregatesService', () => {
         ]
       };
 
-      getTargetIntervals.onCall(0).returns((async function* () {
+      getTargets.onCall(0).returns((async function* () {
         yield targetDoc;
       })());
-      getTargetIntervals.onCall(1).returns((async function* () { })());
-      getTargetIntervals.onCall(2).returns((async function* () { })());
+      getTargets.onCall(1).returns((async function* () { })());
+      getTargets.onCall(2).returns((async function* () { })());
 
       const result = await service.getTargetDocs({ _id: 'uuid' }, ['facility'], 'contact');
 
@@ -1453,7 +1453,7 @@ describe('TargetAggregatesService', () => {
           { id: 'target4', value: { pass: 18, total: 18 } },
         ]
       }]);
-      expect(getTargetIntervals.args).to.deep.equal(
+      expect(getTargets.args).to.deep.equal(
         Array.from({ length: 3 }, () => [Qualifier.and(
           baseReportingPeriodQualifier,
           byContactUuid('uuid')

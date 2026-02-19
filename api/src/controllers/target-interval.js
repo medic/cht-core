@@ -1,11 +1,11 @@
 const auth = require('../auth');
-const { TargetInterval, Qualifier } = require('@medic/cht-datasource');
+const { Target, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const { PermissionError } = require('../errors');
 
-const getTargetInterval = ctx.bind(TargetInterval.v1.get);
-const getTargetIntervals = ctx.bind(TargetInterval.v1.getPage);
+const getTarget = ctx.bind(Target.v1.get);
+const getTargets = ctx.bind(Target.v1.getPage);
 
 const checkUserPermissions = async (req) => {
   const userCtx = await auth.getUserCtx(req);
@@ -29,18 +29,18 @@ module.exports = {
     get: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
       const { uuid } = req.params;
-      const targetInterval = await getTargetInterval(Qualifier.byUuid(uuid));
+      const target = await getTarget(Qualifier.byUuid(uuid));
 
-      if (!targetInterval) {
-        return serverUtils.error({ status: 404, message: 'Target interval not found' }, req, res);
+      if (!target) {
+        return serverUtils.error({ status: 404, message: 'Target not found' }, req, res);
       }
 
-      return res.json(targetInterval);
+      return res.json(target);
     }),
     getAll: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
 
-      const docs = await getTargetIntervals(
+      const docs = await getTargets(
         Qualifier.and(
           getContactUuidQualifier(req.query),
           Qualifier.byReportingPeriod(req.query.reporting_period)

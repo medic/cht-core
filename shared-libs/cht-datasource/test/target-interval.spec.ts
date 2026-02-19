@@ -2,14 +2,14 @@ import { DataContext, InvalidArgumentError } from '../src';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import * as Qualifier from '../src/qualifier';
-import * as TargetInterval from '../src/target-interval';
+import * as Target from '../src/target-interval';
 import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import { and } from '../src/qualifier';
 import * as Core from '../src/libs/core';
 
-describe('target-interval', () => {
+describe('target', () => {
   const dataContext = { } as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
@@ -23,7 +23,7 @@ describe('target-interval', () => {
 
   describe('v1', () => {
     describe('get', () => {
-      const targetInterval = {
+      const target = {
         user: 'user',
         owner: 'owner',
         reporting_period: '2025-01',
@@ -32,30 +32,30 @@ describe('target-interval', () => {
           { id: 'target1', value: { pass: 5, total: 6 } },
           { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
         ]
-      } as TargetInterval.v1.TargetInterval;
+      } as Target.v1.Target;
 
-      let getTargetInterval: SinonStub;
+      let getTarget: SinonStub;
 
       beforeEach(() => {
-        getTargetInterval = sinon.stub();
-        adapt.returns(getTargetInterval);
+        getTarget = sinon.stub();
+        adapt.returns(getTarget);
       });
 
-      it('retrieves the target interval when qualifier is UUID', async () => {
+      it('retrieves the target when qualifier is UUID', async () => {
         const qualifier = Qualifier.byUuid('uuid');
-        getTargetInterval.resolves(targetInterval);
+        getTarget.resolves(target);
 
-        const result = await TargetInterval.v1.get(dataContext)(qualifier);
+        const result = await Target.v1.get(dataContext)(qualifier);
 
-        expect(result).to.equal(targetInterval);
+        expect(result).to.equal(target);
         expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
         expect(adapt).to.have.been.calledOnceWithExactly(
-          dataContext, Local.TargetInterval.v1.get, Remote.TargetInterval.v1.get
+          dataContext, Local.Target.v1.get, Remote.Target.v1.get
         );
-        expect(getTargetInterval).to.have.been.calledOnceWithExactly(qualifier);
+        expect(getTarget).to.have.been.calledOnceWithExactly(qualifier);
       });
 
-      it('builds UUID from composite qualifier and retrieves target interval', async () => {
+      it('builds UUID from composite qualifier and retrieves target', async () => {
         const composite = Qualifier.and(
           Qualifier.byReportingPeriod('2025-01'),
           Qualifier.byContactUuid('contact-uuid'),
@@ -65,26 +65,26 @@ describe('target-interval', () => {
           `target~${composite.reportingPeriod}~${composite.contactUuid}~org.couchdb.user:${composite.username}`
         );
 
-        getTargetInterval.resolves(targetInterval);
+        getTarget.resolves(target);
 
-        const result = await TargetInterval.v1.get(dataContext)(composite);
+        const result = await Target.v1.get(dataContext)(composite);
 
-        expect(result).to.equal(targetInterval);
+        expect(result).to.equal(target);
         expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
         expect(adapt).to.have.been.calledOnceWithExactly(
-          dataContext, Local.TargetInterval.v1.get, Remote.TargetInterval.v1.get
+          dataContext, Local.Target.v1.get, Remote.Target.v1.get
         );
-        expect(getTargetInterval).to.have.been.calledOnceWithExactly(expectedUuidQualifier);
+        expect(getTarget).to.have.been.calledOnceWithExactly(expectedUuidQualifier);
       });
 
       it('throws an error if the data context is invalid', () => {
         assertDataContext.throws(new Error('Invalid data context [null].'));
 
-        expect(() => TargetInterval.v1.get(dataContext)).to.throw('Invalid data context [null].');
+        expect(() => Target.v1.get(dataContext)).to.throw('Invalid data context [null].');
 
         expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
         expect(adapt).to.not.have.been.called;
-        expect(getTargetInterval).to.not.have.been.called;
+        expect(getTarget).to.not.have.been.called;
       });
 
       [
@@ -105,22 +105,22 @@ describe('target-interval', () => {
         Qualifier.byUsername('someuser')
       ].forEach(qualifier => {
         it('throws an error when an invalid qualifier is provided', async () => {
-          const getTarget = TargetInterval.v1.get(dataContext);
-          await expect(getTarget(qualifier as unknown as Qualifier.UuidQualifier)).to.be.rejectedWith(
-            `Invalid target interval qualifier [${JSON.stringify(qualifier)}].`
+          const getTargetFn = Target.v1.get(dataContext);
+          await expect(getTargetFn(qualifier as unknown as Qualifier.UuidQualifier)).to.be.rejectedWith(
+            `Invalid target qualifier [${JSON.stringify(qualifier)}].`
           );
 
           expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
           expect(adapt).to.have.been.calledOnceWithExactly(
-            dataContext, Local.TargetInterval.v1.get, Remote.TargetInterval.v1.get
+            dataContext, Local.Target.v1.get, Remote.Target.v1.get
           );
-          expect(getTargetInterval).to.not.have.been.called;
+          expect(getTarget).to.not.have.been.called;
         });
       });
     });
 
     describe('getPage', () => {
-      const targetIntervals = [
+      const targets = [
         {
           user: 'user',
           owner: 'owner1-uuid',
@@ -141,7 +141,7 @@ describe('target-interval', () => {
             { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
           ]
         }
-      ] as TargetInterval.v1.TargetInterval[];
+      ] as Target.v1.Target[];
 
       let getPage: SinonStub;
 
@@ -154,19 +154,19 @@ describe('target-interval', () => {
         Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
         Qualifier.byContactUuid('owner1-uuid')
       ].forEach(contactQualifier => {
-        it('retrieves the target interval with the correct parameters', async () => {
+        it('retrieves the target with the correct parameters', async () => {
           const qualifier = Qualifier.and(
             contactQualifier,
             Qualifier.byReportingPeriod('2025-01')
           );
-          getPage.resolves(targetIntervals);
+          getPage.resolves(targets);
 
-          const result = await TargetInterval.v1.getPage(dataContext)(qualifier);
+          const result = await Target.v1.getPage(dataContext)(qualifier);
 
-          expect(result).to.equal(targetIntervals);
+          expect(result).to.equal(targets);
           expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
           expect(adapt).to.have.been.calledOnceWithExactly(
-            dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage
+            dataContext, Local.Target.v1.getPage, Remote.Target.v1.getPage
           );
           expect(getPage).to.have.been.calledOnceWith(qualifier);
         });
@@ -176,7 +176,7 @@ describe('target-interval', () => {
         const errorMsg = 'Invalid data context [null].';
         assertDataContext.throws(new Error(errorMsg));
 
-        expect(() => TargetInterval.v1.getPage(dataContext)).to.throw(errorMsg);
+        expect(() => Target.v1.getPage(dataContext)).to.throw(errorMsg);
 
         expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
         expect(adapt).to.not.have.been.called;
@@ -196,15 +196,15 @@ describe('target-interval', () => {
         Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
       )[]).forEach(invalidQualifier => {
         it('throws an error if the qualifier is invalid', async () => {
-          await expect(TargetInterval.v1.getPage(dataContext)(invalidQualifier, null, 10))
-            .to.be.rejectedWith(`Invalid target intervals qualifier [${JSON.stringify(invalidQualifier)}].`);
+          await expect(Target.v1.getPage(dataContext)(invalidQualifier, null, 10))
+            .to.be.rejectedWith(`Invalid targets qualifier [${JSON.stringify(invalidQualifier)}].`);
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(
             adapt.calledOnceWithExactly(
               dataContext,
-              Local.TargetInterval.v1.getPage,
-              Remote.TargetInterval.v1.getPage
+              Local.Target.v1.getPage,
+              Remote.Target.v1.getPage
             )
           ).to.be.true;
           expect(getPage.notCalled).to.be.true;
@@ -221,7 +221,7 @@ describe('target-interval', () => {
         3.45
       ].forEach(l => {
         it('throws an error when an invalid limit is provided', async () => {
-          const getTarget = TargetInterval.v1.getPage(dataContext);
+          const getTarget = Target.v1.getPage(dataContext);
           
           await expect(
             getTarget(
@@ -236,7 +236,7 @@ describe('target-interval', () => {
 
           expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
           expect(adapt).to.have.been.calledOnceWithExactly(
-            dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage
+            dataContext, Local.Target.v1.getPage, Remote.Target.v1.getPage
           );
           expect(getPage).to.not.have.been.called;
         });
@@ -249,7 +249,7 @@ describe('target-interval', () => {
         false,
       ].forEach(c => {
         it('throws an error when an invalid cursor is provided', async () => {
-          const getTarget = TargetInterval.v1.getPage(dataContext);
+          const getTarget = Target.v1.getPage(dataContext);
           
           await expect(
             getTarget(
@@ -264,7 +264,7 @@ describe('target-interval', () => {
 
           expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
           expect(adapt).to.have.been.calledOnceWithExactly(
-            dataContext, Local.TargetInterval.v1.getPage, Remote.TargetInterval.v1.getPage
+            dataContext, Local.Target.v1.getPage, Remote.Target.v1.getPage
           );
           expect(getPage).to.not.have.been.called;
         });
@@ -272,7 +272,7 @@ describe('target-interval', () => {
     });
 
     describe('getAll', () => {
-      const targetIntervals = [
+      const targets = [
         {
           user: 'user',
           owner: 'owner1-uuid',
@@ -293,9 +293,9 @@ describe('target-interval', () => {
             { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
           ]
         }
-      ] as TargetInterval.v1.TargetInterval[];
+      ] as Target.v1.Target[];
       const mockGenerator = async function* () {
-        for (const target of targetIntervals) {
+        for (const target of targets) {
           yield target;
         }
       };
@@ -304,7 +304,7 @@ describe('target-interval', () => {
       let getPagedGenerator: SinonStub;
 
       beforeEach(() => {
-        getPage = sinon.stub(TargetInterval.v1, 'getPage');
+        getPage = sinon.stub(Target.v1, 'getPage');
         dataContext.bind = sinon.stub().returns(getPage);
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
       });
@@ -313,14 +313,14 @@ describe('target-interval', () => {
         Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
         Qualifier.byContactUuid('owner1-uuid')
       ].forEach(contactQualifier => {
-        it('returns target interval generator with correct parameters', () => {
+        it('returns target generator with correct parameters', () => {
           const qualifier = Qualifier.and(
             contactQualifier,
             Qualifier.byReportingPeriod('2025-01')
           );
           getPagedGenerator.returns(mockGenerator);
 
-          const generator = TargetInterval.v1.getAll(dataContext)(qualifier);
+          const generator = Target.v1.getAll(dataContext)(qualifier);
 
           expect(generator).to.deep.equal(mockGenerator);
           expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
@@ -333,7 +333,7 @@ describe('target-interval', () => {
         const errorMsg = 'Invalid data context [null].';
         assertDataContext.throws(new Error(errorMsg));
 
-        expect(() => TargetInterval.v1.getAll(dataContext)).to.throw(errorMsg);
+        expect(() => Target.v1.getAll(dataContext)).to.throw(errorMsg);
 
         expect(assertDataContext).to.have.been.calledOnceWithExactly(dataContext);
         expect(adapt).to.not.have.been.called;
@@ -353,10 +353,10 @@ describe('target-interval', () => {
         Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
       )[]).forEach(invalidQualifier => {
         it('throws an error if the qualifier is invalid', () => {
-          const getAll = TargetInterval.v1.getAll(dataContext);
+          const getAll = Target.v1.getAll(dataContext);
 
           expect(() => getAll(invalidQualifier)).to.throw(
-            `Invalid target intervals qualifier [${JSON.stringify(invalidQualifier)}].`
+            `Invalid targets qualifier [${JSON.stringify(invalidQualifier)}].`
           );
 
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;

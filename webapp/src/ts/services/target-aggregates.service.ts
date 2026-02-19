@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Person, Qualifier, TargetInterval } from '@medic/cht-datasource';
+import { Person, Qualifier, Target } from '@medic/cht-datasource';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { SearchService } from '@mm-services/search.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -8,7 +8,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { RulesEngineService, Target, TargetValue } from '@mm-services/rules-engine.service';
+import { RulesEngineService, TargetViewModel, TargetValue } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
@@ -32,16 +32,16 @@ export class TargetAggregatesService {
     private readonly rulesEngineService: RulesEngineService,
     private readonly ngZone:NgZone,
   ) {
-    this.getTargetIntervals = chtDatasourceService.bindGenerator(TargetInterval.v1.getAll);
+    this.getTargets = chtDatasourceService.bindGenerator(Target.v1.getAll);
   }
 
   private readonly MAX_TARGET_MONTHS = 3;
-  private readonly getTargetIntervals: ReturnType<typeof TargetInterval.v1.getAll>;
+  private readonly getTargets: ReturnType<typeof Target.v1.getAll>;
 
   private async fetchTargetDocsForInterval(contactUuid, intervalTag) {
-    const results: TargetInterval.v1.TargetInterval[] = [];
+    const results: Target.v1.Target[] = [];
     const qualifier = Qualifier.and(byContactUuid(contactUuid), byReportingPeriod(intervalTag));
-    for await (const targetInt of this.getTargetIntervals(qualifier)) {
+    for await (const targetInt of this.getTargets(qualifier)) {
       results.push(targetInt);
     }
     return results;
@@ -100,8 +100,8 @@ export class TargetAggregatesService {
       byReportingPeriod(intervalTag),
       byContactUuids(contacts.map(({ _id }) => _id))
     );
-    const targetDocs: TargetInterval.v1.TargetInterval[] = [];
-    for await (const targetInt of this.getTargetIntervals(qualifier)) {
+    const targetDocs: Target.v1.Target[] = [];
+    for await (const targetInt of this.getTargets(qualifier)) {
       targetDocs.push(targetInt);
     }
 
@@ -328,7 +328,7 @@ export class TargetAggregatesService {
   }
 }
 
-export interface AggregateTarget extends Target {
+export interface AggregateTarget extends TargetViewModel {
   aggregate: boolean;
   hasGoal: boolean;
   isPercent: boolean;

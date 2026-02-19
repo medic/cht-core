@@ -116,7 +116,7 @@ export class CHTDatasourceService {
 
   /**
    * Binds a cht-datasource function to the data context.
-   * (e.g. `const getTargetIntervals = this.bindGenerator(TargetInterval.v1.getAll);`)
+   * (e.g. `const getTargets = this.bindGenerator(Target.v1.getAll);`)
    * @see {@link bind} for binding a function that returns a `Promise`
    * @param fn the function to bind. It should accept a data context as the parameter and return another function that
    * results in an `AsyncGenerator`.

@@ -3,11 +3,11 @@ import logger from '@medic/logger';
 import { expect } from 'chai';
 import { Doc } from '../../src/libs/doc';
 import * as LocalDoc from '../../src/local/libs/doc';
-import * as TargetInterval from '../../src/local/target-interval';
+import * as Target from '../../src/local/target-interval';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import { and, byReportingPeriod, byContactUuid, byContactUuids } from '../../src/qualifier';
 
-describe('local target interval', () => {
+describe('local target', () => {
   let localContext: LocalDataContext;
   let warn: SinonStub;
 
@@ -31,7 +31,7 @@ describe('local target interval', () => {
         getDocByIdOuter = sinon.stub(LocalDoc, 'getDocById').returns(getDocByIdInner);
       });
 
-      it('returns a target interval by UUID', async () => {
+      it('returns a target by UUID', async () => {
         const doc = {
           user: 'user',
           owner: 'owner',
@@ -44,7 +44,7 @@ describe('local target interval', () => {
         };
         getDocByIdInner.resolves(doc);
 
-        const result = await TargetInterval.v1.get(localContext)(identifier);
+        const result = await Target.v1.get(localContext)(identifier);
 
         expect(result).to.equal(doc);
         expect(getDocByIdOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
@@ -55,13 +55,13 @@ describe('local target interval', () => {
       it('returns null if the identified doc is not found', async () => {
         getDocByIdInner.resolves(null);
 
-        const result = await TargetInterval.v1.get(localContext)(identifier);
+        const result = await Target.v1.get(localContext)(identifier);
 
         expect(result).to.be.null;
         expect(getDocByIdOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
         expect(getDocByIdInner).to.have.been.calledOnceWithExactly(identifier.uuid);
         expect(warn).to.have.been.calledOnceWithExactly(
-          `Document [${identifier.uuid}] is not a valid target interval.`
+          `Document [${identifier.uuid}] is not a valid target.`
         );
       });
 
@@ -99,23 +99,23 @@ describe('local target interval', () => {
           targets: []
         },
       ].forEach(invalidDoc => {
-        it('returns null if the identified doc is not a target interval', async () => {
+        it('returns null if the identified doc is not a target', async () => {
           getDocByIdInner.resolves(invalidDoc);
 
-          const result = await TargetInterval.v1.get(localContext)(identifier);
+          const result = await Target.v1.get(localContext)(identifier);
 
           expect(result).to.be.null;
           expect(getDocByIdOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
           expect(getDocByIdInner).to.have.been.calledOnceWithExactly(identifier.uuid);
           expect(warn).to.have.been.calledOnceWithExactly(
-            `Document [${identifier.uuid}] is not a valid target interval.`
+            `Document [${identifier.uuid}] is not a valid target.`
           );
         });
       });
     });
 
     describe('getPage', () => {
-      const targetInterval0 = {
+      const target0 = {
         _id: 'target~2025-01~contact-1',
         user: 'user1',
         owner: 'contact-1',
@@ -123,7 +123,7 @@ describe('local target interval', () => {
         updated_date: 123,
         targets: []
       };
-      const targetInterval1 = {
+      const target1 = {
         _id: 'target~2025-01~contact-2',
         user: 'user2',
         owner: 'contact-2',
@@ -131,7 +131,7 @@ describe('local target interval', () => {
         updated_date: 124,
         targets: []
       };
-      const targetInterval2 = {
+      const target2 = {
         _id: 'target~2025-01~contact-2',
         user: 'user2',
         owner: 'contact-2',
@@ -139,15 +139,15 @@ describe('local target interval', () => {
         updated_date: 124,
         targets: []
       };
-      const invalidTargetInterval = {
+      const invalidTarget = {
         _id: 'target~2025-01~contact-2'
       };
       const qualifier = and(
         byReportingPeriod('2025-01'),
         byContactUuids([
-          targetInterval0.owner,
-          targetInterval1.owner,
-          targetInterval2.owner
+          target0.owner,
+          target1.owner,
+          target2.owner
         ])
       );
       let getDocUuidsByIdRangeOuter: SinonStub;
@@ -170,22 +170,22 @@ describe('local target interval', () => {
         fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
       });
 
-      it('returns paginated target intervals for valid qualifier with matching contactUuids', async () => {
+      it('returns paginated targets for valid qualifier with matching contactUuids', async () => {
         getDocUuidsByIdRangeInner.resolves([
-          targetInterval0._id,
-          targetInterval1._id,
-          targetInterval2._id,
-          invalidTargetInterval._id,
+          target0._id,
+          target1._id,
+          target2._id,
+          invalidTarget._id,
           'target~2025-01~different-contact-id',
         ]);
         const expectedPage = {
-          data: [targetInterval0, targetInterval1, targetInterval2],
+          data: [target0, target1, target2],
           cursor: '3'
         };
         fetchAndFilterInner.resolves(expectedPage);
-        getDocsByIdsInner.resolves([targetInterval0, targetInterval1, targetInterval2, invalidTargetInterval]);
+        getDocsByIdsInner.resolves([target0, target1, target2, invalidTarget]);
 
-        const result = await TargetInterval.v1.getPage(localContext)(qualifier, null, 10);
+        const result = await Target.v1.getPage(localContext)(qualifier, null, 10);
 
         expect(result).to.equal(expectedPage);
         expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
@@ -201,48 +201,48 @@ describe('local target interval', () => {
         expect(limit).to.equal(10);
 
         const docs = await getFn(10, 0);
-        expect(docs).to.deep.equal([targetInterval0, targetInterval1, targetInterval2, invalidTargetInterval]);
+        expect(docs).to.deep.equal([target0, target1, target2, invalidTarget]);
         expect(getDocsByIdsInner).to.have.been.calledOnceWithExactly([
-          targetInterval0._id,
-          targetInterval1._id,
-          targetInterval2._id,
-          invalidTargetInterval._id
+          target0._id,
+          target1._id,
+          target2._id,
+          invalidTarget._id
         ]);
         // Assert ids are filtered by skip/limit
         await getFn(2, 0);
-        expect(getDocsByIdsInner).to.have.been.calledWithExactly([targetInterval0._id, targetInterval1._id]);
+        expect(getDocsByIdsInner).to.have.been.calledWithExactly([target0._id, target1._id]);
         await getFn(2, 10);
         expect(getDocsByIdsInner).to.have.been.calledWithExactly([]);
 
-        expect(filterFn(targetInterval0)).to.be.true;
-        expect(filterFn(invalidTargetInterval)).to.be.false;
+        expect(filterFn(target0)).to.be.true;
+        expect(filterFn(invalidTarget)).to.be.false;
         expect(filterFn({})).to.be.false;
       });
 
       [
-        byContactUuid(targetInterval0.owner),
-        byContactUuids([targetInterval0.owner])
+        byContactUuid(target0.owner),
+        byContactUuids([target0.owner])
       ].forEach(contactQualifier => {
-        it('returns target interval for valid qualifier with single contactUuid', async () => {
-          getDocUuidsByIdRangeInner.resolves([targetInterval0._id]);
+        it('returns target for valid qualifier with single contactUuid', async () => {
+          getDocUuidsByIdRangeInner.resolves([target0._id]);
           const expectedPage = {
-            data: [targetInterval0],
+            data: [target0],
             cursor: '3'
           };
           fetchAndFilterInner.resolves(expectedPage);
-          getDocsByIdsInner.resolves([targetInterval0]);
+          getDocsByIdsInner.resolves([target0]);
           const qualifier = and(
             byReportingPeriod('2025-01'),
             contactQualifier
           );
 
-          const result = await TargetInterval.v1.getPage(localContext)(qualifier, null, 10);
+          const result = await Target.v1.getPage(localContext)(qualifier, null, 10);
 
           expect(result).to.equal(expectedPage);
           expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
           expect(getDocUuidsByIdRangeInner).to.have.been.calledOnceWithExactly(
-            `target~${qualifier.reportingPeriod}~${targetInterval0.owner}~`,
-            `target~${qualifier.reportingPeriod}~${targetInterval0.owner}~\ufff0`
+            `target~${qualifier.reportingPeriod}~${target0.owner}~`,
+            `target~${qualifier.reportingPeriod}~${target0.owner}~\ufff0`
           );
           expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
           expect(fetchAndFilterOuter).to.have.been.calledOnce;
@@ -253,11 +253,11 @@ describe('local target interval', () => {
       [
         [],
         ['target~2025-01~different-contact-id',]
-      ].forEach(targetIntervalIds => {
-        it('returns empty page when no target intervals are found for the reporting period and contacts', async () => {
-          getDocUuidsByIdRangeInner.resolves(targetIntervalIds);
+      ].forEach(targetIds => {
+        it('returns empty page when no targets are found for the reporting period and contacts', async () => {
+          getDocUuidsByIdRangeInner.resolves(targetIds);
 
-          const result = await TargetInterval.v1.getPage(localContext)(qualifier, null, 10);
+          const result = await Target.v1.getPage(localContext)(qualifier, null, 10);
 
           expect(result).to.deep.equal({
             data: [],
@@ -276,7 +276,7 @@ describe('local target interval', () => {
 
       it('throws error when invalid cursor provided', async () => {
         const cursor = { cursor: 'cursor' } as unknown as string;
-        const getPage = TargetInterval.v1.getPage(localContext);
+        const getPage = Target.v1.getPage(localContext);
 
         expect(getDocUuidsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
         expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);

@@ -7,17 +7,17 @@ import {
   UuidQualifier
 } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
-import * as TargetInterval from '../target-interval';
+import * as Target from '../target-interval';
 
 /** @internal */
 export namespace v1 {
   
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => {
-    const getTargetInterval = getResource(remoteContext, 'api/v1/target-interval');
+    const getTarget = getResource(remoteContext, 'api/v1/target-interval');
     return (
       identifier: UuidQualifier
-    ): Promise<Nullable<TargetInterval.v1.TargetInterval>> => getTargetInterval(identifier.uuid);
+    ): Promise<Nullable<Target.v1.Target>> => getTarget(identifier.uuid);
   };
   
   /** @internal */
@@ -25,8 +25,8 @@ export namespace v1 {
     qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
     cursor: Nullable<string>,
     limit: number,
-  ): Promise<Page<TargetInterval.v1.TargetInterval>> => {
-    const getTargetIntervals = getResources(remoteContext, 'api/v1/target-interval');
+  ): Promise<Page<Target.v1.Target>> => {
+    const getTargets = getResources(remoteContext, 'api/v1/target-interval');
     const uuidParam: { contact_uuid: string } | { contact_uuids: string } = isContactUuidQualifier(qualifier)
       ? { contact_uuid: qualifier.contactUuid }
       : { contact_uuids: qualifier.contactUuids.join(',') };
@@ -38,6 +38,6 @@ export namespace v1 {
       ...(cursor ? { cursor } : {})
     };
     
-    return getTargetIntervals(queryParams);
+    return getTargets(queryParams);
   };
 }

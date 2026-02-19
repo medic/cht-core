@@ -3,28 +3,28 @@ const {expect} = require('chai');
 const dataContext = require('../../../src/services/data-context');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
-const { Qualifier, TargetInterval, InvalidArgumentError } = require('@medic/cht-datasource');
+const { Qualifier, Target, InvalidArgumentError } = require('@medic/cht-datasource');
 
-const targetInterval = Object.freeze({ uuid: 'abc-123', name: 'interval' });
-const targetInterval1 = Object.freeze({ uuid: 'abc-124', name: 'interval1' });
-const targetInterval2 = Object.freeze({ uuid: 'abc-125', name: 'interval2' });
+const target = Object.freeze({ uuid: 'abc-123', name: 'interval' });
+const target1 = Object.freeze({ uuid: 'abc-124', name: 'interval1' });
+const target2 = Object.freeze({ uuid: 'abc-125', name: 'interval2' });
 const userCtx = Object.freeze({ name: 'user' });
 
-describe('Target Interval controller', () => {
+describe('Target controller', () => {
   const sandbox = sinon.createSandbox();
 
   let res;
   let req;
   let controller;
-  let getTargetInterval;
-  let getTargetIntervals;
+  let getTarget;
+  let getTargets;
 
   before(() => {
-    getTargetInterval = sandbox.stub();
-    getTargetIntervals = sandbox.stub();
+    getTarget = sandbox.stub();
+    getTargets = sandbox.stub();
     const bind = sinon.stub(dataContext, 'bind');
-    bind.withArgs(TargetInterval.v1.get).returns(getTargetInterval);
-    bind.withArgs(TargetInterval.v1.getPage).returns(getTargetIntervals);
+    bind.withArgs(Target.v1.get).returns(getTarget);
+    bind.withArgs(Target.v1.getPage).returns(getTargets);
 
     controller = require('../../../src/controllers/target-interval');
   });
@@ -50,17 +50,17 @@ describe('Target Interval controller', () => {
         req = { params: { uuid } };
       });
 
-      it('responds with json when target interval is found', async () => {
+      it('responds with json when target is found', async () => {
         auth.isOnlineOnly.returns(true);
-        getTargetInterval.resolves(targetInterval);
+        getTarget.resolves(target);
 
         await controller.v1.get(req, res);
 
         expect(serverUtils.error).to.not.have.been.called;
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetInterval).to.have.been.calledOnceWithExactly(Qualifier.byUuid(uuid));
-        expect(res.json).to.have.been.calledOnceWithExactly(targetInterval);
+        expect(getTarget).to.have.been.calledOnceWithExactly(Qualifier.byUuid(uuid));
+        expect(res.json).to.have.been.calledOnceWithExactly(target);
       });
 
 
@@ -75,24 +75,24 @@ describe('Target Interval controller', () => {
         expect(eReq).to.equal(req);
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetInterval).to.not.have.been.called;
+        expect(getTarget).to.not.have.been.called;
         expect(res.json).to.not.have.been.called;
       });
 
-      it('returns 404 when target interval not found', async () => {
+      it('returns 404 when target not found', async () => {
         auth.isOnlineOnly.returns(true);
-        getTargetInterval.resolves(null);
+        getTarget.resolves(null);
 
         await controller.v1.get(req, res);
 
         expect(serverUtils.error).to.have.been.calledOnceWithExactly(
-          { status: 404, message: 'Target interval not found' },
+          { status: 404, message: 'Target not found' },
           req,
           res
         );
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetInterval).to.have.been.calledOnceWithExactly(Qualifier.byUuid(uuid));
+        expect(getTarget).to.have.been.calledOnceWithExactly(Qualifier.byUuid(uuid));
         expect(res.json).to.not.have.been.called;
       });
     });
@@ -102,7 +102,7 @@ describe('Target Interval controller', () => {
         req = { query: {} };
       });
 
-      it('responds with json when target intervals are found for multiple contact UUIDs', async () => {
+      it('responds with json when targets are found for multiple contact UUIDs', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
           contact_uuids: 'contact1,contact2',
@@ -110,15 +110,15 @@ describe('Target Interval controller', () => {
           cursor: 'cursor123',
           limit: '10'
         };
-        const expectedPage = { data: [targetInterval, targetInterval1, targetInterval2], cursor: '3' };
-        getTargetIntervals.resolves(expectedPage);
+        const expectedPage = { data: [target, target1, target2], cursor: '3' };
+        getTargets.resolves(expectedPage);
 
         await controller.v1.getAll(req, res);
 
         expect(serverUtils.error).to.not.have.been.called;
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetIntervals).to.have.been.calledOnceWithExactly(
+        expect(getTargets).to.have.been.calledOnceWithExactly(
           Qualifier.and(
             Qualifier.byContactUuids(['contact1', 'contact2']),
             Qualifier.byReportingPeriod('2024-01')
@@ -129,7 +129,7 @@ describe('Target Interval controller', () => {
         expect(res.json).to.have.been.calledOnceWithExactly(expectedPage);
       });
 
-      it('responds with json when target intervals are found for single contact UUID', async () => {
+      it('responds with json when targets are found for single contact UUID', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
           contact_uuid: 'contact1',
@@ -137,15 +137,15 @@ describe('Target Interval controller', () => {
           cursor: 'cursor123',
           limit: '10'
         };
-        const expectedPage = { data: [targetInterval], cursor: null };
-        getTargetIntervals.resolves(expectedPage);
+        const expectedPage = { data: [target], cursor: null };
+        getTargets.resolves(expectedPage);
 
         await controller.v1.getAll(req, res);
 
         expect(serverUtils.error).to.not.have.been.called;
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetIntervals).to.have.been.calledOnceWithExactly(
+        expect(getTargets).to.have.been.calledOnceWithExactly(
           Qualifier.and(
             Qualifier.byContactUuid('contact1'),
             Qualifier.byReportingPeriod('2024-01')
@@ -167,7 +167,7 @@ describe('Target Interval controller', () => {
         expect(eReq).to.equal(req);
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetIntervals).to.not.have.been.called;
+        expect(getTargets).to.not.have.been.called;
         expect(res.json).to.not.have.been.called;
       });
 
@@ -191,7 +191,7 @@ describe('Target Interval controller', () => {
           expect(eReq).to.equal(req);
           expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
           expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-          expect(getTargetIntervals).to.not.have.been.called;
+          expect(getTargets).to.not.have.been.called;
           expect(res.json).to.not.have.been.called;
         });
       });
@@ -210,7 +210,7 @@ describe('Target Interval controller', () => {
         expect(eReq).to.equal(req);
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetIntervals).to.not.have.been.called;
+        expect(getTargets).to.not.have.been.called;
         expect(res.json).to.not.have.been.called;
       });
 
@@ -220,15 +220,15 @@ describe('Target Interval controller', () => {
           contact_uuids: 'contact1,contact2',
           reporting_period: '2024-01',
         };
-        const expectedPage = { data: [targetInterval, targetInterval1, targetInterval2], cursor: '3' };
-        getTargetIntervals.resolves(expectedPage);
+        const expectedPage = { data: [target, target1, target2], cursor: '3' };
+        getTargets.resolves(expectedPage);
 
         await controller.v1.getAll(req, res);
 
         expect(serverUtils.error).to.not.have.been.called;
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTargetIntervals).to.have.been.calledOnceWithExactly(
+        expect(getTargets).to.have.been.calledOnceWithExactly(
           Qualifier.and(
             Qualifier.byContactUuids(['contact1', 'contact2']),
             Qualifier.byReportingPeriod('2024-01')

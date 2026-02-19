@@ -8,12 +8,12 @@ import {
   UuidQualifier
 } from '../qualifier';
 import { hasField, isRecord, Nullable, Page } from '../libs/core';
-import * as TargetInterval from '../target-interval';
+import * as Target from '../target-interval';
 import logger from '@medic/logger';
 import { Doc } from '../libs/doc';
 import { validateCursor } from './libs/core';
 
-const getTargetIntervalIds = async (
+const getTargetIds = async (
   getDocUuidsRange: ReturnType<typeof getDocUuidsByIdRange>,
   qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier)
 ) => {
@@ -29,11 +29,11 @@ const getTargetIntervalIds = async (
     );
   }
 
-  const allTargetIntervalIds = await getDocUuidsRange(
+  const allTargetIds = await getDocUuidsRange(
     `target~${qualifier.reportingPeriod}~`,
     `target~${qualifier.reportingPeriod}~\ufff0`,
   );
-  return allTargetIntervalIds.filter(id => {
+  return allTargetIds.filter(id => {
     const [, , contactUuid] = id.split('~');
     return contactUuidSet.has(contactUuid);
   });
@@ -41,7 +41,7 @@ const getTargetIntervalIds = async (
 
 /** @internal */
 export namespace v1 {
-  const isTargetInterval = (doc: Nullable<Doc>): doc is TargetInterval.v1.TargetInterval => {
+  const isTarget = (doc: Nullable<Doc>): doc is Target.v1.Target => {
     return isRecord(doc)
       && hasField(doc, { name: 'user', type: 'string' })
       && hasField(doc, { name: 'owner', type: 'string' })
@@ -56,10 +56,10 @@ export namespace v1 {
 
     return async (
       { uuid }: UuidQualifier
-    ): Promise<Nullable<TargetInterval.v1.TargetInterval>> => {
+    ): Promise<Nullable<Target.v1.Target>> => {
       const doc = await getMedicDocById(uuid);
-      if (!isTargetInterval(doc)) {
-        logger.warn(`Document [${uuid}] is not a valid target interval.`);
+      if (!isTarget(doc)) {
+        logger.warn(`Document [${uuid}] is not a valid target.`);
         return null;
       }
       return doc;
@@ -75,22 +75,22 @@ export namespace v1 {
       qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
       cursor: Nullable<string>,
       limit: number,
-    ): Promise<Page<TargetInterval.v1.TargetInterval>> => {
+    ): Promise<Page<Target.v1.Target>> => {
       const skip = validateCursor(cursor);
-      const targetIntervalIds = await getTargetIntervalIds(getDocUuidsRange, qualifier);
-      if (!targetIntervalIds.length) {
+      const targetIds = await getTargetIds(getDocUuidsRange, qualifier);
+      if (!targetIds.length) {
         return { data: [], cursor: null };
       }
 
       const getFn = async (limit: number, skip: number) => {
-        const ids = targetIntervalIds.slice(skip, skip + limit);
+        const ids = targetIds.slice(skip, skip + limit);
         return getMedicDocsByIds(ids);
       };
       return fetchAndFilter(
         getFn,
-        isTargetInterval,
+        isTarget,
         limit
-      )(limit, skip) as Promise<Page<TargetInterval.v1.TargetInterval>>;
+      )(limit, skip) as Promise<Page<Target.v1.Target>>;
     };
   };
 }

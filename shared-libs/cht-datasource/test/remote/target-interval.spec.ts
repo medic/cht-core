@@ -2,7 +2,7 @@ import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
-import * as TargetInterval from '../../src/remote/target-interval';
+import * as Target from '../../src/remote/target-interval';
 import {
   and,
   byContactUuid,
@@ -10,7 +10,7 @@ import {
   byContactUuids
 } from '../../src/qualifier';
 
-describe('remote target interval', () => {
+describe('remote target', () => {
   const remoteContext = {} as RemoteDataContext;
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
@@ -30,7 +30,7 @@ describe('remote target interval', () => {
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
 
-      it('returns a target interval by UUID', async () => {
+      it('returns a target by UUID', async () => {
         const doc = {
           user: 'user',
           owner: 'owner',
@@ -43,7 +43,7 @@ describe('remote target interval', () => {
         };
         getResourceInner.resolves(doc);
 
-        const result = await TargetInterval.v1.get(remoteContext)(identifier);
+        const result = await Target.v1.get(remoteContext)(identifier);
 
         expect(result).to.equal(doc);
         expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target-interval');
@@ -53,7 +53,7 @@ describe('remote target interval', () => {
       it('returns null if the identified doc is not found', async () => {
         getResourceInner.resolves(null);
 
-        const result = await TargetInterval.v1.get(remoteContext)(identifier);
+        const result = await Target.v1.get(remoteContext)(identifier);
 
         expect(result).to.be.null;
         expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target-interval');
@@ -90,12 +90,12 @@ describe('remote target interval', () => {
       const limit = 3;
       const cursor = '1';
 
-      it('returns target intervals for multiple contact UUIDs', async () => {
+      it('returns targets for multiple contact UUIDs', async () => {
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
         const qualifier = and(byReportingPeriod('2025-01'), byContactUuids([doc[1].owner, doc[0].owner]));
 
-        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
@@ -107,12 +107,12 @@ describe('remote target interval', () => {
         })).to.be.true;
       });
 
-      it('returns target intervals for single contact UUID', async () => {
+      it('returns targets for single contact UUID', async () => {
         const expectedResponse = { data: doc.slice(0, 1), cursor };
         getResourcesInner.resolves(expectedResponse);
         const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
 
-        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
@@ -128,7 +128,7 @@ describe('remote target interval', () => {
         getResourcesInner.resolves([]);
         const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
 
-        const result = await TargetInterval.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
