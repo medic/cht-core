@@ -3,7 +3,7 @@ import logger from '@medic/logger';
 import { expect } from 'chai';
 import { Doc } from '../../src/libs/doc';
 import * as LocalDoc from '../../src/local/libs/doc';
-import * as Target from '../../src/local/target-interval';
+import * as Target from '../../src/local/target';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import { and, byReportingPeriod, byContactUuid, byContactUuids } from '../../src/qualifier';
 

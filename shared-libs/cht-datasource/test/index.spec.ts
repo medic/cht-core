@@ -6,7 +6,7 @@ import * as Person from '../src/person';
 import * as Place from '../src/place';
 import * as Qualifier from '../src/qualifier';
 import * as Report from '../src/report';
-import * as Target from '../src/target-interval';
+import * as Target from '../src/target';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';

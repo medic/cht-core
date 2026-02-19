@@ -35,7 +35,7 @@ import * as Place from './place';
 import * as Qualifier from './qualifier';
 import { and, byContactUuid, byContactUuids, byReportingPeriod } from './qualifier';
 import * as Report from './report';
-import * as Target from './target-interval';
+import * as Target from './target';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT, } from './libs/constants';
 
 export { Nullable, NonEmptyArray } from './libs/core';
@@ -48,7 +48,7 @@ export * as Person from './person';
 export * as Place from './place';
 export * as Qualifier from './qualifier';
 export * as Report from './report';
-export * as Target from './target-interval';
+export * as Target from './target';
 
 /**
  * Returns the source for CHT data.

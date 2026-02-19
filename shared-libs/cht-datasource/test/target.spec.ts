@@ -2,7 +2,7 @@ import { DataContext, InvalidArgumentError } from '../src';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import * as Qualifier from '../src/qualifier';
-import * as Target from '../src/target-interval';
+import * as Target from '../src/target';
 import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';

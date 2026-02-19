@@ -7,14 +7,14 @@ import {
   UuidQualifier
 } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
-import * as Target from '../target-interval';
+import * as Target from '../target';
 
 /** @internal */
 export namespace v1 {
   
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => {
-    const getTarget = getResource(remoteContext, 'api/v1/target-interval');
+    const getTarget = getResource(remoteContext, 'api/v1/target');
     return (
       identifier: UuidQualifier
     ): Promise<Nullable<Target.v1.Target>> => getTarget(identifier.uuid);
@@ -26,7 +26,7 @@ export namespace v1 {
     cursor: Nullable<string>,
     limit: number,
   ): Promise<Page<Target.v1.Target>> => {
-    const getTargets = getResources(remoteContext, 'api/v1/target-interval');
+    const getTargets = getResources(remoteContext, 'api/v1/target');
     const uuidParam: { contact_uuid: string } | { contact_uuids: string } = isContactUuidQualifier(qualifier)
       ? { contact_uuid: qualifier.contactUuid }
       : { contact_uuids: qualifier.contactUuids.join(',') };

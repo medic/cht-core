@@ -3,7 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const { expect } = require('chai');
 const { setAuth, removeAuth } = require('./auth');
-const { getRemoteDataContext, TargetInterval, Qualifier } = require('@medic/cht-datasource');
+const { getRemoteDataContext, Target, Qualifier } = require('@medic/cht-datasource');
 
 const place = utils.deepFreeze(placeFactory.place().build({ type: 'district_hospital' }));
 const offlineUser = utils.deepFreeze(userFactory.build({
@@ -16,7 +16,7 @@ const offlineUser = utils.deepFreeze(userFactory.build({
   roles: ['chw']
 }));
 
-const createTargetInterval = ({
+const createTarget = ({
   owner,
   reporting_period,
   user = 'org.couchdb.user:chw',
@@ -33,9 +33,9 @@ const createTargetInterval = ({
   };
 };
 
-const targetIntervals = utils.deepFreeze([
+const targets = utils.deepFreeze([
   {
-    ...createTargetInterval({
+    ...createTarget({
       owner: '7de6849e-e6e5-4a8d-9b6d-71c9eaa23415',
       reporting_period: '2025-09',
     }),
@@ -65,7 +65,7 @@ const targetIntervals = utils.deepFreeze([
     ],
   },
   {
-    ...createTargetInterval({
+    ...createTarget({
       owner: '9998989-e6e5-4a8d-9b6d-71c9eaa23999',
       reporting_period: '2025-09',
     }),
@@ -79,28 +79,28 @@ const targetIntervals = utils.deepFreeze([
       },
     ],
   },
-  createTargetInterval({
+  createTarget({
     owner: 'c3f6b91e-b095-48ef-a524-705e29fd9f6d',
     reporting_period: '2025-09',
     user: 'org.couchdb.user:supervisor'
   })
 ]);
 
-const targetIntervalDifferentReportingPeriod = utils.deepFreeze(createTargetInterval({
-  owner: targetIntervals[0].owner,
+const targetDifferentReportingPeriod = utils.deepFreeze(createTarget({
+  owner: targets[0].owner,
   reporting_period: '2025-10',
 }));
 
 
-describe('cht-datasource Target Interval', () => {
+describe('cht-datasource Target', () => {
   const dataContext = getRemoteDataContext(utils.getOrigin());
 
   before(async () => {
     setAuth();
     await utils.saveDocs([
-      ...targetIntervals,
+      ...targets,
       place,
-      targetIntervalDifferentReportingPeriod,
+      targetDifferentReportingPeriod,
     ]);
     await utils.createUsers([offlineUser]);
   });
@@ -113,72 +113,72 @@ describe('cht-datasource Target Interval', () => {
 
   describe('v1',  () => {
     describe('get', async () => {
-      const getTargetInterval = TargetInterval.v1.get(dataContext);
+      const getTarget = Target.v1.get(dataContext);
 
-      it('returns the target interval matching the provided UUID', async () => {
-        const result = await getTargetInterval(Qualifier.byUuid(targetIntervals[0]._id));
+      it('returns the target matching the provided UUID', async () => {
+        const result = await getTarget(Qualifier.byUuid(targets[0]._id));
         expect(result)
           .excluding(['_rev'])
           .to
           .deep
-          .equal(targetIntervals[0]);
+          .equal(targets[0]);
       });
 
-      it('returns null when no target interval is found for the UUID', async () => {
-        const result = await getTargetInterval(Qualifier.byUuid('invalid-target'));
+      it('returns null when no target is found for the UUID', async () => {
+        const result = await getTarget(Qualifier.byUuid('invalid-target'));
         expect(result).to.be.null;
       });
     });
 
     describe('getPage', async () => {
-      const getPage = TargetInterval.v1.getPage(dataContext);
+      const getPage = Target.v1.getPage(dataContext);
 
-      it('returns a page of target intervals for multiple contact UUIDs', async () => {
+      it('returns a page of targets for multiple contact UUIDs', async () => {
         const { data, cursor } = await getPage(Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
           Qualifier.byContactUuids([
-            targetIntervals[0].owner,
-            targetIntervals[1].owner,
-            targetIntervals[2].owner,
+            targets[0].owner,
+            targets[1].owner,
+            targets[2].owner,
           ])
         ));
 
-        expect(data).excludingEvery(['_rev']).to.deep.equal(targetIntervals);
+        expect(data).excludingEvery(['_rev']).to.deep.equal(targets);
         expect(cursor).to.be.equal(null);
       });
 
-      it('returns a page of target intervals for single contact UUID', async () => {
+      it('returns a page of targets for single contact UUID', async () => {
         const { data, cursor } = await getPage(Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuid(targetIntervals[0].owner)
+          Qualifier.byContactUuid(targets[0].owner)
         ));
 
-        expect(data).excludingEvery(['_rev']).to.deep.equal([targetIntervals[0]]);
+        expect(data).excludingEvery(['_rev']).to.deep.equal([targets[0]]);
         expect(cursor).to.be.equal(null);
       });
 
-      it('returns a page of target intervals when limit and cursor is passed', async () => {
+      it('returns a page of targets when limit and cursor is passed', async () => {
         const { data, cursor } = await getPage(
           Qualifier.and(
             Qualifier.byReportingPeriod('2025-09'),
             Qualifier.byContactUuids([
-              targetIntervals[0].owner,
-              targetIntervals[1].owner,
-              targetIntervals[2].owner,
+              targets[0].owner,
+              targets[1].owner,
+              targets[2].owner,
             ])
           ),
           '1',
           1
         );
 
-        expect(data).excludingEvery(['_rev']).to.deep.equal([targetIntervals[1]]);
+        expect(data).excludingEvery(['_rev']).to.deep.equal([targets[1]]);
         expect(cursor).to.be.equal('2');
       });
 
       it('throws error when limit is invalid', async () => {
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuids([targetIntervals[0].owner])
+          Qualifier.byContactUuids([targets[0].owner])
         );
         await expect(getPage(qualifier, null, -1)).to.be.rejectedWith(
           `The limit must be a positive integer: [-1].`
@@ -188,7 +188,7 @@ describe('cht-datasource Target Interval', () => {
       it('throws error when cursor is invalid', async () => {
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuids([targetIntervals[0].owner])
+          Qualifier.byContactUuids([targets[0].owner])
         );
         await expect(getPage(qualifier, -1)).to.be.rejectedWith(
           `The cursor must be a string or null for first page: [-1].`

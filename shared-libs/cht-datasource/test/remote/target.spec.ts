@@ -2,7 +2,7 @@ import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
-import * as Target from '../../src/remote/target-interval';
+import * as Target from '../../src/remote/target';
 import {
   and,
   byContactUuid,
@@ -46,7 +46,7 @@ describe('remote target', () => {
         const result = await Target.v1.get(remoteContext)(identifier);
 
         expect(result).to.equal(doc);
-        expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target-interval');
+        expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target');
         expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.uuid);
       });
 
@@ -56,7 +56,7 @@ describe('remote target', () => {
         const result = await Target.v1.get(remoteContext)(identifier);
 
         expect(result).to.be.null;
-        expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target-interval');
+        expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target');
         expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.uuid);
       });
     });
@@ -98,7 +98,7 @@ describe('remote target', () => {
         const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           reporting_period: qualifier.reportingPeriod,
@@ -115,7 +115,7 @@ describe('remote target', () => {
         const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           reporting_period: qualifier.reportingPeriod,
@@ -131,7 +131,7 @@ describe('remote target', () => {
         const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
         expect(result).to.deep.equal([]);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target-interval')).to.be.true;
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/target')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           reporting_period: qualifier.reportingPeriod,

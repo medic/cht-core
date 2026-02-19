@@ -8,7 +8,7 @@ import {
   UuidQualifier
 } from '../qualifier';
 import { hasField, isRecord, Nullable, Page } from '../libs/core';
-import * as Target from '../target-interval';
+import * as Target from '../target';
 import logger from '@medic/logger';
 import { Doc } from '../libs/doc';
 import { validateCursor } from './libs/core';

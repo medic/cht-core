@@ -26,7 +26,7 @@ describe('Target controller', () => {
     bind.withArgs(Target.v1.get).returns(getTarget);
     bind.withArgs(Target.v1.getPage).returns(getTargets);
 
-    controller = require('../../../src/controllers/target-interval');
+    controller = require('../../../src/controllers/target');
   });
 
   beforeEach(() => {
