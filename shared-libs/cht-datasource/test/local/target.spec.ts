@@ -40,7 +40,8 @@ describe('local target', () => {
           targets: [
             { id: 'target1', value: { pass: 5, total: 6 } },
             { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
-          ]
+          ],
+          type: 'target'
         };
         getDocByIdInner.resolves(doc);
 
@@ -73,30 +74,35 @@ describe('local target', () => {
           owner: 'owner',
           reporting_period: '2025-01',
           updated_date: 123,
+          type: 'target'
         },
         {
           user: 'user',
           owner: 'owner',
           reporting_period: '2025-01',
+          updated_date: 123,
           targets: []
         },
         {
           user: 'user',
           owner: 'owner',
           updated_date: 123,
-          targets: []
+          targets: [],
+          type: 'target'
         },
         {
           user: 'user',
           reporting_period: '2025-01',
           updated_date: 123,
-          targets: []
+          targets: [],
+          type: 'target'
         },
         {
           owner: 'owner',
           reporting_period: '2025-01',
           updated_date: 123,
-          targets: []
+          targets: [],
+          type: 'target'
         },
       ].forEach(invalidDoc => {
         it('returns null if the identified doc is not a target', async () => {
@@ -121,7 +127,8 @@ describe('local target', () => {
         owner: 'contact-1',
         reporting_period: '2025-01',
         updated_date: 123,
-        targets: []
+        targets: [],
+        type: 'target'
       };
       const target1 = {
         _id: 'target~2025-01~contact-2',
@@ -129,7 +136,8 @@ describe('local target', () => {
         owner: 'contact-2',
         reporting_period: '2025-01',
         updated_date: 124,
-        targets: []
+        targets: [],
+        type: 'target'
       };
       const target2 = {
         _id: 'target~2025-01~contact-2',
@@ -137,7 +145,8 @@ describe('local target', () => {
         owner: 'contact-2',
         reporting_period: '2025-01',
         updated_date: 124,
-        targets: []
+        targets: [],
+        type: 'target'
       };
       const invalidTarget = {
         _id: 'target~2025-01~contact-2'

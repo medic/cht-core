@@ -43,6 +43,7 @@ const getTargetIds = async (
 export namespace v1 {
   const isTarget = (doc: Nullable<Doc>): doc is Target.v1.Target => {
     return isRecord(doc)
+      && doc.type === 'target'
       && hasField(doc, { name: 'user', type: 'string' })
       && hasField(doc, { name: 'owner', type: 'string' })
       && hasField(doc, { name: 'reporting_period', type: 'string' })
