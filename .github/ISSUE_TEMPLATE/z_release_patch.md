@@ -37,6 +37,15 @@ Once all issues have been merged into `master` then the release process can star
 - [ ] Create a [new release](https://github.com/medic/cht-core/releases/new) in GitHub, with the naming convention `<major>.<minor>.<patch>`, from the release branch created above as the target branch. Click on the "Choose a tag" dropdown and create a tag for the release with the naming convention `<major>.<minor>.<patch>`. Add a link to the release notes page in the description of the release.
 - [ ] Once you publish the release, confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
 - [ ] Upgrade the [demo](https://demo-cht.dev.medicmobile.org/) instance to the newly released version.
+  - [ ] From the "App Management" admin console (`medic` user creds in 1Password), stage the upgrade.
+  - [ ] Clone cht-core and checkout the target tag to ensure you have the proper version of the helm charts.
+  - [ ] In your terminal, change to the `./cht-core/scripts/build/helm` directory. 
+  - [ ] Ensure you have access to [Medic hosted EKS](https://docs.communityhealthtoolkit.org/hosting/medic/). (Note that your AWS user needs [access to the `demo-cht` namespace](https://github.com/medic/medic-infrastructure/issues/1344).)
+  - [ ] Verify you can see the instance with helm: `helm list -n demo-cht`
+  - [ ] Download the current `values.yaml` data from the demo instance: `helm get values demo-cht --namespace demo-cht > values.yaml`
+  - [ ] Edit the `values.yaml` file and update the `cht_image_tag` and `chtversion` properties to have the new tag value.
+  - [ ] Use helm to upgrade the instance: `helm upgrade demo-cht . --namespace demo-cht -f values.yaml`
+  - [ ] Refresh the "App Management" page and verify the instance is running the new version.
 - [ ] Announce the release on the [CHT Forum](https://forum.communityhealthtoolkit.org/), under the "Announcements - Releases" category using this [template](https://forum.communityhealthtoolkit.org/new-topic?title=Announcing%20the%20release%20of%20%3Cmajor%3E.%3Cminor%3E.%3Cpatch%3E%20of%20the%20CHT%20Core%20Framework&body=%2AAnnouncing%20the%20release%20of%20%7B%7Bversion%7D%7D%20of%20%7B%7Bproduct%7D%7D%2A%0AThis%20release%20fixes%20%7B%7Bnumber%20of%20bugs%7D%7D.%20Read%20the%20%5Brelease%20notes%5D%28%7B%7Burl%7D%7D%29%20for%20full%20details.&category=releases).
 - [ ] Go over the list of commits and individually notify contributing / interested community members about the release.
 - [ ] Go to the [Issues tab](https://github.com/medic/cht-core/issues) and filter the issues with `is:issue label:"Affects: 4.x.x" ` , replace `4.x.x` with the previous version number. Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.

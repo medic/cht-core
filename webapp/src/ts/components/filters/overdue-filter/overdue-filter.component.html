@@ -1,0 +1,12 @@
+<div class="mm-overdue-filter" [id]="fieldId">
+  <ul class="filter-options">
+    <li
+      *ngFor="let status of statuses"
+      [class.selected]="filter?.selected.has(status)"
+      [class.disabled]="disabled">
+      <a role="menuitem" tabindex="-1" [attr.data-value]="status" (click)="!disabled && filter?.toggle(status)">
+        {{ 'tasks.sidebar.filter.overdue.' + status | translate }}
+      </a>
+    </li>
+  </ul>
+</div>

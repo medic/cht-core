@@ -3,6 +3,7 @@ const moment = require('moment');
 const expect = require('chai').expect;
 const should = require('chai').should();
 const rewire = require('rewire');
+const { CONTACT_TYPES } = require('@medic/constants');
 const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
@@ -57,7 +58,7 @@ describe('messageUtils', () => {
               phone: clinicPhone
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
@@ -88,7 +89,7 @@ describe('messageUtils', () => {
               phone: `not${clinicPhone}`,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: `not${parentPhone}`,
               },
@@ -109,7 +110,7 @@ describe('messageUtils', () => {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
@@ -140,7 +141,7 @@ describe('messageUtils', () => {
               phone: `not${clinicPhone}`,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: `not${parentPhone}`,
               },
@@ -161,7 +162,7 @@ describe('messageUtils', () => {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
@@ -193,7 +194,7 @@ describe('messageUtils', () => {
             },
             parent: {
               type: 'contact',
-              contact_type: 'health_center',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
@@ -225,7 +226,7 @@ describe('messageUtils', () => {
             },
             parent: {
               type: 'contact',
-              contact_type: 'health_center',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
@@ -282,7 +283,7 @@ describe('messageUtils', () => {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
@@ -329,7 +330,7 @@ describe('messageUtils', () => {
               phone: clinicPhone,
             },
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone,
               },
@@ -440,14 +441,14 @@ describe('messageUtils', () => {
           place: {
             type: 'clinic',
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: '111'
               }
             }
           },
           parent: {
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             contact: {
               phone: '222'
             }
@@ -459,7 +460,7 @@ describe('messageUtils', () => {
             contact_type: 'clinic',
             parent: {
               type: 'contact',
-              contact_type: 'health_center',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: '111'
               }
@@ -467,14 +468,14 @@ describe('messageUtils', () => {
           },
           parent: {
             type: 'contact',
-            contact_type: 'health_center',
+            contact_type: CONTACT_TYPES.HEALTH_CENTER,
             contact: {
               phone: '222'
             }
           }
         };
-        utils._getRecipient(context, 'health_center').should.equal('111');
-        utils._getRecipient(contextFlexible, 'health_center').should.equal('111');
+        utils._getRecipient(context, CONTACT_TYPES.HEALTH_CENTER).should.equal('111');
+        utils._getRecipient(contextFlexible, CONTACT_TYPES.HEALTH_CENTER).should.equal('111');
       });
 
       it('should resolve link: correctly', () => {
@@ -561,7 +562,7 @@ describe('messageUtils', () => {
               },
               parent: {
                 type: 'contact',
-                contact_type: 'health_center',
+                contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: { phone: '22222' },
                 linked_docs: {
                   health_center: { phone: 'three' },
@@ -817,7 +818,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -826,13 +827,13 @@ describe('messageUtils', () => {
           }
         };
         const content = { message: 'xxx' };
-        const recipient = 'health_center';
+        const recipient = CONTACT_TYPES.HEALTH_CENTER;
         const context = {
           patient: {
             parent: {
               type: 'clinic',
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: {
                   type: 'person',
                   phone: '+333'
@@ -870,7 +871,7 @@ describe('messageUtils', () => {
             parent: {
               type: 'clinic',
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
                   type: 'district_hospital',
                   contact: {
@@ -905,7 +906,7 @@ describe('messageUtils', () => {
                 phone: '+222'
               },
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
                   type: 'district_hospital',
                   contact: {
@@ -940,7 +941,7 @@ describe('messageUtils', () => {
                 phone: '+222'
               },
               parent: {
-                type: 'health_center', //parent
+                type: CONTACT_TYPES.HEALTH_CENTER, //parent
                 parent: {
                   type: 'district_hospital', //grandparent
                   contact: {
@@ -971,7 +972,7 @@ describe('messageUtils', () => {
             parent: {
               type: 'clinic',
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
                   type: 'district_hospital',
                   contact: {
@@ -1006,7 +1007,7 @@ describe('messageUtils', () => {
                 phone: '+222'
               },
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
                   type: 'district_hospital',
                   contact: {
@@ -1043,7 +1044,7 @@ describe('messageUtils', () => {
                 type: 'person'                
               },
               parent: {
-                type: 'health_center',
+                type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
                   type: 'district_hospital',
                   contact: {
@@ -1403,7 +1404,7 @@ describe('messageUtils', () => {
           reported_date: '2050-03-13T13:06:22.002Z',
           chw_name: 'Arnold',
           parent: {
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             parent: {
               type: 'district_hospital',
               parent: ''

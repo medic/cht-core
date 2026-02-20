@@ -52,7 +52,9 @@ const initialState: GlobalState = {
   snackbarContent: null as any,
   translationsLoaded: false,
   userFacilityIds: [],
+  userFacilities: [],
   userContactId: null,
+  isOnlineOnly: false,
   language: null,
   storageInfo: {
     status: StorageStatus.STARTUP,
@@ -184,7 +186,12 @@ const _globalReducer = createReducer(
     userFacilityIds = Array.isArray(userFacilityIds) ? userFacilityIds : [userFacilityIds];
     return { ...state, userFacilityIds };
   }),
+  on(Actions.setUserFacilities, (state, { payload: { userFacilities }}) => {
+    userFacilities = Array.isArray(userFacilities) ? userFacilities : [userFacilities];
+    return { ...state, userFacilities };
+  }),
   on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
+  on(Actions.setIsOnlineOnly, (state, { payload: { isOnlineOnly }}) => ({ ...state, isOnlineOnly })),
   on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
     return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
@@ -233,7 +240,9 @@ export interface GlobalState {
   snackbarContent: SnackbarState;
   translationsLoaded: boolean;
   userFacilityIds: null | string[];
+  userFacilities: Record<string, any>[];
   userContactId: null | string;
+  isOnlineOnly: boolean;
   language: null | Record<string, any>;
   storageInfo: StorageInfo;
 }
@@ -279,4 +288,10 @@ interface SidebarFilterState {
   isOpen?: boolean;
   filterCount?: Record<string, number>;
   defaultFilters?: Record<string, any>;
+}
+
+export interface TasksFilters {
+  taskOverdue?: boolean;
+  taskTypes?: { selected: string[] };
+  facilities?: { selected: string[] };
 }

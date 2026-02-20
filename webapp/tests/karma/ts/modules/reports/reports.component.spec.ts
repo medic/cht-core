@@ -105,7 +105,6 @@ describe('Reports Component', () => {
     modalService = { show: sinon.stub() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
-      getUserLineageToRemove: sinon.stub(),
     };
     fastActionButtonService = {
       getReportLeftSideActions: sinon.stub(),
@@ -777,9 +776,8 @@ describe('Reports Component', () => {
       searchService.search.resolves(reports);
     });
 
-    it('should not remove the lineage when user lineage level is undefined', fakeAsync(() => {
+    it('should pass lineage data through without filtering', fakeAsync(() => {
       sinon.resetHistory();
-      userContactService.getUserLineageToRemove.resolves(undefined);
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -831,73 +829,6 @@ describe('Reports Component', () => {
           lineage: undefined,
           heading: 'report.subject.unknown',
           icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-      ];
-
-      component.ngOnInit();
-      component.ngAfterViewInit();
-      flush();
-
-      expect(updateReportsListStub.calledOnce).to.be.true;
-      expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
-    }));
-
-    it('should remove lineage when user lineage level is defined', fakeAsync(() => {
-      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
-      const expectedReports = [
-        {
-          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
-          lineage: [ 'St Elmos Concession', 'Chattanooga Village' ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage: [ 'Chattanooga Village' ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899',
-          lineage: [ 'Chattanooga Village' ],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
-          lineage: [],
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          lineage: undefined,
-          summary: undefined,
-          expanded: false,
-          unread: true,
-        },
-        {
-          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
-          heading: 'report.subject.unknown',
-          icon: undefined,
-          lineage: undefined,
           summary: undefined,
           expanded: false,
           unread: true,
