@@ -171,7 +171,7 @@ describe('Facility Filter Component', () => {
       ]);
     });
 
-    it('should not load facilities if sidebar is close', fakeAsync(() => {
+    it('should not load facilities if sidebar is closed', fakeAsync(() => {
       const facilities = [{
         _id: '1',
         doc: { name: 'not_first', },
@@ -197,7 +197,7 @@ describe('Facility Filter Component', () => {
       expect(component.facilities.length).to.equal(0);
     }));
 
-    it('should not load facilities if sidebar is open', fakeAsync(() => {
+    it('should load facilities if sidebar is open', fakeAsync(() => {
       const facilities = [{
         _id: '1',
         doc: { name: 'not_first', },

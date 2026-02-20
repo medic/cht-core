@@ -2,7 +2,7 @@ const realWorldPlaceFactory = require('../../factories/real-world/contacts/place
 const realWorldPersonFactory = require('../../factories/real-world/contacts/person');
 const realWorldUserFactory = require('../../factories/real-world/users/user');
 const realWorldSurvey = require('../../factories/real-world/reports/survey');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 const fs = require('fs');
 const path = require('path');
 const dataConfig = require('./data-config.json');
@@ -89,19 +89,19 @@ const renameKey = (obj, oldKey, newKey) => {
 
 const pairPlaceTypesRoles = {
   'district_hospital': 'supervisor',
-  'health_center': 'district_admin',
+  [CONTACT_TYPES.HEALTH_CENTER]: 'district_admin',
   'clinic': null
 };
 
 const pairPlaceTypesNeedsUsers = {
   'district_hospital': true,
-  'health_center': true,
+  [CONTACT_TYPES.HEALTH_CENTER]: true,
   'clinic': false
 };
 
 const pairPlaceTypesPersonSubtype = {
   'district_hospital': 'manager',
-  'health_center': 'chw',
+  [CONTACT_TYPES.HEALTH_CENTER]: 'chw',
   'clinic': 'member_eligible_woman'
 };
 
@@ -212,7 +212,7 @@ const generateData = async () => {
     for (let hc = 0; hc < numberOfHealthCentersPerDistrictHospital; hc++) {
       const healthCenterName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc;
       const healthCenter = await generateHierarchy(
-        'health_center',
+        CONTACT_TYPES.HEALTH_CENTER,
         healthCenterName,
         districtHospital,
         numberOfChwPerHealthCenter

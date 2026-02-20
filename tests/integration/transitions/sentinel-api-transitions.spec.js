@@ -2,6 +2,7 @@ const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const apiUtils = require('./utils');
 const chai = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -11,9 +12,9 @@ const contacts = [
     reported_date: new Date().getTime()
   },
   {
-    _id: 'health_center',
+    _id: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     reported_date: new Date().getTime()
   },
@@ -21,17 +22,17 @@ const contacts = [
     _id: 'clinic1',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw1',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     reported_date: new Date().getTime()
@@ -41,7 +42,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient1',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   },
   {
@@ -49,24 +50,24 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient2',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   },
   {
     _id: 'clinic2',
     name: 'Clinic',
     type: 'clinic',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw2',
-      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw2',
     type: 'person',
-    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone2',
     name: 'chw2',
     reported_date: new Date().getTime()
@@ -76,7 +77,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient3',
-    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   },
   {
@@ -84,7 +85,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient4',
-    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   }
 ];
@@ -1009,7 +1010,10 @@ describe('transitions', () => {
       .then(result => {
         chai.expect(result.rows.length).to.equal(1);
         chai.expect(result.rows[0].doc).to.deep.include({
-          parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          parent: {
+            _id: 'clinic1',
+            parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+          },
           date_of_death: '123456789',
           name: 'Veronica',
         });
@@ -1027,7 +1031,7 @@ describe('transitions', () => {
     const place = {
       _id: 'my_favorite_place',
       name: 'My Favorite Place',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       reported_date: new Date().getTime(),
       parent: { _id: 'district_hospital' },
     };

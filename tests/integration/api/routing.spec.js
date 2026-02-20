@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
 const moment = require('moment');
 const semver = require('semver');
 
@@ -19,7 +19,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:offline',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Offline place',
       parent: 'PARENT_PLACE',
     },
@@ -34,7 +34,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Online place',
       parent: 'PARENT_PLACE',
     },

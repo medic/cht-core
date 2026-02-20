@@ -1,5 +1,3 @@
-const _ = require('lodash/core');
-
 /*
  * Get all enabled languages
  */
@@ -11,9 +9,9 @@ angular.module('inboxServices').factory('Languages',
     'ngInject';
     return function() {
       return DB()
-        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
+        .allDocs({ start_key: 'messages-', end_key: 'messages-\ufff0', include_docs: true })
         .then(function(result) {
-          return _.map(result.rows, 'value');
+          return result.rows.map(row => ({ code: row.doc.code, name: row.doc.name }));
         });
     };
   });

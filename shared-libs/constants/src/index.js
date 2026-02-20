@@ -5,10 +5,17 @@
 const DOC_IDS = {
   SERVICE_WORKER_META: 'service-worker-meta',
   SETTINGS: 'settings',
+  RESOURCES: 'resources',
+};
+
+// Contact Types
+const CONTACT_TYPES = {
+  HEALTH_CENTER: 'health_center',
 };
 
 // Document Types
 const DOC_TYPES = {
+  TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
 };
 
@@ -34,4 +41,5 @@ module.exports = {
   HTTP_HEADERS,
   SENTINEL_METADATA,
   USER_ROLES,
+  CONTACT_TYPES,
 };

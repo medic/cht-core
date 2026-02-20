@@ -42,8 +42,6 @@ describe('forms service', () => {
 
       sinon.stub(db.medic, 'getAttachment').resolves(fakeAttachment);
       sinon.stub(logger, 'error');
-
-
       const result = await service.getAttachment(fakeDoc._id, fakeName);
 
       expect(result).to.equal(fakeAttachment);
@@ -51,7 +49,7 @@ describe('forms service', () => {
       expect(logger.error.called).to.be.false;
     });
 
-    it('should return null and log error when error status is 404', async () => {
+    it('should return undefined and log warning when error status is 404', async () => {
       const fakeDoc = { _id: 'doc1', _rev: '1-abc' };
       const fakeName = 'missing.txt';
       const notFoundError = new Error('Not found');
@@ -59,10 +57,12 @@ describe('forms service', () => {
 
       sinon.stub(db.medic, 'getAttachment').rejects(notFoundError);
       sinon.stub(logger, 'error');
+      sinon.stub(logger, 'warn');
       const result = await service.getAttachment(fakeDoc._id, fakeName);
 
-      expect(result).to.be.null;
-      expect(logger.error.calledOnceWith(notFoundError)).to.be.true;
+      expect(result).to.be.undefined;
+      expect(logger.error.called).to.be.false;
+      expect(logger.warn.called).to.be.true;
     });
 
     it('should throw error for non-404 errors', async () => {
