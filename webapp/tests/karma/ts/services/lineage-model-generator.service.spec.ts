@@ -66,7 +66,7 @@ describe('LineageModelGenerator service', () => {
         ] });
       return service.contact('a').then(model => {
         expect(dbQuery.callCount).to.equal(1);
-        expect(dbQuery.args[0][0]).to.equal('medic-client/docs_by_id_lineage');
+        expect(dbQuery.args[0][0]).to.equal('shared/docs_by_id_lineage');
         expect(dbQuery.args[0][1]).to.deep.equal({
           startkey: [ 'a' ],
           endkey: [ 'a', {} ],
@@ -374,7 +374,7 @@ describe('LineageModelGenerator service', () => {
       ];
 
       dbQuery
-        .withArgs('medic-client/contacts_by_reference')
+        .withArgs('shared-contacts/contacts_by_reference')
         .resolves({ rows: [{ id: 'patient1', key: ['shortcode', 'patient_id1'] }] });
       dbAllDocs
         .withArgs(sinon.match({ keys: ['patient1'] }))
@@ -460,7 +460,7 @@ describe('LineageModelGenerator service', () => {
         },
       ];
 
-      dbQuery.withArgs('medic-client/contacts_by_reference').resolves({ rows: [] });
+      dbQuery.withArgs('shared-contacts/contacts_by_reference').resolves({ rows: [] });
       dbAllDocs.withArgs(sinon.match({ keys: ['new_patient'] })).resolves({ rows: [] });
       dbAllDocs
         .withArgs(sinon.match({ keys: ['old_contact', 'new_place', 'old_place'] }))

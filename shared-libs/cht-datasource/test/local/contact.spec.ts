@@ -188,7 +188,7 @@ describe('local contact', () => {
         queryViewTypeFreetextByKey = sinon.stub();
         const queryDocUuidsByKeyStub = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
         queryDocUuidsByKeyStub
-          .withArgs(localContext.medicDb, 'medic-client/contacts_by_type')
+          .withArgs(localContext.medicDb, 'shared-contacts/contacts_by_type')
           .returns(queryViewByType);
         queryDocUuidsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')

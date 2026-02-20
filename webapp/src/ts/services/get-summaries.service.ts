@@ -108,7 +108,7 @@ export class GetSummariesService {
   private getRemote(ids) {
     return this.dbService
       .get()
-      .query('medic/doc_summaries_by_id', { keys: ids })
+      .query('online-user/doc_summaries_by_id', { keys: ids })
       .then(response => {
         return response.rows.map(row => {
           row.value._id = row.id;

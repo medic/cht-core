@@ -27,7 +27,7 @@ describe('local lineage lib', () => {
     const result = await fn(uuid);
 
     expect(result).to.deep.equal([]);
-    expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
+    expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'shared/docs_by_id_lineage')).to.be.true;
     expect(queryFn.calledOnceWithExactly([uuid], [uuid, {}])).to.be.true;
   });
 

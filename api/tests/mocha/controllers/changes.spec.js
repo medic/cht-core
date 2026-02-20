@@ -27,7 +27,7 @@ describe('Changes controller', () => {
     sinon.stub(db.medic, 'changes').resolves({
       changes: [
         { id: DOC_IDS.SERVICE_WORKER_META },
-        { id: '_design/medic-client', },
+        { id: '_design/shared', },
         { id: 'org.couchdb.user:user', },
         { id: DOC_IDS.SETTINGS },
       ],
@@ -35,6 +35,11 @@ describe('Changes controller', () => {
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
       '_design/medic-client',
+      '_design/shared',
+      '_design/shared-contacts',
+      '_design/shared-reports',
+      '_design/webapp-contacts',
+      '_design/webapp-reports',
       DOC_IDS.SERVICE_WORKER_META,
       DOC_IDS.SETTINGS,
       'org.couchdb.user:user',
@@ -42,7 +47,7 @@ describe('Changes controller', () => {
     expect(res.json.args).to.deep.equal([[{
       changes: [
         { id: DOC_IDS.SERVICE_WORKER_META },
-        { id: '_design/medic-client', },
+        { id: '_design/shared', },
         { id: 'org.couchdb.user:user', },
         { id: DOC_IDS.SETTINGS },
       ],

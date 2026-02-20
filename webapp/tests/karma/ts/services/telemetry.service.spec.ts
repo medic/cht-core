@@ -228,9 +228,9 @@ describe('TelemetryService', () => {
       medicDb.info.resolves({ some: 'stats' });
       metaDb.put.resolves();
       medicDb.get
-        .withArgs('_design/medic-client')
+        .withArgs('_design/shared')
         .resolves({
-          _id: '_design/medic-client',
+          _id: '_design/shared',
           build_info: { version: '3.0.0' }
         });
       medicDb.query.resolves({
@@ -319,7 +319,7 @@ describe('TelemetryService', () => {
       });
 
       expect(medicDb.query.calledTwice).to.be.true;
-      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
+      expect(medicDb.query.args[0][0]).to.equal('shared/doc_by_type');
       expect(medicDb.query.args[0][1]).to.deep.equal({ key: [ 'form' ], include_docs: true });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
       expect(telemetryDb.close.notCalled).to.be.true;
@@ -450,8 +450,8 @@ describe('TelemetryService', () => {
       medicDb.info.resolves({ some: 'stats' });
       metaDb.put.onFirstCall().rejects({ status: 409 });
       metaDb.put.onSecondCall().resolves();
-      medicDb.get.withArgs('_design/medic-client').resolves({
-        _id: '_design/medic-client',
+      medicDb.get.withArgs('_design/shared').resolves({
+        _id: '_design/shared',
         build_info: {
           version: '3.0.0'
         }

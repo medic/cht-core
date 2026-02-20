@@ -1260,7 +1260,7 @@ describe('Setup utils', () => {
     it('should return nouveau info for all indexes', async () => {
       const database = { name: 'medic' };
       const ddoc = {
-        _id: '_design/medic',
+        _id: '_design/online-user',
         nouveau: {
           idx1: {},
           idx2: {}
@@ -1275,8 +1275,8 @@ describe('Setup utils', () => {
       const result = await utils.getNouveauInfo(database, ddoc);
 
       expect(getStub.callCount).to.equal(2);
-      expect(getStub.args[0][0].url).to.contain('/medic/_design/medic/_nouveau_info/idx1');
-      expect(getStub.args[1][0].url).to.contain('/medic/_design/medic/_nouveau_info/idx2');
+      expect(getStub.args[0][0].url).to.contain('/medic/_design/online-user/_nouveau_info/idx1');
+      expect(getStub.args[1][0].url).to.contain('/medic/_design/online-user/_nouveau_info/idx2');
       expect(result).to.deep.equal([response1.search_index, response2.search_index]);
     });
 

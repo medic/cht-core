@@ -3,7 +3,7 @@ const logger = require('@medic/logger');
 
 const getReportsCountByForm = async () => {
   try {
-    const result = await db.medic.query('medic-client/reports_by_form', {
+    const result = await db.medic.query('shared-reports/reports_by_form', {
       reduce: true,
       group: true,
     });
@@ -29,7 +29,7 @@ const getReportsCountByForm = async () => {
 
 const getContactsByType = async () => {
   try {
-    const result = await db.medic.query('medic-client/contacts_by_type', {
+    const result = await db.medic.query('shared-contacts/contacts_by_type', {
       reduce: true,
       group: true,
     });

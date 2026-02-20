@@ -415,7 +415,7 @@ const setPatientId = (options) => {
 
 const getParentByPhone = options => {
   return db.medic
-    .query('medic-client/contacts_by_phone', { key: options.doc.from, include_docs: true })
+    .query('shared-contacts/contacts_by_phone', { key: options.doc.from, include_docs: true })
     .then(result => result && result.rows && result.rows.length && result.rows[0].doc)
     .then(contact => {
       if (!contact) {

@@ -20,7 +20,7 @@ const getLogWithView = () => {
     include_docs: true,
     key: [MIGRATION_LOG_TYPE],
   };
-  return db.medic.query('medic-client/doc_by_type', options).then(result => {
+  return db.medic.query('shared/doc_by_type', options).then(result => {
     return result && result.rows && result.rows[0] && result.rows[0].doc;
   });
 };

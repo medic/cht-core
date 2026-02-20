@@ -100,7 +100,7 @@ angular.module('inboxServices').factory('GetSummaries',
     };
 
     const getRemote = ids => {
-      return DB().query('medic/doc_summaries_by_id', { keys: ids }).then(response => {
+      return DB().query('online-user/doc_summaries_by_id', { keys: ids }).then(response => {
         return response.rows.map(row => {
           row.value._id = row.id;
           return row.value;

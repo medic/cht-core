@@ -511,10 +511,7 @@ const deleteAllDocs = async (except = []) => {
 };
 
 
-// Update both ddocs, to avoid instability in tests.
-// Note that API will be copying changes to medic over to medic-client, so change
-// medic-client first (api does nothing) and medic after (api copies changes over to
-// medic-client, but the changes are already there.)
+// Update settings via the API.
 const updateCustomSettings = updates => {
   if (originalSettings) {
     throw new Error('A previous test did not call revertSettings');
@@ -859,7 +856,7 @@ const createUsers = async (users, meta = false, password_change_required = false
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .query('shared/doc_by_type', { include_docs: true, key: ['user-settings'] })
   .then(response => response.rows.map(row => row.doc));
 
 /**

@@ -45,17 +45,17 @@ describe('Configuration', () => {
     it('loads app settings combining with default config, loads views into ViewMaps, loads translations', () => {
       settingsService.update.resolves();
       settingsService.get.resolves({ foo: 'bar' });
-      db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
+      db.medic.get.withArgs('_design/replication').resolves({ _id: '_design/replication' });
       translations.getTranslationDocs.resolves([]);
 
       return bootstrap.load().then(() => {
         chai.expect(db.medic.get.callCount).to.equal(1);
-        chai.expect(db.medic.get.args[0][0]).to.equal('_design/medic');
+        chai.expect(db.medic.get.args[0][0]).to.equal('_design/replication');
         chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
         chai
           .expect(viewMapUtils.loadViewMaps.args[0])
           .to.deep.equal([
-            { _id: '_design/medic' },
+            { _id: '_design/replication' },
             ['contacts_by_depth'],
             ['docs_by_replication_key'],
           ]);
@@ -78,7 +78,7 @@ describe('Configuration', () => {
     it('should not crash if getting translation docs is unsuccessful', () => {
       settingsService.update.resolves();
       settingsService.get.resolves({ foo: 'bar' });
-      db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
+      db.medic.get.withArgs('_design/replication').resolves({ _id: '_design/replication' });
       translations.getTranslationDocs.rejects('errors nooo');
 
       return bootstrap.load().then(() => {
@@ -95,7 +95,7 @@ describe('Configuration', () => {
 
     it('should crash if translations are malformed', () => {
       settingsService.get.resolves({ foo: 'bar' });
-      db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
+      db.medic.get.withArgs('_design/replication').resolves({ _id: '_design/replication' });
       translations.getTranslationDocs.resolves([
         { generic: 'something', code: 'en' },
         { custom: 'or other', code: 'fr', values: 'true' },
@@ -133,10 +133,10 @@ describe('Configuration', () => {
         translations.run.resolves();
         db.medic.get.resolves();
 
-        return dbWatcher.medic.args[0][0]({ id: '_design/medic' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: '_design/replication' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
-          chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/medic']);
+          chai.expect(db.medic.get.args[0]).to.deep.equal(['_design/replication']);
           chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
           chai.expect(generateServiceWorker.run.callCount).to.equal(0);
         });
@@ -147,7 +147,7 @@ describe('Configuration', () => {
         settingsService.update.resolves();
         db.medic.get.resolves();
 
-        return dbWatcher.medic.args[0][0]({ id: '_design/medic' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: '_design/replication' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(1);
         });

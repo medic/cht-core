@@ -397,7 +397,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [            
               { 
-                url: 'someURL/_design/medic-client/_view/contacts_by_type',
+                url: 'someURL/_design/shared-contacts/_view/contacts_by_type',
                 qs: { limit: 1000, reduce: false, keys: '[["clinic"]]' },
                 json: true 
               },
@@ -467,7 +467,7 @@ describe('reminders', () => {
             assert.equal(request.get.callCount, 1);
             assert.deepEqual(request.get.args[0], [
               { 
-                url: 'someURL/_design/medic-client/_view/contacts_by_type',
+                url: 'someURL/_design/shared-contacts/_view/contacts_by_type',
                 qs: { limit: 1000, reduce: false, keys: '[["clinic"]]',
                   start_key_doc_id: 'somedocid' },
                 json: true 
@@ -502,7 +502,7 @@ describe('reminders', () => {
           assert.equal(request.get.callCount, 1);
           assert.deepEqual(request.get.args[0], [
             { 
-              url: 'someURL/_design/medic-client/_view/contacts_by_type',
+              url: 'someURL/_design/shared-contacts/_view/contacts_by_type',
               qs: { limit: 1000, reduce: false, keys: JSON.stringify([['tier2']]) },
               json: true 
             },
@@ -681,14 +681,14 @@ describe('reminders', () => {
         assert.equal(request.get.callCount, 2);
         assert.deepEqual(request.get.args[0], [
           { 
-            url: 'someURL/_design/medic-client/_view/contacts_by_type',
+            url: 'someURL/_design/shared-contacts/_view/contacts_by_type',
             qs: { limit: 1000, reduce: false, keys: JSON.stringify([['tier2']]) },
             json: true 
           },
         ]);
         assert.deepEqual(request.get.args[1], [
           {  
-            url: 'someURL/_design/medic-client/_view/contacts_by_type',
+            url: 'someURL/_design/shared-contacts/_view/contacts_by_type',
             qs: { limit: 1000, reduce: false, keys: JSON.stringify([['tier2']]),
               start_key_doc_id: 'doc3' },
             json: true 
@@ -697,7 +697,7 @@ describe('reminders', () => {
 
         assert.equal(db.medic.query.callCount, 1);
         assert.deepEqual(db.medic.query.args[0], [
-          'medic/reports_by_form_and_parent',
+          'report-transitions/reports_by_form_and_parent',
           {
             keys: [['vform', 'doc1'], ['vform', 'doc2'], ['vform', 'doc3']],
             group: true

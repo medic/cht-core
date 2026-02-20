@@ -225,6 +225,11 @@ describe('changes handler', () => {
     const changesIDs = [
       DOC_IDS.SERVICE_WORKER_META,
       '_design/medic-client',
+      '_design/shared',
+      '_design/shared-contacts',
+      '_design/shared-reports',
+      '_design/webapp-contacts',
+      '_design/webapp-reports',
       DOC_IDS.SETTINGS
     ];
 

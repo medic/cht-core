@@ -11,9 +11,22 @@ const { DOC_IDS } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
-const MEDIC_CLIENT_DDOC = '_design/medic-client';
+
+const REPLICATED_DDOCS = [
+  '_design/medic-client',
+  '_design/shared',
+  '_design/shared-contacts',
+  '_design/shared-reports',
+  '_design/webapp-contacts',
+  '_design/webapp-reports',
+];
+
+const isReplicatedDdoc = (docId) => {
+  return REPLICATED_DDOCS.includes(docId);
+};
+
 const DEFAULT_DDOCS = [
-  MEDIC_CLIENT_DDOC,
+  ...REPLICATED_DDOCS,
   DOC_IDS.SERVICE_WORKER_META,
   DOC_IDS.SETTINGS,
 ];
@@ -157,7 +170,7 @@ const getContactDepth = (authorizationContext, contactsByDepth) => {
  * Updates authorizationContext.subjectIds, including or excluding tested contact `subjectId` and `docId`
  * @param   {Boolean} allowed - whether subjects should be included or excluded
  * @param   {AuthorizationContext} authorizationContext
- * @param   {Array}   contactsByDepth - results of `medic/contacts_by_depth` view against doc
+ * @param   {Array}   contactsByDepth - results of `replication/contacts_by_depth` view against doc
  * @returns {Boolean} whether new subjectIds were added to authorizationContext
  **/
 const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
@@ -185,12 +198,12 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
  * Returns whether an authenticated user has access to a document
  * @param   {String}   docId - CouchDB document ID
  * @param   {AuthorizationContext} authorizationContext
- * @param   {DocByReplicationKey} docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
- * @param   {Array}    contactsByDepth - results of `medic/contacts_by_depth` view against doc
+ * @param   {DocByReplicationKey} docsByReplicationKey - result of `replication/_nouveau/docs_by_replication_key` index
+ * @param   {Array}    contactsByDepth - results of `replication/contacts_by_depth` view against doc
  * @returns {Boolean}
  */
 const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contactsByDepth }) => {
-  if ([MEDIC_CLIENT_DDOC, getUserSettingsId(authorizationContext.userCtx.name)].includes(docId)) {
+  if (isReplicatedDdoc(docId) || docId === getUserSettingsId(authorizationContext.userCtx.name)) {
     return true;
   }
 
@@ -238,7 +251,7 @@ const allowedContact = (docId, docContactsByDepth, authorizationContext) => {
 /**
  * Returns whether an authenticated user has access to a report document
  * @param {AuthorizationContext} authorizationContext
- * @param {DocByReplicationKey} docsByReplicationKey - result of `medic/_nouveau/docs_by_replication_key` index
+ * @param {DocByReplicationKey} docsByReplicationKey - result of `replication/_nouveau/docs_by_replication_key` index
  *
  * @returns {Boolean}
  */
@@ -354,7 +367,7 @@ const getAuthorizationContext = async (userCtx) => {
   const authCtx = getContextObject(userCtx);
   const contactsSubjects = {};
 
-  const results = await db.medic.query('medic/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
+  const results = await db.medic.query('replication/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
   results.rows.forEach(row => {
     const subjects = getContactSubjects(row);
 
@@ -396,7 +409,8 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
   const unknownPrimaryContacts = _.uniq(primaryContactIds.filter(id => !contacts[id]));
 
   if (unknownPrimaryContacts.length) {
-    const result = await db.medic.query('medic/contacts_by_depth', { keys: unknownPrimaryContacts.map(id => [id] ) });
+    const keys = unknownPrimaryContacts.map(id => [id]);
+    const result = await db.medic.query('replication/contacts_by_depth', { keys });
     result.rows.forEach(row => {
       const subjects = getContactSubjects(row);
       authCtx.subjectIds.push(...subjects);
@@ -443,7 +457,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
   const keys = replicationKeys.map(id => ['shortcode', id]);
 
   return db.medic
-    .query('medic-client/contacts_by_reference', { keys })
+    .query('shared-contacts/contacts_by_reference', { keys })
     .then(result => {
       const docIds = new Set();
       for (const replicationKey of replicationKeys) {
@@ -467,7 +481,8 @@ const findContactsByReplicationKeys = (replicationKeys) => {
  */
 const getPrimaryPlaces = async (docs) => {
   const docIds = docs.map(doc => doc._id);
-  const queryResult = await db.medic.query('medic/contacts_by_primary_contact', { keys: docIds, include_docs: true });
+  const opts = { keys: docIds, include_docs: true };
+  const queryResult = await db.medic.query('replication/contacts_by_primary_contact', opts);
   return queryResult.rows.map(row => row.doc).filter(doc => doc);
 };
 
@@ -502,7 +517,7 @@ const populateAllowedSubjectIds = (authorizationCtx, contacts) => {
 
 /**
  * To determine whether a user has access to a small set of docs (for example, during a GET attachment
- * request), instead of querying `medic/contacts_by_depth` to get all allowed subjectIds, runs the view queries
+ * request), instead of querying `replication/contacts_by_depth` to get all allowed subjectIds, runs the view queries
  * over the provided docs, gets all contacts that the docs emit for in `medic/docs_by_replication_key`,
  * if primary contacts are replicated, we also include the docs' lineage, and creates a reduced set of
  * relevant allowed subject ids.
@@ -533,7 +548,7 @@ const getScopedAuthorizationContext = async (userCtx, scopeDocsCtx = []) => {
     contacts.push(...primaryPlaces);
   }
 
-  // we simulate a `medic/contacts_by_depth` filter over the list contacts
+  // we simulate a `replication/contacts_by_depth` filter over the list contacts
   // reiterate because primary contacts are only included in subjects lists
   // after we initially populate it with all other contacts
   let newSubjects;
@@ -627,7 +642,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   while (allKeys.length) {
     const chunk = allKeys.splice(0, nouveau.BATCH_LIMIT);
     const response = await request.post({
-      uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+      uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
       body: {
         q: `key:(${chunk.map(nouveau.escapeKeys).join(' OR ')})`,
         limit: nouveau.RESULTS_LIMIT,
@@ -689,7 +704,7 @@ const getDocsByReplicationKey = async (authorizationContext) => {
  * @returns {string[]}
  */
 const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = true } = {}) => {
-  const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(authCtx.userCtx.name)];
+  const validatedIds = [...REPLICATED_DDOCS, getUserSettingsId(authCtx.userCtx.name)];
 
   if (!docsByReplicationKey || !docsByReplicationKey.length) {
     return validatedIds;
@@ -711,9 +726,9 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
  * @returns {{contactsByDepth: [], docsByReplicationKey: [], couchDbUser: boolean}}
  */
 const getViewResults = (doc) => {
-  const docsByReplicationKey = viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc) || {};
+  const docsByReplicationKey = viewMapUtils.getNouveauViewMapFn('replication', 'docs_by_replication_key')(doc) || {};
   return {
-    contactsByDepth: viewMapUtils.getViewMapFn('medic', 'contacts_by_depth')(doc),
+    contactsByDepth: viewMapUtils.getViewMapFn('replication', 'contacts_by_depth')(doc),
     docsByReplicationKey: {
       ...docsByReplicationKey,
       key: Array.isArray(docsByReplicationKey.key) ? docsByReplicationKey.key : [docsByReplicationKey.key],

@@ -107,7 +107,7 @@ export namespace v1 {
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
-    const queryViewByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryViewByType = queryDocUuidsByKey(medicDb, 'shared-contacts/contacts_by_type');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 

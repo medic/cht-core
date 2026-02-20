@@ -298,7 +298,7 @@ const getPostOpts = (path, body) => ({
 const getDocByPatientId = patientId => {
   return utils
     .requestOnTestDb(
-      `/_design/medic-client/_view/contacts_by_reference?key=["shortcode","${patientId}"]&include_docs=true`
+      `/_design/shared-contacts/_view/contacts_by_reference?key=["shortcode","${patientId}"]&include_docs=true`
     )
     .then(result => result.rows);
 };
@@ -1003,7 +1003,7 @@ describe('transitions', () => {
             key: JSON.stringify(['shortcode', updated.patient_id]),
             include_docs: true,
           },
-          path: '/_design/medic-client/_view/contacts_by_reference',
+          path: '/_design/shared-contacts/_view/contacts_by_reference',
         };
         return utils.requestOnTestDb(opts);
       })

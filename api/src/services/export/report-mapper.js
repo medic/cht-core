@@ -56,7 +56,7 @@ module.exports = {
       }
 
       return db.medic
-        .query('medic-client/reports_by_form', { group: true })
+        .query('shared-reports/reports_by_form', { group: true })
         .then(results => results.rows.map(r => r.key[0]));
     };
 
@@ -69,7 +69,7 @@ module.exports = {
     return getForms()
       .then(forms => {
         const getFieldsPromises = form => db.medic
-          .query('medic-client/reports_by_form', {
+          .query('shared-reports/reports_by_form', {
             key: [form],
             limit: 1,
             include_docs: true,

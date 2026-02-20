@@ -22,7 +22,7 @@ import lineageFactory from '@medic/lineage';
  * @internal
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
-  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
+  const fn = queryDocsByRange(medicDb, 'shared/docs_by_id_lineage');
   return (id: string) => fn([id], [id, {}]);
 };
 

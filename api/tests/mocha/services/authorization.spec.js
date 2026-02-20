@@ -156,7 +156,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext( {facility_id: ['facilityId'] })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
+          db.medic.query.args[0][0].should.equal('replication/contacts_by_depth');
 
           db.medic.query.args[0][1].should.deep.equal({
             keys: [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
@@ -170,7 +170,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext( {facility_id: ['a', 'b', 'c'] })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
+          db.medic.query.args[0][0].should.equal('replication/contacts_by_depth');
 
           db.medic.query.args[0][1].should.deep.equal({
             keys: [
@@ -188,7 +188,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext({ facility_id: ['facilityId'] })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
+          db.medic.query.args[0][0].should.equal('replication/contacts_by_depth');
           db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
         });
     });
@@ -199,7 +199,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext({ facility_id: ['a', 'b', 'c'] })
         .then(() => {
           db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
+          db.medic.query.args[0][0].should.equal('replication/contacts_by_depth');
           db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'a' ], [ 'b' ], [ 'c' ]] });
         });
     });
@@ -217,7 +217,7 @@ describe('Authorization service', () => {
     });
 
     it('returns contactsByDepthKeys array, contact and report depths', () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').resolves({
         rows: [
           { id: 1, key: 'key', value: { shortcode: 's1', primary_contact: undefined } },
           { id: 2, key: 'key', value: { shortcode: 's2' } }
@@ -240,7 +240,7 @@ describe('Authorization service', () => {
     });
 
     it('returns contactsByDepthKeys array, contact and report depths with multiple facilities', () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').resolves({
         rows: [
           { id: 2, key: 'key', value: { shortcode: 's2' } },
           { id: 1, key: 'key', value: { shortcode: 's1' } }
@@ -265,7 +265,7 @@ describe('Authorization service', () => {
     });
 
     it('should compile subjectsDepth when using reportDepth', () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1' } },
@@ -297,7 +297,7 @@ describe('Authorization service', () => {
     });
 
     it('should compile subjectsDepth when using reportDepth and multiple facility', () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' }, },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1' }, },
@@ -346,7 +346,7 @@ describe('Authorization service', () => {
     });
 
     it('should compile subjectsDepth when user has access to unassigned', () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1' } },
@@ -379,7 +379,7 @@ describe('Authorization service', () => {
     });
 
     it('should compile subjectsDepth when user has access to unassigned with multiple facilities', () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1' } },
@@ -425,13 +425,13 @@ describe('Authorization service', () => {
     });
 
     it('should add primary contacts when enabled', async () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').onCall(0).resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact2' } },
         ]
       });
-      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').onCall(1).resolves({
         rows: [
           { id: 'contact', key: ['contact'], value: { shortcode: 'contact_id', primary_contact: '13213' } },
           { id: 'contact2', key: ['contact2'], value: { shortcode: 'contact2_id', primary_contact: 'dsada' } },
@@ -451,19 +451,20 @@ describe('Authorization service', () => {
       ]);
       result.should.deep.include({ contactDepth: 1 });
       db.medic.query.callCount.should.equal(2);
-      db.medic.query.args[0].should.deep.equal(['medic/contacts_by_depth', { keys: [[ 'aaa', 0], [ 'aaa', 1]] }]);
-      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact']] }]);
+      db.medic.query.args[0].should.deep.equal(['replication/contacts_by_depth', { keys: [[ 'aaa', 0], [ 'aaa', 1]] }]);
+      db.medic.query.args[1]
+        .should.deep.equal(['replication/contacts_by_depth', { keys: [['contact2'], ['contact']] }]);
     });
 
     it('should only query for unknown primary contacts', async () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').onCall(0).resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact2' } },
           { id: 'contact2', key: ['aaa', 2], value: { shortcode: 'contact2_id' } },
         ]
       });
-      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').onCall(1).resolves({
         rows: [
           { id: 'contact', key: ['contact'], value: { shortcode: 'contact_id' } },
         ]
@@ -496,14 +497,14 @@ describe('Authorization service', () => {
       });
       db.medic.query.callCount.should.equal(2);
       db.medic.query.args[0].should.deep.equal([
-        'medic/contacts_by_depth',
+        'replication/contacts_by_depth',
         { keys: [[ 'aaa', 0], [ 'aaa', 1], [ 'aaa', 2]] }
       ]);
-      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact']] }]);
+      db.medic.query.args[1].should.deep.equal(['replication/contacts_by_depth', { keys: [['contact']] }]);
     });
     
     it('should set lowest place depth for primary contacts', async () => {
-      db.medic.query.withArgs('medic/contacts_by_depth').onCall(0).resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').onCall(0).resolves({
         rows: [
           { id: 'aaa', key: ['aaa', 0], value: { shortcode: 'aaa', primary_contact: 'contact1' } },
           { id: '1', key: ['aaa', 1], value: { shortcode: 's1', primary_contact: 'contact1' } },
@@ -517,7 +518,7 @@ describe('Authorization service', () => {
           { id: 'contact4', key: ['aaa', 2], value: { shortcode: 'contact4_id' } },
         ]
       });
-      db.medic.query.withArgs('medic/contacts_by_depth').onCall(1).resolves({
+      db.medic.query.withArgs('replication/contacts_by_depth').onCall(1).resolves({
         rows: [
           { id: 'contact2', key: ['contact2'], value: { shortcode: 'contact2_id', primary_contact: 'dsa' } },
           { id: 'contact3', key: ['contact3'], value: { shortcode: 'contact3_id'} },
@@ -562,10 +563,11 @@ describe('Authorization service', () => {
 
       db.medic.query.callCount.should.equal(2);
       db.medic.query.args[0].should.deep.equal([
-        'medic/contacts_by_depth',
+        'replication/contacts_by_depth',
         { keys: [['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]] }
       ]);
-      db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact3']] }]);
+      db.medic.query.args[1]
+        .should.deep.equal(['replication/contacts_by_depth', { keys: [['contact2'], ['contact3']] }]);
     }); 
 
   });
@@ -591,7 +593,7 @@ describe('Authorization service', () => {
               limit: 200000,
               q: 'key:(1 OR 2 OR 3)'
             },
-            uri: 'http://localhost:5988/_design/medic/_nouveau/docs_by_replication_key'
+            uri: 'http://localhost:5988/_design/replication/_nouveau/docs_by_replication_key'
           }]);
 
           result.length.should.equal(0);
@@ -925,10 +927,16 @@ describe('Authorization service', () => {
   });
 
   describe('filterAllowedDocIds', () => {
-    it('should return medic-client and user-settings doc', () => {
+    it('should return replicated ddocs and user-settings doc', () => {
       const authCtx = { userCtx: { name: 'joe' } };
       service.filterAllowedDocIds(authCtx, []).should.deep.equal([
-        '_design/medic-client', 'org.couchdb.user:joe'
+        '_design/medic-client',
+        '_design/shared',
+        '_design/shared-contacts',
+        '_design/shared-reports',
+        '_design/webapp-contacts',
+        '_design/webapp-reports',
+        'org.couchdb.user:joe'
       ]);
     });
 
@@ -939,7 +947,18 @@ describe('Authorization service', () => {
         { id: 'r3', fields: { key: 'contact' } },
       ];
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
-      result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
+      result.should.deep.equal([
+        '_design/medic-client',
+        '_design/shared',
+        '_design/shared-contacts',
+        '_design/shared-reports',
+        '_design/webapp-contacts',
+        '_design/webapp-reports',
+        'org.couchdb.user:user',
+        'r1',
+        'r2',
+        'r3'
+      ]);
     });
 
     it('should include tasks if no options are passed', () => {
@@ -952,8 +971,17 @@ describe('Authorization service', () => {
 
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.have.members([
-        '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'task1', 'r3', 'task2'
+        '_design/medic-client',
+        '_design/shared',
+        '_design/shared-contacts',
+        '_design/shared-reports',
+        '_design/webapp-contacts',
+        '_design/webapp-reports',
+        'org.couchdb.user:user',
+        'r1',
+        'task1',
+        'r3',
+        'task2'
       ]);
     });
 
@@ -971,8 +999,17 @@ describe('Authorization service', () => {
       const ctx = { userCtx: { name: 'user' } };
       const result = service.filterAllowedDocIds(ctx, docsByRepKey, { includeTasks: false });
       result.should.have.members([
-        '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'ts-r2', 'r3', 'ts-r5',
+        '_design/medic-client',
+        '_design/shared',
+        '_design/shared-contacts',
+        '_design/shared-reports',
+        '_design/webapp-contacts',
+        '_design/webapp-reports',
+        'org.couchdb.user:user',
+        'r1',
+        'ts-r2',
+        'r3',
+        'ts-r5',
       ]);
     });
   });
@@ -983,10 +1020,10 @@ describe('Authorization service', () => {
       const docsBydocsByReplicationKeytub = sinon.stub().returns({ docsByReplicationKeyStubResult: true });
       const doc = { _id: 1, _rev: 1 };
       viewMapUtils.getViewMapFn
-        .withArgs('medic', 'contacts_by_depth')
+        .withArgs('replication', 'contacts_by_depth')
         .returns(contactsByDepthStub);
       viewMapUtils.getNouveauViewMapFn
-        .withArgs('medic', 'docs_by_replication_key')
+        .withArgs('replication', 'docs_by_replication_key')
         .returns(docsBydocsByReplicationKeytub);
 
       config.get.returns('config');
@@ -1039,10 +1076,10 @@ describe('Authorization service', () => {
         .should.equal(true);
     });
 
-    it('returns true when it is main ddoc or user contact', () => {
+    it('returns true when it is replicated ddoc or user contact', () => {
       service
         .allowedDoc(
-          '_design/medic-client',
+          '_design/shared',
           { userCtx },
           { docsByReplicationKey: { key: '_all' }, contactsByDepth: null}
         )
@@ -1055,9 +1092,10 @@ describe('Authorization service', () => {
         )
         .should.equal(true);
 
+      // Test that replicated ddocs (shared-*, webapp-*) are allowed
       service
         .allowedDoc(
-          '_design/medic-client',
+          '_design/shared',
           { userCtx: userCtxMultiFacility },
           { docsByReplicationKey: [{ key: '_all', value: null}], contactsByDepth: null}
         )
@@ -2672,8 +2710,8 @@ describe('Authorization service', () => {
       sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       const contactsByDepth = sinon.stub();
       const docsByReplicationKey = sinon.stub();
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
       const docs = [ { _id: 'doc1' }, { _id: 'doc2' }, { _id: 'doc3' } ];
       return service
         .getScopedAuthorizationContext(userCtx, [{ doc: docs[0] }, { doc: docs[1], viewResults: {} }, { doc: docs[2] }])
@@ -2808,15 +2846,15 @@ describe('Authorization service', () => {
       docsByReplicationKey.withArgs(c4).returns({ key: 'c4', type: 'contact' });
       docsByReplicationKey.withArgs(c5).returns({ key: 'c5', type: 'contact' });
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'c1'],
               ['shortcode', 'c2'],
@@ -2981,10 +3019,10 @@ describe('Authorization service', () => {
         .withArgs(sinon.match({ _id: 'patient3doc' }))
         .returns({ key: 'patient3doc', type: 'contact' });
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'patient1doc', key: ['shortcode', 'patient1'] },
           { id: 'patient2doc', key: ['shortcode', 'patient2'] },
@@ -2996,7 +3034,7 @@ describe('Authorization service', () => {
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'patient1'],
               ['shortcode', 'c1'],
@@ -3132,10 +3170,10 @@ describe('Authorization service', () => {
       docsByReplicationKey.withArgs(sinon.match({ _id: 'p2' })).returns([{ fields: { key: 'p2', type: 'contact' }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'p3' })).returns([{ fields: { key: 'p3', type: 'contact' }}]);
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'patient1doc', key: ['shortcode', 'patient1'] },
           { id: 'patient2doc', key: ['shortcode', 'patient2'] },
@@ -3147,7 +3185,7 @@ describe('Authorization service', () => {
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'patient1'],
               ['shortcode', 'c1'],
@@ -3273,10 +3311,10 @@ describe('Authorization service', () => {
         .withArgs(sinon.match({ _id: 'patient2doc' }))
         .returns({ key: ['patient2doc'], type: 'contact' });
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'patient1doc', key: ['shortcode', 'patient1'] },
           { id: 'patient2doc', key: ['shortcode', 'patient2'] },
@@ -3288,7 +3326,7 @@ describe('Authorization service', () => {
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'c1'],
               ['shortcode', 'c2'],
@@ -3409,10 +3447,10 @@ describe('Authorization service', () => {
         .withArgs(sinon.match({ _id: 'patient1doc' }))
         .returns({ key: 'patient1doc', type: 'contact' });
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'patient1doc', key: ['shortcode', 'patient1'] },
         ]
@@ -3423,7 +3461,7 @@ describe('Authorization service', () => {
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'patient1'],
               ['shortcode', 'c1'],
@@ -3525,10 +3563,10 @@ describe('Authorization service', () => {
         .withArgs(sinon.match({ _id: 'facility_id' }))
         .returns({ key: 'facility_id', type: 'contact' });
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'patient1doc', key: ['shortcode', 'patient1'] },
         ]
@@ -3539,7 +3577,7 @@ describe('Authorization service', () => {
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'patient1'],
               ['shortcode', 'c1'],
@@ -3632,15 +3670,15 @@ describe('Authorization service', () => {
       docsByReplicationKey.withArgs(c1).returns({ key: 'c1', type: 'contact' });
       docsByReplicationKey.withArgs(c2).returns({ key: 'c2', type: 'contact' });
 
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'c1'],
               ['shortcode', 'c2'],
@@ -3705,24 +3743,24 @@ describe('Authorization service', () => {
         { key: ['place_id', 0], value: { _id: 'place_id', primary_contact: contact1._id } },
         { key: ['facility_id', 1], value: { _id: 'place_id', primary_contact: contact1._id } },
       ]);
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
       docsByReplicationKey.withArgs(contact2).returns({ key: 'place_id', type: 'contact_id' });
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
         { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
       ]);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'contact_id', key: ['shortcode', '123456'] },
         ]
       });
 
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place_id',
@@ -3739,8 +3777,8 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact_id', '123456', 'place_id']);
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
-        'medic/contacts_by_primary_contact',
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').args.should.deep.equal([[
+        'replication/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact_id', 'place_id']
@@ -3789,24 +3827,24 @@ describe('Authorization service', () => {
         { key: ['facility_id', 1], value: { _id: 'place_id', primary_contact: contact1._id } },
         { key: ['place_id', 0], value: { _id: 'place_id', primary_contact: contact1._id } },
       ]);
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
       docsByReplicationKey.withArgs(contact2).returns({ key: 'place_id', type: 'contact' });
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
         { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
       ]);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'contact', key: ['shortcode', '123456'] },
         ]
       });
 
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place_id',
@@ -3818,8 +3856,8 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact', '123456', 'place_id']);
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
-        'medic/contacts_by_primary_contact',
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').args.should.deep.equal([[
+        'replication/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact']
@@ -3874,24 +3912,24 @@ describe('Authorization service', () => {
         { key: ['facility', 1], value: { _id: 'place', primary_contact: contact1._id } },
         { key: ['place', 0], value: { _id: 'place', primary_contact: contact1._id } },
       ]);
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
       docsByReplicationKey.withArgs(contact2).returns({ key: 'place', type: 'contact' });
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
         { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
       ]);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'contact', key: ['shortcode', '123456'] },
         ]
       });
 
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place',
@@ -3908,8 +3946,8 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
-        'medic/contacts_by_primary_contact',
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').args.should.deep.equal([[
+        'replication/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact']
@@ -3954,24 +3992,24 @@ describe('Authorization service', () => {
       const contactsByDepth = sinon.stub();
       contactsByDepth.withArgs(contact1).returns(docObjs[0].viewResults.contactsByDepth);
       contactsByDepth.withArgs(weirdDoc).returns();
-      viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
+      viewMapUtils.getViewMapFn.withArgs('replication', 'contacts_by_depth').returns(contactsByDepth);
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
       docsByReplicationKey.withArgs(weirdDoc).returns({ key: ['place'], type: 'contact' });
-      viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
+      viewMapUtils.getNouveauViewMapFn.withArgs('replication', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
         { role: 'user', depth: 1, report_depth: 0, replicate_primary_contacts: true },
       ]);
 
-      db.medic.query.withArgs( 'medic-client/contacts_by_reference').resolves({
+      db.medic.query.withArgs( 'shared-contacts/contacts_by_reference').resolves({
         rows: [
           { id: 'contact', key: ['shortcode', '123456'] },
         ]
       });
 
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').resolves({
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').resolves({
         rows: [
           {
             id: 'place',
@@ -3983,8 +4021,8 @@ describe('Authorization service', () => {
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
       result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
-      db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
-        'medic/contacts_by_primary_contact',
+      db.medic.query.withArgs( 'replication/contacts_by_primary_contact').args.should.deep.equal([[
+        'replication/contacts_by_primary_contact',
         {
           include_docs: true,
           keys: ['contact']
@@ -4044,7 +4082,7 @@ describe('Authorization service', () => {
           result.should.deep.equal([{ _id: 'a' }, { _id: 'b' }]);
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal([
-            'medic-client/contacts_by_reference',
+            'shared-contacts/contacts_by_reference',
             { keys: [
               ['shortcode', 'a'], ['shortcode', 'b'],
             ] }
@@ -4074,7 +4112,7 @@ describe('Authorization service', () => {
           result
             .should.deep.equal([ { _id: 'contact1' }, { _id: 'person1' }, { _id: 'contact2' }, { _id: 'person2' } ]);
           db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
+          db.medic.query.args[0].should.deep.equal(['shared-contacts/contacts_by_reference', {
             keys: [
               ['shortcode', 'contact1'],
               ['shortcode', 'patient_1'],

@@ -172,7 +172,7 @@ describe('routing', () => {
       return Promise.all([
         utils.request(Object.assign({ path: '/api/deploy-info' }, onlineRequestOptions)),
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
-        utils.requestOnTestDb('/_design/medic-client'),
+        utils.requestOnTestDb('/_design/shared'),
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
         expect(
           semver.valid(deployInfoOnline.version),

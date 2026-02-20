@@ -107,7 +107,7 @@ export class PlaceHierarchyService {
   async getDescendants(id, onlyPlaces = false) {
     const results = await this.dbService
       .get()
-      .query('medic-client/contacts_by_place', { key: [ id ], include_docs: true });
+      .query('webapp-contacts/contacts_by_place', { key: [ id ], include_docs: true });
 
     if (!onlyPlaces) {
       return results.rows;

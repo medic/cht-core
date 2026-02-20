@@ -183,13 +183,13 @@ describe('db-sync', () => {
   it('should filter ddocs', async () => {
     const newDdoc = { _id: '_design/test' };
     await chtDbUtils.createDoc(newDdoc);
-    const serverRevs = await getServerRevs(['_design/medic-client']);
-    await chtDbUtils.updateDoc('_design/medic-client', { something: 'random' });
+    const serverRevs = await getServerRevs(['_design/shared']);
+    await chtDbUtils.updateDoc('_design/shared', { something: 'random' });
     // updating the ddoc will throw the "upgrade" popup, ignore it!
     await commonElements.closeReloadModal();
     await commonElements.sync();
 
-    const updatedServerRevs = await getServerRevs(['_design/medic-client']);
+    const updatedServerRevs = await getServerRevs(['_design/shared']);
     expect(serverRevs).to.deep.equal(updatedServerRevs);
     const result = await utils.getDocs(['_design/test'], true);
     expect(result.rows[0]).to.deep.equal({

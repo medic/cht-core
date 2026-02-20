@@ -406,8 +406,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       key: 'ddoc',
       filter: (change) => {
         return (
-          change.id === '_design/medic' ||
-          change.id === '_design/medic-client' ||
+          change.id.startsWith('_design/') ||
           change.id === DOC_IDS.SERVICE_WORKER_META ||
           change.id === DOC_IDS.SETTINGS
         );

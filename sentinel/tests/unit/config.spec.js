@@ -47,7 +47,7 @@ describe('config', () => {
 
     expect(db.medic.query.calledOnce).to.be.true;
     expect(db.medic.query.firstCall.args).to.deep.equal([
-      'medic-client/doc_by_type',
+      'shared/doc_by_type',
       {
         key: [DOC_TYPES.TRANSLATIONS],
         include_docs: true,

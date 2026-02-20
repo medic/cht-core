@@ -16,10 +16,19 @@ const parentPlace = {
   place_id: 'district_hospital_shortcode',
 };
 
+const REPLICATED_DDOCS = [
+  '_design/medic-client',
+  '_design/shared',
+  '_design/shared-contacts',
+  '_design/shared-reports',
+  '_design/webapp-contacts',
+  '_design/webapp-reports',
+];
+
 const getIdsForUser = (user) => [
   `org.couchdb.user:${user}`,
   DOC_IDS.SETTINGS,
-  '_design/medic-client',
+  ...REPLICATED_DDOCS,
   DOC_IDS.SERVICE_WORKER_META
 ];
 
@@ -94,7 +103,7 @@ const unrestrictedKeys = [
   'fixture:offline',
   'fixture:user:offline',
   'org.couchdb.user:offline',
-  '_design/medic-client',
+  ...REPLICATED_DDOCS,
   'resources',
   DOC_IDS.SETTINGS,
   /^messages-.*$/

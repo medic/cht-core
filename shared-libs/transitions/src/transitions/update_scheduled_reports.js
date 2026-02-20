@@ -97,7 +97,7 @@ module.exports = {
         parentId,
         {},
       ];
-      view = 'medic/reports_by_form_year_week_parent_reported_date';
+      view = 'report-transitions/reports_by_form_year_week_parent_reported_date';
     } else if (doc.fields.month || doc.fields.month_num) {
       options.startkey = [
         doc.form,
@@ -112,7 +112,7 @@ module.exports = {
         parentId,
         {},
       ];
-      view = 'medic/reports_by_form_year_month_parent_reported_date';
+      view = 'report-transitions/reports_by_form_year_month_parent_reported_date';
     } else {
       return Promise.resolve();
     }

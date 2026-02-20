@@ -3,11 +3,18 @@ const sentinelUtils = require('@utils/sentinel');
 
 const VIEW_INDEXES_BY_DB = {
   'medic-test': [
-    'medic',
     'medic-admin',
-    'medic-client',
     'medic-conflicts',
     'medic-sms',
+    'online-user',
+    'replication',
+    'report-transitions',
+    'sentinel-schedule',
+    'shared',
+    'shared-contacts',
+    'shared-reports',
+    'webapp-contacts',
+    'webapp-reports',
   ],
   'medic-test-sentinel': ['sentinel'],
   'medic-test-users-meta': ['users-meta'],
@@ -15,7 +22,11 @@ const VIEW_INDEXES_BY_DB = {
 };
 
 const NOUVEAU_INDEXES_BY_DB = {
-  'medic-test': ['medic/contacts_by_freetext', 'medic/reports_by_freetext', 'medic/docs_by_replication_key'],
+  'medic-test': [
+    'online-user/contacts_by_freetext',
+    'online-user/reports_by_freetext',
+    'replication/docs_by_replication_key',
+  ],
 };
 
 const getAppVersion = async () => {

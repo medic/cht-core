@@ -275,7 +275,7 @@ describe('server', () => {
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(2);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
+        expect(haproxyRequests[1]).to.include('_design/shared/_view/docs_by_id_lineage');
       });
 
       it('should propagate ID via couch-request', async () => {
@@ -366,8 +366,8 @@ describe('server', () => {
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
-        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_nouveau/docs_by_replication_key');
+        expect(haproxyRequests[5]).to.include('/medic-test/_design/replication/_view/contacts_by_depth');
+        expect(haproxyRequests[6]).to.include('/medic-test/_design/replication/_nouveau/docs_by_replication_key');
         expect(haproxyRequests[7]).to.include('/medic-test-purged-cache/purged-docs-');
         expect(haproxyRequests[8]).to.include('/medic-test-purged-role-');
         expect(haproxyRequests[9]).to.include('/medic-test-logs/replication-count-');

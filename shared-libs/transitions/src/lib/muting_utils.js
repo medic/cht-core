@@ -15,7 +15,7 @@ const isLastUpdatedByClient = (doc) => !!doc.muting_history && doc.muting_histor
 
 const getDescendants = (contactId) => {
   return db.medic
-    .query('medic/contacts_by_depth', { key: [contactId] })
+    .query('replication/contacts_by_depth', { key: [contactId] })
     .then(result => result.rows.map(row => row.id));
 };
 

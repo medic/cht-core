@@ -76,7 +76,7 @@ export class SendMessageService {
   private getDescendants(recipient) {
     return this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', {
+      .query('webapp-contacts/contacts_by_parent', {
         include_docs: true,
         startkey: [ recipient.doc._id ],
         endkey: [ recipient.doc._id, {} ]

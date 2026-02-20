@@ -9,7 +9,7 @@ import {
 import { escapeKeys } from '@medic/nouveau';
 import { getDocById } from './doc';
 
-const MEDIC_NOUVEAU_PATH = '_design/medic/_nouveau';
+const MEDIC_NOUVEAU_PATH = '_design/online-user/_nouveau';
 const jsonContentTypeHeaders = new Headers({ 'Content-Type': 'application/json' });
 const SORT_BY_VIEW: Record<string, string> = {
   'contacts_by_freetext': 'sort_order',

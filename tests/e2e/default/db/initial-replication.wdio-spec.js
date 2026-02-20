@@ -17,6 +17,11 @@ describe('initial-replication', () => {
 
   const requiredDocs = [
     '_design/medic-client',
+    '_design/shared',
+    '_design/shared-contacts',
+    '_design/shared-reports',
+    '_design/webapp-contacts',
+    '_design/webapp-reports',
     DOC_IDS.SETTINGS,
     `org.couchdb.user:${userAllowedDocs.user.username}`,
     DOC_IDS.SERVICE_WORKER_META,
