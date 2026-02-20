@@ -16,6 +16,7 @@ describe('initial-replication', () => {
   const userDeniedDocs = dataFactory.createHierarchy({ name: 'other' });
 
   const requiredDocs = [
+    '_design/medic-client',
     '_design/shared',
     '_design/shared-contacts',
     '_design/shared-reports',

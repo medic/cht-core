@@ -31,6 +31,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared', error: 'missing' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },
@@ -47,6 +48,7 @@ describe('Initial replication', () => {
 
       expect(localDb.allDocs.args).to.deep.equal([[
         { keys: [
+          '_design/medic-client',
           '_design/shared',
           '_design/shared-contacts',
           '_design/shared-reports',
@@ -62,6 +64,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },
@@ -82,6 +85,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },
@@ -103,6 +107,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },
@@ -123,6 +128,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },
@@ -143,6 +149,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },
@@ -172,6 +179,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
+            { id: '_design/medic-client' },
             { id: '_design/shared' },
             { id: '_design/shared-contacts' },
             { id: '_design/shared-reports' },

@@ -125,6 +125,7 @@ const getReplicationLog = async (localDb) => {
 };
 const isReplicationNeeded = async (localDb, userCtx) => {
   const requiredDocs = [
+    '_design/medic-client',
     '_design/shared',
     '_design/shared-contacts',
     '_design/shared-reports',

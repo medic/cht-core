@@ -930,6 +930,7 @@ describe('Authorization service', () => {
     it('should return replicated ddocs and user-settings doc', () => {
       const authCtx = { userCtx: { name: 'joe' } };
       service.filterAllowedDocIds(authCtx, []).should.deep.equal([
+        '_design/medic-client',
         '_design/shared',
         '_design/shared-contacts',
         '_design/shared-reports',
@@ -947,6 +948,7 @@ describe('Authorization service', () => {
       ];
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.deep.equal([
+        '_design/medic-client',
         '_design/shared',
         '_design/shared-contacts',
         '_design/shared-reports',
@@ -969,6 +971,7 @@ describe('Authorization service', () => {
 
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.have.members([
+        '_design/medic-client',
         '_design/shared',
         '_design/shared-contacts',
         '_design/shared-reports',
@@ -996,6 +999,7 @@ describe('Authorization service', () => {
       const ctx = { userCtx: { name: 'user' } };
       const result = service.filterAllowedDocIds(ctx, docsByRepKey, { includeTasks: false });
       result.should.have.members([
+        '_design/medic-client',
         '_design/shared',
         '_design/shared-contacts',
         '_design/shared-reports',

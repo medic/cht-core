@@ -408,8 +408,8 @@ describe('Users API', () => {
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
     const nbrTasks = 20;
-    // 5 replicated ddocs + org.couchdb.user:offline + fixture:offline + OfflineUser
-    let expectedNbrDocs = nbrOfflineDocs + 8;
+    // 6 replicated ddocs + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let expectedNbrDocs = nbrOfflineDocs + 9;
     let docsForAll;
 
     before(async () => {
@@ -429,7 +429,7 @@ describe('Users API', () => {
       const resp = await utils.requestOnTestDb(
         '/_design/replication/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
       );
-      docsForAll = resp.hits.length + 6; // 5 replicated ddocs + org.couchdb.user:doc
+      docsForAll = resp.hits.length + 7; // 6 replicated ddocs + org.couchdb.user:doc
       expectedNbrDocs += resp.hits.length;
     });
 

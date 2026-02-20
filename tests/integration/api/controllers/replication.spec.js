@@ -3,17 +3,22 @@ const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
 
+const REPLICATED_DDOCS = [
+  '_design/medic-client',
+  '_design/shared',
+  '_design/shared-contacts',
+  '_design/shared-reports',
+  '_design/webapp-contacts',
+  '_design/webapp-reports',
+];
+
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
   DOC_IDS.SETTINGS,
   'resources',
   'branding',
   // 'partners',
-  '_design/shared',
-  '_design/shared-contacts',
-  '_design/shared-reports',
-  '_design/webapp-contacts',
-  '_design/webapp-reports'
+  ...REPLICATED_DDOCS,
 ];
 const defaultDocRegex = /^(messages-|form:)/;
 const isFormOrTranslation = id => defaultDocRegex.test(id);

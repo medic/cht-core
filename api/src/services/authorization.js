@@ -13,6 +13,7 @@ const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records e
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 
 const REPLICATED_DDOCS = [
+  '_design/medic-client',
   '_design/shared',
   '_design/shared-contacts',
   '_design/shared-reports',

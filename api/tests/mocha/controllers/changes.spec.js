@@ -34,6 +34,7 @@ describe('Changes controller', () => {
     });
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
+      '_design/medic-client',
       '_design/shared',
       '_design/shared-contacts',
       '_design/shared-reports',
