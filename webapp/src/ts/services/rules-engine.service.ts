@@ -585,4 +585,5 @@ export interface TaskEmission {
   priority: string;
   priorityLabel: string;
   overdue: boolean;
+  [string: string]: any;
 }
