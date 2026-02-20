@@ -47,7 +47,7 @@ describe('nouveau', () => {
 
         expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
-          '_design/medic/_nouveau/reports_by_freetext',
+          '_design/online-user/_nouveau/reports_by_freetext',
           { ...expectedOpts, body: JSON.stringify(body) }
         )).to.be.true;
       });
@@ -74,7 +74,7 @@ describe('nouveau', () => {
 
         expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
-          '_design/medic/_nouveau/contacts_by_freetext',
+          '_design/online-user/_nouveau/contacts_by_freetext',
           { ...expectedOpts, body: JSON.stringify(body) }
         )).to.be.true;
       });
@@ -102,7 +102,7 @@ describe('nouveau', () => {
 
       expect(result).to.deep.equal({ data: ['doc1', 'doc2', 'doc3'], cursor: 'new-bookmark' });
       expect(dbFetch.calledOnceWithExactly(
-        '_design/medic/_nouveau/contacts_by_freetext',
+        '_design/online-user/_nouveau/contacts_by_freetext',
         { ...expectedOpts, body: JSON.stringify(body) }
       )).to.be.true;
     });
@@ -121,7 +121,7 @@ describe('nouveau', () => {
 
       expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
       expect(dbFetch.calledOnceWithExactly(
-        '_design/medic/_nouveau/contacts_by_freetext',
+        '_design/online-user/_nouveau/contacts_by_freetext',
         { ...expectedOpts, body: JSON.stringify(body) }
       )).to.be.true;
     });
@@ -145,7 +145,7 @@ describe('nouveau', () => {
       ).to.be.rejectedWith('Internal Server Error');
 
       expect(dbFetch.calledOnceWithExactly(
-        '_design/medic/_nouveau/contacts_by_freetext',
+        '_design/online-user/_nouveau/contacts_by_freetext',
         { ...expectedOpts, body: JSON.stringify(body) }
       )).to.be.true;
     });
@@ -174,7 +174,7 @@ describe('nouveau', () => {
 
         expect(result).to.deep.equal({ data: [], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
-          '_design/medic/_nouveau/contacts_by_freetext',
+          '_design/online-user/_nouveau/contacts_by_freetext',
           { ...expectedOpts, body: JSON.stringify(body) }
         )).to.be.true;
       });
