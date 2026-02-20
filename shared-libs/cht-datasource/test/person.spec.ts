@@ -7,6 +7,7 @@ import * as Core from '../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import { DataContext } from '../src';
+import { fakeGenerator } from './utils';
 
 describe('person', () => {
   const dataContext = { } as DataContext;
@@ -259,11 +260,7 @@ describe('person', () => {
       const secondPerson = { _id: 'person2' } as Person.v1.Person;
       const thirdPerson = { _id: 'person3' } as Person.v1.Person;
       const people = [firstPerson, secondPerson, thirdPerson];
-      const mockGenerator = function* () {
-        for (const person of people) {
-          yield person;
-        }
-      };
+      const mockGenerator = fakeGenerator(people);
 
       let personGetPage: sinon.SinonStub;
       let getPagedGenerator: sinon.SinonStub;

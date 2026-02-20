@@ -15,6 +15,7 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { Qualifier, Target } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { fakeGenerator } from '../../utils';
 
 const { byContactIds, byContactId, byReportingPeriod } = Qualifier;
 
@@ -308,11 +309,7 @@ describe('TargetAggregatesService', () => {
           { id: 'target', value: { pass: 0, total: 0 } },
         ],
       }));
-      getTargets.returns((async function* () {
-        for (const doc of targetDocs) {
-          yield doc;
-        }
-      })());
+      getTargets.returns(fakeGenerator(targetDocs));
 
       const result = await service.getAggregates();
 
@@ -377,7 +374,7 @@ describe('TargetAggregatesService', () => {
       const oneDifferentPlace = { contact: '', lineage: [] };
       // at least one place will be discarded
       const places = Array.from({ length: 265 }).map((a, i) => i && genPlace(i) || oneDifferentPlace);
-      getTargets.returns((async function* () {})());
+      getTargets.returns(fakeGenerator());
 
       searchService.search.onCall(0).resolves(places.slice(0, 100));
       searchService.search.onCall(1).resolves(places.slice(100, 200));
@@ -687,11 +684,7 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
-      getTargets.returns((async function* () {
-        for (const doc of targetDocs) {
-          yield doc;
-        }
-      })());
+      getTargets.returns(fakeGenerator(targetDocs));
       translateService.instant = sinon.stub().returnsArg(0);
       translateFromService.get.returnsArg(0);
 
@@ -839,11 +832,7 @@ describe('TargetAggregatesService', () => {
       contactTypesService.getPlaceChildTypes.resolves([{ id: 'type1' }]);
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
-      getTargets.returns((async function* () {
-        for (const doc of targetDocs) {
-          yield doc;
-        }
-      })());
+      getTargets.returns(fakeGenerator(targetDocs));
 
       const result = await service.getAggregates();
 
@@ -907,11 +896,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      getTargets.returns((async function* () {
-        for (const doc of targetDocs) {
-          yield doc;
-        }
-      })());
+      getTargets.returns(fakeGenerator(targetDocs));
 
       const result = await service.getAggregates();
 
@@ -999,11 +984,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      getTargets.returns((async function* () {
-        for (const doc of targetDocs) {
-          yield doc;
-        }
-      })());
+      getTargets.returns(fakeGenerator(targetDocs));
 
       const result = await service.getAggregates();
 
@@ -1085,11 +1066,7 @@ describe('TargetAggregatesService', () => {
       getDataRecordsService.get.withArgs(sinon.match.array).resolves(contacts);
       searchService.search.resolves([]);
 
-      getTargets.returns((async function* () {
-        for (const doc of targetDocs) {
-          yield doc;
-        }
-      })());
+      getTargets.returns(fakeGenerator(targetDocs));
 
       const result = await service.getAggregates();
 
@@ -1225,15 +1202,9 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      getTargets.onCall(0).returns((async function* () {
-        yield targetDoc;
-      })());
-      getTargets.onCall(1).returns((async function* () {
-        yield targetDoc2;
-      })());
-      getTargets.onCall(2).returns((async function* () {
-        yield targetDoc3;
-      })());
+      getTargets.onCall(0).returns(fakeGenerator([targetDoc]));
+      getTargets.onCall(1).returns(fakeGenerator([targetDoc2]));
+      getTargets.onCall(2).returns(fakeGenerator([targetDoc3]));
 
       const result = await service.getTargetDocs({ _id: 'uuid' }, ['facility'], 'contact');
 
@@ -1299,15 +1270,9 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      getTargets.onCall(0).returns((async function* () {
-        yield targetDoc;
-      })());
-      getTargets.onCall(1).returns((async function* () {
-        yield targetDoc2;
-      })());
-      getTargets.onCall(2).returns((async function* () {
-        yield targetDoc3;
-      })());
+      getTargets.onCall(0).returns(fakeGenerator([targetDoc]));
+      getTargets.onCall(1).returns(fakeGenerator([targetDoc2]));
+      getTargets.onCall(2).returns(fakeGenerator([targetDoc3]));
 
       const result = await service.getTargetDocs({ _id: 'facility' }, ['facility'], 'usercontact');
 
@@ -1371,15 +1336,9 @@ describe('TargetAggregatesService', () => {
         targets: targetDoc.targets,
       };
 
-      getTargets.onCall(0).returns((async function* () {
-        yield targetDoc;
-      })());
-      getTargets.onCall(1).returns((async function* () {
-        yield targetDoc2;
-      })());
-      getTargets.onCall(2).returns((async function* () {
-        yield targetDoc3;
-      })());
+      getTargets.onCall(0).returns(fakeGenerator([targetDoc]));
+      getTargets.onCall(1).returns(fakeGenerator([targetDoc2]));
+      getTargets.onCall(2).returns(fakeGenerator([targetDoc3]));
 
       const result = await service.getTargetDocs({ _id: 'facility2' }, ['facility1', 'facility2'], 'usercontact');
 
@@ -1435,11 +1394,9 @@ describe('TargetAggregatesService', () => {
         ]
       };
 
-      getTargets.onCall(0).returns((async function* () {
-        yield targetDoc;
-      })());
-      getTargets.onCall(1).returns((async function* () { })());
-      getTargets.onCall(2).returns((async function* () { })());
+      getTargets.onCall(0).returns(fakeGenerator([targetDoc]));
+      getTargets.onCall(1).returns(fakeGenerator());
+      getTargets.onCall(2).returns(fakeGenerator());
 
       const result = await service.getTargetDocs({ _id: 'uuid' }, ['facility'], 'contact');
 

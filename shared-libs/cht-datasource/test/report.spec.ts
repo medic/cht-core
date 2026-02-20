@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import * as Core from '../src/libs/core';
+import { fakeGenerator } from './utils';
 
 describe('report', () => {
   const dataContext = { } as DataContext;
@@ -274,11 +275,7 @@ describe('report', () => {
     describe('getUuids', () => {
       const freetextQualifier = { freetext: 'freetext' } as const;
       const reportIds = ['report1', 'report2', 'report3'];
-      const mockGenerator = function* () {
-        for (const reportId of reportIds) {
-          yield reportId;
-        }
-      };
+      const mockGenerator = fakeGenerator(reportIds);
 
       let reportGetIdsPage: sinon.SinonStub;
       let getPagedGenerator: sinon.SinonStub;

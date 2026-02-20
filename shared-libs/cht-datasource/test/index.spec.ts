@@ -11,6 +11,7 @@ import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
 import { Page } from '../src/libs/core';
+import { fakeGenerator } from './utils';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -108,10 +109,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getByType', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const placeGetAll = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(placeGetAll);
@@ -186,10 +184,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getByType', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const personGetAll = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(personGetAll);
@@ -328,10 +323,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByTypeFreetext', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -355,10 +347,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByType', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -375,10 +364,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByFreetext', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -457,10 +443,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByFreetext', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -566,10 +549,7 @@ describe('CHT Script API - getDatasource', () => {
       });
       
       it('getByReportingPeriodContactIds multiple contact Ids', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
         const reportGet = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
@@ -588,10 +568,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getByReportingPeriodContactIds since contact Id', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
         const reportGet = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(

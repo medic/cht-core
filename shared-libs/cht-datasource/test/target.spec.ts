@@ -8,6 +8,7 @@ import * as Local from '../src/local';
 import * as Remote from '../src/remote';
 import { and } from '../src/qualifier';
 import * as Core from '../src/libs/core';
+import { fakeGenerator } from './utils';
 
 describe('target', () => {
   const dataContext = { } as DataContext;
@@ -294,11 +295,7 @@ describe('target', () => {
           ]
         }
       ] as Target.v1.Target[];
-      const mockGenerator = async function* () {
-        for (const target of targets) {
-          yield target;
-        }
-      };
+      const mockGenerator = fakeGenerator(targets);
 
       let getPage: SinonStub;
       let getPagedGenerator: SinonStub;
