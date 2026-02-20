@@ -151,7 +151,7 @@ describe('local target', () => {
       const invalidTarget = {
         _id: 'target~2025-01~contact-2'
       };
-      const qualifier = and(
+      const defaultQualifier = and(
         byReportingPeriod('2025-01'),
         byContactIds([
           target0.owner,
@@ -194,13 +194,13 @@ describe('local target', () => {
         fetchAndFilterInner.resolves(expectedPage);
         getDocsByIdsInner.resolves([target0, target1, target2, invalidTarget]);
 
-        const result = await Target.v1.getPage(localContext)(qualifier, null, 10);
+        const result = await Target.v1.getPage(localContext)(defaultQualifier, null, 10);
 
         expect(result).to.equal(expectedPage);
         expect(getDocIdsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
         expect(getDocIdsByIdRangeInner).to.have.been.calledOnceWithExactly(
-          `target~${qualifier.reportingPeriod}~`,
-          `target~${qualifier.reportingPeriod}~\ufff0`
+          `target~${defaultQualifier.reportingPeriod}~`,
+          `target~${defaultQualifier.reportingPeriod}~\ufff0`
         );
         expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
         expect(fetchAndFilterOuter).to.have.been.calledOnce;
@@ -266,7 +266,7 @@ describe('local target', () => {
         it('returns empty page when no targets are found for the reporting period and contacts', async () => {
           getDocIdsByIdRangeInner.resolves(targetIds);
 
-          const result = await Target.v1.getPage(localContext)(qualifier, null, 10);
+          const result = await Target.v1.getPage(localContext)(defaultQualifier, null, 10);
 
           expect(result).to.deep.equal({
             data: [],
@@ -274,8 +274,8 @@ describe('local target', () => {
           });
           expect(getDocIdsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
           expect(getDocIdsByIdRangeInner).to.have.been.calledOnceWithExactly(
-            `target~${qualifier.reportingPeriod}~`,
-            `target~${qualifier.reportingPeriod}~\ufff0`
+            `target~${defaultQualifier.reportingPeriod}~`,
+            `target~${defaultQualifier.reportingPeriod}~\ufff0`
           );
           expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
           expect(fetchAndFilterOuter).to.not.have.been.called;
@@ -290,7 +290,7 @@ describe('local target', () => {
         expect(getDocIdsByIdRangeOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
         expect(getDocsByIdsOuter).to.have.been.calledOnceWithExactly(localContext.medicDb);
 
-        await expect(getPage(qualifier, cursor, 10)).to.be.rejectedWith(
+        await expect(getPage(defaultQualifier, cursor, 10)).to.be.rejectedWith(
           `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}].`
         );
 
