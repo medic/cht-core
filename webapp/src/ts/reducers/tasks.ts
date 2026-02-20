@@ -5,7 +5,6 @@ import { Actions } from '@mm-actions/tasks';
 import { TaskEmission } from '@mm-services/rules-engine.service';
 import { orderByDueDateAndPriority } from '@medic/task-utils';
 
-
 const initialState = {
   tasksList: [] as TaskEmission[],
   overdue: [] as TaskEmission[],

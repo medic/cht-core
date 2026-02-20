@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatIconModule } from '@angular/material/icon';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,7 +25,6 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { ExportService } from '@mm-services/export.service';
 import { AuthService } from '@mm-services/auth.service';
-import { UserContactService } from '@mm-services/user-contact.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -37,7 +36,6 @@ describe('Messages Component', () => {
   let authService;
   let sessionService;
   let performanceService;
-  let userContactService;
   let stopPerformanceTrackStub;
 
   beforeEach(waitForAsync(() => {
@@ -59,9 +57,6 @@ describe('Messages Component', () => {
       has: sinon.stub()
     };
     sessionService = { isAdmin: sinon.stub() };
-    userContactService = {
-      getUserLineageToRemove: sinon.stub(),
-    };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
@@ -93,7 +88,6 @@ describe('Messages Component', () => {
           { provide: AuthService, useValue: authService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: PerformanceService, useValue: performanceService },
-          { provide: UserContactService, useValue: userContactService },
           { provide: MatBottomSheet, useValue: { open: sinon.stub() } },
           { provide: MatDialog, useValue: { open: sinon.stub() } },
         ]
@@ -235,84 +229,5 @@ describe('Messages Component', () => {
     });
   });
 
-  describe('Messages breadcrumbs', () => {
-    const conversations = [
-      { key: 'a',
-        message: { inAllMessages: true },
-        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
-      },
-      { key: 'b',
-        message: { inAllMessages: true },
-        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
-      },
-      { key: 'c',
-        message: { inAllMessages: true },
-        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
-      },
-      { key: 'd',
-        message: { inAllMessages: true },
-        lineage: []
-      },
-      { key: 'e',
-        message: { inAllMessages: true },
-      },
-    ];
-
-    it('it should retrieve the hierarchy level of the connected user', fakeAsync(async () => {
-      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
-
-      component.ngOnInit();
-      tick();
-
-      expect(await component.userLineageLevel).to.equal('CHW Bettys Area');
-    }));
-
-    it('should not remove the lineage when user lineage level is undefined', fakeAsync(() => {
-      sinon.resetHistory();
-
-      messageContactService.getList.resolves(conversations);
-      userContactService.getUserLineageToRemove.resolves(undefined);
-      component.ngOnInit();
-      tick();
-      component.updateConversations({ merge: true });
-      tick();
-
-      expect(component.conversations).to.deep.equal(conversations);
-    }));
-
-    it('should remove lineage when user lineage level is defined', fakeAsync(() => {
-      sinon.resetHistory();
-      const updatedConversations = [
-        { key: 'a',
-          message: { inAllMessages: true },
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
-        },
-        { key: 'b',
-          message: { inAllMessages: true },
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
-        },
-        { key: 'c',
-          message: { inAllMessages: true },
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
-        },
-        { key: 'd',
-          message: { inAllMessages: true },
-          lineage: []
-        },
-        { key: 'e',
-          message: { inAllMessages: true },
-        },
-      ];
-
-      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
-      messageContactService.getList.resolves(conversations);
-      component.ngOnInit();
-      tick();
-      component.updateConversations({ merge: true });
-      tick();
-
-      expect(component.conversations).to.deep.equal(updatedConversations);
-    }));
-  });
 });
 

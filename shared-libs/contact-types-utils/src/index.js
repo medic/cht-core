@@ -13,8 +13,8 @@ const getContactTypes = config => {
 };
 
 const getContactTypeIds = config => {
-  const contactTypesObjects = getContactTypes(config);
-  return contactTypesObjects.map((item) => item.id);
+  const ids = getContactTypes(config).map(({ id }) => id);
+  return ids.length ? ids : HARDCODED_TYPES;
 };
 
 const getTypeId = (doc) => {
