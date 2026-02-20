@@ -41,8 +41,8 @@ describe('target', () => {
         adapt.returns(getTarget);
       });
 
-      it('retrieves the target when qualifier is UUID', async () => {
-        const qualifier = Qualifier.byUuid('uuid');
+      it('retrieves the target when qualifier is Id', async () => {
+        const qualifier = Qualifier.byId('uuid');
         getTarget.resolves(target);
 
         const result = await Target.v1.get(dataContext)(qualifier);
@@ -55,14 +55,14 @@ describe('target', () => {
         expect(getTarget).to.have.been.calledOnceWithExactly(qualifier);
       });
 
-      it('builds UUID from composite qualifier and retrieves target', async () => {
+      it('builds Id from composite qualifier and retrieves target', async () => {
         const composite = Qualifier.and(
           Qualifier.byReportingPeriod('2025-01'),
-          Qualifier.byContactUuid('contact-uuid'),
+          Qualifier.byContactId('contact-uuid'),
           Qualifier.byUsername('someuser')
         );
-        const expectedUuidQualifier = Qualifier.byUuid(
-          `target~${composite.reportingPeriod}~${composite.contactUuid}~org.couchdb.user:${composite.username}`
+        const expectedIdQualifier = Qualifier.byId(
+          `target~${composite.reportingPeriod}~${composite.contactId}~org.couchdb.user:${composite.username}`
         );
 
         getTarget.resolves(target);
@@ -74,7 +74,7 @@ describe('target', () => {
         expect(adapt).to.have.been.calledOnceWithExactly(
           dataContext, Local.Target.v1.get, Remote.Target.v1.get
         );
-        expect(getTarget).to.have.been.calledOnceWithExactly(expectedUuidQualifier);
+        expect(getTarget).to.have.been.calledOnceWithExactly(expectedIdQualifier);
       });
 
       it('throws an error if the data context is invalid', () => {
@@ -89,7 +89,7 @@ describe('target', () => {
 
       [
         Qualifier.and(
-          Qualifier.byContactUuid('contact-uuid'),
+          Qualifier.byContactId('contact-uuid'),
           Qualifier.byUsername('someuser')
         ),
         Qualifier.and(
@@ -98,15 +98,15 @@ describe('target', () => {
         ),
         Qualifier.and(
           Qualifier.byReportingPeriod('2025-01'),
-          Qualifier.byContactUuid('contact-uuid'),
+          Qualifier.byContactId('contact-uuid'),
         ),
         Qualifier.byReportingPeriod('2025-01'),
-        Qualifier.byContactUuid('contact-uuid'),
+        Qualifier.byContactId('contact-uuid'),
         Qualifier.byUsername('someuser')
       ].forEach(qualifier => {
         it('throws an error when an invalid qualifier is provided', async () => {
           const getTargetFn = Target.v1.get(dataContext);
-          await expect(getTargetFn(qualifier as unknown as Qualifier.UuidQualifier)).to.be.rejectedWith(
+          await expect(getTargetFn(qualifier as unknown as Qualifier.IdQualifier)).to.be.rejectedWith(
             `Invalid target qualifier [${JSON.stringify(qualifier)}].`
           );
 
@@ -151,8 +151,8 @@ describe('target', () => {
       });
 
       [
-        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
-        Qualifier.byContactUuid('owner1-uuid')
+        Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byContactId('owner1-uuid')
       ].forEach(contactQualifier => {
         it('retrieves the target with the correct parameters', async () => {
           const qualifier = Qualifier.and(
@@ -184,16 +184,16 @@ describe('target', () => {
       });
 
       ([
-        Qualifier.byContactUuid('owner1-uuid'),
-        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byContactId('owner1-uuid'),
+        Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
         Qualifier.byReportingPeriod('2025-01'),
         and(
-          Qualifier.byContactUuid('owner1-uuid'),
-          Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+          Qualifier.byContactId('owner1-uuid'),
+          Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
           Qualifier.byReportingPeriod('2025-01')
         )
       ] as unknown as (
-        Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
+        Qualifier.ReportingPeriodQualifier & Qualifier.ContactIdsQualifier
       )[]).forEach(invalidQualifier => {
         it('throws an error if the qualifier is invalid', async () => {
           await expect(Target.v1.getPage(dataContext)(invalidQualifier, null, 10))
@@ -226,7 +226,7 @@ describe('target', () => {
           await expect(
             getTarget(
               Qualifier.and(
-                Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
+                Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
                 Qualifier.byReportingPeriod('2025-01')
               ), 
               '1', 
@@ -254,7 +254,7 @@ describe('target', () => {
           await expect(
             getTarget(
               Qualifier.and(
-                Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']), 
+                Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
                 Qualifier.byReportingPeriod('2025-01')
               ), 
               c as unknown as string, 
@@ -310,8 +310,8 @@ describe('target', () => {
       });
 
       [
-        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
-        Qualifier.byContactUuid('owner1-uuid')
+        Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byContactId('owner1-uuid')
       ].forEach(contactQualifier => {
         it('returns target generator with correct parameters', () => {
           const qualifier = Qualifier.and(
@@ -341,16 +341,16 @@ describe('target', () => {
       });
 
       ([
-        Qualifier.byContactUuid('owner1-uuid'),
-        Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+        Qualifier.byContactId('owner1-uuid'),
+        Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
         Qualifier.byReportingPeriod('2025-01'),
         and(
-          Qualifier.byContactUuid('owner1-uuid'),
-          Qualifier.byContactUuids(['owner1-uuid', 'owner2-uuid']),
+          Qualifier.byContactId('owner1-uuid'),
+          Qualifier.byContactIds(['owner1-uuid', 'owner2-uuid']),
           Qualifier.byReportingPeriod('2025-01')
         )
       ] as unknown as (
-        Qualifier.ReportingPeriodQualifier & Qualifier.ContactUuidsQualifier
+        Qualifier.ReportingPeriodQualifier & Qualifier.ContactIdsQualifier
       )[]).forEach(invalidQualifier => {
         it('throws an error if the qualifier is invalid', () => {
           const getAll = Target.v1.getAll(dataContext);

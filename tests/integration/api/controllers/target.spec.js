@@ -105,11 +105,11 @@ describe('Target API', () => {
     await utils.deleteUsers([offlineUser]);
   });
   
-  describe('GET /api/v1/target/:uuid', async () => {
+  describe('GET /api/v1/target/:id', async () => {
     const endpoint = '/api/v1/target';
     const target = targets[0];
     
-    it('returns the target matching the provided UUID', async () => {
+    it('returns the target matching the provided id', async () => {
       const opts = {
         path: `${endpoint}/${target._id}`,
       };
@@ -117,7 +117,7 @@ describe('Target API', () => {
       expect(result).excluding([ '_rev' ]).to.deep.equal(target);
     });
 
-    it('throws 404 error when no target is found for the UUID', async () => {
+    it('throws 404 error when no target is found for the id', async () => {
       const opts = {
         path: `${endpoint}/invalid-uuid`,
       };
@@ -136,11 +136,11 @@ describe('Target API', () => {
   describe('GET /api/v1/target', async () => {
     const endpoint = '/api/v1/target';
     
-    it('returns a page of targets for multiple contact UUIDs', async () => {
+    it('returns a page of targets for multiple contact ids', async () => {
       const { data, cursor } = await utils.request({
         path: `${endpoint}`,
         qs: {
-          contact_uuids: [
+          contact_ids: [
             targets[0].owner,
             targets[1].owner,
             targets[2].owner,
@@ -153,11 +153,11 @@ describe('Target API', () => {
       expect(cursor).to.be.equal(null);
     });
 
-    it('returns a page of targets for single contact UUID', async () => {
+    it('returns a page of targets for single contact id', async () => {
       const { data, cursor } = await utils.request({
         path: `${endpoint}`,
         qs: {
-          contact_uuid: targets[0].owner,
+          contact_id: targets[0].owner,
           reporting_period: '2025-09'
         }
       });
@@ -170,7 +170,7 @@ describe('Target API', () => {
       const { data, cursor } = await utils.request({
         path: endpoint, 
         qs: { 
-          contact_uuids: [
+          contact_ids: [
             targets[0].owner,
             targets[1].owner,
             targets[2].owner,
@@ -189,7 +189,7 @@ describe('Target API', () => {
       const opts = {
         path: `/api/v1/target`,
         qs: {
-          contact_uuids: targets[0].owner,
+          contact_ids: targets[0].owner,
           reporting_period: '2025-09'
         },
         auth: { username: offlineUser.username, password: offlineUser.password },
@@ -201,7 +201,7 @@ describe('Target API', () => {
       const opts = {
         path: `/api/v1/target`,
         qs: {
-          contact_uuids: targets[0].owner,
+          contact_ids: targets[0].owner,
           reporting_period: '2025-07',
           limit: -1
         },
@@ -216,7 +216,7 @@ describe('Target API', () => {
       const opts = {
         path: `/api/v1/target`,
         qs: {
-          contact_uuids: targets[0].owner,
+          contact_ids: targets[0].owner,
           reporting_period: '2025-07',
           cursor: '-1'
         },

@@ -14,22 +14,22 @@ const checkUserPermissions = async (req) => {
   }
 };
 
-const getContactUuidQualifier = ({ contact_uuids, contact_uuid }) => {
-  if (contact_uuid) {
-    return Qualifier.byContactUuid(contact_uuid);
+const getContactIdQualifier = ({ contact_ids, contact_id }) => {
+  if (contact_id) {
+    return Qualifier.byContactId(contact_id);
   }
-  const contactUuids = (contact_uuids ?? '')
+  const contactIds = (contact_ids ?? '')
     .split(',')
     .filter(Boolean);
-  return Qualifier.byContactUuids(contactUuids);
+  return Qualifier.byContactIds(contactIds);
 };
 
 module.exports = {
   v1: {
     get: serverUtils.doOrError(async (req, res) => {
       await checkUserPermissions(req);
-      const { uuid } = req.params;
-      const target = await getTarget(Qualifier.byUuid(uuid));
+      const { id } = req.params;
+      const target = await getTarget(Qualifier.byId(id));
 
       if (!target) {
         return serverUtils.error({ status: 404, message: 'Target not found' }, req, res);
@@ -42,7 +42,7 @@ module.exports = {
 
       const docs = await getTargets(
         Qualifier.and(
-          getContactUuidQualifier(req.query),
+          getContactIdQualifier(req.query),
           Qualifier.byReportingPeriod(req.query.reporting_period)
         ),
         req.query.cursor,

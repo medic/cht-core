@@ -448,7 +448,7 @@ app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/target', targetController.v1.getAll);
-app.get('/api/v1/target/:uuid', targetController.v1.get);
+app.get('/api/v1/target/:id', targetController.v1.get);
 
 app.get('/api/v1/users', users.list);
 app.get('/api/v2/users/:username', users.v2.get);

@@ -1211,7 +1211,7 @@ describe('RulesEngineService', () => {
 
       const qualifier = getTarget.args[0][0];
       expect(qualifier).to.have.property('reportingPeriod', '2025-01');
-      expect(qualifier).to.have.property('contactUuid', 'user');
+      expect(qualifier).to.have.property('contactId', 'user');
       expect(qualifier).to.have.property('username', 'fred');
 
       expect(actual.length).to.eq(1);

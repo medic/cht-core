@@ -3,11 +3,11 @@ import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
 import {
   fetchAndFilter,
-  fetchAndFilterUuids,
+  fetchAndFilterIds,
   getDocById,
-  getDocsByIds, getDocUuidsByIdRange,
+  getDocsByIds, getDocIdsByIdRange,
   queryDocsByKey,
-  queryDocsByRange, queryDocUuidsByKey, queryDocUuidsByRange,
+  queryDocsByRange, queryDocIdsByKey, queryDocIdsByRange,
 } from '../../../src/local/libs/doc';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import { expect } from 'chai';
@@ -158,7 +158,7 @@ describe('local doc lib', () => {
     });
   });
 
-  describe('getDocUuidsByIdRange', () => {
+  describe('getDocIdsByIdRange', () => {
     it('returns ids found in the given range', async () => {
       const startkey = 'doc0';
       const endkey = 'doc3';
@@ -170,7 +170,7 @@ describe('local doc lib', () => {
         ]
       });
 
-      const result = await getDocUuidsByIdRange(db)(startkey, endkey);
+      const result = await getDocIdsByIdRange(db)(startkey, endkey);
 
       expect(result).to.deep.equal([startkey, 'doc1', 'doc2']);
       expect(dbAllDocs).to.be.calledOnceWithExactly({
@@ -187,7 +187,7 @@ describe('local doc lib', () => {
       const endkey = 'doc3';
       dbAllDocs.resolves({ rows: [] });
 
-      const result = await getDocUuidsByIdRange(db)(startkey, endkey);
+      const result = await getDocIdsByIdRange(db)(startkey, endkey);
 
       expect(result).to.deep.equal([]);
       expect(dbAllDocs).to.be.calledOnceWithExactly({
@@ -346,11 +346,11 @@ describe('local doc lib', () => {
     });
   });
 
-  describe('queryDocUuidsByRange', () => {
+  describe('queryDocIdsByRange', () => {
     const limit = 3;
     const skip = 2;
 
-    it('returns docs uuids for the given keys', async () => {
+    it('returns docs Ids for the given keys', async () => {
       const doc0 = { id: 'doc0' };
       const doc1 = { id: 'doc1' };
       const doc2 = { id: 'doc2' };
@@ -362,7 +362,7 @@ describe('local doc lib', () => {
         ]
       });
 
-      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0.id, doc1.id);
+      const result = await queryDocIdsByRange(db, 'medic-client/contacts_by_type')(doc0.id, doc1.id);
 
       expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
 
@@ -382,7 +382,7 @@ describe('local doc lib', () => {
         rows: []
       });
 
-      const result = await queryDocUuidsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc1._id, limit, skip);
+      const result = await queryDocIdsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc1._id, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
@@ -395,12 +395,12 @@ describe('local doc lib', () => {
     });
   });
 
-  describe('queryDocUuidsByKey', () => {
+  describe('queryDocIdsByKey', () => {
     const limit = 100;
     const skip = 0;
     const contactType = 'person';
 
-    it('returns doc uuids based on key in pages', async () => {
+    it('returns doc ids based on key in pages', async () => {
       const doc0 = { id: 'doc0' };
       const doc1 = { id: 'doc1' };
       const doc2 = { id: 'doc2' };
@@ -413,7 +413,7 @@ describe('local doc lib', () => {
         ]
       });
 
-      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocIdsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([doc0.id, doc1.id, doc2.id]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
@@ -428,7 +428,7 @@ describe('local doc lib', () => {
     it('returns empty array if docs are not found', async () => {
       dbQuery.resolves({ rows: [] });
 
-      const result = await queryDocUuidsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
+      const result = await queryDocIdsByKey(db, 'medic-client/contacts_by_type')(contactType, limit, skip);
 
       expect(result).to.deep.equal([]);
       expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
@@ -526,7 +526,7 @@ describe('local doc lib', () => {
     });
   });
 
-  describe('fetchAndFilterUuids', () => {
+  describe('fetchAndFilterIds', () => {
     let fetchAndFilterStub: sinon.SinonStub;
 
     beforeEach(() => {
@@ -537,7 +537,7 @@ describe('local doc lib', () => {
       sinon.restore();
     });
 
-    it('should filter out duplicate UUIDs', () => {
+    it('should filter out duplicate Ids', () => {
       const uuids = [
         '123e4567-e89b-12d3-a456-426614174000',
         '123e4567-e89b-12d3-a456-426614174000',
@@ -562,7 +562,7 @@ describe('local doc lib', () => {
           return results;
         });
 
-      const result =  fetchAndFilterUuids(getFunction, 3);
+      const result =  fetchAndFilterIds(getFunction, 3);
 
       expect(result).to.have.members(['123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d7-9b56-254125174000']);
       expect(fetchAndFilterStubFake.calledOnce).to.be.true;
@@ -592,7 +592,7 @@ describe('local doc lib', () => {
           return results;
         });
 
-      const result = fetchAndFilterUuids(getFunction, 3);
+      const result = fetchAndFilterIds(getFunction, 3);
 
       expect(result).to.have.length(2);
       expect(result).to.not.include(null);
@@ -608,7 +608,7 @@ describe('local doc lib', () => {
           return [];
         });
 
-      fetchAndFilterUuids(getFunction, limit);
+      fetchAndFilterIds(getFunction, limit);
     });
 
     it('should handle empty results', () => {
@@ -618,7 +618,7 @@ describe('local doc lib', () => {
       fetchAndFilterStub
         .returns([]);
 
-      const result = fetchAndFilterUuids(getFunction, 3);
+      const result = fetchAndFilterIds(getFunction, 3);
 
       expect(result).to.be.an('array').that.is.empty;
     });
@@ -629,7 +629,7 @@ describe('local doc lib', () => {
 
       fetchAndFilterStub.throws(error);
 
-      expect(() => fetchAndFilterUuids(getFunction, 3)).to.throw('API Error');
+      expect(() => fetchAndFilterIds(getFunction, 3)).to.throw('API Error');
     });
   });
 

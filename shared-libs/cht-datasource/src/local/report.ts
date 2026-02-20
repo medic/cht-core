@@ -1,5 +1,5 @@
 import { LocalDataContext } from './libs/data-context';
-import { fetchAndFilterUuids, getDocById, queryDocUuidsByKey, queryDocUuidsByRange } from './libs/doc';
+import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
 import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Report from '../report';
@@ -11,8 +11,8 @@ import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
-  const queryViewFreetextByKey = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
-  const queryViewFreetextByRange = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
 
   return (qualifier: FreetextQualifier) => {
     if (isKeyedFreetextQualifier(qualifier)) {
@@ -92,7 +92,7 @@ export namespace v1 {
       // Use client-side offline freetext views.
       const skip = validateCursor(cursor);
       const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
-      return fetchAndFilterUuids(getPageFn, limit)(limit, skip);
+      return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
 }

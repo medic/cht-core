@@ -115,8 +115,8 @@ describe('cht-datasource Target', () => {
     describe('get', async () => {
       const getTarget = Target.v1.get(dataContext);
 
-      it('returns the target matching the provided UUID', async () => {
-        const result = await getTarget(Qualifier.byUuid(targets[0]._id));
+      it('returns the target matching the provided id', async () => {
+        const result = await getTarget(Qualifier.byId(targets[0]._id));
         expect(result)
           .excluding(['_rev'])
           .to
@@ -124,8 +124,8 @@ describe('cht-datasource Target', () => {
           .equal(targets[0]);
       });
 
-      it('returns null when no target is found for the UUID', async () => {
-        const result = await getTarget(Qualifier.byUuid('invalid-target'));
+      it('returns null when no target is found for the id', async () => {
+        const result = await getTarget(Qualifier.byId('invalid-target'));
         expect(result).to.be.null;
       });
     });
@@ -133,10 +133,10 @@ describe('cht-datasource Target', () => {
     describe('getPage', async () => {
       const getPage = Target.v1.getPage(dataContext);
 
-      it('returns a page of targets for multiple contact UUIDs', async () => {
+      it('returns a page of targets for multiple contact ids', async () => {
         const { data, cursor } = await getPage(Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuids([
+          Qualifier.byContactIds([
             targets[0].owner,
             targets[1].owner,
             targets[2].owner,
@@ -147,10 +147,10 @@ describe('cht-datasource Target', () => {
         expect(cursor).to.be.equal(null);
       });
 
-      it('returns a page of targets for single contact UUID', async () => {
+      it('returns a page of targets for single contact id', async () => {
         const { data, cursor } = await getPage(Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuid(targets[0].owner)
+          Qualifier.byContactId(targets[0].owner)
         ));
 
         expect(data).excludingEvery(['_rev']).to.deep.equal([targets[0]]);
@@ -161,7 +161,7 @@ describe('cht-datasource Target', () => {
         const { data, cursor } = await getPage(
           Qualifier.and(
             Qualifier.byReportingPeriod('2025-09'),
-            Qualifier.byContactUuids([
+            Qualifier.byContactIds([
               targets[0].owner,
               targets[1].owner,
               targets[2].owner,
@@ -178,7 +178,7 @@ describe('cht-datasource Target', () => {
       it('throws error when limit is invalid', async () => {
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuids([targets[0].owner])
+          Qualifier.byContactIds([targets[0].owner])
         );
         await expect(getPage(qualifier, null, -1)).to.be.rejectedWith(
           `The limit must be a positive integer: [-1].`
@@ -188,7 +188,7 @@ describe('cht-datasource Target', () => {
       it('throws error when cursor is invalid', async () => {
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2025-09'),
-          Qualifier.byContactUuids([targets[0].owner])
+          Qualifier.byContactIds([targets[0].owner])
         );
         await expect(getPage(qualifier, -1)).to.be.rejectedWith(
           `The cursor must be a string or null for first page: [-1].`

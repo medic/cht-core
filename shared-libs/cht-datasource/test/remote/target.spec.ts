@@ -5,9 +5,10 @@ import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import * as Target from '../../src/remote/target';
 import {
   and,
-  byContactUuid,
+  byContactId,
   byReportingPeriod,
-  byContactUuids
+  byContactIds,
+  byId
 } from '../../src/qualifier';
 
 describe('remote target', () => {
@@ -28,9 +29,9 @@ describe('remote target', () => {
 
   describe('v1', () => {
     describe('get', () => {
-      const identifier = { uuid: 'uuid' } as const;
+      const identifier = byId('uuid');
 
-      it('returns a target by UUID', async () => {
+      it('returns a target by Id', async () => {
         const doc = {
           user: 'user',
           owner: 'owner',
@@ -47,7 +48,7 @@ describe('remote target', () => {
 
         expect(result).to.equal(doc);
         expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target');
-        expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.uuid);
+        expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.id);
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -57,7 +58,7 @@ describe('remote target', () => {
 
         expect(result).to.be.null;
         expect(getResourceOuter).to.have.been.calledOnceWithExactly(remoteContext, 'api/v1/target');
-        expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.uuid);
+        expect(getResourceInner).to.have.been.calledOnceWithExactly(identifier.id);
       });
     });
 
@@ -90,10 +91,10 @@ describe('remote target', () => {
       const limit = 3;
       const cursor = '1';
 
-      it('returns targets for multiple contact UUIDs', async () => {
+      it('returns targets for multiple contact Ids', async () => {
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
-        const qualifier = and(byReportingPeriod('2025-01'), byContactUuids([doc[1].owner, doc[0].owner]));
+        const qualifier = and(byReportingPeriod('2025-01'), byContactIds([doc[1].owner, doc[0].owner]));
 
         const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
@@ -102,15 +103,15 @@ describe('remote target', () => {
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           reporting_period: qualifier.reportingPeriod,
-          contact_uuids: `${doc[1].owner},${doc[0].owner}`,
+          contact_ids: `${doc[1].owner},${doc[0].owner}`,
           cursor
         })).to.be.true;
       });
 
-      it('returns targets for single contact UUID', async () => {
+      it('returns targets for single contact Id', async () => {
         const expectedResponse = { data: doc.slice(0, 1), cursor };
         getResourcesInner.resolves(expectedResponse);
-        const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
+        const qualifier = and(byReportingPeriod('2025-01'), byContactId(doc[0].owner));
 
         const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
@@ -119,14 +120,14 @@ describe('remote target', () => {
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           reporting_period: qualifier.reportingPeriod,
-          contact_uuid: doc[0].owner,
+          contact_id: doc[0].owner,
           cursor
         })).to.be.true;
       });
 
       it('returns empty array if docs are not found', async () => {
         getResourcesInner.resolves([]);
-        const qualifier = and(byReportingPeriod('2025-01'), byContactUuid(doc[0].owner));
+        const qualifier = and(byReportingPeriod('2025-01'), byContactId(doc[0].owner));
 
         const result = await Target.v1.getPage(remoteContext)(qualifier, cursor, limit);
 
@@ -135,7 +136,7 @@ describe('remote target', () => {
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
           reporting_period: qualifier.reportingPeriod,
-          contact_uuid: doc[0].owner,
+          contact_id: doc[0].owner,
           cursor
         })).to.be.true;
       });

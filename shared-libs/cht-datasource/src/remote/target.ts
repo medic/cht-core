@@ -1,10 +1,9 @@
 import { getResource, getResources, RemoteDataContext } from './libs/data-context';
 import {
-  ContactUuidQualifier,
-  ContactUuidsQualifier,
-  isContactUuidQualifier,
-  ReportingPeriodQualifier,
-  UuidQualifier
+  ContactIdQualifier,
+  ContactIdsQualifier, IdQualifier,
+  isContactIdQualifier,
+  ReportingPeriodQualifier
 } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Target from '../target';
@@ -16,25 +15,25 @@ export namespace v1 {
   export const get = (remoteContext: RemoteDataContext) => {
     const getTarget = getResource(remoteContext, 'api/v1/target');
     return (
-      identifier: UuidQualifier
-    ): Promise<Nullable<Target.v1.Target>> => getTarget(identifier.uuid);
+      identifier: IdQualifier
+    ): Promise<Nullable<Target.v1.Target>> => getTarget(identifier.id);
   };
   
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
+    qualifier: ReportingPeriodQualifier & (ContactIdsQualifier | ContactIdQualifier),
     cursor: Nullable<string>,
     limit: number,
   ): Promise<Page<Target.v1.Target>> => {
     const getTargets = getResources(remoteContext, 'api/v1/target');
-    const uuidParam: { contact_uuid: string } | { contact_uuids: string } = isContactUuidQualifier(qualifier)
-      ? { contact_uuid: qualifier.contactUuid }
-      : { contact_uuids: qualifier.contactUuids.join(',') };
+    const idParam: { contact_id: string } | { contact_ids: string } = isContactIdQualifier(qualifier)
+      ? { contact_id: qualifier.contactId }
+      : { contact_ids: qualifier.contactIds.join(',') };
 
     const queryParams = {
       'limit': limit.toString(),
       'reporting_period': qualifier.reportingPeriod,
-      ...uuidParam,
+      ...idParam,
       ...(cursor ? { cursor } : {})
     };
     

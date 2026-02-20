@@ -2,6 +2,33 @@ import { hasField, isRecord, isString } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**
+ * A qualifier that identifies an entity.
+ */
+export type IdQualifier = Readonly<{ id: string }>;
+
+/**
+ * Builds a qualifier that identifies an entity.
+ * @param id the identifier of the entity
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the identifier is invalid
+ */
+export const byId = (id: string): IdQualifier => {
+  if (!isString(id) || id.length === 0) {
+    throw new InvalidArgumentError(`Invalid UUID [${JSON.stringify(id)}].`);
+  }
+  return { id };
+};
+
+/**
+ * Returns `true` if the given qualifier is an {@link IdQualifier}, otherwise `false`.
+ * @param identifier the identifier to check
+ * @returns `true` if the given identifier is a {@link IdQualifier}, otherwise `false`
+ */
+export const isIdQualifier = (identifier: unknown): identifier is IdQualifier => {
+  return isRecord(identifier) && hasField(identifier, { name: 'id', type: 'string' });
+};
+
+/**
  * A qualifier that identifies an entity by its UUID.
  */
 export type UuidQualifier = Readonly<{ uuid: string }>;
@@ -185,67 +212,67 @@ export const byUsername = (username: string): UsernameQualifier => {
 };
 
 /**
- * A qualifier that identifies entities based their association with the identified contact.
+ * A qualifier that identifies entities based on their association with the identified contact.
  */
-export interface ContactUuidQualifier {
-  readonly contactUuid: string
+export interface ContactIdQualifier {
+  readonly contactId: string
 }
 
 /**
- * Returns `true` if the given qualifier is a {@link ContactUuidQualifier} otherwise `false`.
+ * Returns `true` if the given qualifier is a {@link ContactIdQualifier} otherwise `false`.
  * @param qualifier the qualifier to check
- * @returns `true` if the given qualifier is a {@link ContactUuidQualifier}, otherwise `false`.
+ * @returns `true` if the given qualifier is a {@link ContactIdQualifier}, otherwise `false`.
  */
-export const isContactUuidQualifier = (qualifier: unknown): qualifier is ContactUuidQualifier => {
+export const isContactIdQualifier = (qualifier: unknown): qualifier is ContactIdQualifier => {
   return isRecord(qualifier) &&
-    hasField(qualifier, { name: 'contactUuid', type: 'string' }) &&
-    qualifier.contactUuid.length > 0;
+    hasField(qualifier, { name: 'contactId', type: 'string' }) &&
+    qualifier.contactId.length > 0;
 };
 
 /**
- * Builds a qualifier for finding entities by contact UUID.
- * @param contactUuid the contact UUID to search with
+ * Builds a qualifier for finding entities by contact identifier.
+ * @param contactId the contact identifier to search with
  * @returns the qualifier
- * @throws InvalidArgumentError if the contact UUID is not valid
+ * @throws InvalidArgumentError if the contact identifier is not valid
  */
-export const byContactUuid = (contactUuid: string): ContactUuidQualifier => {
-  const qualifier = { contactUuid };
-  if (!isContactUuidQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid contact UUID [${contactUuid}].`);
+export const byContactId = (contactId: string): ContactIdQualifier => {
+  const qualifier = { contactId };
+  if (!isContactIdQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact Id [${contactId}].`);
   }
   return qualifier;
 };
 
 /**
- * A qualifier that identifies entities based their association with the identified contacts.
+ * A qualifier that identifies entities based on their association with the identified contacts.
  */
-export interface ContactUuidsQualifier {
-  readonly contactUuids: [string, ...string[]]
+export interface ContactIdsQualifier {
+  readonly contactIds: [string, ...string[]]
 }
 
 /**
- * Returns `true` if the given qualifier is a {@link ContactUuidsQualifier} otherwise `false`.
+ * Returns `true` if the given qualifier is a {@link ContactIdsQualifier} otherwise `false`.
  * @param qualifier the qualifier to check
- * @returns `true` if the given qualifier is a {@link ContactUuidsQualifier}, otherwise `false`.
+ * @returns `true` if the given qualifier is a {@link ContactIdsQualifier}, otherwise `false`.
  */
-export const isContactUuidsQualifier = (qualifier: unknown): qualifier is ContactUuidsQualifier => {
+export const isContactIdsQualifier = (qualifier: unknown): qualifier is ContactIdsQualifier => {
   return isRecord(qualifier)
-    && hasField(qualifier, { name: 'contactUuids', type: 'object' })
-    && Array.isArray(qualifier.contactUuids)
-    && qualifier.contactUuids.length > 0
-    && qualifier.contactUuids.every((contactUuid) => contactUuid?.length > 0);
+    && hasField(qualifier, { name: 'contactIds', type: 'object' })
+    && Array.isArray(qualifier.contactIds)
+    && qualifier.contactIds.length > 0
+    && qualifier.contactIds.every((contactId) => contactId?.length > 0);
 };
 
 /**
- * Builds a qualifier for finding entities by contact UUIDs.
- * @param contactUuids the contact UUIDs to search with
+ * Builds a qualifier for finding entities by contact identifiers.
+ * @param contactIds the contact identifiers to search with
  * @returns the qualifier
- * @throws InvalidArgumentError if the contact UUIDs are not valid
+ * @throws InvalidArgumentError if the contact identifiers are not valid
  */
-export const byContactUuids = (contactUuids: [string, ...string[]]): ContactUuidsQualifier => {
-  const qualifier = { contactUuids };
-  if (!isContactUuidsQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid contact UUIDs [${contactUuids}].`);
+export const byContactIds = (contactIds: [string, ...string[]]): ContactIdsQualifier => {
+  const qualifier = { contactIds };
+  if (!isContactIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact Ids [${contactIds}].`);
   }
   return qualifier;
 };

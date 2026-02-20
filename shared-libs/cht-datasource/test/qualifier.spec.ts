@@ -1,15 +1,15 @@
 import {
   and,
   byContactType,
-  byContactUuid,
-  byContactUuids,
+  byContactId,
+  byContactIds,
   byFreetext,
   byReportingPeriod,
   byUsername,
   byUuid, FreetextQualifier,
   isContactTypeQualifier,
-  isContactUuidQualifier,
-  isContactUuidsQualifier,
+  isContactIdQualifier,
+  isContactIdsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
@@ -203,44 +203,44 @@ describe('qualifier', () => {
     });
   });
 
-  describe('byContactUuid', () => {
-    it('builds a qualifier for searching by contact UUID', () => {
-      expect(byContactUuid('abc-123')).to.deep.equal({ contactUuid: 'abc-123' });
+  describe('byContactId', () => {
+    it('builds a qualifier for searching by contact Id', () => {
+      expect(byContactId('abc-123')).to.deep.equal({ contactId: 'abc-123' });
     });
 
     [
       null,
       ''
-    ].forEach(contactUuid => {
-      it(`throws an error for ${JSON.stringify(contactUuid)}`, () => {
-        expect(() => byContactUuid(contactUuid!)).to.throw(
-          `Invalid contact UUID [${contactUuid}].`
+    ].forEach(contactId => {
+      it(`throws an error for ${JSON.stringify(contactId)}`, () => {
+        expect(() => byContactId(contactId!)).to.throw(
+          `Invalid contact Id [${contactId}].`
         );
       });
     });
   });
 
-  describe('isContactUuidQualifier', () => {
+  describe('isContactIdQualifier', () => {
     [
       [ null, false ],
       [ 'abc-123', false ],
-      [ { contactUuid: '' }, false ],
-      [ { contactUuid: 'def-456' }, true ],
-      [ { contactUuid: { } }, false ]
+      [ { contactId: '' }, false ],
+      [ { contactId: 'def-456' }, true ],
+      [ { contactId: { } }, false ]
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
-        expect(isContactUuidQualifier(qualifier)).to.equal(expected);
+        expect(isContactIdQualifier(qualifier)).to.equal(expected);
       });
     });
   });
 
-  describe('byContactUuids', () => {
+  describe('byContactIds', () => {
     ([
       ['abc-123'],
       ['abc-123', 'abc-200']
-    ] as [string, ...string[]][]).forEach((contactUuids) => {
-      it('builds a qualifier for searching by contact UUID', () => {
-        expect(byContactUuids(contactUuids)).to.deep.equal({ contactUuids });
+    ] as [string, ...string[]][]).forEach((contactIds) => {
+      it('builds a qualifier for searching by contact Id', () => {
+        expect(byContactIds(contactIds)).to.deep.equal({ contactIds });
       });
     });
 
@@ -249,29 +249,29 @@ describe('qualifier', () => {
       '',
       [],
       [''],
-    ] as [string, ...string[]][]).forEach(contactUuids => {
-      it(`throws an error for ${JSON.stringify(contactUuids)}`, () => {
-        expect(() => byContactUuids(contactUuids)).to.throw(
-          `Invalid contact UUIDs [${contactUuids}].`
+    ] as [string, ...string[]][]).forEach(contactIds => {
+      it(`throws an error for ${JSON.stringify(contactIds)}`, () => {
+        expect(() => byContactIds(contactIds)).to.throw(
+          `Invalid contact Ids [${contactIds}].`
         );
       });
     });
   });
 
-  describe('isContactUuidsQualifier', () => {
+  describe('isContactIdsQualifier', () => {
     [
       [ null, false ],
       [ 'abc-123', false ],
-      [ { contactUuids: '' }, false ],
-      [ { contactUuids: { } }, false ],
-      [ { contactUuids: [] }, false ],
-      [ { contactUuids: ['abc-123', ''] }, false ],
-      [ { contactUuids: [null, 'abc-123'] }, false ],
-      [ { contactUuids: ['abc-123'] }, true ],
-      [ { contactUuids: ['abc-123', 'abc-123', 'abc-123'] }, true ],
+      [ { contactIds: '' }, false ],
+      [ { contactIds: { } }, false ],
+      [ { contactIds: [] }, false ],
+      [ { contactIds: ['abc-123', ''] }, false ],
+      [ { contactIds: [null, 'abc-123'] }, false ],
+      [ { contactIds: ['abc-123'] }, true ],
+      [ { contactIds: ['abc-123', 'abc-123', 'abc-123'] }, true ],
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
-        expect(isContactUuidsQualifier(qualifier)).to.equal(expected);
+        expect(isContactIdsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

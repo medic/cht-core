@@ -1,11 +1,10 @@
 import { LocalDataContext } from './libs/data-context';
-import { fetchAndFilter, getDocById, getDocsByIds, getDocUuidsByIdRange } from './libs/doc';
+import { fetchAndFilter, getDocById, getDocsByIds, getDocIdsByIdRange } from './libs/doc';
 import {
-  ContactUuidQualifier,
-  ContactUuidsQualifier,
-  isContactUuidQualifier,
+  ContactIdQualifier,
+  ContactIdsQualifier, IdQualifier,
+  isContactIdQualifier,
   ReportingPeriodQualifier,
-  UuidQualifier
 } from '../qualifier';
 import { hasField, isRecord, Nullable, Page } from '../libs/core';
 import * as Target from '../target';
@@ -14,28 +13,28 @@ import { Doc } from '../libs/doc';
 import { validateCursor } from './libs/core';
 
 const getTargetIds = async (
-  getDocUuidsRange: ReturnType<typeof getDocUuidsByIdRange>,
-  qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier)
+  getDocIdsRange: ReturnType<typeof getDocIdsByIdRange>,
+  qualifier: ReportingPeriodQualifier & (ContactIdsQualifier | ContactIdQualifier)
 ) => {
-  const contactUuidSet = new Set(
-    isContactUuidQualifier(qualifier) ? [qualifier.contactUuid] : qualifier.contactUuids
+  const contactIdSet = new Set(
+    isContactIdQualifier(qualifier) ? [qualifier.contactId] : qualifier.contactIds
   );
 
-  if (contactUuidSet.size === 1) {
-    const contactUuid = contactUuidSet.values().next().value!;
-    return getDocUuidsRange(
-      `target~${qualifier.reportingPeriod}~${contactUuid}~`,
-      `target~${qualifier.reportingPeriod}~${contactUuid}~\ufff0`,
+  if (contactIdSet.size === 1) {
+    const contactId = contactIdSet.values().next().value!;
+    return getDocIdsRange(
+      `target~${qualifier.reportingPeriod}~${contactId}~`,
+      `target~${qualifier.reportingPeriod}~${contactId}~\ufff0`,
     );
   }
 
-  const allTargetIds = await getDocUuidsRange(
+  const allTargetIds = await getDocIdsRange(
     `target~${qualifier.reportingPeriod}~`,
     `target~${qualifier.reportingPeriod}~\ufff0`,
   );
   return allTargetIds.filter(id => {
-    const [, , contactUuid] = id.split('~');
-    return contactUuidSet.has(contactUuid);
+    const [, , contactId] = id.split('~');
+    return contactIdSet.has(contactId);
   });
 };
 
@@ -56,11 +55,11 @@ export namespace v1 {
     const getMedicDocById = getDocById(medicDb);
 
     return async (
-      { uuid }: UuidQualifier
+      { id }: IdQualifier
     ): Promise<Nullable<Target.v1.Target>> => {
-      const doc = await getMedicDocById(uuid);
+      const doc = await getMedicDocById(id);
       if (!isTarget(doc)) {
-        logger.warn(`Document [${uuid}] is not a valid target.`);
+        logger.warn(`Document [${id}] is not a valid target.`);
         return null;
       }
       return doc;
@@ -69,16 +68,16 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb }: LocalDataContext) => {
-    const getDocUuidsRange = getDocUuidsByIdRange(medicDb);
+    const getDocIdsRange = getDocIdsByIdRange(medicDb);
     const getMedicDocsByIds = getDocsByIds(medicDb);
 
     return async (
-      qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
+      qualifier: ReportingPeriodQualifier & (ContactIdsQualifier | ContactIdQualifier),
       cursor: Nullable<string>,
       limit: number,
     ): Promise<Page<Target.v1.Target>> => {
       const skip = validateCursor(cursor);
-      const targetIds = await getTargetIds(getDocUuidsRange, qualifier);
+      const targetIds = await getTargetIds(getDocIdsRange, qualifier);
       if (!targetIds.length) {
         return { data: [], cursor: null };
       }

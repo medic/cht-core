@@ -612,7 +612,7 @@ export class RulesEngineService implements OnDestroy {
     return await this.getTarget(
       Qualifier.and(
         Qualifier.byReportingPeriod(intervalTag),
-        Qualifier.byContactUuid(userContact._id),
+        Qualifier.byContactId(userContact._id),
         Qualifier.byUsername(username)
       )
     );

@@ -16,7 +16,7 @@ import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.
 import { Qualifier, Target } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
-const { byContactUuids, byContactUuid, byReportingPeriod } = Qualifier;
+const { byContactIds, byContactId, byReportingPeriod } = Qualifier;
 
 describe('TargetAggregatesService', () => {
   let service: TargetAggregatesService;
@@ -349,7 +349,7 @@ describe('TargetAggregatesService', () => {
       expect(getDataRecordsService.get.args[3]).to.deep.equal([places.slice(200, 300).map(place => place.contact)]);
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
 
@@ -431,7 +431,7 @@ describe('TargetAggregatesService', () => {
       ]);
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
 
@@ -802,7 +802,7 @@ describe('TargetAggregatesService', () => {
       });
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
 
@@ -865,7 +865,7 @@ describe('TargetAggregatesService', () => {
       });
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
 
@@ -951,7 +951,7 @@ describe('TargetAggregatesService', () => {
       });
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
 
@@ -1039,7 +1039,7 @@ describe('TargetAggregatesService', () => {
       });
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
 
@@ -1127,7 +1127,7 @@ describe('TargetAggregatesService', () => {
       });
       expect(getTargets.args).to.deep.equal([[Qualifier.and(
         baseReportingPeriodQualifier,
-        byContactUuids(contacts.map(({ _id }) => _id) as [string, ...string[]])
+        byContactIds(contacts.map(({ _id }) => _id) as [string, ...string[]])
       )]]);
     });
   });
@@ -1248,15 +1248,15 @@ describe('TargetAggregatesService', () => {
       expect(getTargets.callCount).to.equal(3);
       expect(getTargets.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-02'),
-        byContactUuid('uuid')
+        byContactId('uuid')
       )]);
       expect(getTargets.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2020-01'),
-        byContactUuid('uuid')
+        byContactId('uuid')
       )]);
       expect(getTargets.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2019-12'),
-        byContactUuid('uuid')
+        byContactId('uuid')
       )]);
     });
 
@@ -1320,15 +1320,15 @@ describe('TargetAggregatesService', () => {
       expect(getTargets.callCount).to.equal(3);
       expect(getTargets.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
-        byContactUuid('usercontact')
+        byContactId('usercontact')
       )]);
       expect(getTargets.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-07'),
-        byContactUuid('usercontact')
+        byContactId('usercontact')
       )]);
       expect(getTargets.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-06'),
-        byContactUuid('usercontact')
+        byContactId('usercontact')
       )]);
     });
 
@@ -1392,15 +1392,15 @@ describe('TargetAggregatesService', () => {
       expect(getTargets.callCount).to.equal(3);
       expect(getTargets.args[0]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-08'),
-        byContactUuid('usercontact')
+        byContactId('usercontact')
       )]);
       expect(getTargets.args[1]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-07'),
-        byContactUuid('usercontact')
+        byContactId('usercontact')
       )]);
       expect(getTargets.args[2]).to.deep.equal([Qualifier.and(
         byReportingPeriod('2023-06'),
-        byContactUuid('usercontact')
+        byContactId('usercontact')
       )]);
     });
 
@@ -1456,7 +1456,7 @@ describe('TargetAggregatesService', () => {
       expect(getTargets.args).to.deep.equal(
         Array.from({ length: 3 }, () => [Qualifier.and(
           baseReportingPeriodQualifier,
-          byContactUuid('uuid')
+          byContactId('uuid')
         )])
       );
     });

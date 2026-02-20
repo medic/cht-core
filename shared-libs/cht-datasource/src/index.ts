@@ -33,7 +33,7 @@ import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
 import * as Qualifier from './qualifier';
-import { and, byContactUuid, byContactUuids, byReportingPeriod } from './qualifier';
+import { and, byContactId, byContactIds, byReportingPeriod } from './qualifier';
 import * as Report from './report';
 import * as Target from './target';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT, } from './libs/constants';
@@ -323,72 +323,72 @@ export const getDatasource = (ctx: DataContext) => {
       },
       target: {
         /**
-         * Returns a target by UUID.
-         * @param uuid the UUID of the target to retrieve
-         * @returns the target or `null` if no target is found for the UUID
-         * @throws InvalidArgumentError if no UUID is provided
+         * Returns a target by identifier.
+         * @param id the identifier of the target to retrieve
+         * @returns the target or `null` if no target is found for the identifier
+         * @throws InvalidArgumentError if no identifier is provided
          */
-        getByUuid: (uuid: string) => ctx.bind(Target.v1.get)(Qualifier.byUuid(uuid)),
+        getById: (id: string) => ctx.bind(Target.v1.get)(Qualifier.byId(id)),
 
         /**
          * Returns the target for the given username and reporting period.
          * @param reportingPeriod the reporting period for the target
-         * @param contactUuid the contact UUID of the user for the target
+         * @param contactId the contact identifier of the user for the target
          * @param username the username (without the "org.couchdb.user:" prefix) of the user for the target
          * @returns the target or `null` if no target is found
-         * @throws InvalidArgumentError if no reporting period, contact UUID, and/or username is provided
+         * @throws InvalidArgumentError if no reporting period, contact identifier, and/or username is provided
          */
-        getByReportingPeriodContactUuidUsername: (
+        getByReportingPeriodContactIdUsername: (
           reportingPeriod: string,
-          contactUuid: string,
+          contactId: string,
           username: string
         ) => ctx.bind(Target.v1.get)(and(
           Qualifier.byReportingPeriod(reportingPeriod),
-          Qualifier.byContactUuid(contactUuid),
+          Qualifier.byContactId(contactId),
           Qualifier.byUsername(username)
         )),
 
         /**
          * Returns an array of targets for the provided page specifications.
          * @param reportingPeriod the reporting period for the targets
-         * @param contactUuids the contact UUIDs for the targets
+         * @param contactIds the contact identifiers for the targets
          * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
          * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
          * @param limit the maximum number of targets to return. Default is 100.
          * @returns a page of targets for the provided specifications
          * @throws InvalidArgumentError if no reporting period is provided
-         * @throws InvalidArgumentError if no contact UUIDs are provided
+         * @throws InvalidArgumentError if no contact identifiers are provided
          * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
          * @throws InvalidArgumentError if the provided limit is `<= 0`
-         * @see {@link getByReportingPeriodContactUuids} which provides the same data, but without having to manually 
+         * @see {@link getByReportingPeriodContactIds} which provides the same data, but without having to manually
          * account for paging
          */
-        getPageByReportingPeriodContactUuids: (
+        getPageByReportingPeriodContactIds: (
           reportingPeriod: string,
-          contactUuids: string | [string, ...string[]],
+          contactIds: string | [string, ...string[]],
           cursor: Nullable<string> = null,
           limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
         ) => ctx.bind(Target.v1.getPage)(
           and(
             byReportingPeriod(reportingPeriod),
-            Array.isArray(contactUuids) ? byContactUuids(contactUuids) : byContactUuid(contactUuids)
+            Array.isArray(contactIds) ? byContactIds(contactIds) : byContactId(contactIds)
           ), cursor, limit
         ),
 
         /**
-         * Returns a generator for fetching all targets in the reporting period for the given contact UUIDs.
+         * Returns a generator for fetching all targets in the reporting period for the given contact identifiers.
          * @param reportingPeriod the reporting period for the targets
-         * @param contactUuids the contact UUIDs for the targets
+         * @param contactIds the contact identifiers for the targets
          * @returns a generator for fetching all targets with the given type
          * @throws InvalidArgumentError if no reporting period is provided
-         * @throws InvalidArgumentError if no contact UUIDs are provided
+         * @throws InvalidArgumentError if no contact identifiers are provided
          */
-        getByReportingPeriodContactUuids: (
+        getByReportingPeriodContactIds: (
           reportingPeriod: string, 
-          contactUuids: string | [string, ...string[]]
+          contactIds: string | [string, ...string[]]
         ) => ctx.bind(Target.v1.getAll)(and(
           byReportingPeriod(reportingPeriod),
-          Array.isArray(contactUuids) ? byContactUuids(contactUuids) : byContactUuid(contactUuids)
+          Array.isArray(contactIds) ? byContactIds(contactIds) : byContactId(contactIds)
         ))
       }
     }

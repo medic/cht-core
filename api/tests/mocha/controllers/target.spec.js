@@ -5,9 +5,9 @@ const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const { Qualifier, Target, InvalidArgumentError } = require('@medic/cht-datasource');
 
-const target = Object.freeze({ uuid: 'abc-123', name: 'interval' });
-const target1 = Object.freeze({ uuid: 'abc-124', name: 'interval1' });
-const target2 = Object.freeze({ uuid: 'abc-125', name: 'interval2' });
+const target = Object.freeze({ id: 'abc-123', name: 'interval' });
+const target1 = Object.freeze({ id: 'abc-124', name: 'interval1' });
+const target2 = Object.freeze({ id: 'abc-125', name: 'interval2' });
 const userCtx = Object.freeze({ name: 'user' });
 
 describe('Target controller', () => {
@@ -44,10 +44,10 @@ describe('Target controller', () => {
 
   describe('v1', () => {
     describe('get', () => {
-      const uuid = 'abc-123';
+      const id = 'abc-123';
 
       beforeEach(() => {
-        req = { params: { uuid } };
+        req = { params: { id } };
       });
 
       it('responds with json when target is found', async () => {
@@ -59,7 +59,7 @@ describe('Target controller', () => {
         expect(serverUtils.error).to.not.have.been.called;
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTarget).to.have.been.calledOnceWithExactly(Qualifier.byUuid(uuid));
+        expect(getTarget).to.have.been.calledOnceWithExactly(Qualifier.byId(id));
         expect(res.json).to.have.been.calledOnceWithExactly(target);
       });
 
@@ -92,7 +92,7 @@ describe('Target controller', () => {
         );
         expect(auth.getUserCtx).to.have.been.calledOnceWithExactly(req);
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
-        expect(getTarget).to.have.been.calledOnceWithExactly(Qualifier.byUuid(uuid));
+        expect(getTarget).to.have.been.calledOnceWithExactly(Qualifier.byId(id));
         expect(res.json).to.not.have.been.called;
       });
     });
@@ -102,10 +102,10 @@ describe('Target controller', () => {
         req = { query: {} };
       });
 
-      it('responds with json when targets are found for multiple contact UUIDs', async () => {
+      it('responds with json when targets are found for multiple contact Ids', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
-          contact_uuids: 'contact1,contact2',
+          contact_ids: 'contact1,contact2',
           reporting_period: '2024-01',
           cursor: 'cursor123',
           limit: '10'
@@ -120,7 +120,7 @@ describe('Target controller', () => {
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
         expect(getTargets).to.have.been.calledOnceWithExactly(
           Qualifier.and(
-            Qualifier.byContactUuids(['contact1', 'contact2']),
+            Qualifier.byContactIds(['contact1', 'contact2']),
             Qualifier.byReportingPeriod('2024-01')
           ),
           'cursor123',
@@ -129,10 +129,10 @@ describe('Target controller', () => {
         expect(res.json).to.have.been.calledOnceWithExactly(expectedPage);
       });
 
-      it('responds with json when targets are found for single contact UUID', async () => {
+      it('responds with json when targets are found for single contact Id', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
-          contact_uuid: 'contact1',
+          contact_id: 'contact1',
           reporting_period: '2024-01',
           cursor: 'cursor123',
           limit: '10'
@@ -147,7 +147,7 @@ describe('Target controller', () => {
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
         expect(getTargets).to.have.been.calledOnceWithExactly(
           Qualifier.and(
-            Qualifier.byContactUuid('contact1'),
+            Qualifier.byContactId('contact1'),
             Qualifier.byReportingPeriod('2024-01')
           ),
           'cursor123',
@@ -175,11 +175,11 @@ describe('Target controller', () => {
         '',
         ',',
         undefined
-      ].forEach(contact_uuids => {
-        it('fails when an invalid contact_uuids query parameter is provided', async () => {
+      ].forEach(contact_ids => {
+        it('fails when an invalid contact_ids query parameter is provided', async () => {
           auth.isOnlineOnly.returns(true);
           req.query = {
-            contact_uuids,
+            contact_ids,
             reporting_period: '2024-01'
           };
 
@@ -199,7 +199,7 @@ describe('Target controller', () => {
       it('fails when no reporting_period query parameter is provided', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
-          contact_uuids: 'contact1,contact2',
+          contact_ids: 'contact1,contact2',
         };
 
         await controller.v1.getAll(req, res);
@@ -217,7 +217,7 @@ describe('Target controller', () => {
       it('handles all optional query parameters missing', async () => {
         auth.isOnlineOnly.returns(true);
         req.query = {
-          contact_uuids: 'contact1,contact2',
+          contact_ids: 'contact1,contact2',
           reporting_period: '2024-01',
         };
         const expectedPage = { data: [target, target1, target2], cursor: '3' };
@@ -230,7 +230,7 @@ describe('Target controller', () => {
         expect(auth.isOnlineOnly).to.have.been.calledOnceWithExactly(userCtx);
         expect(getTargets).to.have.been.calledOnceWithExactly(
           Qualifier.and(
-            Qualifier.byContactUuids(['contact1', 'contact2']),
+            Qualifier.byContactIds(['contact1', 'contact2']),
             Qualifier.byReportingPeriod('2024-01')
           ),
           undefined, // NOSONAR

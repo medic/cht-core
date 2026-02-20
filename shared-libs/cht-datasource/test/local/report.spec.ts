@@ -153,28 +153,28 @@ describe('local report', () => {
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
-      let fetchAndFilterUuidsInner: SinonStub;
-      let fetchAndFilterUuidsOuter: SinonStub;
+      let fetchAndFilterIdsInner: SinonStub;
+      let fetchAndFilterIdsOuter: SinonStub;
       let queryNouveauFreetext: SinonStub;
       let useNouveauIndexes: SinonStub;
 
       beforeEach(() => {
         queryViewFreetextByKey = sinon.stub();
         sinon
-          .stub(LocalDoc, 'queryDocUuidsByKey')
+          .stub(LocalDoc, 'queryDocIdsByKey')
           .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
           .returns(queryViewFreetextByKey);
 
         queryViewFreetextByRange = sinon.stub();
         sinon
-          .stub(LocalDoc, 'queryDocUuidsByRange')
+          .stub(LocalDoc, 'queryDocIdsByRange')
           .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
           .returns(queryViewFreetextByRange);
 
-        fetchAndFilterUuidsInner = sinon.stub();
-        fetchAndFilterUuidsOuter = sinon
-          .stub(LocalDoc, 'fetchAndFilterUuids')
-          .returns(fetchAndFilterUuidsInner);
+        fetchAndFilterIdsInner = sinon.stub();
+        fetchAndFilterIdsOuter = sinon
+          .stub(LocalDoc, 'fetchAndFilterIds')
+          .returns(fetchAndFilterIdsInner);
 
         queryNouveauFreetext = sinon.stub();
         sinon
@@ -207,8 +207,8 @@ describe('local report', () => {
             expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
             expect(queryViewFreetextByKey.notCalled).to.be.true;
             expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
         });
 
@@ -227,15 +227,15 @@ describe('local report', () => {
           )).to.be.true;
           expect(queryViewFreetextByKey.notCalled).to.be.true;
           expect(queryViewFreetextByRange.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
       });
 
       describe('when useNouveauIndexes is false', () => {
         beforeEach(() => {
           useNouveauIndexes.resolves(false);
-          fetchAndFilterUuidsInner.resolves(expectedResult);
+          fetchAndFilterIdsInner.resolves(expectedResult);
         });
 
         ([
@@ -252,12 +252,12 @@ describe('local report', () => {
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
             expect(queryNouveauFreetext.notCalled).to.be.true;
             expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-            expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-            expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
 
             // Verify the page function uses the keyed freetext view
-            const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
             pageFn(limit, skip);
 
             expect(queryViewFreetextByKey.calledWithExactly([freetext], limit, skip)).to.be.true;
@@ -273,12 +273,12 @@ describe('local report', () => {
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
             expect(queryNouveauFreetext.notCalled).to.be.true;
             expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-            expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-            expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
 
             // Verify the page function uses the range freetext view
-            const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
             pageFn(limit, skip);
 
             expect(queryViewFreetextByRange.calledWithExactly(
@@ -300,12 +300,12 @@ describe('local report', () => {
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(queryNouveauFreetext.notCalled).to.be.true;
           expect(queryViewFreetextByRange.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-          expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-          expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, 0)).to.be.true;
+          expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+          expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, 0)).to.be.true;
 
           // Verify the page function uses the keyed freetext view
-          const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
           pageFn(limit, 0);
 
           expect(queryViewFreetextByKey.calledWithExactly(['has:delimiter'], limit, 0)).to.be.true;
@@ -325,8 +325,8 @@ describe('local report', () => {
           expect(queryNouveauFreetext.notCalled).to.be.true;
           expect(queryViewFreetextByKey.notCalled).to.be.true;
           expect(queryViewFreetextByRange.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
       });
     });

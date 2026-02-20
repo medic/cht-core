@@ -2,14 +2,14 @@ import { DataObject, getPagedGenerator, Nullable, Page } from './libs/core';
 import { Doc } from './libs/doc';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import {
-  byUuid,
-  ContactUuidQualifier, ContactUuidsQualifier, isContactUuidQualifier, isContactUuidsQualifier,
+  byId,
+  ContactIdQualifier, ContactIdsQualifier, isContactIdQualifier, isContactIdsQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
-  isUuidQualifier,
+  isIdQualifier,
   ReportingPeriodQualifier,
   UsernameQualifier,
-  UuidQualifier
+  IdQualifier
 } from './qualifier';
 import * as Local from './local';
 import * as Remote from './remote';
@@ -18,30 +18,30 @@ import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit } from './libs/parameter-validators';
 
 const getTargetId = (
-  identifier: (ReportingPeriodQualifier & ContactUuidQualifier & UsernameQualifier) | UuidQualifier
-): UuidQualifier => {
-  if (isUuidQualifier(identifier)) {
+  identifier: (ReportingPeriodQualifier & ContactIdQualifier & UsernameQualifier) | IdQualifier
+): IdQualifier => {
+  if (isIdQualifier(identifier)) {
     return identifier;
   }
   if (!(
     isReportingPeriodQualifier(identifier)
-    && isContactUuidQualifier(identifier)
+    && isContactIdQualifier(identifier)
     && isUsernameQualifier(identifier)
   )) {
     throw new InvalidArgumentError(`Invalid target qualifier [${JSON.stringify(identifier)}].`);
   }
 
-  return byUuid(
-    `target~${identifier.reportingPeriod}~${identifier.contactUuid}~org.couchdb.user:${identifier.username}`
+  return byId(
+    `target~${identifier.reportingPeriod}~${identifier.contactId}~org.couchdb.user:${identifier.username}`
   );
 };
 
 // eslint-disable-next-line func-style
 function assertQualifierForGettingTargets (
   qualifier: unknown
-): asserts qualifier is (ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier)) {
-  const isUuidQualifier = isContactUuidsQualifier(qualifier) !== isContactUuidQualifier(qualifier);
-  if (!(isUuidQualifier && isReportingPeriodQualifier(qualifier))) {
+): asserts qualifier is (ReportingPeriodQualifier & (ContactIdsQualifier | ContactIdQualifier)) {
+  const isIdQualifier = isContactIdsQualifier(qualifier) !== isContactIdQualifier(qualifier);
+  if (!(isIdQualifier && isReportingPeriodQualifier(qualifier))) {
     throw new InvalidArgumentError(`Invalid targets qualifier [${JSON.stringify(qualifier)}].`);
   }
 }
@@ -91,7 +91,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curredFn = async (
-      qualifier: (ReportingPeriodQualifier & ContactUuidQualifier & UsernameQualifier) | UuidQualifier
+      qualifier: (ReportingPeriodQualifier & ContactIdQualifier & UsernameQualifier) | IdQualifier
     ): Promise<Nullable<Target>> => {
       const identifier = getTargetId(qualifier);
       return fn(identifier);
@@ -122,7 +122,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
+      qualifier: ReportingPeriodQualifier & (ContactIdsQualifier | ContactIdQualifier),
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
     ): Promise<Page<Target>> => {
@@ -151,7 +151,7 @@ export namespace v1 {
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ReportingPeriodQualifier & (ContactUuidsQualifier | ContactUuidQualifier),
+      qualifier: ReportingPeriodQualifier & (ContactIdsQualifier | ContactIdQualifier),
     ): AsyncGenerator<Target, null> => {
       assertQualifierForGettingTargets(qualifier);
       

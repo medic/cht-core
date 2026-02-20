@@ -484,37 +484,37 @@ describe('CHT Script API - getDatasource', () => {
 
       it('contains expected keys', () => {
         expect(target).to.have.all.keys([
-          'getByUuid', 'getByReportingPeriodContactUuidUsername',
-          'getPageByReportingPeriodContactUuids', 'getByReportingPeriodContactUuids'
+          'getById', 'getByReportingPeriodContactIdUsername',
+          'getPageByReportingPeriodContactIds', 'getByReportingPeriodContactIds'
         ]);
       });
 
-      it('getByUuid', async () => {
+      it('getById', async () => {
         const expectedTarget = {};
         const reportGet = sinon.stub().resolves(expectedTarget);
         dataContextBind.returns(reportGet);
-        const qualifier = Qualifier.byUuid('my-target-uuid');
+        const qualifier = Qualifier.byId('my-target-uuid');
 
-        const returnedTarget = await target.getByUuid(qualifier.uuid);
+        const returnedTarget = await target.getById(qualifier.id);
 
         expect(returnedTarget).to.equal(expectedTarget);
         expect(dataContextBind.calledOnceWithExactly(Target.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
       });
 
-      it('getByReportingPeriodContactUuidUsername', async () => {
+      it('getByReportingPeriodContactIdUsername', async () => {
         const expectedTarget = {};
         const reportGet = sinon.stub().resolves(expectedTarget);
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2020-01' ),
-          Qualifier.byContactUuid('my-contact-uuid'),
+          Qualifier.byContactId('my-contact-uuid'),
           Qualifier.byUsername('my-username')
         );
 
-        const returnedTarget = await target.getByReportingPeriodContactUuidUsername(
+        const returnedTarget = await target.getByReportingPeriodContactIdUsername(
           qualifier.reportingPeriod,
-          qualifier.contactUuid,
+          qualifier.contactId,
           qualifier.username
         );
 
@@ -523,18 +523,18 @@ describe('CHT Script API - getDatasource', () => {
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
       });
 
-      it('getPageByReportingPeriodContactUuids - multiple contact UUIDs', async () => {
+      it('getPageByReportingPeriodContactIds - multiple contact Ids', async () => {
         const expectedTarget = {};
         const reportGet = sinon.stub().resolves(expectedTarget);
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2020-01'),
-          Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
+          Qualifier.byContactIds(['my-first-contact-uuid', 'my-second-contact-uuid'])
         );
 
-        const returnedTarget = await target.getPageByReportingPeriodContactUuids(
+        const returnedTarget = await target.getPageByReportingPeriodContactIds(
           qualifier.reportingPeriod,
-          qualifier.contactUuids,
+          qualifier.contactIds,
           '1',
           10
         );
@@ -544,18 +544,18 @@ describe('CHT Script API - getDatasource', () => {
         expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true; 
       });
 
-      it('getPageByReportingPeriodContactUuids - since contact UUID', async () => {
+      it('getPageByReportingPeriodContactIds - since contact Id', async () => {
         const expectedTarget = {};
         const reportGet = sinon.stub().resolves(expectedTarget);
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2020-01'),
-          Qualifier.byContactUuid('my-first-contact-uuid')
+          Qualifier.byContactId('my-first-contact-uuid')
         );
 
-        const returnedTarget = await target.getPageByReportingPeriodContactUuids(
+        const returnedTarget = await target.getPageByReportingPeriodContactIds(
           qualifier.reportingPeriod,
-          qualifier.contactUuid,
+          qualifier.contactId,
           '1',
           10
         );
@@ -565,7 +565,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true;
       });
       
-      it('getByReportingPeriodContactUuids multiple contact UUIDs', () => {
+      it('getByReportingPeriodContactIds multiple contact Ids', () => {
         const mockAsyncGenerator = async function* () {
           await Promise.resolve();
           yield [];
@@ -574,12 +574,12 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2020-01'),
-          Qualifier.byContactUuids(['my-first-contact-uuid', 'my-second-contact-uuid'])
+          Qualifier.byContactIds(['my-first-contact-uuid', 'my-second-contact-uuid'])
         );
         
-        const returnedTarget = target.getByReportingPeriodContactUuids(
+        const returnedTarget = target.getByReportingPeriodContactIds(
           qualifier.reportingPeriod,
-          qualifier.contactUuids
+          qualifier.contactIds
         );
         
         expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
@@ -587,7 +587,7 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Target.v1.getAll)).to.be.true;
       });
 
-      it('getByReportingPeriodContactUuids since contact UUID', () => {
+      it('getByReportingPeriodContactIds since contact Id', () => {
         const mockAsyncGenerator = async function* () {
           await Promise.resolve();
           yield [];
@@ -596,12 +596,12 @@ describe('CHT Script API - getDatasource', () => {
         dataContextBind.returns(reportGet);
         const qualifier = Qualifier.and(
           Qualifier.byReportingPeriod('2020-01'),
-          Qualifier.byContactUuid('my-first-contact-uuid')
+          Qualifier.byContactId('my-first-contact-uuid')
         );
 
-        const returnedTarget = target.getByReportingPeriodContactUuids(
+        const returnedTarget = target.getByReportingPeriodContactIds(
           qualifier.reportingPeriod,
-          qualifier.contactUuid
+          qualifier.contactId
         );
 
         expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
