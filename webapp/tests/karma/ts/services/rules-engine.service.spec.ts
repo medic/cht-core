@@ -21,6 +21,8 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Target } from '@medic/cht-datasource';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -48,6 +50,7 @@ describe('RulesEngineService', () => {
   let fetchTargetsResult;
   let refreshEmissionsFor;
   let refreshEmissionsForRecursive;
+  let getTarget;
 
   const settingsDoc = {
     _id: DOC_IDS.SETTINGS,
@@ -129,10 +132,14 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
-    chtDatasourceService = { get: sinon.stub().returns(chtScriptApi) };
+    getTarget = sinon.stub();
+    chtDatasourceService = {
+      get: sinon.stub().returns(chtScriptApi),
+      bind: sinon.stub().returnsArg(0)
+    };
+    chtDatasourceService.bind.withArgs(Target.v1.get).returns(getTarget);
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
-
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
     fetchTasksForRecursive = sinon.stub();
@@ -146,7 +153,7 @@ describe('RulesEngineService', () => {
     });
     fetchTasksFor.returns({ on: fetchTasksForRecursive });
 
-    fetchTargetsResult = () => Promise.resolve();
+    fetchTargetsResult = sinon.stub().resolves([]);
     fetchTargets = sinon.stub();
     fetchTargets.events = {};
     fetchTargetsRecursive = sinon.stub();
@@ -1143,5 +1150,257 @@ describe('RulesEngineService', () => {
       // Verify that the filter accepts tasks in Ready state
       expect(filter(readyTaskChange)).to.be.true;
     }));
+  });
+
+  describe('fetchTargets with ReportingPeriod', () => {
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(new Date('2025-02-15').getTime());
+    });
+
+    afterEach(() => {
+      clock && clock.restore();
+    });
+
+    it('should fetch current month targets when ReportingPeriod.CURRENT is passed', async () => {
+      fetchTargetsResult = sinon.stub().resolves([sampleTarget]);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.CURRENT);
+
+      expect(actual).to.deep.equal([sampleTarget]);
+      expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
+      expect(getTarget.called).to.be.false;
+    });
+
+    it('should fetch previous month targets when ReportingPeriod.PREVIOUS is passed', async () => {
+      const targetDoc = {
+        _id: 'target~2025-01~user~org.couchdb.user:fred',
+        type: 'target',
+        user: 'org.couchdb.user:fred',
+        owner: 'user',
+        reporting_period: '2025-01',
+        updated_date: Date.now(),
+        targets: [
+          {
+            id: 'target',
+            value: {
+              pass: 5,
+              total: 10
+            }
+          }
+        ]
+      };
+      getTarget.resolves(targetDoc);
+      service = TestBed.inject(RulesEngineService);
+
+      settingsService.get.resolves({
+        _id: 'settings',
+        tasks: {
+          targets: {
+            items: [
+              { id: 'target', type: 'count' },
+            ]
+          }
+        }
+      });
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+
+      const qualifier = getTarget.args[0][0];
+      expect(qualifier).to.have.property('reportingPeriod', '2025-01');
+      expect(qualifier).to.have.property('contactId', 'user');
+      expect(qualifier).to.have.property('username', 'fred');
+
+      expect(actual.length).to.eq(1);
+      expect(actual[0]).to.include({
+        id: 'target',
+        visible: true,
+        reportingMonth: 'January'
+      });
+      expect(actual[0].value).to.deep.eq({ pass: 5, total: 10 });
+    });
+
+    it('should return empty targets when username is missing', async () => {
+      sessionService.userCtx = () => ({ name: null });
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.called).to.be.false;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should return empty targets when contact is missing', async () => {
+      userContactService.get.resolves(null);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.called).to.be.false;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should return empty array when target is not found', async () => {
+      getTarget.resolves(null);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should handle errors and return empty array', async () => {
+      getTarget.rejects(new Error('Database error'));
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should calculate correct reporting period for previous month', async () => {
+      const targetDoc = {
+        _id: 'target~2025-01~user~org.couchdb.user:fred',
+        type: 'target',
+        user: 'org.couchdb.user:fred',
+        owner: 'user',
+        reporting_period: '2025-01',
+        updated_date: Date.now(),
+        targets: []
+      };
+      getTarget.resolves(targetDoc);
+      service = TestBed.inject(RulesEngineService);
+
+      await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      const qualifier = getTarget.args[0][0];
+      // Current interval ends in Feb 2025, so previous month should be 2025-01
+      expect(qualifier.reportingPeriod).to.eq('2025-01');
+    });
+
+    it('should process multiple targets', async () => {
+      const targetDoc = {
+        _id: 'target~2025-01~user~org.couchdb.user:fred',
+        type: 'target',
+        user: 'org.couchdb.user:fred',
+        owner: 'user',
+        reporting_period: '2025-01',
+        updated_date: Date.now(),
+        targets: [
+          {
+            id: 'target',
+            value: {
+              pass: 3,
+              total: 7
+            }
+          }
+        ]
+      };
+      const settingsWithMultipleTargets = {
+        _id: 'settings',
+        tasks: {
+          targets: {
+            items: [
+              { id: 'target', type: 'count' },
+              { id: 'another-target', type: 'percent' }
+            ]
+          }
+        }
+      };
+      settingsService.get.resolves(settingsWithMultipleTargets);
+      getTarget.resolves(targetDoc);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      // Only returns targets that exist in the interval doc
+      expect(actual.length).to.eq(1);
+      expect(actual[0]).to.include({ id: 'target' });
+      expect(actual[0].value).to.deep.eq({ pass: 3, total: 7 });
+    });
+  });
+
+  describe('getTargetIntervalTag', () => {
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(new Date('2025-02-15').getTime());
+    });
+
+    it('should return current interval tag in YYYY-MM format for CURRENT period', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT);
+
+      expect(tag).to.equal('2025-02');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return previous interval tag for PREVIOUS period with default monthsAgo', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(tag).to.equal('2025-01');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should support custom monthsAgo parameter', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS, 2);
+
+      expect(tag).to.equal('2024-12');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should handle year boundary when going to previous year', () => {
+      clock.restore();
+      clock = sinon.useFakeTimers(new Date('2025-01-10').getTime());
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(tag).to.equal('2024-12');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+  });
+
+  describe('getReportingMonth', () => {
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(new Date('2025-02-15').getTime());
+    });
+
+    it('should return full month name for CURRENT period', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.CURRENT);
+
+      expect(month).to.equal('February');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return full month name for PREVIOUS period', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(month).to.equal('January');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return translated fallback when an error occurs', () => {
+      service = TestBed.inject(RulesEngineService);
+      uhcSettingsService.getMonthStartDate.throws(new Error('test error'));
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(month).to.equal('targets.last_month.subtitle');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
   });
 });

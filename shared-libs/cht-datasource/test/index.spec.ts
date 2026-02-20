@@ -6,10 +6,12 @@ import * as Person from '../src/person';
 import * as Place from '../src/place';
 import * as Qualifier from '../src/qualifier';
 import * as Report from '../src/report';
+import * as Target from '../src/target';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { DataContext } from '../src';
 import { Page } from '../src/libs/core';
+import { fakeGenerator } from './utils';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -41,7 +43,7 @@ describe('CHT Script API - getDatasource', () => {
     beforeEach(() => v1 = datasource.v1);
 
     it('contains expected keys', () => expect(v1).to.have.all.keys([
-      'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report'
+      'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report', 'target'
     ]));
 
     it('permission', () => {
@@ -107,10 +109,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getByType', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const placeGetAll = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(placeGetAll);
@@ -185,10 +184,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getByType', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const personGetAll = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(personGetAll);
@@ -327,10 +323,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByTypeFreetext', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -354,10 +347,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByType', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -374,10 +364,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByFreetext', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -456,10 +443,7 @@ describe('CHT Script API - getDatasource', () => {
       });
 
       it('getUuidsByFreetext', () => {
-        const mockAsyncGenerator = async function* () {
-          await Promise.resolve();
-          yield [];
-        };
+        const mockAsyncGenerator = fakeGenerator();
 
         const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
         dataContextBind.returns(contactGetIds);
@@ -473,6 +457,133 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+    });
+
+    describe('target', () => {
+      let target: typeof v1.target;
+
+      beforeEach(() => target = v1.target);
+
+      it('contains expected keys', () => {
+        expect(target).to.have.all.keys([
+          'getById', 'getByReportingPeriodContactIdUsername',
+          'getPageByReportingPeriodContactIds', 'getByReportingPeriodContactIds'
+        ]);
+      });
+
+      it('getById', async () => {
+        const expectedTarget = {};
+        const reportGet = sinon.stub().resolves(expectedTarget);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.byId('my-target-uuid');
+
+        const returnedTarget = await target.getById(qualifier.id);
+
+        expect(returnedTarget).to.equal(expectedTarget);
+        expect(dataContextBind.calledOnceWithExactly(Target.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('getByReportingPeriodContactIdUsername', async () => {
+        const expectedTarget = {};
+        const reportGet = sinon.stub().resolves(expectedTarget);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01' ),
+          Qualifier.byContactId('my-contact-uuid'),
+          Qualifier.byUsername('my-username')
+        );
+
+        const returnedTarget = await target.getByReportingPeriodContactIdUsername(
+          qualifier.reportingPeriod,
+          qualifier.contactId,
+          qualifier.username
+        );
+
+        expect(returnedTarget).to.equal(expectedTarget);
+        expect(dataContextBind.calledOnceWithExactly(Target.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('getPageByReportingPeriodContactIds - multiple contact Ids', async () => {
+        const expectedTarget = {};
+        const reportGet = sinon.stub().resolves(expectedTarget);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactIds(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+
+        const returnedTarget = await target.getPageByReportingPeriodContactIds(
+          qualifier.reportingPeriod,
+          qualifier.contactIds,
+          '1',
+          10
+        );
+
+        expect(returnedTarget).to.equal(expectedTarget);
+        expect(dataContextBind.calledOnceWithExactly(Target.v1.getPage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true; 
+      });
+
+      it('getPageByReportingPeriodContactIds - since contact Id', async () => {
+        const expectedTarget = {};
+        const reportGet = sinon.stub().resolves(expectedTarget);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactId('my-first-contact-uuid')
+        );
+
+        const returnedTarget = await target.getPageByReportingPeriodContactIds(
+          qualifier.reportingPeriod,
+          qualifier.contactId,
+          '1',
+          10
+        );
+
+        expect(returnedTarget).to.equal(expectedTarget);
+        expect(dataContextBind.calledOnceWithExactly(Target.v1.getPage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier, '1', 10)).to.be.true;
+      });
+      
+      it('getByReportingPeriodContactIds multiple contact Ids', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactIds(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+        
+        const returnedTarget = target.getByReportingPeriodContactIds(
+          qualifier.reportingPeriod,
+          qualifier.contactIds
+        );
+        
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Target.v1.getAll)).to.be.true;
+      });
+
+      it('getByReportingPeriodContactIds since contact Id', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const reportGet = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactId('my-first-contact-uuid')
+        );
+
+        const returnedTarget = target.getByReportingPeriodContactIds(
+          qualifier.reportingPeriod,
+          qualifier.contactId
+        );
+
+        expect(returnedTarget).to.deep.equal(mockAsyncGenerator);
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(dataContextBind.calledOnceWithExactly(Target.v1.getAll)).to.be.true;
       });
     });
   });

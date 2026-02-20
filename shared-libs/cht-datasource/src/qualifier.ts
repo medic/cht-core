@@ -1,5 +1,32 @@
-import { isString, hasField, isRecord, Nullable } from './libs/core';
+import { hasField, isRecord, isString } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
+
+/**
+ * A qualifier that identifies an entity.
+ */
+export type IdQualifier = Readonly<{ id: string }>;
+
+/**
+ * Builds a qualifier that identifies an entity.
+ * @param id the identifier of the entity
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the identifier is invalid
+ */
+export const byId = (id: string): IdQualifier => {
+  if (!isString(id) || id.length === 0) {
+    throw new InvalidArgumentError(`Invalid UUID [${JSON.stringify(id)}].`);
+  }
+  return { id };
+};
+
+/**
+ * Returns `true` if the given qualifier is an {@link IdQualifier}, otherwise `false`.
+ * @param identifier the identifier to check
+ * @returns `true` if the given identifier is a {@link IdQualifier}, otherwise `false`
+ */
+export const isIdQualifier = (identifier: unknown): identifier is IdQualifier => {
+  return isRecord(identifier) && hasField(identifier, { name: 'id', type: 'string' });
+};
 
 /**
  * A qualifier that identifies an entity by its UUID.
@@ -10,7 +37,7 @@ export type UuidQualifier = Readonly<{ uuid: string }>;
  * Builds a qualifier that identifies an entity by its UUID.
  * @param uuid the UUID of the entity
  * @returns the qualifier
- * @throws Error if the UUID is invalid
+ * @throws InvalidArgumentError if the UUID is invalid
  */
 export const byUuid = (uuid: string): UuidQualifier => {
   if (!isString(uuid) || uuid.length === 0) {
@@ -38,7 +65,7 @@ export type ContactTypeQualifier = Readonly<{ contactType: string }>;
  * Build the TypeQualifier that categorizes an entity by its type
  * @param contactType the type of the entity
  * @returns the type
- * @throws Error if the type is invalid
+ * @throws InvalidArgumentError if the type is invalid
  */
 export const byContactType = (contactType: string): ContactTypeQualifier => {
   if (!isString(contactType) || contactType.length === 0) {
@@ -66,7 +93,7 @@ export type FreetextQualifier = Readonly<{ freetext: string }>;
  * Builds a qualifier for finding entities by the given freetext string.
  * @param freetext the text to search with
  * @returns the qualifier
- * @throws Error if the search string is not invalid
+ * @throws InvalidArgumentError if the search string is not valid
  *
  * See {@link isFreetextQualifier} for validity of a search string.
  */
@@ -118,25 +145,150 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 };
 
 /**
+ * A qualifier that identifies entities based on a reporting period (e.g. a calendar month). The reporting period
+ * should be represented with the format YYYY-MM (e.g. "2025-07").
+ */
+export interface ReportingPeriodQualifier {
+  readonly reportingPeriod: string;
+}
+
+const REPORTING_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/**
+ * Returns `true` if the given qualifier is a {@link ReportingPeriodQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ReportingPeriodQualifier}, otherwise `false`.
+ */
+export const isReportingPeriodQualifier = (qualifier: unknown): qualifier is ReportingPeriodQualifier => {
+  return isRecord(qualifier) &&
+    hasField(qualifier, { name: 'reportingPeriod', type: 'string' }) &&
+    REPORTING_PERIOD_PATTERN.test(qualifier.reportingPeriod);
+};
+
+/**
+ * Builds a qualifier for finding entities by reporting period.
+ * @param reportingPeriod the reporting period to search with
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the reporting period is not valid
+ */
+export const byReportingPeriod = (reportingPeriod: string): ReportingPeriodQualifier => {
+  const qualifier = { reportingPeriod };
+  if (!isReportingPeriodQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid reporting period [${reportingPeriod}].`);
+  }
+  return qualifier;
+};
+
+/**
+ * A qualifier that identifies entities based on a username (without the "org.couchdb.user:" prefix).
+ */
+export interface UsernameQualifier {
+  readonly username: string
+}
+
+/**
+ * Returns `true` if the given qualifier is a {@link UsernameQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link UsernameQualifier}, otherwise `false`.
+ */
+export const isUsernameQualifier = (qualifier: unknown): qualifier is UsernameQualifier => {
+  return isRecord(qualifier) &&
+    hasField(qualifier, { name: 'username', type: 'string' }) &&
+    qualifier.username.length > 0;
+};
+
+/**
+ * Builds a qualifier for finding entities by username.
+ * @param username the username to search with
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the username is not valid
+ */
+export const byUsername = (username: string): UsernameQualifier => {
+  const qualifier = { username };
+  if (!isUsernameQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid username [${username}].`);
+  }
+  return qualifier;
+};
+
+/**
+ * A qualifier that identifies entities based on their association with the identified contact.
+ */
+export interface ContactIdQualifier {
+  readonly contactId: string
+}
+
+/**
+ * Returns `true` if the given qualifier is a {@link ContactIdQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ContactIdQualifier}, otherwise `false`.
+ */
+export const isContactIdQualifier = (qualifier: unknown): qualifier is ContactIdQualifier => {
+  return isRecord(qualifier) &&
+    hasField(qualifier, { name: 'contactId', type: 'string' }) &&
+    qualifier.contactId.length > 0;
+};
+
+/**
+ * Builds a qualifier for finding entities by contact identifier.
+ * @param contactId the contact identifier to search with
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the contact identifier is not valid
+ */
+export const byContactId = (contactId: string): ContactIdQualifier => {
+  const qualifier = { contactId };
+  if (!isContactIdQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact Id [${contactId}].`);
+  }
+  return qualifier;
+};
+
+/**
+ * A qualifier that identifies entities based on their association with the identified contacts.
+ */
+export interface ContactIdsQualifier {
+  readonly contactIds: [string, ...string[]]
+}
+
+/**
+ * Returns `true` if the given qualifier is a {@link ContactIdsQualifier} otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link ContactIdsQualifier}, otherwise `false`.
+ */
+export const isContactIdsQualifier = (qualifier: unknown): qualifier is ContactIdsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'contactIds', type: 'object' })
+    && Array.isArray(qualifier.contactIds)
+    && qualifier.contactIds.length > 0
+    && qualifier.contactIds.every((contactId) => contactId?.length > 0);
+};
+
+/**
+ * Builds a qualifier for finding entities by contact identifiers.
+ * @param contactIds the contact identifiers to search with
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the contact identifiers are not valid
+ */
+export const byContactIds = (contactIds: [string, ...string[]]): ContactIdsQualifier => {
+  const qualifier = { contactIds };
+  if (!isContactIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid contact Ids [${contactIds}].`);
+  }
+  return qualifier;
+};
+
+// https://stackoverflow.com/a/50375286
+type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+/**
  * Combines multiple qualifiers into a single object.
  * @returns the combined qualifier
  * @throws Error if any of the qualifiers contain intersecting property names
  */
-export const and = <
-  A,
-  B,
-  C = Nullable<object>,
-  D = Nullable<object>
->(
+export const and = <A, B, C extends object[]>(
   qualifierA: A,
   qualifierB: B,
-  qualifierC?: C,
-  qualifierD?: D
-): A & B & Partial<C> & Partial<D> => {
-  return {
-    ...qualifierA,
-    ...qualifierB,
-    ...(qualifierC ?? {}),
-    ...(qualifierD ?? {}),
-  };
+  ...rest: C
+): A & B & UnionToIntersection<C[number]> => {
+  return Object.assign({}, qualifierA, qualifierB, ...rest);
 };

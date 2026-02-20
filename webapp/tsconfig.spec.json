@@ -6,7 +6,8 @@
       "mocha",
       "sinon",
       "node",
-      "jquery"
+      "jquery",
+      "sinon-chai"
     ]
   },
   "files": [

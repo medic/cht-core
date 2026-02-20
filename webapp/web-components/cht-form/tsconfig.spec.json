@@ -9,7 +9,9 @@
       "@mm-selectors/*": ["src/ts/selectors/*"],
       "@mm-pipes/*": ["src/ts/pipes/*"],
       "@mm-services/*": ["src/ts/services/*"],
+      "@mm-services/cht-datasource.service": ["web-components/cht-form/src/stubs/cht-datasource.service.ts"],
       "@mm-services/db.service": ["web-components/cht-form/src/stubs/db.service.ts"],
+      "@mm-services/language.service": ["web-components/cht-form/src/stubs/language.service.ts"]
     },
     "outDir": "../out-tsc/spec",
     "types": [

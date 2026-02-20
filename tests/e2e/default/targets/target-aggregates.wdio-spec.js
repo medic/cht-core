@@ -12,6 +12,9 @@ const userSettingsFactory = require('@factories/cht/users/user-settings');
 const personFactory = require('@factories/cht/contacts/person');
 const helperFunctions = require('./utils/aggregates-helper-functions');
 const targetAggregatesConfig = require('./config/target-aggregates');
+const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
+const constants = require('@constants');
+const { createTargetDoc, getLastMonth } = require('./utils/targets-helper-functions');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -36,6 +39,7 @@ describe('Target aggregates', () => {
       expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(await targetAggregatesPage.loadingStatus().isDisplayed()).to.be.true;
       expect(await analyticsPage.emptySelectionNoError().isDisplayed()).to.be.true;
+      expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
     });
 
     it('should display an error when there are aggregates but no home place', async () => {
@@ -49,6 +53,7 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.goToTargetAggregates(true);
       expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(await analyticsPage.emptySelectionError().isDisplayed()).to.be.true;
+      expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
     });
   });
 
@@ -141,7 +146,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts: expectedContacts,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name
         };
@@ -151,6 +155,7 @@ describe('Target aggregates', () => {
         await helperFunctions.assertData(
           context, TARGET_VALUES_BY_CONTACT, targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS, asserts
         );
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
       });
 
       it('should display correct data', async () => {
@@ -166,7 +171,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name
         };
@@ -185,12 +189,12 @@ describe('Target aggregates', () => {
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(1);
         await targetAggregatesPage.selectFilterOption('Last month');
 
-        context.period = helperFunctions.getLastMonth();
         context.isCurrentPeriod = false;
         asserts.contactValues = false;
 
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
-
+        const previousTargets = expectedTargets.map(target => ({ ...target, period: getLastMonth() }));
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
       });
 
       it('should route to contact-detail on list item click and display contact summary target card', async () => {
@@ -214,11 +218,7 @@ describe('Target aggregates', () => {
 
         const targetsForContact = (contact) => {
           return helperFunctions.docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targets[contact.name],
-            owner: contact._id,
-            user: 'irrelevant',
+            ...createTargetDoc(tag, contact._id, { targets: targets[contact.name] }),
             date_updated: `yesterday ${contact.name}`,
           }));
         };
@@ -245,7 +245,6 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts: expectedContacts,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name
         };
@@ -265,7 +264,7 @@ describe('Target aggregates', () => {
         await browser.back();
 
         const firstTargetItem =
-          await targetAggregatesPage.getTargetItem(expectedTargets[0], CURRENT_PERIOD, districtHospital1.name);
+          await targetAggregatesPage.getTargetItem(expectedTargets[0], districtHospital1.name);
         await helperFunctions.assertTitle(firstTargetItem.title, expectedTargets[0].title);
 
         await targetAggregatesPage.openTargetDetails(expectedTargets[1]);
@@ -279,8 +278,7 @@ describe('Target aggregates', () => {
         await helperFunctions.validateCardFields(['yesterday Prometheus', moment().format('YYYY-MM'), '18', '15%']);
 
         await browser.back();
-        const secondTargetItem =
-          await targetAggregatesPage.getTargetItem(expectedTargets[1], CURRENT_PERIOD, districtHospital1.name);
+        const secondTargetItem = await targetAggregatesPage.getTargetItem(expectedTargets[1], districtHospital1.name);
         await helperFunctions.assertTitle(secondTargetItem.title, expectedTargets[1].title);
       });
 
@@ -310,11 +308,7 @@ describe('Target aggregates', () => {
 
         const targetsForContact = (contact) => {
           return helperFunctions.docTags.map(tag => ({
-            _id: `target~${tag}~${contact._id}~irrelevant`,
-            reporting_period: tag,
-            targets: targets[contact.name],
-            owner: contact._id,
-            user: 'irrelevant',
+            ...createTargetDoc(tag, contact._id, { targets: targets[contact.name] }),
             date_updated: `yesterday ${contact.name}`,
           }));
         };
@@ -348,6 +342,11 @@ describe('Target aggregates', () => {
         await commonPage.waitForPageLoaded();
       });
 
+      afterEach(async () => {
+        // Including admin because of https://github.com/medic/cht-core/issues/10452
+        await Promise.all([constants.USERNAME, userWithManyPlaces.name].map(destroyTelemetryDb));
+      });
+
       it('should disable content', async () => {
         await targetAggregatesPage.checkContentDisabled();
       });
@@ -361,11 +360,11 @@ describe('Target aggregates', () => {
         await commonPage.waitForLoaderToDisappear(emptySelection);
 
         expect(await emptySelection.getText()).to.equal('Target aggregates are disabled');
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(0);
       });
 
       it('should filter aggregates by place and period', async () => {
-        const expectedTargets = targetAggregatesConfig.EXPECTED_TARGETS_NO_PROGRESS;
-
+        const expectedTargets = targetAggregatesConfig.EXPECTED_DEFAULTS_TARGETS;
         await utils.saveDocs(targetDocs);
         await helperFunctions.updateAggregateTargetsSettings(
           targetAggregatesConfig.TARGETS_DEFAULT_CONFIG,
@@ -381,31 +380,41 @@ describe('Target aggregates', () => {
 
         const context = {
           contacts: contactsDh1,
-          period: CURRENT_PERIOD,
           isCurrentPeriod: true,
           place: districtHospital1.name,
         };
         const asserts = { hasMultipleFacilities: true, contactValues: false };
 
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
 
         await targetAggregatesPage.openSidebarFilter();
         expect((await targetAggregatesPage.sidebarFilter.optionsContainer()).length).to.equal(2);
+        const username = userWithManyPlaces.name;
+        const telemetry = await getTelemetry('sidebar_filter:analytics:target_aggregates:open', username);
+        expect(telemetry.length).to.equal(1);
 
         await targetAggregatesPage.selectFilterOption('Last month');
-        context.period = helperFunctions.getLastMonth();
         context.isCurrentPeriod = false;
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        const previousTargets = expectedTargets.map(target => ({ ...target, period: getLastMonth() }));
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(2);
 
         await targetAggregatesPage.selectFilterOption(districtHospital2.name);
+        const telemetry2 = await getTelemetry(
+          'sidebar_filter:analytics:target_aggregates:reporting-period:select',
+          username
+        );
+        expect(telemetry2.length).to.equal(1);
         context.contacts = contactsDh2;
         context.place = districtHospital2.name;
-        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, previousTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(2);
 
         await targetAggregatesPage.selectFilterOption(CURRENT_PERIOD);
-        context.period = CURRENT_PERIOD;
         context.isCurrentPeriod = true;
         await helperFunctions.assertData(context, TARGET_VALUES_BY_CONTACT, expectedTargets, asserts);
+        expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
       });
     });
   });

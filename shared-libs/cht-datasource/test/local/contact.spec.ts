@@ -174,8 +174,8 @@ describe('local contact', () => {
       let queryViewFreetextByRange: SinonStub;
       let queryViewTypeFreetextByKey: SinonStub;
       let queryViewTypeFreetextByRange: SinonStub;
-      let fetchAndFilterUuidsInner: SinonStub;
-      let fetchAndFilterUuidsOuter: SinonStub;
+      let fetchAndFilterIdsInner: SinonStub;
+      let fetchAndFilterIdsOuter: SinonStub;
       let queryNouveauFreetext: SinonStub;
       let useNouveauIndexes: SinonStub;
       let getContactTypeIds: SinonStub;
@@ -186,31 +186,31 @@ describe('local contact', () => {
         queryViewByType = sinon.stub();
         queryViewFreetextByKey = sinon.stub();
         queryViewTypeFreetextByKey = sinon.stub();
-        const queryDocUuidsByKeyStub = sinon.stub(LocalDoc, 'queryDocUuidsByKey');
-        queryDocUuidsByKeyStub
+        const queryDocIdsByKeyStub = sinon.stub(LocalDoc, 'queryDocIdsByKey');
+        queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_type')
           .returns(queryViewByType);
-        queryDocUuidsByKeyStub
+        queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')
           .returns(queryViewFreetextByKey);
-        queryDocUuidsByKeyStub
+        queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_type_freetext')
           .returns(queryViewTypeFreetextByKey);
 
         queryViewFreetextByRange = sinon.stub();
         queryViewTypeFreetextByRange = sinon.stub();
-        const queryDocUuidsByRangeStub = sinon.stub(LocalDoc, 'queryDocUuidsByRange');
-        queryDocUuidsByRangeStub
+        const queryDocIdsByRangeStub = sinon.stub(LocalDoc, 'queryDocIdsByRange');
+        queryDocIdsByRangeStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')
           .returns(queryViewFreetextByRange);
-        queryDocUuidsByRangeStub
+        queryDocIdsByRangeStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_type_freetext')
           .returns(queryViewTypeFreetextByRange);
 
-        fetchAndFilterUuidsInner = sinon.stub();
-        fetchAndFilterUuidsOuter = sinon
-          .stub(LocalDoc, 'fetchAndFilterUuids')
-          .returns(fetchAndFilterUuidsInner);
+        fetchAndFilterIdsInner = sinon.stub();
+        fetchAndFilterIdsOuter = sinon
+          .stub(LocalDoc, 'fetchAndFilterIds')
+          .returns(fetchAndFilterIdsInner);
 
         queryNouveauFreetext = sinon.stub();
         sinon
@@ -224,7 +224,7 @@ describe('local contact', () => {
       describe('contact type qualifier', () => {
         beforeEach(() => {
           useNouveauIndexes.resolves(false);
-          fetchAndFilterUuidsInner.resolves(expectedResult);
+          fetchAndFilterIdsInner.resolves(expectedResult);
         });
 
         ([
@@ -244,11 +244,11 @@ describe('local contact', () => {
             expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
             expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-            expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-            expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-            expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
             // Verify the page function uses the contacts_by_type view
-            const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
             pageFn(limit, skip);
 
             expect(queryViewByType.calledWithExactly([contactType], limit, skip)).to.be.true;
@@ -269,8 +269,8 @@ describe('local contact', () => {
           expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
           expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
 
         it('throws for invalid cursor', async () => {
@@ -290,8 +290,8 @@ describe('local contact', () => {
           expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
           expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-          expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-          expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+          expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+          expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
       });
 
@@ -322,8 +322,8 @@ describe('local contact', () => {
               expect(queryViewFreetextByRange.notCalled).to.be.true;
               expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
               expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-              expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-              expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+              expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+              expect(fetchAndFilterIdsInner.notCalled).to.be.true;
             });
           });
 
@@ -346,8 +346,8 @@ describe('local contact', () => {
             expect(queryViewFreetextByRange.notCalled).to.be.true;
             expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
             expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
 
           it('uses nouveau for combined freetext and contact type qualifier', async () => {
@@ -368,8 +368,8 @@ describe('local contact', () => {
             expect(queryViewFreetextByRange.notCalled).to.be.true;
             expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
             expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
 
           it('throws for invalid contact type in combined qualifier', async () => {
@@ -390,15 +390,15 @@ describe('local contact', () => {
             expect(queryViewFreetextByRange.notCalled).to.be.true;
             expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
             expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
         });
 
         describe('when useNouveauIndexes is false', () => {
           beforeEach(() => {
             useNouveauIndexes.resolves(false);
-            fetchAndFilterUuidsInner.resolves(expectedResult);
+            fetchAndFilterIdsInner.resolves(expectedResult);
           });
 
           ([
@@ -419,11 +419,11 @@ describe('local contact', () => {
               expect(queryViewByType.notCalled).to.be.true;
               expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
               expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-              expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-              expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-              expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+              expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+              expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
               // Verify the page function uses the keyed freetext view
-              const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+              const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
               pageFn(limit, skip);
 
               expect(queryViewFreetextByKey.calledWithExactly([freetext], limit, skip)).to.be.true;
@@ -443,11 +443,11 @@ describe('local contact', () => {
               expect(queryViewByType.notCalled).to.be.true;
               expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
               expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-              expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-              expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-              expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+              expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+              expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
               // Verify the page function uses the range freetext view
-              const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+              const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
               pageFn(limit, skip);
 
               expect(queryViewFreetextByRange.calledWithExactly(
@@ -475,11 +475,11 @@ describe('local contact', () => {
               expect(queryViewFreetextByKey.notCalled).to.be.true;
               expect(queryViewFreetextByRange.notCalled).to.be.true;
               expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-              expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-              expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-              expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+              expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+              expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
               // Verify the page function uses the keyed type freetext view
-              const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+              const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
               pageFn(limit, skip);
 
               expect(queryViewTypeFreetextByKey.calledWithExactly(
@@ -504,11 +504,11 @@ describe('local contact', () => {
               expect(queryViewFreetextByKey.notCalled).to.be.true;
               expect(queryViewFreetextByRange.notCalled).to.be.true;
               expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-              expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-              expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-              expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+              expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+              expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
               // Verify the page function uses the range type freetext view
-              const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+              const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
               pageFn(limit, skip);
 
               expect(queryViewTypeFreetextByRange.calledWithExactly(
@@ -534,11 +534,11 @@ describe('local contact', () => {
             expect(queryViewByType.notCalled).to.be.true;
             expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
             expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.calledOnce).to.be.true;
-            expect(fetchAndFilterUuidsOuter.args[0][1]).to.equal(limit);
-            expect(fetchAndFilterUuidsInner.calledOnceWithExactly(limit, 0)).to.be.true;
+            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, 0)).to.be.true;
             // Verify the page function uses the keyed freetext view with normalized value
-            const pageFn = fetchAndFilterUuidsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
             pageFn(limit, 0);
 
             expect(queryViewFreetextByKey.calledWithExactly(['has:delimiter'], limit, 0)).to.be.true;
@@ -562,8 +562,8 @@ describe('local contact', () => {
             expect(queryViewFreetextByRange.notCalled).to.be.true;
             expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
             expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsOuter.notCalled).to.be.true;
-            expect(fetchAndFilterUuidsInner.notCalled).to.be.true;
+            expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
+            expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
         });
       });
