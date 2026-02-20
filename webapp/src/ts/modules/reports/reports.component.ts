@@ -23,7 +23,6 @@ import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgIf, NgClass, NgFor } from '@angular/common';
@@ -96,7 +95,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isExporting = false;
   userParentPlace;
   fastActionList?: FastAction[];
-  userLineageLevel;
   totalReportsCount?: number;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
@@ -118,9 +116,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
     private fastActionButtonService:FastActionButtonService,
-    private xmlFormsService:XmlFormsService,
+    private xmlFormsService: XmlFormsService,
     private performanceService: PerformanceService,
-    private extractLineageService: ExtractLineageService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -140,7 +137,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    this.userLineageLevel = this.userContactService.getUserLineageToRemove();
     await this.checkPermissions();
     this.subscribeSidebarFilter();
     this.doInitialSearch();
@@ -268,8 +264,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private async prepareReports(reports, isContent=false) {
-    const userLineageLevel = await this.userLineageLevel;
+  private prepareReports(reports, isContent=false) {
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       const subTitle = form ? form.title : report.form;
@@ -277,14 +272,19 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.expanded = false;
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
-      report.lineage = report.subject && report.subject.lineage || report.lineage;
+      report.lineage = this.filterLineage(report.subject?.lineage || report.lineage);
       report.unread = !report.read;
-      if (Array.isArray(report.lineage)) {
-        report.lineage = this.extractLineageService.removeUserFacility(report.lineage, userLineageLevel);
-      }
 
       return report;
     });
+  }
+
+  private filterLineage(lineage) {
+    if (!Array.isArray(lineage)) {
+      return lineage;
+    }
+    const filtered = lineage.filter(Boolean);
+    return filtered.length ? filtered : undefined;
   }
 
   private query(opts?) {
