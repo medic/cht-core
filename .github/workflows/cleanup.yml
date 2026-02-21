@@ -11,6 +11,7 @@ jobs:
   cleanup:
     name: Deleting old published artefacts
     runs-on: ubuntu-latest
+    if: github.repository == 'medic/cht-core' && secrets.AUTH_MARKET_URL != ''
 
     steps:
     - uses: actions/checkout@v4
