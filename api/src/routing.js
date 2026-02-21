@@ -139,6 +139,17 @@ app.use(prometheusMiddleware({
     45, 90, 180, 360, 600,
     1200, 1800, 3600
   ],
+  additionalLabels: ['userRoles'],
+  extractAdditionalLabelValuesFn: (req) => {
+    const userRoles = req.userCtx?.roles || [];
+    const presentableRoles = [...userRoles]
+      .sort()
+      .join(',');
+    
+    return {
+      userRoles: presentableRoles,
+    };
+  },
 }));
 
 // When testing random stuff in-browser, it can be useful to access the database
