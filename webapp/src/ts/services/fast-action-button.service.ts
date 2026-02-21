@@ -10,6 +10,7 @@ import { ButtonType } from '@mm-components/fast-action-button/fast-action-button
 import { TranslateService } from '@mm-services/translate.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class FastActionButtonService {
     private translateService: TranslateService,
     private translateFromService: TranslateFromService,
     private userSettingsService: UserSettingsService,
+    private contactMutedService: ContactMutedService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.reportsActions = new ReportsActions(store);
@@ -85,17 +87,32 @@ export class FastActionButtonService {
   private getContactFormActions(
     parentFacilityId,
     childContactTypes: Record<string, any>[] = [],
-    queryParams: Record<string, any> | null = null
+    queryParams: Record<string, any> | null = null,
+    parentContact: Record<string, any> | null = null
   ): FastAction[] {
     return childContactTypes
       .map(contactType => ({
         id: contactType.id,
         label: this.getFormTitle(contactType.create_key) ?? contactType.id,
         icon: { name: contactType.icon, type: IconType.RESOURCE },
-        canDisplay: () => this.authService.has([
-          'can_edit',
-          contactType.person ? 'can_create_people' : 'can_create_places'
-        ]),
+        canDisplay: async () => {
+          const hasPermission = await this.authService.has([
+            'can_edit',
+            contactType.person ? 'can_create_people' : 'can_create_places'
+          ]);
+
+          if (!hasPermission) {
+            return false;
+          }
+
+          // Check if parent place is muted
+          if (parentContact && this.contactMutedService.getMuted(parentContact)) {
+            // Check if user has permission to create contacts under muted places
+            return await this.authService.has('can_create_contacts_under_muted_places');
+          }
+
+          return true;
+        },
         execute: () => {
           const route = ['/contacts', 'add', contactType.id];
           if (parentFacilityId) {
@@ -182,7 +199,12 @@ export class FastActionButtonService {
   }
 
   getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
-    const actions = this.getContactFormActions(context.parentFacilityId, context.childContactTypes, { from: 'list' });
+    const actions = this.getContactFormActions(
+      context.parentFacilityId,
+      context.childContactTypes,
+      { from: 'list' },
+      context.parentContact
+    );
 
     return this.filterActions(actions);
   }
@@ -191,7 +213,12 @@ export class FastActionButtonService {
     const actions = [
       this.getPhoneAction(context.communicationContext!),
       this.getSendMessageAction(context.communicationContext!, { isPhoneRequired: true, useMailtoInMobile: true }),
-      ...this.getContactFormActions(context.parentFacilityId, context.childContactTypes),
+      ...this.getContactFormActions(
+        context.parentFacilityId,
+        context.childContactTypes,
+        null,
+        context.parentContact
+      ),
       ...this.getReportFormActions(context.xmlReportForms, context.callbackContactReportModal),
     ];
 
@@ -239,6 +266,7 @@ interface ReportActionsContext {
 
 interface ContactActionsContext {
   parentFacilityId?: string;
+  parentContact?: Record<string, any>;
   childContactTypes?: Record<string, any>[];
   xmlReportForms?: Record<string, any>[];
   communicationContext?: CommunicationActionsContext;
