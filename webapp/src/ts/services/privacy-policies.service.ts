@@ -4,13 +4,14 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { DOC_IDS } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PrivacyPoliciesService {
 
-  PRIVACY_POLICY_DOC_ID = 'privacy-policies';
+  private readonly PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
   ACCEPTED_CONTENT_TYPE = 'text/html';
 
   constructor(
@@ -42,7 +43,7 @@ export class PrivacyPoliciesService {
   private getPrivacyPolicies(attachments = false) {
     return this.dbService
       .get() // Getting DB.
-      .get(this.PRIVACY_POLICY_DOC_ID, { attachments }) // Querying.
+      .get(this.PRIVACY_POLICIES_DOC_ID, { attachments }) // Querying.
       .catch(err => {
         if (err.status === 404) {
           return {};
