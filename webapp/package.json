@@ -62,7 +62,7 @@
     "select2": "4.0.13",
     "signature_pad": "2.3.x",
     "tslib": "^2.8.1",
-    "zone.js": "^0.16.0"
+    "zone.js": "^0.16.1"
   },
   "overrides": {
     "minimist": ">=1.2.6",
