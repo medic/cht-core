@@ -1,17 +1,15 @@
 const dataFactory = require('@factories/cht/generate');
-let data;
 
 const generate = () => {
-  data = dataFactory.createHierarchy({
-    name: 'mychw',
+  return dataFactory.createHierarchy({
+    name: 'test',
     user: true,
     useRealNames: true,
+    nbrClinics: 100,
+    nbrPersons: 20,
   });
-
-  return data;
 };
 
 module.exports = {
   generate,
-  data: () => data,
 };

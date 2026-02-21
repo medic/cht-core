@@ -24,14 +24,15 @@ const prepData = async () => {
   console.warn(result);
 };
 
-module.exports = {
-  ...baseConfig,
+exports.config = Object.assign({}, baseConfig.config, {
   onPrepare: async () => {
-    await baseConfig.onPrepare();
+    await baseConfig.config.onPrepare();
 
     await prepData();
   },
-  suites: {
-    all: ['**/*.wdio-spec.js'],
-  }
-};
+
+  after: () => {
+  },
+  specs: [`${__dirname}/login/*.wdio-spec.js`],
+  exclude: [],
+});
