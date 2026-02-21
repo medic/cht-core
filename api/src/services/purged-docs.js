@@ -26,52 +26,94 @@ const catchDbNotFoundError = (err, purgeDb) => {
     throw err;
   }
 };
-const getPurgedIdsFromAllDocs = result => {
-  const purgedIds = [];
-  if (!result || !result.rows) {
-    return purgedIds;
+
+/**
+ *
+ * @param {string[]} groupIds
+ * @param {PouchDB} purgeDb
+ * @returns {Promise<{ allIds: string[], purgedIds: string[] }>}
+ */
+const getGroupPurgedIds = async (groupIds, purgeDb) => {
+  let purgedIds = [];
+  let allIds = [];
+
+  if (!groupIds?.length) {
+    return { allIds, purgedIds };
   }
 
-  result.rows.forEach(row => {
-    if (row.value && !row.value.deleted) {
-      purgedIds.push(purgingUtils.extractId(row.id));
+  const results = await purgeDb.allDocs({ keys: groupIds.map(purgingUtils.getPurgedGroupId), include_docs: true });
+  for (const row of results.rows) {
+    if (!row.doc) {
+      continue;
     }
-  });
-  return purgedIds;
+    const contactId = purgingUtils.extractId(row.id);
+    if (row.doc.purged_contact) {
+      purgedIds.push(contactId);
+    }
+    purgedIds = purgedIds.concat(Object.keys(row.doc.ids).filter(id => !!row.doc.ids[id]));
+    allIds = allIds.concat(Object.keys(row.doc.ids), contactId);
+  }
+
+  return { allIds, purgedIds };
 };
 
-const getPurgedIds = async (userCtx, docIds, useCache = true) => {
-  let purgeIds = [];
-  if (!docIds?.length || !userCtx.roles?.length) {
-    return Promise.resolve(purgeIds);
-  }
+const getIndividualPurgedIds = async (purgeDb, docIds) => {
+  const results = await purgeDb.allDocs({ keys: docIds.map(purgingUtils.getPurgedId) });
+  return results.rows
+    .filter(row => row.id && !row.value.deleted)
+    .map(row => purgingUtils.extractId(row.id));
+};
 
+/**
+ * Returns the ids of the documents that have been purged for the user
+ * @param {userCtx} userCtx
+ * @param {string[]} docIds
+ * @param {boolean} useCache
+ * @param {string[]} groupIds
+ * @returns {Promise<string[]>}
+ */
+const getPurgedIds = async (userCtx, docIds, useCache = true, groupIds = []) => {
   if (useCache) {
     const cachedIds = await purgedDocsCache.get(userCtx.name);
     if (cachedIds) {
-      return Promise.resolve(cachedIds);
+      return cachedIds;
     }
   }
 
-  const ids = docIds.map(purgingUtils.getPurgedId);
   let purgeDb;
+  let purgedIds = [];
+
+  if (!docIds?.length || !userCtx.roles?.length) {
+    return purgedIds;
+  }
 
   try {
     purgeDb = await getPurgeDb(userCtx.roles);
-    const allDocsResult = await purgeDb.allDocs({ keys: ids });
-    purgeIds = getPurgedIdsFromAllDocs(allDocsResult);
-    useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
+
+    const groupPurgedIds = await getGroupPurgedIds(groupIds, purgeDb);
+    purgedIds = _.intersection(docIds, groupPurgedIds.purgedIds);
+    docIds = _.difference(docIds, groupPurgedIds.allIds);
+
+    purgedIds = purgedIds.concat(await getIndividualPurgedIds(purgeDb, docIds));
+
+    useCache && await purgedDocsCache.set(userCtx.name, purgedIds);
     db.close(purgeDb);
   } catch (err) {
     catchDbNotFoundError(err, purgeDb);
   }
 
-  return purgeIds;
+  return purgedIds;
 };
 
-const getUnPurgedIds = (userCtx, docIds) => {
-  docIds.sort();
-  return getPurgedIds(userCtx, docIds).then(purgedIds => _.difference(docIds, purgedIds));
+/**
+ * Returns the ids of the documents that have not been purged for the user
+ * @param {AuthorizationContext} authContext
+ * @param docIds
+ * @returns {Promise<*>}
+ */
+const getUnPurgedIds = async (authContext, docIds) => {
+  const purgedIds = await getPurgedIds(authContext.userCtx, docIds, true, authContext.subjectIds);
+  return _.difference(docIds, purgedIds);
 };
 
 const listen = () => {
