@@ -27,3 +27,10 @@ local_storage:
   preExistingDiskPath-2: "{{{data_path}}}/srv2"
   preExistingDiskPath-3: "{{{data_path}}}/srv3"
 
+# API log level for integration tests
+api:
+  log_level: "debug"
+
+# Sentinel log level for integration tests
+sentinel:
+  log_level: "debug"
