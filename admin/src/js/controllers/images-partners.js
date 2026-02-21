@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 angular.module('controllers').controller('ImagesPartnersCtrl',
   function(
     $log,
@@ -10,7 +13,7 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
     'ngInject';
     'use strict';
 
-    const PARTNER_ID = 'partners';
+    const PARTNER_ID = DOC_IDS.PARTNERS;
 
     $('#partner-upload .choose').on('click', function(_ev) {
       _ev.preventDefault();
