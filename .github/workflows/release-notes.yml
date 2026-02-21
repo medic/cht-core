@@ -1,0 +1,43 @@
+name: Release notes generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      milestone:
+        description: 'Milestone to build release notes from'
+        type: string
+        required: true
+      skip_commit_checks:
+        description: 'Skip commit checks - empty string means run checks'
+        default: ''
+        type: choice
+        options:
+          - ''
+          - '--skip-commit-validation'
+
+jobs:
+  release_notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+      - name: Use Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install Deps & Run Node Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd scripts
+          npm ci
+          cd release-notes
+          node index.js ${{ github.event.inputs.milestone }} ${{ github.event.inputs.skip_commit_checks }}
+      - name: Upload release note artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ./scripts/release-notes/release-notes.md
+          retention-days: 10
+          compression-level: 0
