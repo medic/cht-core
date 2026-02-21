@@ -437,6 +437,7 @@ describe('Export Data Service', () => {
           user: 'min-data'
         }
       ]);
+      db.medicUsersMeta.query.calledOnceWith('users-meta/device_by_user', { group_level: 2 }).should.equal(true);
     });
   });
 
