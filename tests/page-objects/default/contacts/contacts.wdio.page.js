@@ -20,6 +20,7 @@ const leftPanelSelectors = {
   contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
   contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
   firstContact: () => $(`${CONTACT_LIST_SELECTOR} li:first-child`),
+  nthContact: (n) => $(`${CONTACT_LIST_SELECTOR} li:nth-child(${n})`),
 };
 
 const rightPanelSelectors = {
@@ -417,6 +418,11 @@ const openFirstContact = async () => {
   await firstContact.click();
 };
 
+const openNthContact = async (n) => {
+  const nthContact = leftPanelSelectors.nthContact(n);
+  await nthContact.click();
+};
+
 const openPrimaryContactSearchDropdown = async () => {
   await editDistrictHospitalSelectors.primaryContactSearchDropdown().click();
 };
@@ -431,6 +437,12 @@ const selectPrimaryContactSearchFirstResult = async () => {
   await editDistrictHospitalSelectors.primaryContactSearchFirstResult().click();
 };
 
+const waitForContactsLoaded = async (timeout) => {
+  await browser.waitUntil(
+    async () => (await leftPanelSelectors.contentRows()).length > 0,
+    { timeout: timeout }
+  );
+};
 
 module.exports = {
   genericForm,
@@ -475,9 +487,11 @@ module.exports = {
   getCurrentPersonEditFormValues,
   filterReportViewAll,
   openFirstContact,
+  openNthContact,
   openPrimaryContactSearchDropdown,
   inputPrimaryContactSearchValue,
   selectPrimaryContactSearchFirstResult,
   openSortMenu,
   selectSortOrder,
+  waitForContactsLoaded,
 };

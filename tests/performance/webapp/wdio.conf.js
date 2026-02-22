@@ -1,5 +1,6 @@
 const baseConfig = require('../../wdio.conf.js');
 const utils = require('@utils');
+const { PerformanceReporter } = require('@utils/performance');
 const { generate: generateData } = require('./generate-dataset.js');
 
 const prepData = async () => {
@@ -24,7 +25,8 @@ const prepData = async () => {
   console.warn(result);
 };
 
-exports.config = Object.assign({}, baseConfig.config, {
+exports.config = {
+  ...baseConfig.config,
   onPrepare: async () => {
     await baseConfig.config.onPrepare();
 
@@ -33,6 +35,16 @@ exports.config = Object.assign({}, baseConfig.config, {
 
   after: () => {
   },
-  specs: [`${__dirname}/login/*.wdio-spec.js`],
+  specs: [
+    `./specs/login.wdio-spec.js`,
+    `./specs/tasks.wdio-spec.js`,
+    `./specs/contacts.wdio-spec.js`,
+  ],
   exclude: [],
-});
+  reporters: ['spec', PerformanceReporter],
+  mochaOpts: {
+    ui: 'bdd',
+    timeout: 120000,
+  },
+};
+

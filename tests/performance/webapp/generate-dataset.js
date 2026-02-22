@@ -5,7 +5,7 @@ const generate = () => {
     name: 'test',
     user: true,
     useRealNames: true,
-    nbrClinics: 100,
+    nbrClinics: 50,
     nbrPersons: 20,
   });
 };
