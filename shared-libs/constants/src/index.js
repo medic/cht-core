@@ -17,6 +17,9 @@ const CONTACT_TYPES = {
 const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
+  TASK: 'task',
+  TARGET: 'target',
+  USER_SETTINGS: 'user-settings',
 };
 
 // HTTP Headers
