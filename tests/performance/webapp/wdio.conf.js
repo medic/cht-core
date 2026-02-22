@@ -40,6 +40,13 @@ exports.config = {
     `./specs/tasks.wdio-spec.js`,
     `./specs/contacts.wdio-spec.js`,
   ],
+  suites: {
+    all: [
+      `./specs/login.wdio-spec.js`,
+      `./specs/tasks.wdio-spec.js`,
+      `./specs/contacts.wdio-spec.js`,
+    ],
+  },
   exclude: [],
   reporters: ['spec', PerformanceReporter],
   mochaOpts: {
