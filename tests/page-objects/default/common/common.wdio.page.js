@@ -171,14 +171,14 @@ const waitForLoaderToDisappear = async (element) => {
   await loader.waitForDisplayed({ reverse: true });
 };
 
-const waitForLoaders = async () => {
+const waitForLoaders = async (timeout = 10000) => {
   // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
   // get all loaders.
   do {
     await browser.waitUntil(async () => {
       const visibleLoaders = await getVisibleLoaders();
       return !visibleLoaders.length;
-    }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+    }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.', timeout });
   } while ((await getVisibleLoaders()).length > 0);
 };
 
@@ -186,12 +186,12 @@ const waitForAngularLoaded = async (timeout = 40000) => {
   await hamburgerMenuSelectors.hamburgerMenu().waitForDisplayed({ timeout });
 };
 
-const waitForPageLoaded = async () => {
+const waitForPageLoaded = async (timeout) => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
-  await waitForAngularLoaded();
+  await waitForAngularLoaded(timeout);
 
-  await waitForLoaders();
+  await waitForLoaders(timeout);
 };
 
 const clickFastActionById = async (id) => {
@@ -367,20 +367,24 @@ const goToMessages = async () => {
   await tabsSelector.messagesTab().waitForDisplayed();
 };
 
-const goToTasks = async () => {
+const goToTasks = async (waitForload = true) => {
   await goToUrl(`/#/tasks`);
   await tabsSelector.taskTab().waitForDisplayed();
-  await waitForPageLoaded();
+  if (waitForload) {
+    await waitForPageLoaded();
+  }
 };
 
-const goToReports = async (reportId = '') => {
+const goToReports = async (reportId = '', waitForLoad = true) => {
   await goToUrl(`/#/reports/${reportId}`);
-  await waitForPageLoaded();
+  if (waitForLoad) {
+    await waitForPageLoaded();
+  }
 };
 
-const goToPeople = async (contactId = '', shouldLoad = true) => {
+const goToPeople = async (contactId = '', waitForLoad = true) => {
   await goToUrl(`/#/contacts/${contactId}`);
-  if (shouldLoad) {
+  if (waitForLoad) {
     await waitForPageLoaded();
   }
 };
