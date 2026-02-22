@@ -45,6 +45,7 @@ exports.config = {
       `./specs/login.wdio-spec.js`,
       `./specs/tasks.wdio-spec.js`,
       `./specs/contacts.wdio-spec.js`,
+      `./specs/reports.wdio-spec.js`,
     ],
   },
   exclude: [],

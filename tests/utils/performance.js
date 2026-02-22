@@ -1,23 +1,18 @@
-const performance = require('perf_hooks').performance;
+const performance = require('node:perf_hooks').performance;
 const WDIOReporter = require('@wdio/reporter').default;
 
 const entries = [];
 let currentSuite;
 
 const performanceMeasuresToMarkdownTable = (measures) => {
-  const escapeMd = (value) => String(value ?? '')
-    .replace(/\|/g, '\\|')
-    .replace(/\r?\n/g, ' ');
-
   const formatDuration = (ms) => `${Math.round(Number(ms))} ms`;
   const rows = Array.isArray(measures) ? [...measures] : [];
 
   const lines = [];
-  lines.push('| Action | Duration |');
-  lines.push('|---|---|');
+  lines.push('| Action | Duration |', '|---|---|');
 
   for (const m of rows) {
-    lines.push(`| ${escapeMd(m.name)} | ${escapeMd(formatDuration(m.duration))} |`);
+    lines.push(`| ${m.name} | ${formatDuration(m.duration)} |`);
   }
 
   return lines.join('\n');
@@ -32,7 +27,6 @@ class PerformanceReporter extends WDIOReporter {
   onSuiteStart(suite) {
     suite.entries = [];
     currentSuite = suite;
-    this._indent++;
   }
 
   onSuiteEnd(suite) {
@@ -62,7 +56,7 @@ module.exports = {
     }
 
     entry.end = performance.now();
-    entry.duration = parseInt(entry.end - entry.start);
+    entry.duration = Number.parseInt(entry.end - entry.start, 10);
 
     console.log(entry.name, entry.duration / 1000, 'seconds');
   },

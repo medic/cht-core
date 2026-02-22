@@ -1,6 +1,6 @@
 require('./aliases');
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
@@ -253,7 +253,7 @@ const baseConfig = {
    * @param {Object}     browser    instance of created browser/device session
    */
   before: async function () {
-    global.expect = chai.expect;
+    globalThis.expect = chai.expect;
     if (!utils.isMinimumChromeVersion) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
     }

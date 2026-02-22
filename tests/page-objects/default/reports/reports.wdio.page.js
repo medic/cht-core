@@ -449,6 +449,13 @@ const openFirstReport = async () => {
   await openSelectedReport(firstReport);
 };
 
+const waitForReportsLoaded = async (timeout) => {
+  await browser.waitUntil(
+    async () => (await leftPanelSelectors.allReports()).length > 0,
+    { timeout: timeout }
+  );
+};
+
 module.exports = {
   leftPanelSelectors,
   rightPanelSelectors,
@@ -491,4 +498,5 @@ module.exports = {
   openSelectedReport,
   verifyReport,
   openFirstReport,
+  waitForReportsLoaded,
 };

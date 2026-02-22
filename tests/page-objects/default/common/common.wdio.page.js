@@ -367,7 +367,7 @@ const goToMessages = async () => {
   await tabsSelector.messagesTab().waitForDisplayed();
 };
 
-const goToTasks = async (waitForload) => {
+const goToTasks = async (waitForload = true) => {
   await goToUrl(`/#/tasks`);
   await tabsSelector.taskTab().waitForDisplayed();
   if (waitForload) {
@@ -375,7 +375,7 @@ const goToTasks = async (waitForload) => {
   }
 };
 
-const goToReports = async (reportId = '', waitForLoad) => {
+const goToReports = async (reportId = '', waitForLoad = true) => {
   await goToUrl(`/#/reports/${reportId}`);
   if (waitForLoad) {
     await waitForPageLoaded();
