@@ -1,16 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
-
-const REPLICATED_DDOCS = [
-  '_design/medic-client',
-  '_design/shared',
-  '_design/shared-contacts',
-  '_design/shared-reports',
-  '_design/webapp-contacts',
-  '_design/webapp-reports',
-];
+const { DOC_IDS, CONTACT_TYPES, REPLICATED_DDOCS } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,

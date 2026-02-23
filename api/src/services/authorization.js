@@ -7,19 +7,10 @@ const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, REPLICATED_DDOCS } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
-
-const REPLICATED_DDOCS = [
-  '_design/medic-client',
-  '_design/shared',
-  '_design/shared-contacts',
-  '_design/shared-reports',
-  '_design/webapp-contacts',
-  '_design/webapp-reports',
-];
 
 const isReplicatedDdoc = (docId) => {
   return REPLICATED_DDOCS.includes(docId);

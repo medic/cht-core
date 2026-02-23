@@ -2,7 +2,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, REPLICATED_DDOCS } = require('@medic/constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const expect = chai.expect;
@@ -15,15 +15,6 @@ const parentPlace = {
   name: 'Big Parent Hospital',
   place_id: 'district_hospital_shortcode',
 };
-
-const REPLICATED_DDOCS = [
-  '_design/medic-client',
-  '_design/shared',
-  '_design/shared-contacts',
-  '_design/shared-reports',
-  '_design/webapp-contacts',
-  '_design/webapp-reports',
-];
 
 const getIdsForUser = (user) => [
   `org.couchdb.user:${user}`,
