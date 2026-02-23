@@ -3,6 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const { USER_ROLES } = require('@medic/constants');
+const { expect } = require('chai');
 
 describe('Person API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -268,13 +269,12 @@ describe('Person API', () => {
 
       const personDoc = await utils.request({ ...postOptions, body: personInput });
 
-      expect(personDoc).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal({
+      expect(personDoc).excluding([ '_rev', '_id' ]).to.deep.equal({
         ...personInput,
         type: 'contact',
         contact_type: 'person',
         parent: { _id: place0._id, parent: place0.parent }
       });
-      expect(personDoc.reported_date).to.be.a('number');
     });
 
     it(`creates a person with minimum data`, async () => {
@@ -304,6 +304,20 @@ describe('Person API', () => {
       const expectedError = `400 - ${JSON.stringify({
         code: 400,
         error: `[${personInput.type}] is not a valid person type.`,
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body: personInput })).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error for non-existent parent`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: 'invalid-id'
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent contact [${personInput.parent}] not found.`,
       })}`;
 
       await expect(utils.request({ ...postOptions, body: personInput })).to.be.rejectedWith(expectedError);
@@ -360,8 +374,8 @@ describe('Person API', () => {
     };
     let originalPerson;
 
-    beforeEach(() => {
-      originalPerson = personFactory.build({
+    beforeEach(async () => {
+      const doc = personFactory.build({
         name: 'apoorva',
         parent: {
           _id: place0._id,
@@ -375,13 +389,16 @@ describe('Person API', () => {
         role: 'patient',
         reported_date: 1770397800
       });
+      const { rev } = await utils.saveDoc(doc);
+      originalPerson = {
+        ...doc,
+        _rev: rev
+      };
     });
 
     it(`updates a person`, async () => {
-      const { rev } = await utils.saveDoc(originalPerson);
       const updatePersonInput = {
         ...originalPerson,
-        _rev: rev,
         name: 'apoorva 2',
         hello: 'world'
       };
@@ -398,10 +415,8 @@ describe('Person API', () => {
     });
 
     it(`updates a person when lineage data is provided`, async () => {
-      const { rev } = await utils.saveDoc(originalPerson);
       const updatePersonInput = {
         ...originalPerson,
-        _rev: rev,
         name: 'apoorva 2',
         parent: {
           ...place0,
@@ -431,14 +446,12 @@ describe('Person API', () => {
     });
 
     it(`throws error when updating parent lineage`, async () => {
-      const { rev } = await utils.saveDoc(originalPerson);
       const updatePersonInput = {
         ...originalPerson,
         parent: {
           _id: place0._id,
           parent: { _id: place2._id },
         },
-        _rev: rev,
       };
       delete updatePersonInput.phone;
       const opts = {
@@ -459,14 +472,10 @@ describe('Person API', () => {
       ['a person', place0._id],
     ].forEach(([test, id]) => {
       it(`throws error when id does not match ${test}`, async () => {
-        const { rev } = await utils.saveDoc(originalPerson);
         const opts = {
           ...putOptions,
           path: `${endpoint}/${id}`,
-          body: {
-            ...originalPerson,
-            _rev: rev
-          }
+          body: originalPerson
         };
         const expectedError = `404 - ${JSON.stringify({
           code: 404,
@@ -477,36 +486,20 @@ describe('Person API', () => {
       });
     });
 
-    it(`throws error when user does not have can_update_people or can_edit permissions`, async () => {
-      const { rev } = await utils.saveDoc(originalPerson);
-      const updatePersonInput = {
-        ...originalPerson,
-        _rev: rev,
-      };
-      const opts = {
-        ...putOptions,
-        path: `${endpoint}/${originalPerson._id}`,
-        body: updatePersonInput,
-        auth: { username: userNoPerms.username, password: userNoPerms.password },
-      };
+    [
+      ['does not have can_update_reports or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${originalPerson._id}`,
+          body: originalPerson,
+          auth: { username: user.username, password: user.password },
+        };
 
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-    });
-
-    it(`throws error when user is not an online user`, async () => {
-      const { rev } = await utils.saveDoc(originalPerson);
-      const updatePersonInput = {
-        ...originalPerson,
-        _rev: rev,
-      };
-      const opts = {
-        ...putOptions,
-        path: `${endpoint}/${originalPerson._id}`,
-        body: updatePersonInput,
-        auth: { username: offlineUser.username, password: offlineUser.password },
-      };
-
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 });

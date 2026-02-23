@@ -22,7 +22,6 @@ export namespace v1 {
    * Input data for a report.
    */
   export interface ReportInput extends DataObject {
-    readonly type?: string
     readonly form: string
     readonly reported_date?: DateTimeString | number
     readonly contact: string
