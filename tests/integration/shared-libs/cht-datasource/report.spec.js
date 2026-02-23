@@ -6,11 +6,14 @@ const {
   getRemoteDataContext,
   Report,
   Qualifier,
+  InvalidArgumentError,
+  ResourceNotFoundError
 } = require('@medic/cht-datasource');
 const { USER_ROLES } = require('@medic/constants');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { setAuth, removeAuth } = require('./auth');
+const { expect } = require('chai');
 const uuid = require('uuid').v4;
 
 describe('cht-datasource Report', () => {
@@ -236,8 +239,7 @@ describe('cht-datasource Report', () => {
         expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
-      it(
-        'returns a page of unique report ids for when multiple fields match the same freetext with limit',
+      it('returns a page of unique report ids for when multiple fields match the same freetext with limit', 
         async () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -248,11 +250,9 @@ describe('cht-datasource Report', () => {
 
           expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
           expect(responseCursor).to.not.equal(emptyNouveauCursor);
-        }
-      );
+        });
 
-      it(
-        'returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
+      it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
         async () => {
           const expectedContactIds = [ report6._id, report7._id, report8._id ];
           const responsePage = await getUuidsPage(Qualifier.byFreetext(searchWord), null, twoLimit);
@@ -264,8 +264,7 @@ describe('cht-datasource Report', () => {
           expect(responseIds).to.satisfy(subsetArray => {
             return subsetArray.every(item => expectedContactIds.includes(item));
           });
-        }
-      );
+        });
 
       it('throws error when limit is invalid', async () => {
         await expect(
@@ -303,86 +302,213 @@ describe('cht-datasource Report', () => {
     });
 
     describe('create', () => {
-      it('creates a report for a valid input', async () => {
-        const input = {
-          form: 'pregnancy_home_visit',
-          type: 'data_record',
-          contact: contact0._id
-        };
+      const createReport = Report.v1.create(dataContext);
 
-        const updatedInput = {
-          ...input, contact: {
-            _id: contact0._id, parent: contact0.parent
+      it('creates a report doc for valid input', async () => {
+        const input = {
+          form: 'pregnancy_danger_sign_follow_up',
+          type: 'data_record',
+          reported_date: 11221122,
+          contact: contact0Id,
+          fields: {
+            hello: 'world'
           }
         };
-        const reportDoc = await Report.v1.create(dataContext)(input);
-        expect(reportDoc).excluding([ '_id', '_rev', 'reported_date', ]).to.deep.equal(updatedInput);
+
+        const reportDoc = await createReport(input);
+
+        expect(reportDoc).excluding(['_rev', '_id', 'reported_date']).to.deep.equal({
+          ...input,
+          contact: {
+            _id: contact0Id,
+            parent: contact0.parent
+          }
+        });
       });
 
-      it('throws error for missing contact', async () => {
+      it('creates a report with minimum data', async () => {
         const input = {
-          form: 'pregnancy_home_visit',
-          type: 'data_record',
+          form: 'pregnancy_danger_sign_follow_up',
+          contact: place2._id
         };
-        await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
-          `The [contact] field must have a [string] value.`
+
+        const reportDoc = await createReport(input);
+
+        expect(reportDoc).excluding([ '_rev', '_id', 'reported_date' ]).to.deep.equal({
+          ...input,
+          type: 'data_record',
+          contact: { _id: place2._id }
+        });
+        expect(reportDoc.reported_date).to.be.a('number');
+      });
+
+      it('throws error for non-existent contact', async () => {
+        const input = {
+          form: 'pregnancy_danger_sign_follow_up',
+          contact: 'invalid-id'
+        };
+
+        await expect(createReport(input)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Contact [${input.contact}] not found.`
         );
       });
 
-      it('throws error for invalid date format via createReport', async () => {
+      it('throws error for invalid form', async () => {
         const input = {
-          form: 'pregnancy_home_visit',
-          type: 'data_record',
-          reported_date: '112-9909-123'
+          form: 'invalid-form',
+          contact: place2._id
         };
 
-        await expect(Report.v1.create(dataContext)(input)).to.be.rejectedWith(
-          `Invalid reported_date. Expected format to be 'YYYY-MM-DDTHH:mm:ssZ', ` +
-          `'YYYY-MM-DDTHH:mm:ss.SSSZ', or a Unix epoch.`
+        await expect(createReport(input)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Invalid form value [${input.form}].`
         );
       });
     });
 
     describe('update', () => {
-      const createInput = {
-        form: 'pregnancy_home_visit',
-        type: 'data_record',
-        contact: contact0._id
-      };
+      const updateReport = Report.v1.update(dataContext);
+      let originalReport;
 
-      it('updates report for a valid update input', async () => {
-        const createdReport = await Report.v1.create(dataContext)(createInput);
-        const updateInput = {
-          ...createdReport, form: 'pnc_danger_sign_follow_up_baby'
+      beforeEach(async () => {
+        const doc = reportFactory.report().build({
+          form: 'pregnancy_danger_sign_follow_up',
+          fields: {
+            hello: 'world',
+            foo: 'bar'
+          }
+        }, {
+          patient,
+          submitter: contact0,
+          place: place0
+        });
+        const { rev } = await utils.saveDoc(doc);
+        originalReport = {
+          ...doc,
+          _rev: rev
         };
-        const updatedReport = await Report.v1.update(dataContext)(updateInput);
-        expect(updatedReport).excluding([ '_rev' ])
-          .to.deep.equal(updateInput);
       });
 
-      it('throws error for missing required field', async () => {
-        const createdReport = await Report.v1.create(dataContext)(createInput);
-        const updateInput = {
-          ...createdReport
+      it('updates a report', async () => {
+        const updateReportInput = {
+          ...originalReport,
+          contact: place2._id,
+          fields: {
+            ...originalReport.fields,
+            hello: 'universe',
+          }
         };
-        delete updateInput.form;
-        await expect(Report.v1.update(dataContext)(updateInput))
-          .to.be.rejectedWith(JSON.stringify({
-            code: 400,
-            error: `Valid _id, _rev, form, and type fields must be provided.`
-          }));
+        delete updateReportInput.fields.foo;
+
+        const updatedReportDoc = await updateReport(updateReportInput);
+
+        expect(updatedReportDoc).excluding([ '_rev' ]).to.deep.equal({
+          ...updateReportInput,
+          contact: { _id: place2._id }
+        });
       });
 
-      it('throws error when original report doc does not exist', async () => {
-        const createdReport = await Report.v1.create(dataContext)(createInput);
-        const updateInput = {
-          ...createdReport, _id: '123123123'
+      it('updates a report when lineage data is provided', async () => {
+        const expectedPlaceLineage = {
+          ...place0,
+          contact: contact0,
+          parent: {
+            ...place1,
+            contact: contact1,
+            parent: {
+              ...place2,
+              contact: contact2,
+            }
+          }
         };
-        await expect(Report.v1.update(dataContext)(updateInput))
-          .to.be.rejectedWith(JSON.stringify({
-            code: 404,
-            error: `Report record [123123123] not found.`
-          }));
+        delete expectedPlaceLineage.parent.parent.parent;
+        const updateReportInput = {
+          ...originalReport,
+          contact: {
+            ...contact0,
+            parent: expectedPlaceLineage
+          },
+          fields: {
+            ...originalReport.fields,
+            hello: 'universe',
+          },
+          patient: {
+            ...patient,
+            parent: expectedPlaceLineage
+          },
+          place: expectedPlaceLineage,
+        };
+
+        const updatedReportDoc = await updateReport(updateReportInput);
+
+        // Given lineage data is returned
+        expect(updatedReportDoc).excludingEvery(['_rev', 'reported_date']).to.deep.equal(updateReportInput);
+        const updatedDoc = await utils.getDoc(originalReport._id);
+        // Doc is written with minified lineage
+        expect(updatedDoc).excluding('_rev').to.deep.equal({
+          ...originalReport,
+          fields: {
+            ...originalReport.fields,
+            hello: 'universe',
+          },
+        });
+      });
+
+      it('throws error when updating with invalid contact lineage', async () => {
+        const updateReportInput = {
+          ...originalReport,
+          contact: {
+            _id: place0._id,
+            parent: { _id: place2._id }
+          },
+        };
+
+        await expect(updateReport(updateReportInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `The given contact lineage does not match the current lineage for that contact.`
+        );
+      });
+
+      it('throws error when updating with a non-existent contact', async () => {
+        const updateReportInput = {
+          ...originalReport,
+          contact: 'invalid-id',
+        };
+
+        await expect(updateReport(updateReportInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `No valid contact found for [invalid-id].`
+        );
+      });
+
+      it(`throws error when updating to invalid form`, async () => {
+        const updateReportInput = {
+          ...originalReport,
+          form: 'invalid-form'
+        };
+
+        await expect(updateReport(updateReportInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Invalid form value [${updateReportInput.form}].`
+        );
+      });
+
+      [
+        ['any document', 'does-not-exist'],
+        ['a report', place0._id],
+      ].forEach(([test, id]) => {
+        it(`throws error when id does not match ${test}`, async () => {
+          const updateReportInput = {
+            ...originalReport,
+            _id: id
+          };
+
+          await expect(updateReport(updateReportInput)).to.be.rejectedWith(
+            ResourceNotFoundError,
+            `Report record [${id}] not found.`
+          );
+        });
       });
     });
   });
