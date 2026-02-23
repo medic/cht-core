@@ -439,15 +439,7 @@ describe('Report API', () => {
         ...input,
         contact: {
           _id: contact0Id,
-          parent: {
-            _id: place0._id,
-            parent: {
-              _id: place1._id,
-              parent: {
-                _id: place2._id
-              }
-            }
-          }
+          parent: contact0.parent
         }
       });
     });
@@ -494,28 +486,21 @@ describe('Report API', () => {
       await expect(utils.request({ ...postOptions, body: input })).to.be.rejectedWith(expectedError);
     });
 
-    it('throws error when user does not have can_create_records or can_edit permissions', async () => {
-      const opts = {
-        ...postOptions,
-        body: {
-          form: 'pregnancy_danger_sign_follow_up',
-          contact: place2._id
-        },
-        auth: { username: userNoPerms.username, password: userNoPerms.password },
-      };
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-    });
-
-    it('throws error when user is not an online user', async () => {
-      const opts = {
-        ...postOptions,
-        body: {
-          form: 'pregnancy_danger_sign_follow_up',
-          contact: place2._id
-        },
-        auth: { username: offlineUser.username, password: offlineUser.password },
-      };
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    [
+      ['does not have can_create_records or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...postOptions,
+          body: {
+            form: 'pregnancy_danger_sign_follow_up',
+            contact: place2._id
+          },
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 
@@ -636,6 +621,23 @@ describe('Report API', () => {
       const expectedError = `400 - ${JSON.stringify({
         code: 400,
         error: `The given contact lineage does not match the current lineage for that contact.`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it('throws error when updating with a non-existent contact', async () => {
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalReport._id}`,
+        body: {
+          ...originalReport,
+          contact: 'invalid-id',
+        }
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `No valid contact found for [invalid-id].`
       })}`;
 
       await expect(utils.request(opts)).to.be.rejectedWith(expectedError);

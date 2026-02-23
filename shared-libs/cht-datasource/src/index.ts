@@ -235,8 +235,9 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns the created place record
          * @throws InvalidArgumentError if `type` is not provided or is not a supported place contact type
          * @throws InvalidArgumentError if `name` is not provided
-         * @throws InvalidArgumentError if `parent` is not provided or is not the identifier of a valid contact. The
-         * parent contact's type must be one of the supported parent contact types for the new place.
+         * @throws InvalidArgumentError if `parent` is not provided for types requiring a parent or is not the
+         * identifier of a valid contact. The parent contact's type must be one of the supported parent contact
+         * types for the new place.
          * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
          * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
          * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact

@@ -3,6 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const { USER_ROLES } = require('@medic/constants');
+const { expect } = require('chai');
 
 describe('Place API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -68,18 +69,18 @@ describe('Place API', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: [ 'chw' ]
+    roles: ['chw']
   }));
-  const expectedPlaces = [ place0, clinic1, clinic3 ];
+  const expectedPlaces = [place0, clinic1, clinic3];
 
   before(async () => {
-    await utils.saveDocs([ contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2 ]);
-    await utils.createUsers([ userNoPerms, offlineUser ]);
+    await utils.saveDocs([contact0, contact1, contact2, place0, place1, place2, clinic1, clinic3, healthCenter2]);
+    await utils.createUsers([userNoPerms, offlineUser]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([ userNoPerms, offlineUser ]);
+    await utils.deleteUsers([userNoPerms, offlineUser]);
   });
 
   describe('GET /api/v1/place/:uuid', async () => {
@@ -90,7 +91,7 @@ describe('Place API', () => {
         path: `${endpoint}/${place0._id}`,
       };
       const place = await utils.request(opts);
-      expect(place).excluding([ '_rev', 'reported_date' ]).to.deep.equal(place0);
+      expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
     });
 
     it('returns the place with lineage when the withLineage query parameter is provided', async () => {
@@ -101,7 +102,7 @@ describe('Place API', () => {
         }
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...place0,
         contact: contact0,
         parent: {
@@ -124,7 +125,7 @@ describe('Place API', () => {
         }
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...clinic3,
         contact: {},
         parent: {
@@ -147,7 +148,7 @@ describe('Place API', () => {
         }
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...healthCenter2,
       });
     });
@@ -160,9 +161,9 @@ describe('Place API', () => {
     });
 
     [
-      [ 'does not have can_view_contacts permission', userNoPerms ],
-      [ 'is not an online user', offlineUser ]
-    ].forEach(([ description, user ]) => {
+      ['does not have can_view_contacts permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
           path: `/api/v1/place/${place0._id}`,
@@ -189,7 +190,7 @@ describe('Place API', () => {
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
+      expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
         .to.deep.equalInAnyOrder(expectedPlaces);
       expect(responseCursor).to.be.equal(null);
     });
@@ -201,9 +202,9 @@ describe('Place API', () => {
         qs: { type: placeType, cursor: firstPage.cursor, limit }
       });
 
-      const allPeople = [ ...firstPage.data, ...secondPage.data ];
+      const allPeople = [...firstPage.data, ...secondPage.data];
 
-      expect(allPeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlaces);
+      expect(allPeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlaces);
       expect(firstPage.data.length).to.be.equal(2);
       expect(secondPage.data.length).to.be.equal(1);
       expect(firstPage.cursor).to.be.equal('2');
@@ -272,212 +273,322 @@ describe('Place API', () => {
   });
 
   describe('POST /api/v1/place', () => {
+    const postOptions = {
+      path: `/api/v1/place`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    };
+
     it('creates place for valid input', async () => {
+      const input = {
+        type: 'clinic',
+        name: 'place-1',
+        parent: place1._id,
+        contact: contact0._id,
+        reported_date: 1770397800,
+        hello: 'world'
+      };
+
+      const placeDoc = await utils.request({ ...postOptions, body: input });
+
+      expect(placeDoc).excluding(['_id', '_rev']).to.deep.equal({
+        ...input,
+        contact: {
+          _id: contact0._id,
+          parent: contact0.parent
+        },
+        parent: {
+          _id: place1._id,
+          parent: { _id: place1.parent._id }
+        },
+        type: 'contact',
+        contact_type: 'clinic',
+      });
+    });
+
+    it('creates place with minimum data', async () => {
       const input = {
         type: 'district_hospital',
         name: 'place-1',
-        contact: contact0._id
       };
 
-      const opts = {
-        path: '/api/v1/place',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: input
-      };
-      const placeDoc = await utils.request(opts);
-      const updatedInput = {
+      const placeDoc = await utils.request({ ...postOptions, body: input });
+
+      expect(placeDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal({
         ...input,
-        contact: {
-          _id: contact0._id, parent: contact0.parent
-        },
         type: 'contact',
-        contact_type: 'district_hospital'
-      };
-      expect(placeDoc).excluding([ 'reported_date', '_id', '_rev' ]).to.deep.equal(updatedInput);
+        contact_type: 'district_hospital',
+      });
+      expect(placeDoc.reported_date).to.be.a('number');
     });
 
-    it('throws error for missing fields', async () => {
-      const input = {
+    it(`throws error for non-place type`, async () => {
+      const body = {
+        type: 'person',
         name: 'place-1',
-        contact: 'c1'
       };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `[${body.type}] is not a valid place type.`,
+      })}`;
 
-      const opts = {
-        path: '/api/v1/place',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: input
+      await expect(utils.request({ ...postOptions, body })).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error for non-existent parent`, async () => {
+      const body = {
+        type: 'clinic',
+        name: 'place-1',
+        parent: 'invalid-id'
       };
-      await expect(utils.request(opts))
-        .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `The [type] field must have a [string] value.`
-          })}`
-        );
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent contact [${body.parent}] not found.`,
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body })).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error for non-existent contact`, async () => {
+      const body = {
+        type: 'district_hospital',
+        name: 'place-1',
+        contact: 'invalid-id'
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Primary contact [${body.contact}] not found.`
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body })).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
+      const body = {
+        type: 'health_center',
+        name: 'place-1',
+        parent: place1._id,
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent contact of type [health_center] is not allowed for type [${body.type}].`,
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body })).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['does not have can_create_places or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...postOptions,
+          body: {
+            type: 'district_hospital',
+            name: 'place-1',
+          },
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 
   describe('PUT /api/v1/place/:uuid', async () => {
-    it(`updates a place for valid placeInput`, async () => {
-      const endpoint = '/api/v1/place';
-      const createPlaceInput = {
-        name: 'place-1',
-        type: 'clinic',
-        parent: place1._id
-      };
-      const createOpts = {
-        path: endpoint,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: createPlaceInput
-      };
-      const createPlaceDoc = await utils.request(createOpts);
+    const endpoint = `/api/v1/place`;
+    const putOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    };
+    let originalPlace;
 
-      const updatePlaceInput = {
-        ...createPlaceDoc, name: 'myplace'
-      };
-      // Remove _id from body as it will come from URL
-      delete updatePlaceInput._id;
-      const updateOpts = {
-        path: `${endpoint}/${createPlaceDoc._id}`,
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
+    beforeEach(async () => {
+      const doc = placeFactory.place().build({
+        name: 'clinic-to-update',
+        parent: {
+          _id: place1._id,
+          parent: {
+            _id: place2._id
+          }
         },
-        body: updatePlaceInput
+        type: 'clinic',
+        contact: { _id: contact0._id },
+        reported_date: 1770397800,
+        phone: '1234567890'
+      });
+      const { rev } = await utils.saveDoc(doc);
+      originalPlace = {
+        ...doc,
+        _rev: rev
       };
-      const updatedPlaceDoc = await utils.request(updateOpts);
-      expect(updatedPlaceDoc).excluding([ '_rev' ]).to.deep.equal({ ...updatePlaceInput, _id: createPlaceDoc._id });
     });
 
-    it(`throws error on trying to update an immutable field`, async () => {
-      const endpoint = '/api/v1/place';
-      const createPlaceInput = {
-        name: 'place-1',
-        type: 'clinic',
-        parent: place1._id
+    it(`updates a place`, async () => {
+      const body = {
+        ...originalPlace,
+        name: 'apoorva 2',
+        hello: 'world',
+        contact: contact1._id
       };
-      const createOpts = {
-        path: endpoint,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: createPlaceInput
+      delete body.phone;
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPlace._id}`,
+        body
       };
-      const createPlaceDoc = await utils.request(createOpts);
 
-      const updatePlaceInput = {
-        ...createPlaceDoc, reported_date: 222222
-      };
-      // Remove _id from body as it will come from URL
-      delete updatePlaceInput._id;
-      const updateOpts = {
-        path: `${endpoint}/${createPlaceDoc._id}`,
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: updatePlaceInput
-      };
-      expect(utils.request(updateOpts))
-        .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `Value ${JSON.stringify(
-              updatePlaceInput.reported_date
-            )} of immutable field 'reported_date' does not match with the original doc`
-          })}`
-        );
+      const updatedPlace = await utils.request(opts);
+
+      expect(updatedPlace).excluding([ '_rev' ]).to.deep.equal({
+        ...body,
+        contact: {
+          _id: contact1._id,
+          parent: contact1.parent
+        }
+      });
     });
 
-    it(`throws error on missing _id field`, async () => {
-      const endpoint = '/api/v1/place';
-      const createPlaceInput = {
-        name: 'place-1',
-        type: 'clinic',
-        parent: place1._id
-      };
-      const createOpts = {
-        path: endpoint,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+    it(`updates a place when lineage data is provided`, async () => {
+      const body = {
+        ...originalPlace,
+        name: 'apoorva 2',
+        hello: 'world',
+        contact: contact1,
+        parent: {
+          ...place1,
+          parent: { _id: place2._id }
         },
-        body: createPlaceInput
       };
-      const createPlaceDoc = await utils.request(createOpts);
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPlace._id}`,
+        body
+      };
 
-      const updatePlaceInput = {
-        ...createPlaceDoc, reported_date: 222222
-      };
-      delete updatePlaceInput._id;
-      const updateOpts = {
-        path: `${endpoint}/${createPlaceDoc._id}`,
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
+      const updatedPlace = await utils.request(opts);
+
+      // Given lineage data is returned
+      expect(updatedPlace).excludingEvery(['_rev', 'reported_date']).to.deep.equal(body);
+      const updatedDoc = await utils.getDoc(originalPlace._id);
+      // Doc is written with minified lineage
+      expect(updatedDoc).excluding('_rev').to.deep.equal({
+        ...body,
+        contact: {
+          _id: contact1._id,
+          parent: contact1.parent
         },
-        body: updatePlaceInput
-      };
-      expect(utils.request(updateOpts))
-        .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `Value ${JSON.stringify(
-              updatePlaceInput.reported_date
-            )} of immutable field 'reported_date' does not match with the original doc`
-          })}`
-        );
+        parent: {
+          _id: place1._id,
+          parent: { _id: place1.parent._id },
+        },
+      });
     });
 
-    it(`throws error on missing _rev field`, async () => {
-      const endpoint = '/api/v1/place';
-      const createPlaceInput = {
-        name: 'place-1',
-        type: 'clinic',
-        parent: place1._id
+    it(`updates a place to remove contact`, async () => {
+      const body = { ...originalPlace };
+      delete body.contact;
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPlace._id}`,
+        body
       };
-      const createOpts = {
-        path: endpoint,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: createPlaceInput
-      };
-      const createPlaceDoc = await utils.request(createOpts);
 
-      const updatePlaceInput = {
-        ...createPlaceDoc, reported_date: 222222
+      const updatedPlace = await utils.request(opts);
+
+      expect(updatedPlace).excluding([ '_rev' ]).to.deep.equal(body);
+    });
+
+    it(`throws error when updating parent lineage`, async () => {
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPlace._id}`,
+        body: {
+          ...originalPlace,
+          parent: {
+            _id: place1._id,
+            parent: { _id: place0._id },
+          },
+        }
       };
-      delete updatePlaceInput._rev;
-      // Remove _id from body as it will come from URL
-      delete updatePlaceInput._id;
-      const updateOpts = {
-        path: `${endpoint}/${createPlaceDoc._id}`,
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: updatePlaceInput
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent lineage does not match.`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['any document', 'does-not-exist'],
+      ['a place', contact0._id],
+    ].forEach(([test, id]) => {
+      it(`throws error when id does not match ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${id}`,
+          body: originalPlace
+        };
+        const expectedError = `404 - ${JSON.stringify({
+          code: 404,
+          error: `Place record [${id}] not found.`
+        })}`;
+
+        await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+      });
+    });
+
+    it('throws error when updating with invalid contact lineage', async () => {
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPlace._id}`,
+        body: {
+          ...originalPlace,
+          contact: {
+            _id: place0._id,
+            parent: { _id: place2._id }
+          },
+        }
       };
-      expect(utils.request(updateOpts))
-        .to.be.rejectedWith(
-          `400 - ${JSON.stringify({
-            code: 400,
-            error: `Missing or empty required fields (_rev) for [${JSON
-              .stringify({ ...updatePlaceInput, _id: createPlaceDoc._id })}].`
-          })}`
-        );
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `The given contact lineage does not match the current lineage for that contact.`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it('throws error when updating with a non-existent contact', async () => {
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPlace._id}`,
+        body: {
+          ...originalPlace,
+          contact: 'invalid-id',
+        }
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `No valid contact found for [invalid-id].`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['does not have can_update_places or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${originalPlace._id}`,
+          body: originalPlace,
+          auth: { username: user.username, password: user.password },
+        };
+
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 });

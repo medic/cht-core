@@ -337,32 +337,23 @@ describe('Person API', () => {
       await expect(utils.request({ ...postOptions, body: personInput })).to.be.rejectedWith(expectedError);
     });
 
-    it(`throws error when user does not have can_create_people or can_edit permissions`, async () => {
-      const personInput = {
-        name: 'apoorva',
-        type: 'person',
-        parent: place2._id
-      };
-      const opts = {
-        ...postOptions,
-        body: personInput,
-        auth: { username: userNoPerms.username, password: userNoPerms.password },
-      };
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-    });
-
-    it(`throws error when user is not an online user`, async () => {
-      const personInput = {
-        name: 'apoorva',
-        type: 'person',
-        parent: place2._id
-      };
-      const opts = {
-        ...postOptions,
-        body: personInput,
-        auth: { username: offlineUser.username, password: offlineUser.password },
-      };
-      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    [
+      ['does not have can_create_people or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: place2._id
+        };
+        const opts = {
+          ...postOptions,
+          body: personInput,
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 
@@ -453,7 +444,6 @@ describe('Person API', () => {
           parent: { _id: place2._id },
         },
       };
-      delete updatePersonInput.phone;
       const opts = {
         ...putOptions,
         path: `${endpoint}/${originalPerson._id}`,
