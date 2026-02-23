@@ -14,7 +14,7 @@ export type IdQualifier = Readonly<{ id: string }>;
  */
 export const byId = (id: string): IdQualifier => {
   if (!isString(id) || id.length === 0) {
-    throw new InvalidArgumentError(`Invalid UUID [${JSON.stringify(id)}].`);
+    throw new InvalidArgumentError(`Invalid id [${JSON.stringify(id)}].`);
   }
   return { id };
 };

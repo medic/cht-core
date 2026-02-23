@@ -14,11 +14,43 @@ import {
   isKeyedFreetextQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
-  isUuidQualifier
+  isUuidQualifier,
+  byId,
+  isIdQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
 describe('qualifier', () => {
+  describe('byId', () => {
+    it('builds a qualifier that identifies an entity by its id', () => {
+      expect(byId('uuid')).to.deep.equal({ id: 'uuid' });
+    });
+
+    [
+      null,
+      '',
+      { },
+    ].forEach(uuid => {
+      it(`throws an error for ${JSON.stringify(uuid)}`, () => {
+        expect(() => byId(uuid as string)).to.throw(`Invalid id [${JSON.stringify(uuid)}].`);
+      });
+    });
+  });
+
+  describe('isIdQualifier', () => {
+    [
+      [ null, false ],
+      [ 'uuid', false ],
+      [ { id: { } }, false ],
+      [ { id: 'uuid' }, true ],
+      [ { id: 'uuid', other: 'other' }, true ]
+    ].forEach(([ identifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(identifier)}`, () => {
+        expect(isIdQualifier(identifier)).to.equal(expected);
+      });
+    });
+  });
+
   describe('byUuid', () => {
     it('builds a qualifier that identifies an entity by its UUID', () => {
       expect(byUuid('uuid')).to.deep.equal({ uuid: 'uuid' });
