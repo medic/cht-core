@@ -39,6 +39,20 @@ const getSupportedForms = (medicDb: PouchDB.Database<Doc>) => {
   };
 };
 
+const assertUpdatedForm = async <T extends Report.v1.Report | Report.v1.ReportWithLineage>(
+  originalReport: Report.v1.Report,
+  updatedReport: Input.v1.UpdateReportInput<T>,
+  getForms: () => Promise<string[]>
+) => {
+  if (originalReport.form !== updatedReport.form) {
+    assertHasRequiredField(updatedReport, { name: 'form', type: 'string' }, InvalidArgumentError);
+    const supportedForms = await getForms();
+    if (!supportedForms.includes(updatedReport.form)) {
+      throw new InvalidArgumentError(`Invalid form value [${updatedReport.form}].`);
+    }
+  }
+};
+
 /** @internal */
 export namespace v1 {
   const isReport = (doc: Nullable<Doc>): doc is Report.v1.Report => {
@@ -198,13 +212,7 @@ export namespace v1 {
         throw new InvalidArgumentError('A contact is must be provided.');
       }
       assertFieldsUnchanged(originalReport, updatedReport, ['_rev', 'reported_date']);
-      if (originalReport.form !== updatedReport.form) {
-        assertHasRequiredField(updatedReport, { name: 'form', type: 'string' }, InvalidArgumentError);
-        const supportedForms = await getForms();
-        if (!supportedForms.includes(updatedReport.form)) {
-          throw new InvalidArgumentError(`Invalid form value [${updatedReport.form}].`);
-        }
-      }
+      await assertUpdatedForm(originalReport, updatedReport, getForms);
 
       const updatedReportDoc = {
         ...updatedReport,

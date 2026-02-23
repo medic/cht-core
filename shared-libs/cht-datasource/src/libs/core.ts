@@ -96,7 +96,7 @@ export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value
   return Object.fromEntries(
     Object
       .entries(value)
-      .map(([ key, value ]) => [ key, deepCopy(value) ])
+      .map(([key, value]) => [key, deepCopy(value)])
   ) as unknown as T;
 };
 

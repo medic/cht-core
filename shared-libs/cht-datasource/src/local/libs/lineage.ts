@@ -250,7 +250,7 @@ export const getUpdatedContact = (
 };
 
 /** @internal */
-export const assertHasValidParentType = (childType: Record<string, unknown>, parent: Doc): void => {
+export const assertHasValidParentType = (childType: { id: string }, parent: Doc): void => {
   const parentType = contactTypeUtils.getTypeId(parent);
   if (!contactTypeUtils.isParentOf(parentType, childType)) {
     throw new InvalidArgumentError(

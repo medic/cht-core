@@ -1,5 +1,5 @@
 import sinon, { SinonStub } from 'sinon';
-import contactTypeUtils from '@medic/contact-types-utils';
+import contactTypeUtils, { type ContactType } from '@medic/contact-types-utils';
 import logger from '@medic/logger';
 import { Doc } from '../../src/libs/doc';
 import * as Place from '../../src/local/place';
@@ -165,7 +165,7 @@ describe('local place', () => {
       const placeIdentifier = 'place';
       const placeTypeQualifier = { contactType: placeIdentifier } as const;
       const invalidPlaceTypeQualifier = { contactType: 'invalid' } as const;
-      const placeType = [{ person: true, id: placeIdentifier }] as Record<string, unknown>[];
+      const placeType = [{ person: true, id: placeIdentifier }] as ContactType[];
       let getPlaceTypes: SinonStub;
       let queryDocsByKeyInner: SinonStub;
       let queryDocsByKeyOuter: SinonStub;

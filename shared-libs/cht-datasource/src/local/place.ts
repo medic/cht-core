@@ -20,7 +20,7 @@ import {
 import { assertPlaceInput } from '../libs/parameter-validators';
 import * as LocalContact from './contact';
 
-const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[] } | undefined> = {
+const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[], person?: boolean } | undefined> = {
   district_hospital: { id: 'district_hospital' },
   health_center: {
     id: 'health_center',
@@ -36,7 +36,7 @@ const getPlaceType = (
   settings: DataObject,
   input: Input.v1.PlaceInput
 ) => {
-  const type: Record<string, unknown> | undefined = contactTypeUtils.getTypeById(settings, input.type)
+  const type = contactTypeUtils.getTypeById(settings, input.type)
     ?? DEFAULT_PLACE_TYPES_DICT[input.type];
   if (!type || type.person) {
     throw new InvalidArgumentError(`[${input.type}] is not a valid place type.`);
@@ -62,6 +62,18 @@ const getPrimaryContactForCreate = (settings: SettingsService, input: Input.v1.P
   return contact;
 };
 
+const assertParentType = (
+  input: Input.v1.PlaceInput,
+  childType: { id: string; parents?: string[]; person?: boolean }
+) => {
+  if (input.parent && !childType.parents) {
+    throw new InvalidArgumentError(`Place type [${childType.id}] does not support having a parent contact.`);
+  }
+  if (!input.parent && childType.parents) {
+    throw new InvalidArgumentError(`Place type [${childType.id}] requires a parent contact.`);
+  }
+};
+
 const getParentForCreate = (
   settings: SettingsService,
   input: Input.v1.PlaceInput,
@@ -71,12 +83,7 @@ const getParentForCreate = (
   if (!input.parent && !childType.parents) {
     return undefined;
   }
-  if (input.parent && !childType.parents) {
-    throw new InvalidArgumentError(`Place type [${childType.id}] does not support having a parent contact.`);
-  }
-  if (!input.parent && childType.parents) {
-    throw new InvalidArgumentError(`Place type [${childType.id}] requires a parent contact.`);
-  }
+  assertParentType(input, childType);
   if (!v1.isPlace(settings, parentDoc)) {
     throw new InvalidArgumentError(`Parent contact [${input.parent}] not found.`);
   }
