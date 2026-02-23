@@ -232,14 +232,20 @@ export const getUpdatedContact = (
       throw new InvalidArgumentError(`No valid contact found for [${getContactIdForUpdate(updated)}].`);
     }
 
+    if (isString(updated.contact)) {
+      // Only return mini version of identified contact
+      return minify(contact);
+    }
+
     // Wrong contact lineage provided on input data
-    if (!isString(updated.contact) && !isSameLineage(contact, updated.contact)) {
+    if (!isSameLineage(contact, updated.contact)) {
       throw new InvalidArgumentError(
         'The given contact lineage does not match the current lineage for that contact.'
       );
     }
 
-    return minify(contact);
+    // Return the same contact data that was provided
+    return updated.contact;
   };
 };
 

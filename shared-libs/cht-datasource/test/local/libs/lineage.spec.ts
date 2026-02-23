@@ -594,33 +594,50 @@ describe('local lineage lib', () => {
       expect(minifyLineageInner.notCalled).to.be.true;
     });
 
-    [
-      'contact-1',
-      { _id: 'contact-1', parent: { _id: 'parent-1', parent: { _id: 'grandparent-1' } } },
-    ].forEach(updatedContact => {
-      it('returns minified contact', () => {
-        const updated = {
-          ...doc,
-          contact: updatedContact
-        } as Input.v1.UpdateReportInput<Report.v1.Report>;
+    it('returns minified contact when id provided', () => {
+      const updated = {
+        ...doc,
+        contact: 'contact-1'
+      } as Input.v1.UpdateReportInput<Report.v1.Report>;
 
-        const contact = {
-          _id: 'contact-1',
-          _rev: 'rev-1',
-          type: 'person',
-          parent: { _id: 'parent-1', name: 'Parent', parent: { _id: 'grandparent-1', name: 'Grandparent' } }
-        };
-        const minifiedContact = { _id: 'contact-1', parent: { _id: 'parent-1', parent: { _id: 'grandparent-1' } } };
-        isContact.returns(true);
-        minifyLineageInner.returns(minifiedContact);
+      const contact = {
+        _id: 'contact-1',
+        _rev: 'rev-1',
+        type: 'person',
+        parent: { _id: 'parent-1', name: 'Parent', parent: { _id: 'grandparent-1', name: 'Grandparent' } }
+      };
+      const minifiedContact = { _id: 'contact-1', parent: { _id: 'parent-1', parent: { _id: 'grandparent-1' } } };
+      isContact.returns(true);
+      minifyLineageInner.returns(minifiedContact);
 
-        const result = Lineage.getUpdatedContact(settings, medicDb)(doc, updated, contact);
+      const result = Lineage.getUpdatedContact(settings, medicDb)(doc, updated, contact);
 
-        expect(result).to.deep.equal(minifiedContact);
-        expect(isContact.calledOnceWithExactly(settings, contact)).to.be.true;
-        expect(minifyLineageOuter.calledOnceWithExactly(medicDb)).to.be.true;
-        expect(minifyLineageInner.calledOnceWithExactly(contact)).to.be.true;
-      });
+      expect(result).to.deep.equal(minifiedContact);
+      expect(isContact.calledOnceWithExactly(settings, contact)).to.be.true;
+      expect(minifyLineageOuter.calledOnceWithExactly(medicDb)).to.be.true;
+      expect(minifyLineageInner.calledOnceWithExactly(contact)).to.be.true;
+    });
+
+    it('returns updated contact when contact object provided', () => {
+      const updated = {
+        ...doc,
+        contact: { _id: 'contact-1', parent: { _id: 'parent-1', parent: { _id: 'grandparent-1' } } }
+      } as Input.v1.UpdateReportInput<Report.v1.Report>;
+
+      const contact = {
+        _id: 'contact-1',
+        _rev: 'rev-1',
+        type: 'person',
+        parent: { _id: 'parent-1', name: 'Parent', parent: { _id: 'grandparent-1', name: 'Grandparent' } }
+      };
+      isContact.returns(true);
+
+      const result = Lineage.getUpdatedContact(settings, medicDb)(doc, updated, contact);
+
+      expect(result).to.deep.equal(updated.contact);
+      expect(isContact.calledOnceWithExactly(settings, contact)).to.be.true;
+      expect(minifyLineageOuter.calledOnceWithExactly(medicDb)).to.be.true;
+      expect(minifyLineageInner.notCalled).to.be.true;
     });
   });
 });
