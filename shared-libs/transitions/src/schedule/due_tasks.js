@@ -136,7 +136,7 @@ const getBatch = async (query, startKey, startKeyDocId) => {
 
   const options = {
     baseUrl: environment.couchUrl,
-    uri: '/_design/medic/_view/messages_by_state',
+    uri: '/_design/medic-sms/_view/messages_by_state',
     qs: queryString,
     json: true
   };
