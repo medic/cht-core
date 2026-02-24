@@ -3,8 +3,10 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const pagePerformance = require('@utils/performance');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
 
 const userFactory = require('@factories/cht/users/users');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const user = userFactory.build();
 
 const LOAD_TIMEOUT = 40000;
@@ -65,8 +67,7 @@ describe('contacts', () => {
 
   for (let i = 0; i < 2; i++) {
     it('measure contacts scroll', async () => {
-      await commonElements.goToPeople('', false);
-      await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
+      await commonElements.goToPeople();
       pagePerformance.track('contacts - first scroll');
       await commonElements.loadNextInfiniteScrollPage();
       pagePerformance.record();
@@ -78,8 +79,7 @@ describe('contacts', () => {
   }
 
   it('measure clinic first', async () => {
-    await commonElements.goToPeople('', false);
-    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
+    await commonElements.goToPeople();
     await contactsPage.openNthContact(10);
     pagePerformance.track('contacts - open clinic first load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
@@ -87,8 +87,7 @@ describe('contacts', () => {
   });
 
   it('measure clinic second', async () => {
-    await commonElements.goToPeople('', false);
-    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
+    await commonElements.goToPeople();
     await contactsPage.openNthContact(10);
     pagePerformance.track('contacts - open clinic second load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
@@ -97,12 +96,32 @@ describe('contacts', () => {
 
   for (let i = 0; i < 5; i++) {
     it('measure clinic third', async () => {
-      await commonElements.goToPeople('', false);
-      await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
+      await commonElements.goToPeople();
       await contactsPage.openNthContact(10);
       pagePerformance.track('contacts - open clinic third load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
   }
+
+  it('measure contacts search', async () => {
+    await commonElements.goToPeople();
+    const names = await contactPage.getAllLHSContactsNames();
+    console.warn(names);
+
+    pagePerformance.track('contacts - search first');
+    await searchPage.performSearch(names[2], LOAD_TIMEOUT);
+    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
+    pagePerformance.record();
+
+    pagePerformance.track('contacts - search second');
+    await searchPage.performSearch(names[3], LOAD_TIMEOUT);
+    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
+    pagePerformance.record();
+
+    pagePerformance.track('contacts - search third');
+    await searchPage.performSearch(names[4], LOAD_TIMEOUT);
+    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
+    pagePerformance.record();
+  });
 });

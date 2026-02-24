@@ -13,13 +13,13 @@ const ensureSearchInputVisible = async () => {
 };
 
 // click freetext search box
-const performSearch = async (searchString) => {
+const performSearch = async (searchString, timeout) => {
   await ensureSearchInputVisible();
   await searchBox().click();
   await searchBox().clearValue();
   await searchBox().addValue(searchString);
   await browser.keys(ENTER);
-  await commonElements.waitForLoaders();
+  await commonElements.waitForLoaders(timeout);
 };
 
 const clearSearch = async () => {

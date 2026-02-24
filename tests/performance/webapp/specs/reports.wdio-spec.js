@@ -57,17 +57,15 @@ describe('reports', () => {
   }
 
   it('measure loading report first', async () => {
-    await commonElements.goToReports('', false);
-    await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+    await commonElements.goToReports();
     await reportsPage.leftPanelSelectors.firstReport().click();
     pagePerformance.track('reports - open report first load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
-  it('measure loading home-place second', async () => {
-    await commonElements.goToReports('', false);
-    await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+  it('measure loading reports second', async () => {
+    await commonElements.goToReports();
     await reportsPage.leftPanelSelectors.firstReport().click();
     pagePerformance.track('reports - open report second load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
@@ -75,9 +73,8 @@ describe('reports', () => {
   });
 
   for (let i = 0; i < 5; i++) {
-    it('measure loading home-place third', async () => {
-      await commonElements.goToReports('', false);
-      await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+    it('measure loading reports third', async () => {
+      await commonElements.goToReports();
       await reportsPage.leftPanelSelectors.firstReport().click();
       pagePerformance.track('reports - open report third load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
