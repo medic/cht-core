@@ -1,5 +1,6 @@
 const moment = require('moment/moment');
 const utils = require('@utils/index');
+const { USERNAME } = require('@constants');
 
 const TELEMETRY_PREFIX = 'telemetry';
 
@@ -35,9 +36,21 @@ const getTelemetryFromUserMetaDb = async (username, password) => {
     .map(({ doc }) => doc);
 };
 
+const getTelemetry = async (key, username = null) => {
+  const dbName = getTelemetryDbName(username?? USERNAME, new Date());
+  return await getTelemetryFromBrowser(dbName, key);
+};
+
+const destroyTelemetryDb = (username = null) => {
+  const dbName = getTelemetryDbName(username?? USERNAME, new Date());
+  return destroyDbInBrowser(dbName);
+};
+
 module.exports = {
   getTelemetryDbName,
   getTelemetryFromBrowser,
   getTelemetryFromUserMetaDb,
   destroyDbInBrowser,
+  getTelemetry,
+  destroyTelemetryDb,
 };

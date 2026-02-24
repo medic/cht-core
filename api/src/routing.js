@@ -51,6 +51,7 @@ const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
 const impact = require('./controllers/impact');
+const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
@@ -445,6 +446,9 @@ app.post('/api/v2/records', [jsonParser, formParser], records.v2);
 app.get('/api/v1/forms{/}', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
+
+app.get('/api/v1/target', targetController.v1.getAll);
+app.get('/api/v1/target/:id', targetController.v1.get);
 
 app.get('/api/v1/users', users.list);
 app.get('/api/v2/users/:username', users.v2.get);

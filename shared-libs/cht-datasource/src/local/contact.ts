@@ -1,5 +1,5 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilterUuids, getDocById, queryDocUuidsByKey, queryDocUuidsByRange } from './libs/doc';
+import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
@@ -27,10 +27,10 @@ const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQual
 };
 
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
-  const queryViewFreetextByKey = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-  const queryViewFreetextByRange = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-  const queryViewTypeFreetextByKey = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
-  const queryViewTypeFreetextByRange = queryDocUuidsByRange(
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/contacts_by_freetext');
+  const queryViewTypeFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
+  const queryViewTypeFreetextByRange = queryDocIdsByRange(
     medicDb, 'medic-offline-freetext/contacts_by_type_freetext'
   );
 
@@ -107,7 +107,7 @@ export namespace v1 {
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
-    const queryViewByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
@@ -124,7 +124,7 @@ export namespace v1 {
         // Simple contact type query
         const skip = validateCursor(cursor);
         const getPageFn = (limit: number, skip: number) => queryViewByType([qualifier.contactType], limit, skip);
-        return await fetchAndFilterUuids(getPageFn, limit)(limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
       const freetextQualifier = normalizeFreetextQualifier(qualifier);
@@ -136,7 +136,7 @@ export namespace v1 {
       // Use client-side offline freetext views.
       const skip = validateCursor(cursor);
       const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
-      return fetchAndFilterUuids(getPageFn, limit)(limit, skip);
+      return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
 }

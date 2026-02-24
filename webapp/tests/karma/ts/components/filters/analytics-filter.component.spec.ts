@@ -12,7 +12,6 @@ import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filte
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { GlobalActions } from '@mm-actions/global';
 
 describe('Analytics Filter Component', () => {
@@ -21,7 +20,6 @@ describe('Analytics Filter Component', () => {
   let authService;
   let sessionService;
   let telemetryService;
-  let targetAggregatesService;
   let globalActions;
   let route;
   let router;
@@ -34,14 +32,11 @@ describe('Analytics Filter Component', () => {
     };
     sessionService = { isAdmin: sinon.stub() };
     telemetryService = { record: sinon.stub() };
-    targetAggregatesService = {
-      isEnabled: sinon.stub().resolves(false),
-    };
     globalActions = {
       setSidebarFilter: sinon.stub(GlobalActions.prototype, 'setSidebarFilter'),
     };
     route = {
-      snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'some-module' } } },
+      snapshot: { queryParams: { query: '' }, firstChild: { data: { moduleId: 'target-aggregates' } } },
       url: of([])
     };
     routerEventSubject = new Subject();
@@ -67,7 +62,6 @@ describe('Analytics Filter Component', () => {
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
           { provide: TelemetryService, useValue: telemetryService },
-          { provide: TargetAggregatesService, useValue: targetAggregatesService },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
         ]
@@ -94,14 +88,13 @@ describe('Analytics Filter Component', () => {
     sinon.resetHistory();
     sessionService.isAdmin.returns(false);
     route.snapshot.firstChild.data.moduleId = 'target-aggregates';
-    targetAggregatesService.isEnabled.resolves(true);
 
     component.ngOnInit();
     flush();
 
     expect(component.showFilterButton).to.be.true;
     expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
+    expect(component.activeFilters).to.equal(0);
   }));
 
   it('should open and close sidebar filter', () => {
@@ -118,6 +111,41 @@ describe('Analytics Filter Component', () => {
     expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:target_aggregates:open']);
   });
 
+  it('should display total active filter count', fakeAsync(() => {
+    sinon.resetHistory();
+    sessionService.isAdmin.returns(false);
+    route.snapshot.firstChild.data.moduleId = 'target-aggregates';
+
+    component.ngOnInit();
+    flush();
+
+
+    expect(component.activeFilters).to.equal(0);
+
+    store.overrideSelector(Selectors.getSidebarFilter, {
+      isOpen: false,
+      filterCount: { total: 5 }
+    });
+    store.refreshState();
+
+    expect(component.activeFilters).to.equal(5);
+  }));
+
+  it('should collect telemetry when open sidebar filter', fakeAsync(() => {
+    sinon.resetHistory();
+    component.analyticsModules = [
+      { id: 'targets' },
+      { id: 'target-aggregates' },
+    ];
+    routerEventSubject.next({ snapshot: { data: { moduleId: 'targets' } } });
+    flush();
+
+    component.openSidebar();
+
+    expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
+    expect(telemetryService.record.args[0]).to.deep.equal(['sidebar_filter:analytics:targets:open']);
+  }));
+
   it('should not display filter button if user is admin', fakeAsync(() => {
     sinon.resetHistory();
     sessionService.isAdmin.returns(true);
@@ -126,18 +154,6 @@ describe('Analytics Filter Component', () => {
     flush();
 
     expect(component.showFilterButton).to.be.false;
-  }));
-
-  it('should not display filter button if targetAggregate is not enabled', fakeAsync(() => {
-    sinon.resetHistory();
-    targetAggregatesService.isEnabled.resolves(false);
-
-    component.ngOnInit();
-    flush();
-
-    expect(component.showFilterButton).to.be.false;
-    expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
   }));
 
   it('should not display filter button if module is not target aggregates', fakeAsync(() => {
@@ -149,7 +165,6 @@ describe('Analytics Filter Component', () => {
 
     expect(component.showFilterButton).to.be.false;
     expect(sessionService.isAdmin.callCount).to.equal(1);
-    expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
   }));
 
   it('should update the active module when route changes', fakeAsync(() => {
