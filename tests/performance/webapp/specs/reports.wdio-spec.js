@@ -24,11 +24,11 @@ describe('reports', () => {
     pagePerformance.record();
 
     pagePerformance.track('reports - first scroll');
-    await commonPage.loadNextInfiniteScrollPage();
+    await commonPage.loadNextInfiniteScrollPage(LOAD_TIMEOUT);
     pagePerformance.record();
 
     pagePerformance.track('reports - second scroll');
-    await commonPage.loadNextInfiniteScrollPage();
+    await commonPage.loadNextInfiniteScrollPage(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 

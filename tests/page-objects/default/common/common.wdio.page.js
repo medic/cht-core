@@ -165,10 +165,10 @@ const getVisibleLoaders = async () => {
   return visible;
 };
 
-const waitForLoaderToDisappear = async (element) => {
+const waitForLoaderToDisappear = async (element, timeout = 10000) => {
   const loaderSelector = '.loader';
   const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
-  await loader.waitForDisplayed({ reverse: true });
+  await loader.waitForDisplayed({ reverse: true, timeout });
 };
 
 const waitForLoaders = async (timeout = 10000) => {
@@ -543,11 +543,11 @@ const isMenuOptionVisible = async (action) => {
   return await kebabMenuSelectors[action]().isDisplayed();
 };
 
-const loadNextInfiniteScrollPage = async () => {
+const loadNextInfiniteScrollPage = async (timeout) => {
   await browser.execute(() => {
     $('.inbox-items .content-row:last-child').get(0).scrollIntoView();
   });
-  await waitForLoaderToDisappear(await $('.left-pane'));
+  await waitForLoaderToDisappear(await $('.left-pane'), timeout);
 };
 
 const getErrorLog = async () => {
