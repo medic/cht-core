@@ -543,11 +543,14 @@ const isMenuOptionVisible = async (action) => {
   return await kebabMenuSelectors[action]().isDisplayed();
 };
 
+const countInboxItems = async () => await $$('.inbox-items .content-row').length;
 const loadNextInfiniteScrollPage = async (timeout) => {
-  await browser.execute(() => {
-    $('.inbox-items .content-row:last-child').get(0).scrollIntoView();
-  });
-  await waitForLoaderToDisappear(await $('.left-pane'), timeout);
+  const initalInboxItemsCount = await countInboxItems();
+  await $('.inbox-items .content-row:last-child').scrollIntoView();
+  await browser.waitUntil(
+    async () => (await countInboxItems()) > initalInboxItemsCount,
+    { timeout, timeoutMsg: 'Infinite scroll did not load new items' }
+  );
 };
 
 const getErrorLog = async () => {
