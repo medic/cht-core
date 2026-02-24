@@ -1,0 +1,142 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "projects": {
+    "admin-tool": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "less"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "",
+      "architect": {
+        "build": {
+          "builder": "@angular-builders/custom-webpack:browser",
+          "options": {
+            "outputPath": "../api/build/static/admin-tool",
+            "index": "src/index.html",
+            "main": "src/ts/main.ts",
+            "polyfills": "src/ts/polyfills.ts",
+            "tsConfig": "tsconfig.app.json",
+            "aot": true,
+            "assets": [],
+            "styles": [
+              "src/css/main.less"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
+            ],
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
+          },
+          "configurations": {
+            "development": {
+              "deleteOutputPath": false,
+              "outputHashing": "none",
+              "sourceMap": true,
+              "namedChunks": true,
+              "extractLicenses": false,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "optimization": false
+            },
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/ts/environments/environment.ts",
+                  "with": "src/ts/environments/environment.prod.ts"
+                }
+              ],
+              "deleteOutputPath": false,
+              "optimization": {
+                "fonts": true,
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                }
+              },
+              "outputHashing": "none",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "4mb",
+                  "maximumError": "6mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-builders/custom-webpack:karma",
+          "options": {
+            "main": "tests/karma/test.ts",
+            "polyfills": "src/ts/polyfills.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "tests/karma/karma-unit.conf.js",
+            "include": [
+              "../tests/karma/**/*.spec.ts"
+            ],
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/ts/polyfills.ts",
+              "src/ts/main.ts",
+              "src/ts/environments/**"
+            ],
+            "styles": [],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/select2/dist/js/select2.min.js"
+            ],
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-builders/custom-webpack:dev-server",
+          "options": {
+            "buildTarget": "admin-tool:build"
+          },
+          "configurations": {
+            "development": {
+              "buildTarget": "admin-tool:build:development"
+            },
+            "production": {
+              "buildTarget": "admin-tool:build:production"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false
+  }
+}
