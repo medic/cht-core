@@ -1,18 +1,38 @@
 const performance = require('node:perf_hooks').performance;
+const fs = require('node:fs/promises');
+const path = require('node:path');
 const WDIOReporter = require('@wdio/reporter').default;
 
-const entries = [];
+const tempPerformanceFile = path.resolve(__dirname, '..', 'logs', 'temp-performance.json');
+console.warn(tempPerformanceFile);
+
+const formatDuration = (ms) => ms && `${Math.round(Number(ms)) / 1000} s`;
 let currentSuite;
 
 const performanceMeasuresToMarkdownTable = (measures) => {
-  const formatDuration = (ms) => `${Math.round(Number(ms))} ms`;
-  const rows = Array.isArray(measures) ? [...measures] : [];
+  const rows = {};
+  let maxDurations = 0;
+  measures.forEach(m => {
+    if (!rows[m.name]) {
+      rows[m.name] = { name: m.name, duration: [] };
+    }
+    rows[m.name].duration.push(m.duration);
+    maxDurations = Math.max(maxDurations, rows[m.name].duration.length);
+  });
+
+  const headers = ['Action', ...new Array(maxDurations).fill('Duration (seconds)'), 'Average Duration (seconds)'];
 
   const lines = [];
-  lines.push('| Action | Duration |', '|---|---|');
+  lines.push(`| ${headers.join(' | ')} |`, `| ${headers.map(() => '---').join(' | ')} |`);
 
-  for (const m of rows) {
-    lines.push(`| ${m.name} | ${formatDuration(m.duration)} |`);
+  for (const key of Object.keys(rows).sort()) {
+    const row = rows[key];
+    const line = [
+      row.name,
+      ...new Array(maxDurations).fill('').map((s, i) => formatDuration(row.duration[i]) || s),
+      formatDuration(row.duration.reduce((a, b) => a + b, 0) / row.duration.length),
+    ];
+    lines.push(`| ${line.join(' | ')} |`);
   }
 
   return lines.join('\n');
@@ -29,10 +49,23 @@ class PerformanceReporter extends WDIOReporter {
     currentSuite = suite;
   }
 
-  onSuiteEnd(suite) {
-    this._indent = Math.max(0, this._indent - 1);
+  async onSuiteEnd(suite) {
+    if (!suite.entries.length) {
+      return;
+    }
+
     this.write(performanceMeasuresToMarkdownTable(suite.entries));
     this.write('\n\n');
+
+    console.warn('on runner end 11');
+    let previousEntries;
+    try {
+      previousEntries = JSON.parse(await fs.readFile(tempPerformanceFile, { encoding: 'utf-8' }));
+    } catch {
+      previousEntries = [];
+    }
+    previousEntries.push(...suite.entries);
+    await fs.writeFile(tempPerformanceFile, JSON.stringify(previousEntries, null, 2) + '\n');
   }
 }
 
@@ -43,12 +76,11 @@ module.exports = {
       start: performance.now()
     };
 
-    entries.push(entry);
     currentSuite.entries.push(entry);
   },
 
   record: (name) => {
-    const entry = entries.find(entry => {
+    const entry = currentSuite.entries.find(entry => {
       return (name && entry.name === name || !name) && !entry.end;
     });
     if (!entry) {
@@ -58,10 +90,14 @@ module.exports = {
     entry.end = performance.now();
     entry.duration = Number.parseInt(entry.end - entry.start, 10);
 
-    console.log(entry.name, entry.duration / 1000, 'seconds');
+    console.log(entry.name, formatDuration(entry.duration), 'seconds');
   },
 
-  export: () => entries,
-
   PerformanceReporter,
+  export: async () => {
+    const previousEntries = JSON.parse(await fs.readFile(tempPerformanceFile, { encoding: 'utf-8' }));
+    console.log(performanceMeasuresToMarkdownTable(previousEntries));
+
+    return previousEntries;
+  }
 };

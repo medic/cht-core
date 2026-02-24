@@ -1,6 +1,6 @@
 const baseConfig = require('../../wdio.conf.js');
 const utils = require('@utils');
-const { PerformanceReporter } = require('@utils/performance');
+const { PerformanceReporter, export: exportPerformance } = require('@utils/performance');
 const { generate: generateData } = require('./generate-dataset.js');
 
 const prepData = async () => {
@@ -34,6 +34,12 @@ exports.config = {
   },
 
   after: () => {
+    // global after hook will delete users and their data.
+  },
+
+  onComplete: async () => {
+    await baseConfig.config.onComplete();
+    await exportPerformance();
   },
   specs: [
     `./specs/login.wdio-spec.js`,
@@ -49,7 +55,7 @@ exports.config = {
     ],
   },
   exclude: [],
-  reporters: ['spec', PerformanceReporter],
+  reporters: [PerformanceReporter],
   mochaOpts: {
     ui: 'bdd',
     timeout: 120000,

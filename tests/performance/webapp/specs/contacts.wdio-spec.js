@@ -42,8 +42,6 @@ describe('contacts', () => {
 
   it('measure loading home-place first', async () => {
     await commonElements.goToPeople('', false);
-    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
-    await contactsPage.openFirstContact();
     pagePerformance.track('home-place first');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
@@ -51,8 +49,6 @@ describe('contacts', () => {
 
   it('measure loading home-place second', async () => {
     await commonElements.goToPeople('', false);
-    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
-    await contactsPage.openFirstContact();
     pagePerformance.track('home-place second');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
@@ -61,8 +57,6 @@ describe('contacts', () => {
   for (let i = 0; i < 5; i++) {
     it('measure loading home-place third', async () => {
       await commonElements.goToPeople('', false);
-      await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
-      await contactsPage.openFirstContact();
       pagePerformance.track('home-place third');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
@@ -71,7 +65,7 @@ describe('contacts', () => {
 
   it('measure clinic first', async () => {
     await commonElements.goToPeople('', false);
-    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
+    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     await contactsPage.openNthContact(10);
     pagePerformance.track('clinic first');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
@@ -80,7 +74,7 @@ describe('contacts', () => {
 
   it('measure clinic second', async () => {
     await commonElements.goToPeople('', false);
-    await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
+    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     await contactsPage.openNthContact(10);
     pagePerformance.track('clinic second');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
@@ -90,7 +84,7 @@ describe('contacts', () => {
   for (let i = 0; i < 5; i++) {
     it('measure clinic third', async () => {
       await commonElements.goToPeople('', false);
-      await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
+      await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       await contactsPage.openNthContact(10);
       pagePerformance.track('clinic third');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
