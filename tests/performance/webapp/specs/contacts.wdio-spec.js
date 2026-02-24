@@ -63,6 +63,20 @@ describe('contacts', () => {
     });
   }
 
+  for (let i = 0; i < 2; i++) {
+    it('measure contacts scroll', async () => {
+      await commonElements.goToPeople('', false);
+      await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
+      pagePerformance.track('contacts - first scroll');
+      await commonElements.loadNextInfiniteScrollPage();
+      pagePerformance.record();
+
+      pagePerformance.track('contacts - second scroll');
+      await commonElements.loadNextInfiniteScrollPage();
+      pagePerformance.record();
+    });
+  }
+
   it('measure clinic first', async () => {
     await commonElements.goToPeople('', false);
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);

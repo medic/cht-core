@@ -4,6 +4,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 const userFactory = require('@factories/cht/users/users');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const user = userFactory.build();
 
 const LOAD_TIMEOUT = 40000;
@@ -21,12 +22,28 @@ describe('reports', () => {
     pagePerformance.track('reports - first load');
     await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
+
+    pagePerformance.track('reports - first scroll');
+    await commonPage.loadNextInfiniteScrollPage();
+    pagePerformance.record();
+
+    pagePerformance.track('reports - second scroll');
+    await commonPage.loadNextInfiniteScrollPage();
+    pagePerformance.record();
   });
 
   it('measure reports second load', async () => {
     await commonElements.goToReports('', false);
     pagePerformance.track('reports - second load');
     await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+    pagePerformance.record();
+
+    pagePerformance.track('reports - first scroll');
+    await commonPage.loadNextInfiniteScrollPage();
+    pagePerformance.record();
+
+    pagePerformance.track('reports - second scroll');
+    await commonPage.loadNextInfiniteScrollPage();
     pagePerformance.record();
   });
 

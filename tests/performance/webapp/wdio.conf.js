@@ -25,6 +25,14 @@ const prepData = async () => {
   console.warn(result);
 };
 
+// spec order is relevent, due to initial task calculation
+const specs = [
+  `./specs/login.wdio-spec.js`,
+  `./specs/tasks.wdio-spec.js`,
+  `./specs/contacts.wdio-spec.js`,
+  `./specs/reports.wdio-spec.js`,
+];
+
 exports.config = {
   ...baseConfig.config,
   onPrepare: async () => {
@@ -41,19 +49,8 @@ exports.config = {
     await baseConfig.config.onComplete();
     await exportPerformance();
   },
-  specs: [
-    `./specs/login.wdio-spec.js`,
-    `./specs/tasks.wdio-spec.js`,
-    `./specs/contacts.wdio-spec.js`,
-  ],
-  suites: {
-    all: [
-      `./specs/login.wdio-spec.js`,
-      `./specs/tasks.wdio-spec.js`,
-      `./specs/contacts.wdio-spec.js`,
-      `./specs/reports.wdio-spec.js`,
-    ],
-  },
+  specs,
+  suites: { all: specs },
   exclude: [],
   reporters: [PerformanceReporter],
   mochaOpts: {
