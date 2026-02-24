@@ -12,21 +12,21 @@ const LOAD_TIMEOUT = 40000;
 describe('contacts', () => {
   before(async () => {
     await loginPage.login({ ...user, loadPage: false, createUser: false });
-    pagePerformance.track('replicate with tasks');
+    pagePerformance.track('initial replication with tasks');
     await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
   it('measure contacts initial load', async () => {
     await commonElements.goToPeople('', false);
-    pagePerformance.track('contacts first');
+    pagePerformance.track('contacts - first load');
     await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
   it('measure contacts second load', async () => {
     await commonElements.goToPeople('', false);
-    pagePerformance.track('contacts second');
+    pagePerformance.track('contacts - second load');
     await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -34,7 +34,7 @@ describe('contacts', () => {
   for (let i = 0; i < 5; i++) {
     it('measure contacts third load', async () => {
       await commonElements.goToPeople('', false);
-      pagePerformance.track('contacts third');
+      pagePerformance.track('contacts - third load');
       await contactsPage.waitForContactsLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
@@ -42,14 +42,14 @@ describe('contacts', () => {
 
   it('measure loading home-place first', async () => {
     await commonElements.goToPeople('', false);
-    pagePerformance.track('home-place first');
+    pagePerformance.track('contacts - open home-place first load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
   it('measure loading home-place second', async () => {
     await commonElements.goToPeople('', false);
-    pagePerformance.track('home-place second');
+    pagePerformance.track('contacts - open home-place second load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -57,7 +57,7 @@ describe('contacts', () => {
   for (let i = 0; i < 5; i++) {
     it('measure loading home-place third', async () => {
       await commonElements.goToPeople('', false);
-      pagePerformance.track('home-place third');
+      pagePerformance.track('contacts - open home-place third load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
@@ -67,7 +67,7 @@ describe('contacts', () => {
     await commonElements.goToPeople('', false);
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     await contactsPage.openNthContact(10);
-    pagePerformance.track('clinic first');
+    pagePerformance.track('contacts - open clinic first load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -76,7 +76,7 @@ describe('contacts', () => {
     await commonElements.goToPeople('', false);
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     await contactsPage.openNthContact(10);
-    pagePerformance.track('clinic second');
+    pagePerformance.track('contacts - open clinic second load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -86,7 +86,7 @@ describe('contacts', () => {
       await commonElements.goToPeople('', false);
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       await contactsPage.openNthContact(10);
-      pagePerformance.track('clinic third');
+      pagePerformance.track('contacts - open clinic third load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });

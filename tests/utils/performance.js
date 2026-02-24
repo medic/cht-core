@@ -20,7 +20,7 @@ const performanceMeasuresToMarkdownTable = (measures) => {
     maxDurations = Math.max(maxDurations, rows[m.name].duration.length);
   });
 
-  const headers = ['Action', ...new Array(maxDurations).fill('Duration (seconds)'), 'Average Duration (seconds)'];
+  const headers = ['Action', ...new Array(maxDurations).fill('Time(s)'), 'Avg(s)'];
 
   const lines = [];
   lines.push(`| ${headers.join(' | ')} |`, `| ${headers.map(() => '---').join(' | ')} |`);
@@ -57,7 +57,6 @@ class PerformanceReporter extends WDIOReporter {
     this.write(performanceMeasuresToMarkdownTable(suite.entries));
     this.write('\n\n');
 
-    console.warn('on runner end 11');
     let previousEntries;
     try {
       previousEntries = JSON.parse(await fs.readFile(tempPerformanceFile, { encoding: 'utf-8' }));

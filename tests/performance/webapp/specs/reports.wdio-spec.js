@@ -11,21 +11,21 @@ const LOAD_TIMEOUT = 40000;
 describe('reports', () => {
   before(async () => {
     await loginPage.login({ ...user, loadPage: false, createUser: false });
-    pagePerformance.track('replicate with tasks');
+    pagePerformance.track('initial replication with tasks');
     await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
   it('measure reports initial load', async () => {
     await commonElements.goToReports('', false);
-    pagePerformance.track('reports first');
+    pagePerformance.track('reports - first load');
     await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
   it('measure reports second load', async () => {
     await commonElements.goToReports('', false);
-    pagePerformance.track('reports second');
+    pagePerformance.track('reports - second load');
     await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -33,7 +33,7 @@ describe('reports', () => {
   for (let i = 0; i < 5; i++) {
     it('measure reports third load', async () => {
       await commonElements.goToReports('', false);
-      pagePerformance.track('reports third');
+      pagePerformance.track('reports - third load');
       await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
@@ -43,7 +43,7 @@ describe('reports', () => {
     await commonElements.goToReports('', false);
     await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     await reportsPage.leftPanelSelectors.firstReport().click();
-    pagePerformance.track('report load first');
+    pagePerformance.track('reports - open report first load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -52,7 +52,7 @@ describe('reports', () => {
     await commonElements.goToReports('', false);
     await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     await reportsPage.leftPanelSelectors.firstReport().click();
-    pagePerformance.track('report load second');
+    pagePerformance.track('reports - open report second load');
     await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
   });
@@ -62,7 +62,7 @@ describe('reports', () => {
       await commonElements.goToReports('', false);
       await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
       await reportsPage.leftPanelSelectors.firstReport().click();
-      pagePerformance.track('report load third');
+      pagePerformance.track('reports - open report third load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });

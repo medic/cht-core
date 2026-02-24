@@ -9,7 +9,7 @@ describe('initial replication', () => {
 
   it('measure replication', async () => {
     await loginPage.login({ ...user, loadPage: false, createUser: false });
-    pagePerformance.track('replicate');
+    pagePerformance.track('initial replication');
     await commonElements.waitForAngularLoaded();
     pagePerformance.record();
   });

@@ -13,14 +13,14 @@ describe('tasks', () => {
   describe('with initial calculation', () => {
     before(async () => {
       await loginPage.login({ ...user, loadPage: false, createUser: false });
-      pagePerformance.track('replicate');
+      pagePerformance.track('initial replication');
       await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
 
     it('measure tasks initial load', async () => {
       await commonElements.goToTasks(false);
-      pagePerformance.track('tasks first load with calculation');
+      pagePerformance.track('tasks - first load with calculation');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       await tasksPage.getTasks(LOAD_TIMEOUT);
       pagePerformance.record();
@@ -28,7 +28,7 @@ describe('tasks', () => {
 
     it('measure tasks second load', async () => {
       await commonElements.goToTasks(false);
-      pagePerformance.track('tasks second');
+      pagePerformance.track('tasks - second load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       await tasksPage.getTasks(LOAD_TIMEOUT);
       pagePerformance.record();
@@ -37,7 +37,7 @@ describe('tasks', () => {
     for (let i = 0; i < 5; i++) {
       it('measure tasks third load', async () => {
         await commonElements.goToTasks(false);
-        pagePerformance.track('tasks third');
+        pagePerformance.track('tasks - third load');
         await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
         await tasksPage.getTasks(LOAD_TIMEOUT);
         pagePerformance.record();
@@ -52,14 +52,14 @@ describe('tasks', () => {
   describe('without initial calculation', () => {
     before(async () => {
       await loginPage.login({ ...user, loadPage: false, createUser: false });
-      pagePerformance.track('replicate with tasks');
+      pagePerformance.track('initial replication with tasks');
       await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
 
     it('measure tasks initial load', async () => {
       await commonElements.goToTasks(false);
-      pagePerformance.track('tasks first load without calculation');
+      pagePerformance.track('tasks - first load without calculation');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       await tasksPage.getTasks(LOAD_TIMEOUT);
       pagePerformance.record();
@@ -67,20 +67,11 @@ describe('tasks', () => {
 
     it('measure tasks second load', async () => {
       await commonElements.goToTasks(false);
-      pagePerformance.track('tasks second');
+      pagePerformance.track('tasks - second load');
       await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
       await tasksPage.getTasks(LOAD_TIMEOUT);
       pagePerformance.record();
     });
-
-    for (let i = 0; i < 5; i++) {
-      it('measure tasks third load', async () => {
-        await commonElements.goToTasks(false);
-        pagePerformance.track('tasks third');
-        await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
-        await tasksPage.getTasks(LOAD_TIMEOUT);
-        pagePerformance.record();
-      });
-    }
   });
 });
+
