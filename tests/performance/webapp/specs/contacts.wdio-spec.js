@@ -106,8 +106,7 @@ describe('contacts', () => {
 
   it('measure contacts search', async () => {
     await commonElements.goToPeople();
-    const names = await contactPage.getAllLHSContactsNames();
-    console.warn(names);
+    const names = [...new Set(await contactPage.getAllLHSContactsNames())];
 
     pagePerformance.track('contacts - search first');
     await searchPage.performSearch(names[2], LOAD_TIMEOUT);
