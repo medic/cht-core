@@ -179,7 +179,7 @@
     "rosie": "^2.1.0",
     "sass": "^1.97.3",
     "sharp": "^0.34.3",
-    "shellcheck": "^3.1.0",
+    "shellcheck": "^4.1.0",
     "sinon": "^21.0.1",
     "sinon-chai": "^3.7.0",
     "tail": "^2.2.6",
