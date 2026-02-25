@@ -1,14 +1,56 @@
 import {
+  and,
   byContactType,
+  byContactId,
+  byContactIds,
   byFreetext,
-  byUuid,
+  byReportingPeriod,
+  byUsername,
+  byUuid, FreetextQualifier,
   isContactTypeQualifier,
+  isContactIdQualifier,
+  isContactIdsQualifier,
   isFreetextQualifier,
-  isUuidQualifier
+  isKeyedFreetextQualifier,
+  isReportingPeriodQualifier,
+  isUsernameQualifier,
+  isUuidQualifier,
+  byId,
+  isIdQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
 describe('qualifier', () => {
+  describe('byId', () => {
+    it('builds a qualifier that identifies an entity by its id', () => {
+      expect(byId('uuid')).to.deep.equal({ id: 'uuid' });
+    });
+
+    [
+      null,
+      '',
+      { },
+    ].forEach(uuid => {
+      it(`throws an error for ${JSON.stringify(uuid)}`, () => {
+        expect(() => byId(uuid as string)).to.throw(`Invalid id [${JSON.stringify(uuid)}].`);
+      });
+    });
+  });
+
+  describe('isIdQualifier', () => {
+    [
+      [ null, false ],
+      [ 'uuid', false ],
+      [ { id: { } }, false ],
+      [ { id: 'uuid' }, true ],
+      [ { id: 'uuid', other: 'other' }, true ]
+    ].forEach(([ identifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(identifier)}`, () => {
+        expect(isIdQualifier(identifier)).to.equal(expected);
+      });
+    });
+  });
+
   describe('byUuid', () => {
     it('builds a qualifier that identifies an entity by its UUID', () => {
       expect(byUuid('uuid')).to.deep.equal({ uuid: 'uuid' });
@@ -107,6 +149,189 @@ describe('qualifier', () => {
       it(`evaluates ${JSON.stringify(freetext)}`, () => {
         expect(isFreetextQualifier(freetext)).to.equal(expected);
       });
+    });
+  });
+
+  describe('isKeyedFreetextQualifier', () => {
+    [
+      [ { freetext: 'key:value' }, true ],
+      [ { freetext: 'key:value with spaces' }, true ],
+      [ { freetext: 'value' }, false ],
+      [ { freetext: 'value with spaces' }, false ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isKeyedFreetextQualifier(qualifier as FreetextQualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byReportingPeriod', () => {
+    it('builds a qualifier for searching by reporting period (YYYY-MM)', () => {
+      expect(byReportingPeriod('2025-07')).to.deep.equal({ reportingPeriod: '2025-07' });
+    });
+
+    [
+      null,
+      '',
+      { },
+      '2025-13',
+      '2025-00',
+      '202-12',
+      '2025-1',
+      '2025-012'
+    ].forEach(reportingPeriod => {
+      it(`throws an error for ${JSON.stringify(reportingPeriod)}`, () => {
+        expect(() => byReportingPeriod(reportingPeriod as string)).to.throw(
+          `Invalid reporting period [${reportingPeriod as string}].`
+        );
+      });
+    });
+  });
+
+  describe('isReportingPeriodQualifier', () => {
+    [
+      [ null, false ],
+      [ '2025-07', false ],
+      [ { reportingPeriod: '2025-07' }, true ],
+      [ { reportingPeriod: '1999-12' }, true ],
+      [ { reportingPeriod: '2025-13' }, false ],
+      [ { reportingPeriod: '2025-1' }, false ],
+      [ { reportingPeriod: { } }, false ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isReportingPeriodQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byUsername', () => {
+    it('builds a qualifier for searching by username', () => {
+      expect(byUsername('alice')).to.deep.equal({ username: 'alice' });
+    });
+
+    [
+      null,
+      ''
+    ].forEach(username => {
+      it(`throws an error for ${JSON.stringify(username)}`, () => {
+        expect(() => byUsername(username!)).to.throw(
+          `Invalid username [${username}].`
+        );
+      });
+    });
+  });
+
+  describe('isUsernameQualifier', () => {
+    [
+      [ null, false ],
+      [ 'alice', false ],
+      [ { username: '' }, false ],
+      [ { username: 'bob' }, true ],
+      [ { username: { } }, false ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isUsernameQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byContactId', () => {
+    it('builds a qualifier for searching by contact Id', () => {
+      expect(byContactId('abc-123')).to.deep.equal({ contactId: 'abc-123' });
+    });
+
+    [
+      null,
+      ''
+    ].forEach(contactId => {
+      it(`throws an error for ${JSON.stringify(contactId)}`, () => {
+        expect(() => byContactId(contactId!)).to.throw(
+          `Invalid contact Id [${contactId}].`
+        );
+      });
+    });
+  });
+
+  describe('isContactIdQualifier', () => {
+    [
+      [ null, false ],
+      [ 'abc-123', false ],
+      [ { contactId: '' }, false ],
+      [ { contactId: 'def-456' }, true ],
+      [ { contactId: { } }, false ]
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isContactIdQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byContactIds', () => {
+    ([
+      ['abc-123'],
+      ['abc-123', 'abc-200']
+    ] as [string, ...string[]][]).forEach((contactIds) => {
+      it('builds a qualifier for searching by contact Id', () => {
+        expect(byContactIds(contactIds)).to.deep.equal({ contactIds });
+      });
+    });
+
+    ([
+      null,
+      '',
+      [],
+      [''],
+    ] as [string, ...string[]][]).forEach(contactIds => {
+      it(`throws an error for ${JSON.stringify(contactIds)}`, () => {
+        expect(() => byContactIds(contactIds)).to.throw(
+          `Invalid contact Ids [${contactIds}].`
+        );
+      });
+    });
+  });
+
+  describe('isContactIdsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'abc-123', false ],
+      [ { contactIds: '' }, false ],
+      [ { contactIds: { } }, false ],
+      [ { contactIds: [] }, false ],
+      [ { contactIds: ['abc-123', ''] }, false ],
+      [ { contactIds: [null, 'abc-123'] }, false ],
+      [ { contactIds: ['abc-123'] }, true ],
+      [ { contactIds: ['abc-123', 'abc-123', 'abc-123'] }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isContactIdsQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('and', () => {
+    it('combines two qualifiers', () => {
+      const combined = and(byUuid('u1'), byContactType('person'));
+      expect(combined).to.deep.equal({ uuid: 'u1', contactType: 'person' });
+    });
+
+    it('combines up to four qualifiers', () => {
+      const combined = and(
+        byUuid('u1'),
+        byContactType('person'),
+        byFreetext('value'),
+        byReportingPeriod('2025-07')
+      );
+      expect(combined).to.deep.equal({
+        uuid: 'u1',
+        contactType: 'person',
+        freetext: 'value',
+        reportingPeriod: '2025-07'
+      });
+    });
+
+    it('last-in wins on overlapping keys', () => {
+      const combined = and(byUuid('first'), byUuid('second'));
+      expect(combined).to.deep.equal({ uuid: 'second' });
     });
   });
 });

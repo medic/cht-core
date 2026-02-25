@@ -1,7 +1,6 @@
 import { Doc } from '../../libs/doc';
 import { AbstractDataContext, hasField, isRecord } from '../../libs/core';
 import { DataContext } from '../../libs/data-context';
-import { ddocExists } from './doc';
 
 /**
  * {@link PouchDB.Database}s to be used as the local data source.
@@ -59,9 +58,4 @@ export const getLocalDataContext = (
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);
   return new LocalDataContext(sourceDatabases.medic, settings);
-};
-
-/** @internal */
-export const isOffline = async (db: PouchDB.Database<Doc>): Promise<boolean> => {
-  return ddocExists(db, '_design/medic-offline-freetext');
 };
