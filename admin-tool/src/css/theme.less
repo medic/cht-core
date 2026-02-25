@@ -7,9 +7,21 @@ html {
   font-size: @font-size-base;
 }
 
-body > div {
-  height: 100%;
-  padding-top: 40px;
+// Bootstrap's navbar-fixed-top is position:fixed at the top.
+// Angular renders custom elements (app-root, app-main-layout, etc.) between
+// <body> and the actual divs, so "body > div" never matches.
+// Offset the body itself by the Bootstrap navbar height (50px).
+body {
+  padding-top: 50px;
+}
+
+// Angular custom elements default to display:inline which breaks block/flex
+// layouts. Reset them to block so they participate in normal document flow.
+app-root,
+app-main-layout,
+app-header,
+app-sidebar {
+  display: block;
 }
 
 // --- Fixed header / navbar ---
@@ -38,9 +50,10 @@ body > div {
 }
 
 // --- Body layout ---
+// Use calc so the flex container fills the viewport below the fixed 50px navbar.
 .body {
   display: flex;
-  min-height: 100%;
+  min-height: calc(100vh - 50px);
   font-size: @font-medium;
 }
 
