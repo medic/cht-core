@@ -379,7 +379,7 @@ describe('report', () => {
         const input = 'my-string-report' as unknown as Report.v1.Report;
 
         await expect(Report.v1.update(dataContext)(input))
-          .to.be.rejectedWith(`Invalid report update input`);
+          .to.be.rejectedWith(`Updated report data not provided.`);
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))

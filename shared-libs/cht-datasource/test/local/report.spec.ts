@@ -1017,7 +1017,7 @@ describe('local report', () => {
         getUpdatedContactInner.returns(null);
 
         await expect(Report.v1.update(localContext)(updateInput))
-          .to.be.rejectedWith(InvalidArgumentError, 'A contact is must be provided.');
+          .to.be.rejectedWith(InvalidArgumentError, 'A contact must be provided.');
 
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;

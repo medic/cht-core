@@ -130,12 +130,14 @@ export const hasField = <T extends Record<string, unknown>, N extends string, K 
   { name, type }: FieldDescriptor<N, K>
 ): value is T & Record<N, FieldTypeToValue[K]> => typeof value[name] === type;
 
+const isBlankString = (value: unknown): boolean => typeof value === 'string' && !value.trim();
+
 /** @internal */
 export const hasStringFieldWithValue = <T extends Record<string, unknown>, N extends string>(
   value: T,
   fieldName: N
 ): value is T & Record<N, string> => {
-  return hasField(value, { name: fieldName, type: 'string' }) && !!((value[fieldName] as string).trim());
+  return hasField(value, { name: fieldName, type: 'string' }) && !isBlankString(value[fieldName]);
 };
 
 /** @internal */
@@ -168,7 +170,7 @@ export function assertHasRequiredField <T extends Record<string, unknown>, N ext
   { name, type }: FieldDescriptor<N, K>,
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<N, FieldTypeToValue[K]> {
-  if (!hasField(value, { name, type }) || !value[name]) {
+  if (!hasField(value, { name, type }) || value[name] === null || isBlankString(value[name])) {
     throw new ErrorClass(`The [${String(name)}] field must have a [${String(type)}] value.`);
   }
 }

@@ -175,7 +175,7 @@ export namespace v1 {
       updated: Input.v1.UpdateReportInput<T>
     ): Promise<T> => {
       if (!isIdentifiable(updated)) {
-        throw new InvalidArgumentError('Invalid report update input');
+        throw new InvalidArgumentError('Updated report data not provided.');
       }
       return fn(updated);
     };

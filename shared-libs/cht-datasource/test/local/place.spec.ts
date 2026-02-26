@@ -1009,6 +1009,35 @@ describe('local place', () => {
         expect(updateDocInner.calledOnceWithExactly(updateDocInput)).to.be.true;
       });
 
+      it('updates place to remove contact', async () => {
+        const updateDocInput = {
+          ...originalDoc,
+          contact: undefined
+        };
+        getDocsByIdsInner.resolves([originalDoc, undefined]);
+        getUpdatedContactInner.returns(undefined);
+        updateDocInner.resolves({ _rev: '2' });
+
+        const result = await Place.v1.update(localContext)(updateDocInput);
+
+        expect(result).to.deep.equal({ ...updateDocInput, _rev: '2' });
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
+        expect(settingsGetAll.calledTwice).to.be.true;
+        expect(isPlace.args).to.deep.equal([
+          [settings, updateDocInput],
+          [settings, originalDoc],
+        ]);
+        expect(getDocsByIdsInner.calledOnceWithExactly([originalDoc._id, undefined])).to.be.true;
+        expect(getUpdatedContactInner.calledOnceWithExactly(
+          originalDoc,
+          updateDocInput,
+          undefined
+        )).to.be.true;
+        expect(updateDocInner.calledOnceWithExactly(updateDocInput)).to.be.true;
+      });
+
       it('throws error when updating parent', async () => {
         const updateDocInput = {
           ...originalDoc,

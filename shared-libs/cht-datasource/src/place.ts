@@ -78,7 +78,7 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of places to return. Default is 100.
      * @returns a page of places for the provided specification
-     * @throws InvalidArgumentError if no type is provided or if the type is not for a place
+     * @throws InvalidArgumentError if no type is provided or if the type is not a supported place contact type
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
@@ -110,7 +110,7 @@ export namespace v1 {
      * Returns a generator for fetching all places with the given type
      * @param placeType the type of places to return
      * @returns a generator for fetching all places with the given type
-     * @throws InvaidArgumentError if no type is provided or if the type is not for a place
+     * @throws InvaidArgumentError if no type is provided or if the type is not a supported place contact type
      */
     const curriedGen = (placeType: ContactTypeQualifier) => {
       assertTypeQualifier(placeType);

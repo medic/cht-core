@@ -163,7 +163,7 @@ export namespace v1 {
   export const create = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
     const createMedicDoc = createDoc(medicDb);
-    const minifyLineage = minifyDoc(medicDb);
+    const minifyMedicDoc = minifyDoc(medicDb);
 
     return async (input: Input.v1.PlaceInput): Promise<Place.v1.Place> => {
       assertPlaceInput(input);
@@ -175,7 +175,7 @@ export namespace v1 {
       ] = await getMedicDocsByIds([input.parent, input.contact]);
       const contact = getPrimaryContactForCreate(settings, input, contactDoc);
       const parent = getParentForCreate(settings, input, parentDoc);
-      const placeDoc = minifyLineage({
+      const placeDoc = minifyMedicDoc({
         ...input,
         ...typeProperties,
         parent,

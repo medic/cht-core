@@ -255,23 +255,28 @@ describe('core lib', () => {
   });
 
   describe('assertHasRequiredField', () => {
-    it('does not throw when field has correct type and value', () => {
-      expect(() => assertHasRequiredField({ field: 'value' }, { name: 'field', type: 'string' })).to.not.throw();
+    [
+      [{ field: 'value' }, { name: 'field', type: 'string' }],
+      [{ field: '0' }, { name: 'field', type: 'string' }],
+      [{ field: 1 }, { name: 'field', type: 'number' }],
+      [{ field: 0 }, { name: 'field', type: 'number' }],
+    ].forEach(([obj, field]) => {
+      it('does not throw when field has correct type and value', () => {
+        expect(() => assertHasRequiredField(obj, field as any)).to.not.throw();
+      });
     });
 
-    it('throws when field is missing', () => {
-      expect(() => assertHasRequiredField({}, { name: 'field', type: 'string' }))
-        .to.throw(Error, 'The [field] field must have a [string] value.');
-    });
-
-    it('throws when field has wrong type', () => {
-      expect(() => assertHasRequiredField({ field: 123 }, { name: 'field', type: 'string' }))
-        .to.throw(Error, 'The [field] field must have a [string] value.');
-    });
-
-    it('throws when field is empty string', () => {
-      expect(() => assertHasRequiredField({ field: '' }, { name: 'field', type: 'string' }))
-        .to.throw(Error, 'The [field] field must have a [string] value.');
+    [
+      [{}, { name: 'field', type: 'string' }],
+      [{ field: null }, { name: 'field', type: 'string' }],
+      [{ field: 123 }, { name: 'field', type: 'string' }],
+      [{ field: '' }, { name: 'field', type: 'string' }],
+      [{ field: '       ' }, { name: 'field', type: 'string' }]
+    ].forEach(([obj, field]) => {
+      it('throws when field is invalid', () => {
+        expect(() => assertHasRequiredField(obj, field as any))
+          .to.throw(Error, 'The [field] field must have a [string] value.');
+      });
     });
 
     it('throws with custom error class', () => {

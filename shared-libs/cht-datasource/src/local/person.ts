@@ -123,7 +123,7 @@ export namespace v1 {
   }: LocalDataContext) => {
     const createMedicDoc = createDoc(medicDb);
     const getMedicDoc = getDocById(medicDb);
-    const minifyLineage = minifyDoc(medicDb);
+    const minifyMedicDoc = minifyDoc(medicDb);
 
     return async (input: Input.v1.PersonInput): Promise<Person.v1.Person> => {
       assertPersonInput(input);
@@ -131,7 +131,7 @@ export namespace v1 {
       const typeProperties = getTypeProperties(settingsData, input);
       const parent = await getMedicDoc(input.parent);
       assertParent(settingsData, input, parent);
-      const personDoc = minifyLineage({
+      const personDoc = minifyMedicDoc({
         ...input,
         ...typeProperties,
         parent,
@@ -146,7 +146,7 @@ export namespace v1 {
     const { medicDb, settings } = dataContext;
     const updateMedicDoc = updateDoc(medicDb);
     const getPerson = get(dataContext);
-    const minifyLineage = minifyDoc(medicDb);
+    const minifyMedicDoc = minifyDoc(medicDb);
 
     return async <T extends Input.v1.UpdatePersonInput>(updatedPerson: T): Promise<T> => {
       if (!isPerson(settings, updatedPerson)) {
@@ -162,7 +162,7 @@ export namespace v1 {
         assertHasRequiredField(updatedPerson, { name: 'name', type: 'string' }, InvalidArgumentError);
       }
       assertSameParentLineage(originalPerson, updatedPerson);
-      const { _rev } = await updateMedicDoc(minifyLineage(updatedPerson));
+      const { _rev } = await updateMedicDoc(minifyMedicDoc(updatedPerson));
       return { ...updatedPerson, _rev };
     };
   };

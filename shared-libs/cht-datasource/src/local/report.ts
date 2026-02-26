@@ -157,7 +157,7 @@ export namespace v1 {
   export const create = ({ medicDb, settings }: LocalDataContext) => {
     const createMedicDoc = createDoc(medicDb);
     const getMedicDoc = getDocById(medicDb);
-    const minifyLineage = minifyDoc(medicDb);
+    const minifyMedicDoc = minifyDoc(medicDb);
     const getForms = getSupportedForms(medicDb);
 
     return async (input: Input.v1.ReportInput): Promise<Report.v1.Report> => {
@@ -173,7 +173,7 @@ export namespace v1 {
         throw new InvalidArgumentError(`Contact [${input.contact}] not found.`);
       }
 
-      const reportDoc = minifyLineage({
+      const reportDoc = minifyMedicDoc({
         ...input,
         contact,
         reported_date: getReportedDateTimestamp(input.reported_date),
@@ -209,7 +209,7 @@ export namespace v1 {
 
       const contact = getContactForUpdate(originalReport, updatedReport, contactDoc);
       if (originalReport.contact && !contact) {
-        throw new InvalidArgumentError('A contact is must be provided.');
+        throw new InvalidArgumentError('A contact must be provided.');
       }
       assertFieldsUnchanged(originalReport, updatedReport, ['_rev', 'reported_date']);
       await assertUpdatedForm(originalReport, updatedReport, getForms);
