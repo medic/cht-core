@@ -573,7 +573,7 @@ describe('local person', () => {
           getPersonInner.resolves(originalDoc);
 
           await expect(Person.v1.update(localContext)(updateDocInput))
-            .to.be.rejectedWith(InvalidArgumentError, `The [${field}] field must not be changed.`);
+            .to.be.rejectedWith(InvalidArgumentError, `The [${field}] fields must not be changed.`);
 
           expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getPersonOuter.calledOnceWithExactly(localContext)).to.be.true;

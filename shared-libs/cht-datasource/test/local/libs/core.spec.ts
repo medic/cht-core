@@ -87,7 +87,7 @@ describe('local core', () => {
       const updated = { _id: '456', _rev: '2' };
 
       expect(() => assertFieldsUnchanged(original, updated, ['_id', '_rev']))
-        .to.throw(InvalidArgumentError, 'The [_id] field must not be changed.');
+        .to.throw(InvalidArgumentError, 'The [_id,_rev] fields must not be changed.');
     });
   });
 

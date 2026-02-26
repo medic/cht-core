@@ -810,7 +810,7 @@ describe('local place', () => {
           getUpdatedContactInner.returns(updateDocInput.contact);
 
           await expect(Place.v1.update(localContext)(updateDocInput))
-            .to.be.rejectedWith(InvalidArgumentError, `The [${field}] field must not be changed.`);
+            .to.be.rejectedWith(InvalidArgumentError, `The [${field}] fields must not be changed.`);
 
           expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;

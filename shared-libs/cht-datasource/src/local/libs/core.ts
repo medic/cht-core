@@ -31,20 +31,17 @@ export interface QueryParams {
   cursor?: Nullable<string>;
 }
 
-const assertFieldUnchanged = (original: DataObject, updated: DataObject, key: string) => {
-  if (original[key] === updated[key]) {
-    return;
-  }
-
-  throw new InvalidArgumentError(`The [${key}] field must not be changed.`);
-};
-
 /** @internal*/
 export const assertFieldsUnchanged = (
   original: DataObject,
   updated: DataObject,
   keys: string[]
-): void => keys.forEach((key) => assertFieldUnchanged(original, updated, key));
+): void => {
+  const changedFields = keys.filter((key) => original[key] !== updated[key]);
+  if (changedFields.length) {
+    throw new InvalidArgumentError(`The [${changedFields}] fields must not be changed.`);
+  }
+};
 
 const convertToUnixTimestamp = (date: string | number): number => {
   const timestamp = new Date(date).getTime();
