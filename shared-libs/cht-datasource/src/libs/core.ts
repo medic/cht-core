@@ -170,7 +170,7 @@ export function assertHasRequiredField <T extends Record<string, unknown>, N ext
   { name, type }: FieldDescriptor<N, K>,
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<N, FieldTypeToValue[K]> {
-  if (!hasField(value, { name, type }) || value[name] === null || isBlankString(value[name])) {
+  if (!hasField(value, { name, type }) || isBlankString(value[name])) {
     throw new ErrorClass(`The [${String(name)}] field must have a [${String(type)}] value.`);
   }
 }

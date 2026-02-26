@@ -262,7 +262,7 @@ describe('core lib', () => {
       [{ field: 0 }, { name: 'field', type: 'number' }],
     ].forEach(([obj, field]) => {
       it('does not throw when field has correct type and value', () => {
-        expect(() => assertHasRequiredField(obj, field as any)).to.not.throw();
+        expect(() => assertHasRequiredField(obj, field as never)).to.not.throw();
       });
     });
 
@@ -274,7 +274,7 @@ describe('core lib', () => {
       [{ field: '       ' }, { name: 'field', type: 'string' }]
     ].forEach(([obj, field]) => {
       it('throws when field is invalid', () => {
-        expect(() => assertHasRequiredField(obj, field as any))
+        expect(() => assertHasRequiredField(obj, field as never))
           .to.throw(Error, 'The [field] field must have a [string] value.');
       });
     });
