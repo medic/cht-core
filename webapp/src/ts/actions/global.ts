@@ -33,7 +33,9 @@ export const Actions = {
   updateBubbleCounter: createSingleValueAction('UPDATE_BUBBLE_COUNTER', 'bubbleCounter'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityIds: createSingleValueAction('SET_USER_FACILITY_IDS', 'userFacilityIds'),
+  setUserFacilities: createSingleValueAction('SET_USER_FACILITIES', 'userFacilities'),
   setUserContactId: createSingleValueAction('SET_USER_CONTACT_ID', 'userContactId'),
+  setIsOnlineOnly: createSingleValueAction('SET_IS_ONLINE_ONLY', 'isOnlineOnly'),
   setSidebarMenu: createSingleValueAction('SET_SIDEBAR_MENU', 'sidebarMenu'),
   closeSidebarMenu: createAction('CLOSE_SIDEBAR_MENU'),
   openSidebarMenu: createAction('OPEN_SIDEBAR_MENU'),
@@ -230,8 +232,16 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setUserFacilityIds(userFacilityIds));
   }
 
+  setUserFacilities(userFacilities) {
+    return this.store.dispatch(Actions.setUserFacilities(userFacilities));
+  }
+
   setUserContactId(userContactId) {
     return this.store.dispatch(Actions.setUserContactId(userContactId));
+  }
+
+  setIsOnlineOnly(isOnlineOnly) {
+    return this.store.dispatch(Actions.setIsOnlineOnly(isOnlineOnly));
   }
 
   setSidebarMenu(sidebarMenu) {

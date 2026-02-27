@@ -1,7 +1,34 @@
 import { createSelector } from '@ngrx/store';
-import { GlobalState } from '@mm-reducers/global';
+import { GlobalState, TasksFilters } from '@mm-reducers/global';
+import { TaskEmission } from '@mm-services/rules-engine.service';
+
+interface TaskWithLineage extends TaskEmission {
+  lineageIds: string[];
+}
 
 const getGlobalState = (state): GlobalState => state.global || {};
+
+const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
+  let filtered = tasks;
+
+  if (filters?.taskOverdue !== undefined) {
+    filtered = filtered.filter(task => task.overdue === filters.taskOverdue);
+  }
+
+  if (filters.taskTypes?.selected?.length) {
+    const selectedTypes = filters.taskTypes.selected;
+    filtered = filtered.filter(task => selectedTypes.includes(task.title));
+  }
+
+  if (filters.facilities?.selected?.length) {
+    filtered = filtered.filter(task => {
+      return task.lineageIds.some(id => filters.facilities?.selected.includes(id));
+    });
+  }
+
+  return filtered;
+};
+
 const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
@@ -41,7 +68,9 @@ export const Selectors = {
 
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
   getUserFacilityIds: createSelector(getGlobalState, (globalState) => globalState.userFacilityIds),
+  getUserFacilities: createSelector(getGlobalState, (globalState) => globalState.userFacilities),
   getUserContactId: createSelector(getGlobalState, (globalState) => globalState.userContactId),
+  getIsOnlineOnly: createSelector(getGlobalState, (globalState) => globalState.isOnlineOnly),
   getTrainingCardFormId: createSelector(getGlobalState, (globalState) => globalState.trainingCard?.formId),
   getTrainingCard: createSelector(getGlobalState, (globalState) => globalState.trainingCard),
   getLanguage: createSelector(getGlobalState, (globalState) => globalState.language),
@@ -131,6 +160,9 @@ export const Selectors = {
 
   // tasks
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
+  getFilteredTasksList: createSelector(getTasksState, getGlobalState, (tasksState, globalState) => {
+    return applyTasksFilters(tasksState.tasksList, globalState.filters);
+  }),
   getOverdueTasks: createSelector(getTasksState, (tasksState) => tasksState.overdue),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),

@@ -28,7 +28,7 @@ const processErrorHandler = (xsltproc, err, reject) => {
     logger.error(errMsg);
     return reject(new Error(errMsg));
   }
-  logger.error(err);
+  logger.error('%o', err);
   return reject(new Error(`Unknown Error: An error occurred when executing '${XSLTPROC_CMD}' command`));
 };
 

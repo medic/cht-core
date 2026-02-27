@@ -7,6 +7,7 @@ const targetAggregatesPage = require('@page-objects/default/targets/target-aggre
 const targetAggregatesConfig = require('../config/target-aggregates');
 const chtConfUtils = require('@utils/cht-conf');
 const { CONTACT_TYPES } = require('@medic/constants');
+const { REPORTING_PERIOD, createTargetDoc } = require('./targets-helper-functions');
 
 const generateRandomNumber = (max) => Math.floor(Math.random() * max);
 
@@ -44,9 +45,9 @@ const generateTargetValuesByContact = (contactNames) => {
 
 const docTags = [
   // current targets
-  moment().format('YYYY-MM'),
+  REPORTING_PERIOD.CURRENT,
   // previous months targets
-  moment().date(10).subtract(1, 'month').format('YYYY-MM'),
+  REPORTING_PERIOD.PREVIOUS,
   // previous months targets
   moment().date(10).subtract(2, 'month').format('YYYY-MM'),
   // previous months targets
@@ -77,26 +78,15 @@ const generateContactsAndTargets = (parent, contactName, targetValuesByContact) 
   });
   place.contact = {_id: contact._id, parent: contact.parent};
 
-  const targets = docTags.map(tag => ({
-    _id: `target~${tag}~${contact._id}~irrelevant`,
-    reporting_period: tag,
+  const targets = docTags.map(tag => createTargetDoc(tag, contact._id, {
     targets: targetAggregatesConfig.TARGETS_DEFAULT_CONFIG
-      .map(target => genTarget(target, contact, targetValuesByContact)),
-    owner: contact._id,
-    user: 'irrelevant',
+      .map(target => genTarget(target, contact, targetValuesByContact))
   }));
 
   return {
     targets,
     contacts: [place, contact],
   };
-};
-
-const getLastMonth = () => {
-  const newDate = new Date();
-  newDate.setDate(1);
-  newDate.setMonth(newDate.getMonth() - 1);
-  return newDate.toLocaleString('default', { month: 'long' });
 };
 
 const assertTitle = async (itemTitle, targetTitle) => {
@@ -115,8 +105,9 @@ const assertPlace = async (itemPlace, place) => {
 };
 
 const assertPeriod = async (itemPeriod, period) => {
-  expect(itemPeriod).to.be.true;
-  expect(await targetAggregatesPage.targetDetail.period(period).isDisplayed()).to.be.true;
+  const shouldBeDisplayed = !! period;
+  expect(itemPeriod).to.equal(shouldBeDisplayed);
+  expect(await targetAggregatesPage.targetDetail.period(period).isDisplayed()).to.equal(shouldBeDisplayed);
 };
 
 const assertData = async (context, targetValuesByContact, expectedTargets, asserts) => {
@@ -124,15 +115,12 @@ const assertData = async (context, targetValuesByContact, expectedTargets, asser
   expect(await targetAggregatesPage.aggregateList().length).to.equal(expectedTargets.length);
 
   for (const target of expectedTargets) {
-    const targetItem = await targetAggregatesPage.getTargetItem(target, context.period, context.place);
+    const targetItem = await targetAggregatesPage.getTargetItem(target, context.place);
     await targetAggregatesPage.openTargetDetails(target);
     await assertTitle(targetItem.title, target.title);
 
-    if (context.isCurrentPeriod) {
-      await assertCounter(targetItem.counter, target.counter);
-    } else {
-      await assertPeriod(targetItem.period, context.period);
-    }
+    await assertCounter(targetItem.counter, target.counter);
+    await assertPeriod(targetItem.period, target.period);
 
     if (asserts.hasMultipleFacilities) {
       await assertPlace(targetItem.place, context.place);
@@ -200,7 +188,6 @@ module.exports = {
   generateTargetValuesByContact,
   docTags,
   generateContactsAndTargets,
-  getLastMonth,
   assertTitle,
   assertData,
   validateCardFields,
