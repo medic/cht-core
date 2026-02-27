@@ -24,13 +24,14 @@ const CHROME_OPTIONS_ARGS_DEBUG = utils.isMinimumChromeVersion
     'deny-permission-prompts',
     'ignore-certificate-errors',
     'no-sandbox',
-    'window-size=1200,900'
+    'window-size=1200,900',
   ]
   : [
     'disable-gpu',
     'deny-permission-prompts',
     'ignore-certificate-errors',
-    'window-size=1200,900'
+    'window-size=1200,900',
+    'disable-popup-blocking'
   ];
 const CHROME_OPTIONS_ARGS = CHROME_OPTIONS_ARGS_DEBUG.concat(['headless']);
 const { DOWNLOAD_PATH, setupDownloadFolder } = require('@utils/file-download');

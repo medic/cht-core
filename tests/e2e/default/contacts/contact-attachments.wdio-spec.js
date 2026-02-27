@@ -257,18 +257,11 @@ describe('Contact form attachments', () => {
     const filePicker = await photoLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
-    await resetButton.click();
-
-    await browser.waitUntil(async () => {
-      try {
-        const alertText = await browser.getAlertText();
-        return alertText.includes('This will remove the file');
-      } catch {
-        return false;
-      }
-    }, { timeout: 5000, timeoutMsg: 'Alert did not appear' });
-
-    await browser.acceptAlert();
+    const dialog = await new Promise((resolve) => {
+      browser.on('dialog', resolve);
+      resetButton.click();
+    });
+    await dialog.accept();
 
     const filePreview = await filePicker.$('.file-preview img');
     await filePreview.waitForExist({ reverse: true, timeout: 5000 });
@@ -300,18 +293,11 @@ describe('Contact form attachments', () => {
     const filePicker = await photoLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
-    await resetButton.click();
-
-    await browser.waitUntil(async () => {
-      try {
-        const alertText = await browser.getAlertText();
-        return alertText.includes('This will remove the file');
-      } catch {
-        return false;
-      }
-    }, { timeout: 5000, timeoutMsg: 'Alert did not appear' });
-
-    await browser.acceptAlert();
+    const dialog = await new Promise((resolve) => {
+      browser.on('dialog', resolve);
+      resetButton.click();
+    });
+    await dialog.accept();
 
     const filePreview = await filePicker.$('.file-preview img');
     await filePreview.waitForExist({ reverse: true, timeout: 5000 });
