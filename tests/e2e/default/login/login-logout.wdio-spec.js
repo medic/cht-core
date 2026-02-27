@@ -6,8 +6,6 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
 
-const laxCookie = utils.isMinimumChromeVersion ? 'Lax': 'lax';
-
 describe('Login page functionality tests', () => {
   const auth = {
     username: constants.USERNAME,
@@ -94,7 +92,7 @@ describe('Login page functionality tests', () => {
       const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
       expect(authSessionCookie).to.include({
         httpOnly: true,
-        sameSite: laxCookie,
+        sameSite: 'Lax',
         domain: 'localhost',
         secure: false,
         path: '/'
@@ -103,7 +101,7 @@ describe('Login page functionality tests', () => {
 
       const userCtxCookie = cookies.find(cookie => cookie.name === 'userCtx');
       expect(userCtxCookie).to.include({
-        sameSite: laxCookie,
+        sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
         secure: false,
@@ -114,7 +112,7 @@ describe('Login page functionality tests', () => {
 
       const localeCookie = cookies.find(cookie => cookie.name === 'locale');
       expect(localeCookie).to.include({
-        sameSite: laxCookie,
+        sameSite: 'Lax',
         domain: 'localhost',
         path: '/',
         secure: false,
