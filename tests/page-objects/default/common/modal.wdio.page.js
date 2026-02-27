@@ -32,8 +32,8 @@ const cancel = async (timeout) => {
   await checkModalHasClosed();
 };
 
-const checkModalIsOpen = async () => {
-  return await modal().waitForDisplayed({ timeout: 5000 });
+const checkModalIsOpen = async (timeout) => {
+  return await modal().waitForDisplayed({ timeout });
 };
 
 const isDisplayed = async () => {
