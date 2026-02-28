@@ -1,5 +1,6 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const sentinelUtils = require('@utils/sentinel');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
@@ -78,6 +79,7 @@ const sendMessage = async (message, recipient, entryText) => {
   await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
+  await sentinelUtils.waitForSentinel();
 };
 
 const sendMessageDesktop = async (message, recipient, entryText) => {
