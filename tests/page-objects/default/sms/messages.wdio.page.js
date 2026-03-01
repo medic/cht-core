@@ -94,14 +94,12 @@ const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
-  await sentinelUtils.waitForSentinel();
 };
 
 const sendMessageToContact = async (message) => {
   await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
-  await sentinelUtils.waitForSentinel();
 };
 
 const exportMessages = async () => {
