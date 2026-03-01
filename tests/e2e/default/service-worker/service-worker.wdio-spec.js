@@ -14,15 +14,15 @@ describe('Service worker cache', () => {
 
   // global caches fetch Response navigator
   const getCachedRequests = async (raw) => {
-    const cacheDetails = await browser.executeAsync(async (callback) => {
+    const cacheDetails = await browser.execute(async () => {
       const cacheNames = await caches.keys();
       const cache = await caches.open(cacheNames[0]);
       const cachedRequests = await cache.keys();
       const cachedRequestSummary = cachedRequests.map(req => ({ url: req.url }));
-      callback({
+      return {
         name: cacheNames[0],
         requests: cachedRequestSummary,
-      });
+      };
     });
 
     if (raw) {
@@ -34,24 +34,23 @@ describe('Service worker cache', () => {
     return { name: cacheDetails.name, urls };
   };
 
-  const stubAllCachedRequests = () => browser.executeAsync(async (callback) => {
+  const stubAllCachedRequests = () => browser.execute(async () => {
     const cacheNames = await caches.keys();
     const cache = await caches.open(cacheNames[0]);
     const cachedRequests = await cache.keys();
     await Promise.all(cachedRequests.map(request => cache.put(request, new Response('cache'))));
-    callback();
   });
 
-  const doFetch = (path, headers) => browser.executeAsync(async (innerPath, innerHeaders, callback) => {
+  const doFetch = (path, headers) => browser.execute(async (innerPath, innerHeaders) => {
     const result = await fetch(innerPath, { headers: innerHeaders });
-    callback({
+    return {
       body: await result.text(),
       ok: result.ok,
       status: result.status,
-    });
+    };
   }, path, headers);
 
-  const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsync(async (callback) => {
+  const unregisterServiceWorkerAndWipeAllCaches = () => browser.execute(async () => {
     const registrations = await navigator.serviceWorker.getRegistrations();
     registrations.forEach(registration => registration.unregister());
 
@@ -59,8 +58,6 @@ describe('Service worker cache', () => {
     for (const name of cacheNames) {
       await caches.delete(name);
     }
-
-    callback();
   });
 
   const district = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
