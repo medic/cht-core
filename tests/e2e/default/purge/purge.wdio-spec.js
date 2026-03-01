@@ -43,13 +43,11 @@ describe('purge', function() {
 
   const pregnancies = generateReports(125, 'pregnancy');
 
-  const getAllReports = () => browser.executeAsync(callback => {
-    window.CHTCore.DB
+  const getAllReports = () => browser.execute(() => {
+    return window.CHTCore.DB
       .get()
       .allDocs({ include_docs: true })
-      .then(results => results.rows.map(row => row.doc).filter(doc => doc.type === 'data_record'))
-      .then(callback)
-      .catch(callback);
+      .then(results => results.rows.map(row => row.doc).filter(doc => doc.type === 'data_record'));
   });
 
   const updatePurgeSettings = async (purgeFn, revert) => {

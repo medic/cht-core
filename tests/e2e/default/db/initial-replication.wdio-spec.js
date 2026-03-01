@@ -152,7 +152,8 @@ describe('initial-replication', () => {
   });
 
   it('should log user in', async () => {
-    await loginPage.login(userAllowedDocs.user);
+    await loginPage.login({ ...userAllowedDocs.user, loadPage: false });
+    await commonPage.waitForPageLoaded(60000);
 
     await validateReplication();
 
@@ -181,7 +182,7 @@ describe('initial-replication', () => {
     setTimeout(() => browser.refresh(), 5000);
 
     await utils.delayPromise(5000); // wait for above timers to expire
-    await commonPage.waitForPageLoaded();
+    await commonPage.waitForPageLoaded(60000);
     await validateReplication();
   });
 });
