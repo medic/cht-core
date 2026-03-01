@@ -1,6 +1,5 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
-const sentinelUtils = require('@utils/sentinel');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
@@ -49,20 +48,20 @@ const navigateFromConversationToContact = async () => {
 };
 
 const getLastMessageContent = async () => {
-  const sms = $(`${MESSAGE_CONTENT} li:last-child`);
+  const sms = () => $(`${MESSAGE_CONTENT} li:last-child`);
   return {
-    content: await sms.$('p[test-id="sms-content"]').getText(),
-    state: await sms.$('.state').getText(),
-    dataId: await sms.getAttribute('data-id'),
+    content: await sms().$('p[test-id="sms-content"]').getText(),
+    state: await sms().$('.state').getText(),
+    dataId: await sms().getAttribute('data-id'),
   };
 };
 
 const getMessageContent = async (index = 1) => {
-  const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
+  const sms = () => $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
   return {
-    content: await sms.$('p[test-id="sms-content"]').getText(),
-    state: await sms.$('.state').getText(),
-    dataId: await sms.getAttribute('data-id'),
+    content: await sms().$('p[test-id="sms-content"]').getText(),
+    state: await sms().$('.state').getText(),
+    dataId: await sms().getAttribute('data-id'),
   };
 };
 
@@ -79,7 +78,6 @@ const sendMessage = async (message, recipient, entryText) => {
   await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
-  await sentinelUtils.waitForSentinel();
 };
 
 const sendMessageDesktop = async (message, recipient, entryText) => {
