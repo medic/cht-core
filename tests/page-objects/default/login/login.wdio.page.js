@@ -72,7 +72,7 @@ const cookieLogin = async (options = {}) => {
   const {
     username = constants.USERNAME,
     password = constants.PASSWORD,
-    createUser = true,
+    createUser = false,
     locale = 'en',
   } = options;
   const opts = {

@@ -77,6 +77,8 @@ describe('Service worker cache', () => {
     await browser.throttleNetwork('online');
     if (!await isLoggedIn()) {
       await login();
+    } else {
+      await commonPage.refresh();
     }
   };
 

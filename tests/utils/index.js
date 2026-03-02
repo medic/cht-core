@@ -136,6 +136,14 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
+const loginUser = async (username = constants.USERNAME, password = constants.PASSWORD) => {
+  await request({
+    path: '/medic/login',
+    body: { user: username, password: password },
+    method: 'POST',
+  });
+};
+
 const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
   return getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
@@ -425,6 +433,7 @@ const deleteDocs = ids => {
 const PROTECTED_DOCS = [
   DOC_IDS.SERVICE_WORKER_META,
   constants.USER_CONTACT_ID,
+  `${COUCH_USER_ID_PREFIX}${constants.USERNAME}`,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
@@ -1364,6 +1373,9 @@ const prepServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await loginUser();
+  await setupUserDoc();
 };
 
 const getLogs = (container) => {
