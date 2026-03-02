@@ -65,6 +65,7 @@ const getMessageContent = async (index = 1) => {
   };
 };
 
+
 const searchSelect = async (recipient, option) => {
   await recipientField().setValue(recipient);
   await $('.loading-results').waitForDisplayed({ reverse: true });
