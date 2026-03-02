@@ -25,6 +25,7 @@ const openMessage = async (identifier) => {
   await messageInList(identifier).click();
 };
 
+
 const getMessageInListDetails = async (identifier) => {
   const lineageValue = await messageInList(identifier).$('.horizontal.lineage').isExisting() ?
     await messageInList(identifier).$('.horizontal.lineage').getText() : '';
