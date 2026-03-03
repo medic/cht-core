@@ -1381,6 +1381,7 @@ const prepServices = async (defaultSettings) => {
   await setupUserDoc();
 };
 
+
 const getLogs = (container) => {
   const logFile = path.resolve(__dirname, '../logs', `${container.replace('pod/', '')}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
