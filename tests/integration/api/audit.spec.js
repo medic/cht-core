@@ -226,6 +226,7 @@ describe('auditing', () => {
         const doc = await utils.db.get(docId);
         await utils.db.put(doc);
       }
+      await utils.delayPromise(200); // audit runs async, make sure changes get written
 
       const MAX_HISTORY_LIMIT = 10;
       const doc = await utils.db.get(docId);

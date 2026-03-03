@@ -1357,6 +1357,9 @@ const prepK3DServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await loginUser();
+  await setupUserDoc();
 };
 
 const prepServices = async (defaultSettings) => {
