@@ -388,7 +388,7 @@ const closeReloadModal = async (shouldUpdate, timeout) => {
     timeout = timeout || shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
     if (shouldUpdate) {
       await modalPage.submit(timeout);
-      await waitForAngularLoaded();
+      await waitForAngularLoaded(timeout);
     } else {
       await modalPage.cancel(timeout);
     }

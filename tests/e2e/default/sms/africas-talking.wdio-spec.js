@@ -151,6 +151,7 @@ describe('Africas Talking api', () => {
       await waitForLogs.promise;
       // make sure the requests were sent before loading reports
       await (await utils.waitForApiLogs(/Sending 0 messages/)).promise;
+      await (await utils.waitForApiLogs(/Sending 0 messages/)).promise;
 
       await commonPage.goToReports(pregnancyReportWithTasks._id);
       await reportsPage.rightPanelSelectors.reportTasks().waitForDisplayed();
