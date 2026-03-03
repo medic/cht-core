@@ -2,6 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const docToKeep = { _id: uuid() };
 const docToDelete = { _id: uuid() };
@@ -17,7 +18,7 @@ const user = {
   password: 'Nananana_b4tm4n!',
   place: {
     _id: 'fixture:online',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Online place',
     parent: 'PARENT_PLACE',
   },

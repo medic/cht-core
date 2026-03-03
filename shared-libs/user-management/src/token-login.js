@@ -1,3 +1,4 @@
+const { DOC_TYPES } = require('@medic/constants');
 const db = require('./libs/db');
 const config = require('./libs/config');
 const passwords = require('./libs/passwords');
@@ -190,7 +191,7 @@ const generateTokenLoginDoc = (user, userSettings, token) => {
     }
     const doc = {
       _id: getTokenLoginDocId(token),
-      type: 'token_login',
+      type: DOC_TYPES.TOKEN_LOGIN,
       reported_date: new Date().getTime(),
       user: user._id,
       tasks: [],

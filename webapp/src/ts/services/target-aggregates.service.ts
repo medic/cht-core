@@ -1,9 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import * as moment from 'moment';
-import { Person } from '@medic/cht-datasource';
-
-import { UHCSettingsService } from '@mm-services/uhc-settings.service';
-import { DbService } from '@mm-services/db.service';
+import { Person, Qualifier, Target } from '@medic/cht-datasource';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { SearchService } from '@mm-services/search.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -11,10 +7,12 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { Target, TargetValue } from '@mm-services/rules-engine.service';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { RulesEngineService, TargetViewModel, TargetValue } from '@mm-services/rules-engine.service';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+
+const { byContactIds, byContactId, byReportingPeriod } = Qualifier;
 
 @Injectable({
   providedIn: 'root'
@@ -22,92 +20,41 @@ import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregat
 export class TargetAggregatesService {
 
   constructor(
-    private uhcSettingsService:UHCSettingsService,
-    private dbService:DbService,
-    private translateService:TranslateService,
-    private translateFromService:TranslateFromService,
-    private searchService:SearchService,
-    private getDataRecordsService:GetDataRecordsService,
-    private userSettingsService:UserSettingsService,
-    private contactTypesService:ContactTypesService,
-    private authService:AuthService,
-    private settingsService:SettingsService,
-    private calendarIntervalService:CalendarIntervalService,
-    private ngZone:NgZone,
-  ) { }
+    chtDatasourceService: CHTDatasourceService,
+    private readonly translateService:TranslateService,
+    private readonly translateFromService:TranslateFromService,
+    private readonly searchService:SearchService,
+    private readonly getDataRecordsService:GetDataRecordsService,
+    private readonly userSettingsService:UserSettingsService,
+    private readonly contactTypesService:ContactTypesService,
+    private readonly authService:AuthService,
+    private readonly settingsService:SettingsService,
+    private readonly rulesEngineService: RulesEngineService,
+    private readonly ngZone:NgZone,
+  ) {
+    this.getTargets = chtDatasourceService.bindGenerator(Target.v1.getAll);
+  }
 
   private readonly MAX_TARGET_MONTHS = 3;
-  private readonly INTERVAL_TAG_FORMAT = 'YYYY-MM';
+  private readonly getTargets: ReturnType<typeof Target.v1.getAll>;
 
-  private getIntervalTag(targetInterval) {
-    return moment(targetInterval.end).format(this.INTERVAL_TAG_FORMAT);
-  }
-
-  private getCurrentInterval(appSettings) {
-    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(appSettings);
-    const targetInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
-
-    return {
-      uhcMonthStartDate,
-      targetInterval
-    };
-  }
-
-  /**
-   * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
-   * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
-   * ex: uhcMonthStartDate is 12, current date is 2020-02-03, the <interval_tag> will be 2020-02
-   * ex: uhcMonthStartDate is 15, current date is 2020-02-21, the <interval_tag> will be 2020-03
-   *
-   * @param appSettings - The application settings containing uhcMonthStartDate
-   * @param reportingPeriod - Optional. ReportingPeriod enum value (CURRENT or PREVIOUS)
-   * @param monthsAgo - Optional. Number of reporting periods ago.
-   * @returns A string representing the interval tag in YYYY-MM format
-   */
-
-  private getTargetIntervalTag(appSettings, reportingPeriod?:ReportingPeriod, monthsAgo = 1) {
-    const { uhcMonthStartDate, targetInterval: currentInterval } = this.getCurrentInterval(appSettings);
-    if (!reportingPeriod || reportingPeriod === ReportingPeriod.CURRENT) {
-      return this.getIntervalTag(currentInterval);
+  private async fetchTargetDocsForInterval(contactUuid, intervalTag) {
+    const results: Target.v1.Target[] = [];
+    const qualifier = Qualifier.and(byContactId(contactUuid), byReportingPeriod(intervalTag));
+    for await (const targetInt of this.getTargets(qualifier)) {
+      results.push(targetInt);
     }
-
-    const oldDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
-    const targetInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, oldDate.valueOf());
-    return this.getIntervalTag(targetInterval);
-  }
-
-  /**
-   * Every target doc follows the _id scheme `target~<interval_tag>~<contact_uuid>~<user_id>`
-   * In order to retrieve the latest target document(s), we compute the current interval <interval_tag>
-   */
-  private async fetchLatestTargetDocs(appSettings, reportingPeriod?: ReportingPeriod) {
-    const tag = this.getTargetIntervalTag(appSettings, reportingPeriod);
-
-    const opts = {
-      start_key: `target~${tag}~`,
-      end_key: `target~${tag}~\ufff0`,
-      include_docs: true,
-    };
-
-    const results = await this.dbService.get().allDocs(opts);
-    return results.rows.map(row => row.doc).filter(doc => doc);
-  }
-
-  private async fetchTargetDocsForInterval(contactUuid, intervalTag):Promise<[]> {
-    const opts = {
-      start_key: `target~${intervalTag}~${contactUuid}~`,
-      end_key: `target~${intervalTag}~${contactUuid}~\ufff0`,
-      include_docs: true
-    };
-
-    const results = await this.dbService.get().allDocs(opts);
-    return results.rows.map(row => row.doc);
+    return results;
   }
 
   private async fetchTargetDocs(appSettings, contactUuid) {
-    const allTargetDocs = [];
+    const allTargetDocs: unknown[] = [];
     for (let monthsOld = 0; monthsOld < this.MAX_TARGET_MONTHS; monthsOld++) {
-      const intervalTag = this.getTargetIntervalTag(appSettings, ReportingPeriod.PREVIOUS, monthsOld);
+      const intervalTag = this.rulesEngineService.getTargetIntervalTag(
+        appSettings,
+        ReportingPeriod.PREVIOUS,
+        monthsOld,
+      );
       const intervalTargetDocs = await this.fetchTargetDocsForInterval(contactUuid, intervalTag);
       allTargetDocs.push(...intervalTargetDocs);
     }
@@ -130,32 +77,40 @@ export class TargetAggregatesService {
     return this.translateFromService.get(target.title);
   }
 
-  private getAggregate(originalTargetConfig) {
-    const targetConfig = { ...originalTargetConfig };
-
-    targetConfig.values = [];
-    targetConfig.hasGoal = targetConfig.goal > 0;
-    targetConfig.isPercent = targetConfig.type === 'percent';
-    targetConfig.progressBar = targetConfig.hasGoal || targetConfig.isPercent;
-    targetConfig.heading = this.getTranslatedTitle(targetConfig);
-    targetConfig.aggregateValue = { pass: 0, total: 0 };
-
-    return targetConfig;
+  private getAggregate(originalTargetConfig, reportingMonth: string) {
+    const hasGoal = originalTargetConfig.goal > 0;
+    const isPercent = originalTargetConfig.type === 'percent';
+    return {
+      ...originalTargetConfig,
+      values: [],
+      hasGoal,
+      isPercent,
+      progressBar: hasGoal || isPercent,
+      heading: this.getTranslatedTitle(originalTargetConfig),
+      reportingMonth,
+      aggregateValue: { pass: 0, total: 0 },
+    };
   }
 
-  private getRelevantTargetDocs(targetDocs, contacts) {
+  private async getRelevantTargetDocs(intervalTag: string, contacts) {
+    if (!contacts.length) {
+      return [];
+    }
+    const qualifier = Qualifier.and(
+      byReportingPeriod(intervalTag),
+      byContactIds(contacts.map(({ _id }) => _id))
+    );
+    const targetDocs: Target.v1.Target[] = [];
+    for await (const targetInt of this.getTargets(qualifier)) {
+      targetDocs.push(targetInt);
+    }
+
     return contacts.map(contact => {
-      let targetDoc = targetDocs.find(doc => doc.owner === contact._id);
-
-      if (!targetDoc) {
-        targetDoc = {
-          owner: contact._id,
-          targets: []
-        };
-      }
-
-      targetDoc.contact = contact;
-      return targetDoc;
+      const targetDoc = targetDocs.find(({ owner }) => owner === contact._id);
+      return {
+        ...targetDoc ?? { owner: contact._id, targets: [] },
+        contact
+      };
     });
   }
 
@@ -204,9 +159,8 @@ export class TargetAggregatesService {
     }
   }
 
-  private aggregateTargets(latestTargetDocs, contacts, targetsConfig) {
-    const relevantTargetDocs = this.getRelevantTargetDocs(latestTargetDocs, contacts);
-    const aggregates = targetsConfig.map((targetConfig) => this.getAggregate(targetConfig));
+  private async aggregateTargets(intervalTag: string, contacts, aggregates) {
+    const relevantTargetDocs = await this.getRelevantTargetDocs(intervalTag, contacts);
 
     relevantTargetDocs.forEach(targetDoc => {
       aggregates.forEach(aggregate => {
@@ -320,41 +274,23 @@ export class TargetAggregatesService {
     return !facilityIds || facilityIds.length > 0;
   }
 
-  getReportingMonth(reportingPeriod:ReportingPeriod) {
-    return this.settingsService
-      .get()
-      .then(settings => {
-        const tag = this.getTargetIntervalTag(settings, reportingPeriod);
-        return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
-      })
-      .catch(error => {
-        console.error('Error getting reporting month:', error);
-        return this.translateService.instant('targets.last_month.subtitle');
-      });
-  }
-
-
-  getAggregates(facilityId?, reportingPeriod?: ReportingPeriod) {
+  getAggregates(facilityId?, reportingPeriod = ReportingPeriod.CURRENT) {
     return this.ngZone.runOutsideAngular(() => this._getAggregates(facilityId, reportingPeriod));
   }
 
-  private _getAggregates(facilityId?, reportingPeriod?: ReportingPeriod): Promise<AggregateTarget[]> {
-    return this.settingsService
-      .get()
-      .then(settings => {
-        const targetsConfig = this.getTargetsConfig(settings, true);
+  private async _getAggregates(facilityId, reportingPeriod: ReportingPeriod): Promise<AggregateTarget[]> {
+    const settings = await this.settingsService.get();
+    const targetsConfig = this.getTargetsConfig(settings, true);
 
-        if (!targetsConfig.length) {
-          return [];
-        }
+    if (!targetsConfig.length) {
+      return [];
+    }
 
-        return Promise
-          .all([
-            this.getSupervisedContacts(facilityId),
-            this.fetchLatestTargetDocs(settings, reportingPeriod)
-          ])
-          .then(([ contacts, latestTargetDocs ]) => this.aggregateTargets(latestTargetDocs, contacts, targetsConfig));
-      });
+    const reportingMonth = this.rulesEngineService.getReportingMonth(settings, reportingPeriod);
+    const configAggregates = targetsConfig.map((targetConfig) => this.getAggregate(targetConfig, reportingMonth));
+    const contacts = await this.getSupervisedContacts(facilityId);
+    const intervalTag = this.rulesEngineService.getTargetIntervalTag(settings, reportingPeriod);
+    return this.aggregateTargets(intervalTag, contacts, configAggregates);
   }
 
   getAggregateDetails(targetId?, aggregates?) {
@@ -392,7 +328,7 @@ export class TargetAggregatesService {
   }
 }
 
-export interface AggregateTarget extends Target {
+export interface AggregateTarget extends TargetViewModel {
   aggregate: boolean;
   hasGoal: boolean;
   isPercent: boolean;

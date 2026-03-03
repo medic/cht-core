@@ -183,6 +183,8 @@ describe('server', () => {
     it('should respond to changes even after services are restarted', async () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
+
+      await utils.delayPromise(1000);
       await utils.listenForApi();
 
       const forms = await utils.db.allDocs({
@@ -213,8 +215,8 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startApi(false);
       await utils.startHaproxy();
-      await utils.delayPromise(1000);
 
+      await utils.delayPromise(1000);
       await utils.listenForApi();
     });
 
@@ -222,6 +224,7 @@ describe('server', () => {
       await utils.stopCouchDb();
       await utils.startCouchDb();
 
+      await utils.delayPromise(1000);
       await utils.listenForApi();
     });
   });

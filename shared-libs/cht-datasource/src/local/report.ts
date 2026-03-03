@@ -1,35 +1,50 @@
-import { isOffline, LocalDataContext } from './libs/data-context';
+import { LocalDataContext } from './libs/data-context';
 import {
   createDoc,
-  fetchAndFilterUuids,
-  getDocById,
-  getDocsByIds,
+  fetchAndFilterIds,
+  getDocById, getDocsByIds,
   getDocUuidsByIdRange,
-  queryDocUuidsByKey,
-  queryDocUuidsByRange,
-  queryNouveauIndexUuids,
-  updateDoc,
+  queryDocIdsByKey,
+  queryDocIdsByRange, updateDoc
 } from './libs/doc';
 import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
+import * as LocalContact from './contact';
+import * as Input from '../input';
 import { Doc, isDoc } from '../libs/doc';
 import logger from '@medic/logger';
 import {
   assertFieldsUnchanged,
   getReportedDateTimestamp,
-  normalizeFreetext,
-  QueryParams,
-  validateCursor,
+  normalizeFreetextQualifier,
+  validateCursor
 } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
-import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
-import * as Input from '../input';
 import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc } from './libs/lineage';
+import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
+import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertReportInput } from '../libs/parameter-validators';
-import * as LocalContact from './contact';
 
 const FORM_DOC_ID_PREFIX = 'form:';
+
+const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
+
+  return (qualifier: FreetextQualifier) => {
+    if (isKeyedFreetextQualifier(qualifier)) {
+      return (limit: number, skip: number) => queryViewFreetextByKey([qualifier.freetext], limit, skip);
+    }
+
+    return (limit: number, skip: number) => queryViewFreetextByRange(
+      [qualifier.freetext],
+      [qualifier.freetext + END_OF_ALPHABET_MARKER],
+      limit,
+      skip
+    );
+  };
+};
 
 const getSupportedForms = (medicDb: PouchDB.Database<Doc>) => {
   const getMedicDocUuidsByIdRange = getDocUuidsByIdRange(medicDb);
@@ -92,64 +107,25 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
-    // Define offline query functions
-    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
-    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
-
-    const getDocsFnForFreetextType = (
-      qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<string[]> => {
-      if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
-      }
-      return (limit, skip) => getByStartsWithFreetext(
-        [normalizeFreetext(qualifier.freetext)],
-        [normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
-        limit,
-        skip
-      );
-    };
-
-    const callOnlineQueryNouveauFn = (
-      qualifier: FreetextQualifier,
-      limit: number,
-      cursor: Nullable<string>
-    ) => {
-      const viewName = 'reports_by_freetext';
-      let params: QueryParams;
-
-      if (isKeyedFreetextQualifier(qualifier)) {
-        params = {
-          key: [qualifier.freetext],
-          limit,
-          cursor
-        };
-      } else {
-        params = {
-          startKey: [qualifier.freetext],
-          limit,
-          cursor
-        };
-      }
-
-      return queryNouveauIndexUuids(medicDb, viewName)(params);
-    };
+    const queryNouveauFreetext = queryByFreetext(medicDb, 'reports_by_freetext');
+    const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
+    const promisedUseNouveau = useNouveauIndexes(medicDb);
 
     return async (
       qualifier: FreetextQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      // placing this check inside the curried function because the offline state might change at runtime
-      const offline = await isOffline(medicDb);
-      if (offline) {
-        const skip = validateCursor(cursor);
-        const getDocsFn = getDocsFnForFreetextType(qualifier);
-
-        return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+      const freetextQualifier = normalizeFreetextQualifier(qualifier);
+      if (await promisedUseNouveau) {
+        // Running server-side. Use Nouveau indexes.
+        return await queryNouveauFreetext(freetextQualifier, cursor, limit);
       }
 
-      return callOnlineQueryNouveauFn(qualifier, limit, cursor);
+      // Use client-side offline freetext views.
+      const skip = validateCursor(cursor);
+      const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
+      return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
 

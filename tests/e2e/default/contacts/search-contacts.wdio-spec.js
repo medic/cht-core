@@ -6,6 +6,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact Search', () => {
   const places = placeFactory.generateHierarchy();
@@ -17,14 +18,14 @@ describe('Contact Search', () => {
 
   const sittuHealthCenter = placeFactory.place().build({
     name: 'Sittu Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospitalId, parent: { _id: '' } },
     short_name: searchWord
   });
 
   const potuHealthCenter = placeFactory.place().build({
     name: 'Potu Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: districtHospitalId, parent: { _id: '' } }
   });
 
@@ -91,7 +92,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
 
@@ -119,7 +120,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
 
@@ -134,7 +135,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
 
@@ -152,7 +153,7 @@ describe('Contact Search', () => {
         potuHealthCenter.name,
         sittuHealthCenter.name,
         places.get('district_hospital').name,
-        places.get('health_center').name,
+        places.get(CONTACT_TYPES.HEALTH_CENTER).name,
       ]);
     });
   }));

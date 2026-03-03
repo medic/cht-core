@@ -7,6 +7,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const utils = require('@utils');
 const sms = require('@utils/sms');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('More Options Menu - Online User - Permissions enabled', () => {
   describe('Options displayed when there are no messages, contacts or people created', () => {
@@ -48,7 +49,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
   describe('Options displayed when there are messages, contacts and people created', () => {
     const places = placeFactory.generateHierarchy();
     const clinic = places.get('clinic');
-    const health_center = places.get('health_center');
+    const health_center = places.get(CONTACT_TYPES.HEALTH_CENTER);
     const district_hospital = places.get('district_hospital');
     let xmlReportId;
     let smsReportId;

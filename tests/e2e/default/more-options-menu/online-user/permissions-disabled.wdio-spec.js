@@ -7,11 +7,12 @@ const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const sms = require('@utils/sms');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('More Options Menu - Online User - Permissions disabled', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const health_center = places.get('health_center');
+  const health_center = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const district_hospital = places.get('district_hospital');
 
   const contact = personFactory.build({

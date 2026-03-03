@@ -10,11 +10,12 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 
 describe('Submit an undo death report', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.get('health_center');
+  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });
 

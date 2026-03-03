@@ -4,6 +4,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const {expect} = require('chai');
 const { USER_ROLES } = require('@medic/constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact API', () => {
   // NOTE: this is a common word added to contacts to fetch them
@@ -34,7 +35,7 @@ describe('Contact API', () => {
   }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place1 = utils.deepFreeze({
-    ...placeMap.get('health_center'),
+    ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER),
     contact: { _id: contact1._id },
     notes: commonWord
   });

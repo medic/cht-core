@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 angular.module('inboxFilters').filter('resourceIcon',
   function (
     $sce,
@@ -6,7 +9,7 @@ angular.module('inboxFilters').filter('resourceIcon',
     'use strict';
     'ngInject';
     return (name, placeholder = '') => {
-      return $sce.trustAsHtml(ResourceIcons.getImg(name, 'resources', placeholder));
+      return $sce.trustAsHtml(ResourceIcons.getImg(name, DOC_IDS.RESOURCES, placeholder));
     };
   });
 

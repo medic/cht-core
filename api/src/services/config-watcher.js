@@ -50,7 +50,7 @@ const initTransitionLib = () => {
   try {
     transitionsLib.loadTransitions(true);
   } catch (err) {
-    logger.error(err);
+    logger.error('Error loading transitions - starting up anyway: %o', err);
   }
   config.setTransitionsLib(transitionsLib);
 };

@@ -30,6 +30,7 @@ export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDe
   @Input() disabled;
   @Input() showFilter;
   @Input() showSort;
+  @Input() showFreetext = true;
   @Input() sortDirection;
   @Input() lastVisitedDateExtras;
   @Output() sort: EventEmitter<any> = new EventEmitter();

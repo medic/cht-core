@@ -9,12 +9,18 @@ const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 
 const { assert } = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 const userCtx = {
   name: 'user',
   contact_id: 'contact_id',
   facility_id: ['facility_id'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
-  facility: [{ _id: 'facility_id', place_id: 'facility_shortcode', name: 'health center', type: 'health_center' }],
+  facility: [{
+    _id: 'facility_id',
+    place_id: 'facility_shortcode',
+    name: 'health center',
+    type: CONTACT_TYPES.HEALTH_CENTER
+  }],
   roles: ['user']
 };
 const userCtxMultiFacility = {
@@ -23,8 +29,8 @@ const userCtxMultiFacility = {
   facility_id: ['facility1', 'facility2'],
   contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
   facility: [
-    { _id: 'facility1', place_id: 'fac1', name: 'health center', type: 'health_center' },
-    { _id: 'facility2', place_id: 'fac2', name: 'health center', type: 'health_center' }
+    { _id: 'facility1', place_id: 'fac1', name: 'health center', type: CONTACT_TYPES.HEALTH_CENTER },
+    { _id: 'facility2', place_id: 'fac2', name: 'health center', type: CONTACT_TYPES.HEALTH_CENTER }
   ],
 };
 const subjectIds = [1, 2, 3];

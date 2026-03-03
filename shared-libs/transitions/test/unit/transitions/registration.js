@@ -10,6 +10,7 @@ const validation = require('@medic/validation');
 const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const phoneNumberParser = require('@medic/phone-number');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 let schedules;
 let transitionUtils;
@@ -840,7 +841,7 @@ describe('registration', () => {
               name: 'Petes Place',
               contact_type: 'clinic',
               type: 'contact',
-              parent: { _id: 'west_hc', name: 'west hc', contact_type: 'health_center', type: 'contact' }
+              parent: { _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER, type: 'contact' }
             }
           },
         }
@@ -865,8 +866,8 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'clinic', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -921,7 +922,7 @@ describe('registration', () => {
               type: 'contact',
               contact_type: 'area_type_1',
               parent: {
-                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact', place_id: 'the_west_hc'
               }
             },
@@ -961,9 +962,9 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'area_type_1', parents: ['health_center'] },
-        { id: 'area_type_2', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'area_type_1', parents: [CONTACT_TYPES.HEALTH_CENTER] },
+        { id: 'area_type_2', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['area_type_1'], person: true },
         { id: 'buddy', parents: ['area_type_2'], person: true },
       ];
@@ -1021,7 +1022,7 @@ describe('registration', () => {
               type: 'contact',
               contact_type: 'area_type_1',
               parent: {
-                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact', place_id: 'the_west_hc'
               }
             },
@@ -1051,9 +1052,9 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'area_type_1', parents: ['health_center'] },
-        { id: 'area_type_2', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'area_type_1', parents: [CONTACT_TYPES.HEALTH_CENTER] },
+        { id: 'area_type_2', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['area_type_1'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -1104,7 +1105,7 @@ describe('registration', () => {
               type: 'contact',
               contact_type: 'area_type_1',
               parent: {
-                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact', place_id: 'the_west_hc'
               }
             },
@@ -1134,9 +1135,9 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'area_type_1', parents: ['health_center'] },
-        { id: 'area_type_2', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'area_type_1', parents: [CONTACT_TYPES.HEALTH_CENTER] },
+        { id: 'area_type_2', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['area_type_1'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -1188,7 +1189,7 @@ describe('registration', () => {
               type: 'contact',
               contact_type: 'area_type_1',
               parent: {
-                _id: 'west_hc', name: 'west hc', contact_type: 'health_center',
+                _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact', place_id: 'the_west_hc'
               }
             },
@@ -1226,9 +1227,9 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'area_type_1', parents: ['health_center'] },
-        { id: 'area_type_2', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'area_type_1', parents: [CONTACT_TYPES.HEALTH_CENTER] },
+        { id: 'area_type_2', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['area_type_2'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -1283,7 +1284,7 @@ describe('registration', () => {
               parent: {
                 _id: 'west_hc',
                 name: 'west hc',
-                contact_type: 'health_center',
+                contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact',
                 place_id: 'south_hc_place',
               }
@@ -1296,7 +1297,7 @@ describe('registration', () => {
         _id: 'north_hc',
         name: 'north hc',
         type: 'contact',
-        contact_type: 'health_center',
+        contact_type: CONTACT_TYPES.HEALTH_CENTER,
         place_id: 'north_hc_place',
       };
       sinon.stub(utils, 'getContactUuid').resolves();
@@ -1321,8 +1322,8 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'clinic', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -1558,7 +1559,7 @@ describe('registration', () => {
               parent: {
                 _id: 'west_hc',
                 name: 'west hc',
-                contact_type: 'health_center',
+                contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact',
                 place_id: 'south_hc_place',
               }
@@ -1571,7 +1572,7 @@ describe('registration', () => {
         _id: 'north_hc',
         name: 'north hc',
         type: 'contact',
-        contact_type: 'health_center',
+        contact_type: CONTACT_TYPES.HEALTH_CENTER,
         place_id: 'north_hc_place',
       };
       sinon.stub(utils, 'getContactUuid').resolves();
@@ -1597,8 +1598,8 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'clinic_1', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'clinic_1', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['clinic_1'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -1656,7 +1657,7 @@ describe('registration', () => {
               parent: {
                 _id: 'west_hc',
                 name: 'west hc',
-                contact_type: 'health_center',
+                contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 type: 'contact',
                 place_id: 'south_hc_place',
               }
@@ -1669,7 +1670,7 @@ describe('registration', () => {
         _id: 'north_hc',
         name: 'north hc',
         type: 'contact',
-        contact_type: 'health_center',
+        contact_type: CONTACT_TYPES.HEALTH_CENTER,
         place_id: 'north_hc_place',
       };
       sinon.stub(utils, 'getContactUuid').resolves();
@@ -1695,8 +1696,8 @@ describe('registration', () => {
         }]
       };
       const contactTypes = [
-        { id: 'health_center' },
-        { id: 'clinic', parents: ['health_center'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER },
+        { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'patient', parents: ['clinic'], person: true },
       ];
       config.get.returns([eventConfig]);
@@ -1913,7 +1914,11 @@ describe('registration', () => {
           contact: {
             _id: 'bob', name: 'Bob',
             parent: {
-              _id: 'a_health_center', name: 'HC1', type: 'contact', contact_type: 'health_center', place_id: 'hc1'
+              _id: 'a_health_center',
+              name: 'HC1',
+              type: 'contact',
+              contact_type: CONTACT_TYPES.HEALTH_CENTER,
+              place_id: 'hc1'
             }
           }
         }
@@ -1924,7 +1929,7 @@ describe('registration', () => {
         name: 'Other health center',
         place_id: 'hc2',
         type: 'contact',
-        contact_type: 'health_center',
+        contact_type: CONTACT_TYPES.HEALTH_CENTER,
         parent: { _id: 'district1' },
       };
       sinon.stub(utils, 'getContactUuid').resolves();
@@ -1947,9 +1952,9 @@ describe('registration', () => {
       };
       const contactTypes = [
         { id: 'district' },
-        { id: 'health_center', parents: ['district'] },
+        { id: CONTACT_TYPES.HEALTH_CENTER, parents: ['district'] },
         { id: 'local_thing', parents: ['district'] },
-        { id: 'clinic', parents: ['health_center'] },
+        { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: 'area', parents: ['local_thing'] },
       ];
       config.get.returns([eventConfig]);

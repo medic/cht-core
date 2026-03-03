@@ -2,13 +2,12 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import {
   assertFieldsUnchanged,
-  getReportedDateTimestamp,
-  normalizeFreetext,
+  getReportedDateTimestamp, normalizeFreetextQualifier,
   validateCursor
 } from '../../../src/local/libs/core';
 import { InvalidArgumentError } from '../../../src';
 
-describe('local core', () => {
+describe('local core lib', () => {
   afterEach(() => sinon.restore());
 
   describe('validateCursor', () => {
@@ -62,15 +61,30 @@ describe('local core', () => {
     });
   });
 
-  describe('normalizeFreetext', () => {
-    it('should trim whitespace from freetext', () => {
-      expect(normalizeFreetext('  hello  ')).to.equal('hello');
-      expect(normalizeFreetext('\thello\n')).to.equal('hello');
+  describe('normalizeFreetextQualifier', () => {
+    it('should trim and lowercase the freetext value', () => {
+      const result = normalizeFreetextQualifier({ freetext: '  Hello World  ' });
+      expect(result).to.deep.equal({ freetext: 'hello world' });
     });
 
-    it('should convert freetext to lowercase', () => {
-      expect(normalizeFreetext('HELLO')).to.equal('hello');
-      expect(normalizeFreetext('HeLLo WoRLD')).to.equal('hello world');
+    it('should lowercase the freetext value', () => {
+      const result = normalizeFreetextQualifier({ freetext: 'UPPERCASE' });
+      expect(result).to.deep.equal({ freetext: 'uppercase' });
+    });
+
+    it('should trim leading and trailing whitespace', () => {
+      const result = normalizeFreetextQualifier({ freetext: '  trimme  ' });
+      expect(result).to.deep.equal({ freetext: 'trimme' });
+    });
+
+    it('should preserve additional qualifier properties', () => {
+      const result = normalizeFreetextQualifier({ freetext: 'Test', contactType: 'person' });
+      expect(result).to.deep.equal({ freetext: 'test', contactType: 'person' });
+    });
+
+    it('should handle already normalized values', () => {
+      const result = normalizeFreetextQualifier({ freetext: 'already:normalized' });
+      expect(result).to.deep.equal({ freetext: 'already:normalized' });
     });
   });
 

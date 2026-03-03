@@ -8,6 +8,17 @@ const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
+const sidebarFilterSelectors = {
+  openBtn: () => $('mm-search-bar .open-filter'),
+  resetBtn: () => $('.sidebar-reset'),
+  overdueAccordionHeader: () => $('#overdue-filter-accordion mat-expansion-panel-header'),
+  overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
+  taskTypeAccordionHeader: () => $('#task-type-filter-accordion mat-expansion-panel-header'),
+  taskTypeAccordionBody: () => $('#task-type-filter-accordion mat-panel-description'),
+  placeAccordionHeader: () => $('#place-filter-accordion mat-expansion-panel-header'),
+  placeAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
+};
+
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
 const getTasks = async () => {
   let tasks;
@@ -103,6 +114,60 @@ const isTaskElementDisplayed = async (type, text) => {
   return await $(TASK_LIST_SELECTOR).$(`${type}*=${text}`).isDisplayed();
 };
 
+const openSidebarFilter = async () => {
+  if (!await sidebarFilterSelectors.resetBtn().isDisplayed()) {
+    await sidebarFilterSelectors.openBtn().click();
+  }
+  return await sidebarFilterSelectors.resetBtn().waitForDisplayed();
+};
+
+const filterByOverdue = async (overdueOption) => {
+  if (!await sidebarFilterSelectors.overdueAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.overdueAccordionHeader().click();
+    await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
+  }
+
+  const option = sidebarFilterSelectors.overdueAccordionBody().$(`a*=${overdueOption}`);
+  await option.click();
+};
+
+const filterByTaskType = async (taskType) => {
+  if (!await sidebarFilterSelectors.taskTypeAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.taskTypeAccordionHeader().click();
+    await sidebarFilterSelectors.taskTypeAccordionBody().waitForDisplayed();
+  }
+
+  const option = sidebarFilterSelectors.taskTypeAccordionBody().$(`a*=${taskType}`);
+  await option.click();
+};
+
+const filterByPlace = async (facility, parentFacility) => {
+  if (!await sidebarFilterSelectors.placeAccordionBody().isDisplayed()) {
+    await sidebarFilterSelectors.placeAccordionHeader().click();
+    await sidebarFilterSelectors.placeAccordionBody().waitForDisplayed();
+  }
+
+  if (parentFacility) {
+    const parent = sidebarFilterSelectors.placeAccordionBody().$(`a*=${parentFacility}`);
+    await parent.click();
+  }
+
+  const facilityOption = sidebarFilterSelectors
+    .placeAccordionBody()
+    .$(`a*=${facility}`);
+  await facilityOption.waitForDisplayed();
+  const checkbox = facilityOption.previousElement();
+  await checkbox.click();
+};
+
+const resetFilters = async () => {
+  await sidebarFilterSelectors.resetBtn().click();
+};
+
+const isPlaceFilterDisplayed = async () => {
+  return await sidebarFilterSelectors.placeAccordionHeader().isDisplayed();
+};
+
 module.exports = {
   getTasks,
   getTaskByContactAndForm,
@@ -116,4 +181,11 @@ module.exports = {
   openTaskById,
   compileTasks,
   isTaskElementDisplayed,
+  sidebarFilterSelectors,
+  openSidebarFilter,
+  filterByOverdue,
+  filterByTaskType,
+  filterByPlace,
+  resetFilters,
+  isPlaceFilterDisplayed,
 };

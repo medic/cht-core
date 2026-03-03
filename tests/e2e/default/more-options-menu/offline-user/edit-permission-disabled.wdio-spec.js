@@ -6,11 +6,12 @@ const reportFactory = require('@factories/cht/reports/generic-report');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('More Options Menu - Offline User - Edit permissions disabled', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
-  const health_center = places.get('health_center');
+  const health_center = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const district_hospital = places.get('district_hospital');
   let xmlReportId;
   let smsReportId;

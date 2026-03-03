@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 angular.module('inboxServices').factory('ResourceIcons',
   function(
     $log,
@@ -9,7 +12,7 @@ angular.module('inboxServices').factory('ResourceIcons',
     'ngInject';
 
     const CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
-    const DOC_IDS = ['resources', 'branding', 'partners'];
+    const ICON_DOC_IDS = [DOC_IDS.RESOURCES, 'branding', 'partners'];
 
     const cache = {
       resources: {
@@ -40,7 +43,7 @@ angular.module('inboxServices').factory('ResourceIcons',
             return faPlaceholder ? `<span class="fa ${faPlaceholder}"/>` : '';
           }
           let content;
-          if (icon.content_type === 'image/svg+xml' && i === 'resources') {
+          if (icon.content_type === 'image/svg+xml' && i === DOC_IDS.RESOURCES) {
             // SVG: include the raw data in the page so it can be styled
             content = atob(icon.data);
           } else {
@@ -60,15 +63,15 @@ angular.module('inboxServices').factory('ResourceIcons',
       const image = getHtmlContent(name, docId, faPlaceholder);
       // Handle title attribute for branding doc specially
       // https://github.com/medic/medic/issues/5531
-      const className = CSS_CLASS[DOC_IDS.indexOf(docId)];
-      const titleAttribute = `${docId === DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
+      const className = CSS_CLASS[ICON_DOC_IDS.indexOf(docId)];
+      const titleAttribute = `${docId === ICON_DOC_IDS[1] ? 'data-title' : 'title'}="${name}"`;
       const faPlaceholderAttribute = faPlaceholder ? `data-fa-placeholder="${faPlaceholder}"` : '';
       return `<span class="${className}" ${titleAttribute} ${faPlaceholderAttribute}>${image}</span>`;
     };
 
     const updateDom = ($elem, doc) => {
       $elem = $elem || $(document.body);
-      const css = CSS_CLASS[DOC_IDS.indexOf(doc)];
+      const css = CSS_CLASS[ICON_DOC_IDS.indexOf(doc)];
       $elem.find(`.${css}`).each((i, child) => {
         const $this = $(child);
         const name = $this.data('title') || $this.attr('title');
@@ -92,13 +95,13 @@ angular.module('inboxServices').factory('ResourceIcons',
         });
     };
 
-    DOC_IDS.slice(1).forEach(doc => updateResources(doc));
+    ICON_DOC_IDS.slice(1).forEach(doc => updateResources(doc));
 
-    const initResources = updateResources(DOC_IDS[0]);
+    const initResources = updateResources(ICON_DOC_IDS[0]);
 
     Changes({
       key: 'resource-icons',
-      filter: change => DOC_IDS.includes(change.id),
+      filter: change => ICON_DOC_IDS.includes(change.id),
       callback: change => updateResources(change.id)
     });
 
@@ -114,10 +117,10 @@ angular.module('inboxServices').factory('ResourceIcons',
           return Object.keys((res && res.resources) ? res.resources : {});
         });
       },
-      getAppTitle: () => DB().get(DOC_IDS[1]).then(doc => doc.title),
+      getAppTitle: () => DB().get(ICON_DOC_IDS[1]).then(doc => doc.title),
       replacePlaceholders: $elem => {
         initResources.then(function() {
-          updateDom($elem, DOC_IDS[0]);
+          updateDom($elem, ICON_DOC_IDS[0]);
         });
       },
       getDocResourcesByMimeType: (doc, mimeType) => {

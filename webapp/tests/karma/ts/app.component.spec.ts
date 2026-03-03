@@ -1,6 +1,6 @@
 import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router, ActivationEnd } from '@angular/router';
+import { ActivationEnd, Router } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
@@ -114,7 +114,7 @@ describe('AppComponent', () => {
     // set this in index.html
     window.startupTimes = {};
 
-    authService = { has: sinon.stub().resolves(true) };
+    authService = { has: sinon.stub().resolves(true), online: sinon.stub().returns(false) };
     locationService = { path: 'localhost' };
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
@@ -177,6 +177,8 @@ describe('AppComponent', () => {
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
       setUserFacilityIds: sinon.stub(GlobalActions.prototype, 'setUserFacilityIds'),
       setUserContactId: sinon.stub(GlobalActions.prototype, 'setUserContactId'),
+      setUserFacilities: sinon.stub(GlobalActions.prototype, 'setUserFacilities'),
+      setIsOnlineOnly: sinon.stub(GlobalActions.prototype, 'setIsOnlineOnly'),
     };
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
@@ -188,7 +190,10 @@ describe('AppComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
-    userSettingsService = { get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }) };
+    userSettingsService = {
+      get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
+      getUserFacilities: sinon.stub().resolves([]),
+    };
     formService = { setUserContext: sinon.stub() };
     updateServiceWorkerService = { update: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
@@ -303,6 +308,11 @@ describe('AppComponent', () => {
     // init storage info service
     expect(storageInfoService.init.callCount).to.equal(1);
     expect(tasksNotificationService.initOnAndroid.callCount).to.equal(0);
+    // init user
+    expect(userSettingsService.getUserFacilities.calledOnce).to.equal(true);
+    expect(globalActions.setUserFacilities.calledOnceWith([])).to.equal(true);
+    expect(authService.online.calledOnceWith(true)).to.equal(true);
+    expect(globalActions.setIsOnlineOnly.calledOnceWith(false)).to.equal(true);
   });
 
   it('should init task notifications on android', async () => {

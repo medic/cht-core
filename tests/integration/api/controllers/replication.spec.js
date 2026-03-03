@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
@@ -48,7 +48,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:bobville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Bobville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:bobville',
@@ -65,7 +65,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:clareville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Clareville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:clareville',
@@ -82,7 +82,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chw-bossville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'CHW Bossville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:chw-bossville',
@@ -127,7 +127,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:steveville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Steveville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:steveville',
@@ -144,7 +144,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:managerville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Managerville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:managerville',
@@ -588,13 +588,13 @@ describe('replication', () => {
       const docs = [
         {
           _id: 'depth_hc1',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           parent: { _id: 'PARENT_PLACE' },
           contact: { _id: 'depth_person1' }
         },
         {
           _id: 'depth_hc2',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           parent: { _id: 'PARENT_PLACE' },
           contact: { _id: 'out_of_hierarchy' }
         },
@@ -667,7 +667,7 @@ describe('replication', () => {
         const docs = [
           {
             _id: 'depth_hc',
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
             parent: { _id: 'PARENT_PLACE' },
             contact: { _id: 'depth_person1' }
           },
@@ -1208,6 +1208,26 @@ describe('replication', () => {
         'clare-report-7',
       ];
       assertDocIds(response, ...steveClaresIds, ...expectedReports);
+    });
+
+    it('should be able to retrieve large purged docs cache documents', async () => {
+      const nbrPurgedDocs = 100000;
+      const uuids = Array.from({ length: nbrPurgedDocs }).map(() => uuid());
+
+      const allowedBob = createSomeContacts(5, 'fixture:bobville');
+      uuids.push(...allowedBob.map(c => c._id));
+      await utils.saveDocs(allowedBob);
+
+      await utils.requestOnTestDb({
+        method: 'PUT',
+        path: `-purged-cache/purged-docs-bob`,
+        body: {
+          _id: 'purged-docs-bob',
+          doc_ids: uuids,
+        }
+      });
+      const response = await requestDocs('bob');
+      assertDocIds(response, ...bobsIds);
     });
   });
 
