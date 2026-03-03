@@ -22,6 +22,7 @@ const submitReplyBtn = () => replyMessageActions().$('.submit');
 const messages = () => $$(`${MESSAGE_CONTENT} li`);
 
 const openMessage = async (identifier) => {
+  await messageInList(identifier).waitForStable();
   await messageInList(identifier).click();
   await $(MESSAGE_CONTENT).waitForDisplayed();
 };
