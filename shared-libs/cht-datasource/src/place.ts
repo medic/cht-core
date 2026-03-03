@@ -110,7 +110,7 @@ export namespace v1 {
      * Returns a generator for fetching all places with the given type
      * @param placeType the type of places to return
      * @returns a generator for fetching all places with the given type
-     * @throws InvaidArgumentError if no type is provided or if the type is not a supported place contact type
+     * @throws InvalidArgumentError if no type is provided or if the type is not a supported place contact type
      */
     const curriedGen = (placeType: ContactTypeQualifier) => {
       assertTypeQualifier(placeType);
