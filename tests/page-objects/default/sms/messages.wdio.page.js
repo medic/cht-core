@@ -23,6 +23,7 @@ const messages = () => $$(`${MESSAGE_CONTENT} li`);
 
 const openMessage = async (identifier) => {
   await messageInList(identifier).click();
+  await $(MESSAGE_CONTENT).waitForDisplayed();
 };
 
 const getMessageInListDetails = async (identifier) => {
@@ -121,8 +122,8 @@ const sendReply = async (message) => {
   await replyMessage().setValue(message);
   await replyMessageActions().waitForExist();
   await submitReplyBtn().click();
-  await sentinelUtils.waitForSentinel();
   await browser.waitUntil(async () => await getAmountOfMessagesByPhone() > numberOfMessages);
+  await sentinelUtils.waitForSentinel();
 };
 
 const replyAddRecipients = async (message) => {
