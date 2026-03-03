@@ -1,10 +1,9 @@
 import logger from '@medic/logger';
-import { hasField, NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
+import { DataObject, NouveauHit, NouveauResponse, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 import { QueryParams } from './core';
 import { getAuthenticatedFetch, getRequestBody } from './request-utils';
 import { DEFAULT_IDS_PAGE_LIMIT } from '../../libs/constants';
-import { InvalidArgumentError } from '../../libs/error';
 
 /** @internal */
 export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
@@ -20,15 +19,29 @@ export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): P
   });
 
 /** @internal */
-export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[]): Promise<Doc[]> => {
-  const keys = Array.from(new Set(uuids.filter(uuid => uuid.length)));
-  if (!keys.length) {
-    return [];
+export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (
+  uuids: (string | undefined)[]
+): Promise<Nullable<Doc>[]> => {
+  if (!uuids.some(Boolean)) {
+    return Array.from({ length: uuids.length }, () => null);
   }
-  const response = await db.allDocs({ keys, include_docs: true });
+  const response = await db.allDocs({ keys: uuids.map(id => id ?? ''), include_docs: true });
   return response.rows
     .map(({ doc }) => doc)
-    .filter((doc): doc is Doc => isDoc(doc));
+    .map(doc => isDoc(doc) ? doc : null);
+};
+
+/** @internal */
+export const getDocUuidsByIdRange = (db: PouchDB.Database<Doc>) => async (
+  startkey: string,
+  endkey: string
+): Promise<string[]> => {
+  const response = await db.allDocs({
+    startkey,
+    endkey,
+    include_docs: false,
+  });
+  return response.rows.map(({ id }) => id);
 };
 
 /** @internal */
@@ -182,30 +195,28 @@ export const fetchAndFilterUuids = (
 };
 
 /** @internal */
-export const createDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
-  const { id, ok } = await db.post(data);
+export const createDoc = (db: PouchDB.Database) => async (data: DataObject): Promise<Doc> => {
+  const { id, rev, ok } = await db.post(data);
   if (!ok) {
     throw new Error('Error creating document.');
   }
-  return getDocById(db as PouchDB.Database<Doc>)(id);
+  return {
+    ...data,
+    _id: id,
+    _rev: rev
+  };
 };
 
 /** @internal */
-export const updateDoc = (db: PouchDB.Database) => async (data: Record<string, unknown>): Promise<Nullable<Doc>> => {
-  if (!hasField(data, { name: '_id', type: 'string', ensureTruthyValue: true })) {
-    throw new InvalidArgumentError(`Missing or empty required field (_id) for [${JSON.stringify(data)}]`);
-  }
-  if (!hasField(data, { name: '_rev', type: 'string', ensureTruthyValue: true })) {
-    throw new InvalidArgumentError(`Missing or empty required field (_rev) for [${JSON.stringify(data)}]`);
-  }
-
-  const { id, ok } = await db.put(data);
-
+export const updateDoc = (db: PouchDB.Database<Doc>) => async (data: Doc): Promise<Doc> => {
+  const { ok, rev } = await db.put(data);
   if (!ok) {
     throw new Error('Error updating document.');
   }
-  
-  return getDocById(db as PouchDB.Database<Doc>)(id);
+  return {
+    ...data,
+    _rev: rev
+  };
 };
 
 const isPouchDBNotFoundError = (error: unknown): error is { status: 404, name: string } => {

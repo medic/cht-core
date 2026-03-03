@@ -1,5 +1,4 @@
 import { DataContext } from './data-context';
-import { InvalidArgumentError } from './error';
 
 /**
  * A value that could be `null`.
@@ -8,6 +7,21 @@ export type Nullable<T> = T | null;
 
 /** @internal */
 export const isNotNull = <T>(value: T | null): value is T => value !== null;
+
+/**
+ * A string representation of a date value (optionally including the time). Valid values are supported parameters
+ * for the `Date.parse()` function and the `Date()` constructor.
+ * @see https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date-time-string-format
+ */
+export type DateTimeString = string; // NOSONAR
+
+/** @internal */
+export const isDateTimeString = (value: unknown): value is DateTimeString => {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  return !Number.isNaN(Date.parse(value));
+};
 
 /**
  * An array that is guaranteed to have at least one element.
@@ -52,6 +66,17 @@ export const isDataObject = (value: unknown): value is DataObject => {
     .every((v) => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertDataObject (
+  value: unknown,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is DataObject {
+  if (!isDataObject(value)) {
+    throw new ErrorClass('Not a valid JSON object value.');
+  }
+}
+
 /**
  * Ideally, this function should only be used at the edge of this library (when returning potentially cross-referenced
  * data objects) to avoid unintended consequences if any of the objects are edited in-place. This function should not
@@ -71,7 +96,7 @@ export const deepCopy = <T extends DataObject | DataArray | DataPrimitive>(value
   return Object.fromEntries(
     Object
       .entries(value)
-      .map(([ key, value ]) => [ key, deepCopy(value) ])
+      .map(([key, value]) => [key, deepCopy(value)])
   ) as unknown as T;
 };
 
@@ -85,29 +110,70 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
-interface FieldDescriptor<T> {
-  name: keyof T;
-  type: string;
-  ensureTruthyValue?: boolean
+type FieldType = 'string' | 'number' | 'boolean' | 'function' | 'object';
+interface FieldTypeToValue {
+  string: string
+  number: number
+  boolean: boolean
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  function: Function,
+  object: object
+}
+interface FieldDescriptor<N extends string, K extends FieldType> {
+  name: N;
+  type: K;
 }
 
 /** @internal */
-export const hasField = <T extends Record<string, unknown>>(
+export const hasField = <T extends Record<string, unknown>, N extends string, K extends FieldType>(
   value: T,
-  { name, type, ensureTruthyValue = false }: FieldDescriptor<T>
-): value is T & Record<typeof name, string> => {
-  const valueField = value[name];
-  if (ensureTruthyValue) {
-    return typeof valueField === type && !!valueField;
-  }
-  return typeof valueField === type;
+  { name, type }: FieldDescriptor<N, K>
+): value is T & Record<N, FieldTypeToValue[K]> => typeof value[name] === type;
+
+const isBlankString = (value: unknown): boolean => typeof value === 'string' && !value.trim();
+
+/** @internal */
+export const hasStringFieldWithValue = <T extends Record<string, unknown>, N extends string>(
+  value: T,
+  fieldName: N
+): value is T & Record<N, string> => {
+  return hasField(value, { name: fieldName, type: 'string' }) && !isBlankString(value[fieldName]);
 };
 
 /** @internal */
-export const hasFields = <T extends Record<string, unknown>>(
+export const assertDoesNotHaveField = (
+  value: Record<string, unknown>,
+  name: string,
+  ErrorClass: new (message: string) => Error = Error
+): void => {
+  if (!(value[name] === undefined || value[name] === null)) {
+    throw new ErrorClass(`The [${String(name)}] field must not be set.`);
+  }
+};
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertHasOptionalField <T extends Record<string, unknown>, N extends string, K extends FieldType>(
   value: T,
-  fields: NonEmptyArray<FieldDescriptor<T>>,
-): boolean => fields.every(field => hasField(value, field));
+  { name, type }: FieldDescriptor<N, K>,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is T & Record<N, FieldTypeToValue[K] | undefined> {
+  if (name in value && !hasField(value, { name, type })) {
+    throw new ErrorClass(`The [${String(name)}] field must have the type [${String(type)}].`);
+  }
+}
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertHasRequiredField <T extends Record<string, unknown>, N extends string, K extends FieldType>(
+  value: T,
+  { name, type }: FieldDescriptor<N, K>,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is T & Record<N, FieldTypeToValue[K]> {
+  if (!hasField(value, { name, type }) || isBlankString(value[name])) {
+    throw new ErrorClass(`The [${String(name)}] field must have a [${String(type)}] value.`);
+  }
+}
 
 /** @internal */
 export interface Identifiable extends DataObject {
@@ -116,7 +182,7 @@ export interface Identifiable extends DataObject {
 
 /** @internal */
 export const isIdentifiable = (value: unknown): value is Identifiable => isRecord(value)
-  && hasField(value, { name: '_id', type: 'string' });
+  && hasStringFieldWithValue(value, '_id');
 
 /** @internal */
 export const findById = <T extends Identifiable>(values: T[], id: string): Nullable<T> => values
@@ -172,23 +238,6 @@ export interface NormalizedParent extends DataObject, Identifiable {
 /** @ignore */
 export const isNormalizedParent = (value: unknown): value is NormalizedParent => {
   return isDataObject(value) && isIdentifiable(value) && (!value.parent || isNormalizedParent(value.parent));
-};
-
-/** @internal */
-export const convertToUnixTimestamp = (date: string | number): number => {
-  if (typeof date === 'number') {
-    return date;
-  }
-
-  const parsedDate = new Date(date);
-  if (Number.isNaN(parsedDate.getTime())) {
-    throw new InvalidArgumentError(
-      'Invalid reported_date. Expected format to be ' +
-      '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
-    );
-  }
-
-  return parsedDate.getTime();
 };
 
 /** @internal */

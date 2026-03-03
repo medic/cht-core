@@ -1,4 +1,4 @@
-import { hasField, isRecord, isString, Nullable } from './libs/core';
+import { isString, hasField, isRecord, Nullable } from './libs/core';
 import { InvalidArgumentError } from './libs/error';
 
 /**

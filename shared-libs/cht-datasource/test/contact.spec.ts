@@ -9,7 +9,7 @@ import { expect } from 'chai';
 import * as Core from '../src/libs/core';
 
 describe('contact', () => {
-  const dataContext = {} as DataContext;
+  const dataContext = { } as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
@@ -130,7 +130,7 @@ describe('contact', () => {
     });
 
     describe('getUuidsPage', () => {
-      const contactIds = [ 'contact1', 'contact2', 'contact3' ] as string[];
+      const contactIds = ['contact1', 'contact2', 'contact3'] as string[];
       const cursor = '1';
       const pageData = { data: contactIds, cursor };
       const limit = 3;

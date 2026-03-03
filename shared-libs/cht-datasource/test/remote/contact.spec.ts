@@ -86,7 +86,7 @@ describe('remote contact', () => {
       };
 
       it('returns array of contact identifiers', async () => {
-        const doc = [ { type: 'person' }, { type: 'person' } ];
+        const doc = [{ type: 'person' }, { type: 'person' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 

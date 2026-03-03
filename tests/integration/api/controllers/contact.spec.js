@@ -2,7 +2,7 @@ const utils = require('@utils');
 const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const { expect } = require('chai');
+const {expect} = require('chai');
 const { USER_ROLES } = require('@medic/constants');
 
 describe('Contact API', () => {
@@ -108,9 +108,9 @@ describe('Contact API', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: [ 'chw' ]
+    roles: ['chw']
   }));
-  const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2, patient ];
+  const allDocItems = [contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2, patient];
   const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
@@ -148,17 +148,17 @@ describe('Contact API', () => {
     }
   ];
   const expectedPeopleIds = expectedPeople.map(person => person._id);
-  const expectedPlaces = [ place0, clinic1, clinic2 ];
+  const expectedPlaces = [place0, clinic1, clinic2];
   const expectedPlacesIds = expectedPlaces.map(place => place._id);
 
   before(async () => {
     await utils.saveDocs(allDocItems);
-    await utils.createUsers([ userNoPerms, offlineUser ]);
+    await utils.createUsers([userNoPerms, offlineUser]);
   });
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([ userNoPerms, offlineUser ]);
+    await utils.deleteUsers([userNoPerms, offlineUser]);
   });
 
   describe('GET /api/v1/contact/:uuid', async () => {
@@ -177,7 +177,7 @@ describe('Contact API', () => {
         path: `${endpoint}/${place0._id}`,
       };
       const place = await utils.request(opts);
-      expect(place).excluding([ '_rev', 'reported_date' ]).to.deep.equal(place0);
+      expect(place).excluding(['_rev', 'reported_date']).to.deep.equal(place0);
     });
 
     it('returns the person contact with lineage when the withLineage query parameter is provided', async () => {
@@ -207,7 +207,7 @@ describe('Contact API', () => {
         path: `${endpoint}/${place0._id}?with_lineage=true`,
       };
       const place = await utils.request(opts);
-      expect(place).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+      expect(place).excludingEvery(['_rev', 'reported_date']).to.deep.equal({
         ...place0,
         contact: contact0,
         parent: {
@@ -229,13 +229,13 @@ describe('Contact API', () => {
     });
 
     [
-      [ 'does not have can_view_contacts permission', userNoPerms ],
-      [ 'is not an online user', offlineUser ]
-    ].forEach(([ description, user ]) => {
+      ['does not have can_view_contacts permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
           path: `${endpoint}/${patient._id}`,
-          auth: { username: user.username, password: user.password },
+          auth: {username: user.username, password: user.password},
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
@@ -263,7 +263,7 @@ describe('Contact API', () => {
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeopleIds);
+      expect(responsePeople).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeopleIds);
       expect(responseCursor).to.be.equal(null);
     });
 
@@ -278,7 +278,7 @@ describe('Contact API', () => {
       const responsePlaces = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePlaces).excludingEvery([ '_rev', 'reported_date' ])
+      expect(responsePlaces).excludingEvery(['_rev', 'reported_date'])
         .to.deep.equalInAnyOrder(expectedPlacesIds);
       expect(responseCursor).to.be.equal(null);
     });
@@ -290,7 +290,7 @@ describe('Contact API', () => {
           freetext
         }
       };
-      const expectedContactIds = [ contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id ];
+      const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
 
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -312,7 +312,7 @@ describe('Contact API', () => {
           freetext
         }
       };
-      const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
+      const expectedContactIds = [contact0._id, contact1._id, contact2._id];
 
       const responsePage = await utils.request(opts);
       const responsePeople = responsePage.data;
@@ -330,7 +330,7 @@ describe('Contact API', () => {
           freetext: placeFreetext
         }
       };
-      const expectedContactIds = [ place0._id, clinic1._id, clinic2._id ];
+      const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
 
       const responsePage = await utils.request(opts);
       const responsePlaces = responsePage.data;
@@ -340,8 +340,7 @@ describe('Contact API', () => {
       expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
-    it(
-      'returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',
+    it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
         const qs = {
           type: personType,
@@ -350,7 +349,7 @@ describe('Contact API', () => {
         // first request
         const opts = {
           path: `${endpoint}`,
-          qs
+          qs 
         };
         const firstPage = await utils.request(opts);
 
@@ -362,18 +361,16 @@ describe('Contact API', () => {
         };
         const secondPage = await utils.request(opts2);
 
-        const allData = [ ...firstPage.data, ...secondPage.data ];
+        const allData = [...firstPage.data, ...secondPage.data];
 
-        expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeopleIds);
+        expect(allData).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPeopleIds);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(3);
         expect(firstPage.cursor).to.be.equal('4');
         expect(secondPage.cursor).to.be.equal(null);
-      }
-    );
+      });
 
-    it(
-      'returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
+    it('returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
         // first request
         const qs = {
@@ -394,21 +391,19 @@ describe('Contact API', () => {
         };
         const secondPage = await utils.request(opts2);
 
-        const allData = [ ...firstPage.data, ...secondPage.data ];
+        const allData = [...firstPage.data, ...secondPage.data];
 
-        expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPlacesIds);
+        expect(allData).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedPlacesIds);
         expect(firstPage.data.length).to.be.equal(2);
         expect(secondPage.data.length).to.be.equal(1);
         expect(firstPage.cursor).to.be.equal('2');
         expect(secondPage.cursor).to.be.equal(null);
-      }
-    );
+      });
 
-    it(
-      'returns a page of contact ids with freetext when limit and cursor is passed and cursor can be reused',
+    it('returns a page of contact ids with freetext when limit and cursor is passed and cursor can be reused',
       async () => {
         // first request
-        const expectedContactIds = [ contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id ];
+        const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
         const qs = {
           freetext,
           limit: threeLimit
@@ -427,56 +422,52 @@ describe('Contact API', () => {
         };
         const secondPage = await utils.request(opts2);
 
-        const allData = [ ...firstPage.data, ...secondPage.data ];
+        const allData = [...firstPage.data, ...secondPage.data];
 
         expect(allData).to.deep.equalInAnyOrder(expectedContactIds);
         expect(firstPage.data.length).to.be.equal(3);
         expect(secondPage.data.length).to.be.equal(3);
-        expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
-        expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
-      }
-    );
-
-    it(
-      'returns a page of people type contact ids with freetext when limit and cursor is passed ' +
-      'and cursor can be reused',
-      async () => {
-        // first request
-        const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
-        const qs = {
-          freetext,
-          type: personType,
-          limit: twoLimit
-        };
-        const opts = {
-          path: `${endpoint}`,
-          qs
-        };
-        const firstPage = await utils.request(opts);
-
-        // second request
-        qs.cursor = firstPage.cursor;
-        const opts2 = {
-          path: `${endpoint}`,
-          qs
-        };
-        const secondPage = await utils.request(opts2);
-
-        const allData = [ ...firstPage.data, ...secondPage.data ];
-
-        expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
-        expect(firstPage.data.length).to.be.equal(2);
-        expect(secondPage.data.length).to.be.equal(1);
         expect(firstPage.cursor).to.not.equal('W10=');
         expect(secondPage.cursor).to.not.equal('W10=');
-      }
-    );
+      });
 
-    it(
-      'returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
+    it('returns a page of people type contact ids with freetext when limit and cursor is passed ' +
+      'and cursor can be reused',
+    async () => {
+      // first request
+      const expectedContactIds = [contact0._id, contact1._id, contact2._id];
+      const qs = {
+        freetext,
+        type: personType,
+        limit: twoLimit
+      };
+      const opts = {
+        path: `${endpoint}`,
+        qs
+      };
+      const firstPage = await utils.request(opts);
+
+      // second request
+      qs.cursor = firstPage.cursor;
+      const opts2 = {
+        path: `${endpoint}`,
+        qs
+      };
+      const secondPage = await utils.request(opts2);
+
+      const allData = [...firstPage.data, ...secondPage.data];
+
+      expect(allData).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedContactIds);
+      expect(firstPage.data.length).to.be.equal(2);
+      expect(secondPage.data.length).to.be.equal(1);
+      expect(firstPage.cursor).to.not.equal('W10=');
+      expect(secondPage.cursor).to.not.equal('W10=');
+    });
+
+    it('returns a page of place type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
         // first request
-        const expectedContactIds = [ place0._id, clinic1._id, clinic2._id ];
+        const expectedContactIds = [place0._id, clinic1._id, clinic2._id];
         const qs = {
           freetext: placeFreetext,
           type: placeType,
@@ -496,15 +487,14 @@ describe('Contact API', () => {
         };
         const secondPage = await utils.request(opts2);
 
-        const allData = [ ...firstPage.data, ...secondPage.data ];
+        const allData = [...firstPage.data, ...secondPage.data];
 
-        expect(allData).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedContactIds);
+        expect(allData).excludingEvery(['_rev', 'reported_date']).to.deep.equalInAnyOrder(expectedContactIds);
         expect(firstPage.data.length).to.be.equal(2);
         expect(secondPage.data.length).to.be.equal(1);
         expect(firstPage.cursor).to.not.equal('W10=');
         expect(secondPage.cursor).to.not.equal('W10=');
-      }
-    );
+      });
 
     it('returns a page of unique contact ids for when multiple fields match the same freetext', async () => {
       const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
@@ -523,8 +513,7 @@ describe('Contact API', () => {
       expect(responseCursor).to.not.equal('W10=');
     });
 
-    it(
-      'returns a page of unique contact ids for when multiple fields match the same freetext with limit',
+    it('returns a page of unique contact ids for when multiple fields match the same freetext with limit',
       async () => {
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
         // NOTE: adding a limit of 4 to deliberately fetch 4 contacts with the given search word
@@ -543,11 +532,9 @@ describe('Contact API', () => {
 
         expect(responseIds).to.deep.equalInAnyOrder(expectedContactIds);
         expect(responseCursor).to.not.equal('W10=');
-      }
-    );
+      });
 
-    it(
-      'returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
+    it('returns a page of unique contact ids for when multiple fields match the same freetext with lower limit',
       async () => {
         const qs = {
           freetext: searchWord,
@@ -567,8 +554,7 @@ describe('Contact API', () => {
         expect(responseIds).to.satisfy(subsetArray => {
           return subsetArray.every(item => expectedContactIds.includes(item));
         });
-      }
-    );
+      });
 
     it(`throws error when user does not have can_view_contacts permission`, async () => {
       const opts = {

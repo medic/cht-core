@@ -5,6 +5,7 @@ const controller = require('../../../src/controllers/settings');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const settingsService = require('../../../src/services/settings');
+const { PermissionError } = require('../../../src/errors');
 
 let req;
 let res;
@@ -106,7 +107,7 @@ describe('Settings controller', () => {
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([
-          { code: 403, message: 'Insufficient privileges' },
+          new PermissionError('Insufficient privileges'),
           req,
           res,
           true

@@ -2,10 +2,17 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Place, Qualifier } = require('@medic/cht-datasource');
+const {
+  getRemoteDataContext,
+  Place,
+  Qualifier,
+  InvalidArgumentError,
+  ResourceNotFoundError
+} = require('@medic/cht-datasource');
 const { USER_ROLES } = require('@medic/constants');
 const userFactory = require('@factories/cht/users/users');
 const { setAuth, removeAuth } = require('./auth');
+const { expect } = require('chai');
 
 describe('cht-datasource Place', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -71,10 +78,10 @@ describe('cht-datasource Place', () => {
       _id: 'fixture:user:offline-has-perms',
       name: 'Offline User',
     },
-    roles: [ 'chw' ]
+    roles: ['chw']
   }));
   const dataContext = getRemoteDataContext(utils.getOrigin());
-  const expectedPlaces = [ place0, clinic1, clinic3 ];
+  const expectedPlaces = [place0, clinic1, clinic3];
 
   const excludedProperties = [ '_rev', 'reported_date', 'patient_id', 'place_id' ];
 
@@ -87,7 +94,7 @@ describe('cht-datasource Place', () => {
 
   after(async () => {
     await utils.revertDb([], true);
-    await utils.deleteUsers([ userNoPerms, offlineUser ]);
+    await utils.deleteUsers([userNoPerms, offlineUser]);
     removeAuth();
   });
 
@@ -209,12 +216,10 @@ describe('cht-datasource Place', () => {
           getPage({
             ...Qualifier.byContactType(placeType),
           }, invalidCursor, limit)
-        ).to.be.rejectedWith(
-          {
-            code: 400,
-            error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
-          }
-        );
+        ).to.be.rejectedWith({
+          code: 400,
+          error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+        });
       });
     });
 
@@ -233,102 +238,245 @@ describe('cht-datasource Place', () => {
     });
 
     describe('create', () => {
-      it('creates a place for a valid input', async () => {
-        const placeInput = {
+      const createPlace = Place.v1.create(dataContext);
+
+      it('creates place for valid input', async () => {
+        const input = {
+          type: 'clinic',
           name: 'place-1',
-          type: 'place',
-          parent: contact0._id,
-          contact: contact1._id
+          parent: place1._id,
+          contact: contact0._id,
+          reported_date: 1770397800,
+          hello: 'world'
         };
-        const updatedPlaceInput = {
-          ...placeInput, parent: { _id: contact0._id, parent: contact0.parent },
-          contact: { _id: contact1._id, parent: contact1.parent }
+
+        const placeDoc = await createPlace(input);
+
+        expect(placeDoc).excluding(['_id', '_rev']).to.deep.equal({
+          ...input,
+          contact: {
+            _id: contact0._id,
+            parent: contact0.parent
+          },
+          parent: {
+            _id: place1._id,
+            parent: { _id: place1.parent._id }
+          },
+          type: 'contact',
+          contact_type: 'clinic',
+        });
+      });
+
+      it('creates place with minimum data', async () => {
+        const input = {
+          type: 'district_hospital',
+          name: 'place-1',
         };
-        const placeDoc = await Place.v1.create(dataContext)(placeInput);
-        expect(placeDoc).excluding([ '_rev', 'reported_date', '_id' ])
-          .to.deep.equal(updatedPlaceInput);
+
+        const placeDoc = await createPlace(input);
+
+        expect(placeDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal({
+          ...input,
+          type: 'contact',
+          contact_type: 'district_hospital',
+        });
+        expect(placeDoc.reported_date).to.be.a('number');
+      });
+
+      it(`throws error for non-place type`, async () => {
+        const body = {
+          type: 'person',
+          name: 'place-1',
+        };
+
+        await expect(createPlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `[${body.type}] is not a valid place type.`
+        );
+      });
+
+      it(`throws error for non-existent parent`, async () => {
+        const body = {
+          type: 'clinic',
+          name: 'place-1',
+          parent: 'invalid-id'
+        };
+
+        await expect(createPlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Parent contact [${body.parent}] not found.`
+        );
+      });
+
+      it(`throws error for non-existent contact`, async () => {
+        const body = {
+          type: 'district_hospital',
+          name: 'place-1',
+          contact: 'invalid-id'
+        };
+
+        await expect(createPlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Primary contact [${body.contact}] not found.`
+        );
+      });
+
+      it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
+        const body = {
+          type: 'health_center',
+          name: 'place-1',
+          parent: place1._id,
+        };
+
+        await expect(createPlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Parent contact of type [health_center] is not allowed for type [${body.type}].`
+        );
       });
     });
 
     describe('update', () => {
-      it('updates a place for a valid input', async () => {
-        const placeInput = {
-          name: 'place-1',
-          type: 'clinic',
-          parent: place1._id,
-          contact: contact1._id,
-          weather: 'humid'
-        };
-        const placeDoc = await Place.v1.create(dataContext)(placeInput);
-        const updateInput = {
-          ...placeDoc, extraField: 'value'
-        };
-        delete updateInput.weather;
+      const updatePlace = Place.v1.update(dataContext);
+      let originalPlace;
 
-        const updatedPlaceDoc = await Place.v1.update(dataContext)(updateInput);
-        expect(updatedPlaceDoc).excluding([ '_rev' ]).to.deep.equal(
-          updateInput
+      beforeEach(async () => {
+        const doc = placeFactory.place().build({
+          name: 'clinic-to-update',
+          parent: {
+            _id: place1._id,
+            parent: {
+              _id: place2._id
+            }
+          },
+          type: 'clinic',
+          contact: { _id: contact0._id },
+          reported_date: 1770397800,
+          phone: '1234567890'
+        });
+        const { rev } = await utils.saveDoc(doc);
+        originalPlace = {
+          ...doc,
+          _rev: rev
+        };
+      });
+
+      it(`updates a place`, async () => {
+        const body = {
+          ...originalPlace,
+          name: 'apoorva 2',
+          hello: 'world',
+          contact: contact1._id
+        };
+        delete body.phone;
+
+        const updatedPlace = await updatePlace(body);
+
+        expect(updatedPlace).excluding([ '_rev' ]).to.deep.equal({
+          ...body,
+          contact: {
+            _id: contact1._id,
+            parent: contact1.parent
+          }
+        });
+      });
+
+      it(`updates a place when lineage data is provided`, async () => {
+        const body = {
+          ...originalPlace,
+          name: 'apoorva 2',
+          hello: 'world',
+          contact: contact1,
+          parent: {
+            ...place1,
+            parent: { _id: place2._id }
+          },
+        };
+
+        const updatedPlace = await updatePlace(body);
+
+        // Given lineage data is returned
+        expect(updatedPlace).excludingEvery(['_rev', 'reported_date']).to.deep.equal(body);
+        const updatedDoc = await utils.getDoc(originalPlace._id);
+        // Doc is written with minified lineage
+        expect(updatedDoc).excluding('_rev').to.deep.equal({
+          ...body,
+          contact: {
+            _id: contact1._id,
+            parent: contact1.parent
+          },
+          parent: {
+            _id: place1._id,
+            parent: { _id: place1.parent._id },
+          },
+        });
+      });
+
+      it(`updates a place to remove contact`, async () => {
+        const body = { ...originalPlace };
+        delete body.contact;
+
+        const updatedPlace = await updatePlace(body);
+
+        expect(updatedPlace).excluding([ '_rev' ]).to.deep.equal(body);
+      });
+
+      it(`throws error when updating parent lineage`, async () => {
+        const body = {
+          ...originalPlace,
+          parent: {
+            _id: place1._id,
+            parent: { _id: place0._id },
+          },
+        };
+
+        await expect(updatePlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Parent lineage does not match.`
         );
       });
 
-      it('throws error if the lineage does not match', async () => {
-        const placeInput = {
-          name: 'place-1',
-          type: 'clinic',
-          parent: place1._id,
-          contact: contact1._id,
-          weather: 'humid'
-        };
-        const placeDoc = await Place.v1.create(dataContext)(placeInput);
-        const updateInput = {
-          ...placeDoc, parent: place0
-        };
+      [
+        ['any document', 'does-not-exist'],
+        ['a place', contact0._id],
+      ].forEach(([test, id]) => {
+        it(`throws error when id does not match ${test}`, async () => {
+          const body = {
+            ...originalPlace,
+            _id: id
+          };
 
-        await expect(Place.v1.update(dataContext)(updateInput))
-          .to.be.rejectedWith({
-            code: 400,
-            error: `parent lineage does not match with the lineage of the doc in the db`
-          });
+          await expect(updatePlace(body)).to.be.rejectedWith(
+            ResourceNotFoundError,
+            `Place record [${id}] not found.`
+          );
+        });
       });
 
-      it('throws error if the update payload contains parent for a place at the top of the hierarchy', async () => {
-        const placeInput = {
-          name: 'place-1',
-          type: 'district_hospital',
-          contact: contact1._id,
-          weather: 'humid'
-        };
-        const placeDoc = await Place.v1.create(dataContext)(placeInput);
-        const updateInput = {
-          ...placeDoc, parent: place0
+      it('throws error when updating with invalid contact lineage', async () => {
+        const body = {
+          ...originalPlace,
+          contact: {
+            _id: place0._id,
+            parent: { _id: place2._id }
+          },
         };
 
-        await expect(Place.v1.update(dataContext)(updateInput))
-          .to.be.rejectedWith({
-            code: 400,
-            error: `Places at top of the hierarchy cannot have a parent`
-          });
+        await expect(updatePlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `The given contact lineage does not match the current lineage for that contact.`
+        );
       });
 
-      it('throws error if the _id is missing', async () => {
-        const placeInput = {
-          name: 'place-1',
-          type: 'clinic',
-          parent: place1._id,
-          contact: contact1._id,
-          weather: 'humid'
+      it('throws error when updating with a non-existent contact', async () => {
+        const body = {
+          ...originalPlace,
+          contact: 'invalid-id',
         };
-        const placeDoc = await Place.v1.create(dataContext)(placeInput);
-        const updateInput = {
-          ...placeDoc
-        };
-        delete updateInput._id;
 
-        await expect(Place.v1.update(dataContext)(updateInput))
-          .to.be.rejectedWith({
-            code: 400,
-            error: `Document for update is not a valid Doc ${JSON.stringify(updateInput)}`
-          });
+        await expect(updatePlace(body)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `No valid contact found for [invalid-id].`
+        );
       });
     });
   });

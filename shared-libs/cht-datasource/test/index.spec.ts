@@ -10,7 +10,6 @@ import * as Report from '../src/report';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { Page } from '../src/libs/core';
-import * as Input from '../src/input';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -56,8 +55,8 @@ describe('CHT Script API - getDatasource', () => {
       beforeEach(() => place = v1.place);
 
       it('contains expected keys', () => {
-        expect(place).to.have.all.keys([ 'getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType',
-          'create', 'update' ]);
+        expect(place).to.have.all.keys(['getByType', 'getByUuid', 'getByUuidWithLineage', 'getPageByType',
+          'create', 'update']);
       });
 
       it('getByUuid', async () => {
@@ -136,17 +135,16 @@ describe('CHT Script API - getDatasource', () => {
         };
         const placeCreate = sinon.stub().resolves(expectedPlace);
         dataContextBind.returns(placeCreate);
-        const validatedPlaceInput = sinon.stub(Index.Input.v1, 'validatePlaceInput').returns(expectedPlace);
 
-        const returnedPlace = await place.create(validatedPlaceInput as unknown as Input.v1.PlaceInput);
+        const returnedPlace = await place.create(placeInput);
 
         expect(returnedPlace).to.equal(expectedPlace);
         expect(dataContextBind.calledOnceWithExactly(Place.v1.create)).to.be.true;
-        expect(placeCreate.calledOnceWithExactly(validatedPlaceInput)).to.be.true;
+        expect(placeCreate.calledOnceWithExactly(placeInput)).to.be.true;
       });
 
       it('update', async () => {
-        const placeInput = { name: 'p1', type: 'place' };
+        const placeInput = { name: 'p1', type: 'place', _id: '123', _rev: '1-abc' };
         const expectedPlace = {
           ...placeInput,
           reported_date: 12312312
@@ -201,20 +199,26 @@ describe('CHT Script API - getDatasource', () => {
         };
         const personCreate = sinon.stub().resolves(expectedPerson);
         dataContextBind.returns(personCreate);
-        const validatedPersonInput = sinon.stub(Index.Input.v1, 'validatePersonInput').returns(expectedPerson);
 
-        const returnedPerson = await person.create(validatedPersonInput as unknown as Input.v1.PersonInput);
+        const returnedPerson = await person.create(personInput);
 
         expect(returnedPerson).to.equal(expectedPerson);
         expect(dataContextBind.calledOnceWithExactly(Person.v1.create)).to.be.true;
-        expect(personCreate.calledOnceWithExactly(validatedPersonInput)).to.be.true;
+        expect(personCreate.calledOnceWithExactly(personInput)).to.be.true;
       });
 
       it('update', async () => {
-        const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: { _id: 'p1' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312
+        };
         const expectedPerson = {
           ...personInput,
-          reported_date: 12312312
+          _rev: '2-def',
         };
         const personUpdate = sinon.stub().resolves(expectedPerson);
         dataContextBind.returns(personUpdate);
@@ -563,20 +567,27 @@ describe('CHT Script API - getDatasource', () => {
         };
         const reportCreate = sinon.stub().resolves(expectedReport);
         dataContextBind.returns(reportCreate);
-        const validatedReportInput = sinon.stub(Index.Input.v1, 'validateReportInput').returns(expectedReport);
 
-        const returnedReport = await report.create(validatedReportInput as unknown as Input.v1.ReportInput);
+        const returnedReport = await report.create(reportInput);
 
         expect(returnedReport).to.equal(expectedReport);
         expect(dataContextBind.calledOnceWithExactly(Report.v1.create)).to.be.true;
-        expect(reportCreate.calledOnceWithExactly(validatedReportInput)).to.be.true;
+        expect(reportCreate.calledOnceWithExactly(reportInput)).to.be.true;
       });
 
       it('update', async () => {
-        const reportInput = { name: 'apoorva', type: 'report', contact: 'c1' };
+        const reportInput = {
+          form: 'apoorva',
+          type: 'data_record',
+          contact: { _id: 'c1' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312,
+          fields: {}
+        };
         const expectedReport = {
           ...reportInput,
-          reported_date: 12312312
+          _rev: '2-def',
         };
         const reportUpdate = sinon.stub().resolves(expectedReport);
         dataContextBind.returns(reportUpdate);

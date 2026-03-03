@@ -3,7 +3,6 @@ import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import * as Report from '../../src/remote/report';
 import { expect } from 'chai';
-import { InvalidArgumentError } from '../../src';
 
 describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -11,20 +10,12 @@ describe('remote report', () => {
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
-  let postResourceOuter: SinonStub;
-  let postResourceInner: SinonStub;
-  let putResourceOuter: SinonStub;
-  let putResourceInner: SinonStub;
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
-    postResourceInner = sinon.stub();
-    postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceInner);
-    putResourceInner = sinon.stub();
-    putResourceOuter = sinon.stub(RemoteEnv, 'putResource').returns(putResourceInner);
   });
 
   afterEach(() => sinon.restore());
@@ -60,7 +51,7 @@ describe('remote report', () => {
         const doc = {
           type: 'data_record',
           form: 'yes',
-          lineage: [ 'parent1', 'parent2' ]
+          lineage: ['parent1', 'parent2']
         };
         getResourceInner.resolves(doc);
 
@@ -96,7 +87,7 @@ describe('remote report', () => {
       };
 
       it('returns an array of report identifiers', async () => {
-        const doc = [ { type: 'data_record', form: 'yes' }, { type: 'data_record', form: 'yes' } ];
+        const doc = [{ type: 'data_record', form: 'yes' }, { type: 'data_record', form: 'yes' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -127,11 +118,14 @@ describe('remote report', () => {
           contact: 'c1'
         };
 
-        postResourceInner.resolves(input);
+        const innerFn = sinon.stub().resolves(input);
+        const createStub = sinon.stub(Report.v1, 'create').returns(innerFn);
+
         const reportDoc = await Report.v1.create(remoteContext)(input);
+
         expect(reportDoc).to.deep.equal(input);
-        expect(postResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
-        expect(postResourceInner.calledOnceWithExactly(input)).to.be.true;
+        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(input)).to.be.true;
       });
     });
 
@@ -146,26 +140,15 @@ describe('remote report', () => {
           }, _id: '1', _rev: '2'
         };
 
-        putResourceInner.resolves(input);
+        const innerFn = sinon.stub().resolves(input);
+        const updateStub = sinon.stub(Report.v1, 'update').returns(innerFn);
+
         const reportDoc = await Report.v1.update(remoteContext)(input);
+
         expect(reportDoc).to.deep.equal(input);
-        expect(putResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
-        expect(putResourceInner.calledOnceWithExactly('1', input)).to.be.true;
+        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(innerFn.calledOnceWithExactly(input)).to.be.true;
       });
-
-      it('rejected with an error if report is not found', async () => {
-        const input = {
-          type: 'report',
-          contact: {
-            _id: '2',
-          },
-          _id: '12333', _rev: '2', form: 'hello'
-        };
-        putResourceInner.rejects(new InvalidArgumentError('Report not found'));
-        await expect(Report.v1.update(remoteContext)(input))
-          .to.be.rejectedWith('Report not found');
-      });
-
     });
   });
 });

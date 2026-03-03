@@ -39,7 +39,7 @@ describe('libs parameter-validators', () => {
 
   describe('assertLimit', () => {
     it('should not throw for valid number limits', () => {
-      const validLimits = [ 1, 10, '1', '10' ];
+      const validLimits = [1, 10, '1', '10'];
       validLimits.forEach(limit => {
         expect(() => assertLimit(limit)).to.not.throw();
       });
@@ -69,13 +69,13 @@ describe('libs parameter-validators', () => {
 
   describe('assertCursor', () => {
     it('should not throw for valid cursors', () => {
-      const validCursors = [ 'valid-cursor', 'abc123', null ];
+      const validCursors = ['valid-cursor', 'abc123', null];
       validCursors.forEach(cursor => {
         expect(() => assertCursor(cursor)).to.not.throw();
       });
     });
 
-    [ '', undefined, {}, [], 123 ].forEach(cursor => {
+    ['', undefined, {}, [], 123].forEach(cursor => {
       it(`should throw for invalid cursors: ${JSON.stringify(cursor)}`, () => {
         expect(() => assertCursor(cursor))
           .to.throw(InvalidArgumentError)
@@ -203,80 +203,261 @@ describe('libs parameter-validators', () => {
   });
 
   describe('assertPersonInput', () => {
-    it('throws error for invalid person input with missing fields', () => {
-      const personInput = {
-        name: 'apoorva',
-        type: 'person'
-      };
-      expect(() => assertPersonInput(personInput)).to.throw(
+    const personInput = {
+      name: 'apoorva',
+      type: 'person',
+      parent: 'p1',
+    } as const;
+
+    [
+      personInput,
+      { ...personInput, reported_date: 1769526124 },
+      { ...personInput, reported_date: '2026-01-27T14:34:48.333Z' },
+      { ...personInput, reported_date: '2026-01-27T14:34:48Z' },
+      { ...personInput, date_of_birth: '2000-06-15' },
+      { ...personInput, date_of_birth: '2000-06-15T00:00:00Z' },
+      { ...personInput, date_of_birth: new Date() },
+      {
+        ...personInput,
+        reported_date: 1769526124,
+        date_of_birth: '2000-06-15',
+        phone: '1234567890',
+        patient_id: '444',
+        sex: 'female',
+        custom_field: 'hello world',
+      }
+    ].forEach((input) => {
+      it('should not throw error for a valid person input', () => {
+        expect(() => assertPersonInput(input)).to.not.throw();
+      });
+    });
+
+    it('throws error for input that is not a data object', () => {
+      expect(() => assertPersonInput('person')).to.throw(
         InvalidArgumentError,
-        `Invalid person type [${JSON.stringify(personInput)}].`
+        'Not a valid JSON object value.'
       );
     });
 
-    it('throws error for invalid person input here with invalid reported_date', () => {
-      const personInput = {
-        name: 'apoorva',
-        type: 'person',
-        parent: 'p1',
-        reported_date: 'last august'
-      };
-      expect(() => assertPersonInput(personInput)).to.throw(
+    [
+      'type',
+      'name',
+      'parent'
+    ].forEach((requiredField) => {
+      it(`throws error for missing required field [${requiredField}]`, () => {
+        const input = { ...personInput, [requiredField]: undefined };
+        expect(() => assertPersonInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must have a [string] value.`
+        );
+      });
+    });
+
+    it('throws error for invalid person input with invalid reported_date', () => {
+      const input = { ...personInput, reported_date: 'last august' };
+      expect(() => assertPersonInput(input)).to.throw(
         InvalidArgumentError,
-        `Invalid person type [${JSON.stringify(personInput)}].`
+        `Invalid reported_date. Expected format to be ` +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
       );
     });
 
-    it('should not throw error for a valid person input', () => {
-      const personInput = {
-        name: 'apoorva',
-        type: 'person',
-        parent: 'p1',
-      };
-      expect(() => assertPersonInput(personInput)).to.not.throw();
+    [
+      '_id',
+      '_rev',
+    ].forEach((requiredField) => {
+      it(`throws error for having banned field [${requiredField}]`, () => {
+        const input = { ...personInput, [requiredField]: 'hello' };
+        expect(() => assertPersonInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must not be set.`
+        );
+      });
+    });
+
+    ([
+      ['phone', 'string', 1],
+      ['patient_id', 'string', new Date()],
+      ['sex', 'string', true],
+    ] as [string, string, unknown][]).forEach(([requiredField, type, value]: [string, string, unknown]) => {
+      it(`throws error for optional field [${requiredField}] with invalid value`, () => {
+        const input = { ...personInput, [requiredField]: value };
+        expect(() => assertPersonInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must have the type [${type}].`
+        );
+      });
+    });
+
+    [
+      'yesterday',
+      'not-a-date',
+      123,
+      true,
+    ].forEach((value) => {
+      it(`throws error for date_of_birth with invalid value [${JSON.stringify(value)}]`, () => {
+        const input = { ...personInput, date_of_birth: value };
+        expect(() => assertPersonInput(input)).to.throw(
+          InvalidArgumentError,
+          'The [date_of_birth] field must have a [date] value.'
+        );
+      });
     });
   });
 
   describe('assertPlaceInput', () => {
-    it('throws error for invalid place input with missing field `name`', () => {
-      const placeInput = {
-        type: 'district_hospital'
-      };
-      expect(() => assertPlaceInput(placeInput)).to.throw(
+    const placeInput = {
+      name: 'h1',
+      type: 'district_hospital'
+    } as const;
+
+    [
+      placeInput,
+      { ...placeInput, reported_date: 1769526124 },
+      { ...placeInput, reported_date: '2026-01-27T14:34:48.333Z' },
+      { ...placeInput, reported_date: '2026-01-27T14:34:48Z' },
+      {
+        ...placeInput,
+        reported_date: 1769526124,
+        parent: 'p1',
+        contact: 'c1',
+        place_id: 'plc-123',
+        custom_field: 'hello world',
+      }
+    ].forEach((input) => {
+      it('should not throw error for a valid place input', () => {
+        expect(() => assertPlaceInput(input)).to.not.throw();
+      });
+    });
+
+    it('throws error for input that is not a data object', () => {
+      expect(() => assertPlaceInput('place')).to.throw(
         InvalidArgumentError,
-        `Invalid place type [${JSON.stringify(placeInput)}].`
+        'Not a valid JSON object value.'
       );
     });
 
-    it('should not throw error for a valid place input', () => {
-      const placeInput = {
-        name: 'h1',
-        type: 'hospital',
-        parent: 'p1'
-      };
-      expect(() => assertPlaceInput(placeInput)).to.not.throw();
+    [
+      'type',
+      'name'
+    ].forEach((requiredField) => {
+      it(`throws error for missing required field [${requiredField}]`, () => {
+        const input = { ...placeInput, [requiredField]: undefined };
+        expect(() => assertPlaceInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must have a [string] value.`
+        );
+      });
+    });
+
+    it('throws error for invalid place input with invalid reported_date', () => {
+      const input = { ...placeInput, reported_date: 'last august' };
+      expect(() => assertPlaceInput(input)).to.throw(
+        InvalidArgumentError,
+        `Invalid reported_date. Expected format to be ` +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+      );
+    });
+
+    [
+      '_id',
+      '_rev',
+    ].forEach((requiredField) => {
+      it(`throws error for having banned field [${requiredField}]`, () => {
+        const input = { ...placeInput, [requiredField]: 'hello' };
+        expect(() => assertPlaceInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must not be set.`
+        );
+      });
+    });
+
+    ([
+      ['parent', 'string', 1],
+      ['place_id', 'string', new Date()],
+      ['contact', 'string', true],
+    ] as [string, string, unknown][]).forEach(([requiredField, type, value]: [string, string, unknown]) => {
+      it(`throws error for optional field [${requiredField}] with invalid value`, () => {
+        const input = { ...placeInput, [requiredField]: value };
+        expect(() => assertPlaceInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must have the type [${type}].`
+        );
+      });
     });
   });
 
   describe('assertReportInput', () => {
-    it('throws error for invalid report input with missing field `contact`', () => {
-      const reportInput = {
+    const reportInput = {
+      contact: 'c1',
+      form: 'f1'
+    } as const;
+
+    [
+      reportInput,
+      { ...reportInput, reported_date: 1769526124 },
+      { ...reportInput, reported_date: '2026-01-27T14:34:48.333Z' },
+      { ...reportInput, reported_date: '2026-01-27T14:34:48Z' },
+      {
+        ...reportInput,
+        reported_date: 1769526124,
         type: 'data_record',
-        form: 'f1'
-      };
-      expect(() => assertReportInput(reportInput)).to.throw(
+        custom_field: 'hello world',
+      }
+    ].forEach((input) => {
+      it('should not throw error for a valid place input', () => {
+        expect(() => assertReportInput(input)).to.not.throw();
+      });
+    });
+
+    it('throws error for input that is not a data object', () => {
+      expect(() => assertReportInput('report')).to.throw(
         InvalidArgumentError,
-        `Invalid report type [${JSON.stringify(reportInput)}].`
+        'Not a valid JSON object value.'
       );
     });
 
-    it('should not throw error for a valid report input', () => {
-      const reportInput = {
-        type: 'data_record',
-        form: 'f1',
-        contact: 'c1'
-      };
-      expect(() => assertReportInput(reportInput)).to.not.throw();
+    [
+      'form',
+      'contact'
+    ].forEach((requiredField) => {
+      it(`throws error for missing required field [${requiredField}]`, () => {
+        const input = { ...reportInput, [requiredField]: undefined };
+        expect(() => assertReportInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must have a [string] value.`
+        );
+      });
+    });
+
+    it('throws error for invalid report input with invalid reported_date', () => {
+      const input = { ...reportInput, reported_date: 'last august' };
+      expect(() => assertReportInput(input)).to.throw(
+        InvalidArgumentError,
+        `Invalid reported_date. Expected format to be ` +
+        '\'YYYY-MM-DDTHH:mm:ssZ\', \'YYYY-MM-DDTHH:mm:ss.SSSZ\', or a Unix epoch.'
+      );
+    });
+
+    [
+      '_id',
+      '_rev',
+    ].forEach((requiredField) => {
+      it(`throws error for having banned field [${requiredField}]`, () => {
+        const input = { ...reportInput, [requiredField]: 'hello' };
+        expect(() => assertReportInput(input)).to.throw(
+          InvalidArgumentError,
+          `The [${requiredField}] field must not be set.`
+        );
+      });
+    });
+
+    it('throws error for optional field [type] with invalid value', () => {
+      const input = { ...reportInput, type: 'data' };
+      expect(() => assertReportInput(input)).to.throw(
+        InvalidArgumentError,
+        `Report type must be "data_record".`
+      );
     });
   });
 });
