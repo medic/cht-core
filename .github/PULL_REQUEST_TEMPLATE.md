@@ -12,7 +12,7 @@ feat(#1234): add hat wobble
 |     |
 |     + -------- > issue number
 |
-+ -------------- > type: build|docs|feat|fix|perf|refactor|test|chore
++ -------------- > type: build|feat|fix|perf|refactor|test|chore
 
 https://docs.communityhealthtoolkit.org/contribute/code/workflow/#commit-message-format
 -->
