@@ -19,7 +19,7 @@ After that, make sure you have:
 Start by manually running the CI job, specifying the milestone (`5.2.0` in this case), but using the `gh` command locally on your workstation:
 
 ```shell
-gh workflow run release-notes.yml -f version=5.2.0
+gh workflow run release-notes.yml -f milestone=5.2.0
 ```
 
 If the job is successful, this text will show in the CI output in the "Install Deps & Run Node Script" section (we'll cover if it failed below):
