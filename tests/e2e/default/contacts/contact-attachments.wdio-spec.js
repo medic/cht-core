@@ -257,6 +257,7 @@ describe('Contact form attachments', () => {
     const filePicker = await photoLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
+    await commonPage.closeReloadModal(true);
     await resetButton.click();
 
     await browser.waitUntil(async () => {
@@ -300,6 +301,7 @@ describe('Contact form attachments', () => {
     const filePicker = await photoLabel.$('.file-picker');
     const resetButton = await filePicker.$('button.btn-reset');
 
+    await commonPage.closeReloadModal(true);
     await resetButton.click();
 
     await browser.waitUntil(async () => {
