@@ -1,24 +1,51 @@
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
-import * as Report from '../../src/remote/report';
 import { expect } from 'chai';
 
 describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
+  const sandbox = sinon.createSandbox();
+  const postResourceOuter = sandbox.stub();
+  const putResourceOuter = sandbox.stub();
+
+  let Report: typeof import('../../src/remote/report');
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
+  let postResourceInner: SinonStub;
+  let putResourceInner: SinonStub;
+
+  before(() => {
+    sinon
+      .stub(RemoteEnv, 'postResource')
+      .withArgs('api/v1/report')
+      .returns(postResourceOuter);
+    sinon
+      .stub(RemoteEnv, 'putResource')
+      .withArgs('api/v1/report')
+      .returns(putResourceOuter);
+
+    Reflect.deleteProperty(require.cache, require.resolve('../../src/remote/report'));
+    Report = require('../../src/remote/report');
+  });
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postResourceInner = sinon.stub();
+    postResourceOuter.returns(postResourceInner);
+    putResourceInner = sinon.stub();
+    putResourceOuter.returns(putResourceInner);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    sandbox.reset();
+  });
 
   describe('v1', () => {
     const identifier = { uuid: 'uuid' } as const;
@@ -117,15 +144,14 @@ describe('remote report', () => {
           reported_date: 11223344,
           contact: 'c1'
         };
-
-        const innerFn = sinon.stub().resolves(input);
-        const createStub = sinon.stub(Report.v1, 'create').returns(innerFn);
+        const expectedDoc = { ...input, _id: '1', _rev: '1' };
+        postResourceInner.resolves(expectedDoc);
 
         const reportDoc = await Report.v1.create(remoteContext)(input);
 
-        expect(reportDoc).to.deep.equal(input);
-        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
-        expect(innerFn.calledOnceWithExactly(input)).to.be.true;
+        expect(reportDoc).to.deep.equal(expectedDoc);
+        expect(postResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(input)).to.be.true;
       });
     });
 
@@ -139,15 +165,14 @@ describe('remote report', () => {
             _id: '3'
           }, _id: '1', _rev: '2'
         };
-
-        const innerFn = sinon.stub().resolves(input);
-        const updateStub = sinon.stub(Report.v1, 'update').returns(innerFn);
+        const expectedDoc = { ...input, _rev: '2' };
+        putResourceInner.resolves(expectedDoc);
 
         const reportDoc = await Report.v1.update(remoteContext)(input);
 
         expect(reportDoc).to.deep.equal(input);
-        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
-        expect(innerFn.calledOnceWithExactly(input)).to.be.true;
+        expect(putResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly(input)).to.be.true;
       });
     });
   });

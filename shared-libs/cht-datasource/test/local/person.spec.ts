@@ -37,6 +37,47 @@ describe('local person', () => {
   describe('v1', () => {
     const settings = { hello: 'world' } as const;
 
+    describe('isPerson', () => {
+      beforeEach(() => settingsGetAll.returns(settings));
+
+      it('returns true for valid person', () => {
+        const doc = { _id: 'contact-id', _rev: 'rev' };
+        isPerson.returns(true);
+
+        const result = Person.v1.isPerson(localContext.settings, doc);
+
+        expect(result).to.be.true;
+        expect(isPerson.calledOnceWithExactly(settings, doc)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+      });
+
+      it('returns false for docs with an invalid type', () => {
+        const doc = { _id: 'contact-id', _rev: 'rev' };
+        isPerson.returns(false);
+
+        const result = Person.v1.isPerson(localContext.settings, doc);
+
+        expect(result).to.be.false;
+        expect(isPerson.calledOnceWithExactly(settings, doc)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+      });
+
+      ([
+        null,
+        'contact-id',
+        { _id: 'contact-id' },
+        { _rev: 'rev' }
+      ] as unknown as Doc[]).forEach((doc) => {
+        it('returns false for invalid docs', () => {
+          const result = Person.v1.isPerson(localContext.settings, doc);
+
+          expect(result).to.be.false;
+          expect(isPerson.notCalled).to.be.true;
+          expect(settingsGetAll.notCalled).to.be.true;
+        });
+      });
+    });
+
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
       let getDocByIdOuter: SinonStub;

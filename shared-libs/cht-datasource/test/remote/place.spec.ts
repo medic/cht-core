@@ -1,24 +1,51 @@
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
-import * as Place from '../../src/remote/place';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 
 describe('remote place', () => {
   const remoteContext = {} as RemoteDataContext;
+  const sandbox = sinon.createSandbox();
+  const postResourceOuter = sandbox.stub();
+  const putResourceOuter = sandbox.stub();
+
+  let Place: typeof import('../../src/remote/place');
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
+  let postResourceInner: SinonStub;
+  let putResourceInner: SinonStub;
+
+  before(() => {
+    sinon
+      .stub(RemoteEnv, 'postResource')
+      .withArgs('api/v1/place')
+      .returns(postResourceOuter);
+    sinon
+      .stub(RemoteEnv, 'putResource')
+      .withArgs('api/v1/place')
+      .returns(putResourceOuter);
+
+    Reflect.deleteProperty(require.cache, require.resolve('../../src/remote/place'));
+    Place = require('../../src/remote/place');
+  });
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postResourceInner = sinon.stub();
+    postResourceOuter.returns(postResourceInner);
+    putResourceInner = sinon.stub();
+    putResourceOuter.returns(putResourceInner);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    sandbox.reset();
+  });
 
   describe('v1', () => {
     const identifier = { uuid: 'uuid' } as const;
@@ -110,15 +137,14 @@ describe('remote place', () => {
           name: 'user-1',
           parent: 'p1'
         };
-        const expected_doc = { ...placeInput, _id: '2', _rev: '1' };
-        const innerFn = sinon.stub().resolves(expected_doc);
-        const createStub = sinon.stub(Place.v1, 'create').returns(innerFn);
+        const expectedDoc = { ...placeInput, _id: '2', _rev: '1' };
+        postResourceInner.resolves(expectedDoc);
 
         const result = await Place.v1.create(remoteContext)(placeInput);
 
-        expect(result).to.deep.equal(expected_doc);
-        expect(createStub.calledOnceWithExactly(remoteContext)).to.be.true;
-        expect(innerFn.calledOnceWithExactly(placeInput)).to.be.true;
+        expect(result).to.deep.equal(expectedDoc);
+        expect(postResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
 
@@ -131,15 +157,14 @@ describe('remote place', () => {
           _id: '1',
           _rev: '1'
         };
-        const expected_doc = { ...placeInput, _id: '1', _rev: '2' };
-        const innerFn = sinon.stub().resolves(expected_doc);
-        const updateStub = sinon.stub(Place.v1, 'update').returns(innerFn);
+        const expectedDoc = { ...placeInput, _id: '1', _rev: '2' };
+        putResourceInner.resolves(expectedDoc);
 
         const result = await Place.v1.update(remoteContext)(placeInput);
 
-        expect(result).to.deep.equal(expected_doc);
-        expect(updateStub.calledOnceWithExactly(remoteContext)).to.be.true;
-        expect(innerFn.calledOnceWithExactly(placeInput)).to.be.true;
+        expect(result).to.deep.equal(expectedDoc);
+        expect(putResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
   });

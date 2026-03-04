@@ -16,7 +16,6 @@ export namespace v1 {
    * A report document.
    */
   export interface Report extends Doc {
-    readonly type: string
     readonly form: string
     readonly reported_date?: number
     readonly fields?: DataObject

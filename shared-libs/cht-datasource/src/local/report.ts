@@ -2,8 +2,7 @@ import { LocalDataContext } from './libs/data-context';
 import {
   createDoc,
   fetchAndFilterIds,
-  getDocById, getDocsByIds,
-  getDocUuidsByIdRange,
+  getDocById, getDocIdsByIdRange, getDocsByIds,
   queryDocIdsByKey,
   queryDocIdsByRange, updateDoc
 } from './libs/doc';
@@ -47,7 +46,7 @@ const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
 };
 
 const getSupportedForms = (medicDb: PouchDB.Database<Doc>) => {
-  const getMedicDocUuidsByIdRange = getDocUuidsByIdRange(medicDb);
+  const getMedicDocUuidsByIdRange = getDocIdsByIdRange(medicDb);
   return async () => {
     const formDocIds = await getMedicDocUuidsByIdRange(FORM_DOC_ID_PREFIX, `${FORM_DOC_ID_PREFIX}\ufff0`);
     return formDocIds.map(id => id.substring(FORM_DOC_ID_PREFIX.length));

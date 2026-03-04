@@ -11,7 +11,6 @@ import {
   getDocsByIds,
   queryDocIdsByKey,
   queryDocIdsByRange,
-  queryDocs,
   queryDocsByKey,
   queryDocsByRange,
   updateDoc,
@@ -184,57 +183,6 @@ describe('local doc lib', () => {
       expect(result).to.deep.equal([doc0, doc0]);
       expect(dbAllDocs.calledOnceWithExactly({ keys: [doc0._id, doc0._id], include_docs: true })).to.be.true;
       expect(isDoc.args).to.deep.equal([[doc0], [doc0]]);
-    });
-  });
-
-  describe('queryDocs', () => {
-    it('returns docs from a view query', async () => {
-      const doc0 = { _id: 'doc0' };
-      const doc1 = { _id: 'doc1' };
-      dbQuery.resolves({
-        rows: [
-          { doc: doc0 },
-          { doc: doc1 }
-        ]
-      });
-      isDoc.returns(true);
-
-      const options = { include_docs: true, key: 'test-key' };
-      const result = await queryDocs(db, 'medic-client/some_view', options);
-
-      expect(result).to.deep.equal([doc0, doc1]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/some_view', options)).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0], [doc1]]);
-    });
-
-    it('returns null for entries that are not docs', async () => {
-      const doc0 = { _id: 'doc0' };
-      const notADoc = { something: 'else' };
-      dbQuery.resolves({
-        rows: [
-          { doc: doc0 },
-          { doc: notADoc }
-        ]
-      });
-      isDoc.callsFake(doc => doc === doc0);
-
-      const options = { include_docs: true };
-      const result = await queryDocs(db, 'medic-client/some_view', options);
-
-      expect(result).to.deep.equal([doc0, null]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/some_view', options)).to.be.true;
-      expect(isDoc.args).to.deep.equal([[doc0], [notADoc]]);
-    });
-
-    it('returns empty array if no rows are returned', async () => {
-      dbQuery.resolves({ rows: [] });
-
-      const options = { include_docs: true };
-      const result = await queryDocs(db, 'medic-client/some_view', options);
-
-      expect(result).to.deep.equal([]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/some_view', options)).to.be.true;
-      expect(isDoc.notCalled).to.be.true;
     });
   });
 

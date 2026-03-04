@@ -37,6 +37,45 @@ describe('local contact', () => {
       settingsGetAll.returns(settings);
     });
 
+    describe('isContact', () => {
+      it('returns true for valid contact', () => {
+        const doc = { _id: 'contact-id', _rev: 'rev' };
+        isContact.returns(true);
+
+        const result = Contact.v1.isContact(localContext.settings, doc);
+
+        expect(result).to.be.true;
+        expect(isContact.calledOnceWithExactly(settings, doc)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+      });
+
+      it('returns false for docs with an invalid type', () => {
+        const doc = { _id: 'contact-id', _rev: 'rev' };
+        isContact.returns(false);
+
+        const result = Contact.v1.isContact(localContext.settings, doc);
+
+        expect(result).to.be.false;
+        expect(isContact.calledOnceWithExactly(settings, doc)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+      });
+
+      ([
+        null,
+        'contact-id',
+        { _id: 'contact-id' },
+        { _rev: 'rev' }
+      ] as unknown as Doc[]).forEach((doc) => {
+        it('returns false for invalid docs', () => {
+          const result = Contact.v1.isContact(localContext.settings, doc);
+
+          expect(result).to.be.false;
+          expect(isContact.notCalled).to.be.true;
+          expect(settingsGetAll.notCalled).to.be.true;
+        });
+      });
+    });
+
     describe('get', () => {
       const identifier = { uuid: 'uuid' } as const;
       let getDocByIdOuter: SinonStub;

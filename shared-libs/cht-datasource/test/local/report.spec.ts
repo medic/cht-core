@@ -355,8 +355,8 @@ describe('local report', () => {
       let getDocByIdInner: SinonStub;
       let createDocOuter: SinonStub;
       let createDocInner: SinonStub;
-      let getDocUuidsByIdRangeOuter: SinonStub;
-      let getDocUuidsByIdRangeInner: SinonStub;
+      let getDocIdsByIdRangeOuter: SinonStub;
+      let getDocIdsByIdRangeInner: SinonStub;
       let isContact: SinonStub;
       let getReportedDateTimestamp: SinonStub;
 
@@ -369,10 +369,10 @@ describe('local report', () => {
         createDocOuter = sinon
           .stub(LocalDoc, 'createDoc')
           .returns(createDocInner);
-        getDocUuidsByIdRangeInner = sinon.stub().resolves(supportedForms.map(f => `form:${f}`));
-        getDocUuidsByIdRangeOuter = sinon
-          .stub(LocalDoc, 'getDocUuidsByIdRange')
-          .returns(getDocUuidsByIdRangeInner);
+        getDocIdsByIdRangeInner = sinon.stub().resolves(supportedForms.map(f => `form:${f}`));
+        getDocIdsByIdRangeOuter = sinon
+          .stub(LocalDoc, 'getDocIdsByIdRange')
+          .returns(getDocIdsByIdRangeInner);
         isContact = sinon
           .stub(LocalContact.v1, 'isContact')
           .returns(true);
@@ -393,9 +393,9 @@ describe('local report', () => {
         expect(result).to.equal(reportDoc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
-        expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
+        expect(getDocIdsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(isContact.calledOnceWithExactly(localContext.settings, contact)).to.be.true;
         expect(getReportedDateTimestamp.calledOnceWithExactly(undefined)).to.be.true;
         const expectedReport = {
@@ -419,9 +419,9 @@ describe('local report', () => {
         expect(result).to.equal(reportDoc);
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
-        expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
+        expect(getDocIdsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(isContact.calledOnceWithExactly(localContext.settings, contact)).to.be.true;
         expect(getReportedDateTimestamp.calledOnceWithExactly(input.reported_date)).to.be.true;
         const expectedReport = {
@@ -445,9 +445,9 @@ describe('local report', () => {
 
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.notCalled).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+        expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
         expect(isContact.notCalled).to.be.true;
         expect(getReportedDateTimestamp.notCalled).to.be.true;
         expect(createDocInner.notCalled).to.be.true;
@@ -464,9 +464,9 @@ describe('local report', () => {
 
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
-        expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
+        expect(getDocIdsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(isContact.notCalled).to.be.true;
         expect(getReportedDateTimestamp.notCalled).to.be.true;
         expect(createDocInner.notCalled).to.be.true;
@@ -489,9 +489,9 @@ describe('local report', () => {
 
           expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(createDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-          expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getDocByIdInner.calledOnceWithExactly(input.contact)).to.be.true;
-          expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
+          expect(getDocIdsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
           expect(isContact.calledOnceWithExactly(localContext.settings, invalidContact)).to.be.true;
           expect(getReportedDateTimestamp.notCalled).to.be.true;
           expect(createDocInner.notCalled).to.be.true;
@@ -532,8 +532,8 @@ describe('local report', () => {
       let getDocsByIdsInner: SinonStub;
       let updateDocOuter: SinonStub;
       let updateDocInner: SinonStub;
-      let getDocUuidsByIdRangeOuter: SinonStub;
-      let getDocUuidsByIdRangeInner: SinonStub;
+      let getDocIdsByIdRangeOuter: SinonStub;
+      let getDocIdsByIdRangeInner: SinonStub;
       let getUpdatedContactOuter: SinonStub;
       let getUpdatedContactInner: SinonStub;
 
@@ -548,12 +548,12 @@ describe('local report', () => {
         updateDocOuter = sinon
           .stub(LocalDoc, 'updateDoc')
           .returns(updateDocInner);
-        getDocUuidsByIdRangeInner = sinon
+        getDocIdsByIdRangeInner = sinon
           .stub()
           .resolves(supportedForms.map(f => `form:${f}`));
-        getDocUuidsByIdRangeOuter = sinon
-          .stub(LocalDoc, 'getDocUuidsByIdRange')
-          .returns(getDocUuidsByIdRangeInner);
+        getDocIdsByIdRangeOuter = sinon
+          .stub(LocalDoc, 'getDocIdsByIdRange')
+          .returns(getDocIdsByIdRangeInner);
         getUpdatedContactInner = sinon.stub();
         getUpdatedContactOuter = sinon
           .stub(Lineage, 'getUpdatedContact')
@@ -575,9 +575,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-1'])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+        expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
         expect(updateDocInner.calledOnceWithExactly(updateInput)).to.be.true;
       });
@@ -595,9 +595,9 @@ describe('local report', () => {
           expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-          expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getDocsByIdsInner.notCalled).to.be.true;
-          expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+          expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
           expect(getUpdatedContactInner.notCalled).to.be.true;
           expect(updateDocInner.notCalled).to.be.true;
         });
@@ -612,9 +612,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([originalReport._id, 'contact-1'])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+        expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.notCalled).to.be.true;
         expect(updateDocInner.notCalled).to.be.true;
       });
@@ -630,9 +630,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, undefined])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+        expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, null)).to.be.true;
         expect(updateDocInner.notCalled).to.be.true;
       });
@@ -656,9 +656,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, undefined])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+        expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(
           originalReportNoContact,
           updateInput,
@@ -686,9 +686,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, contactDoc._id])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+        expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(
           originalReportNoContact,
           updateInput,
@@ -710,9 +710,9 @@ describe('local report', () => {
           expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-          expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-1'])).to.be.true;
-          expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+          expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
           expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
           expect(updateDocInner.notCalled).to.be.true;
         });
@@ -732,9 +732,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-1'])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
+        expect(getDocIdsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
         expect(updateDocInner.calledOnceWithExactly(updateInput)).to.be.true;
       });
@@ -752,9 +752,9 @@ describe('local report', () => {
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-        expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-1'])).to.be.true;
-        expect(getDocUuidsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
+        expect(getDocIdsByIdRangeInner.calledOnceWithExactly('form:', 'form:\ufff0')).to.be.true;
         expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, contactDoc)).to.be.true;
         expect(updateDocInner.notCalled).to.be.true;
       });
@@ -780,9 +780,9 @@ describe('local report', () => {
           expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(updateDocOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getUpdatedContactOuter.calledOnceWithExactly(localContext.settings, localContext.medicDb)).to.be.true;
-          expect(getDocUuidsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(getDocIdsByIdRangeOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(getDocsByIdsInner.calledOnceWithExactly([updateInput._id, 'contact-2'])).to.be.true;
-          expect(getDocUuidsByIdRangeInner.notCalled).to.be.true;
+          expect(getDocIdsByIdRangeInner.notCalled).to.be.true;
           expect(getUpdatedContactInner.args).to.deep.equal([[originalReport, updateInput, newContact]]);
           expect(getUpdatedContactInner.calledOnceWithExactly(originalReport, updateInput, newContact)).to.be.true;
           // Minified lineage set on updated doc

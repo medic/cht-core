@@ -15,7 +15,11 @@ export const getDocById = (db: PouchDB.Database<Doc>) => async (id: string): Pro
     throw err;
   });
 
-/** @internal */
+/**
+ * Retrieves the identified documents from the database. The order of the provided array is preserved in the returned
+ * array of docs regardless of whether all the docs exist or not (or if all the provided ids are valued or not).
+ * @internal
+ */
 export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (
   ids: (string | undefined)[]
 ): Promise<Nullable<Doc>[]> => {
@@ -26,19 +30,6 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (
   return response.rows
     .map(({ doc }) => doc)
     .map(doc => isDoc(doc) ? doc : null);
-};
-
-/** @internal */
-export const getDocUuidsByIdRange = (db: PouchDB.Database<Doc>) => async (
-  startkey: string,
-  endkey: string
-): Promise<string[]> => {
-  const response = await db.allDocs({
-    startkey,
-    endkey,
-    include_docs: false,
-  });
-  return response.rows.map(({ id }) => id);
 };
 
 /** @internal */
@@ -58,12 +49,11 @@ export const getDocIdsByIdRange = (db: PouchDB.Database<Doc>) => async (
   return response.rows.map(({ id }) => id);
 };
 
-/** @internal */
-export const queryDocs = (
+const queryDocs = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
-): Promise<Nullable<Doc>[]> => db
+) => db
   .query(view, options)
   .then(({ rows }) => rows.map(({ doc }) => isDoc(doc) ? doc : null));
 
