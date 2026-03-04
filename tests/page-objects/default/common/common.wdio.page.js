@@ -206,11 +206,8 @@ const clickFastActionById = async (id) => {
  * @returns {Promise<HTMLElement>}
  */
 const findVisibleFAB = async () => {
-  for (const button of await fabSelectors.fastActionFAB()) {
-    if (await button.isDisplayed()) {
-      return button;
-    }
-  }
+  const buttons = [...(await fabSelectors.fastActionFAB())];
+  return Promise.race(buttons.map(button => button.waitForDisplayed().then(() => button)));
 };
 
 const clickFastActionFAB = async ({ actionId, waitForList }) => {
