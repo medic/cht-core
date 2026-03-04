@@ -147,7 +147,7 @@ export const assertDoesNotHaveField = (
   ErrorClass: new (message: string) => Error = Error
 ): void => {
   if (!(value[name] === undefined || value[name] === null)) {
-    throw new ErrorClass(`The [${String(name)}] field must not be set.`);
+    throw new ErrorClass(`The [${name}] field must not be set.`);
   }
 };
 
@@ -159,7 +159,7 @@ export function assertHasOptionalField <T extends Record<string, unknown>, N ext
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<N, FieldTypeToValue[K] | undefined> {
   if (name in value && !hasField(value, { name, type })) {
-    throw new ErrorClass(`The [${String(name)}] field must have the type [${String(type)}].`);
+    throw new ErrorClass(`The [${name}] field must have the type [${type}].`);
   }
 }
 
@@ -171,7 +171,7 @@ export function assertHasRequiredField <T extends Record<string, unknown>, N ext
   ErrorClass: new (message: string) => Error = Error
 ): asserts value is T & Record<N, FieldTypeToValue[K]> {
   if (!hasField(value, { name, type }) || isBlankString(value[name])) {
-    throw new ErrorClass(`The [${String(name)}] field must have a [${String(type)}] value.`);
+    throw new ErrorClass(`The [${name}] field must have a [${type}] value.`);
   }
 }
 
