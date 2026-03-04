@@ -192,7 +192,7 @@ const baseConfig = {
   mochaOpts: {
     ui: 'bdd',
     timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
-    retries: DEBUG ? 0 : 5,
+    retries: DEBUG ? 0 : 0,
   },
   //
   // =====
