@@ -28,15 +28,15 @@ When development is ready to begin one of the maintainers should be nominated as
 Once the PR has been merged into `master`, and the `master` branch has the new version number, then the release process can start:
 
 - [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Notify the community by creating a post titled `<major>.<minor>.<patch> Beta Releases` in the [development](https://forum.communityhealthtoolkit.org/c/development/7) category of the CHT forum using this [template](https://forum.communityhealthtoolkit.org/new-topic?title=%3Cmajor%3E.%3Cminor%3E.%3Cpatch%3E%20Beta%20Releases&body=I%27ve%20just%20created%20the%20%60%3Cmajor%3E.%3Cminor%3E.x%60%20release%20branch.%20Please%20be%20aware%20that%20any%20further%20changes%20intended%20for%20this%20release%20will%20have%20to%20be%20merged%20to%20%60master%60%20then%20backported.%20Thanks%21&category=development).
-- [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by creating a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push the created tag.
-- [ ] Once the CI completes successfully notify the community by adding a comment in the forum post created above using this template:
+- [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by creating a lightweight git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`) and then push it (e.g. `git push origin tag  <major>.<minor>.<patch>-beta.1`).
+- [ ] Once the CI completes successfully and images are built, notify the community by adding a comment in the forum post created above using this template:
 ```
 I’ve just created the `<major>.<minor>.<patch>-beta.1` tag. 
 Please let me know if there’s any final update we need to make. 
 If all is good, then in 24h, I will start the release. Thanks!
 ```
-- [ ] The beta tag will automatically trigger the scalability build. Once it passes, check for the scalability results [here](https://github.com/medic/scalability-results/tree/main/results). More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
-- [ ] Go to the [Issues tab](https://github.com/medic/cht-core/issues) and filter the issues with `is:issue label:"Affects: 4.x.x" ` , replace `4.x.x` with the previous version number. Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.  
+- [ ] Go to the [scalability action](https://github.com/medic/cht-core/actions/workflows/scalability.yml) and on the top right, click into "Run workflow".  Under "Use workflow from" first choose "tags" then select the `<major>.<minor>.<minor>-beta.1` tag created above. Then "Run workflow". Once it passes, check for the scalability results [here](https://github.com/medic/scalability-results/tree/main/results). More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
+- [ ] Go to the [Issues tab](https://github.com/medic/cht-core/issues) and filter the issues with `is:issue label:"Affects: 5.x.x" ` , replace `5.x.x` with the previous version number. Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 5.x.x` label.  
 - [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
   - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases).
   - [ ] Ensure all issues are in the GH Milestone, they have human readable descriptions, and that they're correctly labelled. In particular: they have one "Type" label, "UI/UX" if they change the UI, and "Breaking change" if appropriate.
