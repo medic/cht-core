@@ -91,7 +91,7 @@ And a screenshot of the same:
 To force CI to generate the release notes markdown and skip any commit checks, pass in an extra `skip` argument:
 
 ```shell
-gh workflow run release-notes.yml -f version=5.2.0 -f skip_commit_checks='--skip-commit-validation'
+gh workflow run release-notes.yml -f milestone=5.2.0 -f skip_commit_checks='--skip-commit-validation'
 ```
 
 ## Development
