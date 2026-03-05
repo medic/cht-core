@@ -6,13 +6,13 @@ import * as Report from '../report';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import { normalizeFreetextQualifier, validateCursor } from './libs/core';
-import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../libs/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
-  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/reports_by_freetext');
-  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/reports_by_freetext');
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, VIEWS.REPORTS_BY_FREETEXT);
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, VIEWS.REPORTS_BY_FREETEXT);
 
   return (qualifier: FreetextQualifier) => {
     if (isKeyedFreetextQualifier(qualifier)) {
@@ -74,7 +74,7 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = ({ medicDb }: LocalDataContext) => {
-    const queryNouveauFreetext = queryByFreetext(medicDb, 'reports_by_freetext');
+    const queryNouveauFreetext = queryByFreetext(medicDb, NOUVEAU_INDEXES.REPORTS_BY_FREETEXT);
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 

@@ -1,6 +1,7 @@
 const bowser = require('bowser');
 
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
 const db = require('../../db');
 
 const getBrowser = (userAgent) => {
@@ -13,7 +14,7 @@ const getBrowser = (userAgent) => {
 };
 
 module.exports = async () => {
-  const { rows } = await db.medicUsersMeta.query('users-meta/device_by_user', { group: true });
+  const { rows } = await db.medicUsersMeta.query(VIEWS.DEVICE_BY_USER, { group: true });
   return rows.map(doc => {
     const [user, deviceId] = doc.key;
     const date = doc.value.date;

@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
-const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES, NOUVEAU_INDEXES, nouveauUrl } = require('@medic/constants');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -408,8 +408,8 @@ describe('Users API', () => {
     let onlineRequestOptions;
     const nbrOfflineDocs = 30;
     const nbrTasks = 20;
-    // 6 replicated ddocs + org.couchdb.user:offline + fixture:offline + OfflineUser
-    let expectedNbrDocs = nbrOfflineDocs + 9;
+    // 5 replicated ddocs + org.couchdb.user:offline + fixture:offline + OfflineUser
+    let expectedNbrDocs = nbrOfflineDocs + 8;
     let docsForAll;
 
     before(async () => {
@@ -427,9 +427,9 @@ describe('Users API', () => {
       })));
       await utils.saveDocs(docs);
       const resp = await utils.requestOnTestDb(
-        '/_design/replication/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
+        `/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}?limit=100000&q=key:_all`
       );
-      docsForAll = resp.hits.length + 7; // 6 replicated ddocs + org.couchdb.user:doc
+      docsForAll = resp.hits.length + 6; // 5 replicated ddocs + org.couchdb.user:doc
       expectedNbrDocs += resp.hits.length;
     });
 

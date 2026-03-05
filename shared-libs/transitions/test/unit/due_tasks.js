@@ -9,6 +9,7 @@ const db = require('../../src/db');
 const request = require('@medic/couch-request');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
+const { VIEWS, viewUrl } = require('@medic/constants');
 
 describe('due tasks', () => {
   let schedule;
@@ -1088,7 +1089,7 @@ describe('due tasks', () => {
       assert.equal(view.callCount, 1);
       assert.deepEqual(view.args[0], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1231,7 +1232,7 @@ describe('due tasks', () => {
       assert.equal(request.get.callCount, 3);
       assert.deepEqual(request.get.args[0], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1242,7 +1243,7 @@ describe('due tasks', () => {
       }]);
       assert.deepEqual(request.get.args[1], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1254,7 +1255,7 @@ describe('due tasks', () => {
       }]);
       assert.deepEqual(request.get.args[2], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1472,7 +1473,7 @@ describe('due tasks', () => {
       assert.equal(request.get.callCount, 3);
       assert.deepEqual(request.get.args[0], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1483,7 +1484,7 @@ describe('due tasks', () => {
       }]);
       assert.deepEqual(request.get.args[1], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1495,7 +1496,7 @@ describe('due tasks', () => {
       }]);
       assert.deepEqual(request.get.args[2], [{
         baseUrl: 'http://admin:pass@127.0.0.1:5984/medic',
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
@@ -1599,7 +1600,7 @@ describe('due tasks', () => {
       assert.equal(request.get.callCount, 3);
 
       assert.deepNestedInclude(request.get.args[0][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 1000,
@@ -1608,7 +1609,7 @@ describe('due tasks', () => {
         }
       });
       assert.deepNestedInclude(request.get.args[1][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 2000,
@@ -1618,7 +1619,7 @@ describe('due tasks', () => {
         }
       });
       assert.deepNestedInclude(request.get.args[2][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 2000,
@@ -1733,7 +1734,7 @@ describe('due tasks', () => {
       assert.equal(request.get.callCount, 4);
 
       assert.deepNestedInclude(request.get.args[0][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 1000,
@@ -1742,7 +1743,7 @@ describe('due tasks', () => {
         }
       });
       assert.deepNestedInclude(request.get.args[1][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 2000,
@@ -1752,7 +1753,7 @@ describe('due tasks', () => {
         }
       });
       assert.deepNestedInclude(request.get.args[2][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 4000,
@@ -1762,7 +1763,7 @@ describe('due tasks', () => {
         }
       });
       assert.deepNestedInclude(request.get.args[3][0], {
-        uri: '/_design/medic-sms/_view/messages_by_state',
+        uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
         qs: {
           include_docs: true,
           limit: 4000,

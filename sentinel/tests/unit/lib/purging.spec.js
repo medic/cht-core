@@ -14,7 +14,7 @@ const db = require('../../../src/db');
 const chtDatasource = require('@medic/cht-datasource');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, NOUVEAU_INDEXES, nouveauUrl, VIEWS } = require('@medic/constants');
 const dataContext = require('../../../src/data-context');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 
@@ -403,7 +403,7 @@ describe('ServerSidePurge', () => {
 
   describe('purgeContacts', () => {
     const getContactsByTypeArgs = ({ limit, id = '', key }) => ([
-      'shared-contacts/contacts_by_type',
+      VIEWS.CONTACTS_BY_TYPE,
       {
         limit: limit,
         start_key: JSON.stringify(key || (id ? `key${id}` : '')),
@@ -668,28 +668,28 @@ describe('ServerSidePurge', () => {
 
         chai.expect(request.post.args[0]).excludingEvery('q').to.deep.equal([{
           body: { limit: 200000 },
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`
         }]);
         chai.expect(request.post.args[1]).excludingEvery('q').to.deep.equal([{
           body: {
             limit: 200000,
             bookmark: '1',
           },
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`
         }]);
 
         chai.expect(request.post.args[2]).excludingEvery('q').to.deep.equal([{
           body: { limit: 200000, },
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`
         }]);
         chai.expect(request.post.args[3]).excludingEvery('q').to.deep.equal([{
           body: { limit: 200000, bookmark: '2' },
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`
         }]);
 
         chai.expect(request.post.args[4]).excludingEvery('q').to.deep.equal([{
           body: { limit: 200000, },
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`
         }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(2);
@@ -873,7 +873,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(request.post.args[0]).to.deep.equal([{
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:(first OR f1 OR s1 OR f2 OR f4 OR s4) AND type:data_record',
             limit: 200000
@@ -1029,7 +1029,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(request.post.args[0]).to.deep.equal([{
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:(first OR f1 OR s1 OR f2 OR s2) AND type:data_record',
             limit: 200000
@@ -1139,7 +1139,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(request.post.args[0]).to.deep.equal([{
-          uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:(first OR f1 OR s1 OR f2) AND type:data_record',
             limit: 200000
@@ -1511,7 +1511,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(request.post.args[0]).to.deep.equal([{
-          url: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          url: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:_unassigned',
             limit: 20000,
@@ -1548,7 +1548,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(request.post.callCount).to.equal(3);
         chai.expect(request.post.args[0]).to.deep.equal([{
-          url: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          url: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:_unassigned',
             limit: 20000,
@@ -1557,7 +1557,7 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(request.post.args[1]).to.deep.equal([{
-          url: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          url: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:_unassigned',
             limit: 20000,
@@ -1567,7 +1567,7 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(request.post.args[2]).to.deep.equal([{
-          url: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+          url: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
           body: {
             q: 'key:_unassigned',
             limit: 20000,
@@ -1817,7 +1817,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(1);
         chai.expect(db.queryMedic.args[0]).to.deep.equal([
-          'sentinel-schedule/tasks_in_terminal_state',
+          VIEWS.TASKS_IN_TERMINAL_STATE,
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),
@@ -1853,7 +1853,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeTasks')(roles).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(3);
         chai.expect(db.queryMedic.args[0]).to.deep.equal([
-          'sentinel-schedule/tasks_in_terminal_state',
+          VIEWS.TASKS_IN_TERMINAL_STATE,
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),
@@ -1863,7 +1863,7 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(db.queryMedic.args[1]).to.deep.equal([
-          'sentinel-schedule/tasks_in_terminal_state',
+          VIEWS.TASKS_IN_TERMINAL_STATE,
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),
@@ -1873,7 +1873,7 @@ describe('ServerSidePurge', () => {
         ]);
 
         chai.expect(db.queryMedic.args[2]).to.deep.equal([
-          'sentinel-schedule/tasks_in_terminal_state',
+          VIEWS.TASKS_IN_TERMINAL_STATE,
           {
             limit: 20000,
             end_key: JSON.stringify(getDaysAgo(60)),

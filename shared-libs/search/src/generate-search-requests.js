@@ -1,5 +1,6 @@
 const _ = require('lodash/core');
 const moment = require('moment');
+const { VIEWS } = require('@medic/constants');
 
 const MINIMUM_SEARCH_TERM_LENGTH = 3;
 
@@ -52,7 +53,7 @@ const reportedDateRequest = (filters) => {
   const to = moment(dateRange.to);
   const from = moment(dateRange.from || 0);
   return {
-    view: 'shared-reports/reports_by_date',
+    view: VIEWS.REPORTS_BY_DATE,
     params: {
       startkey: [ from.valueOf() ],
       endkey: [ to.valueOf() ]
@@ -62,7 +63,7 @@ const reportedDateRequest = (filters) => {
 
 const formRequest = (filters) => {
   const mapKeysFunc = forms => forms.map(form => [ form.code ]);
-  const req = getRequestForMultidropdown('shared-reports/reports_by_form', filters.forms, mapKeysFunc);
+  const req = getRequestForMultidropdown(VIEWS.REPORTS_BY_FORM, filters.forms, mapKeysFunc);
   if (req) {
     req.params.reduce = false;
   }
@@ -70,15 +71,15 @@ const formRequest = (filters) => {
 };
 
 const validityRequest = (filters) => {
-  return getRequestForBooleanKey('webapp-reports/reports_by_validity', filters.valid);
+  return getRequestForBooleanKey(VIEWS.REPORTS_BY_VALIDITY, filters.valid);
 };
 
 const verificationRequest = (filters) => {
-  return getRequestWithMappedKeys('webapp-reports/reports_by_verification', filters.verified, getKeysArray);
+  return getRequestWithMappedKeys(VIEWS.REPORTS_BY_VERIFICATION, filters.verified, getKeysArray);
 };
 
 const placeRequest = (filters) => {
-  return getRequestForMultidropdown('webapp-reports/reports_by_place', filters.facilities, getKeysArray);
+  return getRequestForMultidropdown(VIEWS.REPORTS_BY_PLACE, filters.facilities, getKeysArray);
 };
 
 const freetextRequestParams = (word) => {
@@ -111,7 +112,7 @@ const freetextRequest = (filters, view) => {
 
 const subjectRequest = (filters) => {
   const subjectIds = filters.subjectIds;
-  return getRequestWithMappedKeys('shared-reports/reports_by_subject', subjectIds);
+  return getRequestWithMappedKeys(VIEWS.REPORTS_BY_SUBJECT, subjectIds);
 };
 
 const getContactsByParentRequest = (filters) => {
@@ -121,7 +122,7 @@ const getContactsByParentRequest = (filters) => {
 
   const types = filters?.types?.selected;
   return {
-    view: 'webapp-contacts/contacts_by_parent',
+    view: VIEWS.CONTACTS_BY_PARENT,
     params: {
       keys: types ? types.map(type => ([ filters.parent, type ])) : [ filters.parent ],
     },
@@ -132,7 +133,7 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
   if (!filters.types) {
     return;
   }
-  const view = 'shared-contacts/contacts_by_type';
+  const view = VIEWS.CONTACTS_BY_TYPE;
   const {selected, options} = filters.types;
   const request= (selected && options)
     ? getRequestForMultidropdown(view, filters.types, getKeysArray)
@@ -157,7 +158,7 @@ const contactTypeRequest = (filters, sortByLastVisitedDate) => {
 
 const defaultReportRequest = () => {
   return {
-    view: 'shared-reports/reports_by_date',
+    view: VIEWS.REPORTS_BY_DATE,
     ordered: true,
     params: { descending: true }
   };
@@ -165,7 +166,7 @@ const defaultReportRequest = () => {
 
 const defaultContactRequest = () => {
   return {
-    view: 'shared-contacts/contacts_by_type',
+    view: VIEWS.CONTACTS_BY_TYPE,
     params: { reduce: false },
     ordered: true
   };
@@ -173,7 +174,7 @@ const defaultContactRequest = () => {
 
 const sortByLastVisitedDate = () => {
   return {
-    view: 'webapp-contacts/contacts_by_last_visited',
+    view: VIEWS.CONTACTS_BY_LAST_VISITED,
     map: (row) => {
       row.id = row.key;
       row.value = row.value.max;

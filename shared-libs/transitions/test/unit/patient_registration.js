@@ -1,6 +1,7 @@
 const  moment = require('moment');
 const sinon = require('sinon');
 const assert = require('chai').assert;
+const { VIEWS } = require('@medic/constants');
 const rewire = require('rewire');
 const db = require('../../src/db');
 const utils = require('../../src/lib/utils');
@@ -560,7 +561,7 @@ describe('patient registration', () => {
       });
 
       db.medic.query
-        .withArgs('shared-contacts/contacts_by_reference')
+        .withArgs(VIEWS.CONTACTS_BY_REFERENCE)
         .resolves({
           rows: [{ key: ['shortcode', 'not_unique'], id: 'some_patient' }]
         });
@@ -577,7 +578,7 @@ describe('patient registration', () => {
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'shared-contacts/contacts_by_reference');
+        assert.deepEqual(db.medic.query.args[0][0], VIEWS.CONTACTS_BY_REFERENCE);
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'not_unique'] });
 
         assert.equal(db.medic.post.callCount, 1);
@@ -619,7 +620,7 @@ describe('patient registration', () => {
 
       sinon.stub(db.medic, 'query');
       db.medic.query
-        .withArgs('shared-contacts/contacts_by_reference')
+        .withArgs(VIEWS.CONTACTS_BY_REFERENCE)
         .resolves({
           rows: []
         });
@@ -635,7 +636,7 @@ describe('patient registration', () => {
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
         assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'shared-contacts/contacts_by_reference');
+        assert.deepEqual(db.medic.query.args[0][0], VIEWS.CONTACTS_BY_REFERENCE);
         assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'unique'] });
 
         assert.equal(db.medic.post.callCount, 1);

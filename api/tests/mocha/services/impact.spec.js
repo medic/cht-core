@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const chai = require('chai').use(require('chai-as-promised'));
 const db = require('../../../src/db');
 const service = require('../../../src/services/impact');
+const { VIEWS } = require('@medic/constants');
 describe('impact service', () => {
   afterEach(() => sinon.restore());
 
@@ -10,7 +11,7 @@ describe('impact service', () => {
 
     const medicQuery = sinon.stub(db.medic, 'query');
 
-    medicQuery.withArgs('shared-contacts/contacts_by_type', sinon.match.object)
+    medicQuery.withArgs(VIEWS.CONTACTS_BY_TYPE, sinon.match.object)
       .resolves({
         rows: contacts || [
           { key: ['person'], value: 5 },
@@ -18,7 +19,7 @@ describe('impact service', () => {
         ]
       });
 
-    medicQuery.withArgs('shared-reports/reports_by_form', sinon.match.object)
+    medicQuery.withArgs(VIEWS.REPORTS_BY_FORM, sinon.match.object)
       .resolves({
         rows: reports || [
           { key: ['L'], value: 3 },
@@ -89,10 +90,10 @@ describe('impact service', () => {
     sinon.stub(db.users, 'info').resolves({ doc_count: 1 });
     const medicQuery = sinon.stub(db.medic, 'query');
 
-    medicQuery.withArgs('shared-contacts/contacts_by_type', sinon.match.object)
+    medicQuery.withArgs(VIEWS.CONTACTS_BY_TYPE, sinon.match.object)
       .rejects(new Error('Error fetching contacts by type: db fail'));
 
-    medicQuery.withArgs('shared-reports/reports_by_form', sinon.match.object)
+    medicQuery.withArgs(VIEWS.REPORTS_BY_FORM, sinon.match.object)
       .resolves({ rows: [{ key: ['L'], value: 10 }] });
 
     const result = await service.jsonV1();

@@ -3,6 +3,7 @@ _.uniq = require('lodash/uniq');
 const constants = require('@medic/constants');
 const DOC_IDS = constants.DOC_IDS;
 const DOC_TYPES = constants.DOC_TYPES;
+const VIEWS = constants.VIEWS;
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
@@ -91,7 +92,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       $scope.loading = true;
       $q
         .all([
-          DB().query('shared/doc_by_type', {
+          DB().query(VIEWS.DOC_BY_TYPE, {
             key: [ DOC_TYPES.TRANSLATIONS ],
             include_docs: true
           }),

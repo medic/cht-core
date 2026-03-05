@@ -11,6 +11,7 @@ const request = require('@medic/couch-request');
 const nouveau = require('@medic/nouveau');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
+const { NOUVEAU_INDEXES, VIEWS, nouveauUrl } = require('@medic/constants');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
@@ -277,7 +278,7 @@ const getRecordsForContactsBatch = async (subjectIds) => {
       opts.bookmark = bookmark;
     }
     const result = await request.post({
-      uri: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+      uri: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
       body: opts
     });
 
@@ -402,7 +403,7 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
   // using `db.queryMedic` library because PouchDB doesn't support `startkey_docid` in view queries
   // using `startkey_docid` because using `skip` is *very* slow
   return db
-    .queryMedic('shared-contacts/contacts_by_type', queryString)
+    .queryMedic(VIEWS.CONTACTS_BY_TYPE, queryString)
     .then(result => {
       result.rows.forEach(row => {
         if (row.id === startKeyDocId) {
@@ -455,7 +456,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
       opts.bookmark = startKey;
     }
     const results = await request.post({
-      url: `${environment.couchUrl}/_design/replication/_nouveau/docs_by_replication_key`,
+      url: `${environment.couchUrl}/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
       body: opts,
     });
 
@@ -512,7 +513,7 @@ const purgeTasks = async (roles) => {
   let nextBatch;
 
   // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('sentinel-schedule/tasks_in_terminal_state', {
+  const getBatch = () => db.queryMedic(VIEWS.TASKS_IN_TERMINAL_STATE, {
     limit: MAX_BATCH_SIZE,
     end_key: JSON.stringify(maximumEmissionEndDate),
     start_key: JSON.stringify(startKey),
@@ -624,7 +625,7 @@ const writePurgeLog = (roles, start, error) => {
 // - reads all user documents from the `_users` database to comprise a list of unique sets of roles
 // - creates a database for each role set with the name `<main db name>-purged-role-<hash>` where `hash` is an md5 of
 // the JSON.Stringify-ed list of roles
-// - iterates over all contacts by querying `shared-contacts/contacts_by_type` in batches
+// - iterates over all contacts by querying `shared/contacts_by_type` in batches
 // - for every batch of contacts, queries `docs_by_replication_key` with the resulting `subject_ids`
 // - groups results by contact to generate a list of pairs containing :
 //    a) a contact document

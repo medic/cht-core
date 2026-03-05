@@ -6,6 +6,7 @@
 
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { VIEWS } from '@medic/constants';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
@@ -35,7 +36,7 @@ export class WealthQuintilesWatcherService implements OnDestroy {
 
     this.dbService
       .get()
-      .query('webapp-contacts/contacts_by_parent', {
+      .query(VIEWS.CONTACTS_BY_PARENT, {
         startkey: [ fields.place_id ],
         endkey: [ fields.place_id, {} ],
         include_docs: true

@@ -1,6 +1,7 @@
 const rewire = require('rewire');
 const sinon = require('sinon');
 const chai = require('chai');
+const { VIEWS } = require('@medic/constants');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const dataContext = require('../../../src/data-context');
@@ -108,7 +109,7 @@ describe('self_report transition', () => {
         chai.expect(result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'shared-contacts/contacts_by_phone',
+          VIEWS.CONTACTS_BY_PHONE,
           { key: '12345' }
         ]);
         chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
@@ -153,7 +154,7 @@ describe('self_report transition', () => {
         .then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(db.medic.query.args[0]).to.deep.equal([ 'shared-contacts/contacts_by_phone', { key: '12345' } ]);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([ VIEWS.CONTACTS_BY_PHONE, { key: '12345' } ]);
           chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
@@ -181,7 +182,7 @@ describe('self_report transition', () => {
         chai.expect(result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'shared-contacts/contacts_by_phone',
+          VIEWS.CONTACTS_BY_PHONE,
           { key: '654987' }
         ]);
         chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
@@ -231,7 +232,7 @@ describe('self_report transition', () => {
         chai.expect(result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'shared-contacts/contacts_by_phone',
+          VIEWS.CONTACTS_BY_PHONE,
           { key: '999999' }
         ]);
         chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
@@ -301,7 +302,7 @@ describe('self_report transition', () => {
         chai.expect(result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'shared-contacts/contacts_by_phone',
+          VIEWS.CONTACTS_BY_PHONE,
           { key: '111222333' }
         ]);
         chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
@@ -338,7 +339,7 @@ describe('self_report transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'shared-contacts/contacts_by_phone', { key: '98765' } ]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([ VIEWS.CONTACTS_BY_PHONE, { key: '98765' } ]);
         chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact1')]);
@@ -396,7 +397,7 @@ describe('self_report transition', () => {
         chai.expect(result).to.equal(true);
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'shared-contacts/contacts_by_phone',
+          VIEWS.CONTACTS_BY_PHONE,
           { key: '999999' }
         ]);
         chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
@@ -440,7 +441,7 @@ describe('self_report transition', () => {
         .then(result => {
           chai.expect(result).to.equal(true);
           chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(db.medic.query.args[0]).to.deep.equal([ 'shared-contacts/contacts_by_phone', { key: '12345' } ]);
+          chai.expect(db.medic.query.args[0]).to.deep.equal([ VIEWS.CONTACTS_BY_PHONE, { key: '12345' } ]);
           chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc.tasks.length).to.equal(1);

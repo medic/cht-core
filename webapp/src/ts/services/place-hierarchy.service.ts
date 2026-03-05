@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { VIEWS } from '@medic/constants';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -107,7 +108,7 @@ export class PlaceHierarchyService {
   async getDescendants(id, onlyPlaces = false) {
     const results = await this.dbService
       .get()
-      .query('webapp-contacts/contacts_by_place', { key: [ id ], include_docs: true });
+      .query(VIEWS.CONTACTS_BY_PLACE, { key: [ id ], include_docs: true });
 
     if (!onlyPlaces) {
       return results.rows;

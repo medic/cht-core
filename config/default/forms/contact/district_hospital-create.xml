@@ -950,7 +950,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
         </translation>
       </itext>
       <instance>
-        <data id="contact:district_hospital:create" version="2025-05-01 22-44" prefix="J1!contact:district_hospital:create!" delimiter="#">
+        <data id="contact:district_hospital:create" version="2023-02-14 7-41" prefix="J1!contact:district_hospital:create!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -1161,12 +1161,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           </item>
         </root>
       </instance>
-      <bind nodeset="/data/inputs" relevant="false()"/>
+      <bind nodeset="/data/inputs" relevant="0"/>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind nodeset="/data/init/create_new_person" type="string" required="true()"/>
-      <bind nodeset="/data/init/select_person" type="string" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"/>
+      <bind nodeset="/data/init/select_person" type="db:person" required="true()" relevant="selected( /data/init/create_new_person ,'old_person')"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../../contact/name, ../name)"/>
       <bind nodeset="/data/init/custom_place_name_label_translator" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false')" calculate="&quot;name&quot;"/>
@@ -1233,7 +1233,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value>
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <input ref="/data/init/select_person" appearance="select-contact type-person">
+      <input ref="/data/init/select_person" appearance="db-object">
         <label ref="jr:itext('/data/init/select_person:label')"/>
       </input>
       <input ref="/data/init/name" appearance="hidden"/>

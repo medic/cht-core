@@ -2,7 +2,7 @@ const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const apiUtils = require('./utils');
 const chai = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, VIEWS, viewUrl } = require('@medic/constants');
 
 const contacts = [
   {
@@ -298,7 +298,7 @@ const getPostOpts = (path, body) => ({
 const getDocByPatientId = patientId => {
   return utils
     .requestOnTestDb(
-      `/_design/shared-contacts/_view/contacts_by_reference?key=["shortcode","${patientId}"]&include_docs=true`
+      `/${viewUrl(VIEWS.CONTACTS_BY_REFERENCE)}?key=["shortcode","${patientId}"]&include_docs=true`
     )
     .then(result => result.rows);
 };
@@ -1003,7 +1003,7 @@ describe('transitions', () => {
             key: JSON.stringify(['shortcode', updated.patient_id]),
             include_docs: true,
           },
-          path: '/_design/shared-contacts/_view/contacts_by_reference',
+          path: `/${viewUrl(VIEWS.CONTACTS_BY_REFERENCE)}`,
         };
         return utils.requestOnTestDb(opts);
       })

@@ -2,6 +2,7 @@ const _ = require('lodash/core');
 _.union = require('lodash/union');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
+const VIEWS = constants.VIEWS;
 
 const TRANSLATION_KEYS_OPTION = { doc: {code: 'keys', name: 'Translation Keys'} };
 const DEFAULT_LANGUAGE = 'en';
@@ -56,7 +57,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
 
     const updateTranslations = function() {
       return DB()
-        .query('shared/doc_by_type', {
+        .query(VIEWS.DOC_BY_TYPE, {
           key: [ DOC_TYPES.TRANSLATIONS ],
           include_docs: true
         })

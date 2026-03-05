@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { filter as _filter, flattenDeep as _flattenDeep, groupBy as _groupBy, uniqBy as _uniqBy } from 'lodash-es';
+import { VIEWS } from '@medic/constants';
 import { Dictionary } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as taskUtils from '@medic/task-utils';
@@ -76,7 +77,7 @@ export class SendMessageService {
   private getDescendants(recipient) {
     return this.dbService
       .get()
-      .query('webapp-contacts/contacts_by_parent', {
+      .query(VIEWS.CONTACTS_BY_PARENT, {
         include_docs: true,
         startkey: [ recipient.doc._id ],
         endkey: [ recipient.doc._id, {} ]

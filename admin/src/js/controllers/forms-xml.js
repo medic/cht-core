@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const VIEWS = constants.VIEWS;
 
 angular.module('controllers').controller('FormsXmlCtrl',
   function (
@@ -23,7 +25,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
         key: ['form']
       };
       return DB()
-        .query('shared/doc_by_type', options)
+        .query(VIEWS.DOC_BY_TYPE, options)
         .then(res => res.rows.map(row => row.doc));
     };
 

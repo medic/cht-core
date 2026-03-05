@@ -4,6 +4,7 @@ const secureSettings = require('@medic/settings');
 const logger = require('@medic/logger');
 const config = require('../config');
 const db = require('../db');
+const { VIEWS } = require('@medic/constants');
 
 /**
  * Mapping of RapidPro message/broadcast statuses to CHT-Core message states
@@ -198,7 +199,7 @@ const poll = () => {
     .then(credentials => {
       const viewOptions = { keys: NON_FINAL_STATES, limit: BATCH_SIZE, skip };
       return db.medic
-        .query('medic-sms/gateway_messages_by_state', viewOptions)
+        .query(VIEWS.GATEWAY_MESSAGES_BY_STATE, viewOptions)
         .then(result => {
           if (!result || !result.rows || !result.rows.length) {
             skip = 0; // start from the beginning on the next poll call

@@ -1,4 +1,5 @@
 const db = require('../db');
+const { VIEWS } = require('@medic/constants');
 const config = require('../config');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const phoneNumber = require('@medic/phone-number');
@@ -26,7 +27,7 @@ module.exports = {
     }
 
     return db.medic
-      .query('shared-contacts/contacts_by_phone', { key: normalizedPhone })
+      .query(VIEWS.CONTACTS_BY_PHONE, { key: normalizedPhone })
       .then(result => {
         if (!result || !result.rows || !result.rows.length) {
           res.status(404);

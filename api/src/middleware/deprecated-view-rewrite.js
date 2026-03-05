@@ -1,4 +1,7 @@
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
+
+const getDdoc = (viewPath) => viewPath.split('/')[0];
 
 // Maps view names from their old design documents (medic / medic-client)
 // to the new design documents introduced by the view reorganization (#2849).
@@ -6,42 +9,68 @@ const logger = require('@medic/logger');
 // reference the old URLs, so we transparently rewrite them.
 const VIEW_MAPPING = {
   medic: {
-    contacts_by_depth: 'replication',
-    contacts_by_primary_contact: 'replication',
-    doc_summaries_by_id: 'online-user',
-    docs_by_shortcode: 'shared',
-    messages_by_state: 'medic-sms',
-    reports_by_form_and_parent: 'report-transitions',
-    reports_by_form_year_month_parent_reported_date: 'report-transitions',
-    reports_by_form_year_week_parent_reported_date: 'report-transitions',
-    tasks_in_terminal_state: 'sentinel-schedule',
+    contacts_by_depth: getDdoc(VIEWS.CONTACTS_BY_DEPTH),
+    contacts_by_primary_contact: getDdoc(VIEWS.CONTACTS_BY_PRIMARY_CONTACT),
+    doc_summaries_by_id: getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+    docs_by_shortcode: getDdoc(VIEWS.DOCS_BY_SHORTCODE),
+    messages_by_state: getDdoc(VIEWS.MESSAGES_BY_STATE),
+    reports_by_form_and_parent: getDdoc(VIEWS.REPORTS_BY_FORM_AND_PARENT),
+    reports_by_form_year_month_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_MONTH_PARENT_REPORTED_DATE),
+    reports_by_form_year_week_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_WEEK_PARENT_REPORTED_DATE),
+    tasks_in_terminal_state: getDdoc(VIEWS.TASKS_IN_TERMINAL_STATE),
   },
   'medic-client': {
-    contacts_by_last_visited: 'webapp-contacts',
-    contacts_by_parent: 'webapp-contacts',
-    contacts_by_phone: 'shared-contacts',
-    contacts_by_place: 'webapp-contacts',
-    contacts_by_reference: 'shared-contacts',
-    contacts_by_type: 'shared-contacts',
-    data_records_by_type: 'webapp-reports',
-    doc_by_type: 'shared',
-    docs_by_id_lineage: 'shared',
-    messages_by_contact_date: 'webapp-reports',
-    registered_patients: 'shared-contacts',
-    reports_by_date: 'shared-reports',
-    reports_by_form: 'shared-reports',
-    reports_by_place: 'webapp-reports',
-    reports_by_subject: 'shared-reports',
-    reports_by_validity: 'webapp-reports',
-    reports_by_verification: 'webapp-reports',
-    tasks_by_contact: 'shared-reports',
-    visits_by_date: 'webapp-reports',
+    contacts_by_last_visited: getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
+    contacts_by_parent: getDdoc(VIEWS.CONTACTS_BY_PARENT),
+    contacts_by_phone: getDdoc(VIEWS.CONTACTS_BY_PHONE),
+    contacts_by_place: getDdoc(VIEWS.CONTACTS_BY_PLACE),
+    contacts_by_reference: getDdoc(VIEWS.CONTACTS_BY_REFERENCE),
+    contacts_by_type: getDdoc(VIEWS.CONTACTS_BY_TYPE),
+    data_records_by_type: getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
+    doc_by_type: getDdoc(VIEWS.DOC_BY_TYPE),
+    docs_by_id_lineage: getDdoc(VIEWS.DOCS_BY_ID_LINEAGE),
+    messages_by_contact_date: getDdoc(VIEWS.MESSAGES_BY_CONTACT_DATE),
+    registered_patients: getDdoc(VIEWS.REGISTERED_PATIENTS),
+    reports_by_date: getDdoc(VIEWS.REPORTS_BY_DATE),
+    reports_by_form: getDdoc(VIEWS.REPORTS_BY_FORM),
+    reports_by_place: getDdoc(VIEWS.REPORTS_BY_PLACE),
+    reports_by_subject: getDdoc(VIEWS.REPORTS_BY_SUBJECT),
+    reports_by_validity: getDdoc(VIEWS.REPORTS_BY_VALIDITY),
+    reports_by_verification: getDdoc(VIEWS.REPORTS_BY_VERIFICATION),
+    tasks_by_contact: getDdoc(VIEWS.TASKS_BY_CONTACT),
+    visits_by_date: getDdoc(VIEWS.VISITS_BY_DATE),
+  },
+};
+
+// Views that moved from intermediate ddocs (introduced in the first reorganization)
+// to their final ddocs in the second reorganization.
+const INTERMEDIATE_VIEW_MAPPING = {
+  'online-user': {
+    doc_summaries_by_id: getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+  },
+  'report-transitions': {
+    reports_by_form_and_parent: getDdoc(VIEWS.REPORTS_BY_FORM_AND_PARENT),
+    reports_by_form_year_month_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_MONTH_PARENT_REPORTED_DATE),
+    reports_by_form_year_week_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_WEEK_PARENT_REPORTED_DATE),
+  },
+  'sentinel-schedule': {
+    tasks_in_terminal_state: getDdoc(VIEWS.TASKS_IN_TERMINAL_STATE),
+  },
+  'shared-contacts': {
+    contacts_by_phone: getDdoc(VIEWS.CONTACTS_BY_PHONE),
+    contacts_by_reference: getDdoc(VIEWS.CONTACTS_BY_REFERENCE),
+    contacts_by_type: getDdoc(VIEWS.CONTACTS_BY_TYPE),
+    registered_patients: getDdoc(VIEWS.REGISTERED_PATIENTS),
+  },
+  'webapp-reports': {
+    messages_by_contact_date: getDdoc(VIEWS.MESSAGES_BY_CONTACT_DATE),
   },
 };
 
 // Matches: /{db}/_design/{ddoc}/_view/{view}
 // Captures: ddoc name and view name
-const VIEW_URL_PATTERN = /^(\/[^/]+\/_design\/)(medic-client|medic)(\/_view\/)([a-z_]+)(.*)/;
+const DEPRECATED_DDOCS = Object.keys(VIEW_MAPPING).concat(Object.keys(INTERMEDIATE_VIEW_MAPPING)).join('|');
+const VIEW_URL_PATTERN = new RegExp(`^(\\/[^/]+\\/_design\\/)(${DEPRECATED_DDOCS})(\\/_view\\/)([a-z_]+)(.*)`);
 
 const rewriteDeprecatedViewUrl = (req, res, next) => {
   const match = req.url.match(VIEW_URL_PATTERN);
@@ -50,7 +79,7 @@ const rewriteDeprecatedViewUrl = (req, res, next) => {
   }
 
   const [, prefix, oldDdoc, viewSegment, viewName, rest] = match;
-  const ddocMapping = VIEW_MAPPING[oldDdoc];
+  const ddocMapping = VIEW_MAPPING[oldDdoc] || INTERMEDIATE_VIEW_MAPPING[oldDdoc];
   const newDdoc = ddocMapping && ddocMapping[viewName];
 
   if (!newDdoc) {

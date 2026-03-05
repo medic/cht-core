@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { VIEWS } from '@medic/constants';
 import { GetSummariesService } from '@mm-services/get-summaries.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -65,7 +66,7 @@ describe('GetSummaries service', () => {
         ] });
       return service.get([ 'a', 'b' ]).then(actual => {
         expect(query.callCount).to.equal(1);
-        expect(query.args[0][0]).to.equal('online-user/doc_summaries_by_id');
+        expect(query.args[0][0]).to.equal(VIEWS.DOC_SUMMARIES_BY_ID);
         expect(query.args[0][1]).to.deep.equal({ keys: [ 'a', 'b' ] });
         expect(allDocs.callCount).to.equal(0);
         expect(actual).to.deep.equal([

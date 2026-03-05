@@ -2,7 +2,7 @@ const _ = require('lodash');
 const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
-const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, VIEWS } = require('@medic/constants');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -24,7 +24,7 @@ const loadTranslations = () => {
     include_docs: true,
   };
   return db.medic
-    .query('shared/doc_by_type', options)
+    .query(VIEWS.DOC_BY_TYPE, options)
     .then(result => {
       result.rows.forEach(row => {
         const values = Object.assign(row.doc.generic, row.doc.custom || {});

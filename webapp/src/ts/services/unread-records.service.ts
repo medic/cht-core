@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { find as _find } from 'lodash-es';
 import { Subscription } from 'rxjs';
+import { VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
@@ -29,13 +30,13 @@ export class UnreadRecordsService implements OnDestroy {
   private getTotal() {
     return this.dbService
       .get()
-      .query('webapp-reports/data_records_by_type', { group: true });
+      .query(VIEWS.DATA_RECORDS_BY_TYPE, { group: true });
   }
 
   private getRead() {
     return this.dbService
       .get({ meta: true })
-      .query('medic-user/read', { group: true });
+      .query(VIEWS.READ, { group: true });
   }
 
   private getRowValueForType(type, response:any = {}) {

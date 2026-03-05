@@ -4,6 +4,7 @@ const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
 
 const utils = require('@utils');
+const { VIEWS, viewUrl } = require('@medic/constants');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
@@ -59,7 +60,7 @@ describe('Bikram Sambat date display', () => {
 
   const getReports = async () => {
     const options = {
-      path: '/_design/shared-reports/_view/reports_by_date',
+      path: `/${viewUrl(VIEWS.REPORTS_BY_DATE)}`,
       qs: { include_docs: true },
     };
     const response = await utils.requestOnMedicDb(options);

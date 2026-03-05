@@ -5,7 +5,7 @@ const db = require('../db');
 const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const deployInfoService = require('./deploy-info');
-const { SENTINEL_METADATA } = require('@medic/constants');
+const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS } = require('@medic/constants');
 
 const DBS_TO_MONITOR = {
   'medic': environment.db,
@@ -22,10 +22,8 @@ const VIEW_INDEXES_TO_MONITOR = {
     'medic-sms',
     'online-user',
     'replication',
-    'report-transitions',
-    'sentinel-schedule',
+    'server',
     'shared',
-    'shared-contacts',
     'shared-reports',
     'webapp-contacts',
     'webapp-reports',
@@ -36,18 +34,14 @@ const VIEW_INDEXES_TO_MONITOR = {
 };
 
 const NOUVEAU_INDEXES_TO_MONITOR = {
-  medic: {
-    'online-user': [
-      'contacts_by_freetext',
-      'reports_by_freetext',
-    ],
-    'replication': [
-      'docs_by_replication_key',
-    ],
-  },
-  sentinel: {},
-  usersmeta: {},
-  users: {},
+  medic: [
+    NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT,
+    NOUVEAU_INDEXES.REPORTS_BY_FREETEXT,
+    NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY,
+  ],
+  sentinel: [],
+  usersmeta: [],
+  users: [],
 };
 
 const MESSAGE_QUEUE_STATUS_KEYS = ['due', 'scheduled', 'muted', 'failed', 'delivered'];
@@ -206,13 +200,12 @@ const fetchNouveauIndexInfo = (db, designDoc, indexName) => request
     return null;
   });
 
-const fetchNouveauIndexInfosForDdoc = (db, ddoc) => NOUVEAU_INDEXES_TO_MONITOR[db][ddoc].map(
-  indexName => fetchNouveauIndexInfo(DBS_TO_MONITOR[db], ddoc, indexName),
-);
-
-const fetchNouveauIndexInfosForDb = (db) => Promise.all(Object.keys(NOUVEAU_INDEXES_TO_MONITOR[db]).flatMap(
-  ddoc => fetchNouveauIndexInfosForDdoc(db, ddoc),
-)).then((nouveauIndexInfos) => nouveauIndexInfos.filter(info => info));
+const fetchNouveauIndexInfosForDb = (db) => Promise.all(
+  NOUVEAU_INDEXES_TO_MONITOR[db].map(index => {
+    const [ddoc, indexName] = index.split('/');
+    return fetchNouveauIndexInfo(DBS_TO_MONITOR[db], ddoc, indexName);
+  }),
+).then((nouveauIndexInfos) => nouveauIndexInfos.filter(info => info));
 
 const fetchAllNouveauIndexInfos = () => Promise.all(
   Object.keys(NOUVEAU_INDEXES_TO_MONITOR).map(fetchNouveauIndexInfosForDb),
@@ -234,7 +227,7 @@ const getDbInfos = async () => {
 const getResultCount = result => result.rows.length ? result.rows[0].value : 0;
 
 const getConflictCount = () => {
-  return db.medic.query('medic-conflicts/conflicts', { reduce: true })
+  return db.medic.query(VIEWS.CONFLICTS, { reduce: true })
     .then(result => getResultCount(result))
     .catch(err => {
       logger.error('Error fetching conflict count: %o', err);
@@ -243,7 +236,7 @@ const getConflictCount = () => {
 };
 
 const getOutboundPushQueueLength = () => {
-  return db.sentinel.query('sentinel/outbound_push_tasks')
+  return db.sentinel.query(VIEWS.OUTBOUND_PUSH_TASKS)
     .then(result => getResultCount(result))
     .catch(err => {
       logger.error('Error fetching outbound push queue length: %o', err);
@@ -252,7 +245,7 @@ const getOutboundPushQueueLength = () => {
 };
 
 const getFeedbackCount = () => {
-  return db.medicUsersMeta.query('users-meta/feedback_by_date')
+  return db.medicUsersMeta.query(VIEWS.FEEDBACK_BY_DATE)
     .then(result => getResultCount(result))
     .catch(err => {
       logger.error('Error fetching feedback count: %o', err);
@@ -261,7 +254,7 @@ const getFeedbackCount = () => {
 };
 
 const getOutgoingMessageStatusCounts = () => {
-  return db.medic.query('medic-admin/message_queue', { reduce: true, group_level: 1 })
+  return db.medic.query(VIEWS.MESSAGE_QUEUE, { reduce: true, group_level: 1 })
     .then(counts => {
       const result = fromEntries(MESSAGE_QUEUE_STATUS_KEYS, 0);
       counts.rows.forEach(row => {
@@ -286,7 +279,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
   }));
 
   const query = (options) => db.medic
-    .query('medic-admin/message_queue', options)
+    .query(VIEWS.MESSAGE_QUEUE, options)
     .catch(err => {
       logger.error(`Error fetching weekly outgoing message status counts ${options.start_key}: %o`, err);
       return { rows: [{ value: -1 }] };
@@ -316,7 +309,7 @@ const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
   };
 
   return db.medic
-    .query('medic-sms/messages_by_last_updated_state', options)
+    .query(VIEWS.MESSAGES_BY_LAST_UPDATED_STATE, options)
     .then(results => {
       const counts = fromEntries(statuses, 0);
       results.rows.forEach(row => {
@@ -349,7 +342,7 @@ const getLastHundredStatusUpdatesCounts = () => {
 
 const getReplicationLimitLog = () => {
   return db.medicLogs
-    .query('logs/replication_limit')
+    .query(VIEWS.REPLICATION_LIMIT)
     .then(result => getResultCount(result))
     .catch(err => {
       logger.error('Error fetching replication limit logs: %o', err);
@@ -360,7 +353,7 @@ const getReplicationLimitLog = () => {
 const getConnectedUserLogs = (connectedUserInterval) => {
   const earliestTimestamp = moment().subtract(connectedUserInterval, 'days').valueOf();
   return db.medicLogs
-    .query('logs/connected_users', { startkey: earliestTimestamp, reduce: true })
+    .query(VIEWS.CONNECTED_USERS, { startkey: earliestTimestamp, reduce: true })
     .then(result => getResultCount(result))
     .catch(err => {
       logger.error('Error fetching connected users logs: %o', err);

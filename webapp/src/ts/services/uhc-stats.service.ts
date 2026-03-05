@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as moment from 'moment';
 import { isObject as _isObject, uniq as _uniq } from 'lodash-es';
 import * as CalendarInterval from '@medic/calendar-interval';
+import { VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -25,7 +26,7 @@ export class UHCStatsService {
   private async getLastVisitedDate(contactId) {
     const records = await this.dbService
       .get()
-      .query('webapp-contacts/contacts_by_last_visited', { reduce: true, group: true, key: contactId });
+      .query(VIEWS.CONTACTS_BY_LAST_VISITED, { reduce: true, group: true, key: contactId });
 
     const lastVisitedDateRow = records?.rows?.length ? records.rows[0] : {};
 
@@ -36,7 +37,7 @@ export class UHCStatsService {
     const records = await this.dbService
       .get()
       .query(
-        'webapp-reports/visits_by_date',
+        VIEWS.VISITS_BY_DATE,
         { start_key: [ contactId, dateRange.start ], end_key: [ contactId, dateRange.end ] }
       );
 

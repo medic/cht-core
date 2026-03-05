@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const VIEWS = constants.VIEWS;
 
 angular.module('controllers').controller('UsersCtrl',
   function (
@@ -23,7 +25,7 @@ angular.module('controllers').controller('UsersCtrl',
     $scope.updateList = function() {
       $scope.loading = true;
       const params = { include_docs: true, key: ['user-settings'] };
-      DB().query('shared/doc_by_type', params)
+      DB().query(VIEWS.DOC_BY_TYPE, params)
         .then(function(settings) {
           $scope.users = _.map(settings.rows, 'doc');
           $scope.loading = false;

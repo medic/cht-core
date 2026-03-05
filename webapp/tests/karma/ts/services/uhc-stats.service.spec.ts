@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import * as moment from 'moment';
 
+import { VIEWS } from '@medic/constants';
 import { UHCStatsService } from '@mm-services/uhc-stats.service';
 import { DbService } from '@mm-services/db.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -110,11 +111,11 @@ describe('UHCStats Service', () => {
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
-      'webapp-contacts/contacts_by_last_visited',
+      VIEWS.CONTACTS_BY_LAST_VISITED,
       { group: true, reduce: true, key: '2b' }
     ]);
     expect(localDb.query.args[1]).to.have.deep.members([
-      'webapp-reports/visits_by_date',
+      VIEWS.VISITS_BY_DATE,
       { start_key: [ contact._id, range.start ], end_key: [ contact._id, range.end ] }
     ]);
   });
@@ -171,11 +172,11 @@ describe('UHCStats Service', () => {
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
-      'webapp-contacts/contacts_by_last_visited',
+      VIEWS.CONTACTS_BY_LAST_VISITED,
       { group: true, reduce: true, key: '2b' }
     ]);
     expect(localDb.query.args[1]).to.have.deep.members([
-      'webapp-reports/visits_by_date',
+      VIEWS.VISITS_BY_DATE,
       { start_key: [ contact._id, range.start ], end_key: [ contact._id, range.end ] }
     ]);
   });
@@ -209,7 +210,7 @@ describe('UHCStats Service', () => {
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(1);
     expect(localDb.query.args[0]).to.have.deep.members([
-      'webapp-contacts/contacts_by_last_visited',
+      VIEWS.CONTACTS_BY_LAST_VISITED,
       { group: true, reduce: true, key: '3c' }
     ]);
   });
@@ -243,7 +244,7 @@ describe('UHCStats Service', () => {
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(1);
     expect(localDb.query.args[0]).to.have.deep.members([
-      'webapp-contacts/contacts_by_last_visited',
+      VIEWS.CONTACTS_BY_LAST_VISITED,
       { group: true, reduce: true, key: '2b' }
     ]);
   });
@@ -283,11 +284,11 @@ describe('UHCStats Service', () => {
     expect(sessionService.isAdmin.callCount).to.equal(1);
     expect(localDb.query.callCount).to.equal(2);
     expect(localDb.query.args[0]).to.have.deep.members([
-      'webapp-contacts/contacts_by_last_visited',
+      VIEWS.CONTACTS_BY_LAST_VISITED,
       { group: true, reduce: true, key: '3c' }
     ]);
     expect(localDb.query.args[1]).to.have.deep.members([
-      'webapp-reports/visits_by_date',
+      VIEWS.VISITS_BY_DATE,
       { start_key: [ contact._id, range.start ], end_key: [ contact._id, range.end ] }
     ]);
   });

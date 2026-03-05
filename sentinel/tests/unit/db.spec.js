@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
+const { VIEWS, viewUrl } = require('@medic/constants');
 
 
 let db;
@@ -90,12 +91,12 @@ describe('db', () => {
       const params = { skip: 100, start_key: 'thing', whatever: 'yes' };
       const body = { keys: [1, 2, 3] };
       request.post.resolves({ the: 'response' });
-      return db.queryMedic('replication/contacts_by_depth', params, body).then(response => {
+      return db.queryMedic(VIEWS.CONTACTS_BY_DEPTH, params, body).then(response => {
         expect(response).to.deep.equal({ the: 'response' });
         expect(request.get.callCount).to.equal(0);
         expect(request.post.callCount).to.equal(1);
         expect(request.post.args[0]).to.deep.equal([{
-          url: 'http://admin:pass@localhost:5984/medic/_design/replication/_view/contacts_by_depth',
+          url: `http://admin:pass@localhost:5984/medic/${viewUrl(VIEWS.CONTACTS_BY_DEPTH)}`,
           qs: { skip: 100, start_key: 'thing', whatever: 'yes' },
           json: true,
           body: { keys: [1, 2, 3] },

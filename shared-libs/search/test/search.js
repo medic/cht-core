@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const { VIEWS } = require('@medic/constants');
 const Search = require('../src/search');
 const GenerateSearchRequests = require('../src/generate-search-requests');
 
@@ -29,7 +30,7 @@ describe('Search service', function() {
 
     it('returns error when DB.query errors when no filters', function() {
       GenerateSearchRequests.generate.returns([{
-        view: 'shared-reports/reports_by_date',
+        view: VIEWS.REPORTS_BY_DATE,
         ordered: true,
         params: {
           descending: true
@@ -49,7 +50,7 @@ describe('Search service', function() {
 
     it('handles no rows when no filters', function() {
       GenerateSearchRequests.generate.returns([{
-        view: 'shared-reports/reports_by_date',
+        view: VIEWS.REPORTS_BY_DATE,
         ordered: true,
         params: {
           descending: true
@@ -66,7 +67,7 @@ describe('Search service', function() {
 
     it('returns results when no filters', function() {
       GenerateSearchRequests.generate.returns([{
-        view: 'shared-reports/reports_by_date',
+        view: VIEWS.REPORTS_BY_DATE,
         ordered: true,
         params: {
           descending: true
@@ -79,7 +80,7 @@ describe('Search service', function() {
           chai.expect(actual).to.deep.equal({ docIds: [3, 4] });
           chai.expect(GenerateSearchRequests.generate.callCount).to.equal(1);
           chai.expect(DB.query.callCount).to.equal(1);
-          chai.expect(DB.query.args[0][0]).to.equal('shared-reports/reports_by_date');
+          chai.expect(DB.query.args[0][0]).to.equal(VIEWS.REPORTS_BY_DATE);
           chai.expect(DB.query.args[0][1]).to.deep.equal({ descending: true, limit: 50, skip: 0 });
         });
     });

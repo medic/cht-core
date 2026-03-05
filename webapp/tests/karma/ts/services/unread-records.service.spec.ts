@@ -2,6 +2,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { VIEWS } from '@medic/constants';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -98,9 +99,9 @@ describe('UnreadRecordsService', () => {
 
       expect(result).to.deep.equal({ report: 10, message: 5 });
       expect(dbInstance.query.callCount).to.equal(2);
-      expect(dbInstance.query.args[0][0]).to.equal('webapp-reports/data_records_by_type');
+      expect(dbInstance.query.args[0][0]).to.equal(VIEWS.DATA_RECORDS_BY_TYPE);
       expect(dbInstance.query.args[0][1].group).to.equal(true);
-      expect(dbInstance.query.args[1][0]).to.equal('medic-user/read');
+      expect(dbInstance.query.args[1][0]).to.equal(VIEWS.READ);
       expect(dbInstance.query.args[1][1].group).to.equal(true);
     }));
 

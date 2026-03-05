@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const db = require('../../../src/db');
 const serverUtils = require('../../../src/server-utils');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, REPLICATED_DDOCS } = require('@medic/constants');
 
 const controller =  require('../../../src/controllers/changes');
 let req;
@@ -34,12 +34,7 @@ describe('Changes controller', () => {
     });
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
-      '_design/medic-client',
-      '_design/shared',
-      '_design/shared-contacts',
-      '_design/shared-reports',
-      '_design/webapp-contacts',
-      '_design/webapp-reports',
+      ...REPLICATED_DDOCS,
       DOC_IDS.SERVICE_WORKER_META,
       DOC_IDS.SETTINGS,
       'org.couchdb.user:user',

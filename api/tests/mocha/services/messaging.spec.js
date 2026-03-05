@@ -9,6 +9,7 @@ const africasTalking = require('../../../src/services/africas-talking');
 const rapidPro = require('../../../src/services/rapidpro');
 const service = rewire('../../../src/services/messaging');
 const records = require('../../../src/services/records');
+const { VIEWS } = require('@medic/constants');
 
 describe('messaging service', () => {
 
@@ -38,7 +39,7 @@ describe('messaging service', () => {
 
       return service.getOutgoingMessages({ state: 'pending' }).then(messages => {
         chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_state');
+        chai.expect(query.args[0][0]).to.equal(VIEWS.MESSAGES_BY_STATE);
         chai.expect(query.args[0][1]).to.deep.equal({
           limit: 25,
           startkey: [ 'pending-or-forwarded', 0 ],
@@ -156,7 +157,7 @@ describe('messaging service', () => {
         chai.expect(doc._id).to.equal('testDoc');
 
         chai.expect(db.medic.query.callCount).to.equal(2);
-        chai.expect(db.medic.query.args[0][0]).to.equal('medic-sms/messages_by_gateway_ref');
+        chai.expect(db.medic.query.args[0][0]).to.equal(VIEWS.MESSAGES_BY_GATEWAY_REF);
         chai.expect(db.medic.query.args[0][1]).to.deep.equal({ keys: [ gatewayRef1, gatewayRef2 ] });
       });
     });
@@ -634,7 +635,7 @@ describe('messaging service', () => {
       const createRecord = sinon.stub(records, 'createByForm');
       return service.processIncomingMessages(given).then(() => {
         chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.args[0][0]).to.equal('medic-sms/messages_by_gateway_ref');
+        chai.expect(query.args[0][0]).to.equal(VIEWS.MESSAGES_BY_GATEWAY_REF);
         chai.expect(query.args[0][1]).to.deep.equal({ keys: [ 'seen' ] });
         chai.expect(createRecord.callCount).to.equal(0);
       });

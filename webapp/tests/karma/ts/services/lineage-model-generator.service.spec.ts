@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { VIEWS } from '@medic/constants';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DbService } from '@mm-services/db.service';
 
@@ -66,7 +67,7 @@ describe('LineageModelGenerator service', () => {
         ] });
       return service.contact('a').then(model => {
         expect(dbQuery.callCount).to.equal(1);
-        expect(dbQuery.args[0][0]).to.equal('shared/docs_by_id_lineage');
+        expect(dbQuery.args[0][0]).to.equal(VIEWS.DOCS_BY_ID_LINEAGE);
         expect(dbQuery.args[0][1]).to.deep.equal({
           startkey: [ 'a' ],
           endkey: [ 'a', {} ],
@@ -374,7 +375,7 @@ describe('LineageModelGenerator service', () => {
       ];
 
       dbQuery
-        .withArgs('shared-contacts/contacts_by_reference')
+        .withArgs(VIEWS.CONTACTS_BY_REFERENCE)
         .resolves({ rows: [{ id: 'patient1', key: ['shortcode', 'patient_id1'] }] });
       dbAllDocs
         .withArgs(sinon.match({ keys: ['patient1'] }))
@@ -460,7 +461,7 @@ describe('LineageModelGenerator service', () => {
         },
       ];
 
-      dbQuery.withArgs('shared-contacts/contacts_by_reference').resolves({ rows: [] });
+      dbQuery.withArgs(VIEWS.CONTACTS_BY_REFERENCE).resolves({ rows: [] });
       dbAllDocs.withArgs(sinon.match({ keys: ['new_patient'] })).resolves({ rows: [] });
       dbAllDocs
         .withArgs(sinon.match({ keys: ['old_contact', 'new_place', 'old_place'] }))

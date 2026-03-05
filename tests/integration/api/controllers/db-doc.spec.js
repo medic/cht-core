@@ -2481,7 +2481,6 @@ describe('db-doc handler', () => {
       return Promise
         .all([
           utils.requestOnTestDb(_.defaults({ path: '/_design/shared' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/shared-contacts' }, offlineRequestOptions)),
           utils.requestOnTestDb(_.defaults({ path: '/_design/shared-reports' }, offlineRequestOptions)),
           utils.requestOnTestDb(_.defaults({ path: '/_design/webapp-contacts' }, offlineRequestOptions)),
           utils.requestOnTestDb(_.defaults({ path: '/_design/webapp-reports' }, offlineRequestOptions)),
@@ -2491,14 +2490,13 @@ describe('db-doc handler', () => {
         ])
         .then(results => {
           chai.expect(results[0]._id).to.equal('_design/shared');
-          chai.expect(results[1]._id).to.equal('_design/shared-contacts');
-          chai.expect(results[2]._id).to.equal('_design/shared-reports');
-          chai.expect(results[3]._id).to.equal('_design/webapp-contacts');
-          chai.expect(results[4]._id).to.equal('_design/webapp-reports');
+          chai.expect(results[1]._id).to.equal('_design/shared-reports');
+          chai.expect(results[2]._id).to.equal('_design/webapp-contacts');
+          chai.expect(results[3]._id).to.equal('_design/webapp-reports');
 
+          chai.expect(results[4]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
           chai.expect(results[5]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
           chai.expect(results[6]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
-          chai.expect(results[7]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
         });
     });
 

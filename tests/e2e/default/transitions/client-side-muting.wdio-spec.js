@@ -8,7 +8,7 @@ const formsUtils = require('./forms');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, VIEWS } = require('@medic/constants');
 
 /* global window */
 
@@ -86,7 +86,7 @@ describe.skip('Muting', () => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
-        .query('shared-reports/reports_by_date', { descending: true, limit: 1, include_docs: true })
+        .query(VIEWS.REPORTS_BY_DATE, { descending: true, limit: 1, include_docs: true })
         .then(result => callback(result.rows[0].doc))
         .catch(err => callback(err));
     });

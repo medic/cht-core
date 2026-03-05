@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { VIEWS } from '@medic/constants';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
@@ -108,7 +109,7 @@ export class GetSummariesService {
   private getRemote(ids) {
     return this.dbService
       .get()
-      .query('online-user/doc_summaries_by_id', { keys: ids })
+      .query(VIEWS.DOC_SUMMARIES_BY_ID, { keys: ids })
       .then(response => {
         return response.rows.map(row => {
           row.value._id = row.id;

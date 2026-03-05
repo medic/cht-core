@@ -6,6 +6,7 @@ import { Doc } from '../../../src/libs/doc';
 import logger from '@medic/logger';
 import * as Core from '../../../src/libs/core';
 import { NonEmptyArray, Nullable } from '../../../src';
+import { VIEWS } from '../../../src/libs/constants';
 
 describe('local lineage lib', () => {
   let debug: SinonStub;
@@ -27,7 +28,7 @@ describe('local lineage lib', () => {
     const result = await fn(uuid);
 
     expect(result).to.deep.equal([]);
-    expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'shared/docs_by_id_lineage')).to.be.true;
+    expect(queryDocsByRange.calledOnceWithExactly(medicDb, VIEWS.DOCS_BY_ID_LINEAGE)).to.be.true;
     expect(queryFn.calledOnceWithExactly([uuid], [uuid, {}])).to.be.true;
   });
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, VIEWS } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,7 @@ export class LanguagesService {
 
     const result = await this.dbService
       .get()
-      .query('shared/doc_by_type', { key: [DOC_TYPES.TRANSLATIONS], include_docs: true });
+      .query(VIEWS.DOC_BY_TYPE, { key: [DOC_TYPES.TRANSLATIONS], include_docs: true });
 
     return result.rows
       .filter(row => enabledLanguages.includes(row.doc.code) || !enabledLanguages.length)

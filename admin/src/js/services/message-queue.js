@@ -1,6 +1,8 @@
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
+const constants = require('@medic/constants');
+const VIEWS = constants.VIEWS;
 
 angular.module('services').factory('MessageQueueUtils',
   function(
@@ -93,13 +95,13 @@ angular.module('services').factory('MessageQueue',
       }
 
       return DB({ remote: true })
-        .query('shared-contacts/contacts_by_phone', { keys: phoneNumbers })
+        .query(VIEWS.CONTACTS_BY_PHONE, { keys: phoneNumbers })
         .then(function(contactsByPhone) {
           const ids = contactsByPhone.rows.map(function(row) {
             return row.id;
           });
 
-          return DB({ remote: true }).query('online-user/doc_summaries_by_id', { keys: ids });
+          return DB({ remote: true }).query(VIEWS.DOC_SUMMARIES_BY_ID, { keys: ids });
         })
         .then(function(summaries) {
           messages.forEach(function(message) {
@@ -129,8 +131,8 @@ angular.module('services').factory('MessageQueue',
 
       return $q
         .all([
-          DB({ remote: true }).query('shared-contacts/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('shared-contacts/registered_patients', { keys: shortcodes, include_docs: true }),
+          DB({ remote: true }).query(VIEWS.CONTACTS_BY_REFERENCE, { keys: referenceKeys }),
+          DB({ remote: true }).query(VIEWS.REGISTERED_PATIENTS, { keys: shortcodes, include_docs: true }),
         ])
         .then(([contactsByReference, registrations]) => {
           registrations = getValidRegistrations(registrations, settings);
@@ -312,8 +314,8 @@ angular.module('services').factory('MessageQueue',
         return $q
           .all([
             Settings(),
-            DB({ remote: true }).query('medic-admin/message_queue', params.list),
-            DB({ remote: true }).query('medic-admin/message_queue', params.count)
+            DB({ remote: true }).query(VIEWS.MESSAGE_QUEUE, params.list),
+            DB({ remote: true }).query(VIEWS.MESSAGE_QUEUE, params.count)
           ])
           .then(([settings, messagesList, messagesCount]) => {
             const messages = messagesList.rows.map((row) => {

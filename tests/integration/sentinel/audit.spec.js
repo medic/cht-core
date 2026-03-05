@@ -4,7 +4,7 @@ const moment = require('moment/moment');
 const testForm = require('./transitions/test-stubs');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, VIEWS, viewUrl } = require('@medic/constants');
 
 const contacts = [
   {
@@ -55,7 +55,7 @@ const contacts = [
 const getContactsByReference = async (shortcodes) => {
   const keys = shortcodes.map(shortcode => ['shortcode', shortcode]);
   const qs = { keys: JSON.stringify(keys), include_docs: true };
-  const results = await utils.requestOnTestDb({ path: '/_design/shared-contacts/_view/contacts_by_reference', qs });
+  const results = await utils.requestOnTestDb({ path: `/${viewUrl(VIEWS.CONTACTS_BY_REFERENCE)}`, qs });
   return results.rows.map(row => row.doc);
 };
 

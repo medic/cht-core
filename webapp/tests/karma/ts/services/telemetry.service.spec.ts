@@ -3,6 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { VIEWS } from '@medic/constants';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -319,7 +320,7 @@ describe('TelemetryService', () => {
       });
 
       expect(medicDb.query.calledTwice).to.be.true;
-      expect(medicDb.query.args[0][0]).to.equal('shared/doc_by_type');
+      expect(medicDb.query.args[0][0]).to.equal(VIEWS.DOC_BY_TYPE);
       expect(medicDb.query.args[0][1]).to.deep.equal({ key: [ 'form' ], include_docs: true });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
       expect(telemetryDb.close.notCalled).to.be.true;

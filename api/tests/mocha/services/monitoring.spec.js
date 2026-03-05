@@ -9,7 +9,7 @@ const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
-const { SENTINEL_METADATA } = require('@medic/constants');
+const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS } = require('@medic/constants');
 
 let clock;
 
@@ -72,10 +72,8 @@ const VIEW_INDEXES_BY_DB = {
     'medic-sms',
     'online-user',
     'replication',
-    'report-transitions',
-    'sentinel-schedule',
+    'server',
     'shared',
-    'shared-contacts',
     'shared-reports',
     'webapp-contacts',
     'webapp-reports',
@@ -141,15 +139,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'shared-contacts': {
-    name: 'shared-contacts',
-    view_index: {
-      sizes: {
-        active: 100,
-        file: 200
-      }
-    }
-  },
   'shared': {
     name: 'shared',
     view_index: {
@@ -159,17 +148,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'sentinel-schedule': {
-    name: 'sentinel-schedule',
-    view_index: {
-      sizes: {
-        active: 100,
-        file: 200
-      }
-    }
-  },
-  'report-transitions': {
-    name: 'report-transitions',
+  'server': {
+    name: 'server',
     view_index: {
       sizes: {
         active: 100,
@@ -292,7 +272,7 @@ const setUpMocks = () => {
   sinon.stub(db.sentinel, 'get').withArgs(SENTINEL_METADATA.TRANSITIONS_SEQ)
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
-  medicQuery.withArgs('medic-admin/message_queue')
+  medicQuery.withArgs(VIEWS.MESSAGE_QUEUE)
     .resolves({ rows: [] })
     .onCall(0).resolves({ rows: [
       { key: [ 'scheduled' ], value: 15 },
@@ -301,23 +281,23 @@ const setUpMocks = () => {
       { key: [ 'delivered' ], value: 10 },
     ] });
   medicQuery
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
+    .withArgs(VIEWS.MESSAGE_QUEUE, sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
     .resolves({ rows: [{ key: undefined, value: 20 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
+    .withArgs(VIEWS.MESSAGE_QUEUE, sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
     .resolves({ rows: [{ key: undefined, value: 15 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
+    .withArgs(VIEWS.MESSAGE_QUEUE, sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
     .resolves({ rows: [{ key: undefined, value: 5 }] });
 
-  medicQuery.withArgs('medic-conflicts/conflicts')
+  medicQuery.withArgs(VIEWS.CONFLICTS)
     .resolves({ rows: [ { value: 40 } ] });
   sinon.stub(db.sentinel, 'query')
     .resolves({ rows: [ { value: 3 } ] });
   sinon.stub(db.medicUsersMeta, 'query')
     .resolves({ rows: [ { value: 2 } ] });
   sinon.stub(db.medicLogs, 'query')
-    .withArgs('logs/replication_limit')
+    .withArgs(VIEWS.REPLICATION_LIMIT)
     .resolves({ rows: [ { value: 1 } ] })
-    .withArgs('logs/connected_users', { startkey: 0, reduce: true })
+    .withArgs(VIEWS.CONNECTED_USERS, { startkey: 0, reduce: true })
     .resolves({ rows: [ { value: 2 } ] });
 };
 
@@ -332,7 +312,7 @@ const generateRows = (statusCounters) => {
 };
 
 const setupV2Mocks = (statusCounters) => {
-  const view = 'medic-sms/messages_by_last_updated_state';
+  const view = VIEWS.MESSAGES_BY_LAST_UPDATED_STATE;
   const finalRows = generateRows({
     sent: statusCounters.sent,
     delivered: statusCounters.delivered,
@@ -404,17 +384,17 @@ describe('Monitoring service', () => {
           nouveau_indexes: [
             {
               file_size: 76815351,
-              name: 'online-user/contacts_by_freetext',
+              name: NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT,
               doc_count: 207734,
             },
             {
               file_size: 157258510,
-              name: 'online-user/reports_by_freetext',
+              name: NOUVEAU_INDEXES.REPORTS_BY_FREETEXT,
               doc_count: 183741,
             },
             {
               file_size: 218427370,
-              name: 'replication/docs_by_replication_key',
+              name: NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY,
               doc_count: 1261007,
             },
           ],
@@ -484,24 +464,22 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/report-transitions/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/sentinel-schedule/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/replication/_nouveau_info/docs_by_replication_key`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -552,17 +530,17 @@ describe('Monitoring service', () => {
           nouveau_indexes: [
             {
               file_size: 76815351,
-              name: 'online-user/contacts_by_freetext',
+              name: NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT,
               doc_count: 207734,
             },
             {
               file_size: 157258510,
-              name: 'online-user/reports_by_freetext',
+              name: NOUVEAU_INDEXES.REPORTS_BY_FREETEXT,
               doc_count: 183741,
             },
             {
               file_size: 218427370,
-              name: 'replication/docs_by_replication_key',
+              name: NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY,
               doc_count: 1261007,
             },
           ],
@@ -659,24 +637,22 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/report-transitions/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/sentinel-schedule/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/replication/_nouveau_info/docs_by_replication_key`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -702,9 +678,9 @@ describe('Monitoring service', () => {
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
     sinon.stub(db.medicLogs, 'query')
-      .withArgs('logs/replication_limit')
+      .withArgs(VIEWS.REPLICATION_LIMIT)
       .rejects()
-      .withArgs('logs/connected_users', { startkey: 0, reduce: true })
+      .withArgs(VIEWS.CONNECTED_USERS, { startkey: 0, reduce: true })
       .rejects();
 
     return service.jsonV1().then(actual => {
@@ -790,24 +766,22 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/report-transitions/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/sentinel-schedule/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/replication/_nouveau_info/docs_by_replication_key`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -936,24 +910,22 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/report-transitions/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/sentinel-schedule/_info` }],
+        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/contacts_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/online-user/_nouveau_info/reports_by_freetext`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/replication/_nouveau_info/docs_by_replication_key`,
+          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],

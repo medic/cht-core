@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { find as _find, groupBy as _groupBy, partial as _partial, } from 'lodash-es';
+import { VIEWS } from '@medic/constants';
 
 import registrationUtils from '@medic/registration-utils';
 
@@ -161,9 +162,9 @@ export class ContactViewModelGeneratorService {
       return children;
     }
 
-    // If the primary contact is not a child, fetch the document    
+    // If the primary contact is not a child, fetch the document
     const contact = await this.getContactFromDatasource(Qualifier.byUuid(contactId));
-    
+
     if (!contact) {
       return children;
     }
@@ -212,7 +213,7 @@ export class ContactViewModelGeneratorService {
     }
     return this.dbService
       .get()
-      .query('webapp-contacts/contacts_by_parent', options)
+      .query(VIEWS.CONTACTS_BY_PARENT, options)
       .then(response => response.rows);
   }
 

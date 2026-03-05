@@ -1,6 +1,7 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const utils = require('./utils');
+const { VIEWS } = require('@medic/constants');
 
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
 
@@ -217,7 +218,7 @@ module.exports = function(Promise, DB) {
       .filter(shortcode => shortcode)
       .map(shortcode => [ 'shortcode', shortcode ]);
 
-    return DB.query('shared-contacts/contacts_by_reference', { keys })
+    return DB.query(VIEWS.CONTACTS_BY_REFERENCE, { keys })
       .then(function(results) {
         const findIdWithKey = key => {
           const matchingRow = results.rows.find(row => row.key[1] === key);
@@ -234,7 +235,7 @@ module.exports = function(Promise, DB) {
       endkey: [id, {}],
       include_docs: true
     };
-    return DB.query('shared/docs_by_id_lineage', options)
+    return DB.query(VIEWS.DOCS_BY_ID_LINEAGE, options)
       .then(function(result) {
         return result.rows.map(function(row) {
           return row.doc;

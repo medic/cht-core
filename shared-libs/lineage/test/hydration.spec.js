@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const { VIEWS } = require('@medic/constants');
 const lineageFactory = require('../src');
 
 describe('Lineage', function() {
@@ -28,7 +29,7 @@ describe('Lineage', function() {
 
       return lineage.fetchLineageById(id).then(() => {
         chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.getCall(0).args[0]).to.equal('shared/docs_by_id_lineage');
+        chai.expect(query.getCall(0).args[0]).to.equal(VIEWS.DOCS_BY_ID_LINEAGE);
         chai.expect(query.getCall(0).args[1].startkey).to.deep.equal([ id ]);
         chai.expect(query.getCall(0).args[1].endkey).to.deep.equal([ id, {} ]);
         chai.expect(query.getCall(0).args[1].include_docs).to.deep.equal(true);

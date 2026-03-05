@@ -2,6 +2,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { VIEWS } from '@medic/constants';
 import { WealthQuintilesWatcherService } from '@mm-services/wealth-quintiles-watcher.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { DbService } from '@mm-services/db.service';
@@ -107,7 +108,7 @@ describe('WealthQuintilesWatcherService', () => {
     tick();
 
     expect(dbInstance.query.callCount).to.equal(1);
-    expect(dbInstance.query.args[0][0]).to.equal('webapp-contacts/contacts_by_parent');
+    expect(dbInstance.query.args[0][0]).to.equal(VIEWS.CONTACTS_BY_PARENT);
     expect(dbInstance.query.args[0][1]).to.deep.equal({
       startkey: [ '123' ],
       endkey: [ '123', {} ],
@@ -162,7 +163,7 @@ describe('WealthQuintilesWatcherService', () => {
     tick();
 
     expect(dbInstance.query.callCount).to.equal(1);
-    expect(dbInstance.query.args[0][0]).to.equal('webapp-contacts/contacts_by_parent');
+    expect(dbInstance.query.args[0][0]).to.equal(VIEWS.CONTACTS_BY_PARENT);
     expect(dbInstance.query.args[0][1]).to.deep.equal({
       startkey: [ '123' ],
       endkey: [ '123', {} ],
@@ -219,7 +220,7 @@ describe('WealthQuintilesWatcherService', () => {
     tick();
 
     expect(dbInstance.query.callCount).to.equal(1);
-    expect(dbInstance.query.args[0][0]).to.equal('webapp-contacts/contacts_by_parent');
+    expect(dbInstance.query.args[0][0]).to.equal(VIEWS.CONTACTS_BY_PARENT);
     expect(dbInstance.query.args[0][1]).to.deep.equal({
       startkey: [ '123' ],
       endkey: [ '123', {} ],

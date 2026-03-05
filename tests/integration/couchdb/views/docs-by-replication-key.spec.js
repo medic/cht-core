@@ -1,5 +1,6 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
+const { NOUVEAU_INDEXES, nouveauUrl } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('docs_by_replication_key', () => {
@@ -290,7 +291,7 @@ describe('docs_by_replication_key', () => {
 
     return await utils
       .requestOnTestDb({
-        path: '/_design/replication/_nouveau/docs_by_replication_key',
+        path: `/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
         method: 'POST',
         body: opts,
       })
