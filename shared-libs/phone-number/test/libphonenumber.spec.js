@@ -236,6 +236,32 @@ describe('libphonenumber', () => {
 
   });
 
+  describe('format', () => {
+
+    it('returns formatted number for valid domestic number', () => {
+      const actual = phonenumber.format(settings, NZ_DOMESTIC_VALID);
+      assert.isString(actual);
+      assert.isNotFalse(actual);
+    });
+
+    it('returns formatted international number when country code does not match', () => {
+      const actual = phonenumber.format(settings, US_INTERNATIONAL_VALID);
+      assert.isString(actual);
+      assert.include(actual, '+1');
+    });
+
+    it('returns false for empty number', () => {
+      const actual = phonenumber.format(settings, '');
+      assert.isFalse(actual);
+    });
+
+    it('returns false for invalid number', () => {
+      const actual = phonenumber.format(settings, 'not-a-number');
+      assert.isFalse(actual);
+    });
+
+  });
+
   describe('same', () => {
 
     it('returns true for different formats', () => {
@@ -251,6 +277,11 @@ describe('libphonenumber', () => {
     it('missing country code matches default', () => {
       const actual = phonenumber.same('+41446681800', '446681800');
       assert.isTrue(actual);
+    });
+
+    it('returns false for invalid input', () => {
+      const actual = phonenumber.same(null, undefined);
+      assert.isFalse(actual);
     });
 
   });
