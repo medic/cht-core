@@ -34,6 +34,33 @@ describe('environment', () => {
     expect(logger.error.calledWithMatch('Please define a valid COUCH_URL in your environment')).to.be.true;
   });
 
+  it('should exit on unexpected errors during initialization', () => {
+    sinon.stub(process, 'exit');
+    stubProcessEnv({ COUCH_URL: 'http://admin:pass@localhost:5984/medic' });
+    sinon.stub(logger, 'error');
+
+    const OrigURL = global.URL;
+    let urlCallCount = 0;
+    global.URL = class FakeURL extends OrigURL {
+      constructor(...args) {
+        super(...args);
+        urlCallCount++;
+        if (urlCallCount >= 2) {
+          throw new Error('unexpected failure');
+        }
+      }
+    };
+
+    try {
+      rewire('../src/index');
+    } finally {
+      global.URL = OrigURL;
+    }
+
+    expect(process.exit.calledWith(1)).to.be.true;
+    expect(logger.error.calledWithMatch(sinon.match.has('message', 'unexpected failure'))).to.be.true;
+  });
+
   it('should export correct values', () => {
     stubProcessEnv({ COUCH_URL: 'https://admin:pass@couchdb:5984/medicdb' });
 
