@@ -42,7 +42,6 @@ describe('checks', () => {
     });
 
     it('should throw when given an invalid URL', () => {
-      sinon.spy(console, 'log');
       chai.expect(() => service.checkServerUrl('not-a-valid-url')).to.throw(/COUCH_URL/);
     });
 
