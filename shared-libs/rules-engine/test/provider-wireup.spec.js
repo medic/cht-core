@@ -1286,4 +1286,27 @@ describe('provider-wireup integration tests', () => {
       });
     });
   });
+
+  describe('initialize error paths', () => {
+    it('should throw when rules exist but are not declarative', async () => {
+      const nonDeclarativeSettings = {
+        rules: 'some rules',
+        rulesAreDeclarative: false,
+      };
+      try {
+        await wireup.initialize(provider, nonDeclarativeSettings, {});
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err.message).to.include('not declarative');
+      }
+    });
+  });
+
+  describe('refreshEmissionsFor', () => {
+    it('should return disabled response when emitter is not enabled', async () => {
+      // Don't initialize - emitter is disabled
+      const result = await wireup.refreshEmissionsFor(provider, ['abc']);
+      expect(result).to.deep.equal([]);
+    });
+  });
 });
