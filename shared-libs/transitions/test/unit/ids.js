@@ -102,8 +102,7 @@ describe('ids', () => {
 
   it('getIdLengthDoc throws when db.get rejects with a non-404 error', () => {
     const db = mockDb(() => []);
-    const serverError = { status: 500, message: 'server error' };
-    db.medic.get.rejects(serverError);
+    db.medic.get.rejects({ status: 500, message: 'server error' });
 
     return ids.generator(db).next().value.then(
       () => assert.fail('should have thrown'),
@@ -134,9 +133,7 @@ describe('ids', () => {
       }
       return []; // none used at length 6
     });
-
-    const serverError = { status: 500, message: 'put server error' };
-    db.medic.put.rejects(serverError);
+    db.medic.put.rejects({ status: 500, message: 'put server error' });
 
     return ids.generator(db).next().value.then(
       () => assert.fail('should have thrown'),
@@ -162,7 +159,7 @@ describe('ids', () => {
     return ids.generator(db).next().value.then(patientId => {
       assert(patientId);
       assert.equal(patientId.length, 6);
-      assert.equal(logger.warn.callCount >= 1, true);
+      assert.isAtLeast(logger.warn.callCount, 1);
       const warnCalls = logger.warn.args.map(args => args[0]);
       const has409Warning = warnCalls.some(msg => typeof msg === 'string' && msg.includes('409'));
       assert(has409Warning, 'should have logged a 409 warning');

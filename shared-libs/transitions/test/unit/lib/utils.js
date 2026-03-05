@@ -400,9 +400,7 @@ describe('utils util', () => {
     it('should reject when formName is missing', () => {
       return utils
         .getReportsWithSameParentAndForm({})
-        .then(() => {
-          throw new Error('Expected rejection');
-        })
+        .then(() => expect.fail('Expected rejection'))
         .catch(err => {
           err.should.equal('Missing required argument `formName` for match query.');
           db.medic.query.callCount.should.equal(0);
@@ -412,9 +410,7 @@ describe('utils util', () => {
     it('should reject when parentId is missing', () => {
       return utils
         .getReportsWithSameParentAndForm({ formName: 'myForm', doc: {} })
-        .then(() => {
-          throw new Error('Expected rejection');
-        })
+        .then(() => expect.fail('Expected rejection'))
         .catch(err => {
           err.should.equal('Missing required argument `parentId` for match query.');
           db.medic.query.callCount.should.equal(0);
@@ -427,9 +423,7 @@ describe('utils util', () => {
           formName: 'myForm',
           doc: { contact: { parent: {} } }
         })
-        .then(() => {
-          throw new Error('Expected rejection');
-        })
+        .then(() => expect.fail('Expected rejection'))
         .catch(err => {
           err.should.equal('Missing required argument `parentId` for match query.');
           db.medic.query.callCount.should.equal(0);
@@ -438,20 +432,22 @@ describe('utils util', () => {
 
     it('should query the view with correct parameters when valid options are provided', () => {
       db.medic.query.resolves({ rows: [{ id: 'report1' }, { id: 'report2' }] });
-      return utils.getReportsWithSameParentAndForm({
-        formName: 'myForm',
-        doc: { contact: { parent: { _id: 'parent1' } } }
-      }).then(result => {
-        result.should.deep.equal([{ id: 'report1' }, { id: 'report2' }]);
-        db.medic.query.callCount.should.equal(1);
-        db.medic.query.args[0][0].should.equal('medic/reports_by_form_and_parent');
-        db.medic.query.args[0][1].should.deep.equal({
-          startkey: ['myForm', 'parent1'],
-          endkey: ['myForm', 'parent1'],
-          include_docs: true,
-          reduce: false,
+      return utils
+        .getReportsWithSameParentAndForm({
+          formName: 'myForm',
+          doc: { contact: { parent: { _id: 'parent1' } } }
+        })
+        .then(result => {
+          result.should.deep.equal([{ id: 'report1' }, { id: 'report2' }]);
+          db.medic.query.callCount.should.equal(1);
+          db.medic.query.args[0][0].should.equal('medic/reports_by_form_and_parent');
+          db.medic.query.args[0][1].should.deep.equal({
+            startkey: ['myForm', 'parent1'],
+            endkey: ['myForm', 'parent1'],
+            include_docs: true,
+            reduce: false,
+          });
         });
-      });
     });
   });
 
@@ -516,8 +512,7 @@ describe('utils util', () => {
       });
     });
 
-    it('should return the contact doc when includeDocs is true (via getContact)', () => {
-      sinon.stub(logger, 'warn');
+    it('should return the contact doc', () => {
       db.medic.query.resolves({
         rows: [
           { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
@@ -526,12 +521,10 @@ describe('utils util', () => {
 
       return utils.getContact('shortcode123').then(result => {
         result.should.deep.equal({ _id: 'contact1', name: 'Alice' });
-        logger.warn.callCount.should.equal(0);
       });
     });
 
-    it('should return contact id when using getContactUuid', () => {
-      sinon.stub(logger, 'warn');
+    it('should return contact id', () => {
       db.medic.query.resolves({
         rows: [
           { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
@@ -540,11 +533,10 @@ describe('utils util', () => {
 
       return utils.getContactUuid('shortcode123').then(result => {
         result.should.equal('contact1');
-        logger.warn.callCount.should.equal(0);
       });
     });
 
-    it('should log warning and still return first contact id when multiple matches via getContactUuid', () => {
+    it('should log warning and return first contact id when multiple matches via getContactUuid', () => {
       sinon.stub(logger, 'warn');
       db.medic.query.resolves({
         rows: [

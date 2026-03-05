@@ -1,24 +1,23 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../src/config');
+const rewire = require('rewire');
 
 describe('date', () => {
+  let dateModule;
+
   afterEach(() => {
     sinon.restore();
-    // Clean up require cache so date.js can be re-loaded
-    delete require.cache[require.resolve('../../src/date')];
   });
 
   describe('without synthetic date', () => {
-    let dateModule;
-
     beforeEach(() => {
       config.init({
         get: sinon.stub().returns(undefined),
         getAll: sinon.stub().returns({}),
       });
-      delete require.cache[require.resolve('../../src/date')];
-      dateModule = require('../../src/date');
+
+      dateModule = rewire('../../src/date');
     });
 
     it('isSynthetic returns false', () => {
@@ -44,15 +43,12 @@ describe('date', () => {
   });
 
   describe('with synthetic date', () => {
-    let dateModule;
-
     beforeEach(() => {
       config.init({
         get: sinon.stub().returns('202301151430'),
         getAll: sinon.stub().returns({}),
       });
-      delete require.cache[require.resolve('../../src/date')];
-      dateModule = require('../../src/date');
+      dateModule = rewire('../../src/date');
     });
 
     it('isSynthetic returns true', () => {
@@ -81,15 +77,12 @@ describe('date', () => {
   });
 
   describe('with synthetic date without hours/minutes', () => {
-    let dateModule;
-
     beforeEach(() => {
       config.init({
         get: sinon.stub().returns('20230115'),
         getAll: sinon.stub().returns({}),
       });
-      delete require.cache[require.resolve('../../src/date')];
-      dateModule = require('../../src/date');
+      dateModule = rewire('../../src/date');
     });
 
     it('defaults hours to 12 and minutes to 0', () => {
@@ -103,15 +96,12 @@ describe('date', () => {
   });
 
   describe('with non-matching synthetic date', () => {
-    let dateModule;
-
     beforeEach(() => {
       config.init({
         get: sinon.stub().returns('not-a-date'),
         getAll: sinon.stub().returns({}),
       });
-      delete require.cache[require.resolve('../../src/date')];
-      dateModule = require('../../src/date');
+      dateModule = rewire('../../src/date');
     });
 
     it('isSynthetic returns false when date does not match pattern', () => {
@@ -120,15 +110,12 @@ describe('date', () => {
   });
 
   describe('getDuration', () => {
-    let dateModule;
-
     beforeEach(() => {
       config.init({
         get: sinon.stub().returns(undefined),
         getAll: sinon.stub().returns({}),
       });
-      delete require.cache[require.resolve('../../src/date')];
-      dateModule = require('../../src/date');
+      dateModule = rewire('../../src/date');
     });
 
     it('returns null for invalid input', () => {

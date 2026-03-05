@@ -61,6 +61,12 @@ describe('mark for outbound', () => {
         .onMatch(change)
         .then(() => {
           assert.equal(outbound.send.callCount, 1);
+          assert.deepEqual(outbound.send.args[0], [
+            configDoc['test-push-1'],
+            'test-push-1',
+            change.doc,
+            {}
+          ]);
           assert.equal(db.sentinel.put.callCount, 1);
           assert.equal(db.sentinel.get.callCount, 2);
           assert.equal(logger.info.callCount, 1);
@@ -92,6 +98,19 @@ describe('mark for outbound', () => {
         .onMatch(change)
         .then(() => {
           assert.equal(outbound.send.callCount, 2);
+          assert.deepEqual(outbound.send.args[0], [
+            configDoc['test-push-1'],
+            'test-push-1',
+            change.doc,
+            {}
+          ]);
+
+          assert.deepEqual(outbound.send.args[1], [
+            configDoc['test-push-3'],
+            'test-push-3',
+            change.doc,
+            {}
+          ]);
           assert.equal(db.sentinel.put.callCount, 1);
           assert.equal(db.sentinel.get.callCount, 1);
           assert.equal(logger.info.callCount, 1);
@@ -103,6 +122,7 @@ describe('mark for outbound', () => {
           assert.isTrue(db.sentinel.put.args[0][0].queue.includes('test-push-3'));
         });
     });
+
     it('returns false when no relevant configs exist', () => {
       const configDoc = {
         'test-push-1': {
@@ -153,6 +173,13 @@ describe('mark for outbound', () => {
         .then(result => {
           assert.equal(result, false);
           assert.equal(outbound.send.callCount, 1);
+          assert.deepEqual(outbound.send.args[0], [
+            configDoc['test-push-1'],
+            'test-push-1',
+            change.doc,
+            change.info,
+          ]);
+
           assert.equal(infodocLib.saveCompletedTasks.callCount, 1);
           assert.deepEqual(infodocLib.saveCompletedTasks.args[0], [
             'test-doc-id',

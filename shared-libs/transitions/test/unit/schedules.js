@@ -11,12 +11,8 @@ describe('schedules', () => {
 
   beforeEach(() => {
     config.init({
-      getAll: sinon
-        .stub()
-        .returns({}),
-      get: sinon
-        .stub()
-        .returns(undefined),
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns(),
     });
 
     schedules = require('../../src/lib/schedules');

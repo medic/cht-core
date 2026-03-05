@@ -189,24 +189,18 @@ describe('messages', () => {
   });
 
   it('addMessage with unique=true handles empty messages array from generate', () => {
-    // Set up deny list so isOutgoingAllowed returns false (avoids accessing undefined msg properties)
     config.getAll.returns({ outgoing_deny_list: '+denied' });
     const doc = {
       form: 'x',
       from: '+denied',
-      tasks: [
-        {
-          messages: [{ to: '+123', message: 'existing' }]
-        }
-      ]
+      tasks: [ { messages: [{ to: '+123', message: 'existing' }] } ]
     };
     sinon.stub(messageUtils, 'generate').returns([undefined]);
-    const task = messages.addMessage(doc, { message: 'test' }, '+123', {}, true);
-    // When newTask.messages[0] is falsy, findExistentTask returns undefined (early return),
-    // so a new task is added instead of matching an existing one
+    messages.addMessage(doc, { message: 'test' }, '+123', {}, true);
+
     assert.equal(doc.tasks.length, 2);
-    assert.deepEqual(task.messages, [undefined]);
-    assert.equal(task.state, 'denied');
+    assert.deepEqual(doc.tasks[0], { messages: [{ to: '+123', message: 'existing' }] });
+    assert.deepOwnInclude(doc.tasks[1], { messages: [undefined], state: 'denied', state_details: undefined });
   });
 
   it('addMessage does not duplicate messages when requested to ensure uniqueness', () => {
@@ -424,9 +418,8 @@ describe('messages', () => {
       sinon.stub(messageUtils, 'template').returns('processed error');
       sinon.stub(utils, 'addError');
       const doc = { errors: [] };
-      const error = { code: 'some_code' };
 
-      messages.addError(doc, error);
+      messages.addError(doc, { code: 'some_code' });
 
       assert.equal(logger.warn.callCount, 1);
       assert.equal(logger.warn.args[0][0], 'Message property missing on error object.');

@@ -218,7 +218,7 @@ describe('update_scheduled_reports', () => {
       });
     });
 
-    it('use week view when doc has week_number property instead of week', () => {
+    it('use week view when doc has week_number property', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
@@ -243,7 +243,7 @@ describe('update_scheduled_reports', () => {
       });
     });
 
-    it('use month view when doc has month_num property instead of month', () => {
+    it('use month view when doc has month_num property', () => {
       const doc = {
         type: 'data_record',
         form: 'form',
@@ -529,6 +529,7 @@ describe('update_scheduled_reports', () => {
         assert.equal(db.medic.bulkDocs.args[0][0].length, 2);
       });
     });
+
     it('should resolve without querying when doc has neither week nor month fields', () => {
       sinon.stub(db.medic, 'query');
       const change = {

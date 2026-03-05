@@ -4,9 +4,11 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
+const messagesMod = require('../../../src/lib/messages');
 
 describe('accept_case_reports', () => {
   let transition;
+  let transitionUtils;
 
   beforeEach(() => {
     config.init({
@@ -14,6 +16,7 @@ describe('accept_case_reports', () => {
       get: sinon.stub(),
       getTranslations: sinon.stub().returns({})
     });
+    transitionUtils = require('../../../src/transitions/utils');
     transition = require('../../../src/transitions/accept_case_reports');
   });
 
@@ -171,6 +174,8 @@ describe('accept_case_reports', () => {
 
       return transition.onMatch({ doc }).then(() => {
         doc.tasks.length.should.equal(1);
+        doc.tasks[0].messages.length.should.equal(1);
+        doc.tasks[0].messages[0].message.should.equal('Active case');
       });
     });
 
@@ -205,6 +210,7 @@ describe('accept_case_reports', () => {
 
       return transition.onMatch({ doc }).then(() => {
         expect(doc.fields.place_uuid).to.be.undefined;
+        expect(doc.tasks).to.equal(undefined);
       });
     });
 
@@ -221,18 +227,17 @@ describe('accept_case_reports', () => {
 
       return transition.onMatch({ doc }).then(() => {
         doc.fields.place_uuid.should.equal('abc');
+        expect(doc.tasks).to.equal(undefined);
       });
     });
 
     it('returns true and adds errors when validation fails', () => {
-      const transitionUtilsMod = require('../../../src/transitions/utils');
-      const messagesMod = require('../../../src/lib/messages');
       config.get.returns([{
         form: 'x',
         validations: { list: [{ property: 'patient_id', rule: 'required' }] },
         messages: [{ event_type: 'report_accepted', message: [{ content: 'ok', locale: 'en' }] }],
       }]);
-      sinon.stub(transitionUtilsMod, 'validate').resolves([{ message: 'patient_id is required' }]);
+      sinon.stub(transitionUtils, 'validate').resolves([{ message: 'patient_id is required' }]);
       sinon.stub(messagesMod, 'addErrors');
 
       const doc = { form: 'x', fields: {} };
@@ -240,6 +245,7 @@ describe('accept_case_reports', () => {
       return transition.onMatch({ doc }).then(changed => {
         changed.should.equal(true);
         messagesMod.addErrors.callCount.should.equal(1);
+        expect(doc.tasks).to.equal(undefined);
       });
     });
 
@@ -249,7 +255,7 @@ describe('accept_case_reports', () => {
         messages: [{
           event_type: 'report_accepted',
           message: [{
-            content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
+            content: 'Thank you. ANC visit for {{patient_id}} has been recorded.',
             locale: 'en',
           }],
           recipient: 'reporting_unit',
@@ -269,6 +275,9 @@ describe('accept_case_reports', () => {
 
       return transition.onMatch({ doc }).then(() => {
         doc.fields.place_uuid.should.equal('abc');
+        doc.tasks.length.should.equal(1);
+        doc.tasks[0].messages.length.should.equal(1);
+        doc.tasks[0].messages[0].message.should.equal('Thank you. ANC visit for x has been recorded.');
       });
     });
 

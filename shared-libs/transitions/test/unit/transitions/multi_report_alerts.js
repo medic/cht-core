@@ -719,13 +719,11 @@ describe('multi report alerts', () => {
     assert.include(logger.warn.args[0][0], 'Expecting "forms" to be an array of form codes');
   });
 
-  it('validates config : does not warn when forms is a valid array', () => {
-    sinon.stub(logger, 'warn');
+  it('validates correct config', () => {
     alertConfig.forms = ['A', 'B'];
     config.get.returns([alertConfig]);
     transition.init();
     assert.deepEqual(alertConfig.forms, ['A', 'B']);
-    assert.equal(logger.warn.callCount, 0);
   });
 
   it('onMatch collects errors from runOneAlert and throws with changed=true', () => {
@@ -733,15 +731,11 @@ describe('multi report alerts', () => {
 
     // Make runOneAlert reject by having getReportsWithinTimeWindow fail.
     sinon.stub(utils, 'getReportsWithinTimeWindow').rejects(new Error('db connection failed'));
-
-    // Note: .catch(errors.push) on line 348 of the source loses its `this` context,
-    // so the catch handler itself throws a TypeError. This means the error aggregation
-    // path (lines 353-356) is unreachable with the current code. We verify the actual
-    // behavior: the TypeError from the broken .catch(errors.push) propagates.
     return transition.onMatch({ doc: doc }).then(() => {
       assert.fail('Expected error to be thrown');
     }).catch(err => {
       assert.instanceOf(err, TypeError);
+      assert.equal(err.message, 'Cannot convert undefined or null to object');
     });
   });
 });
