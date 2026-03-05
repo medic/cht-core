@@ -1,4 +1,5 @@
 require('chai').should();
+const { expect } = require('chai');
 
 const sinon = require('sinon');
 const utils = require('../../../src/lib/utils');
@@ -120,6 +121,125 @@ describe('accept_case_reports', () => {
         doc.tasks.length.should.equal(1);
         doc.tasks[0].messages.length.should.equal(1);
         doc.tasks[0].messages[0].message.should.equal('Thanks jane');
+      });
+    });
+
+    it('skips messages with non report_accepted event_type', () => {
+      config.get.returns([{
+        form: 'x',
+        messages: [{
+          event_type: 'registration_not_found',
+          message: [{ content: 'Not found', locale: 'en' }],
+          recipient: 'reporting_unit',
+        }]
+      }]);
+      sinon.stub(utils, 'getReportsBySubject').resolves([{
+        fields: { place_uuid: 'abc' }
+      }]);
+
+      const doc = {
+        form: 'x',
+        fields: { patient_id: 'x' },
+        case_id: '123',
+      };
+
+      return transition.onMatch({ doc }).then(() => {
+        expect(doc.tasks).to.be.undefined;
+      });
+    });
+
+    it('evaluates bool_expr when present on message', () => {
+      config.get.returns([{
+        form: 'x',
+        messages: [{
+          event_type: 'report_accepted',
+          bool_expr: 'doc.fields.status === "active"',
+          message: [{ content: 'Active case', locale: 'en' }],
+          recipient: 'reporting_unit',
+        }]
+      }]);
+      sinon.stub(utils, 'getReportsBySubject').resolves([{
+        fields: { place_uuid: 'abc' }
+      }]);
+
+      const doc = {
+        form: 'x',
+        fields: { patient_id: 'x', status: 'active' },
+        case_id: '123',
+        contact: { name: 'jane' },
+      };
+
+      return transition.onMatch({ doc }).then(() => {
+        doc.tasks.length.should.equal(1);
+      });
+    });
+
+    it('skips adding messages when config has no messages property', () => {
+      config.get.returns([{ form: 'x' }]);
+      sinon.stub(utils, 'getReportsBySubject').resolves([{
+        fields: { place_uuid: 'abc' }
+      }]);
+
+      const doc = {
+        form: 'x',
+        fields: { patient_id: 'x' },
+        case_id: '123',
+      };
+
+      return transition.onMatch({ doc }).then(() => {
+        expect(doc.tasks).to.be.undefined;
+      });
+    });
+
+    it('handles registrations with no place_uuid', () => {
+      config.get.returns([{ form: 'x' }]);
+      sinon.stub(utils, 'getReportsBySubject').resolves([{
+        fields: {}
+      }]);
+
+      const doc = {
+        form: 'x',
+        fields: { patient_id: 'x' },
+        case_id: '123',
+      };
+
+      return transition.onMatch({ doc }).then(() => {
+        expect(doc.fields.place_uuid).to.be.undefined;
+      });
+    });
+
+    it('initializes doc.fields when not present during place uuid update', () => {
+      config.get.returns([{ form: 'x' }]);
+      sinon.stub(utils, 'getReportsBySubject').resolves([{
+        fields: { place_uuid: 'abc' }
+      }]);
+
+      const doc = {
+        form: 'x',
+        case_id: '123',
+      };
+
+      return transition.onMatch({ doc }).then(() => {
+        doc.fields.place_uuid.should.equal('abc');
+      });
+    });
+
+    it('returns true and adds errors when validation fails', () => {
+      const transitionUtilsMod = require('../../../src/transitions/utils');
+      const messagesMod = require('../../../src/lib/messages');
+      config.get.returns([{
+        form: 'x',
+        validations: { list: [{ property: 'patient_id', rule: 'required' }] },
+        messages: [{ event_type: 'report_accepted', message: [{ content: 'ok', locale: 'en' }] }],
+      }]);
+      sinon.stub(transitionUtilsMod, 'validate').resolves([{ message: 'patient_id is required' }]);
+      sinon.stub(messagesMod, 'addErrors');
+
+      const doc = { form: 'x', fields: {} };
+
+      return transition.onMatch({ doc }).then(changed => {
+        changed.should.equal(true);
+        messagesMod.addErrors.callCount.should.equal(1);
       });
     });
 

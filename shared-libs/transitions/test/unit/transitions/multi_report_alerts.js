@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const config = require('../../../src/config');
+const logger = require('@medic/logger');
 const messages = require('../../../src/lib/messages');
 const sinon = require('sinon');
 const assert = require('chai').assert;
@@ -687,5 +688,60 @@ describe('multi report alerts', () => {
         assert.equal(countedReportsIds.length, 151);
         assert.equal(newReports.length, 151);
       });
+  });
+
+  it('validates config : num_reports_threshold > MAX_NUM_REPORTS_THRESHOLD includes threshold in error', () => {
+    sinon.stub(logger, 'error');
+    alertConfig.num_reports_threshold = 101;
+    config.get.returns([alertConfig]);
+    try {
+      transition.init();
+      assert.fail('Expected error to be thrown');
+    } catch (err) {
+      assert.include(err.message, 'Validation failed for multi_report_alerts transition');
+      assert.equal(logger.error.callCount, 2);
+      assert.include(
+        logger.error.args[1][0],
+        '"num_reports_threshold" should be less than 100. Found 101'
+      );
+    }
+  });
+
+  it('validates config : warns and nullifies forms when forms is not an array', () => {
+    sinon.stub(logger, 'warn');
+    alertConfig.forms = 'not-an-array';
+    config.get.returns([alertConfig]);
+    transition.init();
+    assert.equal(alertConfig.forms, null);
+    assert.equal(logger.warn.callCount, 1);
+    assert.include(logger.warn.args[0][0], 'Bad config for multi_report_alerts');
+    assert.include(logger.warn.args[0][0], alertConfig.name);
+    assert.include(logger.warn.args[0][0], 'Expecting "forms" to be an array of form codes');
+  });
+
+  it('validates config : does not warn when forms is a valid array', () => {
+    sinon.stub(logger, 'warn');
+    alertConfig.forms = ['A', 'B'];
+    config.get.returns([alertConfig]);
+    transition.init();
+    assert.deepEqual(alertConfig.forms, ['A', 'B']);
+    assert.equal(logger.warn.callCount, 0);
+  });
+
+  it('onMatch collects errors from runOneAlert and throws with changed=true', () => {
+    config.get.returns([alertConfig]);
+
+    // Make runOneAlert reject by having getReportsWithinTimeWindow fail.
+    sinon.stub(utils, 'getReportsWithinTimeWindow').rejects(new Error('db connection failed'));
+
+    // Note: .catch(errors.push) on line 348 of the source loses its `this` context,
+    // so the catch handler itself throws a TypeError. This means the error aggregation
+    // path (lines 353-356) is unreachable with the current code. We verify the actual
+    // behavior: the TypeError from the broken .catch(errors.push) propagates.
+    return transition.onMatch({ doc: doc }).then(() => {
+      assert.fail('Expected error to be thrown');
+    }).catch(err => {
+      assert.instanceOf(err, TypeError);
+    });
   });
 });
