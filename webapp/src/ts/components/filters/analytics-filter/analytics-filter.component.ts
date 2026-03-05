@@ -16,8 +16,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
-import { AGGREGATE_TARGETS_ID } from '@mm-services/analytics-modules.service';
+import { AGGREGATE_TARGETS_ID, TARGETS_ID } from '@mm-services/analytics-modules.service';
 import { NgIf, NgFor } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -33,6 +32,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   private globalActions;
   activeModule;
+  activeFilters = 0;
   subscriptions: Subscription = new Subscription();
   showFilterButton;
   isOpen = false;
@@ -43,7 +43,6 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     private router: Router,
     private sessionService: SessionService,
     private telemetryService: TelemetryService,
-    private targetAggregatesService: TargetAggregatesService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -66,7 +65,7 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
 
   ngAfterContentChecked() {
     if (!this.activeModule && this.analyticsModules?.length) {
-      this.setActiveModule(this.route.snapshot?.firstChild?.data?.moduleId);
+      this.setActiveModule(this.getCurrentModuleId());
     }
   }
 
@@ -77,7 +76,10 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
   private subscribeToStore() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe((filterState) => this.isOpen = filterState?.isOpen ?? false);
+      .subscribe((filterState) => {
+        this.isOpen = filterState?.isOpen ?? false;
+        this.activeFilters = filterState?.filterCount?.total ?? 0;
+      });
     this.subscriptions.add(subscription);
   }
 
@@ -99,27 +101,33 @@ export class AnalyticsFilterComponent implements AfterContentInit, AfterContentC
     this.subscriptions.add(routeSubscription);
   }
 
-  private isTargetAggregates() {
-    return this.getCurrentModuleId() === AGGREGATE_TARGETS_ID;
-  }
-
-  private isTargetAggregateEnabled() {
-    return this.targetAggregatesService.isEnabled();
+  private isAnalyticsModule() {
+    const moduleId = this.getCurrentModuleId();
+    return moduleId === AGGREGATE_TARGETS_ID || moduleId === TARGETS_ID;
   }
 
   private async canDisplayFilterButton() {
     const isAdmin = this.sessionService.isAdmin();
-    const isTargetAggregateEnabled = await this.isTargetAggregateEnabled();
 
-    this.showFilterButton = !isAdmin && this.isTargetAggregates() && isTargetAggregateEnabled;
+    this.showFilterButton = !isAdmin && this.isAnalyticsModule();
   }
 
   openSidebar() {
     this.isOpen = !this.isOpen;
     this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
-    if (this.isOpen) {
-      // Counting every time the user opens the sidebar filter in analytics_targets_aggregrate tab.
+
+    if (!this.isOpen) {
+      return;
+    }
+
+    const moduleId = this.activeModule? this.activeModule.id: this.getCurrentModuleId();
+
+    if (moduleId === AGGREGATE_TARGETS_ID) {
       this.telemetryService.record('sidebar_filter:analytics:target_aggregates:open');
+    }
+
+    if (moduleId === TARGETS_ID) {
+      this.telemetryService.record('sidebar_filter:analytics:targets:open');
     }
   }
 }
