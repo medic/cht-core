@@ -91,7 +91,35 @@ describe('people controller', () => {
 
   });
 
+  describe('getOrCreatePerson', () => {
+    it('creates and returns person when given new object', () => {
+      sinon.stub(controller, 'createPerson').resolves({ id: 'new-id' });
+      sinon.stub(controller, '_getPerson').resolves({ _id: 'new-id', name: 'Test' });
+      return controller.getOrCreatePerson({ name: 'Test', type: 'person' }).then(result => {
+        chai.expect(result._id).to.equal('new-id');
+        chai.expect(controller.createPerson.callCount).to.equal(1);
+        chai.expect(controller._getPerson.calledWith('new-id')).to.be.true;
+      });
+    });
+
+    it('rejects existing object with _rev', () => {
+      return controller.getOrCreatePerson({ _id: 'x', _rev: '1' }).catch(err => {
+        chai.expect(err.code).to.equal(400);
+        chai.expect(err.message).to.include('Person must be a new object');
+      });
+    });
+  });
+
   describe('createPerson', () => {
+
+    it('does not override existing type', () => {
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
+      sinon.stub(controller, '_validatePerson').returns();
+      db.medic.post.resolves({ id: 'new-id' });
+      return controller.createPerson({ type: 'person', name: 'Test' }).then(() => {
+        chai.expect(db.medic.post.args[0][0].type).to.equal('person');
+      });
+    });
 
     it('returns error from db insert', done => {
       sinon.stub(controller, '_validatePerson').returns();

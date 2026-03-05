@@ -188,6 +188,30 @@ describe('places controller', () => {
       });
     });
 
+    it('returns error when place is missing name', done => {
+      const place = { type: 'district_hospital' };
+      controller._validatePlace(place).catch(err => {
+        chai.expect(err.message).to.equal('Place  is missing a "name" property.');
+        done();
+      });
+    });
+
+    it('returns error when name is not a string', done => {
+      const place = { type: 'district_hospital', name: 123 };
+      controller._validatePlace(place).catch(err => {
+        chai.expect(err.message).to.equal('Property "name" on place  must be a string.');
+        done();
+      });
+    });
+
+    it('returns error when contact is invalid type', done => {
+      const place = { type: 'district_hospital', name: 'Test', contact: 42 };
+      controller._validatePlace(place).catch(err => {
+        chai.expect(err.message).to.include('must be an object or string');
+        done();
+      });
+    });
+
     it('does not return error if district is missing parent', () => {
       delete examplePlace.parent;
       examplePlace.type = 'district_hospital';
@@ -667,6 +691,47 @@ describe('places controller', () => {
 
       chai.expect(dataContext.bind.calledOnce).to.be.true;
       chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('test'))).to.be.true;
+    });
+
+    it('rejects non-object non-string contact', async () => {
+      await chai.expect(controller._preparePlaceContact(42)).to.be.rejectedWith();
+    });
+  });
+
+  describe('createPlace with existing contact', () => {
+    it('creates place with existing string contact', async () => {
+      sinon.stub(controller, '_validatePlace').resolves();
+      sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'person-id', name: 'Jim' });
+      db.medic.post.resolves({ id: 'place-id', rev: '1' });
+
+      const result = await controller._createPlace({
+        name: 'Test Place',
+        type: 'district_hospital',
+        contact: 'person-id'
+      });
+
+      chai.expect(result).to.deep.include({ contact: { id: 'person-id' } });
+      chai.expect(db.medic.post.args[0][0].contact).to.equal('person-id');
+    });
+  });
+
+  describe('getOrCreatePlace', () => {
+    it('fetches place when given string id', async () => {
+      sinon.stub(controller, 'getPlace').resolves({ _id: 'place-id' });
+      const result = await controller.getOrCreatePlace('place-id');
+      chai.expect(result._id).to.equal('place-id');
+    });
+
+    it('creates and returns place when given new object', async () => {
+      sinon.stub(controller, '_createPlaces').resolves({ id: 'new-place' });
+      sinon.stub(controller, 'getPlace').resolves({ _id: 'new-place' });
+      const result = await controller.getOrCreatePlace({ name: 'Test', type: 'district_hospital' });
+      chai.expect(result._id).to.equal('new-place');
+    });
+
+    it('rejects existing place with _rev', async () => {
+      await chai.expect(controller.getOrCreatePlace({ _id: 'x', _rev: '1' }))
+        .to.be.rejectedWith('Place must be a new object');
     });
   });
 
