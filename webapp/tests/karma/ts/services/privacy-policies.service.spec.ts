@@ -8,6 +8,9 @@ import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { DOC_IDS } from '@medic/constants';
+
+const PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
 
 describe('PrivacyPoliciesService', () => {
   let service: PrivacyPoliciesService;
@@ -55,7 +58,7 @@ describe('PrivacyPoliciesService', () => {
       expect(result).to.deep.equal({ privacyPolicy: false, accepted: true });
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
-      expect(localDb.get.args[0]).to.deep.equal([ 'privacy-policies', { attachments: false } ]);
+      expect(localDb.get.args[0]).to.deep.equal([ PRIVACY_POLICIES_DOC_ID, { attachments: false } ]);
       expect(userSettingsService.get.callCount).to.equal(1);
     });
 
@@ -75,7 +78,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return false true when no privacy policy for current language', async () => {
       languageService.get.resolves('sw');
       const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'the_en_a.html',
           fr: 'the_fr',
@@ -100,7 +103,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return false when privacy policy attachment is missing', async () => {
       languageService.get.resolves('en');
       const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'missing.html',
           fr: 'the_fr',
@@ -125,7 +128,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return false/true when policy is of wrong type', async () => {
       languageService.get.resolves('en');
       const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.jpg',
           fr: 'fr.html',
@@ -146,7 +149,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return true/false when policies exist but were not accepted, with no log', async () => {
       languageService.get.resolves('fr');
       const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
           fr: 'fr_att.html',
@@ -167,7 +170,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return true/false when policies exist but were not accepted', async () => {
       languageService.get.resolves('fr');
       const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
           fr: 'fr_att.html',
@@ -197,7 +200,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return true true when user has accepted', async () => {
       languageService.get.resolves('fr');
       const privacyPoliciesDoc = {
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'eng.html',
           fr: 'fr.html',
@@ -363,7 +366,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return nothing when no policy found', async () => {
       languageService.get.resolves('ne');
       localDb.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en_html',
           fr: 'fr.html',
@@ -379,14 +382,14 @@ describe('PrivacyPoliciesService', () => {
       expect(result).to.equal(false);
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
-      expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+      expect(localDb.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
       expect(sanitizer.sanitize.callCount).to.equal(0);
     });
 
     it('should return nothing when no attachment found', async () => {
       languageService.get.resolves('ne');
       localDb.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en_html',
           fr: 'fr.html',
@@ -404,14 +407,14 @@ describe('PrivacyPoliciesService', () => {
       expect(result).to.equal(false);
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
-      expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+      expect(localDb.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
       expect(sanitizer.sanitize.callCount).to.equal(0);
     });
 
     it('should return nothing when attachment is wrong type', async () => {
       languageService.get.resolves('ne');
       localDb.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en_html',
           fr: 'fr.html',
@@ -429,7 +432,7 @@ describe('PrivacyPoliciesService', () => {
       expect(result).to.equal(false);
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
-      expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+      expect(localDb.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
       expect(sanitizer.sanitize.callCount).to.equal(0);
     });
 
@@ -437,7 +440,7 @@ describe('PrivacyPoliciesService', () => {
       const html = '<div>this <span>is</span> my <strong>star</strong></div>';
       languageService.get.resolves('sw');
       localDb.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.h',
           fr: 'fr.d',
@@ -459,7 +462,7 @@ describe('PrivacyPoliciesService', () => {
       });
       expect(languageService.get.callCount).to.equal(1);
       expect(localDb.get.callCount).to.equal(1);
-      expect(localDb.get.args[0]).to.deep.equal(['privacy-policies', { attachments: true }]);
+      expect(localDb.get.args[0]).to.deep.equal([PRIVACY_POLICIES_DOC_ID, { attachments: true }]);
       expect(sanitizer.sanitize.callCount).to.equal(1);
       expect(sanitizer.sanitize.args[0]).to.deep.equal([SecurityContext.HTML, html]);
     });
@@ -476,7 +479,7 @@ describe('PrivacyPoliciesService', () => {
       const html = 'Behold this list of emojis: 😂 😒 😔 😚 😠';
       languageService.get.resolves('hi');
       localDb.get.resolves({
-        _id: 'privacy-policies',
+        _id: PRIVACY_POLICIES_DOC_ID,
         privacy_policies: {
           en: 'en.html',
           fr: 'fr.data',
