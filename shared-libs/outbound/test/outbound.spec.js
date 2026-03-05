@@ -236,7 +236,9 @@ describe('outbound shared library', () => {
     it('throws when path accessor throws', () => {
       const doc = {
         _id: 'test-doc',
-        get evil() { throw new Error('getter boom'); }
+        get evil() {
+          throw new Error('getter boom');
+        }
       };
 
       const conf = {
@@ -559,7 +561,9 @@ describe('outbound shared library', () => {
       const body = {
         length: 200,
         substring: (start, end) => 'x'.repeat(end - start),
-        toJSON: () => { throw new Error('circular'); }
+        toJSON: () => {
+          throw new Error('circular');
+        }
       };
       const error = { constructor: { name: 'StatusCodeError' }, response: { statusCode: 500, body } };
       logSendError('config', 'record-1', error);
@@ -567,7 +571,9 @@ describe('outbound shared library', () => {
 
     it('logs StatusCodeError with non-stringifiable short body', () => {
       const body = {};
-      body.toJSON = () => { throw new Error('circular'); };
+      body.toJSON = () => {
+        throw new Error('circular');
+      };
       const error = {
         constructor: { name: 'StatusCodeError' },
         response: { statusCode: 500, body }
