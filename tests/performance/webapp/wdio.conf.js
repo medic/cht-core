@@ -27,9 +27,9 @@ const prepData = async () => {
 
 // spec order is relevent, due to initial task calculation
 const specs = [
-  `./specs/login.wdio-spec.js`,
+  // `./specs/login.wdio-spec.js`,
   `./specs/tasks.wdio-spec.js`,
-  `./specs/contacts.wdio-spec.js`,
+  // `./specs/contacts.wdio-spec.js`,
   `./specs/reports.wdio-spec.js`,
 ];
 

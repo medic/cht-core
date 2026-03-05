@@ -10,16 +10,27 @@ const { CONTACT_TYPES } = require('@medic/constants');
 
 // Fixed collection of real-world data
 const FIRST_NAMES = [
-  'Amanda', 'Beatrice', 'Dana', 'Fatima',
-  'Gina', 'Helen', 'Isabelle', 'Jessica',
-  'Ivy', 'Sara', 'John', 'Timmy', 'Elias',
-  'Hawa', 'Ana', 'Tania'
+  'Abigail', 'Amanda', 'Ana', 'Andrew', 'Beatrice',
+  'Catherine', 'Charity', 'Dana', 'Daniel', 'David',
+  'Elias', 'Esther', 'Faith', 'Fatima', 'Florence',
+  'Gina', 'Grace', 'Hawa', 'Helen', 'Hope',
+  'Isabelle', 'Ivy', 'James', 'Jessica', 'John',
+  'Joseph', 'Joy', 'Leah', 'Lydia', 'Margaret',
+  'Martha', 'Mary', 'Mercy', 'Miriam', 'Moses',
+  'Naomi', 'Patricia', 'Peter', 'Philip', 'Priscilla',
+  'Rachel', 'Rose', 'Ruth', 'Samuel', 'Sara',
+  'Simon', 'Tania', 'Timmy'
 ];
 
 const LAST_NAMES = [
-  'Allen', 'Bass', 'Dearborn', 'Flair',
-  'Gorman', 'Hamburg', 'Ivanas', 'James',
-  'Moore', 'Taylor'
+  'Akinyi', 'Allen', 'Barasa', 'Bass',
+  'Chebet', 'Dearborn', 'Flair', 'Gorman',
+  'Hamburg', 'Ivanas', 'James', 'Kamau',
+  'Kariuki', 'Kimani', 'Kipchoge', 'Moore',
+  'Muthoni', 'Mutua', 'Mwangi', 'Ndungu',
+  'Njoroge', 'Nyambura', 'Ochieng', 'Oduya',
+  'Onyango', 'Otieno', 'Taylor', 'Waithera',
+  'Wambui', 'Wanjiku'
 ];
 
 const PATIENT_IDS = Array.from({ length: 1000 }, (_, i) => 123456 + i);
@@ -63,7 +74,7 @@ const getReportContext = (patient, submitter) => {
   if (submitter) {
     context.contact = {
       _id: submitter.contact._id,
-      parent: submitter.contact.parent,
+      parent: submitter.contact.parent || patient.parent,
     };
   }
   return context;

@@ -46,15 +46,18 @@ class PerformanceReporter extends WDIOReporter {
 
   onSuiteStart(suite) {
     suite.entries = [];
-    currentSuite = suite;
+    if (!currentSuite) {
+      currentSuite = suite;
+    }
   }
 
   async onSuiteEnd(suite) {
-    if (!suite.entries.length) {
+    console.warn(currentSuite, suite,);
+    if (currentSuite !== suite) {
       return;
     }
 
-    this.write(performanceMeasuresToMarkdownTable(suite.entries));
+    this.write(performanceMeasuresToMarkdownTable(currentSuite));
     this.write('\n\n');
 
     let previousEntries;

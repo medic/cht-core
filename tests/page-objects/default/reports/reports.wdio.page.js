@@ -269,14 +269,9 @@ const filterByFacility = async (parentFacility, reportFacility) => {
   await sidebarFilterSelectors.facilityAccordionHeader().click();
   await sidebarFilterSelectors.facilityAccordionBody().waitForDisplayed();
 
-  const parent = sidebarFilterSelectors.facilityAccordionBody().$(`a*=${parentFacility}`);
-  await parent.waitForDisplayed();
-  await parent.click();
+  await sidebarFilterSelectors.facilityAccordionBody().$(`a*=${parentFacility}`).click();
 
-  const facility = sidebarFilterSelectors
-    .facilityAccordionBody()
-    .$('.mm-dropdown-submenu')
-    .$(`a*=${reportFacility}`);
+  const facility = sidebarFilterSelectors.facilityAccordionBody().$(`a*=${reportFacility}`);
   await facility.waitForDisplayed();
   const checkbox = facility.previousElement();
   await checkbox.click();
@@ -450,6 +445,7 @@ const openFirstReport = async () => {
 };
 
 const waitForReportsLoaded = async (timeout) => {
+  await commonElements.waitForPageLoaded(timeout);
   await browser.waitUntil(
     async () => (await leftPanelSelectors.allReports()).length > 0,
     { timeout: timeout }

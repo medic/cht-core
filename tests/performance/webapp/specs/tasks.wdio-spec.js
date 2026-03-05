@@ -44,6 +44,11 @@ describe('tasks', () => {
       });
     }
 
+    it('should sync tasks', async () => {
+      await commonElements.goToAboutPage();
+      await commonElements.sync();
+    });
+
     after(async () => {
       await commonElements.reloadSession();
     });
