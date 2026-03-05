@@ -159,16 +159,9 @@ describe('refresh-rules-emissions', () => {
 
     it('should keep more ready emission when duplicates exist', () => {
       const readyEmission = mockEmission(0, { _id: 'dup' });
-      const draftEmission = mockEmission(MS_IN_DAY + 10, { _id: 'dup' });
-      const result = disambiguateEmissions([draftEmission, readyEmission], NOW);
-      expect(result.length).to.equal(1);
-      expect(result[0]).to.deep.equal(readyEmission);
-    });
-
-    it('should keep first emission when incoming is not more ready', () => {
-      const readyEmission = mockEmission(0, { _id: 'dup' });
-      const laterDraft = mockEmission(MS_IN_DAY + 10, { _id: 'dup' });
-      const result = disambiguateEmissions([readyEmission, laterDraft], NOW);
+      const draft = mockEmission(MS_IN_DAY + 10, { _id: 'dup' });
+      const laterDraft = mockEmission(MS_IN_DAY + 20, { _id: 'dup' });
+      const result = disambiguateEmissions([laterDraft, readyEmission, draft], NOW);
       expect(result.length).to.equal(1);
       expect(result[0]).to.deep.equal(readyEmission);
     });
@@ -179,7 +172,7 @@ describe('refresh-rules-emissions', () => {
 
     beforeEach(() => {
       rulesEmitter = {
-        getEmissionsFor: sinon.stub().resolves({ tasks: [], targets: [{ _id: 't1' }] }),
+        getEmissionsFor: sinon.stub().resolves({ tasks: [{ _id: 't2' }], targets: [{ _id: 't1' }] }),
       };
       refreshRulesEmissionsContact.__set__('rulesEmitter', rulesEmitter);
     });

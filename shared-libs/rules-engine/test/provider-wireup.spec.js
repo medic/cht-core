@@ -1293,12 +1293,8 @@ describe('provider-wireup integration tests', () => {
         rules: 'some rules',
         rulesAreDeclarative: false,
       };
-      try {
-        await wireup.initialize(provider, nonDeclarativeSettings, {});
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err.message).to.include('not declarative');
-      }
+      await expect(wireup.initialize(provider, nonDeclarativeSettings, {}))
+        .to.be.rejectedWith('Rules Engine: Rules are not declarative');
     });
   });
 
