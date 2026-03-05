@@ -4,6 +4,7 @@ const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
 const serverInfo = require('@medic/server-info');
 const request = require('@medic/couch-request');
+const logger = require('@medic/logger');
 let outbound;
 
 describe('outbound shared library', () => {
@@ -548,13 +549,19 @@ describe('outbound shared library', () => {
     let logSendError;
     beforeEach(() => {
       logSendError = outbound.__get__('logSendError');
+      sinon.stub(logger, 'error');
     });
 
     it('logs StatusCodeError with JSON body', () => {
-      const error = new Error('status');
-      Object.defineProperty(error.constructor, 'name', { value: 'StatusCodeError', configurable: true });
-      error.response = { statusCode: 500, body: { detail: 'fail' } };
+      const error = {
+        constructor: { name: 'StatusCodeError' },
+        response: { statusCode: 500, body: { detail: 'fail' } }
+      };
       logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config, server responsed with 500'
+      );
     });
 
     it('logs StatusCodeError with non-stringifiable long body', () => {
@@ -565,8 +572,15 @@ describe('outbound shared library', () => {
           throw new Error('circular');
         }
       };
-      const error = { constructor: { name: 'StatusCodeError' }, response: { statusCode: 500, body } };
+      const error = {
+        constructor: { name: 'StatusCodeError' },
+        response: { statusCode: 500, body }
+      };
       logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config, server responsed with 500'
+      );
     });
 
     it('logs StatusCodeError with non-stringifiable short body', () => {
@@ -579,21 +593,41 @@ describe('outbound shared library', () => {
         response: { statusCode: 500, body }
       };
       logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config, server responsed with 500'
+      );
     });
 
     it('logs RequestError', () => {
-      const error = { constructor: { name: 'RequestError' }, message: 'ECONNREFUSED' };
+      const error = {
+        constructor: { name: 'RequestError' },
+        message: 'ECONNREFUSED'
+      };
       logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config: ECONNREFUSED'
+      );
     });
 
     it('logs OutboundError', () => {
       const error = { constructor: { name: 'OutboundError' }, message: 'Auth failed' };
       logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config: Auth failed'
+      );
     });
 
     it('logs unknown error type', () => {
       const error = new TypeError('something');
       logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config: %o'
+      );
+      assert.equal(logger.error.args[0][1], error);
     });
   });
 
