@@ -20,7 +20,7 @@ describe('Countdown timer widget', () => {
     await enketoWidgetsPage.clickTimer('countdown'); // start
     await enketoWidgetsPage.clickTimer('countdown'); // stop
     await genericForm.nextPage();
-    await genericForm.submitForm({ ignoreValidationErrors: true });
+    await genericForm.submitForm({ ignoreValidationErrors: true, waitForPageLoaded: false });
     // Triggers error because timer is required
     await genericForm.waitForValidationErrors();
     await enketoWidgetsPage.clickTimer('countdown');

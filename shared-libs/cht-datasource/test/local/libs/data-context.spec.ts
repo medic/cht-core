@@ -3,7 +3,7 @@ import {
   getLocalDataContext,
   isLocalDataContext,
   SettingsService,
-  SourceDatabases
+  SourceDatabases,
 } from '../../../src/local/libs/data-context';
 import { DataContext } from '../../../src';
 
@@ -55,4 +55,5 @@ describe('local context lib', () => {
       expect(dataContext).to.deep.include({ medicDb: sourceDatabases.medic, settings: settingsService });
     });
   });
+
 });

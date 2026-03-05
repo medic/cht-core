@@ -20,9 +20,6 @@ upstream_servers:
   docker_registry: "public.ecr.aws/medic" # DEFAULT: Good default
   builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4" # DEFAULT: Good default
 
-upgrade_service:
-  tag: 0.32 # DEFAULT: Good default
-
 # CouchDB Settings
 couchdb:
   password: "<password-value>" # REQUIRED: User must set this

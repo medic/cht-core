@@ -11,7 +11,7 @@
         <label translate>branding.logo.field</label>
         <div>
           <div class="navbar-inverse">
-            <div ng-bind-html="'logo' | headerLogo"></div>
+            <div  ng-bind-html="'logo' | headerLogo"></div>
           </div>
         </div>
         <div id="logo-upload">
@@ -29,7 +29,7 @@
       <div class="form-group required">
         <label translate>branding.favicon.field</label>
         <div class="favicon">
-          <img src="data:{{favicon.content_type}};base64,{{favicon.data}}" />
+          <img ng-if="favicon" src="data:{{favicon.content_type}};base64,{{favicon.data}}" />
         </div>
         <div id="favicon-upload">
           <button type="button" class="btn btn-default choose">
@@ -46,7 +46,7 @@
       <div class="form-group required">
         <label translate>branding.icon.field</label>
         <div class="favicon">
-          <img src="data:{{icon.content_type}};base64,{{icon.data}}" />
+          <img ng-if="icon" src="data:{{icon.content_type}};base64,{{icon.data}}" />
         </div>
         <div id="icon-upload">
           <button type="button" class="btn btn-default choose">

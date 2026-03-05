@@ -7,6 +7,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
 const path = require('path');
 const chtConfUtils = require('@utils/cht-conf');
+const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
 
 describe('ongoing replication', function() {
   const userAllowedDocs = dataFactory.createHierarchy({ name: 'base', user: true, nbrClinics: 2 });
@@ -135,7 +136,7 @@ describe('ongoing replication', function() {
     await commonPage.sync({ expectReload: true });
     const [rnd] = await chtDbUtils.getDocs(['messages-rnd']);
     expect(rnd).to.include({
-      type: 'translations',
+      type: DOC_TYPES.TRANSLATIONS,
       code: 'rnd',
       _id: 'messages-rnd'
     });
@@ -172,7 +173,7 @@ describe('ongoing replication', function() {
     await commonPage.sync();
     await utils.updateSettings({ test: true }, { ignoreReload: 'api' });
     await commonPage.sync({ expectReload: true });
-    const [settings] = await chtDbUtils.getDocs(['settings']);
+    const [settings] = await chtDbUtils.getDocs([DOC_IDS.SETTINGS]);
     expect(settings.settings.test).to.equal(true);
   });
 

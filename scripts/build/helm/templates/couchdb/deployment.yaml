@@ -13,7 +13,7 @@ spec:
     matchLabels:
       cht.service: couchdb
   strategy:
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:
@@ -68,6 +68,16 @@ spec:
               name: couchdb-claim0
               subPath: local.d
           {{- end }}
+        - name: cht-couchdb-nouveau
+          image: "{{ .Values.upstream_servers.docker_registry }}/cht-couchdb-nouveau:{{ .Values.cht_image_tag }}"
+          {{ if eq .Values.cache_images false}}imagePullPolicy: Always{{ end }}
+          ports:
+            - containerPort: 5987
+          resources: {}
+          volumeMounts:
+            - mountPath: /data/nouveau
+              name: couchdb-claim0
+              subPath: data
       restartPolicy: Always
       volumes:
         - name: couchdb-claim0
@@ -91,7 +101,7 @@ spec:
     matchLabels:
       cht.service: couchdb-{{ $nodeNumber }}
   strategy:
-    type: RollingUpdate
+    type: Recreate
   template:
     metadata:
       labels:
@@ -156,6 +166,18 @@ spec:
         - mountPath: /opt/couchdb/etc/local.d
           name: couchdb-{{ $nodeNumber }}-claim0
           subPath: local.d
+      {{- if eq $nodeNumber 1 }}
+      - name: cht-couchdb-nouveau
+        image: "{{ $.Values.upstream_servers.docker_registry }}/cht-couchdb-nouveau:{{ $.Values.cht_image_tag }}"
+        {{ if eq $.Values.cache_images false}}imagePullPolicy: Always{{ end }}
+        ports:
+          - containerPort: 5987
+        resources: {}
+        volumeMounts:
+        - mountPath: /data/nouveau
+          name: couchdb-{{ $nodeNumber }}-claim0
+          subPath: data
+      {{- end }}
       restartPolicy: Always
       volumes:
       - name: couchdb-{{ $nodeNumber }}-claim0

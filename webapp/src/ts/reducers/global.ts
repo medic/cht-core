@@ -48,11 +48,13 @@ const initialState: GlobalState = {
   showContent: false,
   showPrivacyPolicy: false,
   title: null,
-  unreadCount: {},
+  bubbleCounter: {},
   snackbarContent: null as any,
   translationsLoaded: false,
   userFacilityIds: [],
+  userFacilities: [],
   userContactId: null,
+  isOnlineOnly: false,
   language: null,
   storageInfo: {
     status: StorageStatus.STARTUP,
@@ -173,18 +175,23 @@ const _globalReducer = createReducer(
   on(Actions.setProcessingReportVerification, (state, { payload: { loading } }) => {
     return { ...state, processingReportVerification: loading };
   }),
-  on(Actions.setUnreadCount, (state, { payload: { unreadCount } }) => {
-    return { ...state, unreadCount: unreadCount };
+  on(Actions.setBubbleCounter, (state, { payload: { bubbleCounter } }) => {
+    return { ...state, bubbleCounter };
   }),
-  on(Actions.updateUnreadCount, (state, { payload: { unreadCount } }) => {
-    return { ...state, unreadCount: { ...state.unreadCount, ...unreadCount } };
+  on(Actions.updateBubbleCounter, (state, { payload: { bubbleCounter } }) => {
+    return { ...state, bubbleCounter: { ...state.bubbleCounter, ...bubbleCounter } };
   }),
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
   on(Actions.setUserFacilityIds, (state, { payload: { userFacilityIds }}) => {
     userFacilityIds = Array.isArray(userFacilityIds) ? userFacilityIds : [userFacilityIds];
     return { ...state, userFacilityIds };
   }),
+  on(Actions.setUserFacilities, (state, { payload: { userFacilities }}) => {
+    userFacilities = Array.isArray(userFacilities) ? userFacilities : [userFacilities];
+    return { ...state, userFacilities };
+  }),
   on(Actions.setUserContactId, (state, { payload: { userContactId }}) => ({ ...state, userContactId })),
+  on(Actions.setIsOnlineOnly, (state, { payload: { isOnlineOnly }}) => ({ ...state, isOnlineOnly })),
   on(Actions.setSidebarMenu, (state, { payload: { sidebarMenu }}) => {
     return { ...state, sidebarMenu: { ...state.sidebarMenu, ...sidebarMenu } };
   }),
@@ -229,11 +236,13 @@ export interface GlobalState {
   showContent: boolean;
   showPrivacyPolicy: boolean;
   title: null | string;
-  unreadCount: Record<string, any>;
+  bubbleCounter: Record<string, any>;
   snackbarContent: SnackbarState;
   translationsLoaded: boolean;
   userFacilityIds: null | string[];
+  userFacilities: Record<string, any>[];
   userContactId: null | string;
+  isOnlineOnly: boolean;
   language: null | Record<string, any>;
   storageInfo: StorageInfo;
 }
@@ -275,8 +284,13 @@ interface NavigationState {
   recordTelemetry: null | string;
 }
 
-interface SidebarFilterState {
+export interface SidebarFilterState {
   isOpen?: boolean;
   filterCount?: Record<string, number>;
-  defaultFilters?: Record<string, any>;
+}
+
+export interface TasksFilters {
+  taskOverdue?: boolean;
+  taskTypes?: { selected: string[] };
+  facilities?: { selected: string[] };
 }

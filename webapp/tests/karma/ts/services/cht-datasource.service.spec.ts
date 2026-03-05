@@ -128,15 +128,18 @@ describe('CHTScriptApiService service', () => {
   });
 
   describe('bind()', () => {
+    const settings = { hello: 'settings' } as const;
+    const userCtx = { hello: 'world' } as const;
+
+    beforeEach(() => {
+      settingsService.get.resolves(settings);
+      sessionService.userCtx.returns(userCtx);
+      dbService.get.resolves({ hello: 'medic' });
+    });
+
     [true, false].forEach((isOnlineOnly) => {
       it(`binds to a data context when isOnlineOnly is ${isOnlineOnly}`, async () => {
-        const settings = { hello: 'settings' } as const;
-        settingsService.get.resolves(settings);
-        const userCtx = { hello: 'world' };
-        sessionService.userCtx.returns(userCtx);
         sessionService.isOnlineOnly.returns(isOnlineOnly);
-        const expectedDb = { hello: 'medic' };
-        dbService.get.resolves(expectedDb);
         const innerFn = sinon.stub().resolves('hello world');
         const outerFn = sinon
           .stub()
@@ -168,13 +171,7 @@ describe('CHTScriptApiService service', () => {
     });
 
     it('surfaces exceptions thrown by bound function', async () => {
-      const settings = { hello: 'settings' } as const;
-      settingsService.get.resolves(settings);
-      const userCtx = { hello: 'world' };
-      sessionService.userCtx.returns(userCtx);
       sessionService.isOnlineOnly.returns(true);
-      const expectedDb = { hello: 'medic' };
-      dbService.get.resolves(expectedDb);
       const expectedError = new Error('hello world');
       const innerFn = sinon.stub().rejects(expectedError);
       const outerFn = sinon
@@ -193,6 +190,90 @@ describe('CHTScriptApiService service', () => {
       expect(other).to.be.empty;
       expect(dataContext.bind).to.be.a('function');
       expect(innerFn.calledOnceWithExactly()).to.be.true;
+      expect(changesService.subscribe.calledOnce).to.be.true;
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+      expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+      expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
+      expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+      expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+      expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+      expect(dbService.get.notCalled).to.be.true;
+    });
+  });
+
+  describe('bindGenerator()', () => {
+    const settings = { hello: 'settings' } as const;
+    const userCtx = { hello: 'world' } as const;
+
+    beforeEach(() => {
+      settingsService.get.resolves(settings);
+      sessionService.userCtx.returns(userCtx);
+      dbService.get.resolves({ hello: 'medic' });
+    });
+
+    [true, false].forEach((isOnlineOnly) => {
+      it(`binds to a data context when isOnlineOnly is ${isOnlineOnly}`, async () => {
+        sessionService.isOnlineOnly.returns(isOnlineOnly);
+        const strings = ['hello', 'world'];
+        const mockGenerator = async function* (input: string[]) {
+          for (const s of input) {
+            yield s;
+          }
+        };
+        const outerFn = sinon
+          .stub()
+          .returns(mockGenerator);
+
+        const returnedFn = service.bindGenerator(outerFn);
+
+        expect(outerFn.notCalled).to.be.true;
+
+        const returnedGen = returnedFn(strings);
+        const results: string[] = [];
+        for await (const s of returnedGen) {
+          results.push(s);
+        }
+
+        expect(results).to.deep.equal(strings);
+        expect(outerFn.calledOnce).to.be.true;
+        const [dataContext, ...other] = outerFn.args[0];
+        expect(other).to.be.empty;
+        expect(dataContext.bind).to.be.a('function');
+        expect(changesService.subscribe.calledOnce).to.be.true;
+        expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+        expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+        expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+        expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
+        expect(settingsService.get.calledOnceWithExactly()).to.be.true;
+        expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+        expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
+      });
+    });
+
+    it('surfaces exceptions thrown by bound function', async () => {
+      sessionService.isOnlineOnly.returns(true);
+      const expectedError = new Error('hello world');
+      // eslint-disable-next-line require-yield
+      const mockGenerator = async function* (_: string[]) {
+        throw expectedError;
+      };
+      const outerFn = sinon
+        .stub()
+        .returns(mockGenerator);
+
+      const returnedFn = service.bindGenerator(outerFn);
+
+      expect(outerFn.notCalled).to.be.true;
+
+      const returnedGen = returnedFn(['input']);
+      await expect(returnedGen.next()).to.be.rejectedWith(expectedError);
+
+      expect(outerFn.calledOnce).to.be.true;
+      const [dataContext, ...other] = outerFn.args[0];
+      expect(other).to.be.empty;
+      expect(dataContext.bind).to.be.a('function');
       expect(changesService.subscribe.calledOnce).to.be.true;
       expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
       expect(changesService.subscribe.args[0][0].filter).to.be.a('function');

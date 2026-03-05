@@ -20,4 +20,3 @@ CMD ["/opt/couchdb/bin/couchdb"]
 
 # Final
 FROM base_couchdb_build AS cht-couchdb
-LABEL Authors="MEDIC SRE TEAM<devops@medic.org>"

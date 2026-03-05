@@ -6,6 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
+const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -294,7 +295,7 @@ describe('Users API', () => {
               roles: ['district_admin'],
               name: 'Philip',
               contact: { name: 'Philip' },
-              place: { name: 'PhilipPlace', type: 'health_center', parent: 'PARENT_PLACE' },
+              place: { name: 'PhilipPlace', type: CONTACT_TYPES.HEALTH_CENTER, parent: 'PARENT_PLACE' },
             },
           };
 
@@ -332,7 +333,7 @@ describe('Users API', () => {
             contact: { _id: contact._id, parent: contact.parent },
             name: 'PhilipPlace',
             parent: { _id: 'PARENT_PLACE' },
-            type: 'health_center',
+            type: CONTACT_TYPES.HEALTH_CENTER,
           });
         });
 
@@ -361,7 +362,7 @@ describe('Users API', () => {
         password: password,
         place: {
           _id: 'fixture:offline',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Offline place',
           parent: 'PARENT_PLACE'
         },
@@ -376,7 +377,7 @@ describe('Users API', () => {
         password: password,
         place: {
           _id: 'fixture:online',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Online place',
           parent: 'PARENT_PLACE'
         },
@@ -391,7 +392,7 @@ describe('Users API', () => {
         password: password,
         place: {
           _id: 'fixture:offlineonline',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Online place',
           parent: 'PARENT_PLACE'
         },
@@ -425,9 +426,11 @@ describe('Users API', () => {
         user: 'org.couchdb.user:offline'
       })));
       await utils.saveDocs(docs);
-      const resp = await utils.requestOnTestDb('/_design/medic/_view/docs_by_replication_key?key="_all"');
-      docsForAll = resp.rows.length + 2; // _design/medic-client + org.couchdb.user:doc
-      expectedNbrDocs += resp.rows.length;
+      const resp = await utils.requestOnTestDb(
+        '/_design/medic/_nouveau/docs_by_replication_key?limit=100000&q=key:_all'
+      );
+      docsForAll = resp.hits.length + 2; // _design/medic-client + org.couchdb.user:doc
+      expectedNbrDocs += resp.hits.length;
     });
 
     after(async () => {
@@ -544,7 +547,7 @@ describe('Users API', () => {
 
     it('should throw error when requesting for online roles', () => {
       const params = {
-        role: JSON.stringify(['national_admin', 'mm-online']),
+        role: JSON.stringify(['national_admin', USER_ROLES.ONLINE]),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -558,7 +561,7 @@ describe('Users API', () => {
 
     it('should throw error for array roles of online user', () => {
       const params = {
-        role: JSON.stringify(['random', 'national_admin', 'mm-online']),
+        role: JSON.stringify(['random', 'national_admin', USER_ROLES.ONLINE]),
         facility_id: 'fixture:offline'
       };
       onlineRequestOptions.path += '?' + querystring.stringify(params);
@@ -612,7 +615,7 @@ describe('Users API', () => {
         roles: ['district_admin'],
         place: {
           _id: 'fixture:test',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'TestVille',
           parent: 'PARENT_PLACE'
         },
@@ -844,7 +847,7 @@ describe('Users API', () => {
             password: password,
             place: {
               _id: 'fixture:offline4',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline4 place',
               parent: 'PARENT_PLACE'
             },
@@ -859,7 +862,7 @@ describe('Users API', () => {
             password: password,
             place: {
               _id: 'fixture:offline5',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline5 place',
               parent: 'PARENT_PLACE'
             },
@@ -898,7 +901,7 @@ describe('Users API', () => {
             password: 'password',
             place: {
               _id: 'fixture:offline5',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline5 place',
               parent: 'PARENT_PLACE'
             },
@@ -912,7 +915,7 @@ describe('Users API', () => {
             username: 'offline6',
             place: {
               _id: 'fixture:offline6',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline6 place',
               parent: 'PARENT_PLACE'
             },
@@ -927,7 +930,7 @@ describe('Users API', () => {
             password,
             place: {
               _id: 'fixture:offline7',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline7 place',
               parent: 'PARENT_PLACE'
             },
@@ -970,7 +973,7 @@ describe('Users API', () => {
             password_change_required: false,
             place: {
               _id: 'fixture:offline2',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline2 place',
               parent: 'PARENT_PLACE'
             },
@@ -986,7 +989,7 @@ describe('Users API', () => {
             password_change_required: false,
             place: {
               _id: 'fixture:online2',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1002,7 +1005,7 @@ describe('Users API', () => {
             password_change_required: false,
             place: {
               _id: 'fixture:offlineonline2',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1075,7 +1078,7 @@ describe('Users API', () => {
             token_login: true,
             place: {
               _id: 'fixture:offline3',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Offline2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1092,7 +1095,7 @@ describe('Users API', () => {
             token_login: true,
             place: {
               _id: 'fixture:online3',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1109,7 +1112,7 @@ describe('Users API', () => {
             phone: '+40756898989',
             place: {
               _id: 'fixture:offlineonline3',
-              type: 'health_center',
+              type: CONTACT_TYPES.HEALTH_CENTER,
               name: 'Online2 place',
               parent: 'PARENT_PLACE'
             },
@@ -1552,7 +1555,7 @@ describe('Users API', () => {
         roles: ['national_manager'],
         place: {
           _id: 'fixture:online',
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'TestVille',
           parent: 'PARENT_PLACE'
         },
@@ -1716,14 +1719,14 @@ describe('Users API', () => {
         username: uuid(),
         password: password,
         place: {
-          type: 'health_center',
+          type: CONTACT_TYPES.HEALTH_CENTER,
           name: 'Online place',
           parent: 'PARENT_PLACE'
         },
         contact: {
           name: 'OnlineUser'
         },
-        roles: ['district_admin', 'mm-online']
+        roles: ['district_admin', USER_ROLES.ONLINE]
       }));
 
       await utils.request({ path: '/api/v2/users', method: 'POST', body: users });
@@ -1745,12 +1748,12 @@ describe('Users API', () => {
       const facilityE = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
-        body: { type: 'health_center', name: 'Facility E', parent: 'PARENT_PLACE' },
+        body: { type: CONTACT_TYPES.HEALTH_CENTER, name: 'Facility E', parent: 'PARENT_PLACE' },
       });
       const facilityF = await utils.request({
         path: '/api/v1/places',
         method: 'POST',
-        body: { type: 'health_center', name: 'Facility F', parent: 'PARENT_PLACE' },
+        body: { type: CONTACT_TYPES.HEALTH_CENTER, name: 'Facility F', parent: 'PARENT_PLACE' },
       });
       const contactA = await utils.request({
         path: '/api/v1/people',
@@ -1771,7 +1774,7 @@ describe('Users API', () => {
       const userFactory = ({ contact, place }) => ({
         username: uuid(),
         password: password,
-        roles: ['district_admin', 'mm-online'],
+        roles: ['district_admin', USER_ROLES.ONLINE],
         contact,
         place,
       });
@@ -1894,7 +1897,7 @@ describe('Users API', () => {
     before(async () => {
       const placeAttributes = {
         parent: { _id: parentPlace._id },
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
       };
       places = [
         placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
@@ -1931,13 +1934,13 @@ describe('Users API', () => {
       const onlineUserSettingsDoc = await utils.getDoc(onlineResult['user-settings'].id);
 
       expect(onlineUserDoc).to.deep.include({
-        roles: [...onlineUserPayload.roles, 'mm-online'],
+        roles: [...onlineUserPayload.roles, USER_ROLES.ONLINE],
         facility_id: onlineUserPayload.place,
         contact_id: onlineUserPayload.contact,
       });
 
       expect(onlineUserSettingsDoc).to.deep.include({
-        roles: [...onlineUserPayload.roles, 'mm-online'],
+        roles: [...onlineUserPayload.roles, USER_ROLES.ONLINE],
         facility_id: onlineUserPayload.place,
         contact_id: onlineUserPayload.contact,
       });
@@ -2000,7 +2003,7 @@ describe('Users API', () => {
       const onlineUserDoc = await utils.getDoc(result.user.id);
 
       expect(onlineUserDoc).to.deep.include({
-        roles: [...onlineUserPayload.roles, 'mm-online'],
+        roles: [...onlineUserPayload.roles, USER_ROLES.ONLINE],
         facility_id: [onlineUserPayload.place],
         contact_id: onlineUserPayload.contact,
       });
@@ -2069,7 +2072,7 @@ describe('Users API', () => {
     before(async () => {
       const placeAttributes = {
         parent: { _id: parentPlace._id },
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
       };
       places = [
         placeFactory.place().build({ ...placeAttributes, name: 'place1' }),
@@ -2121,7 +2124,7 @@ describe('Users API', () => {
     ];
     const placeAttributes = {
       parent: { _id: parentPlace._id },
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
     };
     const places = [
       placeFactory.place().build({ ...placeAttributes, name: 'place1' }),

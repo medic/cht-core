@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { DbService } from '@mm-services/db.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
@@ -13,6 +15,7 @@ import { EnketoService } from '@mm-services/enketo.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { WebappEnketoFormContext } from '@mm-services/form.service';
+import { Qualifier, Report } from '@medic/cht-datasource';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -33,7 +36,7 @@ describe('Enketo service', () => {
 
   let enketoInit;
   let dbGetAttachment;
-  let dbGet;
+  let getReport;
   let createObjectURL;
   let TranslateFrom;
   let form;
@@ -43,11 +46,12 @@ describe('Enketo service', () => {
   let EnketoPrepopulationData;
   let translateService;
   let extractLineageService;
+  let chtDatasourceService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
-    dbGet = sinon.stub();
+    getReport = sinon.stub();
     createObjectURL = sinon.stub();
     TranslateFrom = sinon.stub();
     form = {
@@ -78,6 +82,9 @@ describe('Enketo service', () => {
       get: sinon.stub(),
     };
     extractLineageService = { extract: ExtractLineageService.prototype.extract };
+    chtDatasourceService = {
+      bind: sinon.stub().withArgs(Report.v1.get).returns(getReport)
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -85,7 +92,7 @@ describe('Enketo service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, get: dbGet })
+            get: () => ({ getAttachment: dbGetAttachment })
           }
         },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
@@ -93,6 +100,8 @@ describe('Enketo service', () => {
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         { provide: TranslateService, useValue: translateService },
         { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 
@@ -1049,7 +1058,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
-      dbGet.resolves({
+      getReport.resolves({
         _id: '6',
         _rev: '1-abc',
         form: 'V',
@@ -1067,8 +1076,8 @@ describe('Enketo service', () => {
 
           expect(form.validate.callCount).to.equal(1);
           expect(form.getDataStr.callCount).to.equal(1);
-          expect(dbGet.callCount).to.equal(1);
-          expect(dbGet.args[0][0]).to.equal('6');
+          expect(chtDatasourceService.bind.calledOnceWithExactly(Report.v1.get)).to.be.true;
+          expect(getReport.calledOnceWithExactly(Qualifier.byUuid('6'))).to.be.true;
           expect(actual._id).to.equal('6');
           expect(actual._rev).to.equal('1-abc');
           expect(actual.fields.name).to.equal('Sally');

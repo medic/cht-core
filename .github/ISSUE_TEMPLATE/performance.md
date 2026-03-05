@@ -1,5 +1,5 @@
 ---
-name: Performance improvement
+name: 📈 Performance improvement
 about: Suggest something to make something faster
 title: ''
 labels: 'Type: Performance'

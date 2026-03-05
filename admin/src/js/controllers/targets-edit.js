@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
 
 angular.module('controllers').controller('TargetsEditCtrl',
   function (
@@ -60,7 +62,7 @@ angular.module('controllers').controller('TargetsEditCtrl',
       });
 
     DB()
-      .get('resources')
+      .get(DOC_IDS.RESOURCES)
       .then(function(icons) {
         $scope.icons = Object.keys(icons.resources);
       })

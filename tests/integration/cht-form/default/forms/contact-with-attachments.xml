@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>New Person With Attachments</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="/data/person/name:label">
+            <value>Full name</value>
+          </text>
+          <text id="/data/person/photo:label">
+            <value>Photo</value>
+          </text>
+          <text id="/data/person/document:label">
+            <value>Document</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="contact:person:create" version="2026-01-23" prefix="J1!contact:person:create!" delimiter="#">
+          <person>
+            <parent>PARENT</parent>
+            <type>person</type>
+            <name/>
+            <photo/>
+            <document/>
+          </person>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/person/parent" type="string"/>
+      <bind nodeset="/data/person/type" type="string"/>
+      <bind nodeset="/data/person/name" type="string" required="true()"/>
+      <bind nodeset="/data/person/photo" type="binary"/>
+      <bind nodeset="/data/person/document" type="binary"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/person">
+      <input ref="/data/person/name">
+        <label ref="jr:itext('/data/person/name:label')"/>
+      </input>
+      <upload ref="/data/person/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/person/photo:label')"/>
+      </upload>
+      <upload ref="/data/person/document" mediatype="application/*">
+        <label ref="jr:itext('/data/person/document:label')"/>
+      </upload>
+    </group>
+  </h:body>
+</h:html>

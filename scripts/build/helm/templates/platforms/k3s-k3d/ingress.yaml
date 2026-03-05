@@ -1,4 +1,5 @@
 {{- /* k3s-k3d Ingress for API using default ingress controller */ -}}
+{{- if eq .Values.cluster_type "k3s-k3d" }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -14,3 +15,4 @@ spec:
                 name: api
                 port:
                   number: 5988
+{{- end }}

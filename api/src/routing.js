@@ -50,6 +50,8 @@ const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
+const impact = require('./controllers/impact');
+const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
@@ -411,6 +413,7 @@ app.get('/api/deploy-info', async (req, res) => {
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
+app.get('/api/v1/impact', impact.v1.get);
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
@@ -418,10 +421,12 @@ app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
 
 app.get('/api/v2/upgrade', upgrade.upgradeInProgress);
 app.post('/api/v2/upgrade', jsonParser, upgrade.upgrade);
+app.get('/api/v2/upgrade/can-upgrade', upgrade.canUpgrade);
 app.post('/api/v2/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v2/upgrade/complete', jsonParser, upgrade.complete);
 app.delete('/api/v2/upgrade', jsonParser, upgrade.abort);
 app.all('/api/v2/upgrade/service-worker', upgrade.serviceWorker);
+app.all('/api/v2/upgrade/compare', jsonParser, upgrade.compare);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
@@ -441,6 +446,9 @@ app.post('/api/v2/records', [jsonParser, formParser], records.v2);
 app.get('/api/v1/forms{/}', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
+
+app.get('/api/v1/target', targetController.v1.getAll);
+app.get('/api/v1/target/:id', targetController.v1.get);
 
 app.get('/api/v1/users', users.list);
 app.get('/api/v2/users/:username', users.v2.get);

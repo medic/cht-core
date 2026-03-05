@@ -28,11 +28,11 @@ const createUserDoc = id => {
 const createCouchResponse = docs => ({ rows: docs.map(doc => ({ doc })) });
 
 const assertDocByTypeQueryArgs = (args, skip) => expect(args).to.deep.equal([
-  'medic-client/doc_by_type',
   {
+    startkey: 'org.couchdb.user:',
+    endkey: 'org.couchdb.user:\uffff',
     include_docs: true,
     limit: BATCH_SIZE,
-    key: ['user-settings'],
     skip
   }
 ]);
@@ -45,13 +45,13 @@ const getExpectedUserDoc = userSettingsDocs => (userDoc, index) => {
 };
 
 describe('add-contact-id-to-user-docs migration', () => {
-  let medicQuery;
+  let medicAllDocs;
   let usersAllDocs;
   let usersBulkDocs;
   let loggerWarn;
 
   beforeEach(() => {
-    medicQuery = sinon.stub(db.medic, 'query');
+    medicAllDocs = sinon.stub(db.medic, 'allDocs');
     usersAllDocs = sinon.stub(db.users, 'allDocs');
     usersBulkDocs = sinon.stub(db.users, 'bulkDocs');
     loggerWarn = sinon.spy(logger, 'warn');
@@ -70,14 +70,14 @@ describe('add-contact-id-to-user-docs migration', () => {
 
   it('migrates the contact_id value from user-settings to _users', async () => {
     const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:test-chw-1', 'contact-1');
-    medicQuery.resolves(createCouchResponse([userSettingsDoc]));
+    medicAllDocs.resolves(createCouchResponse([userSettingsDoc]));
     const userDoc = createUserDoc(userSettingsDoc._id);
     usersAllDocs.resolves(createCouchResponse([userDoc]));
 
     await migration.run();
 
-    expect(medicQuery.calledOnce).to.be.true;
-    assertDocByTypeQueryArgs(medicQuery.args[0], 0);
+    expect(medicAllDocs.calledOnce).to.be.true;
+    assertDocByTypeQueryArgs(medicAllDocs.args[0], 0);
     expect(usersAllDocs.calledOnce).to.be.true;
     expect(usersAllDocs.args[0]).to.deep.equal([{ include_docs: true, keys: [userSettingsDoc._id] }]);
     expect(usersBulkDocs.calledOnce).to.be.true;
@@ -94,9 +94,9 @@ describe('add-contact-id-to-user-docs migration', () => {
       (_, i) => createUserSettingsDoc(`org.couchdb.user:test-chw-11${i}`, `contact-11${i}`)
     );
     const userSettingsThirdBatch = [createUserSettingsDoc(`org.couchdb.user:test-chw-222`, `contact-222`)];
-    medicQuery.onFirstCall().resolves(createCouchResponse(userSettingsFirstBatch));
-    medicQuery.onSecondCall().resolves(createCouchResponse(userSettingsSecondBatch));
-    medicQuery.onThirdCall().resolves(createCouchResponse(userSettingsThirdBatch));
+    medicAllDocs.onFirstCall().resolves(createCouchResponse(userSettingsFirstBatch));
+    medicAllDocs.onSecondCall().resolves(createCouchResponse(userSettingsSecondBatch));
+    medicAllDocs.onThirdCall().resolves(createCouchResponse(userSettingsThirdBatch));
 
     const userDocsFirstBatch = userSettingsFirstBatch.map(doc => createUserDoc(doc._id));
     const userDocsSecondBatch = userSettingsSecondBatch.map(doc => createUserDoc(doc._id));
@@ -107,10 +107,10 @@ describe('add-contact-id-to-user-docs migration', () => {
 
     await migration.run();
 
-    expect(medicQuery.calledThrice).to.be.true;
-    assertDocByTypeQueryArgs(medicQuery.args[0], 0);
-    assertDocByTypeQueryArgs(medicQuery.args[1], BATCH_SIZE);
-    assertDocByTypeQueryArgs(medicQuery.args[2], BATCH_SIZE * 2);
+    expect(medicAllDocs.calledThrice).to.be.true;
+    assertDocByTypeQueryArgs(medicAllDocs.args[0], 0);
+    assertDocByTypeQueryArgs(medicAllDocs.args[1], BATCH_SIZE);
+    assertDocByTypeQueryArgs(medicAllDocs.args[2], BATCH_SIZE * 2);
     expect(usersAllDocs.calledThrice).to.be.true;
     expect(usersAllDocs.args[0]).to.deep.equal([{
       include_docs: true,
@@ -131,25 +131,25 @@ describe('add-contact-id-to-user-docs migration', () => {
   });
 
   it('does nothing if no user-settings are found', async () => {
-    medicQuery.resolves(createCouchResponse([]));
+    medicAllDocs.resolves(createCouchResponse([]));
 
     await migration.run();
 
-    expect(medicQuery.calledOnce).to.be.true;
-    assertDocByTypeQueryArgs(medicQuery.args[0], 0);
+    expect(medicAllDocs.calledOnce).to.be.true;
+    assertDocByTypeQueryArgs(medicAllDocs.args[0], 0);
     expect(usersAllDocs.notCalled).to.be.true;
     expect(usersBulkDocs.notCalled).to.be.true;
   });
 
   it('does nothing if no _users docs are found', async () => {
     const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:test-chw-1', 'contact-1');
-    medicQuery.resolves(createCouchResponse([userSettingsDoc]));
+    medicAllDocs.resolves(createCouchResponse([userSettingsDoc]));
     usersAllDocs.resolves(createCouchResponse([null]));
 
     await migration.run();
 
-    expect(medicQuery.calledOnce).to.be.true;
-    assertDocByTypeQueryArgs(medicQuery.args[0], 0);
+    expect(medicAllDocs.calledOnce).to.be.true;
+    assertDocByTypeQueryArgs(medicAllDocs.args[0], 0);
     expect(usersAllDocs.calledOnce).to.be.true;
     expect(usersAllDocs.args[0]).to.deep.equal([{ include_docs: true, keys: [userSettingsDoc._id] }]);
     expect(usersBulkDocs.notCalled).to.be.true;
@@ -159,7 +159,7 @@ describe('add-contact-id-to-user-docs migration', () => {
 
   it('overwrites any existing contact_id value in _users', async () => {
     const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:test-chw-1', 'contact-1');
-    medicQuery.resolves(createCouchResponse([userSettingsDoc]));
+    medicAllDocs.resolves(createCouchResponse([userSettingsDoc]));
     const userDoc = createUserDoc(userSettingsDoc._id);
     usersAllDocs.resolves(createCouchResponse([{
       ...userDoc,
@@ -168,8 +168,8 @@ describe('add-contact-id-to-user-docs migration', () => {
 
     await migration.run();
 
-    expect(medicQuery.calledOnce).to.be.true;
-    assertDocByTypeQueryArgs(medicQuery.args[0], 0);
+    expect(medicAllDocs.calledOnce).to.be.true;
+    assertDocByTypeQueryArgs(medicAllDocs.args[0], 0);
     expect(usersAllDocs.calledOnce).to.be.true;
     expect(usersAllDocs.args[0]).to.deep.equal([{ include_docs: true, keys: [userSettingsDoc._id] }]);
     expect(usersBulkDocs.calledOnce).to.be.true;

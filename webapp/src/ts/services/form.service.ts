@@ -313,15 +313,17 @@ export class FormService {
       return this.enketoService.completeExistingReport(form, formDoc, docId);
     }
 
-    const contact = await this.getUserContact(true);
-    return this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
+    const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(formInternalId);
+    const contact = await this.getUserContact(!isTrainingCardForm);
+    const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
+    if (!docId && isTrainingCardForm) {
+      docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
+    }
+    return docs;
   }
 
   async save(formInternalId, form, geoHandle, docId?) {
     const docs = await this.completeReport(formInternalId, form, docId);
-    if (!docId && this.trainingCardsService.isTrainingCardForm(formInternalId)) {
-      docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
-    }
     return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
   }
 
@@ -475,6 +477,6 @@ export class WebappEnketoFormContext implements EnketoFormContext {
 
   requiresContact() {
     // Users can access contact forms even when they don't have a contact associated.
-    return this.type !== 'contact';
+    return this.type !== 'contact' && this.type !== 'training-card';
   }
 }

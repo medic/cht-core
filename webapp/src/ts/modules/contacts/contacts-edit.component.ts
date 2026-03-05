@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { isEqual as _isEqual } from 'lodash-es';
@@ -12,18 +12,20 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { NgClass } from '@angular/common';
+import { FileReaderService } from '@mm-services/file-reader.service';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
 import { DuplicateCheck } from '@mm-services/deduplicate.service';
-import { Contact } from '@medic/cht-datasource';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
-  imports: [MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent, NgClass]
+  imports: [NgIf, NgFor, MatAccordion, EnketoComponent, TranslatePipe, DuplicateContactsComponent, NgClass]
 })
 export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
@@ -36,15 +38,20 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly dbService: DbService,
     private readonly performanceService: PerformanceService,
     private readonly telemetryService: TelemetryService,
+    readonly chtDatasourceService: CHTDatasourceService,
     private readonly translateService: TranslateService,
+    private readonly ngZone: NgZone,
+    private readonly fileReaderService: FileReaderService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
   private xmlVersion;
+  private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
   enketoSaving;
@@ -259,22 +266,32 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async validateParentForCreateForm() {
     if (!this.contact.parent) {
-      const topLevelTypes = await this.contactTypesService.getChildren();
-      if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
-        throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
-      }
+      await this.ensureValidTopLevelType();
       return;
     }
 
-    const parent = await this.dbService
-      .get()
-      .get(this.contact.parent);
+    const parent = await this.getContactFromDatasource(Qualifier.byUuid(this.contact.parent));
 
+    if (!parent){
+      throw new Error(`Parent contact with UUID ${this.contact.parent} not found.`);
+    }
+  
     const parentType = this.contactTypesService.getTypeId(parent);
     if (!parentType) {
       throw new Error(`Parent type is undefined for parent UUID ${this.contact.parent}.`);
     }
 
+    await this.ensureValidChildType(parentType);
+  }
+
+  private async ensureValidTopLevelType() {
+    const topLevelTypes = await this.contactTypesService.getChildren();
+    if (!topLevelTypes.some(({ id }) => id === this.contact.contact_type)) {
+      throw new Error(`Cannot create a ${this.contact.contact_type} at the top level. It requires a parent.`);
+    }
+  }
+
+  private async ensureValidChildType(parentType: string) {
     const validChildTypes = await this.contactTypesService.getChildren(parentType);
     if (!validChildTypes.some(({ id }) => id === this.contact.contact_type)) {
       throw new Error(`Cannot create a ${this.contact.contact_type} as a child of a ${parentType}.`);
@@ -324,7 +341,72 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     this.trackEditDuration = this.performanceService.track();
 
+    if (this.contactId) {
+      await this.ngZone.runOutsideAngular(() => this.renderAttachmentPreviews(this.contact));
+    }
+
     return formInstance;
+  }
+
+  private getAttachment(docId: string, attachmentName: string): Promise<Blob | undefined> {
+    return this.dbService
+      .get()
+      .getAttachment(docId, attachmentName)
+      .catch(e => {
+        if (e.status === 404) {
+          console.error(`Could not find attachment [${attachmentName}] on doc [${docId}].`);
+        } else {
+          throw e;
+        }
+      });
+  }
+
+  private async renderAttachmentPreviews(doc: any): Promise<void> {
+    if (!doc._attachments) {
+      return;
+    }
+
+    const fileInputs = $('#contact-form input[type="file"]:not(.draw-widget__load)');
+
+    await Promise.all(
+      fileInputs.map(async (_idx, element) => {
+        const $element = $(element);
+        const $picker = $element
+          .closest('.question')
+          .find('.widget.file-picker');
+
+        $picker
+          .find('.file-feedback')
+          .empty();
+
+        // Currently only support rendering image previews when editing contacts
+        if ($element.attr('accept') !== 'image/*') {
+          return;
+        }
+
+        const fileName = $element.data('loaded-file-name');
+        if (!fileName) {
+          return;
+        }
+
+        const attachmentName = `user-file-${fileName}`;
+
+        if (!doc._attachments[attachmentName]) {
+          return;
+        }
+
+        const attachmentBlob = await this.getAttachment(doc._id, attachmentName);
+        if (!attachmentBlob) {
+          return;
+        }
+
+        const base64 = await this.fileReaderService.base64(attachmentBlob);
+
+        const $preview = $picker.find('.file-preview');
+        $preview.empty();
+        $preview.append('<img src="data:' + base64 + '">');
+      })
+    );
   }
 
   private setEnketoContact(formInstance) {

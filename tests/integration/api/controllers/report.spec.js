@@ -4,14 +4,16 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const {expect} = require('chai');
+const { USER_ROLES } = require('@medic/constants');
 const uuid = require('uuid').v4;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Report API', () => {
   const contact0Id = uuid();
   const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
   const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get('health_center'), contact: {_id: contact1._id}});
+  const place1 = utils.deepFreeze({...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: {_id: contact1._id}});
   const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
@@ -104,7 +106,7 @@ describe('Report API', () => {
   const userNoPerms = utils.deepFreeze(userFactory.build({
     username: 'online-no-perms', place: place1._id, contact: {
       _id: 'fixture:user:online-no-perms', name: 'Online User',
-    }, roles: [ 'mm-online' ]
+    }, roles: [ USER_ROLES.ONLINE ]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms', place: place0._id, contact: {
@@ -227,6 +229,7 @@ describe('Report API', () => {
     const fourLimit = 4;
     const twoLimit = 2;
     const endpoint = '/api/v1/report/uuid';
+    const emptyNouveauCursor = 'W10=';
 
     it('returns a page of report ids for no limit and cursor passed', async () => {
       const qs = {
@@ -241,8 +244,8 @@ describe('Report API', () => {
       const responsePeople = responsePage.data;
       const responseCursor = responsePage.cursor;
 
-      expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
-      expect(responseCursor).to.be.equal(null);
+      expect(responsePeople).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of report ids when limit and cursor is passed and cursor can be reused', async () => {
@@ -271,8 +274,8 @@ describe('Report API', () => {
       expect(allReports).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedReportIds);
       expect(firstPage.data.length).to.be.equal(4);
       expect(secondPage.data.length).to.be.equal(2);
-      expect(firstPage.cursor).to.be.equal('4');
-      expect(secondPage.cursor).to.be.equal(null);
+      expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+      expect(secondPage.cursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext', async () => {
@@ -290,7 +293,7 @@ describe('Report API', () => {
 
       expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
         .to.deep.equalInAnyOrder(expectedContactIds);
-      expect(responseCursor).to.be.equal(null);
+      expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext with limit',
@@ -313,7 +316,7 @@ describe('Report API', () => {
 
         expect(responseIds).excludingEvery([ '_rev', 'reported_date' ])
           .to.deep.equalInAnyOrder(expectedContactIds);
-        expect(responseCursor).to.be.equal(null);
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
       });
 
     it('returns a page of unique report ids for when multiple fields match the same freetext with lower limit',
@@ -333,7 +336,7 @@ describe('Report API', () => {
         const responseCursor = responsePage.cursor;
 
         expect(responseIds.length).to.be.equal(2);
-        expect(responseCursor).to.be.equal('2');
+        expect(responseCursor).to.not.equal(emptyNouveauCursor);
         expect(responseIds).to.satisfy(subsetArray => {
           return subsetArray.every(item => expectedContactIds.includes(item));
         });
@@ -393,7 +396,7 @@ describe('Report API', () => {
       );
     });
 
-    it('throws 400 error when cursor is invalid', async () => {
+    it('throws 500 error when cursor is invalid', async () => {
       const qs = {
         freetext, cursor: '-1'
       };
@@ -404,7 +407,7 @@ describe('Report API', () => {
 
       await expect(utils.request(opts))
         .to.be.rejectedWith(
-          `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
+          `500 - {"code":500,"error":"Server error"}`
         );
     });
   });

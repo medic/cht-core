@@ -1,10 +1,12 @@
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
-const { expect } = require('chai');
+const { USER_ROLES } = require('@medic/constants');
 const userFactory = require('@factories/cht/users/users');
-const {setAuth, removeAuth} = require('./auth');
+const { setAuth, removeAuth } = require('./auth');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('cht-datasource Person', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -12,7 +14,7 @@ describe('cht-datasource Person', () => {
   const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
   const place0 = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact0._id } });
-  const place1 = utils.deepFreeze({ ...placeMap.get('health_center'), contact: { _id: contact1._id } });
+  const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
 
   const patient = utils.deepFreeze(personFactory.build({
@@ -36,7 +38,7 @@ describe('cht-datasource Person', () => {
       _id: 'fixture:user:online-no-perms',
       name: 'Online User',
     },
-    roles: ['mm-online']
+    roles: [USER_ROLES.ONLINE]
   }));
   const offlineUser = utils.deepFreeze(userFactory.build({
     username: 'offline-has-perms',
@@ -86,9 +88,12 @@ describe('cht-datasource Person', () => {
     }
   ];
 
+  const excludedProperties = [ '_rev', 'reported_date', 'patient_id', 'place_id' ];
+
   before(async () => {
     setAuth();
     await utils.saveDocs(allDocItems);
+    await sentinelUtils.waitForSentinel();
     await utils.createUsers([userNoPerms, offlineUser]);
   });
 
@@ -104,7 +109,7 @@ describe('cht-datasource Person', () => {
 
       it('returns the person matching the provided UUID', async () => {
         const person = await getPerson(Qualifier.byUuid(patient._id));
-        expect(person).excluding([ '_rev', 'reported_date' ]).to.deep.equal(patient);
+        expect(person).excluding(excludedProperties).to.deep.equal(patient);
       });
 
       it('returns null when no person is found for the UUID', async () => {
@@ -118,7 +123,7 @@ describe('cht-datasource Person', () => {
 
       it('returns the person with lineage', async () => {
         const person = await getPersonWithLineage(Qualifier.byUuid(patient._id));
-        expect(person).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equal({
+        expect(person).excludingEvery(excludedProperties).to.deep.equal({
           ...patient,
           parent: {
             ...place0,
@@ -149,7 +154,7 @@ describe('cht-datasource Person', () => {
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+        expect(responsePeople).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(expectedPeople);
         expect(responseCursor).to.be.equal(null);
       });
 
@@ -158,7 +163,7 @@ describe('cht-datasource Person', () => {
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
-        expect(responsePeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+        expect(responsePeople).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(expectedPeople);
         expect(responseCursor).to.be.equal('7');
       });
 
@@ -168,7 +173,7 @@ describe('cht-datasource Person', () => {
 
         const allPeople = [ ...firstPage.data, ...secondPage.data ];
 
-        expect(allPeople).excludingEvery([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+        expect(allPeople).excludingEvery(excludedProperties).to.deep.equalInAnyOrder(expectedPeople);
         expect(firstPage.data.length).to.be.equal(4);
         expect(secondPage.data.length).to.be.equal(3);
         expect(firstPage.cursor).to.be.equal('4');
@@ -204,7 +209,7 @@ describe('cht-datasource Person', () => {
           docs.push(doc);
         }
 
-        expect(docs).excluding([ '_rev', 'reported_date' ]).to.deep.equalInAnyOrder(expectedPeople);
+        expect(docs).excluding(excludedProperties).to.deep.equalInAnyOrder(expectedPeople);
       });
     });
   });

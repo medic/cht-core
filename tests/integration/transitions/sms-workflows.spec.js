@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 chai.use(require('chai-exclude'));
 
 const contacts = [
@@ -19,9 +20,9 @@ const contacts = [
     },
   },
   {
-    _id: 'health_center',
+    _id: CONTACT_TYPES.HEALTH_CENTER,
     name: 'Health Center',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'health_center_shortcode',
     parent: { _id: 'district_hospital' },
     contact: { _id: 'chw2' },
@@ -32,7 +33,7 @@ const contacts = [
     name: 'Clinic',
     type: 'clinic',
     place_id: 'clinic_shortcode',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     contact: { _id: 'chw1' },
     linked_docs: {
       some_tag4: { _id: 'chw4' },
@@ -44,7 +45,7 @@ const contacts = [
   {
     _id: 'chw1',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     linked_docs: {
@@ -54,7 +55,7 @@ const contacts = [
   {
     _id: 'chw2',
     type: 'person',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     phone: 'phone2',
     name: 'chw2',
   },
@@ -67,13 +68,13 @@ const contacts = [
   {
     _id: 'chw4',
     type: 'person',
-    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
     phone: 'phone4',
   },
   {
     _id: 'chw5',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone5',
     linked_docs: {
       sibling: 'chw6',
@@ -82,7 +83,7 @@ const contacts = [
   {
     _id: 'chw6',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
     phone: 'phone6',
   },
   {
@@ -1154,6 +1155,113 @@ describe('SMS workflows', () => {
         { messages: [{ to: 'phone3', message: 'to clinic' }] }, // sender
         { messages: [{ to: 'phone3', message: 'to health_center' }] }, // sender
         { messages: [{ to: 'phone3', message: 'to district' }] },
+      ]);
+    });
+
+    it('should send to sender if field is not found and default_to_sender is set to true', async () => {
+      const settings = {
+        sms: {
+          default_to_sender: true
+        },
+        transitions: {
+          conditional_alerts: true,
+          update_clinics: true
+        },
+        alerts: [
+          {
+            form: 'FORM',
+            condition: 'true',
+            message: 'to patient',
+            recipient: 'patient.message_phone'
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'contact_chw5',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone1',
+          reported_date: new Date().getTime(),
+        }
+      ];
+
+      const [ contactChw1] = await processReportsAndSettings(reports, settings);
+      expectTasks(contactChw1, [
+        { messages: [{ to: 'phone1', message: 'to patient' }] }
+      ]);
+    });
+
+    it('should send to sender if recipent is empty and default_to_sender is set to false', async () => {
+      const settings = {
+        sms: {
+          default_to_sender: false
+        },
+        transitions: {
+          conditional_alerts: true,
+          update_clinics: true
+        },
+        alerts: [
+          {
+            form: 'FORM',
+            condition: 'true',
+            message: 'to patient',
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'contact_chw5',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone1',
+          reported_date: new Date().getTime(),
+        }
+      ];
+
+      const [ contactChw1] = await processReportsAndSettings(reports, settings);
+      expectTasks(contactChw1, [
+        { messages: [{ to: 'phone1', message: 'to patient' }] }
+      ]);
+    });
+
+    it('should not send to sender if field is not found and default_to_sender is set to false', async () => {
+      const settings = {
+        sms: {
+          default_to_sender: false
+        },
+        transitions: {
+          conditional_alerts: true,
+          update_clinics: true
+        },
+        alerts: [
+          {
+            form: 'FORM',
+            condition: 'true',
+            message: 'to patient',
+            recipient: 'patient.message_phone'
+          }
+        ],
+        forms: { FORM: { } }
+      };
+
+      const reports = [
+        {
+          _id: 'contact_chw5',
+          type: 'data_record',
+          form: 'FORM',
+          from: 'phone1',
+          reported_date: new Date().getTime(),
+        }
+      ];
+
+      const [ contactChw1] = await processReportsAndSettings(reports, settings);
+      expectTasks(contactChw1, [
+        { messages: [{ to: 'patient.message_phone', message: 'to patient' }] }
       ]);
     });
   });

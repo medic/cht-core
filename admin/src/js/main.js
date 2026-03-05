@@ -81,6 +81,7 @@ require('./directives/auth');
 angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
+require('./filters/bytes');
 
 angular.module('inboxFilters', []);
 require('./filters/resource-icon');
@@ -102,6 +103,7 @@ require('./services/cache');
 require('./services/changes');
 require('./services/contact-muted');
 require('./services/contact-types');
+require('./services/data-context');
 require('./services/db');
 require('./services/export');
 require('./services/extract-lineage');

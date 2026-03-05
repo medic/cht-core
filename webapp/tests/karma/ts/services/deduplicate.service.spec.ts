@@ -56,8 +56,10 @@ const SIBLINGS = [
 describe('Deduplicate', () => {
   let service;
   let telemetryService;
+  let clock;
 
   beforeEach(() => {
+    clock = sinon.useFakeTimers({ now: new Date('2025-11-11') });
     telemetryService = {
       record: sinon.stub(),
     };
@@ -78,7 +80,10 @@ describe('Deduplicate', () => {
     service = TestBed.inject(DeduplicateService);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock.restore();
+  });
 
   describe('getDuplicates', () => {
     it('should return duplicates based on default matching', () => {

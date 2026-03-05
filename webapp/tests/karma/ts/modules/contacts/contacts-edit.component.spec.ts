@@ -1,4 +1,4 @@
-import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
+import { fakeAsync, flushMicrotasks, TestBed, tick } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Subject } from 'rxjs';
 import { expect } from 'chai';
@@ -6,8 +6,11 @@ import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClient } from '@angular/common/http';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { ContactsEditComponent } from '@mm-modules/contacts/contacts-edit.component';
 import { TranslateService } from '@mm-services/translate.service';
@@ -15,9 +18,10 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormService, DuplicatesFoundError } from '@mm-services/form.service';
+import { DuplicatesFoundError, FormService } from '@mm-services/form.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { Contact, Qualifier } from '@medic/cht-datasource';
 
 
 describe('ContactsEdit component', () => {
@@ -26,6 +30,7 @@ describe('ContactsEdit component', () => {
   let router;
   let route;
   let dbGet;
+  let dbService;
   let createComponent;
   let fixture;
   let component;
@@ -35,9 +40,13 @@ describe('ContactsEdit component', () => {
   let stopPerformanceTrackStub;
   let performanceService;
   let telemetryService;
+  let chtDatasourceService;
+  let getContact;
+  let fileReaderService;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
+    getContact = sinon.stub();
     contactTypesService = {
       get: sinon.stub().resolves(),
       getChildren: sinon.stub().resolves(),
@@ -45,6 +54,13 @@ describe('ContactsEdit component', () => {
     };
     translateService = { get: sinon.stub().resolvesArg(0) };
     dbGet = sinon.stub().resolves();
+    dbService = {
+      get: sinon.stub().returns({
+        get: dbGet,
+        getAttachment: sinon.stub()
+      })
+    };
+    fileReaderService = { base64: sinon.stub() };
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
     route = {
@@ -64,6 +80,9 @@ describe('ContactsEdit component', () => {
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: {} }) };
     telemetryService = { record: sinon.stub() };
+    chtDatasourceService = {
+      bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
+    };
 
     sinon.stub(console, 'error');
 
@@ -86,14 +105,17 @@ describe('ContactsEdit component', () => {
       providers: [
         provideMockStore({ selectors: mockedSelectors }),
         { provide: TranslateService, useValue: translateService },
-        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
+        { provide: DbService, useValue: dbService },
         { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: route },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: FormService, useValue: formService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: PerformanceService, useValue: performanceService },
-        { provide: TelemetryService, useValue: telemetryService }
+        { provide: TelemetryService, useValue: telemetryService },
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: FileReaderService, useValue: fileReaderService },
+        { provide: HttpClient, useValue: {} },
       ],
     });
 
@@ -165,6 +187,21 @@ describe('ContactsEdit component', () => {
 
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'id']]);
+    });
+  });
+
+  describe('validateParentForCreateForm', () => {
+    it('should throw an error if parent contact is not found', async () => {
+      await createComponent();
+      component.contact = {
+        parent: 'missing_parent_uuid',
+        contact_type: 'clinic'
+      };
+      getContact.withArgs(Qualifier.byUuid('missing_parent_uuid')).resolves(null);
+
+      await expect(component.validateParentForCreateForm()).to.be.rejectedWith(
+        'Parent contact with UUID missing_parent_uuid not found.'
+      );
     });
   });
 
@@ -253,8 +290,8 @@ describe('ContactsEdit component', () => {
       route.params.next({ type: 'random', parent_id: 'the_district' });
 
       contactTypesService.getChildren.resolves([{ id: 'random' }, { id: 'other' }]);
-      dbGet
-        .withArgs('the_district')
+      getContact
+        .withArgs(Qualifier.byUuid('the_district'))
         .resolves({ _id: 'the_district', type: 'random' });
       contactTypesService.get
         .withArgs('random')
@@ -291,7 +328,8 @@ describe('ContactsEdit component', () => {
       await fixture.whenStable();
       flushMicrotasks();
 
-      expect(dbGet.callCount).to.equal(4);
+      expect(dbGet.args).to.deep.equal([['random_create'], ['other_create']]);
+      expect(getContact.args).to.deep.equal([[Qualifier.byUuid('the_district')], [Qualifier.byUuid('the_district')]]);
       expect(contactTypesService.get.callCount).to.equal(2);
       expect(formService.render.callCount).to.equal(2);
       expect(formService.render.args[1][0]).to.deep.include({
@@ -337,8 +375,8 @@ describe('ContactsEdit component', () => {
           create_form: 'the_place_create_form_id',
           create_key: 'the_place_create_key',
         });
-        dbGet
-          .withArgs('parent_id')
+        getContact
+          .withArgs(Qualifier.byUuid('parent_id'))
           .resolves({ _id: 'parent_id', type: 'the_place' });
         contactTypesService.getChildren.resolves([{ id: 'clinic' }]);
 
@@ -348,6 +386,7 @@ describe('ContactsEdit component', () => {
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['the_place']);
         expect(contactTypesService.getChildren.callCount).to.equal(1);
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('parent_id'))).to.be.true;
         expect(formService.render.callCount).to.equal(0);
         expect(component.enketoContact).to.deep.equal(undefined);
         expect(component.contentError).to.equal(true);
@@ -381,8 +420,8 @@ describe('ContactsEdit component', () => {
           create_form: 'clinic_create_form_id',
           create_key: 'clinic_create_key',
         });
-        dbGet
-          .withArgs('the_district')
+        getContact
+          .withArgs(Qualifier.byUuid('the_district'))
           .resolves({ _id: 'the_district', type: 'clinic' });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
@@ -391,9 +430,8 @@ describe('ContactsEdit component', () => {
 
         expect(contactTypesService.get.callCount).to.equal(1);
         expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
-        expect(dbGet.callCount).to.equal(2);
-        expect(dbGet.args[0]).to.deep.equal(['the_district']);
-        expect(dbGet.args[1]).to.deep.equal(['clinic_create_form_id']);
+        expect(dbGet.calledOnceWithExactly('clinic_create_form_id')).to.be.true;
+        expect(getContact.calledOnceWithExactly(Qualifier.byUuid('the_district'))).to.be.true;
         expect(component.enketoContact).to.deep.equal({
           type: 'clinic',
           formInstance: undefined,
@@ -653,6 +691,186 @@ describe('ContactsEdit component', () => {
     });
   });
 
+  describe('loading attachments', () => {
+    const imageElementName = '/contact_form/photo';
+    const imageAttachmentName = 'photo.jpg';
+    const getFileInputHTML = (accept: string, loadedFileName?: string) => $.parseHTML(`<input
+      type="file"
+      name="${imageElementName}"
+      accept="${accept}"
+      ${loadedFileName ? `data-loaded-file-name="${loadedFileName}"` : ''}
+    >`);
+    const fileInputSelector = '#contact-form input[type="file"]:not(.draw-widget__load)';
+
+    let jqStub;
+    let jqMap;
+    let jqFeedbackElement;
+    let jqPreviewElement;
+    let jqPickerElement;
+    let getAttachment;
+    let mockJQueryElement;
+
+    beforeEach(() => {
+      jqFeedbackElement = { empty: sinon.stub() };
+      jqPreviewElement = { empty: sinon.stub(), append: sinon.stub() };
+      jqPickerElement = { find: sinon.stub() };
+      jqPickerElement.find.withArgs('.file-feedback').returns(jqFeedbackElement);
+      jqPickerElement.find.withArgs('.file-preview').returns(jqPreviewElement);
+
+      jqMap = sinon.stub();
+      jqStub = sinon.stub(window as any, '$');
+      jqStub.parseXML = $.parseXML;
+      jqStub.parseHTML = $.parseHTML;
+      jqStub.withArgs(fileInputSelector).returns({ map: jqMap });
+
+      mockJQueryElement = {
+        attr: sinon.stub().returnsArg(0),
+        data: sinon.stub(),
+        closest: sinon.stub().returns({
+          find: sinon.stub().returns(jqPickerElement)
+        })
+      };
+      jqStub.returns(mockJQueryElement);
+
+      getAttachment = dbService.get().getAttachment;
+    });
+
+    describe('for new contact', () => {
+      it('does not load attachments when creating new contact', fakeAsync(async () => {
+        routeSnapshot.params = { type: 'person' };
+        contactTypesService.getChildren.resolves([{ id: 'person' }]);
+        contactTypesService.get.resolves({
+          create_form: 'person_create_form',
+          create_key: 'person_create_key',
+        });
+        dbGet.resolves({ _id: 'person_create_form', form: true });
+
+        await createComponent();
+        tick();
+
+        expect(getAttachment.notCalled).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+      }));
+    });
+
+    describe('for existing contact', () => {
+      it('renders existing image attachment preview when editing contact', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = {
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
+          }
+        };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        dbGet.onCall(0).resolves({ _id: 'person_edit_form', form: true });
+        const attachmentBlob = { attachment: 'blob' };
+        getAttachment.resolves(attachmentBlob);
+        const base64 = 'base64';
+        fileReaderService.base64.resolves(base64);
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('image/*', imageAttachmentName)[0];
+
+        mockJQueryElement.attr.withArgs('accept').returns('image/*');
+        mockJQueryElement.attr.withArgs('name').returns(imageElementName);
+        mockJQueryElement.data.withArgs('loaded-file-name').returns(imageAttachmentName);
+
+        await renderAttachmentPreview(0, inputElement);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
+        expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
+        expect(jqPreviewElement.empty.calledOnce).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+      }));
+
+      it('does not load attachment when the attachment is a non-image attachment', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = {
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'video/mp4' }
+          }
+        };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        dbGet.resolves({ _id: 'person_edit_form', form: true });
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('video/*', imageAttachmentName)[0];
+        await renderAttachmentPreview(0, inputElement);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.notCalled).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+        expect(jqPreviewElement.empty.notCalled).to.be.true;
+        expect(jqPreviewElement.append.notCalled).to.be.true;
+      }));
+
+      it('loads form successfully when there is an error retrieving the attachment', fakeAsync(async () => {
+        routeSnapshot.params = { id: 'the_person' };
+        const doc = {
+          _id: 'the_person',
+          type: 'person',
+          _attachments: {
+            [`user-file-${imageAttachmentName}`]: { content_type: 'image/png' }
+          }
+        };
+        lineageModelGeneratorService.contact.resolves({ doc });
+        contactTypesService.get.resolves({
+          edit_form: 'person_edit_form',
+          edit_key: 'person_edit_key',
+        });
+        dbGet.resolves({ _id: 'person_edit_form', form: true });
+        const expectedError = new Error('some error');
+        getAttachment.onFirstCall().rejects(expectedError);
+
+        await createComponent();
+        tick();
+
+        expect(jqStub.calledWith(fileInputSelector)).to.be.true;
+        expect(jqMap.calledOnce).to.be.true;
+
+        const renderAttachmentPreview = jqMap.args[0][0];
+        const inputElement = getFileInputHTML('image/*', imageAttachmentName)[0];
+
+        mockJQueryElement.attr.withArgs('accept').returns('image/*');
+        mockJQueryElement.attr.withArgs('name').returns(imageElementName);
+        mockJQueryElement.data.withArgs('loaded-file-name').returns(imageAttachmentName);
+
+        await expect(renderAttachmentPreview(0, inputElement)).to.be.rejectedWith(expectedError);
+
+        expect(jqFeedbackElement.empty.calledOnce).to.be.true;
+        expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
+        expect(fileReaderService.base64.notCalled).to.be.true;
+        expect(jqPreviewElement.empty.notCalled).to.be.true;
+        expect(jqPreviewElement.append.notCalled).to.be.true;
+      }));
+    });
+  });
+
   describe('saving', () => {
     let setEnketoSavingStatus;
     let setEnketoError;
@@ -724,8 +942,8 @@ describe('ContactsEdit component', () => {
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',
       });
-      dbGet
-        .withArgs('the_district')
+      getContact
+        .withArgs(Qualifier.byUuid('the_district'))
         .resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
@@ -752,9 +970,8 @@ describe('ContactsEdit component', () => {
         name: 'enketo:contacts:clinic_create_form_id:add:save',
         recordApdex: true,
       });
-      expect(dbGet.callCount).to.equal(2);
-      expect(dbGet.args[0]).to.deep.equal(['the_district']);
-      expect(dbGet.args[1]).to.deep.equal(['clinic_create_form_id']);
+      expect(dbGet.calledOnceWithExactly('clinic_create_form_id')).to.be.true;
+      expect(getContact.calledOnceWithExactly(Qualifier.byUuid('the_district'))).to.be.true;
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
@@ -882,8 +1099,8 @@ describe('ContactsEdit component', () => {
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',
       });
-      dbGet
-        .withArgs('the_district')
+      getContact
+        .withArgs(Qualifier.byUuid('the_district'))
         .resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
@@ -909,6 +1126,8 @@ describe('ContactsEdit component', () => {
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
+      expect(getContact.calledOnceWithExactly(Qualifier.byUuid('the_district'))).to.be.true;
+      expect(dbGet.calledOnceWithExactly('clinic_create_form_id')).to.be.true;
       expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(setEnketoError.callCount).to.equal(2);
@@ -925,8 +1144,8 @@ describe('ContactsEdit component', () => {
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',
       });
-      dbGet
-        .withArgs('the_district')
+      getContact
+        .withArgs(Qualifier.byUuid('the_district'))
         .resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
@@ -984,8 +1203,8 @@ describe('ContactsEdit component', () => {
         create_form: 'clinic_create_form_id',
         create_key: 'clinic_create_key',
       });
-      dbGet
-        .withArgs('the_district')
+      getContact
+        .withArgs(Qualifier.byUuid('the_district'))
         .resolves({ _id: 'the_district', type: 'clinic' });
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {

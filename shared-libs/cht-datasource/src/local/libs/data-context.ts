@@ -19,7 +19,7 @@ export class LocalDataContext extends AbstractDataContext {
   /** @internal */
   constructor(
     readonly medicDb: PouchDB.Database<Doc>,
-    readonly settings: SettingsService
+    readonly settings: SettingsService,
   ) {
     super();
   }
@@ -51,7 +51,10 @@ export const isLocalDataContext = (context: DataContext): context is LocalDataCo
  * @returns the local data context
  * @throws Error if the provided settings or source databases are invalid
  */
-export const getLocalDataContext = (settings: SettingsService, sourceDatabases: SourceDatabases): DataContext => {
+export const getLocalDataContext = (
+  settings: SettingsService,
+  sourceDatabases: SourceDatabases,
+): DataContext => {
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);
   return new LocalDataContext(sourceDatabases.medic, settings);

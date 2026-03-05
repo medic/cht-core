@@ -49,11 +49,13 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 import { BrowserCompatibilityComponent } from '@mm-modals/browser-compatibility/browser-compatibility.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettings, UserSettingsService } from '@mm-services/user-settings.service';
-import { OLD_NAV_PERMISSION, HeaderComponent } from '@mm-components/header/header.component';
-
+import { HeaderComponent, OLD_NAV_PERMISSION } from '@mm-components/header/header.component';
+import { NgIf } from '@angular/common';
 import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-policy.component';
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
+import { TasksNotificationService } from '@mm-services/task-notifications.service';
+import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -82,12 +84,13 @@ const SYNC_STATUS = {
   selector: 'app-root',
   templateUrl: './app.component.html',
   imports: [
+    NgIf,
     PrivacyPolicyComponent,
     SidebarMenuComponent,
     HeaderComponent,
     RouterOutlet,
-    SnackbarComponent
-],
+    SnackbarComponent,
+  ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
   private globalActions: GlobalActions;
@@ -155,6 +158,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private browserDetectorService: BrowserDetectorService,
     private userSettingsService: UserSettingsService,
     private formService: FormService,
+    private readonly taskNotificationService: TasksNotificationService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -311,7 +315,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
-      .then(() => this.initUnreadCount())
+      .then(() => this.initBubbleCounter())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses())
       .catch(err => {
@@ -331,12 +335,21 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.requestPersistentStorage();
     this.startWealthQuintiles();
     this.initAnalyticsModules();
+    this.initAndroidTaskNotifications();
+  }
+
+  private initAndroidTaskNotifications() {
+    if (typeof globalThis?.medicmobile_android?.updateTaskNotificationStore === 'function') {
+      this.taskNotificationService.initOnAndroid();
+    }
   }
 
   private async initUser() {
     const userSettings:UserSettings = await this.userSettingsService.get();
     this.globalActions.setUserContactId(userSettings.contact_id);
     this.globalActions.setUserFacilityIds(userSettings.facility_id);
+    this.globalActions.setUserFacilities(await this.userSettingsService.getUserFacilities());
+    this.globalActions.setIsOnlineOnly(this.authService.online(true));
   }
 
   ngAfterViewInit() {
@@ -395,12 +408,12 @@ export class AppComponent implements OnInit, AfterViewInit {
         return (
           change.id === '_design/medic' ||
           change.id === '_design/medic-client' ||
-          change.id === 'service-worker-meta' ||
-          change.id === 'settings'
+          change.id === DOC_IDS.SERVICE_WORKER_META ||
+          change.id === DOC_IDS.SETTINGS
         );
       },
       callback: (change) => {
-        if (change.id === 'service-worker-meta') {
+        if (change.id === DOC_IDS.SERVICE_WORKER_META) {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
 
         } else {
@@ -430,7 +443,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   private watchTranslationsChanges() {
     this.changesService.subscribe({
-      key: 'translations',
+      key: DOC_TYPES.TRANSLATIONS,
       filter: change => TranslationDocsMatcherProvider.test(change.id),
       callback: change => {
         const locale = TranslationDocsMatcherProvider.getLocaleCode(change.id);
@@ -605,13 +618,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .catch(err => console.error('Failed to load privacy policy', err));
   }
 
-  private initUnreadCount() {
+  private initBubbleCounter() {
     this.unreadRecordsService.init((err, data) => {
       if (err) {
         console.error('Error fetching read status', err);
         return;
       }
-      this.globalActions.setUnreadCount(data);
+      this.globalActions.setBubbleCounter(data);
     });
   }
 

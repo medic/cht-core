@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const { USER_ROLES } = require('@medic/constants');
 
 const config = require('../../src/libs/config');
 const roles = require('../../src/roles');
@@ -21,7 +22,7 @@ describe('roles', () => {
     it('should return false when no online role was found', () => {
       const scenarios = [
         ['some_role'],
-        ['one_role', 'district_manager', 'admin'],
+        ['one_role', 'district_manager'],
         ['one_role', 'not_district_admin', 'not_admin'],
         ['not_chw', 'national_admin'],
         ['random', 'national_admin'],
@@ -38,9 +39,9 @@ describe('roles', () => {
         ['_admin'],
         ['_admin', 'other_role'],
         ['chw', '_admin'],
-        ['mm-online'],
-        ['mm-online', 'other'],
-        ['not-mm-online', 'mm-online'],
+        [USER_ROLES.ONLINE],
+        [USER_ROLES.ONLINE, 'other'],
+        ['not-mm-online', USER_ROLES.ONLINE],
       ];
       scenarios.forEach(userRoles => {
         const message = `hasOnlineRole failed for ${userRoles}`;
@@ -54,6 +55,8 @@ describe('roles', () => {
     it('checks for "admin" role', () => {
       chai.expect(roles.isOnlineOnly({ roles: ['_admin'] })).to.equal(true);
       chai.expect(roles.isOnlineOnly({ roles: ['_admin', 'some_role'] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: ['admin'] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: ['admin', 'some_role'] })).to.equal(true);
     });
 
     it('checks "national_admin" role', () => {
@@ -62,8 +65,8 @@ describe('roles', () => {
     });
 
     it('should check for "mm-online" role', () => {
-      chai.expect(roles.isOnlineOnly({ roles: ['mm-online'] })).to.equal(true);
-      chai.expect(roles.isOnlineOnly({ roles: ['mm-online', 'offline'] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: [USER_ROLES.ONLINE] })).to.equal(true);
+      chai.expect(roles.isOnlineOnly({ roles: [USER_ROLES.ONLINE, 'offline'] })).to.equal(true);
     });
 
     it('should return false for non-admin roles', () => {
@@ -80,9 +83,13 @@ describe('roles', () => {
   });
 
   describe('isOffline', () => {
-    it('should return true for an empty array and for roles that are not configured', () => {
+    it('should return false empty array', () => {
       config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
-      chai.expect(roles.isOffline([])).to.equal(true);
+      chai.expect(roles.isOffline([])).to.equal(false);
+    });
+
+    it('should return true for roles that are not configured', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(roles.isOffline(['random'])).to.equal(true);
       chai.expect(roles.isOffline(['role1', 'role2'])).to.equal(true);
     });
@@ -93,6 +100,7 @@ describe('roles', () => {
       chai.expect(roles.isOffline(['roleA', 'random'])).to.equal(true);
       chai.expect(roles.isOffline(['roleA', 'roleB'])).to.equal(true);
       chai.expect(roles.isOffline(['roleA', 'roleB', 'random'])).to.equal(true);
+      chai.expect(roles.isOffline(['roleB', 'roleA'])).to.equal(true);
     });
 
     it('should return false when none of the configured roles are offline', () => {
@@ -100,11 +108,28 @@ describe('roles', () => {
       chai.expect(roles.isOffline(['roleB'])).to.equal(false);
       chai.expect(roles.isOffline(['roleB', 'roleC'])).to.equal(false);
     });
+
+    it('should return false for empty roles', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline([])).to.equal(false);
+    });
+
+    it('should return false for db admins', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline(['_admin'])).to.equal(false);
+      chai.expect(roles.isOffline(['admin'])).to.equal(false);
+    });
+
+    it('should return false for mm-online role', () => {
+      config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
+      chai.expect(roles.isOffline(['mm-online'])).to.equal(false);
+    });
   });
 
   describe('hasAllPermissions', () => {
     it('should return true for db admin', () => {
       chai.expect(roles.hasAllPermissions(['_admin'], 'permission')).to.equal(true);
+      chai.expect(roles.hasAllPermissions(['admin'], 'permission')).to.equal(true);
     });
 
     it('should return false for no permissions', () => {

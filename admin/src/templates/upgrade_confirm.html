@@ -8,6 +8,48 @@
   on-submit="submit()"
 >
   <p translate-values="{ before: '{{model.before}}', after: '{{model.after}}' }" translate>instance.upgrade.confirm.summary</p>
+  <div ng-if="model.build.compare">
+    <p ng-if="!model.build.compare.length" class="alert alert-info" translate>instance.upgrade.indexing.not_required</p>
+    <div ng-if="model.build.compare.length">
+      <a class="alert alert-warning btn" ng-click="isCollapsed = !isCollapsed">
+        <i class="fa" ng-class="{'fa-chevron-down': !isCollapsed, 'fa-chevron-right': isCollapsed}"></i>
+        <span translate>instance.upgrade.indexing.required</span>
+      </a>
+      <div uib-collapse="isCollapsed">
+        <table class="table">
+          <tr>
+            <th><span translate>instance.upgrade.indexing.db</span></th>
+            <th><span translate>instance.upgrade.indexing.ddoc</span></th>
+            <th><span translate>instance.upgrade.indexing.type</span></th>
+            <th><span translate>instance.upgrade.indexing.size</span></th>
+          </tr>
+          <tr ng-repeat="difference in model.build.compare">
+            <td>{{difference.db}}</td>
+            <td>{{difference.ddoc}}</td>
+            <td>
+                <span ng-repeat="type in difference.type">
+                  <span translate="instance.upgrade.indexing.type.{{type}}"></span>
+                </span>
+            </td>
+            <td>
+                <span>
+                  {{difference.size | bytes}}
+                </span>
+            </td>
+          </tr>
+        </table>
+
+        <div class="alert alert-warning">
+          <span translate>instance.upgrade.indexing.size.warning</span>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      <a href="https://docs.communityhealthtoolkit.org/hosting/cht/upgrade-troubleshooting/" target="_blank" rel="noopener noreferrer" translate>instance.upgrade.indexing.documentation</a>
+    </p>
+
+  </div>
   <p ng-if="model.stageOnly" translate>instance.stage.confirm.note</p>
-  <p ng-if="!model.stageOnly" translate>instance.upgrade.confirm.warning.text</p>
+  <p ng-if="!model.stageOnly" translate class="alert alert-info">instance.upgrade.confirm.warning.text</p>
 </mm-modal>

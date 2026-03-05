@@ -26,15 +26,15 @@ const catchDbNotFoundError = (err, purgeDb) => {
     throw err;
   }
 };
-const getPurgedIdsFromChanges = result => {
+const getPurgedIdsFromAllDocs = result => {
   const purgedIds = [];
-  if (!result || !result.results) {
+  if (!result || !result.rows) {
     return purgedIds;
   }
 
-  result.results.forEach(change => {
-    if (!change.deleted) {
-      purgedIds.push(purgingUtils.extractId(change.id));
+  result.rows.forEach(row => {
+    if (row.value && !row.value.deleted) {
+      purgedIds.push(purgingUtils.extractId(row.id));
     }
   });
   return purgedIds;
@@ -58,9 +58,8 @@ const getPurgedIds = async (userCtx, docIds, useCache = true) => {
 
   try {
     purgeDb = await getPurgeDb(userCtx.roles);
-    // requesting _changes instead of _all_docs because it's roughly twice faster
-    const changesResult = await purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length });
-    purgeIds = getPurgedIdsFromChanges(changesResult);
+    const allDocsResult = await purgeDb.allDocs({ keys: ids });
+    purgeIds = getPurgedIdsFromAllDocs(allDocsResult);
     useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
     db.close(purgeDb);
   } catch (err) {

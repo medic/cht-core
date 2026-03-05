@@ -9,8 +9,8 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
-import { NgClass } from '@angular/common';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { NgIf, NgClass, NgFor } from '@angular/common';
 import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
@@ -25,14 +25,16 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
   selector: 'analytics-target-aggregates-detail',
   templateUrl: './analytics-target-aggregates-detail.component.html',
   imports: [
+    NgIf,
     NgClass,
+    NgFor,
     RouterLink,
     AnalyticsTargetsDetailsComponent,
     AnalyticsTargetsProgressComponent,
     TranslatePipe,
     ResourceIconPipe,
     TranslateFromPipe
-]
+  ]
 })
 export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestroy, AfterViewInit {
   private targetAggregatesActions: TargetAggregatesActions;

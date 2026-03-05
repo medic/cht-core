@@ -2,6 +2,7 @@ const chai = require('chai');
 const utils = require('@utils');
 const _ = require('lodash');
 const chaiExclude = require('chai-exclude');
+const { CONTACT_TYPES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
@@ -18,7 +19,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:offline',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Offline place',
       parent: 'PARENT_PLACE',
     },
@@ -33,7 +34,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Online place',
       parent: 'PARENT_PLACE',
     },
@@ -53,7 +54,7 @@ const contacts = [
   parentPlace,
   {
     _id: 'hc1',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     name: 'hc1',
     parent: { _id: 'PARENT_PLACE' },
     contact: { _id: 'supervisor1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
@@ -103,7 +104,7 @@ const contacts = [
   },
   {
     _id: 'hc2',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     name: 'hc1',
     parent: { _id: 'DISTRICT_2' },
     contact: { _id: 'chw2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
@@ -135,7 +136,7 @@ const contacts = [
   },
   {
     _id: 'center_with_linked_docs',
-    type: 'health_center',
+    type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'PARENT_PLACE' },
     name: 'center_with_linked_docs',
     contact: { _id: 'chw_with_linked_docs' },

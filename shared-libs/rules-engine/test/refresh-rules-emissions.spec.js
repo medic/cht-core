@@ -11,7 +11,7 @@ const NOW = 100000;
 
 describe('refresh-rules-emissions', () => {
   beforeEach(() => {
-    clock = sinon.useFakeTimers(NOW);
+    clock = sinon.useFakeTimers({ now: NOW, toFake: ['Date'] });
     refreshRulesEmissionsContact = rewire('../src/refresh-rules-emissions');
   });
 

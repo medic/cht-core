@@ -4,6 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
+import { DOC_IDS } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -21,6 +22,10 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { Store } from '@ngrx/store';
+import { TasksActions } from '@mm-actions/tasks';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { Qualifier, Target } from '@medic/cht-datasource';
 
 interface DebounceActive {
   [key: string]: {
@@ -31,6 +36,13 @@ interface DebounceActive {
     promise?: Promise<any>;
     resolve?: any;
   };
+}
+
+interface TaskDoc {
+  _id: string;
+  emission?: any;
+  owner: string;
+  stateHistory: Array<{ state: string, timestamp: number }>;
 }
 
 @Injectable({
@@ -52,15 +64,18 @@ export class RulesEngineCoreFactoryService {
 export class RulesEngineService implements OnDestroy {
   private rulesEngineCore;
   private readonly MAX_LINEAGE_DEPTH = 50;
-  private readonly ENSURE_FRESHNESS_MILLIS = 120 * 1000;
+  private readonly ENSURE_FRESHNESS_MILLIS = 1000;
   private readonly DEBOUNCE_CHANGE_MILLIS = 1000;
   private readonly CHANGE_WATCHER_KEY = 'mark-contacts-dirty';
   private readonly FRESHNESS_KEY = 'freshness';
+  private readonly INTERVAL_TAG_FORMAT = 'YYYY-MM';
   private subscriptions: Subscription = new Subscription();
   private initialized;
   private uhcMonthStartDate;
   private debounceActive: DebounceActive = {};
   private observable = new Subject();
+  private readonly taskActions: TasksActions;
+  private readonly getTarget: ReturnType<typeof Target.v1.get>;
 
   constructor(
     private translateService:TranslateService,
@@ -79,10 +94,13 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private chtDatasourceService:CHTDatasourceService
+    private chtDatasourceService:CHTDatasourceService,
+    private store: Store
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.taskActions = new TasksActions(this.store);
+    this.getTarget = chtDatasourceService.bind(Target.v1.get);
   }
 
   ngOnDestroy(): void {
@@ -136,7 +154,7 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesDebounceRef = _debounce(() => {
       this.debounceActive[this.FRESHNESS_KEY].active = false;
-      this.refreshEmissions();
+      this.fetchOverdueTasksForAllContacts();
     }, this.ENSURE_FRESHNESS_MILLIS);
 
     this.debounceActive[this.FRESHNESS_KEY] = {
@@ -152,6 +170,14 @@ export class RulesEngineService implements OnDestroy {
     trackPerformance?.stop(trackName);
 
     return true;
+  }
+
+  private async fetchOverdueTasksForAllContacts() {
+    const allTasks = await this.fetchTaskDocsForAllContacts();
+    this.ngZone.run(() => {
+      this.taskActions.setTasksList(allTasks.map(task => task.emission));
+    });
+    this.monitorTaskChanges();
   }
 
   private cancelDebounce(entity) {
@@ -277,9 +303,9 @@ export class RulesEngineService implements OnDestroy {
 
     const rulesUpdateSubscription = this.changesService.subscribe({
       key: 'rules-config-update',
-      filter: change => change.id === 'settings' || userLineage.includes(change.id),
+      filter: change => change.id === DOC_IDS.SETTINGS || userLineage.includes(change.id),
       callback: change => {
-        if (change.id !== 'settings') {
+        if (change.id !== DOC_IDS.SETTINGS) {
           return this.userContactService
             .get()
             .then(updatedUser => {
@@ -293,6 +319,19 @@ export class RulesEngineService implements OnDestroy {
       },
     });
     this.subscriptions.add(rulesUpdateSubscription);
+  }
+
+  private monitorTaskChanges() {
+    const taskDocSubscription = this.changesService.subscribe({
+      key: 'task-doc-update',
+      filter: change => change.doc.type === 'task' && this.rulesEngineCore.showTask(change.doc),
+      callback: change => {
+        this.ngZone.run(() => {
+          this.taskActions.setOverdueTasks(this.hydrateTaskDocs([change.doc]));
+        });
+      }
+    });
+    this.subscriptions.add(taskDocSubscription);
   }
 
   private monitorChanges(rulesEngineContext) {
@@ -327,7 +366,7 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private hydrateTaskDocs(taskDocs: { _id: string; emission?: any; owner: string }[] = []) {
+  private hydrateTaskDocs(taskDocs: Array<TaskDoc> = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
       if (!emission) {
@@ -459,11 +498,34 @@ export class RulesEngineService implements OnDestroy {
       });
   }
 
-  fetchTargets() {
-    return this.ngZone.runOutsideAngular(() => this._fetchTargets());
+  fetchTargets(reportingPeriod: ReportingPeriod = ReportingPeriod.CURRENT): Promise<TargetViewModel[]> {
+    return this.ngZone.runOutsideAngular(() => this._fetchTargets(reportingPeriod));
   }
 
-  private async _fetchTargets(): Promise<Target[]> {
+  private async _fetchTargets(reportingPeriod: ReportingPeriod): Promise<TargetViewModel[]> {
+    // If current month, use existing logic
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
+      return this._fetchCurrentTargets();
+    }
+
+    // Previous month: use target interval from cht-datasource
+    try {
+      const settings = await this.settingsService.get();
+      const targetDocs = await this.fetchTargetDocumentsForPeriod(settings, reportingPeriod);
+
+      // If no target interval found (null), return empty array
+      if (!targetDocs) {
+        return [];
+      }
+
+      return this.processTargetDocuments(targetDocs, settings, reportingPeriod);
+    } catch (error) {
+      console.error('Error fetching previous month targets:', error);
+      return [];
+    }
+  }
+
+  private async _fetchCurrentTargets(): Promise<TargetViewModel[]> {
     const trackName = this.getTelemetryTrackName('targets');
     let trackPerformanceQueueing;
     let trackPerformanceRunning;
@@ -492,6 +554,101 @@ export class RulesEngineService implements OnDestroy {
     return targets;
   }
 
+  /**
+   * Targets reporting intervals cover a calendaristic month, starting on a configurable day (uhcMonthStartDate)
+   * Each target doc will use the end date of its reporting interval, in YYYY-MM format, as part of its _id
+   * @param settings - The application settings containing uhcMonthStartDate
+   * @param reportingPeriod - ReportingPeriod enum value (CURRENT or PREVIOUS)
+   * @param monthsAgo - Number of reporting periods ago (default: 1)
+   * @returns A string representing the interval tag in YYYY-MM format
+   */
+  getTargetIntervalTag(
+    settings: Record<string, unknown>,
+    reportingPeriod: ReportingPeriod,
+    monthsAgo = 1
+  ): string {
+    const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+
+    if (reportingPeriod === ReportingPeriod.CURRENT) {
+      return moment(currentInterval.end)
+        .locale('en')
+        .format(this.INTERVAL_TAG_FORMAT);
+    }
+
+    const previousMonthDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
+    const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
+    return moment(previousInterval.end)
+      .locale('en')
+      .format(this.INTERVAL_TAG_FORMAT);
+  }
+
+  getReportingMonth(settings: Record<string, unknown>, reportingPeriod:ReportingPeriod) {
+    try {
+      const tag = this.getTargetIntervalTag(settings, reportingPeriod);
+      return moment(tag, this.INTERVAL_TAG_FORMAT).format('MMMM');
+    } catch (error) {
+      console.error('Error getting reporting month:', error);
+      return this.translateService.instant('targets.last_month.subtitle');
+    }
+  }
+
+  /**
+   * Fetch target interval for a specific reporting period using cht-datasource
+   * @returns the target interval, or null if not found or prerequisites aren't met
+   */
+  private async fetchTargetDocumentsForPeriod(
+    settings: any,
+    reportingPeriod: ReportingPeriod
+  ): Promise<Target.v1.Target | null> {
+    const intervalTag = this.getTargetIntervalTag(settings, reportingPeriod);
+    const userContact = await this.userContactService.get();
+    const username = this.sessionService.userCtx()?.name;
+
+    if (!userContact?._id || !username) {
+      return null;
+    }
+
+    return await this.getTarget(
+      Qualifier.and(
+        Qualifier.byReportingPeriod(intervalTag),
+        Qualifier.byContactId(userContact._id),
+        Qualifier.byUsername(username)
+      )
+    );
+  }
+
+  /**
+   * Process target interval into target format expected by UI
+   * Only returns targets that exist in the target interval document.
+   */
+  private processTargetDocuments(
+    targetDoc: Target.v1.Target,
+    settings: any,
+    reportingPeriod: ReportingPeriod
+  ): TargetViewModel[] {
+    const targetsConfig = settings?.tasks?.targets?.items || [];
+    const processedTargets: TargetViewModel[] = [];
+
+    if (!targetDoc?.targets) {
+      return processedTargets;
+    }
+
+    targetDoc.targets.forEach(targetValue => {
+      const targetConfig = targetsConfig.find(config => config.id === targetValue.id);
+      if (targetConfig && targetConfig.visible !== false) {
+        processedTargets.push({
+          ...targetConfig,
+          reportingMonth: this.getReportingMonth(settings, reportingPeriod),
+          ...targetValue,
+          visible: true
+        });
+      }
+    });
+
+    return processedTargets;
+  }
+
   async monitorExternalChanges(replicationResult?) {
     await this.initialized;
     return replicationResult?.docs && this.updateEmissionExternalChanges(replicationResult.docs);
@@ -504,7 +661,6 @@ export class RulesEngineService implements OnDestroy {
   private getTelemetryTrackName(...params:string[]) {
     return ['rules-engine', ...params].join(':');
   }
-
 }
 
 export enum TargetType {
@@ -518,7 +674,7 @@ export interface TargetValue {
   total: number;
 }
 
-export interface Target {
+export interface TargetViewModel {
   id: string;
   type: TargetType;
   icon: string;
@@ -526,4 +682,30 @@ export interface Target {
   subtitle_translation_key: string;
   goal: number;
   value: TargetValue;
+}
+
+export interface Task {
+  _id: string;
+  authoredOn: number;
+  stateHistory: {
+    state: string;
+    timestamp: number;
+  }[],
+  state: string,
+  user: string;
+  requester: string;
+  owner: string;
+  emission: TaskEmission;
+}
+
+export interface TaskEmission {
+  _id: string;
+  title: string;
+  resolved: boolean;
+  actions: any[];
+  dueDate: string;
+  priority: string;
+  priorityLabel: string;
+  overdue: boolean;
+  [string: string]: any;
 }

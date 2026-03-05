@@ -18,6 +18,7 @@ const angularEslintEslintPlugin = require('@angular-eslint/eslint-plugin');
 const angularEslintEslintPluginTemplate = require('@angular-eslint/eslint-plugin-template');
 const templateParser = require('@angular-eslint/template-parser');
 const stylisticPlugin = require('@stylistic/eslint-plugin');
+const Path = require('node:path');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -317,7 +318,7 @@ module.exports = defineConfig([
     files: ['ddocs/**/*.js'],
 
     languageOptions: {
-      ecmaVersion: 5,
+      ecmaVersion: 6,
       sourceType: 'script',
       parser: {
         meta: {
@@ -330,6 +331,7 @@ module.exports = defineConfig([
       globals: {
         emit: true,
         log: true,
+        index: true,
       }
     },
 
@@ -426,7 +428,7 @@ module.exports = defineConfig([
 
     languageOptions: {
       parser: tsParser,
-      ecmaVersion: 5,
+      ecmaVersion: 2020,
       sourceType: 'script',
 
       parserOptions: {
@@ -499,6 +501,14 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['webapp/src/js/bootstrapper/offline-ddocs/**/*.js'],
+    languageOptions: {
+      globals: {
+        emit: true,
+      },
+    },
+  },
+  {
     files: ['webapp/src/js/enketo/widgets/*.js'],
     rules: {
       'no-inner-declarations': 'off',
@@ -517,12 +527,6 @@ module.exports = defineConfig([
     },
   },
   {
-    files: ['scripts/deploy/**/*'],
-    languageOptions: {
-      sourceType: 'module',
-    }
-  },
-  {
     files: ['shared-libs/cht-datasource/**/*.ts'],
     extends: compat.extends(
       'plugin:@typescript-eslint/strict-type-checked',
@@ -535,7 +539,7 @@ module.exports = defineConfig([
 
       parserOptions: {
         project: 'tsconfig.json',
-        tsconfigRootDir: 'shared-libs/cht-datasource/'
+        tsconfigRootDir: Path.join(__dirname, 'shared-libs/cht-datasource')
       },
     },
     plugins: {

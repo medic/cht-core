@@ -12,7 +12,6 @@ const SUITES = {
     './privacy-policy/**/*.wdio-spec.js',
   ],
   workflows: [
-    './analytics/**/*.wdio-spec.js',
     './contacts/**/*.wdio-spec.js',
     './reports/**/*.wdio-spec.js',
     './targets/**/*.wdio-spec.js',

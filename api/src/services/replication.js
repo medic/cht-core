@@ -16,7 +16,7 @@ const getContext = async (userCtx) => {
   const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTasks);
   const unpurgedWarnIds = _.intersection(unpurgedIds, warnIds);
 
-  await replicationLimitLog.put(userCtx.name, unpurgedIds.length);
+  await replicationLimitLog.put(userCtx.name, unpurgedIds.length, allowedIds.length);
 
   return {
     docIds: unpurgedIds,

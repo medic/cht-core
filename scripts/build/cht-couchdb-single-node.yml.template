@@ -12,6 +12,21 @@ services:
       - "SVC_NAME=${SVC_NAME:-couchdb}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
     restart: always
+    depends_on:
+      - nouveau
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      cht-net:
+
+  nouveau:
+    image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
+    volumes:
+      - ${COUCHDB_DATA:-./srv}/nouveau:/data/nouveau
+    restart: always
     logging:
       driver: "local"
       options:

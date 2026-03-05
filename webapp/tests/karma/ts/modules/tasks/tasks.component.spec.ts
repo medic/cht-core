@@ -18,7 +18,10 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { UserContactService } from '@mm-services/user-contact.service';
+import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
+import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
+import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -27,7 +30,6 @@ describe('TasksComponent', () => {
   let performanceService;
   let stopPerformanceTrackStub;
   let contactTypesService;
-  let userContactService;
   let clock;
   let store;
   let lineageModelGeneratorService;
@@ -48,9 +50,6 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
-    userContactService = {
-      getUserLineageToRemove: sinon.stub(),
-    };
 
     TestBed.configureTestingModule({
       imports: [
@@ -58,6 +57,7 @@ describe('TasksComponent', () => {
         RouterTestingModule,
         MatIconModule,
         TasksComponent,
+        TasksSidebarFilterComponent,
         NavigationComponent,
         ToolBarComponent,
       ],
@@ -68,8 +68,12 @@ describe('TasksComponent', () => {
         { provide: PerformanceService, useValue: performanceService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
-        { provide: UserContactService, useValue: userContactService },
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
+        // Needed because of facility filter
+        { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves([]) } },
+        // Needed because of Tasks Sidebar Filter
+        { provide: SessionService, useValue: { isOnlineOnly: sinon.stub().returns(false) } },
+        { provide: DbService, useValue: { get: sinon.stub().resolves() } },
       ],
     });
 
@@ -92,7 +96,7 @@ describe('TasksComponent', () => {
   it('should ngOnDestroy should unsubscribe and clear state', async () => {
     await getComponent();
 
-    const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
+    const clearTaskList = sinon.stub(TasksActions.prototype, 'clearTaskList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
     const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
@@ -100,8 +104,7 @@ describe('TasksComponent', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-    expect(setTasksList.callCount).to.equal(1);
-    expect(setTasksList.args[0]).to.deep.equal([[]]);
+    expect(clearTaskList.callCount).to.equal(1);
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
@@ -158,8 +161,28 @@ describe('TasksComponent', () => {
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers({ now: now.valueOf(), toFake: ['Date']});
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
+      {
+        _id: '1',
+        emission: {
+          _id: 'e1',
+          dueDate: futureDate.format('YYYY-MM-DD'),
+          owner: 'a',
+          overdue: false,
+          date: new Date(futureDate.valueOf())
+        },
+        owner: 'a'
+      },
+      {
+        _id: '2',
+        emission: {
+          _id: 'e2',
+          dueDate: pastDate.format('YYYY-MM-DD'),
+          owner: 'b',
+          overdue: true,
+          date: new Date(pastDate.valueOf()),
+        },
+        owner: 'b'
+      },
     ];
     const expectedTasks = [
       {
@@ -168,6 +191,8 @@ describe('TasksComponent', () => {
         overdue: false,
         date: new Date(futureDate.valueOf()),
         owner: 'a',
+        lineage: [],
+        lineageIds: ['a'],
       },
       {
         _id: 'e2',
@@ -175,6 +200,8 @@ describe('TasksComponent', () => {
         overdue: true,
         date: new Date(pastDate.valueOf()),
         owner: 'b',
+        lineage: [],
+        lineageIds: ['b'],
       },
     ];
 
@@ -316,17 +343,28 @@ describe('TasksComponent', () => {
       },
     ];
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
-      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+      {
+        _id: '1',
+        emission: { _id: 'e1', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'a' },
+        forId: 'a',
+        owner: 'a',
+      },
+      {
+        _id: '2',
+        emission: { _id: 'e2', dueDate: '2020-10-20', date: moment('2020-10-20').toDate(), overdue: true, owner: 'b' },
+        forId: 'b',
+        owner: 'b'
+      },
     ];
 
-    it('should not remove the lineage when user lineage level is undefined', async () => {
+    it('should set lineage data on tasks', async () => {
       const expectedTasks = [
         {
           _id: 'e1',
           date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          lineageIds: ['a'],
           overdue: true,
           owner: 'a',
         },
@@ -335,11 +373,11 @@ describe('TasksComponent', () => {
           date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          lineageIds: ['b'],
           overdue: true,
           owner: 'b',
         },
       ];
-      userContactService.getUserLineageToRemove.resolves(undefined);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
 
@@ -348,39 +386,6 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(await component.userLineageLevel).to.be.undefined;
-      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
-    });
-
-    it('should remove lineage when user lineage level is defined', async () => {
-      const expectedTasks = [
-        {
-          _id: 'e1',
-          date: moment('2020-10-20').toDate(),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          overdue: true,
-          owner: 'a',
-        },
-        {
-          _id: 'e2',
-          date: moment('2020-10-20').toDate(),
-          dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
-          overdue: true,
-          owner: 'b',
-        },
-      ];
-      userContactService.getUserLineageToRemove.resolves('CHW Bettys Area');
-      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
-
-      await new Promise(resolve => {
-        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
-        getComponent();
-      });
-
-      expect(await component.userLineageLevel).to.equal('CHW Bettys Area');
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
   });

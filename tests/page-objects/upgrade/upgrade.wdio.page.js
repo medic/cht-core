@@ -10,7 +10,7 @@ const getInstallButtonSelector = (branch, tag) => {
     const match = tag.includes('beta') ? '*=' : '=';
     return `span${match}${tag}`;
   }
-  return `span*=${utils.escapeBranchName(branch)} (`;
+  return `span*=${utils.escapeBranchName(branch)}`;
 };
 
 const getInstallButton = async (branch, tag) => {

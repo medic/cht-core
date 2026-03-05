@@ -1,5 +1,6 @@
 import { Nullable } from '../../libs/core';
 import { InvalidArgumentError } from '../../libs/error';
+import { FreetextQualifier } from '../../qualifier';
 
 /** @internal */
 export const validateCursor = (cursor: Nullable<string>): number => {
@@ -11,8 +12,9 @@ export const validateCursor = (cursor: Nullable<string>): number => {
 };
 
 /** @internal */
-export const normalizeFreetext = (
-  freetext: string,
-): string => {
-  return freetext.trim().toLowerCase();
+export const normalizeFreetextQualifier = <T extends FreetextQualifier> (qualifier: T): T => {
+  return {
+    ...qualifier,
+    freetext: qualifier.freetext.trim().toLowerCase()
+  };
 };

@@ -1,7 +1,10 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { provideMockStore } from '@ngrx/store/testing';
+import { Store } from '@ngrx/store';
 import sinon from 'sinon';
 import { assert, expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { DOC_IDS } from '@medic/constants';
 
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -18,6 +21,8 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { RulesEngineCoreFactoryService, RulesEngineService } from '@mm-services/rules-engine.service';
 import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { Target } from '@medic/cht-datasource';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -45,9 +50,10 @@ describe('RulesEngineService', () => {
   let fetchTargetsResult;
   let refreshEmissionsFor;
   let refreshEmissionsForRecursive;
+  let getTarget;
 
   const settingsDoc = {
-    _id: 'settings',
+    _id: DOC_IDS.SETTINGS,
     tasks: {
       rules: 'rules',
       schedules: ['schedules'],
@@ -75,6 +81,7 @@ describe('RulesEngineService', () => {
       other: true,
       dueDate: '2023-10-24',
     },
+    stateHistory: []
   };
   const sampleTarget =  {
     id: 'pregnancy-registrations-this-month',
@@ -125,10 +132,14 @@ describe('RulesEngineService', () => {
       pipesMap: new Map(),
       getPipeNameVsIsPureMap: PipesService.prototype.getPipeNameVsIsPureMap
     };
-    chtDatasourceService = { get: sinon.stub().returns(chtScriptApi) };
+    getTarget = sinon.stub();
+    chtDatasourceService = {
+      get: sinon.stub().returns(chtScriptApi),
+      bind: sinon.stub().returnsArg(0)
+    };
+    chtDatasourceService.bind.withArgs(Target.v1.get).returns(getTarget);
     stopPerformanceTrackStub = sinon.stub();
     performanceService = { track: sinon.stub().returns({ stop: stopPerformanceTrackStub }) };
-
     fetchTasksResult = () => Promise.resolve();
     fetchTasksFor = sinon.stub();
     fetchTasksForRecursive = sinon.stub();
@@ -142,7 +153,7 @@ describe('RulesEngineService', () => {
     });
     fetchTasksFor.returns({ on: fetchTasksForRecursive });
 
-    fetchTargetsResult = () => Promise.resolve();
+    fetchTargetsResult = sinon.stub().resolves([]);
     fetchTargets = sinon.stub();
     fetchTargets.events = {};
     fetchTargetsRecursive = sinon.stub();
@@ -177,6 +188,7 @@ describe('RulesEngineService', () => {
       getDirtyContacts: sinon.stub().returns([]),
       fetchTasksBreakdown: sinon.stub(),
       refreshEmissionsFor: refreshEmissionsFor,
+      showTask: sinon.stub().callsFake(doc => doc?.emission?.state === 'Ready'),
     };
     const rulesEngineCoreFactory= { get: () => rulesEngineCoreStubs };
 
@@ -185,6 +197,7 @@ describe('RulesEngineService', () => {
         TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
       ],
       providers: [
+        provideMockStore(),
         ParseProvider,
         ContactTypesService,
         { provide: AuthService, useValue: authService },
@@ -294,7 +307,7 @@ describe('RulesEngineService', () => {
       const noMatchingContext = { id: 'no-match', context: '!!user.dne' };
       const expectedParams = [allContexts.id, emptyContext.id, matchingContext.id];
       const settingsDoc = {
-        _id: 'settings',
+        _id: DOC_IDS.SETTINGS,
         tasks: {
           targets: {
             items: [ allContexts, emptyContext, matchingContext, noMatchingContext ]
@@ -321,14 +334,14 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
     });
 
-    it('tasks.isDeclarative flag (set via cht-conf) disables nools', async () => {
+    it('tasks.isDeclarative flag throws an error when false', async () => {
       service = TestBed.inject(RulesEngineService);
 
       const settingsDoc = {
-        _id: 'settings',
+        _id: DOC_IDS.SETTINGS,
         tasks: {
           rules: 'rules',
-          isDeclarative: true,
+          isDeclarative: false,
         },
       };
       settingsService.get.resolves(settingsDoc);
@@ -337,7 +350,7 @@ describe('RulesEngineService', () => {
 
       expect(result).to.be.true;
       expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
-      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ rulesAreDeclarative: true });
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ rulesAreDeclarative: false });
     });
   });
 
@@ -393,7 +406,7 @@ describe('RulesEngineService', () => {
     });
 
     const cachebustScenarios = [
-      { _id: 'settings', settings: settingsDoc },
+      { _id: DOC_IDS.SETTINGS, settings: settingsDoc },
       userContactDoc,
       userContactGrandparent,
     ];
@@ -781,15 +794,15 @@ describe('RulesEngineService', () => {
     service = TestBed.inject(RulesEngineService);
 
     await service.isEnabled();
-    tick(500 * 1000);
+    tick(1000);
 
-    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(1);
-    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.refreshEmissionsFor.callCount).to.eq(0);
+    expect(rulesEngineCoreStubs.fetchTasksFor.callCount).to.eq(1);
     expect(rulesEngineCoreStubs.fetchTargets.callCount).to.eq(0);
     expect(telemetryService.record.callCount).to.equal(1);
     expect(stopPerformanceTrackStub.calledTwice).to.be.true;
     expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
-    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:background-refresh' });
+    expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks:all-contacts' });
   }));
 
   it('should cancel all ensure freshness threads', async () => {
@@ -956,7 +969,7 @@ describe('RulesEngineService', () => {
 
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([undefined]);
-      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:all-contacts' });
     });
@@ -984,10 +997,410 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.callCount).to.equal(1);
       expect(rulesEngineCoreStubs.fetchTasksBreakdown.args[0]).to.deep.equal([['c1', 'c2', 'c3']]);
 
-
-      expect(stopPerformanceTrackStub.calledTwice).to.be.true;
+      expect(stopPerformanceTrackStub.calledThrice).to.be.true;
       expect(stopPerformanceTrackStub.args[0][0]).to.deep.equal({ name: 'rules-engine:initialize' });
       expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'rules-engine:tasks-breakdown:some-contacts' });
+    });
+  });
+
+  describe('monitorTaskChanges', () => {
+    it('should subscribe to task document changes', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+
+      // Trigger the background refresh
+      tick(1000);
+
+      await nextTick();
+
+      // Verify that task-doc-update subscription was created
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+    }));
+
+    it('should update overdue tasks when task document changes', fakeAsync(async () => {
+      const store = TestBed.inject(Store);
+      const dispatchSpy = sinon.spy(store, 'dispatch');
+
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription callback
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const callback = taskDocSubscription[0].callback;
+
+      // Simulate a task document change
+      const taskChange = {
+        id: 'task-1',
+        doc: {
+          _id: 'task-1',
+          type: 'task',
+          emission: {
+            _id: 'emission-1',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      callback(taskChange);
+
+      // Verify that setOverdueTasks was dispatched
+      const setOverdueTasksCalls = dispatchSpy.getCalls().filter(
+        call => (call.args[0] as any).type === 'SET_OVERDUE_TASKS'
+      );
+      expect(setOverdueTasksCalls.length).to.be.greaterThan(0);
+      expect((setOverdueTasksCalls[0].args[0] as any).payload.tasks).to.deep.equal([taskChange.doc]);
+    }));
+
+    it('should not update overdue tasks for non-task documents', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const filter = taskDocSubscription[0].filter;
+
+      // Simulate a non-task document change
+      const reportChange = {
+        id: 'report-1',
+        doc: {
+          _id: 'report-1',
+          type: 'data_record',
+          form: 'some-form',
+        },
+      };
+
+      // Verify that the filter rejects non-task documents
+      expect(filter(reportChange)).to.be.false;
+    }));
+
+    it('should not update overdue tasks for tasks that are not in Ready state', fakeAsync(async () => {
+      service = TestBed.inject(RulesEngineService);
+      await service.isEnabled();
+
+      // Trigger the fetchOverdueTasksForAllContacts which calls monitorTaskChanges
+      sinon.stub(service, 'fetchTaskDocsForAllContacts').resolves([sampleTaskDoc]);
+      tick(1000);
+      await nextTick();
+
+      // Get the task-doc-update subscription
+      const taskDocSubscription = changesService.subscribe.args.find(
+        args => args[0].key === 'task-doc-update'
+      );
+      expect(taskDocSubscription).to.exist;
+
+      const filter = taskDocSubscription[0].filter;
+
+      // Simulate a task document that is not in Ready state (e.g., Cancelled)
+      const cancelledTaskChange = {
+        id: 'task-cancelled',
+        doc: {
+          _id: 'task-cancelled',
+          type: 'task',
+          state: 'Cancelled',
+          emission: {
+            _id: 'emission-cancelled',
+            state: 'Cancelled',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      // Verify that the filter rejects tasks not in Ready state
+      expect(filter(cancelledTaskChange)).to.be.false;
+
+      // Simulate a task document that is in Ready state
+      const readyTaskChange = {
+        id: 'task-ready',
+        doc: {
+          _id: 'task-ready',
+          type: 'task',
+          state: 'Ready',
+          emission: {
+            _id: 'emission-ready',
+            state: 'Ready',
+            dueDate: '2023-10-24',
+          },
+        },
+      };
+
+      // Verify that the filter accepts tasks in Ready state
+      expect(filter(readyTaskChange)).to.be.true;
+    }));
+  });
+
+  describe('fetchTargets with ReportingPeriod', () => {
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(new Date('2025-02-15').getTime());
+    });
+
+    afterEach(() => {
+      clock && clock.restore();
+    });
+
+    it('should fetch current month targets when ReportingPeriod.CURRENT is passed', async () => {
+      fetchTargetsResult = sinon.stub().resolves([sampleTarget]);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.CURRENT);
+
+      expect(actual).to.deep.equal([sampleTarget]);
+      expect(rulesEngineCoreStubs.fetchTargets.calledOnce).to.be.true;
+      expect(getTarget.called).to.be.false;
+    });
+
+    it('should fetch previous month targets when ReportingPeriod.PREVIOUS is passed', async () => {
+      const targetDoc = {
+        _id: 'target~2025-01~user~org.couchdb.user:fred',
+        type: 'target',
+        user: 'org.couchdb.user:fred',
+        owner: 'user',
+        reporting_period: '2025-01',
+        updated_date: Date.now(),
+        targets: [
+          {
+            id: 'target',
+            value: {
+              pass: 5,
+              total: 10
+            }
+          }
+        ]
+      };
+      getTarget.resolves(targetDoc);
+      service = TestBed.inject(RulesEngineService);
+
+      settingsService.get.resolves({
+        _id: 'settings',
+        tasks: {
+          targets: {
+            items: [
+              { id: 'target', type: 'count' },
+            ]
+          }
+        }
+      });
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
+
+      const qualifier = getTarget.args[0][0];
+      expect(qualifier).to.have.property('reportingPeriod', '2025-01');
+      expect(qualifier).to.have.property('contactId', 'user');
+      expect(qualifier).to.have.property('username', 'fred');
+
+      expect(actual.length).to.eq(1);
+      expect(actual[0]).to.include({
+        id: 'target',
+        visible: true,
+        reportingMonth: 'January'
+      });
+      expect(actual[0].value).to.deep.eq({ pass: 5, total: 10 });
+    });
+
+    it('should return empty targets when username is missing', async () => {
+      sessionService.userCtx = () => ({ name: null });
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.called).to.be.false;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should return empty targets when contact is missing', async () => {
+      userContactService.get.resolves(null);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.called).to.be.false;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should return empty array when target is not found', async () => {
+      getTarget.resolves(null);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should handle errors and return empty array', async () => {
+      getTarget.rejects(new Error('Database error'));
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      expect(actual).to.deep.eq([]);
+    });
+
+    it('should calculate correct reporting period for previous month', async () => {
+      const targetDoc = {
+        _id: 'target~2025-01~user~org.couchdb.user:fred',
+        type: 'target',
+        user: 'org.couchdb.user:fred',
+        owner: 'user',
+        reporting_period: '2025-01',
+        updated_date: Date.now(),
+        targets: []
+      };
+      getTarget.resolves(targetDoc);
+      service = TestBed.inject(RulesEngineService);
+
+      await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      expect(getTarget.calledOnce).to.be.true;
+      const qualifier = getTarget.args[0][0];
+      // Current interval ends in Feb 2025, so previous month should be 2025-01
+      expect(qualifier.reportingPeriod).to.eq('2025-01');
+    });
+
+    it('should process multiple targets', async () => {
+      const targetDoc = {
+        _id: 'target~2025-01~user~org.couchdb.user:fred',
+        type: 'target',
+        user: 'org.couchdb.user:fred',
+        owner: 'user',
+        reporting_period: '2025-01',
+        updated_date: Date.now(),
+        targets: [
+          {
+            id: 'target',
+            value: {
+              pass: 3,
+              total: 7
+            }
+          }
+        ]
+      };
+      const settingsWithMultipleTargets = {
+        _id: 'settings',
+        tasks: {
+          targets: {
+            items: [
+              { id: 'target', type: 'count' },
+              { id: 'another-target', type: 'percent' }
+            ]
+          }
+        }
+      };
+      settingsService.get.resolves(settingsWithMultipleTargets);
+      getTarget.resolves(targetDoc);
+      service = TestBed.inject(RulesEngineService);
+
+      const actual = await service.fetchTargets(ReportingPeriod.PREVIOUS);
+
+      // Only returns targets that exist in the interval doc
+      expect(actual.length).to.eq(1);
+      expect(actual[0]).to.include({ id: 'target' });
+      expect(actual[0].value).to.deep.eq({ pass: 3, total: 7 });
+    });
+  });
+
+  describe('getTargetIntervalTag', () => {
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(new Date('2025-02-15').getTime());
+    });
+
+    it('should return current interval tag in YYYY-MM format for CURRENT period', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.CURRENT);
+
+      expect(tag).to.equal('2025-02');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return previous interval tag for PREVIOUS period with default monthsAgo', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(tag).to.equal('2025-01');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should support custom monthsAgo parameter', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS, 2);
+
+      expect(tag).to.equal('2024-12');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should handle year boundary when going to previous year', () => {
+      clock.restore();
+      clock = sinon.useFakeTimers(new Date('2025-01-10').getTime());
+      service = TestBed.inject(RulesEngineService);
+
+      const tag = service.getTargetIntervalTag(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(tag).to.equal('2024-12');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+  });
+
+  describe('getReportingMonth', () => {
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(new Date('2025-02-15').getTime());
+    });
+
+    it('should return full month name for CURRENT period', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.CURRENT);
+
+      expect(month).to.equal('February');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return full month name for PREVIOUS period', () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(month).to.equal('January');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
+    });
+
+    it('should return translated fallback when an error occurs', () => {
+      service = TestBed.inject(RulesEngineService);
+      uhcSettingsService.getMonthStartDate.throws(new Error('test error'));
+
+      const month = service.getReportingMonth(settingsDoc, ReportingPeriod.PREVIOUS);
+
+      expect(month).to.equal('targets.last_month.subtitle');
+      expect(uhcSettingsService.getMonthStartDate.calledOnceWithExactly(settingsDoc)).to.be.true;
     });
   });
 });

@@ -5,6 +5,9 @@ const chai = require('chai');
 const mutingUtils = require('../../../src/lib/muting_utils');
 const utils = require('../../../src/lib/utils');
 const transitionsIndex = require('../../../src/transitions/index');
+const dataContext = require('../../../src/data-context');
+const { Qualifier, Report } = require('@medic/cht-datasource');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Muting transition', () => {
   let transitionUtils;
@@ -120,7 +123,12 @@ describe('Muting transition', () => {
 
     it('should return true for new contacts under muted parents', () => {
       config.getAll.returns({
-        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]
+        contact_types: [
+          { id: 'person' },
+          { id: 'clinic' },
+          { id: CONTACT_TYPES.HEALTH_CENTER },
+          { id: 'district_hospital' }
+        ]
       });
       mutingUtils.isMutedInLineage.returns(true);
       chai.expect(transition.filter({ doc: { muted: false, type: 'person' }, info: { initial_replication_date: 1 } }))
@@ -132,7 +140,7 @@ describe('Muting transition', () => {
         info: {initial_replication_date: 3 }
       })).to.equal(true);
       chai.expect(transition.filter({
-        doc: { muted: false, type: 'health_center' },
+        doc: { muted: false, type: CONTACT_TYPES.HEALTH_CENTER },
         info: { initial_replication_date: 4 }
       })).to.equal(true);
       chai.expect(transition.filter({
@@ -145,14 +153,19 @@ describe('Muting transition', () => {
         [{ muted: false, type: 'person' }, 1],
         [{ muted: false, type: 'clinic' }, 2],
         [{ muted: false, type: 'district_hospital' }, 3],
-        [{ muted: false, type: 'health_center' }, 4],
+        [{ muted: false, type: CONTACT_TYPES.HEALTH_CENTER }, 4],
         [{ muted: false, type: 'clinic', contact_type: 'm' }, 7]
       ]);
     });
 
     it('should return true for contacts muted client_side', () => {
       config.getAll.returns({
-        contact_types: [{ id: 'person' }, { id: 'clinic' }, { id: 'health_center' }, { id: 'district_hospital' } ]
+        contact_types: [
+          { id: 'person' },
+          { id: 'clinic' },
+          { id: CONTACT_TYPES.HEALTH_CENTER },
+          { id: 'district_hospital' }
+        ]
       });
       const contactMutedByClient = {
         type: 'person',
@@ -475,6 +488,15 @@ describe('Muting transition', () => {
         ]
       };
 
+      let getReportWithLineage;
+
+      beforeEach(() => {
+        getReportWithLineage = sinon.stub();
+        dataContext.init({
+          bind: sinon.stub().returns(getReportWithLineage),
+        });
+      });
+
       it('should load the contact', () => {
         const contact = { _id: 'contact', patient_id: 'patient', type: 'data_record', };
         const doc = { _id: 'report', type: 'data_record', patient_id: 'patient', patient: contact };
@@ -716,13 +738,13 @@ describe('Muting transition', () => {
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
         sinon.stub(utils, 'isValidSubmission').returns(true);
-        sinon.stub(mutingUtils.lineage, 'fetchHydratedDocs')
-          .withArgs(['a']).resolves([{ _id: 'a', some: 'data', form: 'mute', type: 'data_record' }])
-          .withArgs(['b']).resolves([]) // not found
-          .withArgs(['c']).resolves([{ _id: 'c', irrelevant: true }])
-          .withArgs(['d']).resolves([{ _id: 'd', form: 'not-mute', type: 'data_record' }])
-          .withArgs(['e']).resolves([{ _id: 'e', form: 'unmute', type: 'data_record' }])
-          .withArgs(['f']).resolves([]); // not found
+        getReportWithLineage
+          .withArgs(Qualifier.byUuid('a')).resolves({ _id: 'a', some: 'data', form: 'mute', type: 'data_record' })
+          .withArgs(Qualifier.byUuid('b')).resolves(null) // not found
+          .withArgs(Qualifier.byUuid('c')).resolves({ _id: 'c', irrelevant: true })
+          .withArgs(Qualifier.byUuid('d')).resolves({ _id: 'd', form: 'not-mute', type: 'data_record' })
+          .withArgs(Qualifier.byUuid('e')).resolves({ _id: 'e', form: 'unmute', type: 'data_record' })
+          .withArgs(Qualifier.byUuid('f')).resolves(null); // not found
 
         sinon.stub(mutingUtils.infodoc, 'get')
           .callsFake(change => Promise.resolve({ doc_id: change.id }));
@@ -733,10 +755,15 @@ describe('Muting transition', () => {
           chai.expect(result).to.equal(true);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
           chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ doc.patient, true, doc._id, true ]);
-          chai.expect(mutingUtils.lineage.fetchHydratedDocs.callCount).to.equal(6);
+          chai.expect(dataContext.bind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
+          chai.expect(getReportWithLineage.callCount).to.equal(6);
           chai.expect(
-            mutingUtils.lineage.fetchHydratedDocs.args
-          ).to.deep.equal([[['a']], [['b']], [['c']], [['d']], [['e']], [['f']]]);
+            getReportWithLineage.args
+          ).to.deep.equal(
+            ['a', 'b', 'c', 'd', 'e', 'f']
+              .map(Qualifier.byUuid)
+              .map(q => [q])
+          );
           chai.expect(mutingUtils.infodoc.get.callCount).to.equal(2);
           chai.expect(mutingUtils.infodoc.get.args).to.deep.equal([
             [{ id: 'a', doc: { _id: 'a', some: 'data', form: 'mute', type: 'data_record' } }],
@@ -804,7 +831,6 @@ describe('Muting transition', () => {
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
         sinon.stub(utils, 'isValidSubmission').returns(true);
-        sinon.stub(mutingUtils.lineage, 'fetchHydratedDocs');
 
         sinon.stub(mutingUtils.infodoc, 'get');
         sinon.stub(transitionsIndex, 'applyTransition').callsArgWith(1, null, true);
@@ -814,7 +840,8 @@ describe('Muting transition', () => {
           chai.expect(result).to.equal(true);
           chai.expect(mutingUtils.updateMuteState.callCount).to.equal(1);
           chai.expect(mutingUtils.updateMuteState.args[0]).to.deep.equal([ doc.patient, true, doc._id, false ]);
-          chai.expect(mutingUtils.lineage.fetchHydratedDocs.callCount).to.equal(0);
+          chai.expect(dataContext.bind.notCalled).to.be.true;
+          chai.expect(getReportWithLineage.callCount).to.equal(0);
           chai.expect(mutingUtils.infodoc.get.callCount).to.equal(0);
 
           chai.expect(transitionsIndex.applyTransition.callCount).to.equal(0);
@@ -839,7 +866,7 @@ describe('Muting transition', () => {
         mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
 
         sinon.stub(utils, 'isValidSubmission').returns(true);
-        sinon.stub(mutingUtils.lineage, 'fetchHydratedDocs').rejects({ some: 'error' });
+        getReportWithLineage.rejects({ some: 'error' });
         sinon.stub(mutingUtils.infodoc, 'bulkGet');
         sinon.stub(transitionsIndex, 'applyTransition');
         sinon.stub(transitionsIndex, 'finalize');
@@ -849,7 +876,8 @@ describe('Muting transition', () => {
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
             chai.expect(err).to.deep.equal({ some: 'error' });
-            chai.expect(mutingUtils.lineage.fetchHydratedDocs.callCount).to.equal(1);
+            chai.expect(dataContext.bind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
+            chai.expect(getReportWithLineage.calledOnceWithExactly(Qualifier.byUuid('a'))).to.be.true;
             chai.expect(transitionsIndex.applyTransition.callCount).to.equal(0);
             chai.expect(transitionsIndex.finalize.callCount).to.equal(0);
           });
@@ -871,10 +899,10 @@ describe('Muting transition', () => {
         config.get.returns(mutingConfig);
         mutingUtils.updateMuteState.resolves(['a', 'b', 'c', 'd', 'e', 'f']);
         sinon.stub(utils, 'isValidSubmission').returns(true);
-        sinon.stub(mutingUtils.lineage, 'fetchHydratedDocs')
-          .withArgs(['a']).resolves([{ _id: 'a', type: 'data_record', form: 'mute' }])
-          .withArgs(['b']).resolves([{ _id: 'b', type: 'data_record', form: 'mute' }])
-          .withArgs(['c']).resolves([{ _id: 'c', type: 'data_record', form: 'mute' }]);
+        getReportWithLineage
+          .withArgs(Qualifier.byUuid('a')).resolves({ _id: 'a', type: 'data_record', form: 'mute' })
+          .withArgs(Qualifier.byUuid('b')).resolves({ _id: 'b', type: 'data_record', form: 'mute' })
+          .withArgs(Qualifier.byUuid('c')).resolves({ _id: 'c', type: 'data_record', form: 'mute' });
         sinon.stub(mutingUtils.infodoc, 'get').callsFake(change => Promise.resolve({ doc_id: change.id }));
 
         sinon.stub(transitionsIndex, 'applyTransition').callsArgWith(1, null, true);
@@ -886,7 +914,11 @@ describe('Muting transition', () => {
           .then(() => chai.assert.fail('should have thrown'))
           .catch(err => {
             chai.expect(err).to.deep.equal({ some: 'error' });
-            chai.expect(mutingUtils.lineage.fetchHydratedDocs.callCount).to.equal(2);
+            chai.expect(dataContext.bind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
+            chai.expect(getReportWithLineage.args).to.deep.equal([
+              [Qualifier.byUuid('a')],
+              [Qualifier.byUuid('b')]
+            ]);
             chai.expect(mutingUtils.infodoc.get.callCount).to.equal(2);
             chai.expect(transitionsIndex.applyTransition.callCount).to.equal(2);
             chai.expect(transitionsIndex.finalize.callCount).to.equal(2);

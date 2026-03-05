@@ -1,21 +1,64 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
+import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
 import {
-  fetchAndFilterUuids,
-  getDocById,
-  queryDocUuidsByKey,
-  queryDocUuidsByRange
-} from './libs/doc';
-import { ContactTypeQualifier, FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+  ContactTypeQualifier,
+  FreetextQualifier,
+  isContactTypeQualifier,
+  isFreetextQualifier,
+  isKeyedFreetextQualifier,
+  UuidQualifier
+} from '../qualifier';
 import * as Contact from '../contact';
-import { Nullable, Page } from '../libs/core';
+import { DataObject, Nullable, Page } from '../libs/core';
 import { Doc } from '../libs/doc';
 import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { InvalidArgumentError } from '../libs/error';
-import { normalizeFreetext, validateCursor } from './libs/core';
+import { normalizeFreetextQualifier, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
-import { isContactType, isContactTypeAndFreetextType } from '../libs/parameter-validators';
 import { fetchHydratedDoc } from './libs/lineage';
+import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
+
+const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQualifier) => {
+  const contactTypesIds = contactTypeUtils.getContactTypeIds(settings);
+  if (!contactTypesIds.includes(qualifier.contactType)) {
+    throw new InvalidArgumentError(`Invalid contact type [${qualifier.contactType}].`);
+  }
+};
+
+const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/contacts_by_freetext');
+  const queryViewTypeFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
+  const queryViewTypeFreetextByRange = queryDocIdsByRange(
+    medicDb, 'medic-offline-freetext/contacts_by_type_freetext'
+  );
+
+  return (qualifier: FreetextQualifier & Partial<ContactTypeQualifier>) => {
+    if (isContactTypeQualifier(qualifier)) {
+      if (isKeyedFreetextQualifier(qualifier)) {
+        return (limit: number, skip: number) => queryViewTypeFreetextByKey(
+          [qualifier.contactType, qualifier.freetext], limit, skip
+        );
+      }
+
+      return (limit: number, skip: number) => queryViewTypeFreetextByRange(
+        [qualifier.contactType, qualifier.freetext],
+        [qualifier.contactType, qualifier.freetext + END_OF_ALPHABET_MARKER],
+        limit,
+        skip
+      );
+    }
+
+    if (isKeyedFreetextQualifier(qualifier)) {
+      return (limit: number, skip: number) => queryViewFreetextByKey([qualifier.freetext], limit, skip);
+    }
+
+    return (limit: number, skip: number) => queryViewFreetextByRange(
+      [qualifier.freetext], [qualifier.freetext + END_OF_ALPHABET_MARKER], limit, skip
+    );
+  };
+};
 
 /** @internal */
 export namespace v1 {
@@ -56,93 +99,44 @@ export namespace v1 {
       if (!isContact(settings)(contact, identifier.uuid)) {
         return null;
       }
-  
+
       return contact;
     };
   };
 
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
-    // Define query functions
-    const getByTypeExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type_freetext');
-    const getByExactMatchFreetext = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_freetext');
-    const getByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type');
-    const getByTypeStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/contacts_by_type_freetext');
-    const getByStartsWithFreetext = queryDocUuidsByRange(medicDb, 'medic-client/contacts_by_freetext');
-
-    const determineGetDocsFn = (
-      qualifier: ContactTypeQualifier | FreetextQualifier
-    ): ((limit: number, skip: number) => Promise<string[]>) => {
-      if (isContactTypeAndFreetextType(qualifier)) {
-        return getDocsFnForContactTypeAndFreetext(qualifier);
-      }
-
-      if (isContactType(qualifier)) {
-        return getDocsFnForContactType(qualifier);
-      }
-
-      // if the qualifier is not a ContactType then, it's a FreetextType
-      return getDocsFnForFreetextType(qualifier);
-    };
-
-    const getDocsFnForContactTypeAndFreetext = (
-      qualifier: ContactTypeQualifier & FreetextQualifier
-    ): (limit: number, skip: number) => Promise<string[]> => {
-      // this is for an exact match search
-      if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getByTypeExactMatchFreetext(
-          [qualifier.contactType, normalizeFreetext(qualifier.freetext)],
-          limit,
-          skip
-        );
-      }
-
-      // this is for a begins with search
-      return (limit, skip) => getByTypeStartsWithFreetext(
-        [qualifier.contactType, normalizeFreetext(qualifier.freetext)],
-        [qualifier.contactType, normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
-        limit,
-        skip
-      );
-    };
-
-    const getDocsFnForContactType = (
-      qualifier: ContactTypeQualifier
-    ): (limit: number, skip: number) => Promise<string[]> => (
-      limit,
-      skip
-    ) => getByType([qualifier.contactType], limit, skip);
-
-    const getDocsFnForFreetextType = (
-      qualifier: FreetextQualifier
-    ): (limit: number, skip: number) => Promise<string[]> => {
-      if (isKeyedFreetextQualifier(qualifier)) {
-        return (limit, skip) => getByExactMatchFreetext([normalizeFreetext(qualifier.freetext)], limit, skip);
-      }
-      return (limit, skip) => getByStartsWithFreetext(
-        [normalizeFreetext(qualifier.freetext)],
-        [normalizeFreetext(qualifier.freetext) + END_OF_ALPHABET_MARKER],
-        limit,
-        skip
-      );
-    };
+    const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
+    const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
+    const promisedUseNouveau = useNouveauIndexes(medicDb);
 
     return async (
       qualifier: ContactTypeQualifier | FreetextQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
-      if (isContactType(qualifier)) {
-        const contactTypesIds = contactTypeUtils.getContactTypeIds(settings.getAll());
-        if (!contactTypesIds.includes(qualifier.contactType)) {
-          throw new InvalidArgumentError(`Invalid contact type [${qualifier.contactType}].`);
-        }
+      if (isContactTypeQualifier(qualifier)) {
+        assertValidContactType(settings.getAll(), qualifier);
       }
 
-      const skip = validateCursor(cursor);
-      const getDocsFn = determineGetDocsFn(qualifier);
+      if (!isFreetextQualifier(qualifier)) {
+        // Simple contact type query
+        const skip = validateCursor(cursor);
+        const getPageFn = (limit: number, skip: number) => queryViewByType([qualifier.contactType], limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
 
-      return await fetchAndFilterUuids(getDocsFn, limit)(limit, skip);
+      const freetextQualifier = normalizeFreetextQualifier(qualifier);
+      if (await promisedUseNouveau) {
+        // Running server-side. Use Nouveau indexes.
+        return await queryNouveauFreetext(freetextQualifier, cursor, limit);
+      }
+
+      // Use client-side offline freetext views.
+      const skip = validateCursor(cursor);
+      const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
+      return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
 }

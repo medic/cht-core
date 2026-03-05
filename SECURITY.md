@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-Follow [these guidelines](https://docs.communityhealthtoolkit.org/contribute/code/#disclosing-vulnerabilities) to report vulnerabilities.
+Follow [these guidelines](https://docs.communityhealthtoolkit.org/community/contributing/disclosing-vulnerabilities/) to report vulnerabilities.

@@ -7,9 +7,10 @@ const logger = require('@medic/logger');
 const util = require('util');
 const path = require('path');
 const settingsService = require('./services/settings');
+const { DOC_TYPES } = require('@medic/constants');
 
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
-const DOC_TYPE = 'translations';
+const DOC_TYPE = DOC_TYPES.TRANSLATIONS;
 const MESSAGES_DOC_ID_PREFIX = 'messages-';
 
 const parseProperties = util.promisify(properties.parse);
@@ -24,7 +25,8 @@ const LOCAL_NAME_MAP = {
   hi: 'हिन्दी (Hindi)',
   id: 'Bahasa Indonesia (Indonesian)',
   lg: 'Luganda (Ganda)',
-  ar: 'عربي (Arabic)'
+  ar: 'عربي (Arabic)',
+  pt: 'Português (Portuguese)'
 };
 
 const RTL_LANGUAGES =  ['ar'];
@@ -55,7 +57,6 @@ const createDoc = attachment => {
     type: DOC_TYPE,
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
-    enabled: true,
     generic: attachment.generic,
     rtl: RTL_LANGUAGES.includes(attachment.code),
   };
@@ -110,21 +111,16 @@ const getTranslationDocs = async () => {
     });
 };
 
-const getEnabledLocaleCodes = (languages, translationDocs) => {
-  if (
-    languages &&
-    Array.isArray(languages) &&
-    languages.length > 0
-  ) {
-    return languages.filter(language => language.enabled !== false).map(language => language.locale);
-  }
-
-  return translationDocs.filter(doc => doc.enabled).map(doc => doc.code);
-};
-
 const getEnabledLocales = async () => {
-  const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
-  const enabledLocaleCodes = getEnabledLocaleCodes(settings.languages, translationDocs);
+  const settings = await settingsService.get();
+  const translationDocs = await getTranslationDocs();
+
+  const languages = settings.languages || translationDocs.map(doc => ({ locale: doc.code, enabled: true }));
+
+  const enabledLocaleCodes = languages
+    .filter(language => language.enabled !== false)
+    .map(language => language.locale);
+
   return translationDocs.filter(doc => enabledLocaleCodes.includes(doc.code));
 };
 

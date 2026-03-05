@@ -1,6 +1,7 @@
-const COOKIE_NAME = 'userCtx';
-const ONLINE_ROLE = 'mm-online';
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const COOKIE_NAME = 'userCtx';
+const ONLINE_ROLE = constants.USER_ROLES.ONLINE;
 
 (function () {
 

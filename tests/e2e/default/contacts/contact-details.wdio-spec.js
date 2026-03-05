@@ -155,7 +155,7 @@ describe('Contact details page.', () => {
       await chtConfUtils.initializeConfigDir();
       const contactSummaryFile = path.join(__dirname, 'config/contact-summary-error-config.js');
 
-      const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+      const { contactSummary } = await chtConfUtils.compileConfig({ contactSummary: contactSummaryFile });
       await utils.updateSettings({ contact_summary: contactSummary }, { ignoreReload: true });
 
       await utils.saveDocs([...places.values(), patient]);

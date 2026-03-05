@@ -5,9 +5,7 @@ const vm = require('vm');
 
 const MAP_ARG_NAME = 'doc';
 
-module.exports.loadView = (dbName, ddocName, viewName) => {
-  const mapPath = path.join(__dirname, '../../../../../ddocs', dbName, ddocName, 'views', viewName, '/map.js');
-  const mapString = fs.readFileSync(mapPath, 'utf8');
+module.exports.buildViewMapFn = (mapString) => {
   const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
 
   const emitted = [];
@@ -33,6 +31,12 @@ module.exports.loadView = (dbName, ddocName, viewName) => {
   };
 
   return mapFn;
+};
+
+module.exports.loadView = (dbName, ddocName, viewName) => {
+  const mapPath = path.join(__dirname, '../../../../../ddocs', dbName, ddocName, 'views', viewName, '/map.js');
+  const mapString = fs.readFileSync(mapPath, 'utf8');
+  return module.exports.buildViewMapFn(mapString);
 };
 
 module.exports.assertIncludesPair = (array, pair) => {

@@ -29,7 +29,7 @@ describe('Contact summary', () => {
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/contact-summary-reports`));
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config/contact-summary-reports.js');
-    const { contactSummary } = await chtConfUtils.compileNoolsConfig({ contactSummary: contactSummaryFile });
+    const { contactSummary } = await chtConfUtils.compileConfig({ contactSummary: contactSummaryFile });
     await utils.updateSettings({ contact_summary: contactSummary }, true);
 
     await utils.saveDocs([...places.values(), patient, ...reports]);

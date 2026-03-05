@@ -5,10 +5,11 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
 const utils = require('../../../src/lib/utils');
+const { CONTACT_TYPES } = require('@medic/constants');
 const phone = '+34567890123';
 
 let transition;
-let lineageStub;
+let getContactWithLineage;
 
 describe('update clinic', () => {
   beforeEach(() => {
@@ -18,8 +19,11 @@ describe('update clinic', () => {
       getTranslations: sinon.stub().returns({})
     });
     transition = require('../../../src/transitions/update_clinics');
-    lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
     dataContext.init({ bind: sinon.stub() });
+    getContactWithLineage = sinon.stub();
+    dataContext.init({
+      bind: sinon.stub().returns(getContactWithLineage),
+    });
   });
 
   afterEach(() => {
@@ -65,7 +69,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -86,7 +90,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ id: contact._id }] });
-    lineageStub.resolves(contact);
+    getContactWithLineage.resolves(contact);
 
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
@@ -142,7 +146,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -164,7 +168,7 @@ describe('update clinic', () => {
 
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
-    lineageStub.returns(Promise.resolve(contact));
+    getContactWithLineage.returns(Promise.resolve(contact));
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
@@ -189,7 +193,7 @@ describe('update clinic', () => {
       parent: {
         _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
         _rev: '6-723dad2083c951501a1851fb88b6e3b5',
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -269,7 +273,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
-    lineageStub.withArgs('someID').rejects('some error');
+    getContactWithLineage.withArgs('someID').rejects('some error');
 
     return transition.onMatch({ doc: doc }).catch(err => {
       assert.equal(err, 'some error');
@@ -479,7 +483,7 @@ describe('update clinic', () => {
         phone: '+34567890123',
       },
       parent: {
-        type: 'health_center',
+        type: CONTACT_TYPES.HEALTH_CENTER,
         name: 'Health Center',
         contact: {
           name: 'HCCN',
@@ -498,7 +502,7 @@ describe('update clinic', () => {
 
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
-    lineageStub.resolves(contact);
+    getContactWithLineage.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);

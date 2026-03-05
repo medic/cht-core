@@ -46,7 +46,7 @@ export class GetDataRecordsService {
     return await this.getSubjectSummariesService.get(summaries);
   }
 
-  async get(ids: string[], options?) {
+  async get(ids: string[], options: { hydrateContactNames?: boolean, include_docs?: boolean } = {}) {
     if (!ids?.length) {
       return Promise.resolve([]);
     }

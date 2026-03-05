@@ -14,6 +14,7 @@ const logoutButton = () => $('i.fa-power-off');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
+const userList = () => $$('[test-id="user-list"]');
 const usernameErrorMessage = () => $('span.help-block.ng-binding');
 const passwordErrorMessage = () => $('.password-input-group ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
@@ -42,6 +43,36 @@ const openAddUserDialog = async () => {
   await addUserDialog().waitForDisplayed();
   // wait for animations to finish
   await browser.pause(500);
+};
+
+const getUsernameRow = async (username) => {
+  await usernameText().waitForDisplayed();
+  const elems = await userList();
+  const found = await elems.filter(async elem => await elem.$$(usernameTextSelector)[0].getText() === username);
+  return found.length === 0? undefined : found[0];
+};
+
+const openEditUserDialog = async (username) => {
+  const element = await getUsernameRow(username);
+
+  if (!element) {
+    return;
+  }
+
+  element.waitForDisplayed();
+  element.click();
+  await addUserDialog().waitForDisplayed();
+  await browser.pause(500);
+};
+
+const editUserDialogDetails = async () => {
+  return {
+    usernameText: await (await $('[id="edit-username"]')).getValue(),
+    chwIsSelected: await (await $('input[value="chw"]')).isSelected(),
+    place: await (await $('[id="facilitySelect"]')).getValue(),
+    contact: await (await $('[id="contactSelect"]')).getValue(),
+    ssoEmail: await (await $('[id="sso-login"]')).getValue()
+  };
 };
 
 const scrollToBottomOfModal = async () => {
@@ -234,6 +265,8 @@ module.exports = {
   goToAdminUser,
   goToAdminUpgrade,
   openAddUserDialog,
+  openEditUserDialog,
+  editUserDialogDetails,
   inputAddUserFields,
   saveUser,
   logout,

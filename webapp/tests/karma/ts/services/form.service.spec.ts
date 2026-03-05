@@ -40,6 +40,7 @@ import { DeduplicateService } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { Contact, Qualifier, Report } from '@medic/cht-datasource';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -65,7 +66,8 @@ describe('Form service', () => {
 
   let enketoInit;
   let dbGetAttachment;
-  let dbGet;
+  let getReport;
+  let getContact;
   let dbBulkDocs;
   let ContactSummary;
   let Form2Sms;
@@ -108,7 +110,8 @@ describe('Form service', () => {
   beforeEach(() => {
     enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
-    dbGet = sinon.stub();
+    getReport = sinon.stub();
+    getContact = sinon.stub();
     dbBulkDocs = sinon.stub();
     ContactSummary = sinon.stub();
     Form2Sms = sinon.stub();
@@ -159,7 +162,12 @@ describe('Form service', () => {
     zScoreUtil = sinon.stub();
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     chtScriptApi = sinon.stub();
-    chtDatasourceService = { get: sinon.stub().resolves(chtScriptApi) };
+    chtDatasourceService = {
+      get: sinon.stub().resolves(chtScriptApi),
+      bind: sinon.stub()
+    };
+    chtDatasourceService.bind.withArgs(Report.v1.get).returns(getReport);
+    chtDatasourceService.bind.withArgs(Contact.v1.get).returns(getContact);
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     trainingCardsService = {
@@ -187,7 +195,7 @@ describe('Form service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
+            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
           }
         },
         { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -747,6 +755,41 @@ describe('Form service', () => {
         });
     });
 
+    it('creates training when user has no contact', () => {
+      const content = loadXML('sally-lmp');
+      form.getDataStr.returns(content);
+      trainingCardsService.isTrainingCardForm.returns(true);
+      trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
+      form.validate.resolves(true);
+      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+      UserContact.resolves(null);
+
+      return service
+        .save('training:a_new_training', form)
+        .then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.calledOnce).to.be.true;
+          expect(form.getDataStr.calledOnce).to.be.true;
+          expect(dbBulkDocs.calledOnce).to.be.true;
+          expect(UserContact.calledOnce).to.be.true;
+          expect(actual._id.startsWith('training:user-jim:')).to.be.true;
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('training:a_new_training');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact).to.be.null;
+          expect(actual.from).to.be.undefined;
+          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('training:a_new_training');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
+          expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
+        });
+    });
+
     describe('Geolocation recording', () => {
       it('saves geolocation data into a new report', () => {
         form.validate.resolves(true);
@@ -847,7 +890,7 @@ describe('Form service', () => {
           timestamp: 12345,
           recording: originalGeoData
         };
-        dbGet.resolves({
+        getReport.resolves({
           _id: '6',
           _rev: '1-abc',
           form: 'V',
@@ -874,8 +917,7 @@ describe('Form service', () => {
 
           expect(form.validate.callCount).to.equal(1);
           expect(form.getDataStr.callCount).to.equal(1);
-          expect(dbGet.callCount).to.equal(1);
-          expect(dbGet.args[0][0]).to.equal('6');
+          expect(getReport.calledOnceWithExactly(Qualifier.byUuid('6'))).to.be.true;
           expect(dbBulkDocs.callCount).to.equal(1);
           expect(actual._id).to.equal('6');
           expect(actual._rev).to.equal('2-abc');
@@ -936,7 +978,7 @@ describe('Form service', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
-      dbGet.resolves({
+      getReport.resolves({
         _id: '6',
         _rev: '1-abc',
         form: 'V',
@@ -952,8 +994,7 @@ describe('Form service', () => {
 
         expect(form.validate.callCount).to.equal(1);
         expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0][0]).to.equal('6');
+        expect(getReport.calledOnceWithExactly(Qualifier.byUuid('6'))).to.be.true;
         expect(dbBulkDocs.callCount).to.equal(1);
         expect(actual._id).to.equal('6');
         expect(actual._rev).to.equal('2-abc');
@@ -1356,7 +1397,7 @@ describe('Form service', () => {
           {
             provide: DbService,
             useValue: {
-              get: () => ({ getAttachment: dbGetAttachment, get: dbGet, bulkDocs: dbBulkDocs })
+              get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
             }
           },
           { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -1401,14 +1442,13 @@ describe('Form service', () => {
         doc: { _id: 'main1', type: 'main', contact: 'abc' }
       });
       dbBulkDocs.resolves([]);
-      dbGet.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
+      getContact.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
         .saveContact({ docId, type }, { form })
         .then(() => {
-          assert.equal(dbGet.callCount, 1);
-          assert.equal(dbGet.args[0][0], 'abc');
+          assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
 
           assert.equal(dbBulkDocs.callCount, 1);
 
@@ -1435,14 +1475,13 @@ describe('Form service', () => {
         doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
       });
       dbBulkDocs.resolves([]);
-      dbGet.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
+      getContact.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
 
       return service
         .saveContact({ docId, type }, { form })
         .then(() => {
-          assert.equal(dbGet.callCount, 1);
-          assert.equal(dbGet.args[0][0], 'abc');
+          assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
 
           assert.equal(dbBulkDocs.callCount, 1);
 
@@ -1521,8 +1560,8 @@ describe('Form service', () => {
         }
       });
       dbBulkDocs.resolves([]);
-      dbGet
-        .withArgs('main1')
+      getContact
+        .withArgs(Qualifier.byUuid('main1'))
         .resolves({
           _id: 'main1',
           name: 'Richard',
@@ -1531,7 +1570,7 @@ describe('Form service', () => {
           some: 'additional',
           data: 'is present',
         })
-        .withArgs('contact')
+        .withArgs(Qualifier.byUuid('contact'))
         .resolves({ _id: 'contact', name: 'Richard', parent: { _id: 'def' } });
 
       extractLineageService.extract
@@ -1544,9 +1583,9 @@ describe('Form service', () => {
       return service
         .saveContact({ docId, type }, { form })
         .then(() => {
-          assert.equal(dbGet.callCount, 2);
-          assert.deepEqual(dbGet.args[0], ['main1']);
-          assert.deepEqual(dbGet.args[1], ['contact']);
+          assert.equal(getContact.callCount, 2);
+          assert.deepEqual(getContact.args[0], [Qualifier.byUuid('main1')]);
+          assert.deepEqual(getContact.args[1], [Qualifier.byUuid('contact')]);
 
           assert.equal(dbBulkDocs.callCount, 1);
 
@@ -1580,7 +1619,7 @@ describe('Form service', () => {
         doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
       });
       dbBulkDocs.resolves([]);
-      dbGet.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
+      getContact.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
       extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
       transitionsService.applyTransitions.callsFake((docs) => {
         const clonedDocs = cloneDeep(docs); // don't mutate so we can assert
@@ -1593,8 +1632,7 @@ describe('Form service', () => {
       return service
         .saveContact({ docId, type }, { form })
         .then(() => {
-          assert.equal(dbGet.callCount, 1);
-          assert.equal(dbGet.args[0][0], 'abc');
+          assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
 
           assert.equal(transitionsService.applyTransitions.callCount, 1);
           assert.deepEqual(transitionsService.applyTransitions.args[0], [[
@@ -1634,7 +1672,7 @@ describe('Form service', () => {
       const docId = null;
       const type = 'some-contact-type';
 
-      dbGet.resolves({});
+      getContact.resolves({});
       enketoTranslationService.contactRecordToJs.returns({
         doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
       });
@@ -1681,7 +1719,7 @@ describe('Form service', () => {
       const docId = null;
       const type = 'some-contact-type';
 
-      dbGet.resolves({});
+      getContact.resolves({});
       enketoTranslationService.contactRecordToJs.returns({
         doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
       });
@@ -1810,5 +1848,10 @@ describe('WebappEnketoFormContext', () => {
   it('requiresContact should return false when type is contact', () => {
     const ctxReport = new WebappEnketoFormContext('a', 'contact', {}, {});
     expect(ctxReport.requiresContact()).to.eq(false);
+  });
+
+  it('requiresContact should return false for training forms', () => {
+    const ctxTraining = new WebappEnketoFormContext('a', 'training-card', {}, {});
+    expect(ctxTraining.requiresContact()).to.eq(false);
   });
 });

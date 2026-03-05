@@ -1,6 +1,6 @@
 /**
  * @module rules-emitter
- * Handles the lifecycle of a @RulesEmitter and marshales of documents into the emitter by contact
+ * Handles the lifecycle of a @RulesEmitter and marshals of documents into the emitter by contact
  * 
  * @typedef {Object} RulesEmitter Responsible for executing the logic in _rules_ and returning _emissions_
  */
@@ -8,7 +8,6 @@ const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
 const javascriptEmitter = require('./emitter.javascript');
-const noolsEmitter = require('./emitter.nools');
 
 let emitter;
 
@@ -31,7 +30,7 @@ module.exports = {
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
    * @param {Boolean} [settings.rulesAreDeclarative=true] Flag to indicate the content of settings.rules. When true, 
-   * rules is processed as native JavaScript. When false, nools is used.
+   * rules is processed as native JavaScript. When false, an error is thrown.
    * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {Object} settings.contact The logged in user's contact document
    * @returns {Boolean} Success
@@ -64,27 +63,13 @@ module.exports = {
   },
 
   /**
-   * When upgrading to version 3.8, partners are required to make schema changes in their partner code
-   * https://docs.communityhealthtoolkit.org/core/releases/3.8.0/#breaking-changes
-   *
-   * @returns True if the schema changes are in place
-   */
-  isLatestNoolsSchema: () => {
-    if (!emitter) {
-      throw Error('task emitter is not enabled -- cannot determine schema version');
-    }
-
-    return emitter.isLatestNoolsSchema();
-  },
-
-  /**
-   * Runs the partner's rules code for a set of documents and returns all emissions from nools
+   * Runs the partner's rules code for a set of documents and returns all emissions
    *
    * @param {Object[]} contactDocs A set of contact documents
    * @param {Object[]} reportDocs All of the contacts' reports
    * @param {Object[]} taskDocs All of the contacts' task documents (must be linked by requester to a contact)
    *
-   * @returns {Promise<Object>} emissions The raw emissions from nools
+   * @returns {Promise<Object>} emissions The raw emissions
    * @returns {Object[]} emissions.tasks Array of task emissions
    * @returns {Object[]} emissions.targets Array of target emissions
    */
@@ -170,10 +155,10 @@ const marshalDocsByContact = (Contact, contactDocs, reportDocs, taskDocs) => {
 };
 
 const resolveEmitter = (settings = {}) => {
-  const { rulesAreDeclarative, customEmitter } = settings;
+  const { customEmitter } = settings;
   if (customEmitter !== null && typeof customEmitter === 'object') {
     return customEmitter;
   }
   
-  return rulesAreDeclarative ? javascriptEmitter : noolsEmitter;
+  return javascriptEmitter;
 };

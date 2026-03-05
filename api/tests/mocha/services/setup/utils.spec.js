@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 const fs = require('fs');
 const request = require('@medic/couch-request');
+const logger = require('@medic/logger');
 
 const db = require('../../../../src/db');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -23,6 +24,7 @@ const mockDb = (db) => {
   sinon.stub(db, 'compact');
   sinon.stub(db, 'viewCleanup');
 };
+
 
 'use strict';
 
@@ -155,13 +157,17 @@ describe('Setup utils', () => {
   });
 
   describe('cleanup', () => {
-    it('should start db compact and view cleanup for every database', () => {
+    beforeEach(() => {
+      sinon.stub(db, 'nouveauCleanup').returns(new Promise(() => {}));
+      sinon.stub(logger, 'error');
       mockDb(db.medic);
       mockDb(db.sentinel);
       mockDb(db.medicLogs);
       mockDb(db.medicUsersMeta);
       mockDb(db.users);
+    });
 
+    it('should start db compact and view cleanup for every database', () => {
       utils.cleanup();
 
       expect(db.medic.compact.callCount).to.equal(1);
@@ -175,19 +181,52 @@ describe('Setup utils', () => {
       expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
       expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
     });
 
-    it('should catch errors', async () => {
-      mockDb(db.medic);
-      mockDb(db.sentinel);
-      mockDb(db.medicLogs);
-      mockDb(db.medicUsersMeta);
-      mockDb(db.users);
+    it('should catch compact errors and log them', async () => {
+      const error = { some: 'error' };
+      db.sentinel.compact.rejects(error);
 
-      db.sentinel.compact.rejects({ some: 'error' });
       utils.cleanup();
 
       await Promise.resolve();
+      await Promise.resolve();
+
+      expect(db.medic.compact.callCount).to.equal(1);
+      // this should return an error, but the other compacts
+      // and viewCleanups whould be called.
+      expect(db.sentinel.compact.callCount).to.equal(1);
+      expect(db.medicLogs.compact.callCount).to.equal(1);
+      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
+      expect(db.users.compact.callCount).to.equal(1);
+
+      expect(db.medic.viewCleanup.callCount).to.equal(1);
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+      expect(db.sentinel.viewCleanup.callCount).to.equal(1);
+      expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
+      expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
+      expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(logger.error.callCount).to.be.at.least(1);
+      expect(logger.error.args[0][0]).to.include('Error while running cleanup');
+      expect(logger.error.args[0][1]).to.deep.equal(error);
+    });
+
+    it('should catch nouveau cleanup errors and log them', async () => {
+      const error = { some: 'error' };
+      db.nouveauCleanup.rejects(error);
+
+      utils.cleanup();
+
+      await Promise.resolve();
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+
+      expect(logger.error.callCount).to.be.at.least(1);
+      expect(logger.error.args[0][0]).to.include('Error while running cleanup');
+      expect(logger.error.args[0][1]).to.deep.equal(error);
     });
   });
 
@@ -243,6 +282,22 @@ describe('Setup utils', () => {
           ['localDdocs/users-meta.json', 'utf-8'],
           ['localDdocs/users.json', 'utf-8'],
         ]);
+      });
+
+      it('should cache local ddoc definitions', async () => {
+        sinon.stub(fs.promises, 'readFile');
+        sinon.stub(resources, 'ddocsPath').value('localDdocs');
+
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        fs.promises.readFile.resolves(genDdocsJson(medicDdocs));
+
+        const result1 = await utils.getDdocDefinitions();
+        const result2 = await utils.getDdocDefinitions();
+
+        // Results are copies (not same reference) but structurally equal
+        expect(result1).to.not.equal(result2);
+        expect(result1).to.deep.equal(result2);
+        expect(fs.promises.readFile.callCount).to.equal(5); // Once for each database
       });
 
       it('should throw error when read fails', async () => {
@@ -378,6 +433,50 @@ describe('Setup utils', () => {
         expect(result.get(DATABASES[0])).to.deep.equal(medicDdocs);
         expect(result.get(DATABASES[2])).to.deep.equal(logsDdocs);
         expect(result.size).to.equal(2);
+      });
+
+      it('should cache ddoc definitions', async () => {
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const version = 'version_number';
+        db.builds.get.resolves({
+          build_info: buildInfo(version),
+          version: version,
+          _attachments: {
+            'ddocs/medic.json': { data: genAttachmentData(medicDdocs) },
+          },
+        });
+
+        const result1 = await utils.getDdocDefinitions(buildInfo(version));
+        const result2 = await utils.getDdocDefinitions(buildInfo(version));
+
+        expect(result1).to.deep.equal(result2);
+        expect(result1).to.not.equal(result2); // cached results are deep copied
+        expect(db.builds.get.callCount).to.equal(1);
+      });
+
+      it('should cache ddoc definitions per version', async () => {
+        const medicDdocs = [{ _id: 'ddoc1' }];
+        const version1 = 'v1';
+        const version2 = 'v2';
+        db.builds.get.withArgs(`medic:medic:${version1}`, { attachments: true }).resolves({
+          build_info: buildInfo(version1),
+          version: version1,
+          _attachments: { 'ddocs/medic.json': { data: genAttachmentData(medicDdocs) } },
+        });
+        db.builds.get.withArgs(`medic:medic:${version2}`, { attachments: true }).resolves({
+          build_info: buildInfo(version2),
+          version: version2,
+          _attachments: { 'ddocs/medic.json': { data: genAttachmentData(medicDdocs) } },
+        });
+
+        const result1 = await utils.getDdocDefinitions(buildInfo(version1));
+        const result2 = await utils.getDdocDefinitions(buildInfo(version2));
+        const result1Cached = await utils.getDdocDefinitions(buildInfo(version1));
+
+        expect(result1).to.not.equal(result2);
+        expect(result1).to.deep.equal(result1Cached);
+        expect(result1).to.not.equal(result1Cached); // cached results are deep copied
+        expect(db.builds.get.callCount).to.equal(2);
       });
 
       it('should throw error when staging doc not found', async () => {
@@ -582,6 +681,44 @@ describe('Setup utils', () => {
       }
 
       expect(db.saveDocs.callCount).to.equal(3);
+    });
+
+    it('should not mutate the local ddoc definitions cache', async () => {
+      const genDdocsJson = (ddocs) => JSON.stringify({ docs: ddocs });
+      sinon.stub(fs.promises, 'readFile');
+      sinon.stub(resources, 'ddocsPath').value('localDdocs');
+
+      const medicDdocs = [
+        { _id: '_design/medic', views: { medic: {} } },
+        { _id: '_design/medic-client', views: { client: {} } },
+      ];
+      const sentinelDdocs = [{ _id: '_design/sentinel', views: { sentinel: {} } }];
+      const logsDdocs = [{ _id: '_design/logs', views: { logs: {} } }];
+      const usersMetaDdocs = [{ _id: '_design/meta', views: { meta: {} } }];
+      const usersDdocs = [{ _id: '_design/users', views: { users: {} } }];
+
+      fs.promises.readFile.withArgs('localDdocs/medic.json').resolves(genDdocsJson(medicDdocs));
+      fs.promises.readFile.withArgs('localDdocs/sentinel.json').resolves(genDdocsJson(sentinelDdocs));
+      fs.promises.readFile.withArgs('localDdocs/logs.json').resolves(genDdocsJson(logsDdocs));
+      fs.promises.readFile.withArgs('localDdocs/users-meta.json').resolves(genDdocsJson(usersMetaDdocs));
+      fs.promises.readFile.withArgs('localDdocs/users.json').resolves(genDdocsJson(usersDdocs));
+
+      const deployInfo = { user: 'admin', upgrade_log_id: 'theid' };
+      sinon.stub(upgradeLogService, 'getDeployInfo').resolves(deployInfo);
+      sinon.stub(db, 'saveDocs').resolves();
+
+      const ddocDefinitions = await utils.getDdocDefinitions();
+      await utils.saveStagedDdocs(ddocDefinitions);
+      const ddocDefinitionsAfter = await utils.getDdocDefinitions();
+
+      expect(ddocDefinitionsAfter.get(DATABASES[0])[0]._id).to.equal('_design/medic');
+      expect(ddocDefinitionsAfter.get(DATABASES[0])[1]._id).to.equal('_design/medic-client');
+      expect(ddocDefinitionsAfter.get(DATABASES[1])[0]._id).to.equal('_design/sentinel');
+      expect(ddocDefinitionsAfter.get(DATABASES[2])[0]._id).to.equal('_design/logs');
+      expect(ddocDefinitionsAfter.get(DATABASES[3])[0]._id).to.equal('_design/meta');
+      expect(ddocDefinitionsAfter.get(DATABASES[4])[0]._id).to.equal('_design/users');
+
+      expect(ddocDefinitionsAfter.get(DATABASES[0])[0].deploy_info).to.be.undefined;
     });
   });
 
@@ -1046,6 +1183,117 @@ describe('Setup utils', () => {
       const payload = { docker_compose: { a: 'a' }, containers: [{ container_name: 'aa' }, { container_name: 'bb' }] };
       const response = { aa: { ok: true }, bb: { ok: false } };
       expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(true);
+    });
+  });
+
+  describe('isDockerUpgradeServiceRunning', () => {
+    it('should return true when docker upgrade service is running', async () => {
+      sinon.stub(request, 'get').resolves({ ok: true });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://localhost:5008' }]);
+    });
+
+    it('should return false when another upgrade service is running', async () => {
+      sinon.stub(request, 'get').resolves({ message: 'ok' });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://localhost:5008' }]);
+    });
+
+    it('should return false when connection to service does not work', async () => {
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(false);
+    });
+
+    it('should use URL from environment', async () => {
+      process.env.UPGRADE_SERVICE_URL = 'http://someurl';
+      utils = rewire('../../../../src/services/setup/utils');
+
+      sinon.stub(request, 'get').resolves({ ok: true });
+
+      expect(await utils.isDockerUpgradeServiceRunning()).to.equal(true);
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0]).to.deep.equal([{ url: 'http://someurl' }]);
+    });
+  });
+
+  describe('getDdocInfo', () => {
+    it('should return view_index info on success', async () => {
+      const database = { name: 'medic' };
+      const ddoc = '_design/medic';
+      const response = { view_index: { sizes: { active: 123 } } };
+      sinon.stub(request, 'get').resolves(response);
+
+      const result = await utils.getDdocInfo(database, ddoc);
+
+      expect(request.get.callCount).to.equal(1);
+      expect(request.get.args[0][0].url).to.contain('/medic/_design/medic/_info');
+      expect(result).to.deep.equal(response.view_index);
+    });
+
+    it('should return null and log error on failure', async () => {
+      const database = { name: 'medic' };
+      const ddoc = '_design/medic';
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+      sinon.stub(logger, 'error');
+
+      const result = await utils.getDdocInfo(database, ddoc);
+
+      expect(result).to.equal(null);
+      expect(logger.error.callCount).to.equal(1);
+      expect(logger.error.args[0][0]).to.equal('Error fetching view index info: %o');
+    });
+  });
+
+  describe('getNouveauInfo', () => {
+    it('should return empty array if ddoc has no nouveau property', async () => {
+      const database = { name: 'medic' };
+      const ddoc = { _id: '_design/medic' };
+      const result = await utils.getNouveauInfo(database, ddoc);
+      expect(result).to.deep.equal([]);
+    });
+
+    it('should return nouveau info for all indexes', async () => {
+      const database = { name: 'medic' };
+      const ddoc = {
+        _id: '_design/medic',
+        nouveau: {
+          idx1: {},
+          idx2: {}
+        }
+      };
+      const response1 = { search_index: { disk_size: 100 } };
+      const response2 = { search_index: { disk_size: 200 } };
+      const getStub = sinon.stub(request, 'get');
+      getStub.onFirstCall().resolves(response1);
+      getStub.onSecondCall().resolves(response2);
+
+      const result = await utils.getNouveauInfo(database, ddoc);
+
+      expect(getStub.callCount).to.equal(2);
+      expect(getStub.args[0][0].url).to.contain('/medic/_design/medic/_nouveau_info/idx1');
+      expect(getStub.args[1][0].url).to.contain('/medic/_design/medic/_nouveau_info/idx2');
+      expect(result).to.deep.equal([response1.search_index, response2.search_index]);
+    });
+
+    it('should return empty array and log error on failure', async () => {
+      const database = { name: 'medic' };
+      const ddoc = {
+        _id: '_design/medic',
+        nouveau: { idx1: {} }
+      };
+      sinon.stub(request, 'get').rejects(new Error('boom'));
+      sinon.stub(logger, 'error');
+
+      const result = await utils.getNouveauInfo(database, ddoc);
+
+      expect(result).to.deep.equal([]);
+      expect(logger.error.callCount).to.equal(1);
+      expect(logger.error.args[0][0]).to.equal('Error fetching view index info: %o');
     });
   });
 });

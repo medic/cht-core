@@ -36,7 +36,7 @@ const getTemplateContext = async (doc) => {
   return context;
 };
 
-const updateScheduledTasks = (doc, context, dueDates) => {
+const updateScheduledTasks = (doc, context, dueDates, clearFailing=false) => {
   if (!doc) {
     return;
   }
@@ -73,14 +73,16 @@ const updateScheduledTasks = (doc, context, dueDates) => {
         }
       }
 
-      // only update task states when messages exist
-      if (task.messages) {
+      // check that messages.message is not empty
+      const hasValidMessage = task.messages?.[0].message?.trim().length > 0;
+
+      // update task states to pending when messages exist or to clear if specified in config      
+      if (hasValidMessage || clearFailing) {
         updatedTasks = true;
-        utils.setTaskState(task, 'pending');
+        utils.setTaskState(task, hasValidMessage? 'pending' : 'clear');
       }
     }
-  });
-
+  }); 
   return updatedTasks;
 };
 
@@ -112,10 +114,12 @@ const processBatch = async (result) => {
     rows[row.id].dueDates.push(moment(row.key[1]).toISOString());
   });
 
+  const clearFailing = config.get('sms')?.clear_failing_schedules || false;
+
   for (const row of Object.values(rows)) {
     const [doc] = await lineage.hydrateDocs([row.doc]);
     const context = await getTemplateContext(doc);
-    const hasUpdatedTasks = updateScheduledTasks(doc, context, row.dueDates);
+    const hasUpdatedTasks = updateScheduledTasks(doc, context, row.dueDates, clearFailing);
     if (hasUpdatedTasks) {
       lineage.minify(doc);
       await db.medic.put(doc);

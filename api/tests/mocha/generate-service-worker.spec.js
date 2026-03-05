@@ -9,6 +9,7 @@ const resources = require('../../src/resources');
 const logger = require('@medic/logger');
 const loginController = require('../../src/controllers/login');
 const extensionLibsService = require('../../src/services/extension-libs');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('generate service worker', () => {
   let clock;
@@ -50,7 +51,7 @@ describe('generate service worker', () => {
     loginController.renderPasswordReset.resolves('passwordresetpage html');
     extensionLibsService.getAll.resolves([{ name: 'bar.js', data: 'barcode' }]);
     sinon.stub(workbox, 'generateSW').returns();
-    db.medic.get.resolves({ _id: 'service-worker-meta' });
+    db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
     clock.tick(2500);
 
@@ -101,10 +102,10 @@ describe('generate service worker', () => {
     }]);
 
     chai.expect(db.medic.get.callCount).to.equal(1);
-    chai.expect(db.medic.get.args[0]).to.deep.equal(['service-worker-meta']);
+    chai.expect(db.medic.get.args[0]).to.deep.equal([DOC_IDS.SERVICE_WORKER_META]);
     chai.expect(db.medic.put.callCount).to.equal(1);
     chai.expect(db.medic.put.args[0]).to.deep.equal([{
-      _id: 'service-worker-meta',
+      _id: DOC_IDS.SERVICE_WORKER_META,
       hash: 'second',
       generated_at: 2500,
     }]);
@@ -128,7 +129,7 @@ describe('generate service worker', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves('same');
     extensionLibsService.getAll.resolves([]);
-    db.medic.get.resolves({ _id: 'service-worker-meta' });
+    db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
 
     return generateServiceWorker.run(true).then(() => {
@@ -137,7 +138,7 @@ describe('generate service worker', () => {
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
-        _id: 'service-worker-meta',
+        _id: DOC_IDS.SERVICE_WORKER_META,
         hash: 'same',
         generated_at: 0,
       }]);
@@ -148,7 +149,7 @@ describe('generate service worker', () => {
     getServiceWorkerHash.onCall(0).resolves('thing');
     getServiceWorkerHash.onCall(1).resolves(undefined);
     extensionLibsService.getAll.resolves([]);
-    db.medic.get.resolves({ _id: 'service-worker-meta' });
+    db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
 
     return generateServiceWorker.run(true).then(() => {
@@ -163,7 +164,7 @@ describe('generate service worker', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves(undefined);
     extensionLibsService.getAll.resolves([]);
-    db.medic.get.resolves({ _id: 'service-worker-meta' });
+    db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
 
     return generateServiceWorker.run(true).then(() => {
@@ -203,7 +204,7 @@ describe('generate service worker', () => {
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
       chai.expect(db.medic.put.args[0]).to.deep.equal([{
-        _id: 'service-worker-meta',
+        _id: DOC_IDS.SERVICE_WORKER_META,
         generated_at: 0,
         hash: 'second',
       }]);
@@ -211,7 +212,7 @@ describe('generate service worker', () => {
   });
 
   it('should handle sw doc put 409s', () => {
-    db.medic.get.resolves({ _id: 'service-worker-meta' });
+    db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.rejects({ status: 409 });
     extensionLibsService.getAll.resolves([]);
     loginController.renderLogin.resolves('aaa');

@@ -13,7 +13,7 @@ describe('Contact and User Management', () => {
     await chtConfUtils.initializeConfigDir();
     const contactSummaryFile = path.join(__dirname, 'config/contact-summary.templated.js');
     const contactSummaryExtrasFile = path.join(__dirname, 'config/contact-summary-extras.js');
-    const { contactSummary } = await chtConfUtils.compileNoolsConfig({
+    const { contactSummary } = await chtConfUtils.compileConfig({
       contactSummary: contactSummaryFile,
       contactSummaryExtras: contactSummaryExtrasFile
     });

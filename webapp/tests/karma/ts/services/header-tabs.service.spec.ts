@@ -60,6 +60,30 @@ describe('HeaderTabs service', () => {
         { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-bar-chart-o' },
       ]);
     });
+
+    it('should include typeName property for tabs that need bubble counters', () => {
+      const tabs = service.get();
+
+      const messagesTab = tabs.find(tab => tab.name === 'messages');
+      expect(messagesTab).to.exist;
+      expect(messagesTab!.typeName).to.equal('message');
+
+      const tasksTab = tabs.find(tab => tab.name === 'tasks');
+      expect(tasksTab).to.exist;
+      expect(tasksTab!.typeName).to.equal('task');
+
+      const reportsTab = tabs.find(tab => tab.name === 'reports');
+      expect(reportsTab).to.exist;
+      expect(reportsTab!.typeName).to.equal('report');
+
+      const contactsTab = tabs.find(tab => tab.name === 'contacts');
+      expect(contactsTab).to.exist;
+      expect(contactsTab!.typeName).to.be.undefined;
+
+      const analyticsTab = tabs.find(tab => tab.name === 'analytics');
+      expect(analyticsTab).to.exist;
+      expect(analyticsTab!.typeName).to.be.undefined;
+    });
   });
 
   describe('getAuthorizedTabs()', () => {
@@ -129,6 +153,7 @@ describe('HeaderTabs service', () => {
           defaultIcon: 'fa-flag',
           translation: 'Tasks',
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
+          typeName: 'task',
           icon: undefined,
           resourceIcon: undefined,
         },
@@ -186,6 +211,7 @@ describe('HeaderTabs service', () => {
           defaultIcon: 'fa-flag',
           translation: 'Tasks',
           permissions: ['can_view_tasks', 'can_view_tasks_tab'],
+          typeName: 'task',
           icon: 'fa-apple',
           resourceIcon: undefined,
         },

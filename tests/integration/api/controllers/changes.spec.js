@@ -3,6 +3,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const constants = require('@constants');
+const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
 const assertChangeIds = (changes, ...expectedIds) => {
@@ -28,7 +29,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:bobville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Bobville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:bobville',
@@ -45,7 +46,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:clareville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Clareville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:clareville',
@@ -62,7 +63,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chw-bossville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'CHW Bossville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:chw-bossville',
@@ -107,7 +108,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:steveville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Steveville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:steveville',
@@ -124,7 +125,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:managerville',
-      type: 'health_center',
+      type: CONTACT_TYPES.HEALTH_CENTER,
       name: 'Managerville',
       parent: 'PARENT_PLACE',
       place_id: 'shortcode:managerville',
@@ -222,9 +223,9 @@ describe('changes handler', () => {
 
   describe('Filtered replication', () => {
     const changesIDs = [
-      'service-worker-meta',
+      DOC_IDS.SERVICE_WORKER_META,
       '_design/medic-client',
-      'settings'
+      DOC_IDS.SETTINGS
     ];
 
     beforeEach(async () => {

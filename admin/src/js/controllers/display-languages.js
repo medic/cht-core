@@ -1,5 +1,8 @@
 const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+const DOC_TYPES = constants.DOC_TYPES;
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
@@ -29,7 +32,8 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       if (hasEnabledLanguages(languages)) {
         return languages.some(translation => translation.enabled !== false && translation.locale === doc.code);
       }
-      return doc.enabled;
+      $scope.error = $translate.instant('language.settings.invalid');
+      return true;
     };
 
     const createLocaleModel = function(doc, totalTranslations, languages) {
@@ -51,6 +55,11 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     };
 
     const updateLanguageSettings = (languages, doc, enabled) => {
+      if (!languages) {
+        $log.error('No languages settings found.');
+        return;
+      }
+
       let language = languages.find(language => language.locale === doc.code);
       if (!language) {
         language = { locale: doc.code };
@@ -60,21 +69,12 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return UpdateSettings({ languages });
     };
 
-    const updateLanguageDoc = (doc, enabled) => {
-      doc.enabled = enabled;
-      return DB().put(doc);
-    };
-
     const setLanguageStatus = function(doc, enabled) {
-      return Settings().then(settings => {
-        if (hasEnabledLanguages(settings.languages)) {
-          return updateLanguageSettings(settings.languages, doc, enabled);
-        }
-
-        return updateLanguageDoc(doc, enabled);
-      }).catch(err => {
-        $log.error('Error updating translation doc', err);
-      });
+      return Settings()
+        .then(settings => updateLanguageSettings(settings.languages, doc, enabled))
+        .catch(err => {
+          $log.error('Error updating translation doc', err);
+        });
     };
 
     const getTranslationKeys = doc => {
@@ -89,14 +89,14 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const getLanguages = function() {
       $scope.loading = true;
-      $q.all([
-        DB().query('medic-client/doc_by_type', {
-          startkey: [ 'translations', false ],
-          endkey: [ 'translations', true ],
-          include_docs: true
-        }),
-        Settings()
-      ])
+      $q
+        .all([
+          DB().query('medic-client/doc_by_type', {
+            key: [ DOC_TYPES.TRANSLATIONS ],
+            include_docs: true
+          }),
+          Settings()
+        ])
         .then(([translations, settings]) => {
           const totalTranslations = countTotalTranslations(translations.rows);
           $scope.loading = false;
@@ -119,7 +119,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const changeListener = Changes({
       key: 'update-languages',
-      filter: change => TranslationLoader.test(change.id) || change.id === 'settings',
+      filter: change => TranslationLoader.test(change.id) || change.id === DOC_IDS.SETTINGS,
       callback: () => getLanguages()
     });
 
@@ -138,6 +138,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     $scope.enableLanguage = function(doc) {
       return setLanguageStatus(doc, true);
     };
+
     $scope.prepareImport = function(doc) {
       Modal({
         templateUrl: 'templates/import_translation.html',
