@@ -624,5 +624,105 @@ module.exports = defineConfig([
     rules: {
       ['@typescript-eslint/no-unused-expressions']: 'off',
     },
-  }
+  },
+  // ── admin-tool (Angular 19, browser app) ────────────────────────────────
+  {
+    files: ['admin-tool/**/*'],
+    plugins: {
+      compat: compatPlugin,
+    },
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.browser,
+        ...globalsPlugin.jquery,
+      },
+      ecmaVersion: 2020,
+      sourceType: 'commonjs',
+    },
+    rules: {
+      'compat/compat': 'error',
+    },
+  },
+  {
+    files: ['admin-tool/**/*.ts', 'admin-tool/**/*.tsx'],
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      '@angular-eslint': angularEslintEslintPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 2020,
+      sourceType: 'script',
+      parserOptions: {
+        createDefaultProgram: true,
+      },
+    },
+    rules: {
+      '@angular-eslint/component-class-suffix': 'error',
+      '@angular-eslint/contextual-lifecycle': 'error',
+      '@angular-eslint/directive-class-suffix': 'error',
+      '@angular-eslint/no-conflicting-lifecycle': 'error',
+      '@angular-eslint/no-input-rename': 'error',
+      '@angular-eslint/no-inputs-metadata-property': 'error',
+      '@angular-eslint/no-output-native': 'error',
+      '@angular-eslint/no-output-rename': 'error',
+      '@angular-eslint/no-outputs-metadata-property': 'error',
+      '@angular-eslint/use-lifecycle-interface': 'warn',
+      '@angular-eslint/use-pipe-transform-interface': 'error',
+      'no-console': 'off',
+      'no-restricted-syntax': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      }],
+      '@typescript-eslint/ban-ts-comment': 'error',
+      'quote-props': ['error', 'as-needed'],
+    },
+  },
+  {
+    files: ['admin-tool/**/*.spec.ts'],
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
+    languageOptions: {
+      parser: tsParser,
+      globals: {
+        ...globalsPlugin.mocha,
+        ...globalsPlugin.node,
+        ...globalsPlugin.jquery,
+      },
+    },
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
+  {
+    files: ['admin-tool/**/*.component.html'],
+    extends: compat.extends('plugin:@angular-eslint/template/recommended'),
+    plugins: {
+      '@angular-eslint/template': angularEslintEslintPluginTemplate,
+    },
+    languageOptions: {
+      parser: templateParser,
+    },
+    rules: {
+      indent: 'off',
+      'max-len': 'off',
+    },
+  },
+  {
+    files: ['admin-tool/tests/**/*'],
+    languageOptions: {
+      globals: {
+        ...globalsPlugin.mocha,
+        ...globalsPlugin.browser,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ]);

@@ -1,0 +1,45 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "es2020",
+    "module": "es2020",
+    "skipLibCheck": true,
+    "lib": [
+      "es2016",
+      "dom"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@admin-tool-actions/*": ["src/ts/actions/*"],
+      "@admin-tool-components/*": ["src/ts/components/*"],
+      "@admin-tool-directives/*": ["src/ts/directives/*"],
+      "@admin-tool-effects/*": ["src/ts/effects/*"],
+      "@admin-tool-environments/*": ["src/ts/environments/*"],
+      "@admin-tool-modules/*": ["src/ts/modules/*"],
+      "@admin-tool-pipes/*": ["src/ts/pipes/*"],
+      "@admin-tool-providers/*": ["src/ts/providers/*"],
+      "@admin-tool-reducers/*": ["src/ts/reducers/*"],
+      "@admin-tool-selectors/*": ["src/ts/selectors/*"],
+      "@admin-tool-services/*": ["src/ts/services/*"]
+    },
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "noImplicitThis": true,
+    "outDir": "dist",
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictInjectionParameters": true,
+    "preserveWhitespaces": true,
+    "skipTemplateCodegen": false
+  }
+}
