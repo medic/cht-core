@@ -103,10 +103,13 @@ describe('people controller', () => {
     });
 
     it('rejects existing object with _rev', () => {
-      return controller.getOrCreatePerson({ _id: 'x', _rev: '1' }).catch(err => {
-        chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.include('Person must be a new object');
-      });
+      return controller
+        .getOrCreatePerson({ _id: 'x', _rev: '1' })
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.include('Person must be a new object');
+        });
     });
   });
 
@@ -121,17 +124,19 @@ describe('people controller', () => {
       });
     });
 
-    it('returns error from db insert', done => {
+    it('returns error from db insert', () => {
       sinon.stub(controller, '_validatePerson').returns();
       sinon.stub(places, 'getOrCreatePlace').resolves();
       db.medic.post.returns(Promise.reject('yucky'));
-      controller.createPerson({}).catch(err => {
-        chai.expect(err).to.equal('yucky');
-        done();
-      });
+      return controller
+        .createPerson({})
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err).to.equal('yucky');
+        });
     });
 
-    it('rejects invalid reported_date.', done => {
+    it('rejects invalid reported_date.', () => {
       const person = {
         name: 'Test',
         reported_date: 'x'
@@ -139,12 +144,14 @@ describe('people controller', () => {
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
-      controller.createPerson(person).catch(err => {
-        chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('Reported date is invalid: x');
-        chai.expect(config.get.args[0]).to.deep.equal([]);
-        done();
-      });
+      return controller
+        .createPerson(person)
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Reported date is invalid: x');
+          chai.expect(config.get.args[0]).to.deep.equal([]);
+        });
     });
 
     it('accepts valid reported_date in ms since epoch.', () => {
