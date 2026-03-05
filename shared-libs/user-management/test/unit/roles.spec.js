@@ -124,6 +124,11 @@ describe('roles', () => {
       config.get.withArgs('roles').returns({ roleA: { offline: true }, roleB: { offline: false }});
       chai.expect(roles.isOffline(['mm-online'])).to.equal(false);
     });
+
+    it('should handle roles config returning falsy', () => {
+      config.get.withArgs('roles').returns(undefined);
+      chai.expect(roles.isOffline(['someRole'])).to.equal(true);
+    });
   });
 
   describe('hasAllPermissions', () => {
