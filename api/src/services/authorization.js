@@ -7,7 +7,7 @@ const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS,DOC_TYPES } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -696,7 +696,7 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
   }
 
   for (const hit of docsByReplicationKey) {
-    if (hit.fields.type !== 'task' || includeTasks) {
+    if (hit.fields.type !== DOC_TYPES.TASK || includeTasks) {
       validatedIds.push(hit.id);
     }
   }
