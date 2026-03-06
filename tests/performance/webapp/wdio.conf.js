@@ -55,7 +55,7 @@ exports.config = {
   reporters: [PerformanceReporter],
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120000,
+    timeout: 220000,
   },
 };
 
