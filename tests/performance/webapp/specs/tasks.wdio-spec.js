@@ -46,7 +46,7 @@ describe('tasks', () => {
 
     it('should sync tasks', async () => {
       await commonElements.goToAboutPage();
-      await commonElements.sync();
+      await commonElements.sync({ timeout: LOAD_TIMEOUT });
     });
 
     after(async () => {
