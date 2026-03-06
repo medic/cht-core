@@ -3,21 +3,21 @@ import { Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 
 /** @internal */
-export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
-  .get(uuid)
+export const getDocById = (db: PouchDB.Database<Doc>) => async (id: string): Promise<Nullable<Doc>> => db
+  .get(id)
   .then(doc => isDoc(doc) ? doc : null)
   .catch((err: unknown) => {
     if ((err as PouchDB.Core.Error).status === 404) {
       return null;
     }
 
-    logger.error(`Failed to fetch doc with id [${uuid}]`, err);
+    logger.error(`Failed to fetch doc with id [${id}]`, err);
     throw err;
   });
 
 /** @internal */
-export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[]): Promise<Doc[]> => {
-  const keys = Array.from(new Set(uuids.filter(uuid => uuid.length)));
+export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (ids: string[]): Promise<Doc[]> => {
+  const keys = Array.from(new Set(ids.filter(id => id.length)));
   if (!keys.length) {
     return [];
   }
@@ -25,6 +25,23 @@ export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[
   return response.rows
     .map(({ doc }) => doc)
     .filter((doc): doc is Doc => isDoc(doc));
+};
+
+/** @internal */
+export const getDocIdsByIdRange = (db: PouchDB.Database<Doc>) => async (
+  startkey: string,
+  endkey: string,
+  limit?: number,
+  skip = 0
+): Promise<string[]> => {
+  const response = await db.allDocs({
+    startkey,
+    endkey,
+    include_docs: false,
+    limit,
+    skip,
+  });
+  return response.rows.map(({ id }) => id);
 };
 
 const queryDocs = (
@@ -66,7 +83,7 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
-const queryDocUuids = (
+const queryDocIds = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
@@ -75,7 +92,7 @@ const queryDocUuids = (
   .then(({ rows }) => rows.map(({ id }) => id as string));
 
 /** @internal */
-export const queryDocUuidsByRange = (
+export const queryDocIdsByRange = (
   db: PouchDB.Database<Doc>,
   view: string
 ) => async (
@@ -83,7 +100,7 @@ export const queryDocUuidsByRange = (
   endkey: unknown,
   limit?: number,
   skip = 0
-): Promise<string[]> => queryDocUuids(
+): Promise<string[]> => queryDocIds(
   db,
   view,
   {
@@ -96,14 +113,14 @@ export const queryDocUuidsByRange = (
 );
 
 /** @internal */
-export const queryDocUuidsByKey = (
+export const queryDocIdsByKey = (
   db: PouchDB.Database<Doc>,
   view: string
 ) => async (
   key: unknown,
   limit: number,
   skip: number
-): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, reduce: false, key, limit, skip });
+): Promise<string[]> => queryDocIds(db, view, { include_docs: false, reduce: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
@@ -115,7 +132,7 @@ export const queryDocUuidsByKey = (
  */
 export const fetchAndFilter = <T>(
   getFunction: (limit: number, skip: number) => Promise<Nullable<T>[]>,
-  filterFunction: (doc: Nullable<T>, uuid?: string) => boolean,
+  filterFunction: (doc: Nullable<T>, id?: string) => boolean,
   limit: number,
 ): typeof recursionInner => {
   const recursionInner = async (
@@ -155,18 +172,18 @@ export const fetchAndFilter = <T>(
 };
 
 /** @internal */
-export const fetchAndFilterUuids = (
+export const fetchAndFilterIds = (
   getFunction: (limit: number, skip: number) => Promise<string[]>,
   limit: number,
 ): ReturnType<typeof fetchAndFilter<string>> => {
-  const uuidSet = new Set<string>();
-  const filterFn = (uuid: Nullable<string>): boolean => {
-    if (!uuid) {
+  const idSet = new Set<string>();
+  const filterFn = (id: Nullable<string>): boolean => {
+    if (!id) {
       return false;
     }
-    const { size } = uuidSet;
-    uuidSet.add(uuid);
-    return uuidSet.size !== size;
+    const { size } = idSet;
+    idSet.add(id);
+    return idSet.size !== size;
   };
 
   return fetchAndFilter(
