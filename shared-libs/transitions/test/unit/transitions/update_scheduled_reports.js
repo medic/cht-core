@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const db = require('../../../src/db');
 const config = require('../../../src/config');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, VIEWS } = require('@medic/constants');
 
 describe('update_scheduled_reports', () => {
   let transition;
@@ -195,7 +195,7 @@ describe('update_scheduled_reports', () => {
       return transition._getDuplicates(doc).then(result => {
         assert.equal(
           db.medic.query.args[0][0],
-          'medic/reports_by_form_year_week_parent_reported_date'
+          VIEWS.REPORTS_BY_FORM_YEAR_WEEK_PARENT_REPORTED_DATE
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,
@@ -220,7 +220,7 @@ describe('update_scheduled_reports', () => {
       return transition._getDuplicates(doc).then(result => {
         assert.equal(
           db.medic.query.args[0][0],
-          'medic/reports_by_form_year_month_parent_reported_date'
+          VIEWS.REPORTS_BY_FORM_YEAR_MONTH_PARENT_REPORTED_DATE
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,

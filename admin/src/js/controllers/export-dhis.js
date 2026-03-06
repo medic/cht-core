@@ -3,6 +3,8 @@ Integrating with DHIS2 -- https://docs.communityhealthtoolkit.org/apps/features/
 */
 const _ = require('lodash');
 const moment = require('moment');
+const constants = require('@medic/constants');
+const VIEWS = constants.VIEWS;
 
 angular.module('controllers').controller('ExportDhisCtrl',
   function (
@@ -25,7 +27,7 @@ angular.module('controllers').controller('ExportDhisCtrl',
 
     const loadPlaces = () => (
       DB()
-        .query('medic-admin/contacts_by_dhis_orgunit', { include_docs: true })
+        .query(VIEWS.CONTACTS_BY_DHIS_ORGUNIT, { include_docs: true })
         .then(function(result) {
           const places = _.uniqBy(result.rows.map(row => row.doc), '_id');
 

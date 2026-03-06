@@ -1,8 +1,8 @@
 const utils = require('@utils');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, VIEWS } = require('@medic/constants');
 
 const getQueuedMessages = () => utils.db
-  .query('medic-admin/message_queue', { reduce: false, include_docs: true })
+  .query(VIEWS.MESSAGE_QUEUE, { reduce: false, include_docs: true })
   .then(response => response.rows.map(row => row.doc));
 
 const getTextedLoginLink = async (newUserSettings) => {

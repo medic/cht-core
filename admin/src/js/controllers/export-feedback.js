@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const VIEWS = constants.VIEWS;
+
 angular
   .module('controllers')
   .controller('ExportFeedbackCtrl', function(
@@ -49,7 +52,7 @@ angular
     };
 
     DB({ usersMeta: true })
-      .query('users-meta/feedback_by_date', {
+      .query(VIEWS.FEEDBACK_BY_DATE, {
         include_docs: true,
         descending: true,
         limit: 20,

@@ -15,7 +15,7 @@ import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { InvalidArgumentError } from '../libs/error';
 import { normalizeFreetextQualifier, validateCursor } from './libs/core';
-import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../libs/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 
@@ -27,11 +27,11 @@ const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQual
 };
 
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
-  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-  const queryViewTypeFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, VIEWS.CONTACTS_BY_FREETEXT);
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, VIEWS.CONTACTS_BY_FREETEXT);
+  const queryViewTypeFreetextByKey = queryDocIdsByKey(medicDb, VIEWS.CONTACTS_BY_TYPE_FREETEXT);
   const queryViewTypeFreetextByRange = queryDocIdsByRange(
-    medicDb, 'medic-offline-freetext/contacts_by_type_freetext'
+    medicDb, VIEWS.CONTACTS_BY_TYPE_FREETEXT
   );
 
   return (qualifier: FreetextQualifier & Partial<ContactTypeQualifier>) => {
@@ -106,8 +106,8 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
-    const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
-    const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryNouveauFreetext = queryByFreetext(medicDb, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT);
+    const queryViewByType = queryDocIdsByKey(medicDb, VIEWS.CONTACTS_BY_TYPE);
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 

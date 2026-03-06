@@ -4,6 +4,7 @@ const db = require('../db');
 const NAME = 'self_report';
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const dataContext = require('../data-context');
+const { VIEWS } = require('@medic/constants');
 const getConfig = () => config.get(NAME) || [];
 
 const getConfiguredForm = (form) => form && getConfig().find(item => item && item.form === form);
@@ -28,7 +29,7 @@ module.exports = {
     const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
 
     return db.medic
-      .query('medic-client/contacts_by_phone', { key: String(doc.from) })
+      .query(VIEWS.CONTACTS_BY_PHONE, { key: String(doc.from) })
       .then(result => {
         if (!result.rows || !result.rows.length || !result.rows[0].id) {
           transitionUtils.addRejectionMessage(doc, formConfig, 'sender_not_found');

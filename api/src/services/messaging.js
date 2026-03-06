@@ -8,6 +8,7 @@ const rapidPro = require('./rapidpro');
 const nepalDoITSMS = require('./nepal-doit-sms');
 const records = require('../services/records');
 const environment = require('@medic/environment');
+const { VIEWS } = require('@medic/constants');
 
 // Check DB for messages every minute
 // when e2e testing, check every second
@@ -154,7 +155,7 @@ const removeDuplicateMessages = messages => {
     return Promise.resolve([]);
   }
   const keys = messages.map(message => message.id);
-  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys })
+  return db.medic.query(VIEWS.MESSAGES_BY_GATEWAY_REF, { keys })
     .then(res => res.rows.map(row => row.key))
     .then(seenIds => messages.filter(message => {
       if (seenIds.includes(message.id)) {
@@ -189,7 +190,7 @@ const resolveMissingUuids = changes => {
     // all messages have ids
     return Promise.resolve();
   }
-  return db.medic.query('medic-sms/messages_by_gateway_ref', { keys: gatewayRefs }).then(res => {
+  return db.medic.query(VIEWS.MESSAGES_BY_GATEWAY_REF, { keys: gatewayRefs }).then(res => {
     res.rows.forEach(({ key, value }) => {
       const change = changes.find(({ gatewayRef }) => gatewayRef === key);
       if (change) {
@@ -253,7 +254,7 @@ module.exports = {
       startkey: [ 'pending-or-forwarded', 0 ],
       endkey: [ 'pending-or-forwarded', '\ufff0' ],
     };
-    return db.medic.query('medic/messages_by_state', viewOptions)
+    return db.medic.query(VIEWS.MESSAGES_BY_STATE, viewOptions)
       .then(response => response.rows.map(row => {
         if (row.value.to) {
           const normalized = phoneNumber.normalize(config.get(), row.value.to);
@@ -285,7 +286,7 @@ module.exports = {
     return resolveMissingUuids(taskStateChanges)
       .then(() => {
         const keys = taskStateChanges.map(change => change.messageId);
-        return db.medic.query('medic-sms/messages_by_uuid', { keys });
+        return db.medic.query(VIEWS.MESSAGES_BY_UUID, { keys });
       })
       .then(results => {
         const uniqueIds = [...new Set(results.rows.map(row => row.id))];

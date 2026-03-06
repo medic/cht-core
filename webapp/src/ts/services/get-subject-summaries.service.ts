@@ -1,5 +1,6 @@
 import * as _ from 'lodash-es';
 import {Injectable} from '@angular/core';
+import { VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { GetSummariesService } from '@mm-services/get-summaries.service';
@@ -115,7 +116,7 @@ export class GetSubjectSummariesService {
     });
 
     return this.dbService.get()
-      .query('medic-client/contacts_by_reference', { keys: uniqueReferences })
+      .query(VIEWS.CONTACTS_BY_REFERENCE, { keys: uniqueReferences })
       .then((response) => {
         return this.replaceReferencesWithIds(summaries, response);
       });

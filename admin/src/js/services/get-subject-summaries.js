@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const VIEWS = constants.VIEWS;
 
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
@@ -107,7 +109,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
       });
 
       return DB()
-        .query('medic-client/contacts_by_reference', { keys: uniqReferences })
+        .query(VIEWS.CONTACTS_BY_REFERENCE, { keys: uniqReferences })
         .then(function(response) {
           return replaceReferencesWithIds(summaries, response);
         });

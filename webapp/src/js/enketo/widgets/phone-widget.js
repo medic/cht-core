@@ -3,6 +3,7 @@ const FormModel = require( 'enketo-core' ).FormModel;
 const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 const phoneNumber = require('@medic/phone-number');
+const { VIEWS } = require('@medic/constants');
 require( 'enketo-core/src/js/plugins' );
 
 const isContactPhoneValid = (settings, fieldValue) => {
@@ -16,7 +17,7 @@ const isContactPhoneValid = (settings, fieldValue) => {
 
 const getContactIdsForPhone = (phoneNumber) => window.CHTCore.DB
   .get()
-  .query('medic-client/contacts_by_phone', { key: phoneNumber })
+  .query(VIEWS.CONTACTS_BY_PHONE, { key: phoneNumber })
   .then(results => results.rows.map(row => row.id));
 
 const isContactPhoneUnique = async (settings, fieldValue) => {

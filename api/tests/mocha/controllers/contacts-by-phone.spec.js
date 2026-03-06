@@ -6,6 +6,7 @@ const phoneNumber = require('@medic/phone-number');
 const config = require('../../../src/config');
 const serverUtils = require('../../../src/server-utils');
 const db = require('../../../src/db');
+const { VIEWS } = require('@medic/constants');
 
 let req;
 let res;
@@ -108,7 +109,8 @@ describe('contacts-by-phone controller', () => {
         chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'aaa' ]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic-client/contacts_by_phone', { key: 'a_normalized' }]);
+        chai.expect(db.medic.query.args[0])
+          .to.deep.equal([VIEWS.CONTACTS_BY_PHONE, { key: 'a_normalized' }]);
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
         chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['my_doc_id']]);
 
@@ -134,7 +136,7 @@ describe('contacts-by-phone controller', () => {
 
       chai.expect(db.medic.query.callCount).to.equal(1);
       chai.expect(db.medic.query.args[0]).to.deep.equal(
-        ['medic-client/contacts_by_phone', { key: 'normalized_phone' }]
+        [VIEWS.CONTACTS_BY_PHONE, { key: 'normalized_phone' }]
       );
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['doc_id']]);
@@ -160,7 +162,7 @@ describe('contacts-by-phone controller', () => {
 
       chai.expect(db.medic.query.callCount).to.equal(1);
       chai.expect(db.medic.query.args[0]).to.deep.equal(
-        ['medic-client/contacts_by_phone', { key: 'normalized_phone' }]
+        [VIEWS.CONTACTS_BY_PHONE, { key: 'normalized_phone' }]
       );
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['doc_id']]);
@@ -186,7 +188,7 @@ describe('contacts-by-phone controller', () => {
       chai.expect(phoneNumber.normalize.args[0]).to.deep.equal([ settings, 'phone' ]);
 
       chai.expect(db.medic.query.callCount).to.equal(1);
-      chai.expect(db.medic.query.args[0]).to.deep.equal(['medic-client/contacts_by_phone', { key: 'norm' }]);
+      chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_PHONE, { key: 'norm' }]);
       chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(1);
       chai.expect(lineage.fetchHydratedDocs.args[0]).to.deep.equal([['one', 'two', 'three']]);
 
@@ -215,7 +217,7 @@ describe('contacts-by-phone controller', () => {
 
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equal(
-          ['medic-client/contacts_by_phone', { key: 'phn' }]
+          [VIEWS.CONTACTS_BY_PHONE, { key: 'phn' }]
         );
         chai.expect(lineage.fetchHydratedDocs.callCount).to.equal(0);
 

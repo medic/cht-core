@@ -1339,7 +1339,7 @@ describe('XmlForms service', () => {
         expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
         expect(actual).to.deep.equal(expected);
         expect(dbQuery.callCount).to.equal(1);
-        expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
+        expect(dbQuery.args[0][0]).to.equal(`shared/doc_by_type`);
         const options = dbQuery.args[0][1];
         expect(options.include_docs).to.equal(true);
         expect(options.key).to.deep.equal(['form']);

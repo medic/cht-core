@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as _ from 'lodash-es';
+import { VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { FormatDateService } from '@mm-services/format-date.service';
@@ -38,7 +39,7 @@ export class FormatDataRecordService {
     };
     return this.dbService
       .get()
-      .query('medic-client/registered_patients', options)
+      .query(VIEWS.REGISTERED_PATIENTS, options)
       .then((result) => {
         return result.rows.map(row => row.doc);
       });

@@ -2,7 +2,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const sinon = require('sinon');
 const rewire = require('rewire');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, VIEWS } = require('@medic/constants');
 
 const couchSettings = require('@medic/settings');
 const tokenLogin = require('../../src/token-login');
@@ -236,7 +236,7 @@ describe('Users service', () => {
             }
           ],
         };
-        db.users.query.withArgs('users/users_by_field', {
+        db.users.query.withArgs(VIEWS.USERS_BY_FIELD, {
           include_docs: true,
           key: ['facility_id', filters.facilityId],
         }).resolves(usersResponse);
@@ -304,7 +304,7 @@ describe('Users service', () => {
             }
           }],
         };
-        db.users.query.withArgs('users/users_by_field', {
+        db.users.query.withArgs(VIEWS.USERS_BY_FIELD, {
           include_docs: true,
           key: ['contact_id', filters.contactId],
         }).resolves(usersResponse);
@@ -362,7 +362,7 @@ describe('Users service', () => {
             }
           ],
         };
-        db.users.query.withArgs('users/users_by_field', {
+        db.users.query.withArgs(VIEWS.USERS_BY_FIELD, {
           include_docs: true,
           key: ['contact_id', filters.contactId],
         }).resolves(usersResponse);

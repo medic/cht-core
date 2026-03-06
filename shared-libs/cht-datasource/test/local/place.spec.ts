@@ -7,6 +7,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import { expect } from 'chai';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as Lineage from '../../src/local/libs/lineage';
+import { VIEWS } from '../../src/libs/constants';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
@@ -181,7 +182,7 @@ describe('local place', () => {
         expect(settingsGetAll.callCount).to.equal(1);
         expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, VIEWS.CONTACTS_BY_TYPE)
         ).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.calledOnce).to.be.true;
@@ -207,7 +208,7 @@ describe('local place', () => {
         expect(settingsGetAll.callCount).to.equal(1);
         expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, VIEWS.CONTACTS_BY_TYPE)
         ).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');
@@ -224,7 +225,7 @@ describe('local place', () => {
 
         expect(settingsGetAll.calledOnce).to.be.true;
         expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
-        expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
+        expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, VIEWS.CONTACTS_BY_TYPE))
           .to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterInner.notCalled).to.be.true;
@@ -244,7 +245,7 @@ describe('local place', () => {
           expect(settingsGetAll.calledOnce).to.be.true;
           expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
           expect(queryDocsByKeyOuter.calledOnceWithExactly(
-            localContext.medicDb, 'medic-client/contacts_by_type'
+            localContext.medicDb, VIEWS.CONTACTS_BY_TYPE
           )).to.be.true;
           expect(queryDocsByKeyInner.notCalled).to.be.true;
           expect(fetchAndFilterInner.notCalled).to.be.true;
@@ -266,7 +267,7 @@ describe('local place', () => {
         expect(settingsGetAll.calledOnce).to.be.true;
         expect(getPlaceTypes.calledOnceWithExactly(settings)).to.be.true;
         expect(
-          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type')
+          queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, VIEWS.CONTACTS_BY_TYPE)
         ).to.be.true;
         expect(queryDocsByKeyInner.notCalled).to.be.true;
         expect(fetchAndFilterOuter.firstCall.args[0]).to.be.a('function');

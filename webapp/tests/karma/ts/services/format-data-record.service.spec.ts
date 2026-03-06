@@ -6,6 +6,7 @@ import * as chaiExclude from 'chai-exclude';
 //@ts-ignore
 chai.use(chaiExclude);
 
+import { VIEWS } from '@medic/constants';
 import { FormatDataRecordService } from '@mm-services/format-data-record.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { FormatDateService } from '@mm-services/format-date.service';
@@ -462,7 +463,7 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(1);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/registered_patients',
+          VIEWS.REGISTERED_PATIENTS,
           { key: '12345', include_docs: true }
         ]);
 
@@ -538,7 +539,7 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(1);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/registered_patients',
+          VIEWS.REGISTERED_PATIENTS,
           { key: '789', include_docs: true }
         ]);
 
@@ -625,11 +626,11 @@ describe('FormatDataRecord service', () => {
       return service.format(report).then(formatted => {
         expect(db.query.callCount).to.equal(2);
         expect(db.query.args[0]).to.deep.equal([
-          'medic-client/registered_patients',
+          VIEWS.REGISTERED_PATIENTS,
           { key: '123456', include_docs: true }
         ]);
         expect(db.query.args[1]).to.deep.equal([
-          'medic-client/registered_patients',
+          VIEWS.REGISTERED_PATIENTS,
           { key: '789', include_docs: true }
         ]);
 

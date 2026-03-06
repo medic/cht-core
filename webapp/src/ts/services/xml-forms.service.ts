@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
+import { VIEWS } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
@@ -57,7 +58,7 @@ export class XmlFormsService {
       key: ['form']
     };
     return this.dbService.get()
-      .query('medic-client/doc_by_type', options)
+      .query(VIEWS.DOC_BY_TYPE, options)
       .then((res) => {
         if (!res?.rows) {
           return;

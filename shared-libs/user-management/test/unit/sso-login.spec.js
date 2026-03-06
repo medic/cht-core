@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
+const { VIEWS } = require('@medic/constants');
 
 const config = require('../../src/libs/config');
 const service = require('../../src/sso-login');
@@ -74,7 +75,7 @@ describe('SSO Login service', () => {
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
@@ -95,7 +96,7 @@ describe('SSO Login service', () => {
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
@@ -195,7 +196,7 @@ describe('SSO Login service', () => {
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
@@ -222,7 +223,7 @@ describe('SSO Login service', () => {
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
@@ -255,7 +256,7 @@ describe('SSO Login service', () => {
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
       expect(generatePassword.calledOnceWithExactly()).to.be.true;
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', 'test'] }
       )).to.be.true;
     });
@@ -287,7 +288,7 @@ describe('SSO Login service', () => {
 
       expect(result).to.deep.equal([userDoc]);
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', oidcUsername] }
       )).to.be.true;
     });
@@ -300,7 +301,7 @@ describe('SSO Login service', () => {
 
       expect(result).to.be.empty;
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', oidcUsername] }
       )).to.be.true;
     });
@@ -315,7 +316,7 @@ describe('SSO Login service', () => {
 
       expect(result).to.deep.equal([userDoc0, userDoc1]);
       expect(db.users.query.calledOnceWithExactly(
-        'users/users_by_field',
+        VIEWS.USERS_BY_FIELD,
         { include_docs: true, key: ['oidc_username', oidcUsername] }
       )).to.be.true;
     });

@@ -1,7 +1,7 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
-import { DOC_IDS } from '@medic/constants';
+import { DOC_IDS, VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -69,8 +69,8 @@ export class TelemetryService {
   private generateMetadataSection(dbName) {
     return Promise
       .all([
-        this.dbService.get().get('_design/medic-client'),
-        this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
+        this.dbService.get().get('_design/shared'),
+        this.dbService.get().query(VIEWS.DOC_BY_TYPE, { key: ['form'], include_docs: true }),
         this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
       ])
       .then(([ ddoc, formResults, settingsResults ]) => {
@@ -238,12 +238,12 @@ export class TelemetryService {
         const dbNameParts = dbName.split(this.NAME_DIVIDER);
         if (dbNameParts.length >= 4) {
           const datePart = `${dbNameParts[1]}-${dbNameParts[2]}-${dbNameParts[3]}`;
-          
+
           // Don't submit today's telemetry records
           if (datePart === today.formatted) {
             continue;
           }
-          
+
           try {
             const db = this.windowRef.PouchDB(dbName);
             await this.aggregate(db, dbName);

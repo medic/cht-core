@@ -1,6 +1,7 @@
 const db = require('../../src/db');
 const sinon = require('sinon');
 const assert = require('chai').assert;
+const { VIEWS } = require('@medic/constants');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const registrationUtils = require('@medic/registration-utils');
@@ -27,7 +28,7 @@ describe('utils', () => {
     const result = [{_id: 'someRowId'}];
 
     db.medic.query
-      .withArgs('medic/reports_by_form_and_parent', {
+      .withArgs(VIEWS.REPORTS_BY_FORM_AND_PARENT, {
         startkey: [formName, clinicId],
         endkey: [formName, clinicId],
         include_docs: true,
@@ -72,7 +73,7 @@ describe('utils', () => {
       return utils.getContactUuid(given).then((actual) => {
         assert.equal(actual, expected);
         assert.equal(query.callCount, 1);
-        assert.equal(query.args[0][0], 'medic-client/contacts_by_reference');
+        assert.equal(query.args[0][0], VIEWS.CONTACTS_BY_REFERENCE);
         assert.equal(query.args[0][1].key[0], 'shortcode');
         assert.equal(query.args[0][1].key[1], given);
         assert.equal(query.args[0][1].include_docs, false);
@@ -109,7 +110,7 @@ describe('utils', () => {
       return utils.getContact(given).then(actual => {
         assert.equal(actual.name, 'jim');
         assert.equal(query.callCount, 1);
-        assert.equal(query.args[0][0], 'medic-client/contacts_by_reference');
+        assert.equal(query.args[0][0], VIEWS.CONTACTS_BY_REFERENCE);
         assert.equal(query.args[0][1].key[0], 'shortcode');
         assert.equal(query.args[0][1].key[1], given);
         assert.equal(query.args[0][1].include_docs, true);
@@ -149,7 +150,7 @@ describe('utils', () => {
         assert.equal(query.callCount, 1);
         assert.equal(registrationUtils.isValidRegistration.callCount, 1);
         assert.deepEqual(registrationUtils.isValidRegistration.args[0], [expectedDoc, { config: 'all' }]);
-        assert.equal(query.args[0][0], 'medic-client/registered_patients');
+        assert.equal(query.args[0][0], VIEWS.REGISTERED_PATIENTS);
         assert.equal(query.args[0][1].key, given);
         assert.equal(query.args[0][1].include_docs, true);
       });
@@ -169,7 +170,7 @@ describe('utils', () => {
         assert.deepEqual(registrationUtils.isValidRegistration.args[1], [expectedDoc2, { config: 'all' }]);
         assert.deepEqual(actual, [expectedDoc1, expectedDoc2 ]);
         assert.equal(view.callCount, 1);
-        assert.equal(view.args[0][0], 'medic-client/registered_patients');
+        assert.equal(view.args[0][0], VIEWS.REGISTERED_PATIENTS);
         assert.equal(view.args[0][1].keys, given);
         assert.equal(view.args[0][1].include_docs, true);
       });

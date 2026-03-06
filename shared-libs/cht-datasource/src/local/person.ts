@@ -9,6 +9,7 @@ import logger from '@medic/logger';
 import { InvalidArgumentError } from '../libs/error';
 import { validateCursor } from './libs/core';
 import { fetchHydratedDoc } from './libs/lineage';
+import { VIEWS } from '../libs/constants';
 
 /** @internal */
 export namespace v1 {
@@ -54,7 +55,7 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getDocsByPage = queryDocsByKey(medicDb, VIEWS.CONTACTS_BY_TYPE);
 
     return async (
       personType: ContactTypeQualifier,

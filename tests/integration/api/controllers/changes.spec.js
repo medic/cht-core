@@ -3,7 +3,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, REPLICATED_DDOCS } = require('@medic/constants');
 const { expect } = require('chai');
 
 const assertChangeIds = (changes, ...expectedIds) => {
@@ -224,7 +224,7 @@ describe('changes handler', () => {
   describe('Filtered replication', () => {
     const changesIDs = [
       DOC_IDS.SERVICE_WORKER_META,
-      '_design/medic-client',
+      ...REPLICATED_DDOCS,
       DOC_IDS.SETTINGS
     ];
 

@@ -7,6 +7,7 @@ const MIGRATION_LOG_ID = 'migration-log';
 const MIGRATION_LOG_TYPE = 'meta';
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
 
 const hasRun = (log, migration) => {
   if (!log || !log.migrations) {
@@ -20,7 +21,7 @@ const getLogWithView = () => {
     include_docs: true,
     key: [MIGRATION_LOG_TYPE],
   };
-  return db.medic.query('medic-client/doc_by_type', options).then(result => {
+  return db.medic.query(VIEWS.DOC_BY_TYPE, options).then(result => {
     return result && result.rows && result.rows[0] && result.rows[0].doc;
   });
 };

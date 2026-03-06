@@ -13,6 +13,7 @@ const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
 const phoneNumberParser = require('@medic/phone-number');
+const { VIEWS } = require('@medic/constants');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
@@ -415,7 +416,7 @@ const setPatientId = (options) => {
 
 const getParentByPhone = options => {
   return db.medic
-    .query('medic-client/contacts_by_phone', { key: options.doc.from, include_docs: true })
+    .query(VIEWS.CONTACTS_BY_PHONE, { key: options.doc.from, include_docs: true })
     .then(result => result && result.rows && result.rows.length && result.rows[0].doc)
     .then(contact => {
       if (!contact) {

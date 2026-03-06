@@ -7,6 +7,7 @@ const config = require('../config');
 const db = require('../db');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
+const { VIEWS, viewUrl } = require('@medic/constants');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
@@ -136,7 +137,7 @@ const getBatch = async (query, startKey, startKeyDocId) => {
 
   const options = {
     baseUrl: environment.couchUrl,
-    uri: '/_design/medic/_view/messages_by_state',
+    uri: `/${viewUrl(VIEWS.MESSAGES_BY_STATE)}`,
     qs: queryString,
     json: true
   };

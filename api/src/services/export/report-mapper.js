@@ -5,6 +5,7 @@ const dateFormat = require('./date-format');
 const dataContext = require('../data-context');
 const search = require('@medic/search')(db.medic, dataContext);
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const { VIEWS } = require('@medic/constants');
 
 // Flattens a given object into an object where the keys are dot-notation
 // paths to the flattened values:
@@ -56,7 +57,7 @@ module.exports = {
       }
 
       return db.medic
-        .query('medic-client/reports_by_form', { group: true })
+        .query(VIEWS.REPORTS_BY_FORM, { group: true })
         .then(results => results.rows.map(r => r.key[0]));
     };
 
@@ -69,7 +70,7 @@ module.exports = {
     return getForms()
       .then(forms => {
         const getFieldsPromises = form => db.medic
-          .query('medic-client/reports_by_form', {
+          .query(VIEWS.REPORTS_BY_FORM, {
             key: [form],
             limit: 1,
             include_docs: true,

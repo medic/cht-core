@@ -2,7 +2,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, REPLICATED_DDOCS } = require('@medic/constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const expect = chai.expect;
@@ -19,7 +19,7 @@ const parentPlace = {
 const getIdsForUser = (user) => [
   `org.couchdb.user:${user}`,
   DOC_IDS.SETTINGS,
-  '_design/medic-client',
+  ...REPLICATED_DDOCS,
   DOC_IDS.SERVICE_WORKER_META
 ];
 
@@ -94,7 +94,7 @@ const unrestrictedKeys = [
   'fixture:offline',
   'fixture:user:offline',
   'org.couchdb.user:offline',
-  '_design/medic-client',
+  ...REPLICATED_DDOCS,
   'resources',
   DOC_IDS.SETTINGS,
   /^messages-.*$/

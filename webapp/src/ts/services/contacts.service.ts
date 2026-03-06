@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { flattenDeep as _flattenDeep } from 'lodash-es';
+import { VIEWS } from '@medic/constants';
 
 import { CacheService } from '@mm-services/cache.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -30,7 +31,7 @@ export class ContactsService {
             get: (callback) => {
               return this.dbService
                 .get()
-                .query('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: [type.id] })
+                .query(VIEWS.CONTACTS_BY_TYPE, { include_docs: true, reduce: false, key: [type.id] })
                 .then((result) => {
                   callback(null, result.rows.map(row => row.doc));
                 })
@@ -83,7 +84,7 @@ export class ContactsService {
     }
     const results = await this.dbService
       .get()
-      .query('medic-client/contacts_by_parent', {
+      .query(VIEWS.CONTACTS_BY_PARENT, {
         key: [parentId, contactType],
         include_docs: true
       });

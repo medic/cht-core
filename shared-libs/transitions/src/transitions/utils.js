@@ -6,6 +6,7 @@ const idGenerator = require('../lib/ids').generator(db);
 const config = require('../config');
 const validation = require('@medic/validation');
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
 
 validation.init({ db, translate: utils.translate, settings: config.getAll(), logger, dataContext });
 
@@ -59,7 +60,7 @@ module.exports = {
   },
   isIdUnique: (id) => {
     return db.medic
-      .query('medic-client/contacts_by_reference', { key: ['shortcode', id] })
+      .query(VIEWS.CONTACTS_BY_REFERENCE, { key: ['shortcode', id] })
       .then(results => !(results && results.rows && results.rows.length));
   },  
   addUniqueId: (doc) => {

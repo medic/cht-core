@@ -12,6 +12,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const logger = require('@medic/logger');
 const messages = config.getTransitionsLib().messages;
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { VIEWS, viewUrl } = require('@medic/constants');
 
 const BATCH_SIZE = 1000;
 
@@ -110,7 +111,7 @@ const getPlaceIds = (keys, startDocId) => {
   // using `request` library because PouchDB doesn't support `start_key_doc_id` in view queries
   // using `start_key_doc_id` because using `skip` is *very* slow
   return request
-    .get({ url: `${environment.couchUrl}/_design/medic-client/_view/contacts_by_type`, qs: query, json: true })
+    .get({ url: `${environment.couchUrl}/${viewUrl(VIEWS.CONTACTS_BY_TYPE)}`, qs: query, json: true })
     .then(result => result.rows.map(row => row.id));
 };
 
@@ -141,7 +142,7 @@ const getPlacesWithoutSentForms = (reminder, scheduledDate, placeIds) => {
 
   const keys = placeIds.map(id => [reminder.form, id]);
   return db.medic
-    .query('medic/reports_by_form_and_parent', { keys, group: true })
+    .query(VIEWS.REPORTS_BY_FORM_AND_PARENT, { keys, group: true })
     .then(results => {
       const invalidPlaceIds = [];
       results.rows.forEach(row => {

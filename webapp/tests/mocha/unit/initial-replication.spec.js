@@ -2,7 +2,7 @@ const sinon = require('sinon');
 require('chai').use(require('chai-as-promised'));
 const rewire = require('rewire');
 const { expect } = require('chai');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, REPLICATED_DDOCS } = require('@medic/constants');
 const utils = require('../../../src/js/bootstrapper/utils');
 
 let initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
@@ -31,7 +31,12 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client', error: 'missing' },
+            { id: '_design/medic-client' },
+            { id: '_design/shared', error: 'missing' },
+
+            { id: '_design/shared-reports' },
+            { id: '_design/webapp-contacts' },
+            { id: '_design/webapp-reports' },
             { id: DOC_IDS.SETTINGS },
             { id: 'org.couchdb.user:Nivea' },
           ]
@@ -42,7 +47,11 @@ describe('Initial replication', () => {
       expect(await initialReplication.isReplicationNeeded(localDb, userCtx)).to.equal(true);
 
       expect(localDb.allDocs.args).to.deep.equal([[
-        { keys: ['_design/medic-client', DOC_IDS.SETTINGS, 'org.couchdb.user:Nivea'] },
+        { keys: [
+          ...REPLICATED_DDOCS,
+          DOC_IDS.SETTINGS,
+          'org.couchdb.user:Nivea',
+        ] },
       ]]);
     });
 
@@ -50,7 +59,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client' },
+            ...REPLICATED_DDOCS.map(id => ({ id })),
             { id: DOC_IDS.SETTINGS, error: 'missing' },
             { id: 'userctx' },
           ]
@@ -66,7 +75,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client' },
+            ...REPLICATED_DDOCS.map(id => ({ id })),
             { id: DOC_IDS.SETTINGS },
             { id: 'userctx', error: 'missing' },
           ]
@@ -83,7 +92,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client' },
+            ...REPLICATED_DDOCS.map(id => ({ id })),
             { id: DOC_IDS.SETTINGS },
             { id: 'userctx' },
           ]
@@ -99,7 +108,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client' },
+            ...REPLICATED_DDOCS.map(id => ({ id })),
             { id: DOC_IDS.SETTINGS },
             { id: 'userctx' },
           ]
@@ -115,7 +124,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client' },
+            ...REPLICATED_DDOCS.map(id => ({ id })),
             { id: DOC_IDS.SETTINGS },
             { id: 'userctx' },
           ]
@@ -140,7 +149,7 @@ describe('Initial replication', () => {
       localDb = {
         allDocs: sinon.stub().resolves({
           rows: [
-            { id: '_design/medic-client' },
+            ...REPLICATED_DDOCS.map(id => ({ id })),
             { id: DOC_IDS.SETTINGS },
             { id: 'userctx' },
           ]

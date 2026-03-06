@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, REPLICATED_DDOCS } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
@@ -9,7 +9,7 @@ const DEFAULT_EXPECTED = [
   'resources',
   'branding',
   // 'partners',
-  '_design/medic-client'
+  ...REPLICATED_DDOCS,
 ];
 const defaultDocRegex = /^(messages-|form:)/;
 const isFormOrTranslation = id => defaultDocRegex.test(id);

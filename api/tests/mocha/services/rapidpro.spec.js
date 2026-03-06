@@ -8,6 +8,7 @@ const config = require('../../../src/config');
 const db = require('../../../src/db');
 const messaging = require('../../../src/services/messaging');
 const service = rewire('../../../src/services/rapidpro');
+const { VIEWS } = require('@medic/constants');
 
 const generateMessages = (count = 25) => Array
   .from({ length: count })
@@ -221,7 +222,7 @@ describe('RapidPro SMS Gateway', () => {
         expect(secureSettings.getCredentials.args[0]).to.deep.equal(['rapidpro:outgoing']);
         expect(db.medic.query.callCount).to.equal(1);
         expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-sms/gateway_messages_by_state',
+          VIEWS.GATEWAY_MESSAGES_BY_STATE,
           {
             keys: nonFinalStatuses,
             skip: 0,
@@ -422,9 +423,9 @@ describe('RapidPro SMS Gateway', () => {
         return service.poll().then(() => {
           expect(db.medic.query.callCount).to.equal(3);
           expect(db.medic.query.args).to.deep.equal([
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 25 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 50 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 25 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 50 }],
           ]);
           expect(service.__get__('skip')).to.equal(0);
         });
@@ -443,8 +444,8 @@ describe('RapidPro SMS Gateway', () => {
           expect(service.__get__('skip')).to.equal(0);
           expect(db.medic.query.callCount).to.equal(2);
           expect(db.medic.query.args).to.deep.equal([
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 0 }],
           ]);
         });
       });
@@ -466,10 +467,10 @@ describe('RapidPro SMS Gateway', () => {
           expect(service.__get__('skip')).to.equal(0);
           expect(db.medic.query.callCount).to.equal(4);
           expect(db.medic.query.args).to.deep.equal([
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 2 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 10 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 17 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 2 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 10 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 17 }],
           ]);
         });
       });
@@ -486,9 +487,9 @@ describe('RapidPro SMS Gateway', () => {
           expect(service.__get__('skip')).to.equal(0);
           expect(db.medic.query.callCount).to.equal(3);
           expect(db.medic.query.args).to.deep.equal([
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 0 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 12 }],
-            ['medic-sms/gateway_messages_by_state', { keys: nonFinalStatuses, limit: 25, skip: 24 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 0 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 12 }],
+            [VIEWS.GATEWAY_MESSAGES_BY_STATE, { keys: nonFinalStatuses, limit: 25, skip: 24 }],
           ]);
         });
       });

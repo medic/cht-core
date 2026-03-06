@@ -4,6 +4,7 @@ const moment = require('moment');
 const db = require('../../db');
 const config = require('../../config');
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
 
 /**
  * @param {string} filters.dataSet
@@ -73,7 +74,7 @@ const fetch = {
   },
 
   contactsWithOrgUnits: async orgUnit => {
-    const fetched = await db.medic.query('medic-admin/contacts_by_dhis_orgunit', { key: orgUnit, include_docs: true });
+    const fetched = await db.medic.query(VIEWS.CONTACTS_BY_DHIS_ORGUNIT, { key: orgUnit, include_docs: true });
     return _.uniqBy(fetched.rows.map(row => row.doc), '_id');
   },
 

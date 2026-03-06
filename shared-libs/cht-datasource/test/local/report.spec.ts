@@ -7,7 +7,7 @@ import * as Nouveau from '../../src/local/libs/nouveau';
 import * as Report from '../../src/local/report';
 import * as Qualifier from '../../src/qualifier';
 import { expect } from 'chai';
-import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
+import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../../src/libs/constants';
 import * as Lineage from '../../src/local/libs/lineage';
 import { InvalidArgumentError } from '../../src';
 
@@ -162,13 +162,13 @@ describe('local report', () => {
         queryViewFreetextByKey = sinon.stub();
         sinon
           .stub(LocalDoc, 'queryDocIdsByKey')
-          .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
+          .withArgs(localContext.medicDb, VIEWS.REPORTS_BY_FREETEXT)
           .returns(queryViewFreetextByKey);
 
         queryViewFreetextByRange = sinon.stub();
         sinon
           .stub(LocalDoc, 'queryDocIdsByRange')
-          .withArgs(localContext.medicDb, 'medic-offline-freetext/reports_by_freetext')
+          .withArgs(localContext.medicDb, VIEWS.REPORTS_BY_FREETEXT)
           .returns(queryViewFreetextByRange);
 
         fetchAndFilterIdsInner = sinon.stub();
@@ -179,7 +179,7 @@ describe('local report', () => {
         queryNouveauFreetext = sinon.stub();
         sinon
           .stub(Nouveau, 'queryByFreetext')
-          .withArgs(localContext.medicDb, 'reports_by_freetext')
+          .withArgs(localContext.medicDb, NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)
           .returns(queryNouveauFreetext);
 
         useNouveauIndexes = sinon.stub(Nouveau, 'useNouveauIndexes');

@@ -1,6 +1,7 @@
 const db = require('../db');
 const config = require('../config');
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
 const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const NAME = 'update_scheduled_reports';
@@ -97,7 +98,7 @@ module.exports = {
         parentId,
         {},
       ];
-      view = 'medic/reports_by_form_year_week_parent_reported_date';
+      view = VIEWS.REPORTS_BY_FORM_YEAR_WEEK_PARENT_REPORTED_DATE;
     } else if (doc.fields.month || doc.fields.month_num) {
       options.startkey = [
         doc.form,
@@ -112,7 +113,7 @@ module.exports = {
         parentId,
         {},
       ];
-      view = 'medic/reports_by_form_year_month_parent_reported_date';
+      view = VIEWS.REPORTS_BY_FORM_YEAR_MONTH_PARENT_REPORTED_DATE;
     } else {
       return Promise.resolve();
     }
