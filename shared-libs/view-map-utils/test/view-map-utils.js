@@ -440,4 +440,5 @@ describe('Replication Helper Views Lib', () => {
       lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 'Medic', value: null }]);
     });
   });
+
 });
