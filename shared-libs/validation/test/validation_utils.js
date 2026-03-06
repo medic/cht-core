@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('chai').assert;
+const { expect } = require('chai');
 const logger = require('@medic/logger');
 const validationUtils = require('../src/validation_utils');
 
@@ -16,9 +16,9 @@ describe('validation_utils', () => {
     it('should reject when no fields provided', async () => {
       try {
         await validationUtils.exists({}, [], {});
-        assert.fail('should have thrown');
+        expect.fail('should have thrown');
       } catch (e) {
-        assert.equal(e, 'No arguments provided to "exists" validation function');
+        expect(e).to.equal('No arguments provided to "exists" validation function');
       }
     });
   });
@@ -27,27 +27,27 @@ describe('validation_utils', () => {
     it('should return false and log error when exception is thrown', () => {
       // Pass invalid arguments that cause an exception in parseDuration
       const result = validationUtils.compareDate({}, null, null, false);
-      assert.isFalse(result);
-      assert.equal(logger.error.callCount, 1);
+      expect(result).to.be.false;
+      expect(logger.error.callCount).to.equal(1);
     });
   });
 
   describe('isISOWeek', () => {
     it('should return false when week field does not exist', () => {
       const result = validationUtils.isISOWeek({}, 'week', 'year');
-      assert.isFalse(result);
-      assert.equal(logger.error.callCount, 1);
+      expect(result).to.be.false;
+      expect(logger.error.callCount).to.equal(1);
     });
 
     it('should return false when year field is specified but does not exist', () => {
       const result = validationUtils.isISOWeek({ week: 5 }, 'week', 'year');
-      assert.isFalse(result);
-      assert.equal(logger.error.callCount, 1);
+      expect(result).to.be.false;
+      expect(logger.error.callCount).to.equal(1);
     });
 
     it('should use current year when no year field specified', () => {
       const result = validationUtils.isISOWeek({ week: 5 }, 'week');
-      assert.isTrue(result);
+      expect(result).to.be.true;
     });
   });
 });

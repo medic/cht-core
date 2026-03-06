@@ -1,4 +1,4 @@
-const assert = require('chai').assert;
+const { expect } = require('chai');
 const lexer = require('../src/lexer');
 const parser = require('../src/parser');
 const validator = require('../src/validator');
@@ -10,14 +10,14 @@ describe('lexer', () => {
     // Backslash outside a string escapes the next char, treating it as identifier
     const tokens = lexer.tokenize('test\\(value');
     const idToken = tokens.find(t => t.name === Token.Identifier);
-    assert.equal(idToken.data, 'test(value');
+    expect(idToken.data).to.equal('test(value');
   });
 
   it('should tokenize logical NOT', () => {
     const tokens = lexer.tokenize('!required');
-    assert.equal(tokens[0].name, Token.LogicalNot);
-    assert.equal(tokens[1].name, Token.Identifier);
-    assert.equal(tokens[1].data, 'required');
+    expect(tokens[0].name).to.equal(Token.LogicalNot);
+    expect(tokens[1].name).to.equal(Token.Identifier);
+    expect(tokens[1].data).to.equal('required');
   });
 });
 
@@ -25,32 +25,32 @@ describe('parser', () => {
   it('should parse logical NOT', () => {
     const tokens = lexer.tokenize('!required');
     const result = parser.parse(tokens);
-    assert.equal(result[0].type, Entity.Block);
-    assert.equal(result[0].sub[0].type, Entity.LogicalNot);
-    assert.equal(result[0].sub[1].type, Entity.Func);
-    assert.equal(result[0].sub[1].funcName, 'required');
+    expect(result[0].type).to.equal(Entity.Block);
+    expect(result[0].sub[0].type).to.equal(Entity.LogicalNot);
+    expect(result[0].sub[1].type).to.equal(Entity.Func);
+    expect(result[0].sub[1].funcName).to.equal('required');
   });
 
   it('should throw on unexpected string', () => {
     const tokens = [{ name: Token.String, data: 'bad' }];
-    assert.throws(() => parser.parse(tokens), 'Unexpected string');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected string');
   });
 
   it('should throw on unexpected number', () => {
     const tokens = [{ name: Token.Number, data: '42' }];
-    assert.throws(() => parser.parse(tokens), 'Unexpected string');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected string');
   });
 
   it('should throw on unexpected opening bracket in wrong context', () => {
     // After a function name, we expect funcArgsStart or logicalOp.
     // A second BracketOpen after args start expects string/number/funcArgsEnd, not blockStart.
     const tokens = lexer.tokenize('required(()');
-    assert.throws(() => parser.parse(tokens), 'Unexpected opening bracket');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected opening bracket');
   });
 
   it('should throw on unexpected closing bracket', () => {
     const tokens = lexer.tokenize(')');
-    assert.throws(() => parser.parse(tokens));
+    expect(() => parser.parse(tokens)).to.throw('Unexpected closing bracket');
   });
 
   it('should throw on unexpected identifier', () => {
@@ -59,42 +59,42 @@ describe('parser', () => {
       { name: Token.Identifier, data: 'required' },
       { name: Token.Identifier, data: 'lenMin' },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected identifier');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected identifier');
   });
 
   it('should throw on unexpected logical AND', () => {
     const tokens = [
       { name: Token.LogicalAnd, data: null },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected logical AND');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected logical AND');
   });
 
   it('should throw on unexpected logical OR', () => {
     const tokens = [
       { name: Token.LogicalOr, data: null },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected logical OR');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected logical OR');
   });
 
   it('should throw on unexpected ternary then', () => {
     const tokens = [
       { name: Token.QuestionMark, data: null },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected ternary');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected ternary');
   });
 
   it('should throw on unexpected ternary else', () => {
     const tokens = [
       { name: Token.Colon, data: null },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected ternary');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected ternary');
   });
 
   it('should throw on unexpected comma', () => {
     const tokens = [
       { name: Token.Comma, data: null },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected function argument separator');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected function argument separator');
   });
 
   it('should throw on unexpected logical NOT', () => {
@@ -103,40 +103,40 @@ describe('parser', () => {
       { name: Token.Identifier, data: 'required' },
       { name: Token.LogicalNot, data: null },
     ];
-    assert.throws(() => parser.parse(tokens), 'Unexpected logical NOT');
+    expect(() => parser.parse(tokens)).to.throw('Unexpected logical NOT');
   });
 
   it('should throw when trying to close root block', () => {
     // "required)" tries to close a block that was never opened
     const tokens = lexer.tokenize('required)');
-    assert.throws(() => parser.parse(tokens), 'Can\'t close the root block');
+    expect(() => parser.parse(tokens)).to.throw('Can\'t close the root block');
   });
 
   it('should throw when blocks are not closed', () => {
     const tokens = lexer.tokenize('(required');
-    assert.throws(() => parser.parse(tokens), 'All blocks weren\'t closed');
+    expect(() => parser.parse(tokens)).to.throw('All blocks weren\'t closed');
   });
 
   it('should handle ternary without explicit else at end of tokens', () => {
     // "required ? lenMin(1)" - ternary with just a then branch
     const tokens = lexer.tokenize('required ? lenMin(1)');
     const result = parser.parse(tokens);
-    assert.equal(result[0].type, Entity.Block);
+    expect(result[0].type).to.equal(Entity.Block);
     const ternary = result[0].sub[0];
-    assert.equal(ternary.type, Entity.Ternary);
-    assert.isNotNull(ternary.ifThen);
+    expect(ternary.type).to.equal(Entity.Ternary);
+    expect(ternary.ifThen).to.not.be.null;
   });
 });
 
 describe('validator', () => {
   it('should return true for null entities', async () => {
     const result = await validator.validate(null, {}, 'key');
-    assert.isTrue(result);
+    expect(result).to.be.true;
   });
 
   it('should return true for undefined entities', async () => {
     const result = await validator.validate(undefined, {}, 'key');
-    assert.isTrue(result);
+    expect(result).to.be.true;
   });
 
   it('should handle negation with logical NOT', async () => {
@@ -150,7 +150,7 @@ describe('validator', () => {
     ];
     // value is 'hello' which is truthy, so required returns true, negated to false
     const result = await validator.validate(entities, { key: 'hello' }, 'key');
-    assert.isFalse(result);
+    expect(result).to.be.false;
   });
 
   it('should handle negation making false become true', async () => {
@@ -164,20 +164,20 @@ describe('validator', () => {
     ];
     // value is '' which is falsy, so required returns false, negated to true
     const result = await validator.validate(entities, { key: '' }, 'key');
-    assert.isTrue(result);
+    expect(result).to.be.true;
   });
 });
 
 describe('entities', () => {
   it('toString should return entity name', () => {
-    assert.equal(Entity.Block.toString(), 'Block');
-    assert.equal(Entity.Func.toString(), 'Func');
+    expect(Entity.Block.toString()).to.equal('Block');
+    expect(Entity.Func.toString()).to.equal('Func');
   });
 });
 
 describe('tokens', () => {
   it('toString should return token name', () => {
-    assert.equal(Token.Identifier.toString(), 'Identifier');
-    assert.equal(Token.Comma.toString(), 'Comma');
+    expect(Token.Identifier.toString()).to.equal('Identifier');
+    expect(Token.Comma.toString()).to.equal('Comma');
   });
 });
