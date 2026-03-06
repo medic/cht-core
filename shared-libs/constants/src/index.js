@@ -125,9 +125,9 @@ const USER_ROLES = {
 
 // CouchDB Nouveau index paths (ddoc/index)
 const NOUVEAU_INDEXES = {
-  // online-user ddoc
-  CONTACTS_BY_FREETEXT: 'online-user/contacts_by_freetext',
-  REPORTS_BY_FREETEXT: 'online-user/reports_by_freetext',
+  // server ddoc
+  CONTACTS_BY_FREETEXT: 'server/contacts_by_freetext',
+  REPORTS_BY_FREETEXT: 'server/reports_by_freetext',
 
   // replication ddoc
   DOCS_BY_REPLICATION_KEY: 'replication/docs_by_replication_key',
@@ -136,8 +136,12 @@ const NOUVEAU_INDEXES = {
 // Converts a view path like 'shared/doc_by_type' to the CouchDB URL segment '_design/shared/_view/doc_by_type'
 const viewUrl = (viewPath) => `_design/${viewPath.replace('/', '/_view/')}`;
 
-// Converts a nouveau index path like 'replication/docs_by_replication_key' to '_design/replication/_nouveau/docs_by_replication_key'
+// Converts a nouveau index path like 'replication/docs_by_replication_key'
+// to '_design/replication/_nouveau/docs_by_replication_key'
 const nouveauUrl = (indexPath) => `_design/${indexPath.replace('/', '/_nouveau/')}`;
+
+// Converts a nouveau index path to its info URL segment: '_design/replication/_nouveau_info/docs_by_replication_key'
+const nouveauInfoUrl = (indexPath) => `_design/${indexPath.replace('/', '/_nouveau_info/')}`;
 
 module.exports = {
   DOC_IDS,
@@ -149,6 +153,7 @@ module.exports = {
   USER_ROLES,
   CONTACT_TYPES,
   VIEWS,
+  nouveauInfoUrl,
   nouveauUrl,
   viewUrl,
 };

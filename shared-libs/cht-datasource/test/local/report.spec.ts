@@ -7,7 +7,7 @@ import * as Nouveau from '../../src/local/libs/nouveau';
 import * as Report from '../../src/local/report';
 import * as Qualifier from '../../src/qualifier';
 import { expect } from 'chai';
-import { END_OF_ALPHABET_MARKER, VIEWS } from '../../src/libs/constants';
+import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../../src/libs/constants';
 import * as Lineage from '../../src/local/libs/lineage';
 import { InvalidArgumentError } from '../../src';
 
@@ -179,7 +179,7 @@ describe('local report', () => {
         queryNouveauFreetext = sinon.stub();
         sinon
           .stub(Nouveau, 'queryByFreetext')
-          .withArgs(localContext.medicDb, 'reports_by_freetext')
+          .withArgs(localContext.medicDb, NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)
           .returns(queryNouveauFreetext);
 
         useNouveauIndexes = sinon.stub(Nouveau, 'useNouveauIndexes');

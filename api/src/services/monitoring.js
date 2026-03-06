@@ -20,7 +20,6 @@ const VIEW_INDEXES_TO_MONITOR = {
     'medic-admin',
     'medic-conflicts',
     'medic-sms',
-    'online-user',
     'replication',
     'server',
     'shared',

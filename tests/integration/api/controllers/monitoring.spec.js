@@ -1,13 +1,12 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const { NOUVEAU_INDEXES, VIEWS } = require('@medic/constants');
+const { NOUVEAU_INDEXES } = require('@medic/constants');
 
 const VIEW_INDEXES_BY_DB = {
   'medic-test': [
     'medic-admin',
     'medic-conflicts',
     'medic-sms',
-    'online-user',
     'replication',
     'server',
     'shared',

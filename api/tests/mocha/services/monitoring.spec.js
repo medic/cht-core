@@ -9,7 +9,7 @@ const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
-const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS } = require('@medic/constants');
+const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS, nouveauInfoUrl } = require('@medic/constants');
 
 let clock;
 
@@ -70,7 +70,6 @@ const VIEW_INDEXES_BY_DB = {
     'medic-admin',
     'medic-conflicts',
     'medic-sms',
-    'online-user',
     'replication',
     'server',
     'shared',
@@ -166,15 +165,6 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'online-user': {
-    name: 'online-user',
-    view_index: {
-      sizes: {
-        active: 100,
-        file: 200
-      }
-    }
-  },
   'sentinel': {
     name: 'sentinel',
     view_index: {
@@ -205,13 +195,13 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
 };
 
 const NOUVEAU_DDOCS_BY_DB = {
-  [environment.db]: ['online-user', 'replication'],
+  [environment.db]: ['server', 'replication'],
 };
 
 const NOUVEAU_INDEX_INFO_BY_DDOC = {
-  'online-user': {
+  'server': {
     reports_by_freetext: {
-      name: '_design/online-user/reports_by_freetext',
+      name: '_design/server/reports_by_freetext',
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -221,7 +211,7 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
       },
     },
     contacts_by_freetext: {
-      name: '_design/online-user/contacts_by_freetext',
+      name: '_design/server/contacts_by_freetext',
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -373,7 +363,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.0724612953683592,
+          fragmentation: 1.0724187132519811,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -462,7 +452,6 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
@@ -471,15 +460,15 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -519,7 +508,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.0724612953683592,
+          fragmentation: 1.0724187132519811,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -635,7 +624,6 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
@@ -644,15 +632,15 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -764,7 +752,6 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
@@ -773,15 +760,15 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
@@ -908,7 +895,6 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/online-user/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
@@ -917,15 +903,15 @@ describe('Monitoring service', () => {
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
         }],
         [{
           json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.replace('/', '/_nouveau_info/')}`,
+          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
         }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],

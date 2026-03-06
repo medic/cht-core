@@ -28,8 +28,8 @@ export const VIEWS = {
 
 /** @ignore */
 export const NOUVEAU_INDEXES = {
-  CONTACTS_BY_FREETEXT: 'online-user/contacts_by_freetext',
-  REPORTS_BY_FREETEXT: 'online-user/reports_by_freetext',
+  CONTACTS_BY_FREETEXT: 'server/contacts_by_freetext',
+  REPORTS_BY_FREETEXT: 'server/reports_by_freetext',
 } as const;
 
 /** @ignore */
