@@ -51,7 +51,7 @@ export class PartnerImagePipe implements PipeTransform {
   ) { }
 
   transform(name:string) {
-    return this.sanitizer.bypassSecurityTrustHtml(this.resourceIcons.getImg(name, 'partners'));
+    return this.sanitizer.bypassSecurityTrustHtml(this.resourceIcons.getImg(name, DOC_IDS.PARTNERS));
   }
 }
 
