@@ -24,7 +24,7 @@ describe('server', () => {
 
   describe('response compression', () => {
     const requestWrapper = async (options) => {
-      const opts =  { path: '/', gzip: true, resolveWithFullResponse: true, ...options };
+      const opts = { path: '/', gzip: true, resolveWithFullResponse: true, ...options };
 
       const res = await utils.request(opts);
       return { res, body: res.body };
@@ -33,7 +33,7 @@ describe('server', () => {
     it('compresses proxied CouchDB application/json requests which send accept-encoding gzip headers', () => {
       const options = { path: '/medic/_all_docs' };
 
-      return requestWrapper(options).then(({res}) => {
+      return requestWrapper(options).then(({ res }) => {
         expect(res.headers.get('content-encoding')).to.equal('gzip');
         expect(res.headers.get('content-type')).to.equal('application/json');
       });
@@ -46,7 +46,7 @@ describe('server', () => {
         headers: { 'Accept-Encoding': 'deflate' }
       };
 
-      return requestWrapper(options).then(({res}) => {
+      return requestWrapper(options).then(({ res }) => {
         expect(res.headers.get('content-encoding')).to.equal('deflate');
         expect(res.headers.get('content-type')).to.equal('application/json');
       });
@@ -58,7 +58,7 @@ describe('server', () => {
         gzip: false
       };
 
-      return requestWrapper(options).then(({res}) => {
+      return requestWrapper(options).then(({ res }) => {
         expect(res.headers.get('content-type')).to.equal('application/json');
         expect(res.headers.get('content-encoding')).to.be.null;
       });
@@ -81,7 +81,7 @@ describe('server', () => {
         }
       };
 
-      return requestWrapper(options).then(({res, body}) => {
+      return requestWrapper(options).then(({ res, body }) => {
         expect(res.headers.get('content-type')).to.equal('application/json; charset=utf-8');
         expect(res.headers.get('content-encoding')).to.equal('gzip');
         expect(_.omit(body[0], 'rev')).to.eql({ id: 'sample_doc', ok: true });
@@ -105,7 +105,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({body}) => {
+        .then(({ body }) => {
           const options = {
             path: '/medic//sample_doc/attach',
             json: false,
@@ -114,7 +114,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({res, body}) => {
+        .then(({ res, body }) => {
           expect(res.headers.get('content-type')).to.equal('text/plain');
           expect(res.headers.get('content-encoding')).to.equal('gzip');
           expect(body).to.equal('my-attachment-content');
@@ -123,8 +123,8 @@ describe('server', () => {
 
     it('compresses compressible CouchDB doc attachments (application/xml)', () => {
       const xml = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
-                  '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
-                  '<name>Person 1.1.2.1</name></contact></parent></contact>';
+        '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
+        '<name>Person 1.1.2.1</name></contact></parent></contact>';
       return utils
         .getDoc('sample_doc2')
         .then(doc => {
@@ -139,7 +139,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({body}) => {
+        .then(({ body }) => {
           const options = {
             path: '/medic/sample_doc2/attach',
             qs: { rev: body.rev }
@@ -147,7 +147,7 @@ describe('server', () => {
 
           return requestWrapper(options);
         })
-        .then(({res, body}) => {
+        .then(({ res, body }) => {
           expect(res.headers.get('content-type')).to.equal('application/xml');
           expect(res.headers.get('content-encoding')).to.equal('gzip');
           expect(body).to.equal(xml);
@@ -156,8 +156,8 @@ describe('server', () => {
 
     it('does not compress uncompressible CouchDB doc attachments (image/png)', async () => {
       const png = '<contact><_id>689960f3-edc2-429b-92f7-96799b3db7d5</_id><patient_id>40599</patient_id>' +
-                  '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
-                  '<name>Person 1.1.2.1</name></contact></parent></contact>';
+        '<name>Person 1.1.2.1</name><date_of_birth /><sex /><parent><contact><phone />' +
+        '<name>Person 1.1.2.1</name></contact></parent></contact>';
       const doc = await utils.getDoc('sample_doc2');
       const options = {
         path: '/medic/sample_doc2/attach',
@@ -263,7 +263,7 @@ describe('server', () => {
         const collectApiLogs = await utils.collectApiLogs(/hydrate/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
-        const result = await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] }});
+        const result = await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] } });
         await utils.delayPromise(500); // wait for everything to get logged
 
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
@@ -302,7 +302,7 @@ describe('server', () => {
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
         await utils.request({ path: '/api/couch-config-attachments' });
-        await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] }});
+        await utils.request({ path: '/api/v1/hydrate', qs: { doc_ids: [constants.USER_CONTACT_ID] } });
 
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
         const haproxyLogs = (await collectHaproxyLogs()).filter(log => log.length);
@@ -449,6 +449,6 @@ describe('server', () => {
 
       await utils.stopApi();
       await utils.startApi();
-    }); 
+    });
   });
 });

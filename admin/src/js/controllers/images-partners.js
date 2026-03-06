@@ -26,7 +26,7 @@ angular.module('controllers').controller('ImagesPartnersCtrl',
     $scope.images = null;
 
     const renderResources = () => {
-      ResourceIcons.getDocResources('partners').then(images => {
+      ResourceIcons.getDocResources(PARTNER_ID).then(images => {
         $scope.images = images;
         $scope.loading = false;
       });
