@@ -181,6 +181,11 @@ const getIssueNumbers = commitMessage => {
     return authConcat.trim();
   };
 
+  const commitIsTypeChore = (commit) => {
+    const title = commit.messageHeadline;
+    return title.substring(0, 6) === 'chore(';
+  };
+
   const findCommitsWithoutMilestone = async (commitsForRelease) => {
     const commitsWithoutMilestone = [];
     for (const commit of commitsForRelease) {
@@ -189,6 +194,7 @@ const getIssueNumbers = commitMessage => {
         || commitPRHasIssueWithMilestone(commit)
         || (await commitMsgHasIssueWithMilestone(commit))
         || commitMadeByDependabot(commit)
+        || commitIsTypeChore(commit)
       ) {
         continue;
       }
