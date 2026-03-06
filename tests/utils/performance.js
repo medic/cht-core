@@ -4,7 +4,6 @@ const path = require('node:path');
 const WDIOReporter = require('@wdio/reporter').default;
 
 const tempPerformanceFile = path.resolve(__dirname, '..', 'logs', 'temp-performance.json');
-console.warn(tempPerformanceFile);
 
 const formatDuration = (ms) => ms && `${Math.round(Number(ms)) / 1000} s`;
 let currentSuite;
@@ -45,19 +44,18 @@ class PerformanceReporter extends WDIOReporter {
   }
 
   onSuiteStart(suite) {
-    suite.entries = [];
     if (!currentSuite) {
       currentSuite = suite;
+      suite.entries = [];
     }
   }
 
   async onSuiteEnd(suite) {
-    console.warn(currentSuite, suite,);
     if (currentSuite !== suite) {
       return;
     }
 
-    this.write(performanceMeasuresToMarkdownTable(currentSuite));
+    this.write(performanceMeasuresToMarkdownTable(currentSuite.entries));
     this.write('\n\n');
 
     let previousEntries;
@@ -66,7 +64,7 @@ class PerformanceReporter extends WDIOReporter {
     } catch {
       previousEntries = [];
     }
-    previousEntries.push(...suite.entries);
+    previousEntries.push(...currentSuite.entries);
     await fs.writeFile(tempPerformanceFile, JSON.stringify(previousEntries, null, 2) + '\n');
   }
 }

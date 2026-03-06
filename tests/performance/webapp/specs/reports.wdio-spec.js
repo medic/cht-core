@@ -17,8 +17,16 @@ describe('reports', () => {
     pagePerformance.track('initial replication with tasks');
     await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
-    await commonPage.goToTasks(false);
+
+    await commonElements.goToTasks(false);
+    pagePerformance.track('tasks - first load without calculation');
+    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
     await tasksPage.getTasks(LOAD_TIMEOUT);
+    pagePerformance.record();
+  });
+
+  beforeEach(async () => {
+    await commonElements.goToAboutPage();
   });
 
   it('measure reports initial load', async () => {
@@ -91,7 +99,6 @@ describe('reports', () => {
       await commonPage.goToReports();
       await reportsPage.waitForReportsLoaded();
 
-
       await reportsPage.openSidebarFilter();
       await reportsPage.openSidebarFilterDateAccordion();
       pagePerformance.track('reports - filter by date - first');
@@ -145,6 +152,7 @@ describe('reports', () => {
       await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
 
+      await commonElements.goToAboutPage();
       await commonPage.goToReports();
       await reportsPage.waitForReportsLoaded();
 
@@ -165,6 +173,7 @@ describe('reports', () => {
       await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
 
+      await commonElements.goToAboutPage();
       await commonPage.goToReports();
       await reportsPage.waitForReportsLoaded();
 
