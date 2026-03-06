@@ -2,11 +2,18 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const { getRemoteDataContext, Person, Qualifier } = require('@medic/cht-datasource');
+const {
+  getRemoteDataContext,
+  Person,
+  Qualifier,
+  InvalidArgumentError,
+  ResourceNotFoundError
+} = require('@medic/cht-datasource');
 const { USER_ROLES } = require('@medic/constants');
 const userFactory = require('@factories/cht/users/users');
 const { setAuth, removeAuth } = require('./auth');
 const { CONTACT_TYPES } = require('@medic/constants');
+const { expect } = require('chai');
 
 describe('cht-datasource Person', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -182,9 +189,9 @@ describe('cht-datasource Person', () => {
 
       it('throws error when limit is invalid', async () => {
         await expect(
-          getPage({...Qualifier.byContactType(personType)}, cursor, invalidLimit)
+          getPage({ ...Qualifier.byContactType(personType) }, cursor, invalidLimit)
         ).to.be.rejectedWith(
-          `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].`
+          { code: 400, error: `The limit must be a positive integer: [${JSON.stringify(invalidLimit)}].` }
         );
       });
 
@@ -193,9 +200,10 @@ describe('cht-datasource Person', () => {
           getPage({
             ...Qualifier.byContactType(personType),
           }, invalidCursor, limit)
-        ).to.be.rejectedWith(
-          `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
-        );
+        ).to.be.rejectedWith({
+          code: 400,
+          error: `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}].`
+        });
       });
     });
 
@@ -210,6 +218,188 @@ describe('cht-datasource Person', () => {
         }
 
         expect(docs).excluding(excludedProperties).to.deep.equalInAnyOrder(expectedPeople);
+      });
+    });
+
+    describe('create', async () => {
+      const createPerson = Person.v1.create(dataContext);
+
+      it(`creates a person`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: place0._id,
+          date_of_birth: '1996-06-09',
+          phone: '+1234567890',
+          patient_id: 'patient-id-123',
+          sex: 'female',
+          hello: 'world',
+          reported_date: 1770397800
+        };
+
+        const person = await createPerson(personInput);
+
+        expect(person).excluding([ '_rev', '_id' ]).to.deep.equal({
+          ...personInput,
+          type: 'contact',
+          contact_type: 'person',
+          parent: { _id: place0._id, parent: place0.parent }
+        });
+      });
+
+      it(`creates a person with minimum data`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: place2._id
+        };
+
+        const person = await createPerson(personInput);
+
+        expect(person).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal({
+          ...personInput,
+          type: 'contact',
+          contact_type: 'person',
+          parent: { _id: place2._id }
+        });
+        expect(person.reported_date).to.be.a('number');
+      });
+
+      it(`throws error for non-person type`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'clinic',
+          parent: contact0._id
+        };
+
+        await expect(createPerson(personInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `[${personInput.type}] is not a valid person type.`
+        );
+      });
+
+      it(`throws error for non-existent parent`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: 'invalid-id'
+        };
+
+        await expect(createPerson(personInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Parent contact [${personInput.parent}] not found.`
+        );
+      });
+
+      it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: contact0._id
+        };
+
+        await expect(createPerson(personInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Parent contact of type [person] is not allowed for type [${personInput.type}].`,
+        );
+      });
+    });
+
+    describe('update', async () => {
+      const updatePerson = Person.v1.update(dataContext);
+      let originalPerson;
+
+      beforeEach(async () => {
+        const doc = personFactory.build({
+          name: 'apoorva',
+          parent: {
+            _id: place0._id,
+            parent: {
+              _id: place1._id,
+              parent: { _id: place2._id }
+            },
+          },
+          phone: '1234567890',
+          date_of_birth: '2000-02-01',
+          role: 'patient',
+          reported_date: 1770397800
+        });
+        const { rev } = await utils.saveDoc(doc);
+        originalPerson = {
+          ...doc,
+          _rev: rev
+        };
+      });
+
+      it(`updates a person`, async () => {
+        const updatePersonInput = {
+          ...originalPerson,
+          name: 'apoorva 2',
+          hello: 'world'
+        };
+        delete updatePersonInput.phone;
+
+        const updatedPerson = await updatePerson(updatePersonInput);
+
+        expect(updatedPerson).excluding(['_rev']).to.deep.equal(updatePersonInput);
+      });
+
+      it(`updates a person when lineage data is provided`, async () => {
+        const updatePersonInput = {
+          ...originalPerson,
+          name: 'apoorva 2',
+          parent: {
+            ...place0,
+            parent: {
+              ...place1,
+              parent: { ...place2 }
+            }
+          }
+        };
+        delete updatePersonInput.parent.parent.parent.parent;
+
+        const updatedPerson = await updatePerson(updatePersonInput);
+
+        // Given lineage data is returned
+        expect(updatedPerson).excludingEvery(['_rev', 'reported_date']).to.deep.equal(updatePersonInput);
+        const updatedDoc = await utils.getDoc(originalPerson._id);
+        // Doc is written with minified lineage
+        expect(updatedDoc).excluding('_rev').to.deep.equal({
+          ...updatePersonInput,
+          parent: originalPerson.parent
+        });
+      });
+
+      it(`throws error when updating parent lineage`, async () => {
+        const updatePersonInput = {
+          ...originalPerson,
+          parent: {
+            _id: place0._id,
+            parent: { _id: place2._id },
+          },
+        };
+
+        await expect(updatePerson(updatePersonInput)).to.be.rejectedWith(
+          InvalidArgumentError,
+          `Parent lineage does not match.`,
+        );
+      });
+
+      [
+        ['any document', 'does-not-exist'],
+        ['a person', place0._id],
+      ].forEach(([test, id]) => {
+        it(`throws error when id does not match ${test}`, async () => {
+          const updatePersonInput = {
+            ...originalPerson,
+            _id: id
+          };
+
+          await expect(updatePerson(updatePersonInput)).to.be.rejectedWith(
+            ResourceNotFoundError,
+            `Person record [${id}] not found.`
+          );
+        });
       });
     });
   });
