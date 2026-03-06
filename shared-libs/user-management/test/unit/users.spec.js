@@ -2268,8 +2268,6 @@ describe('Users service', () => {
 
       await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
         .and.have.property('code', 400);
-
-      sinon.restore();
     });
 
     it('returns error if has multiple facilities but does not have role', async () => {
