@@ -13,6 +13,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ReportsActions } from '@mm-actions/reports';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { ContactMutedService } from '@mm-services/contact-muted.service';
 
 describe('Fast Action Button service', () => {
   let service: FastActionButtonService;
@@ -22,6 +23,7 @@ describe('Fast Action Button service', () => {
   let translateService;
   let translateFromService;
   let userSettingsService;
+  let contactMutedService;
   let documentMock;
   let domElement;
 
@@ -32,6 +34,7 @@ describe('Fast Action Button service', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
     userSettingsService = { get: sinon.stub().resolves() };
+    contactMutedService = { getMuted: sinon.stub().returns(false) };
     domElement = {
       click: sinon.stub(),
       remove: sinon.stub(),
@@ -50,6 +53,7 @@ describe('Fast Action Button service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: UserSettingsService, useValue: userSettingsService },
+        { provide: ContactMutedService, useValue: contactMutedService },
         { provide: DOCUMENT, useValue: documentMock},
       ],
     });
@@ -587,6 +591,99 @@ describe('Fast Action Button service', () => {
         label: 'place-2',
         icon: 'place-2-icon',
         route: [ '/contacts', 'add', 'place-2' ],
+        queryParams: { from: 'list' },
+      });
+    });
+
+    it('should hide contact form actions when parent place is muted and user lacks permission', async () => {
+      const parentContact = {
+        _id: 'muted-place-1',
+        muted: Date.now(),
+      };
+      const context = {
+        parentFacilityId: 'muted-place-1',
+        parentContact: parentContact,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          { id: 'child-place-2', icon: 'child-place-2-icon' },
+        ],
+      };
+      authService.has.withArgs([ 'can_edit', 'can_create_places' ]).resolves(true);
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(false);
+      contactMutedService.getMuted.withArgs(parentContact).returns(true);
+
+      const actions = await service.getContactLeftSideActions(context);
+
+      expect(actions.length).to.equal(0);
+    });
+
+    it('should show contact form actions when parent place is muted but user has permission', async () => {
+      const parentContact = {
+        _id: 'muted-place-1',
+        muted: Date.now(),
+      };
+      const context = {
+        parentFacilityId: 'muted-place-1',
+        parentContact: parentContact,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          { id: 'child-place-2', icon: 'child-place-2-icon' },
+        ],
+      };
+      authService.has.withArgs([ 'can_edit', 'can_create_places' ]).resolves(true);
+      authService.has.withArgs('can_create_contacts_under_muted_places').resolves(true);
+      contactMutedService.getMuted.withArgs(parentContact).returns(true);
+
+      const actions = await service.getContactLeftSideActions(context);
+
+      expect(actions.length).to.equal(2);
+      assertContactFormAction(actions[0], {
+        id: 'child-place-1',
+        label: 'child-place-1-title',
+        icon: 'child-place-1-icon',
+        route: [ '/contacts', 'muted-place-1', 'add', 'child-place-1' ],
+        queryParams: { from: 'list' },
+      });
+      assertContactFormAction(actions[1], {
+        id: 'child-place-2',
+        label: 'child-place-2',
+        icon: 'child-place-2-icon',
+        route: [ '/contacts', 'muted-place-1', 'add', 'child-place-2' ],
+        queryParams: { from: 'list' },
+      });
+    });
+
+    it('should show contact form actions when parent place is not muted', async () => {
+      const parentContact = {
+        _id: 'not-muted-place-1',
+      };
+      const context = {
+        parentFacilityId: 'not-muted-place-1',
+        parentContact: parentContact,
+        childContactTypes: [
+          { id: 'child-place-1', create_key: 'child-place-1-title', icon: 'child-place-1-icon' },
+          { id: 'child-place-2', icon: 'child-place-2-icon' },
+        ],
+      };
+      authService.has.withArgs([ 'can_edit', 'can_create_places' ]).resolves(true);
+      contactMutedService.getMuted.withArgs(parentContact).returns(false);
+
+      const actions = await service.getContactLeftSideActions(context);
+
+      expect(actions.length).to.equal(2);
+      expect(authService.has.withArgs('can_create_contacts_under_muted_places').notCalled).to.be.true;
+      assertContactFormAction(actions[0], {
+        id: 'child-place-1',
+        label: 'child-place-1-title',
+        icon: 'child-place-1-icon',
+        route: [ '/contacts', 'not-muted-place-1', 'add', 'child-place-1' ],
+        queryParams: { from: 'list' },
+      });
+      assertContactFormAction(actions[1], {
+        id: 'child-place-2',
+        label: 'child-place-2',
+        icon: 'child-place-2-icon',
+        route: [ '/contacts', 'not-muted-place-1', 'add', 'child-place-2' ],
         queryParams: { from: 'list' },
       });
     });
