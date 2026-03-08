@@ -14,7 +14,6 @@ describe('Token login', () => {
     roles: ['program_officer'],
     phone: '+40766565656',
     token_login: true,
-    known: true,
   };
 
   const getUrl = (token) => `/medic/login/token/${token}`;
@@ -53,21 +52,12 @@ describe('Token login', () => {
     });
   };
 
-
   beforeEach(async () => {
     await browser.deleteCookies();
   });
 
   afterEach(async () => {
     await utils.deleteUsers([user]);
-    await utils.revertDb([/^form:/], true);
-  });
-
-  it('should redirect the user to the app if already logged in', async () => {
-    await loginPage.cookieLogin();
-    await browser.url(getUrl('this is a random string'));
-    await commonElements.waitForLoaderToDisappear();
-    expect(await commonElements.isMessagesListPresent()).to.be.true;
   });
 
   it('should display an error when token login is disabled', async () => {
@@ -76,38 +66,52 @@ describe('Token login', () => {
     expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
   });
 
-  it('should display an error with incorrect url', async () => {
-    await setupTokenLoginSettings();
-    await browser.url(`/medic/login/token`);
-    expect(await loginPage.getTokenError('missing')).to.contain(MISSING);
-    expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
-  });
+  describe('token login enabled', () => {
+    before(async () => {
+      await setupTokenLoginSettings();
+    });
 
-  it('should display an error when accessing with random strings', async () => {
-    await setupTokenLoginSettings();
-    await browser.url(getUrl('this is a random string'));
-    expect(await loginPage.getTokenError('invalid')).to.contain(INVALID);
-    expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
-  });
+    it('should display an error with incorrect url', async () => {
+      await browser.url(`/medic/login/token`);
+      expect(await loginPage.getTokenError('missing')).to.contain(MISSING);
+      expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
+    });
 
-  it('should display an error when token is expired', async () => {
-    await setupTokenLoginSettings();
-    const response = await createUser(user);
-    const userDoc = await getUser(response.user.id);
-    const url = await getTokenUrl(userDoc);
-    await expireToken(userDoc);
-    await browser.url(url);
-    expect(await loginPage.getTokenError('expired')).to.contain(EXPIRED);
-    expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
-  });
+    it('should display an error when accessing with random strings', async () => {
+      await browser.url(getUrl('this is a random string'));
+      expect(await loginPage.getTokenError('invalid')).to.contain(INVALID);
+      expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
+    });
 
-  it('should log the user in when token is correct', async () => {
-    await setupTokenLoginSettings();
-    const response = await createUser(user);
-    const userDoc = await getUser(response.user.id);
-    const url = await getTokenUrl(userDoc);
-    await browser.url(url);
-    await commonElements.waitForLoaderToDisappear();
-    expect(await commonElements.isMessagesListPresent()).to.be.true;
+    it('should display an error when token is expired', async () => {
+      const response = await createUser(user);
+      const userDoc = await getUser(response.user.id);
+      const url = await getTokenUrl(userDoc);
+      await expireToken(userDoc);
+      await browser.url(url);
+      expect(await loginPage.getTokenError('expired')).to.contain(EXPIRED);
+      expect(await loginPage.getToLoginLinkText()).to.equal(TO_LOGIN);
+    });
+
+    it('should log the user in when token is correct', async () => {
+      const response = await createUser(user);
+      const userDoc = await getUser(response.user.id);
+      const url = await getTokenUrl(userDoc);
+      await browser.url(url);
+      await commonElements.waitForPageLoaded();
+      expect(await commonElements.isMessagesListPresent()).to.be.true;
+    });
+
+    it('should redirect the user to the app if already logged in', async () => {
+      const response = await createUser(user);
+      const userDoc = await getUser(response.user.id);
+      const url = await getTokenUrl(userDoc);
+      await browser.url(url);
+      await commonElements.waitForPageLoaded();
+
+      await browser.url(getUrl('this is a random string'));
+      await commonElements.waitForPageLoaded();
+      expect(await commonElements.isMessagesListPresent()).to.be.true;
+    });
   });
 });

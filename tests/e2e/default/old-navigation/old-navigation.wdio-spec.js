@@ -41,7 +41,7 @@ describe('Old Navigation', () => {
     const permissions = settings.permissions;
     permissions.can_aggregate_targets = offlineUser.roles;
     permissions.can_view_old_navigation = offlineUser.roles;
-    await utils.updateSettings({ tasks, permissions }, true);
+    await utils.updateSettings({ tasks, permissions }, { ignoreReload: true });
 
     await loginPage.login({ ...offlineUser, loadPage: false });
     await oldNavigationPage.waitForPageLoaded();
