@@ -2174,6 +2174,32 @@ describe('Users service', () => {
       chai.expect(response[0].error.translationParams).to.have.property('username');
       chai.expect(insert.callCount).to.equal(0);
     });
+
+    it('should filter out ignored users during createUsers', async () => {
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('setContactParent', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(tokenLogin, 'manageTokenLogin').resolves({});
+      sinon.stub(places, 'getPlace').resolves({ _id: 'place1' });
+      getContact
+        .onFirstCall().resolves(null)
+        .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+
+      const users = [
+        { username: 'skip-me', password: COMPLEX_PASSWORD, place: 'place1', contact: 'c1', type: 'national-manager' },
+        { username: 'keep-me', password: COMPLEX_PASSWORD, place: 'place1', contact: 'c1', type: 'national-manager' },
+      ];
+      const ignoredUsers = { 'skip-me': { user: users[0], ignoreMessage: 'Already imported' } };
+
+      const response = await service.createUsers(users, ignoredUsers);
+      chai.expect(response).to.have.length(1);
+    });
   });
 
   describe('createMultiFacilityUser', () => {
@@ -2221,6 +2247,25 @@ describe('Users service', () => {
         type: 'national-manager',
         password: 'password'
       };
+      await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
+        .and.have.property('code', 400);
+    });
+
+    it('returns error if token login validation fails', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      config.get.withArgs('token_login').returns(tokenLoginConfig);
+      sinon.stub(tokenLogin, 'validateTokenLogin').returns({ msg: 'Phone number is invalid', key: 'invalid.phone' });
+
+      const data = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'x',
+        contact: 'y',
+        type: 'national-manager',
+        token_login: true,
+        phone: 'invalid',
+      };
+
       await chai.expect(service.createMultiFacilityUser(data)).to.be.eventually.rejectedWith(Error)
         .and.have.property('code', 400);
     });
@@ -4201,6 +4246,37 @@ describe('Users service', () => {
           }
         }
       ]);
+    });
+  });
+
+  describe('parseCsv with import status columns', () => {
+    it('should handle import.status:excluded and import.message:excluded columns', async () => {
+      const csv = 'username,password,type,place,import.status:excluded,import.message:excluded\n' +
+                  'mary,Secret1234,person,place-1,imported,Previously imported\n' +
+                  'peter,Secret5678,person,place-2,,';
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.length(2);
+      chai.expect(result.users[0].username).to.equal('mary');
+      chai.expect(result.users[1].username).to.equal('peter');
+      chai.expect(result.ignoredUsers.mary).to.deep.include({ ignoreMessage: 'Previously imported' });
+    });
+  });
+
+  describe('checkPayloadFacilityCount', () => {
+    it('should return true when place is array with multiple items', () => {
+      chai.expect(service.checkPayloadFacilityCount({ place: ['a', 'b'] })).to.equal(true);
+    });
+
+    it('should return false when place is not an array', () => {
+      chai.expect(service.checkPayloadFacilityCount({ place: 'a' })).to.equal(false);
+    });
+
+    it('should return false when place is array with single item', () => {
+      chai.expect(service.checkPayloadFacilityCount({ place: ['a'] })).to.equal(false);
     });
   });
 

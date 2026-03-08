@@ -8,7 +8,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
-import { orderByDueDateAndPriority } from '@medic/task-utils';
+import { orderByDueDateAndPriority } from '@mm-reducers/tasks';
 
 const DEFAULT_MAX_NOTIFICATIONS = 8;
 
