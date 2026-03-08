@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '@shared-libs/constants';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -111,7 +112,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       filter: change => !!change.doc && (
         this.contactTypesService.includes(change.doc) ||
         isReport(change.doc) ||
-        change.doc.type === 'task'
+        change.doc.type === DOC_TYPES.TASK
       ),
       callback: () => {
         this.debouncedReload.cancel();
