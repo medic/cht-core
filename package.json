@@ -59,6 +59,7 @@
     "wdio-visual-mobile": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=mobileTests",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
     "apdex-test": "wdio run ./tests/performance/apdex-score/wdio.conf.js",
+    "wdio-performance-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/performance/webapp/wdio.conf.js",
     "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
     "build": "./scripts/build/build-ci.sh",
     "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck && npm run build && npm run integration-api && npm run unit",
@@ -75,7 +76,8 @@
     "test-config-covid-19": "cd config/covid-19 && npm run test",
     "test-config-default": "cd config/default && npm run test",
     "test-config-demo": "cd config/demo && npm run test",
-    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
+    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
+    "wdio-performance": "wdio run ./tests/performance/webapp/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-eslint/builder": "^20.1.1",

@@ -241,7 +241,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
+        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile', 'wdio-performance']
         chrome-version: ['90', 'latest']
         suite: [all]
         include:
@@ -269,6 +269,8 @@ jobs:
           - cmd: ci-integration-sentinel
             chrome-version: 90
           - cmd: ci-webdriver-default-mobile
+            chrome-version: 90
+          - cmd: wdio-performance
             chrome-version: 90
     steps:
     - name: Login to Docker Hub

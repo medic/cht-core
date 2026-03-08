@@ -126,6 +126,10 @@ const parseCookieResponse = (cookieString) => {
   });
 };
 
+const getUserDoc = (userName = constants.USERNAME) => {
+  return getDoc(COUCH_USER_ID_PREFIX + userName);
+};
+
 const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
   return getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
@@ -1673,6 +1677,7 @@ module.exports = {
   hostURL,
   parseCookieResponse,
   setupUserDoc,
+  getUserDoc,
   request,
   requestOnTestDb,
   requestOnTestMetaDb,
