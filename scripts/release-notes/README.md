@@ -13,7 +13,7 @@ To generate release notes for a milestone:
 ![running.on.gh.png](running.on.gh.png)
 
 
-If the job is successful, **reload the action page**. Then the build artifact with the final release notes will be available.:
+If the job is successful, **reload the action page**. Then the build artifact with the final release notes will be available.
 
 ![artifacts.png](artifacts.png)
 
