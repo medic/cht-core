@@ -27,7 +27,7 @@ describe('local contact', () => {
     warn = sinon.stub(logger, 'warn');
     isContact = sinon.stub(contactTypeUtils, 'isContact');
   });
-  
+
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
@@ -35,6 +35,45 @@ describe('local contact', () => {
 
     beforeEach(() => {
       settingsGetAll.returns(settings);
+    });
+
+    describe('isContact', () => {
+      it('returns true for valid contact', () => {
+        const doc = { _id: 'contact-id', _rev: 'rev' };
+        isContact.returns(true);
+
+        const result = Contact.v1.isContact(localContext.settings, doc);
+
+        expect(result).to.be.true;
+        expect(isContact.calledOnceWithExactly(settings, doc)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+      });
+
+      it('returns false for docs with an invalid type', () => {
+        const doc = { _id: 'contact-id', _rev: 'rev' };
+        isContact.returns(false);
+
+        const result = Contact.v1.isContact(localContext.settings, doc);
+
+        expect(result).to.be.false;
+        expect(isContact.calledOnceWithExactly(settings, doc)).to.be.true;
+        expect(settingsGetAll.calledOnceWithExactly()).to.be.true;
+      });
+
+      ([
+        null,
+        'contact-id',
+        { _id: 'contact-id' },
+        { _rev: 'rev' }
+      ] as unknown as Doc[]).forEach((doc) => {
+        it('returns false for invalid docs', () => {
+          const result = Contact.v1.isContact(localContext.settings, doc);
+
+          expect(result).to.be.false;
+          expect(isContact.notCalled).to.be.true;
+          expect(settingsGetAll.notCalled).to.be.true;
+        });
+      });
     });
 
     describe('get', () => {
@@ -48,7 +87,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: 'person', _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         isContact.returns(true);
 
@@ -62,7 +101,7 @@ describe('local contact', () => {
       });
 
       it('returns null if the identified doc does not have a contact type', async () => {
-        const doc = { type: 'not-contact', _id: '_id' };
+        const doc = { type: 'not-contact', _id: '_id', _rev: '1' };
         getDocByIdInner.resolves(doc);
         isContact.returns(false);
 
@@ -72,7 +111,7 @@ describe('local contact', () => {
         expect(getDocByIdOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(isContact.calledOnceWithExactly(settingsGetAll(), doc)).to.be.true;
-        expect(warn.calledOnceWithExactly(`Document [${doc._id}] is not a valid contact.`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
       });
 
       it('returns null if the identified doc is not found', async () => {
@@ -85,7 +124,7 @@ describe('local contact', () => {
         expect(getDocByIdInner.calledOnceWithExactly(identifier.uuid)).to.be.true;
         expect(settingsGetAll.notCalled).to.be.true;
         expect(isContact.notCalled).to.be.true;
-        expect(warn.calledOnceWithExactly(`No contact found for identifier [${identifier.uuid}].`)).to.be.true;
+        expect(warn.calledOnceWithExactly(`Document [${identifier.uuid}] is not a valid contact.`)).to.be.true;
       });
 
       it('propagates error if getMedicDocById throws an error', async () => {
@@ -124,8 +163,10 @@ describe('local contact', () => {
       });
 
       it('returns a contact with lineage for place type contact', async () => {
-        const placeContact = { type: 'place', _id: 'place0', _rev: 'rev', 
-          contact: { _id: 'contact0', _rev: 'rev' } };
+        const placeContact = {
+          type: 'place', _id: 'place0', _rev: 'rev',
+          contact: { _id: 'contact0', _rev: 'rev' }
+        };
         const mockFunction = sinon.stub().resolves(placeContact);
         mockFetchHydratedDoc.returns(mockFunction);
         isContact.returns(true);

@@ -419,7 +419,7 @@ const PROTECTED_DOCS = [
   'migration-log',
   'resources',
   'branding',
-  'partners',
+  DOC_IDS.PARTNERS,
   DOC_IDS.SETTINGS,
   /^form:/,
   /^_design/

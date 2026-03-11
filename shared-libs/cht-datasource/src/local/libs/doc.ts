@@ -1,5 +1,5 @@
 import logger from '@medic/logger';
-import { Nullable, Page } from '../../libs/core';
+import { DataObject, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 
 /** @internal */
@@ -15,16 +15,21 @@ export const getDocById = (db: PouchDB.Database<Doc>) => async (id: string): Pro
     throw err;
   });
 
-/** @internal */
-export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (ids: string[]): Promise<Doc[]> => {
-  const keys = Array.from(new Set(ids.filter(id => id.length)));
-  if (!keys.length) {
-    return [];
+/**
+ * Retrieves the identified documents from the database. The order of the provided array is preserved in the returned
+ * array of docs regardless of whether all the docs exist or not (or if all the provided ids are valued or not).
+ * @internal
+ */
+export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (
+  ids: (string | undefined)[]
+): Promise<Nullable<Doc>[]> => {
+  if (!ids.some(Boolean)) {
+    return Array.from({ length: ids.length }, () => null);
   }
-  const response = await db.allDocs({ keys, include_docs: true });
+  const response = await db.allDocs({ keys: ids.map(id => id ?? ''), include_docs: true });
   return response.rows
     .map(({ doc }) => doc)
-    .filter((doc): doc is Doc => isDoc(doc));
+    .map(doc => isDoc(doc) ? doc : null);
 };
 
 /** @internal */
@@ -144,7 +149,7 @@ export const fetchAndFilter = <T>(
     const noMoreResults = docs.length < currentLimit;
     const newDocs = docs.filter((doc): doc is T => filterFunction(doc));
     const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
-    const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
+    const totalDocs = [ ...currentDocs, ...newDocs ].slice(0, limit);
 
     if (noMoreResults) {
       return { data: totalDocs, cursor: null };
@@ -191,4 +196,29 @@ export const fetchAndFilterIds = (
     filterFn,
     limit
   );
+};
+
+/** @internal */
+export const createDoc = (db: PouchDB.Database) => async (data: DataObject): Promise<Doc> => {
+  const { id, rev, ok } = await db.post(data);
+  if (!ok) {
+    throw new Error('Error creating document.');
+  }
+  return {
+    ...data,
+    _id: id,
+    _rev: rev
+  };
+};
+
+/** @internal */
+export const updateDoc = (db: PouchDB.Database<Doc>) => async (data: Doc): Promise<Doc> => {
+  const { ok, rev } = await db.put(data);
+  if (!ok) {
+    throw new Error('Error updating document.');
+  }
+  return {
+    ...data,
+    _rev: rev
+  };
 };
