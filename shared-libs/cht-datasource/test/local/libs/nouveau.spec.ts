@@ -44,7 +44,8 @@ describe('nouveau', () => {
           sort: 'reported_date'
         };
 
-        const result = await queryByFreetext(db, NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)(qualifier, body.bookmark, body.limit);
+        const query = queryByFreetext(db, NOUVEAU_INDEXES.REPORTS_BY_FREETEXT);
+        const result = await query(qualifier, body.bookmark, body.limit);
 
         expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
@@ -71,7 +72,8 @@ describe('nouveau', () => {
           sort: 'sort_order'
         };
 
-        const result = await queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)(qualifier, body.bookmark, body.limit);
+        const query = queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT);
+        const result = await query(qualifier, body.bookmark, body.limit);
 
         expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
