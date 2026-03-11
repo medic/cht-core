@@ -110,7 +110,7 @@ You can skip validation optionally as well:
 gh workflow run release-notes.yml -f milestone=5.2.0 -f skip_commit_checks='--skip-commit-validation'
 ```
 
-Finally, you  may want to easily call the action on your branch after you have pushed it. Assuming you branch is call `mrjones-awesome-branch-of-much-love`, call it like so:
+Finally, you  may want to easily call the action on your branch after you have pushed it. Assuming your branch is called `mrjones-awesome-branch-of-much-love`, call it like so:
 
 ```shell
 gh workflow run release-notes.yml -f milestone=5.2.0 --ref mrjones-awesome-branch-of-much-love 
