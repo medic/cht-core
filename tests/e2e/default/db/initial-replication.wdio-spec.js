@@ -87,16 +87,17 @@ describe('initial-replication', () => {
     expect(localDocIds).to.include.members(requiredDocs);
     expect(localDocIds).to.include.members(translationIds);
 
-    const localForms = await chtDbUtils.getDocs(formIds);
-    localForms.forEach(form => {
-      const attachments = form._attachments;
-      const serverForm = forms.find(serverForm => form._id === serverForm.id);
-      const expectedAttachments = getExpectedAttachments((form._id));
-      expect(Object.keys(attachments)).to.have.members(expectedAttachments, `${form._id} has incorrect attachments`);
+    for (const formId of formIds) {
+      const localDoc = await chtDbUtils.getDoc(formId, true);
+      const serverForm = forms.find(serverForm => formId === serverForm.id);
+      const expectedAttachments = getExpectedAttachments((formId));
+      expect(Object.keys(localDoc._attachments))
+        .to.have.members(expectedAttachments, `${formId} has incorrect attachments`);
+
       expectedAttachments.forEach(attName => {
-        expect(attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data);
+        expect(localDoc._attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data);
       });
-    });
+    }
 
     expect(localDocIds).to.include.members(dataFactory.ids(userAllowedDocs.clinics));
     expect(localDocIds).to.include.members(dataFactory.ids(userAllowedDocs.persons));
@@ -119,6 +120,15 @@ describe('initial-replication', () => {
 
   before(async () => {
     await utils.toggleSentinelTransitions();
+    // due to the high number of generated docs, many tasks would also be generated
+    // this makes the sync feature slower, and unpredictable
+    // disabling tasks fixes this _and_ makes the test faster
+    await utils.updatePermissions(
+      userAllowedDocs.user.roles,
+      [],
+      ['can_view_tasks', 'can_view_analytics'],
+      { ignoreReload: true }
+    );
 
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
@@ -142,7 +152,8 @@ describe('initial-replication', () => {
   });
 
   it('should log user in', async () => {
-    await loginPage.login(userAllowedDocs.user);
+    await loginPage.login({ ...userAllowedDocs.user, loadPage: false });
+    await commonPage.waitForPageLoaded(60000);
 
     await validateReplication();
 
@@ -151,9 +162,9 @@ describe('initial-replication', () => {
     await commonPage.waitForAngularLoaded(3000);
 
     // supports reloading the page while offline
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await refreshAndWaitForAngular();
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
 
     // it should not restart initial replication if the local doc is missing on refresh
     await chtDbUtils.deleteDoc(LOCAL_LOG);
@@ -171,7 +182,7 @@ describe('initial-replication', () => {
     setTimeout(() => browser.refresh(), 5000);
 
     await utils.delayPromise(5000); // wait for above timers to expire
-    await commonPage.waitForPageLoaded();
+    await commonPage.waitForPageLoaded(60000);
     await validateReplication();
   });
 });

@@ -14,15 +14,15 @@ describe('Service worker cache', () => {
 
   // global caches fetch Response navigator
   const getCachedRequests = async (raw) => {
-    const cacheDetails = await browser.executeAsync(async (callback) => {
+    const cacheDetails = await browser.execute(async () => {
       const cacheNames = await caches.keys();
       const cache = await caches.open(cacheNames[0]);
       const cachedRequests = await cache.keys();
       const cachedRequestSummary = cachedRequests.map(req => ({ url: req.url }));
-      callback({
+      return {
         name: cacheNames[0],
         requests: cachedRequestSummary,
-      });
+      };
     });
 
     if (raw) {
@@ -34,24 +34,23 @@ describe('Service worker cache', () => {
     return { name: cacheDetails.name, urls };
   };
 
-  const stubAllCachedRequests = () => browser.executeAsync(async (callback) => {
+  const stubAllCachedRequests = () => browser.execute(async () => {
     const cacheNames = await caches.keys();
     const cache = await caches.open(cacheNames[0]);
     const cachedRequests = await cache.keys();
     await Promise.all(cachedRequests.map(request => cache.put(request, new Response('cache'))));
-    callback();
   });
 
-  const doFetch = (path, headers) => browser.executeAsync(async (innerPath, innerHeaders, callback) => {
+  const doFetch = (path, headers) => browser.execute(async (innerPath, innerHeaders) => {
     const result = await fetch(innerPath, { headers: innerHeaders });
-    callback({
+    return {
       body: await result.text(),
       ok: result.ok,
       status: result.status,
-    });
+    };
   }, path, headers);
 
-  const unregisterServiceWorkerAndWipeAllCaches = () => browser.executeAsync(async (callback) => {
+  const unregisterServiceWorkerAndWipeAllCaches = () => browser.execute(async () => {
     const registrations = await navigator.serviceWorker.getRegistrations();
     registrations.forEach(registration => registration.unregister());
 
@@ -59,8 +58,6 @@ describe('Service worker cache', () => {
     for (const name of cacheNames) {
       await caches.delete(name);
     }
-
-    callback();
   });
 
   const district = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
@@ -77,9 +74,11 @@ describe('Service worker cache', () => {
   };
 
   const loginIfNeeded = async () => {
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
     if (!await isLoggedIn()) {
       await login();
+    } else {
+      await commonPage.refresh();
     }
   };
 
@@ -91,10 +90,6 @@ describe('Service worker cache', () => {
 
   beforeEach(async () => {
     await loginIfNeeded();
-  });
-
-  afterEach(async () => {
-    await utils.revertSettings(true);
   });
 
   after(async () => {
@@ -154,8 +149,8 @@ describe('Service worker cache', () => {
     await utils.saveDoc(branding);
     await waitForLogs.promise;
 
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-    await browser.throttle('offline'); // make sure we load the login page from cache
+    await commonPage.sync({ serviceWorkerUpdate: true });
+    await browser.throttleNetwork('offline'); // make sure we load the login page from cache
     await commonPage.logout();
     expect(await browser.getTitle()).to.equal('Not Medic');
   });
@@ -168,8 +163,8 @@ describe('Service worker cache', () => {
     });
     await waitForLogs.promise;
 
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-    await browser.throttle('offline'); // make sure we load the login page from cache
+    await commonPage.sync({ serviceWorkerUpdate: true });
+    await browser.throttleNetwork('offline'); // make sure we load the login page from cache
     await commonPage.logout();
 
     expect(await loginPage.labelForUser().getText()).to.equal('NotUsername');
@@ -177,10 +172,9 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
+    await browser.throttleNetwork('offline');
     const languageCode = 'ro';
-    await utils.enableLanguage(languageCode);
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-
+    await utils.enableLanguage(languageCode, { ignoreReload: true });
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations(languageCode, {
       ...DEFAULT_TRANSLATIONS,
@@ -189,8 +183,9 @@ describe('Service worker cache', () => {
       'login': 'Autentificare',
     });
     await waitForLogs.promise;
+    await browser.throttleNetwork('online');
 
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ serviceWorkerUpdate: true });
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');
@@ -201,8 +196,6 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
-
     const cacheDetails = await getCachedRequests(true);
 
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
@@ -212,7 +205,7 @@ describe('Service worker cache', () => {
       'some': 'thing',
     });
     await waitForLogs.promise;
-    await commonPage.sync({ expectReload: true, serviceWorkerUpdate: true });
+    await commonPage.sync({ serviceWorkerUpdate: true });
 
     const updatedCacheDetails = await getCachedRequests(true);
 
@@ -223,10 +216,10 @@ describe('Service worker cache', () => {
   });
 
   it('should load the page while offline', async () => {
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await browser.refresh();
     await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
-    await browser.throttle('online');
+    await browser.throttleNetwork('online');
   });
 
   it('confirm fetch yields cached result', async () => {
