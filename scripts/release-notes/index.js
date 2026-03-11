@@ -183,7 +183,7 @@ const getIssueNumbers = commitMessage => {
 
   const commitIsTypeChore = (commit) => {
     const title = commit.messageHeadline;
-    return title.substring(0, 6) === 'chore(';
+    return title.startsWith('chore(');
   };
 
   const findCommitsWithoutMilestone = async (commitsForRelease) => {
