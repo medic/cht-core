@@ -3,7 +3,7 @@
 
 ## Usage
 
-To generate releaste notes for a milestone:
+To generate release notes for a milestone:
 
 1. Go to the [Release Notes Action](https://github.com/medic/cht-core/actions/workflows/release-notes.yml)
 2. Click "Run workflow" to open the modal
