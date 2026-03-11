@@ -1,22 +1,24 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const { NOUVEAU_INDEXES } = require('@medic/constants');
+const { NOUVEAU_INDEXES, VIEWS } = require('@medic/constants');
+
+const getDdoc = (viewPath) => viewPath.split('/')[0];
 
 const VIEW_INDEXES_BY_DB = {
   'medic-test': [
-    'medic-admin',
-    'medic-conflicts',
-    'medic-sms',
-    'replication',
-    'server',
-    'shared',
-    'shared-reports',
-    'webapp-contacts',
-    'webapp-reports',
+    getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
+    getDdoc(VIEWS.CONFLICTS),
+    getDdoc(VIEWS.MESSAGES_BY_STATE),
+    getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
+    getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+    getDdoc(VIEWS.DOC_BY_TYPE),
+    getDdoc(VIEWS.REPORTS_BY_DATE),
+    getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
+    getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
   ],
-  'medic-test-sentinel': ['sentinel'],
-  'medic-test-users-meta': ['users-meta'],
-  _users: ['users'],
+  'medic-test-sentinel': [getDdoc(VIEWS.OUTBOUND_PUSH_TASKS)],
+  'medic-test-users-meta': [getDdoc(VIEWS.DEVICE_BY_USER)],
+  _users: [getDdoc(VIEWS.USERS_BY_FIELD)],
 };
 
 const NOUVEAU_INDEXES_BY_DB = {

@@ -1,5 +1,6 @@
 const assert = require('chai').assert;
 const utils = require('./utils');
+const { VIEWS } = require('@medic/constants');
 
 const person = {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402',
@@ -233,7 +234,7 @@ const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
 
 describe('doc_summaries_by_id view', () => {
   it('indexes name, phone, type, contact, lineage, dod for non-data-records', () => {
-    const map = utils.loadView('medic-db', 'server', 'doc_summaries_by_id');
+    const map = utils.loadView('medic-db', ...VIEWS.DOC_SUMMARIES_BY_ID.split('/'));
 
     const emitted = map(person, true) && map(personBis, true);
     assert.deepEqual(emitted[0], {
@@ -267,7 +268,7 @@ describe('doc_summaries_by_id view', () => {
   });
 
   it('indexes data-records summary and subject', () => {
-    const map = utils.loadView('medic-db', 'server', 'doc_summaries_by_id');
+    const map = utils.loadView('medic-db', ...VIEWS.DOC_SUMMARIES_BY_ID.split('/'));
 
     const reportsList = [
       householdVisit,

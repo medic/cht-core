@@ -1,7 +1,7 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
-import { DOC_IDS, VIEWS } from '@medic/constants';
+import { DOC_IDS, REPLICATED_DDOCS, VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -69,7 +69,7 @@ export class TelemetryService {
   private generateMetadataSection(dbName) {
     return Promise
       .all([
-        this.dbService.get().get('_design/shared'),
+        this.dbService.get().get(REPLICATED_DDOCS[1]),
         this.dbService.get().query(VIEWS.DOC_BY_TYPE, { key: ['form'], include_docs: true }),
         this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
       ])

@@ -9,7 +9,10 @@ const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
-const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS, nouveauInfoUrl } = require('@medic/constants');
+const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS } = require('@medic/constants');
+
+// Extract the ddoc name from a view/index path like 'shared/doc_by_type' → 'shared'
+const getDdoc = (viewPath) => viewPath.split('/')[0];
 
 let clock;
 
@@ -67,25 +70,25 @@ const dbInfos = [
 const VIEW_INDEXES_BY_DB = {
   [`${environment.db}`]: [
     // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
-    'medic-admin',
-    'medic-conflicts',
-    'medic-sms',
-    'replication',
-    'server',
-    'shared',
-    'shared-reports',
-    'webapp-contacts',
-    'webapp-reports',
+    getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
+    getDdoc(VIEWS.CONFLICTS),
+    getDdoc(VIEWS.MESSAGES_BY_STATE),
+    getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
+    getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+    getDdoc(VIEWS.DOC_BY_TYPE),
+    getDdoc(VIEWS.REPORTS_BY_DATE),
+    getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
+    getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
   ],
-  [`${environment.db}-sentinel`]: ['sentinel'],
-  [`${environment.db}-users-meta`]: ['users-meta'],
-  '_users': ['users'],
+  [`${environment.db}-sentinel`]: [getDdoc(VIEWS.OUTBOUND_PUSH_TASKS)],
+  [`${environment.db}-users-meta`]: [getDdoc(VIEWS.DEVICE_BY_USER)],
+  '_users': [getDdoc(VIEWS.USERS_BY_FIELD)],
 };
 
 const VIEW_INDEX_INFO_BY_DESIGN = {
   // Note: medic and medic-client removed as all views have been moved to other ddocs
-  'medic-admin': {
-    name: 'medic-admin',
+  [getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT)]: {
+    name: getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
     view_index: {
       sizes: {
         active: 6533400,
@@ -93,8 +96,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'medic-conflicts': {
-    name: 'medic-conflicts',
+  [getDdoc(VIEWS.CONFLICTS)]: {
+    name: getDdoc(VIEWS.CONFLICTS),
     view_index: {
       sizes: {
         active: 6,
@@ -102,8 +105,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'medic-sms': {
-    name: 'medic-sms',
+  [getDdoc(VIEWS.MESSAGES_BY_STATE)]: {
+    name: getDdoc(VIEWS.MESSAGES_BY_STATE),
     view_index: {
       sizes: {
         active: 100,
@@ -111,8 +114,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'webapp-reports': {
-    name: 'webapp-reports',
+  [getDdoc(VIEWS.DATA_RECORDS_BY_TYPE)]: {
+    name: getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
     view_index: {
       sizes: {
         active: 100,
@@ -120,8 +123,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'webapp-contacts': {
-    name: 'webapp-contacts',
+  [getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED)]: {
+    name: getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
     view_index: {
       sizes: {
         active: 100,
@@ -129,8 +132,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'shared-reports': {
-    name: 'shared-reports',
+  [getDdoc(VIEWS.REPORTS_BY_DATE)]: {
+    name: getDdoc(VIEWS.REPORTS_BY_DATE),
     view_index: {
       sizes: {
         active: 100,
@@ -138,8 +141,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'shared': {
-    name: 'shared',
+  [getDdoc(VIEWS.DOC_BY_TYPE)]: {
+    name: getDdoc(VIEWS.DOC_BY_TYPE),
     view_index: {
       sizes: {
         active: 100,
@@ -147,8 +150,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'server': {
-    name: 'server',
+  [getDdoc(VIEWS.DOC_SUMMARIES_BY_ID)]: {
+    name: getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
     view_index: {
       sizes: {
         active: 100,
@@ -156,8 +159,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'replication': {
-    name: 'replication',
+  [getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY)]: {
+    name: getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
     view_index: {
       sizes: {
         active: 100,
@@ -165,8 +168,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'sentinel': {
-    name: 'sentinel',
+  [getDdoc(VIEWS.OUTBOUND_PUSH_TASKS)]: {
+    name: getDdoc(VIEWS.OUTBOUND_PUSH_TASKS),
     view_index: {
       sizes: {
         active: 700,
@@ -174,8 +177,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'users-meta': {
-    name: 'users-meta',
+  [getDdoc(VIEWS.DEVICE_BY_USER)]: {
+    name: getDdoc(VIEWS.DEVICE_BY_USER),
     view_index: {
       sizes: {
         active: 600,
@@ -183,8 +186,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'users': {
-    name: 'users',
+  [getDdoc(VIEWS.USERS_BY_FIELD)]: {
+    name: getDdoc(VIEWS.USERS_BY_FIELD),
     view_index: {
       sizes: {
         active: 600,
@@ -195,13 +198,13 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
 };
 
 const NOUVEAU_DDOCS_BY_DB = {
-  [environment.db]: ['server', 'replication'],
+  [environment.db]: [getDdoc(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT), getDdoc(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)],
 };
 
 const NOUVEAU_INDEX_INFO_BY_DDOC = {
-  'server': {
-    reports_by_freetext: {
-      name: '_design/server/reports_by_freetext',
+  [getDdoc(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)]: {
+    [NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.split('/')[1]]: {
+      name: `_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT}`,
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -210,8 +213,8 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
         signature: 'cfd67cbb4800308021b6547bcf21cbf99b9476186b5251f317b221225714c5d3',
       },
     },
-    contacts_by_freetext: {
-      name: '_design/server/contacts_by_freetext',
+    [NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.split('/')[1]]: {
+      name: `_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT}`,
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -221,9 +224,9 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
       },
     },
   },
-  'replication': {
-    'docs_by_replication_key': {
-      name: '_design/replication/docs_by_replication_key',
+  [getDdoc(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)]: {
+    [NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.split('/')[1]]: {
+      name: `_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY}`,
       search_index: {
         update_seq: 1263237,
         purge_seq: 0,
@@ -234,6 +237,23 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
     }
   },
 };
+
+const getExpectedViewInfoArgs = () => Object.entries(VIEW_INDEXES_BY_DB).flatMap(
+  ([dbName, ddocs]) => ddocs.map(
+    ddoc => [{ json: true, url: `${environment.serverUrl}/${dbName}/_design/${ddoc}/_info` }]
+  )
+);
+
+const getExpectedNouveauInfoArgs = () => Object.entries(NOUVEAU_DDOCS_BY_DB).flatMap(
+  ([dbName, ddocs]) => ddocs.flatMap(
+    ddoc => Object.keys(NOUVEAU_INDEX_INFO_BY_DDOC[ddoc]).map(
+      indexName => [{
+        json: true,
+        url: `${environment.serverUrl}/${dbName}/_design/${ddoc}/_nouveau_info/${indexName}`,
+      }]
+    )
+  )
+);
 
 const setUpMocks = () => {
   sinon.stub(deployInfo, 'get').resolves({ version: '5.3.2' });
@@ -448,31 +468,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.replication_limit.count).to.equal(1);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
         [{
           json: true,
           url: `${environment.serverUrl}${environment.db}/_changes`,
@@ -620,31 +617,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.connected_users.count).to.equal(2);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
         [{
           json: true,
           url: `${environment.serverUrl}${environment.db}/_changes`,
@@ -748,31 +722,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
       ]);
     });
   });
@@ -891,31 +842,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/replication/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/server/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/shared-reports/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-contacts/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/webapp-reports/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT)}`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/${nouveauInfoUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
       ]);
     });
   });

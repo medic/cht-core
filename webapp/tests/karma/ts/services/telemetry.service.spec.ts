@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-import { VIEWS } from '@medic/constants';
+import { REPLICATED_DDOCS, VIEWS } from '@medic/constants';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -229,9 +229,9 @@ describe('TelemetryService', () => {
       medicDb.info.resolves({ some: 'stats' });
       metaDb.put.resolves();
       medicDb.get
-        .withArgs('_design/shared')
+        .withArgs(REPLICATED_DDOCS[1])
         .resolves({
-          _id: '_design/shared',
+          _id: REPLICATED_DDOCS[1],
           build_info: { version: '3.0.0' }
         });
       medicDb.query.resolves({
@@ -451,8 +451,8 @@ describe('TelemetryService', () => {
       medicDb.info.resolves({ some: 'stats' });
       metaDb.put.onFirstCall().rejects({ status: 409 });
       metaDb.put.onSecondCall().resolves();
-      medicDb.get.withArgs('_design/shared').resolves({
-        _id: '_design/shared',
+      medicDb.get.withArgs(REPLICATED_DDOCS[1]).resolves({
+        _id: REPLICATED_DDOCS[1],
         build_info: {
           version: '3.0.0'
         }

@@ -1059,7 +1059,7 @@ describe('Authorization service', () => {
     it('returns true when it is replicated ddoc or user contact', () => {
       service
         .allowedDoc(
-          '_design/shared',
+          REPLICATED_DDOCS[1],
           { userCtx },
           { docsByReplicationKey: { key: '_all' }, contactsByDepth: null}
         )
@@ -1075,7 +1075,7 @@ describe('Authorization service', () => {
       // Test that replicated ddocs (shared-*, webapp-*) are allowed
       service
         .allowedDoc(
-          '_design/shared',
+          REPLICATED_DDOCS[1],
           { userCtx: userCtxMultiFacility },
           { docsByReplicationKey: [{ key: '_all', value: null}], contactsByDepth: null}
         )

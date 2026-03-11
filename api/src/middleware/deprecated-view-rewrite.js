@@ -42,34 +42,9 @@ const VIEW_MAPPING = {
   },
 };
 
-// Views that moved from intermediate ddocs (introduced in the first reorganization)
-// to their final ddocs in the second reorganization.
-const INTERMEDIATE_VIEW_MAPPING = {
-  'online-user': {
-    doc_summaries_by_id: getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
-  },
-  'report-transitions': {
-    reports_by_form_and_parent: getDdoc(VIEWS.REPORTS_BY_FORM_AND_PARENT),
-    reports_by_form_year_month_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_MONTH_PARENT_REPORTED_DATE),
-    reports_by_form_year_week_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_WEEK_PARENT_REPORTED_DATE),
-  },
-  'sentinel-schedule': {
-    tasks_in_terminal_state: getDdoc(VIEWS.TASKS_IN_TERMINAL_STATE),
-  },
-  'shared-contacts': {
-    contacts_by_phone: getDdoc(VIEWS.CONTACTS_BY_PHONE),
-    contacts_by_reference: getDdoc(VIEWS.CONTACTS_BY_REFERENCE),
-    contacts_by_type: getDdoc(VIEWS.CONTACTS_BY_TYPE),
-    registered_patients: getDdoc(VIEWS.REGISTERED_PATIENTS),
-  },
-  'webapp-reports': {
-    messages_by_contact_date: getDdoc(VIEWS.MESSAGES_BY_CONTACT_DATE),
-  },
-};
-
 // Matches: /{db}/_design/{ddoc}/_view/{view}
 // Captures: ddoc name and view name
-const DEPRECATED_DDOCS = Object.keys(VIEW_MAPPING).concat(Object.keys(INTERMEDIATE_VIEW_MAPPING)).join('|');
+const DEPRECATED_DDOCS = Object.keys(VIEW_MAPPING).join('|');
 const VIEW_URL_PATTERN = new RegExp(`^(\\/[^/]+\\/_design\\/)(${DEPRECATED_DDOCS})(\\/_view\\/)([a-z_]+)(.*)`);
 
 const rewriteDeprecatedViewUrl = (req, res, next) => {
@@ -79,8 +54,7 @@ const rewriteDeprecatedViewUrl = (req, res, next) => {
   }
 
   const [, prefix, oldDdoc, viewSegment, viewName, rest] = match;
-  const ddocMapping = VIEW_MAPPING[oldDdoc] || INTERMEDIATE_VIEW_MAPPING[oldDdoc];
-  const newDdoc = ddocMapping && ddocMapping[viewName];
+  const newDdoc = VIEW_MAPPING[oldDdoc] && VIEW_MAPPING[oldDdoc][viewName];
 
   if (!newDdoc) {
     return next();
