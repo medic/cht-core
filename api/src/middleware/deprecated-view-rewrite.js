@@ -19,6 +19,20 @@ const VIEW_MAPPING = {
     reports_by_form_year_week_parent_reported_date: getDdoc(VIEWS.REPORTS_BY_FORM_YEAR_WEEK_PARENT_REPORTED_DATE),
     tasks_in_terminal_state: getDdoc(VIEWS.TASKS_IN_TERMINAL_STATE),
   },
+  'medic-admin': {
+    contacts_by_dhis_orgunit: getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
+    message_queue: getDdoc(VIEWS.MESSAGE_QUEUE),
+  },
+  'medic-conflicts': {
+    conflicts: getDdoc(VIEWS.CONFLICTS),
+  },
+  'medic-sms': {
+    gateway_messages_by_state: getDdoc(VIEWS.GATEWAY_MESSAGES_BY_STATE),
+    messages_by_gateway_ref: getDdoc(VIEWS.MESSAGES_BY_GATEWAY_REF),
+    messages_by_last_updated_state: getDdoc(VIEWS.MESSAGES_BY_LAST_UPDATED_STATE),
+    messages_by_state: getDdoc(VIEWS.MESSAGES_BY_STATE),
+    messages_by_uuid: getDdoc(VIEWS.MESSAGES_BY_UUID),
+  },
   'medic-client': {
     contacts_by_last_visited: getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
     contacts_by_parent: getDdoc(VIEWS.CONTACTS_BY_PARENT),

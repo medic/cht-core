@@ -17,9 +17,7 @@ const DBS_TO_MONITOR = {
 const VIEW_INDEXES_TO_MONITOR = {
   // Note: medic and medic-client ddocs are no longer included as all views have been moved to other ddocs
   medic: [
-    'medic-admin',
-    'medic-conflicts',
-    'medic-sms',
+    'messages',
     'replication',
     'server',
     'shared',

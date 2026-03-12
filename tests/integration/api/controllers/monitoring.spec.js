@@ -6,8 +6,6 @@ const getDdoc = (viewPath) => viewPath.split('/')[0];
 
 const VIEW_INDEXES_BY_DB = {
   'medic-test': [
-    getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
-    getDdoc(VIEWS.CONFLICTS),
     getDdoc(VIEWS.MESSAGES_BY_STATE),
     getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
     getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),

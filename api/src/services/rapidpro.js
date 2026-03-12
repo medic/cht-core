@@ -187,7 +187,7 @@ let polling = false;
 let throttled = false;
 
 /**
- * Queries `medic-sms/gateway_messages_by_state` for a batch of messages that are in
+ * Queries the gateway_messages_by_state view for a batch of messages that are in
  * non-final states, `skip`ping rows that were already processed. Increases the global variable `skip` with the
  * number of rows that were not updated (their states have not changed) from this batch.
  * When there are no more rows to process, sets `skip` to 0 and will start over the queue on next iteration.

@@ -70,8 +70,6 @@ const dbInfos = [
 const VIEW_INDEXES_BY_DB = {
   [`${environment.db}`]: [
     // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
-    getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
-    getDdoc(VIEWS.CONFLICTS),
     getDdoc(VIEWS.MESSAGES_BY_STATE),
     getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
     getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
@@ -87,24 +85,6 @@ const VIEW_INDEXES_BY_DB = {
 
 const VIEW_INDEX_INFO_BY_DESIGN = {
   // Note: medic and medic-client removed as all views have been moved to other ddocs
-  [getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT)]: {
-    name: getDdoc(VIEWS.CONTACTS_BY_DHIS_ORGUNIT),
-    view_index: {
-      sizes: {
-        active: 6533400,
-        file: 7005334
-      }
-    }
-  },
-  [getDdoc(VIEWS.CONFLICTS)]: {
-    name: getDdoc(VIEWS.CONFLICTS),
-    view_index: {
-      sizes: {
-        active: 6,
-        file: 7
-      }
-    }
-  },
   [getDdoc(VIEWS.MESSAGES_BY_STATE)]: {
     name: getDdoc(VIEWS.MESSAGES_BY_STATE),
     view_index: {
@@ -383,7 +363,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.0724187132519811,
+          fragmentation: 2,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -505,7 +485,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.0724187132519811,
+          fragmentation: 2,
           name: 'mydb',
           update_sequence: 100,
           sizes: {

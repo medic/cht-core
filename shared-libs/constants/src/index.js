@@ -42,24 +42,18 @@ const REPLICATED_DDOCS = [
 
 // CouchDB view paths (ddoc/view)
 const VIEWS = {
-  // medic-admin ddoc
-  CONTACTS_BY_DHIS_ORGUNIT: 'medic-admin/contacts_by_dhis_orgunit',
-  MESSAGE_QUEUE: 'medic-admin/message_queue',
-
-  // medic-conflicts ddoc
-  CONFLICTS: 'medic-conflicts/conflicts',
-
   // medic-offline-freetext ddoc (offline client freetext search)
   CONTACTS_BY_FREETEXT: 'medic-offline-freetext/contacts_by_freetext',
   CONTACTS_BY_TYPE_FREETEXT: 'medic-offline-freetext/contacts_by_type_freetext',
   REPORTS_BY_FREETEXT: 'medic-offline-freetext/reports_by_freetext',
 
-  // medic-sms ddoc
-  GATEWAY_MESSAGES_BY_STATE: 'medic-sms/gateway_messages_by_state',
-  MESSAGES_BY_GATEWAY_REF: 'medic-sms/messages_by_gateway_ref',
-  MESSAGES_BY_LAST_UPDATED_STATE: 'medic-sms/messages_by_last_updated_state',
-  MESSAGES_BY_STATE: 'medic-sms/messages_by_state',
-  MESSAGES_BY_UUID: 'medic-sms/messages_by_uuid',
+  // messages ddoc
+  GATEWAY_MESSAGES_BY_STATE: 'messages/gateway_messages_by_state',
+  MESSAGE_QUEUE: 'messages/message_queue',
+  MESSAGES_BY_GATEWAY_REF: 'messages/messages_by_gateway_ref',
+  MESSAGES_BY_LAST_UPDATED_STATE: 'messages/messages_by_last_updated_state',
+  MESSAGES_BY_STATE: 'messages/messages_by_state',
+  MESSAGES_BY_UUID: 'messages/messages_by_uuid',
 
   // replication ddoc
   CONTACTS_BY_DEPTH: 'replication/contacts_by_depth',
@@ -70,6 +64,8 @@ const VIEWS = {
   OUTBOUND_PUSH_TASKS: 'sentinel/outbound_push_tasks',
 
   // server ddoc (server-only views, not replicated)
+  CONFLICTS: 'server/conflicts',
+  CONTACTS_BY_DHIS_ORGUNIT: 'server/contacts_by_dhis_orgunit',
   DOC_SUMMARIES_BY_ID: 'server/doc_summaries_by_id',
   DOCS_BY_SHORTCODE: 'server/docs_by_shortcode',
   REPORTS_BY_FORM_AND_PARENT: 'server/reports_by_form_and_parent',
