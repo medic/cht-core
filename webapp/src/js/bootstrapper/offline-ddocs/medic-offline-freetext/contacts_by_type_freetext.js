@@ -1,14 +1,15 @@
 module.exports.map = (doc) => {
-  const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
+  const { DOC_TYPES } = require('@medic/constants');
+  const skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
   const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
 
   const usedKeys = [];
-  const emitMaybe = function(type, key, value) {
+  const emitMaybe = function (type, key, value) {
     if (usedKeys.indexOf(key) === -1 && // Not already used
       key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
-      emit([ type, key ], value);
+      emit([type, key], value);
     }
   };
 
@@ -32,7 +33,7 @@ module.exports.map = (doc) => {
   };
 
   const getType = () => {
-    if (doc.type !== 'contact') {
+    if (doc.type !== DOC_TYPES.CONTACT) {
       return doc.type;
     }
 
@@ -40,9 +41,9 @@ module.exports.map = (doc) => {
   };
 
   const getTypeIndex = type => {
-    const types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+    const types = ['district_hospital', 'health_center', 'clinic', 'person'];
     const typeIndex = types.indexOf(type);
-    if (typeIndex === -1 && doc.type === 'contact') {
+    if (typeIndex === -1 && doc.type === DOC_TYPES.CONTACT) {
       return type;
     }
 
@@ -60,5 +61,5 @@ module.exports.map = (doc) => {
   const order = `${dead} ${muted} ${idx} ${doc.name && doc.name.toLowerCase()}`;
   Object
     .keys(doc)
-    .forEach(key  => emitField(type, key, doc[key], order));
+    .forEach(key => emitField(type, key, doc[key], order));
 };

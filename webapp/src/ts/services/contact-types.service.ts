@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { DOC_TYPES } from '@medic/constants';
 import * as contactTypesUtils from '@medic/contact-types-utils';
 
 import { SettingsService } from '@mm-services/settings.service';
@@ -7,7 +8,7 @@ import { SettingsService } from '@mm-services/settings.service';
   providedIn: 'root'
 })
 export class ContactTypesService {
-  constructor(private settingsService:SettingsService) {
+  constructor(private settingsService: SettingsService) {
   }
 
   static HARDCODED_TYPES() {
@@ -26,7 +27,7 @@ export class ContactTypesService {
   /**
    * Returns a Promise to resolve an array of configured contact types.
    */
-  getAll () {
+  getAll() {
     return this.settingsService
       .get()
       .then(config => contactTypesUtils.getContactTypes(config));
@@ -48,7 +49,7 @@ export class ContactTypesService {
     if (!type) {
       return false;
     }
-    return type === 'contact' ||   // configurable hierarchy
+    return type === DOC_TYPES.CONTACT ||   // configurable hierarchy
       contactTypesUtils.isHardcodedType(type);  // hardcoded
   }
 
@@ -119,7 +120,7 @@ export class ContactTypesService {
     if (!typeId || !types?.length) {
       return false;
     }
-    return !!types.find((type:ContactType) => type?.id === typeId);
+    return !!types.find((type: ContactType) => type?.id === typeId);
   }
 }
 
