@@ -92,10 +92,6 @@ describe('Contact details page.', () => {
       await loginPage.login(user);
     });
 
-    after(async () => {
-      await utils.revertSettings(true);
-    });
-
     it('should show reports and tasks when permissions are enabled', async () => {
       await commonElements.goToPeople(patient._id, true);
       expect(await contactPage.contactCardSelectors.contactCardName().getText()).to.equal(patient.name);
@@ -159,14 +155,11 @@ describe('Contact details page.', () => {
       await utils.updateSettings({ contact_summary: contactSummary }, { ignoreReload: true });
 
       await utils.saveDocs([...places.values(), patient]);
-    });
 
-    after(async () => {
-      await utils.revertSettings(true);
+      await loginPage.cookieLogin();
     });
 
     it('should show error log for bad config', async () => {
-      await loginPage.cookieLogin();
       await commonPage.goToPeople(patient._id);
 
       const { errorMessage, url, username, errorStack } = await commonPage.getErrorLog();

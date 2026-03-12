@@ -4,8 +4,8 @@ import { Store } from '@ngrx/store';
 
 import { Selectors } from '@mm-selectors/index';
 
-const OUTDATED_BROWSER_VERSION_MIN = '74';
-const OUTDATED_BROWSER_VERSION_MAX = '90';
+const OUTDATED_BROWSER_VERSION_MIN = '90';
+const OUTDATED_BROWSER_VERSION_MAX = '107';
 type VersionSuffix = `` | `-${string}`;
 export type VersionNumber = 'SNAPSHOT' | `v${string}.${string}.${string}${VersionSuffix}`;
 
@@ -31,13 +31,9 @@ export class BrowserDetectorService {
     return this._parser;
   }
 
-  public detect() {
-    return this.parser.getBrowser();
-  }
-
   public isUsingSupportedBrowser() {
     return this.parser.satisfies({
-      chrome: '>=90', // Chrome 90 was released on April 14, 2021; for desktop and Android.
+      chrome: `>=${OUTDATED_BROWSER_VERSION_MAX}`, // Chrome 107 was released on 25 Oct 2022; for desktop and Android.
       firefox: '>=98', // Firefox 98 was released on March 8, 2022; for desktop and Android.
     });
   }

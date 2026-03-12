@@ -12,6 +12,12 @@ describe('Login page functionality tests', () => {
     password: constants.PASSWORD
   };
 
+  before(async () => {
+    if (utils.isMinimumChromeVersion) {
+      await browser.url('/');
+    }
+  });
+
   afterEach(async () => {
     await commonPage.reloadSession();
   });
