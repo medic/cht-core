@@ -20,14 +20,14 @@ const sidebarFilterSelectors = {
 };
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
-const getTasks = async () => {
+const getTasks = async (timeout = 10000) => {
   let tasks;
   await browser.waitUntil(async () => {
     const tasksList = await $(TASK_LIST_SELECTOR);
     tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
     return await tasksList.isDisplayed() && tasks.length > 0;
   }, {
-    timeout: 10000,
+    timeout,
     timeoutMsg: 'Expected tasks list to be displayed with at least one task'
   });
 
