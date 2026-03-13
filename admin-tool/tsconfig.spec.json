@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "mocha",
+      "sinon",
+      "node",
+      "sinon-chai"
+    ]
+  },
+  "files": [
+    "tests/karma/test.ts",
+    "src/ts/polyfills.ts"
+  ],
+  "include": [
+    "tests/karma/**/*.spec.ts",
+    "tests/karma/**/*.d.ts"
+  ]
+}

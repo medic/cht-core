@@ -1,0 +1,43 @@
+// ============================================================
+// Admin Tool Common Styles
+// Shared base styles
+// ============================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: @font-family-main;
+  font-size: @font-size-base;
+  color: @top-header-color;
+  background-color: @background-color;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+a {
+  color: @blue-dark;
+
+  &:hover {
+    color: @blue-ultra-dark;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: @top-header-color;
+}
+
+// --- Utility classes ---
+.text-muted {
+  color: @inactive-color;
+}
+
+.hidden {
+  display: none !important;
+}
