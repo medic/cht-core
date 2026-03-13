@@ -13,7 +13,7 @@ export const appConfig: ApplicationConfig = {
       BrowserModule,
       AppRoutingModule,
       RouterModule,
-TranslateModule.forRoot(),
+      TranslateModule.forRoot(),
     ),
     provideHttpClient(withInterceptorsFromDi()),
     provideAnimations(),
