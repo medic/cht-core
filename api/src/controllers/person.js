@@ -9,8 +9,51 @@ const getPage = ctx.bind(Person.v1.getPage);
 const createPerson = ctx.bind(Person.v1.create);
 const updatePerson = ctx.bind(Person.v1.update);
 
+/**
+ * @openapi
+ * tags:
+ *   - name: Person
+ *     description: Operations for person contacts
+ */
 module.exports = {
   v1: {
+    /**
+     * @openapi
+     * /api/v1/person/{uuid}:
+     *   get:
+     *     summary: Get a person by UUID
+     *     operationId: getPersonByUuid
+     *     description: Returns a person contact record. Optionally includes the full parent place lineage.
+     *     tags:
+     *       - Person
+     *     parameters:
+     *       - in: path
+     *         name: uuid
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The UUID of the person to retrieve
+     *       - in: query
+     *         name: with_lineage
+     *         schema:
+     *           type: string
+     *           enum:
+     *             - 'true'
+     *         description: When set to 'true', includes the full parent place lineage
+     *     responses:
+     *       '200':
+     *         description: The person record
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/v1.Person'
+     *       '404':
+     *         description: Person not found
+     *       '401':
+     *         description: Not authenticated
+     *       '403':
+     *         description: Insufficient permissions (requires can_view_contacts)
+     */
     get: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
       const { params: { uuid }, query: { with_lineage } } = req;
@@ -29,6 +72,35 @@ module.exports = {
       return res.json(docs);
     }),
 
+    /**
+     * @openapi
+     * /api/v1/person:
+     *   post:
+     *     summary: Create a new person
+     *     operationId: createPerson
+     *     description: Creates a new person contact record.
+     *     tags:
+     *       - Person
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/v1.PersonInput'
+     *     responses:
+     *       '200':
+     *         description: The created person record
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/v1.Person'
+     *       '400':
+     *         description: Invalid input (missing required fields, invalid types, etc.)
+     *       '401':
+     *         description: Not authenticated
+     *       '403':
+     *         description: Insufficient permissions (requires can_create_people or can_edit)
+     */
     create: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_people', 'can_edit'] });
       const personDoc = await createPerson(req.body);
