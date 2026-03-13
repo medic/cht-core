@@ -416,8 +416,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
-      - name: Generate TypeDoc
+      - name: Generate cht-datasource TypeDoc
         run: npm run --prefix shared-libs/cht-datasource gen-docs
+      - name: Generate openapi.json
+        run: npm run generate-openapi
       - name: Main Branch Only - Deploy to GH pages
         uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/master'

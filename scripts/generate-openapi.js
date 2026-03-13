@@ -101,7 +101,7 @@ const lintSpec = async (spec) => {
   if (errors.length > 0) {
     throw new Error(`OpenAPI spec has ${errors.length} validation error(s)`);
   }
-  // TODO Consider failiing for warnings
+  // TODO Consider failing for warnings
 };
 
 const main = async () => {
@@ -109,7 +109,8 @@ const main = async () => {
   const tsSchemas = generateTsSchemas();
   Object.assign(swaggerSpec.components.schemas, tsSchemas);
   await lintSpec(swaggerSpec);
-  const outputPath = path.resolve(__dirname, '../build/openapi.json');
+  // TODO Currently publishing with cht-datasource docs site.
+  const outputPath = path.resolve(__dirname, '../shared-libs/cht-datasource/docs/openapi.json');
   fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2) + '\n');
 };
 
