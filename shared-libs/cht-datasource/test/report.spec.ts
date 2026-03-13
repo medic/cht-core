@@ -170,6 +170,16 @@ describe('report', () => {
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
       });
 
+      it('uses default cursor and limit when not provided', async () => {
+        isFreetextQualifier.returns(true);
+        getIdsPage.resolves(pageData);
+
+        const result = await Report.v1.getUuidsPage(dataContext)(freetextQualifier);
+
+        expect(result).to.equal(pageData);
+        expect(getIdsPage.calledOnceWithExactly(freetextQualifier, null, 10000)).to.be.true;
+      });
+
       it('retrieves report ids from the data context when cursor is not null', async () => {
         isFreetextQualifier.returns(true);
         getIdsPage.resolves(pageData);

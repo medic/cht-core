@@ -157,6 +157,16 @@ describe('person', () => {
         expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
       });
 
+      it('uses default cursor and limit when not provided', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Person.v1.getPage(dataContext)(personTypeQualifier);
+
+        expect(result).to.equal(pageData);
+        expect(getPage.calledOnceWithExactly(personTypeQualifier, null, 100)).to.be.true;
+      });
+
       it('retrieves people from the data context when cursor is not null', async () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);

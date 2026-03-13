@@ -97,6 +97,47 @@ describe('server-info', () => {
         expect((await serverInfo.getDeployInfo()).version).to.equal('4.2.0');
         expect(request.get.callCount).to.equal(2);
       });
+
+      it('should fall back to deploy_info.build when build_info.version is invalid', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: { version: 'not-semver' },
+          deploy_info: { build: '3.5.0' }
+        };
+
+        sinon.stub(request, 'get').resolves(ddoc);
+        serverInfo = rewire('../src/index');
+
+        const result = await serverInfo.getDeployInfo();
+        expect(result.version).to.equal('3.5.0');
+      });
+
+      it('should fall back to ddoc.version when semver fields are invalid', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+          build_info: { version: 'invalid' },
+          deploy_info: { build: 'also-invalid' },
+          version: 'my-custom-version'
+        };
+
+        sinon.stub(request, 'get').resolves(ddoc);
+        serverInfo = rewire('../src/index');
+
+        const result = await serverInfo.getDeployInfo();
+        expect(result.version).to.equal('my-custom-version');
+      });
+
+      it('should return unknown when no version fields are available', async () => {
+        const ddoc = {
+          _id: '_design/medic',
+        };
+
+        sinon.stub(request, 'get').resolves(ddoc);
+        serverInfo = rewire('../src/index');
+
+        const result = await serverInfo.getDeployInfo();
+        expect(result.version).to.equal('unknown');
+      });
     });
 
     describe('getVersion', () => {

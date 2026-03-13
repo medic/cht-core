@@ -4,6 +4,7 @@ const rewire = require('rewire');
 const secureSettings = require('@medic/settings');
 const serverInfo = require('@medic/server-info');
 const request = require('@medic/couch-request');
+const logger = require('@medic/logger');
 let outbound;
 
 describe('outbound shared library', () => {
@@ -79,6 +80,17 @@ describe('outbound shared library', () => {
           assert.equal(sendPayload.callCount, 1);
 
           assert.deepEqual(err, error);
+        });
+    });
+
+    it('returns false when payload already sent', () => {
+      mapDocumentToPayload.resolves(payload);
+      alreadySent.returns(true);
+
+      return outbound.send(config, configName, record, recordInfo)
+        .then(result => {
+          assert.equal(result, false);
+          assert.equal(sendPayload.callCount, 0);
         });
     });
   });
@@ -198,6 +210,16 @@ describe('outbound shared library', () => {
       });
     });
 
+    it('throws when required expr evaluates to undefined', () => {
+      const doc = { _id: 'test-doc' };
+      const conf = {
+        mapping: {
+          'dest': { expr: 'doc.nonexistent' }
+        }
+      };
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), /expr evaluated to undefined/);
+    });
+
     it('throws a useful exception if the expression errors', () => {
       const doc = {
         _id: 'test-doc',
@@ -210,6 +232,23 @@ describe('outbound shared library', () => {
       };
 
       assert.throws(() => mapDocumentToPayload(doc, conf, 'test-doc'), /Mapping error/);
+    });
+
+    it('throws when path accessor throws', () => {
+      const doc = {
+        _id: 'test-doc',
+        get evil() {
+          throw new Error('getter boom');
+        }
+      };
+
+      const conf = {
+        mapping: {
+          'dest': 'doc.evil'
+        }
+      };
+
+      assert.throws(() => mapDocumentToPayload(doc, conf, 'test-config'), /Mapping error.*JS error/);
     });
 
     it('throws an exception if the expression does not have either path or expr', () => {
@@ -457,6 +496,138 @@ describe('outbound shared library', () => {
         .catch(err => {
           assert.equal(err.message, 'Got 404 when requesting auth');
         });
+    });
+  });
+
+  describe('validateAuthConfig', () => {
+    let validateAuthConfig;
+    beforeEach(() => {
+      validateAuthConfig = outbound.__get__('validateAuthConfig');
+    });
+
+    it('throws when auth type is missing', () => {
+      assert.throws(() => validateAuthConfig({}), /No auth.type/);
+    });
+
+    it('throws when auth type is invalid', () => {
+      assert.throws(() => validateAuthConfig({ type: 'oauth' }), /Invalid auth type 'oauth'/);
+    });
+
+    it('returns normalized type for valid auth', () => {
+      assert.equal(validateAuthConfig({ type: 'Basic' }), 'basic');
+      assert.equal(validateAuthConfig({ type: 'Header' }), 'header');
+      assert.equal(validateAuthConfig({ type: 'muso-sih' }), 'muso-sih');
+    });
+  });
+
+  describe('handleHeaderAuth', () => {
+    it('throws for unsupported header name', async () => {
+      const handleHeaderAuth = outbound.__get__('handleHeaderAuth');
+      try {
+        await handleHeaderAuth({ name: 'X-Custom' }, {});
+        assert.fail('should have thrown');
+      } catch (err) {
+        assert.include(err.message, 'Unsupported header name');
+      }
+    });
+  });
+
+  describe('fetchPassword', () => {
+    it('throws when credentials are not configured', async () => {
+      const fetchPassword = outbound.__get__('fetchPassword');
+      sinon.stub(secureSettings, 'getCredentials').resolves(null);
+      try {
+        await fetchPassword('missing-key');
+        assert.fail('should have thrown');
+      } catch (err) {
+        assert.include(err.message, 'Credentials for \'missing-key\' have not been configured');
+      }
+    });
+  });
+
+  describe('logSendError', () => {
+    let logSendError;
+    beforeEach(() => {
+      logSendError = outbound.__get__('logSendError');
+      sinon.stub(logger, 'error');
+    });
+
+    it('logs StatusCodeError with JSON body', () => {
+      const error = {
+        constructor: { name: 'StatusCodeError' },
+        response: { statusCode: 500, body: { detail: 'fail' } }
+      };
+      logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config, server responsed with 500'
+      );
+    });
+
+    it('logs StatusCodeError with non-stringifiable long body', () => {
+      const body = {
+        length: 200,
+        substring: (start, end) => 'x'.repeat(end - start),
+        toJSON: () => {
+          throw new Error('circular');
+        }
+      };
+      const error = {
+        constructor: { name: 'StatusCodeError' },
+        response: { statusCode: 500, body }
+      };
+      logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config, server responsed with 500'
+      );
+    });
+
+    it('logs StatusCodeError with non-stringifiable short body', () => {
+      const body = {};
+      body.toJSON = () => {
+        throw new Error('circular');
+      };
+      const error = {
+        constructor: { name: 'StatusCodeError' },
+        response: { statusCode: 500, body }
+      };
+      logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config, server responsed with 500'
+      );
+    });
+
+    it('logs RequestError', () => {
+      const error = {
+        constructor: { name: 'RequestError' },
+        message: 'ECONNREFUSED'
+      };
+      logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config: ECONNREFUSED'
+      );
+    });
+
+    it('logs OutboundError', () => {
+      const error = { constructor: { name: 'OutboundError' }, message: 'Auth failed' };
+      logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config: Auth failed'
+      );
+    });
+
+    it('logs unknown error type', () => {
+      const error = new TypeError('something');
+      logSendError('config', 'record-1', error);
+      assert.equal(
+        logger.error.args[0][0],
+        'Failed to push record-1 to config: %o'
+      );
+      assert.equal(logger.error.args[0][1], error);
     });
   });
 

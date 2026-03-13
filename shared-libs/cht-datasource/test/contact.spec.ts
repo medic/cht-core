@@ -171,6 +171,17 @@ describe('contact', () => {
         expect(isFreetextQualifier.notCalled).to.be.true;
       });
 
+      it('uses default cursor and limit when not provided', async () => {
+        isContactTypeQualifier.returns(true);
+        isFreetextQualifier.returns(true);
+        getIdsPage.resolves(pageData);
+
+        const result = await Contact.v1.getUuidsPage(dataContext)(qualifier);
+
+        expect(result).to.equal(pageData);
+        expect(getIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
       it('retrieves contact id page from the data context when cursor is not null', async () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);

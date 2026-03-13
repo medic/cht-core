@@ -11,16 +11,25 @@ describe('checks', () => {
 
   const log = idx => console.log.getCall(idx).args.map(arg => arg.toString()).join(' ');
 
+  describe('checkNodeVersion', () => {
+    it('should log node version, mode and options', () => {
+      sinon.spy(console, 'log');
+      service.checkNodeVersion();
+      chai.expect(console.log.callCount).to.equal(3);
+      chai.expect(log(0)).to.include('Node Version:');
+      chai.expect(log(1)).to.include('Node Mode:');
+      chai.expect(log(2)).to.include('Node Environment Options:');
+    });
+  });
+
   describe('checkServerUrl', () => {
 
     it('should allow urls with a single path segment', () => {
-      const couchUrl = 'http://couch.db/dbname';
-      chai.expect(() => service.checkServerUrl(couchUrl)).not.to.throw;
+      service.checkServerUrl('http://couch.db/dbname');
     });
 
     it('should ignore empty path segments', () => {
-      const couchUrl = 'http://couch.db/////dbname/////';
-      chai.expect(() => service.checkServerUrl(couchUrl)).not.to.throw;
+      service.checkServerUrl('http://couch.db/////dbname/////');
     });
 
     it('should block urls with no path segments', () => {
@@ -30,6 +39,10 @@ describe('checks', () => {
     it('should block urls with multiple path segments', () => {
       const couchUrl = 'http://couch.db/path/to/db';
       chai.expect(() => service.checkServerUrl(couchUrl)).to.throw(/must have only one path segment/);
+    });
+
+    it('should throw when given an invalid URL', () => {
+      chai.expect(() => service.checkServerUrl('not-a-valid-url')).to.throw(/COUCH_URL/);
     });
 
   });
@@ -42,6 +55,12 @@ describe('checks', () => {
       // no error thrown = pass
       // ensure credentials are removed
       chai.expect(request.get.args[0][0]).to.deep.equal({ url: 'http://localhost:5984/', json: false, simple: false });
+    });
+
+    it('should rethrow non-HTTP errors', async () => {
+      sinon.stub(request, 'get').rejects(new Error('Network failure'));
+      await chai.expect(service.checkCouchDbNoAdminPartyMode('http://localhost:5984'))
+        .to.eventually.be.rejectedWith('Network failure');
     });
 
     it('enabled', async () => {
