@@ -3,21 +3,21 @@ const utils = require('@utils');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const {expect} = require('chai');
+const { expect } = require('chai');
 const { USER_ROLES } = require('@medic/constants');
 const uuid = require('uuid').v4;
 const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Report API', () => {
   const contact0Id = uuid();
-  const contact1 = utils.deepFreeze(personFactory.build({name: 'contact1', role: 'chw_supervisor'}));
-  const contact2 = utils.deepFreeze(personFactory.build({name: 'contact2', role: 'program_officer'}));
+  const contact1 = utils.deepFreeze(personFactory.build({ name: 'contact1', role: 'chw_supervisor' }));
+  const contact2 = utils.deepFreeze(personFactory.build({ name: 'contact2', role: 'program_officer' }));
   const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
-  const place1 = utils.deepFreeze({...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: {_id: contact1._id}});
-  const place2 = utils.deepFreeze({...placeMap.get('district_hospital'), contact: {_id: contact2._id}});
+  const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
+  const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
     ...placeMap.get('clinic'),
-    contact: {_id: contact0Id},
+    contact: { _id: contact0Id },
     parent: {
       _id: place1._id,
       parent: {
@@ -46,7 +46,11 @@ describe('Report API', () => {
           _id: place2._id
         }
       },
-    }, phone: '1234567890', role: 'patient', short_name: 'Mary', patient_id: uuid()
+    },
+    phone: '1234567890',
+    role: 'patient',
+    short_name: 'Mary',
+    patient_id: uuid()
   }));
   const report0 = utils.deepFreeze(reportFactory.report().build({
     form: 'report0'
@@ -152,7 +156,7 @@ describe('Report API', () => {
     ].forEach(([ description, user ]) => {
       it(`throws error when user ${description}`, async () => {
         const opts = {
-          path: `/api/v1/report/${patient._id}`, auth: {username: user.username, password: user.password},
+          path: `/api/v1/report/${patient._id}`, auth: { username: user.username, password: user.password },
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
@@ -223,7 +227,7 @@ describe('Report API', () => {
       });
     });
   });
-  
+
   describe('GET /api/v1/report/uuid', async () => {
     const freetext = 'report';
     const fourLimit = 4;
@@ -344,14 +348,14 @@ describe('Report API', () => {
 
     it(`throws error when user does not have can_view_reports permission`, async () => {
       const opts = {
-        path: endpoint, auth: {username: userNoPerms.username, password: userNoPerms.password},
+        path: endpoint, auth: { username: userNoPerms.username, password: userNoPerms.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
 
     it(`throws error when user is not an online user`, async () => {
       const opts = {
-        path: endpoint, auth: {username: offlineUser.username, password: offlineUser.password},
+        path: endpoint, auth: { username: offlineUser.username, password: offlineUser.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
     });
@@ -409,6 +413,288 @@ describe('Report API', () => {
         .to.be.rejectedWith(
           `500 - {"code":500,"error":"Server error"}`
         );
+    });
+  });
+
+  describe('POST /api/v1/report/', () => {
+    const postOptions = {
+      path: `/api/v1/report`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    };
+
+    it('creates a report doc for valid input', async () => {
+      const input = {
+        form: 'pregnancy_danger_sign_follow_up',
+        type: 'data_record',
+        reported_date: 11221122,
+        contact: contact0Id,
+        fields: {
+          hello: 'world'
+        }
+      };
+
+      const reportDoc = await utils.request({ ...postOptions, body: input });
+
+      expect(reportDoc).excluding(['_rev', '_id', 'reported_date']).to.deep.equal({
+        ...input,
+        contact: {
+          _id: contact0Id,
+          parent: contact0.parent
+        }
+      });
+    });
+
+    it('creates a report with minimum data', async () => {
+      const input = {
+        form: 'pregnancy_danger_sign_follow_up',
+        contact: place2._id
+      };
+
+      const reportDoc = await utils.request({ ...postOptions, body: input });
+
+      expect(reportDoc).excluding([ '_rev', '_id', 'reported_date' ]).to.deep.equal({
+        ...input,
+        type: 'data_record',
+        contact: { _id: place2._id }
+      });
+      expect(reportDoc.reported_date).to.be.a('number');
+    });
+
+    it('throws error for non-existent contact', async () => {
+      const input = {
+        form: 'pregnancy_danger_sign_follow_up',
+        contact: 'invalid-id'
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Contact [${input.contact}] not found.`
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body: input })).to.be.rejectedWith(expectedError);
+    });
+
+    it('throws error for invalid form', async () => {
+      const input = {
+        form: 'invalid-form',
+        contact: place2._id
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Invalid form value [${input.form}].`
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body: input })).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['does not have can_create_records or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...postOptions,
+          body: {
+            form: 'pregnancy_danger_sign_follow_up',
+            contact: place2._id
+          },
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+  });
+
+  describe('PUT /api/v1/report/:uuid', () => {
+    const endpoint = `/api/v1/report`;
+    const putOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    };
+    let originalReport;
+
+    beforeEach(async () => {
+      const doc = reportFactory.report().build({
+        form: 'pregnancy_danger_sign_follow_up',
+        fields: {
+          hello: 'world',
+          foo: 'bar'
+        }
+      }, {
+        patient,
+        submitter: contact0,
+        place: place0
+      });
+      const { rev } = await utils.saveDoc(doc);
+      originalReport = {
+        ...doc,
+        _rev: rev
+      };
+    });
+
+    it('updates a report', async () => {
+      const updateReportInput = {
+        ...originalReport,
+        contact: place2._id,
+        fields: {
+          ...originalReport.fields,
+          hello: 'universe',
+        }
+      };
+      delete updateReportInput.fields.foo;
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalReport._id}`,
+        body: updateReportInput
+      };
+
+      const updatedReportDoc = await utils.request(opts);
+
+      expect(updatedReportDoc).excluding([ '_rev' ]).to.deep.equal({
+        ...updateReportInput,
+        contact: { _id: place2._id }
+      });
+    });
+
+    it('updates a report when lineage data is provided', async () => {
+      const expectedPlaceLineage = {
+        ...place0,
+        contact: contact0,
+        parent: {
+          ...place1,
+          contact: contact1,
+          parent: {
+            ...place2,
+            contact: contact2,
+          }
+        }
+      };
+      delete expectedPlaceLineage.parent.parent.parent;
+      const updateReportInput = {
+        ...originalReport,
+        contact: {
+          ...contact0,
+          parent: expectedPlaceLineage
+        },
+        fields: {
+          ...originalReport.fields,
+          hello: 'universe',
+        },
+        patient: {
+          ...patient,
+          parent: expectedPlaceLineage
+        },
+        place: expectedPlaceLineage,
+      };
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalReport._id}`,
+        body: updateReportInput
+      };
+
+      const updatedReportDoc = await utils.request(opts);
+
+      // Given lineage data is returned
+      expect(updatedReportDoc).excludingEvery(['_rev', 'reported_date']).to.deep.equal(updateReportInput);
+      const updatedDoc = await utils.getDoc(originalReport._id);
+      // Doc is written with minified lineage
+      expect(updatedDoc).excluding('_rev').to.deep.equal({
+        ...originalReport,
+        fields: {
+          ...originalReport.fields,
+          hello: 'universe',
+        },
+      });
+    });
+
+    it('throws error when updating with invalid contact lineage', async () => {
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalReport._id}`,
+        body: {
+          ...originalReport,
+          contact: {
+            _id: place0._id,
+            parent: { _id: place2._id }
+          },
+        }
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `The given contact lineage does not match the current lineage for that contact.`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it('throws error when updating with a non-existent contact', async () => {
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalReport._id}`,
+        body: {
+          ...originalReport,
+          contact: 'invalid-id',
+        }
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `No valid contact found for [invalid-id].`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error when updating to invalid form`, async () => {
+      const updateReportInput = {
+        ...originalReport,
+        form: 'invalid-form'
+      };
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalReport._id}`,
+        body: updateReportInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Invalid form value [${updateReportInput.form}].`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['any document', 'does-not-exist'],
+      ['a report', place0._id],
+    ].forEach(([test, id]) => {
+      it(`throws error when id does not match ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${id}`,
+          body: originalReport
+        };
+        const expectedError = `404 - ${JSON.stringify({
+          code: 404,
+          error: `Report record [${id}] not found.`
+        })}`;
+
+        await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+      });
+    });
+
+    [
+      ['does not have can_update_reports or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${originalReport._id}`,
+          body: originalReport,
+          auth: { username: user.username, password: user.password },
+        };
+
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 });

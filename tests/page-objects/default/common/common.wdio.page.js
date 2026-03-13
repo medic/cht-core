@@ -5,6 +5,8 @@ const constants = require('@constants');
 const ELEMENT_DISPLAY_PAUSE = 500; // 500ms
 const RELOAD_SYNC_TIMEOUT = 10000;
 
+const getGenericAria = (text) => $(`aria/${text}`);
+
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
   messagesTab: () => $('#messages-tab'),
@@ -73,6 +75,7 @@ const isHamburgerMenuOpen = async () => {
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
     await closeFastActionList();
+    await closeReloadModal(false);
     await hamburgerMenuSelectors.hamburgerMenu().click();
   }
   await hamburgerMenuSelectors.closeSideBarMenu().waitForDisplayed();
@@ -141,28 +144,16 @@ const hideSnackbar = () => {
   });
 };
 
-const getVisibleLoaders = async () => {
-  const visible = [];
-
-  // Get all loaders in the page
-  const loaders = await $$('.loader').getElements();
-  if (loaders.length) {
-    // Add a small pause to let the DOM stabilize
-    await browser.pause(100);
-    // Instead of iterating through the loaders array, query for each loader individually
-    // This avoids issues with stale references
-    for (let i = 0; i < loaders.length; i++) {
-      // Use a more specific selector to get a fresh reference to each loader
-      // This avoids the index out of bounds issue
-      const loaderSelector = `.loader:nth-of-type(${i + 1})`;
-      const loader = await $(loaderSelector);
-      if (await loader.isExisting() && await loader.isDisplayed({ withinViewport: true })) {
-        visible.push(loader);
-      }
+const hasVisibleLoader = async () => {
+  const loaders = await $$('.loader');
+  for (const loader of loaders) {
+    try {
+      return await loader.isDisplayed();
+    } catch {
+      // Ignore stale element errors
     }
   }
-
-  return visible;
+  return false;
 };
 
 const waitForLoaderToDisappear = async (element, timeout = 10000) => {
@@ -171,15 +162,18 @@ const waitForLoaderToDisappear = async (element, timeout = 10000) => {
   await loader.waitForDisplayed({ reverse: true, timeout });
 };
 
-const waitForLoaders = async (timeout = 10000) => {
-  // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
-  // get all loaders.
-  do {
-    await browser.waitUntil(async () => {
-      const visibleLoaders = await getVisibleLoaders();
-      return !visibleLoaders.length;
-    }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.', timeout });
-  } while ((await getVisibleLoaders()).length > 0);
+const waitForLoaders = async (timeout = 5000) => {
+  await browser.waitUntil(async () => {
+    if (await hasVisibleLoader()) {
+      return false;
+    }
+    // Wait for loaders to settle - another loader might appear
+    await browser.pause(200);
+    return !(await hasVisibleLoader());
+  }, {
+    timeoutMsg: 'Waiting for Loading spinners to hide timed out.',
+    timeout
+  });
 };
 
 const waitForAngularLoaded = async (timeout = 40000) => {
@@ -215,9 +209,8 @@ const findVisibleFAB = async () => {
 
 const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
-  const fab = await findVisibleFAB();
   waitForList = waitForList === undefined ? await fabSelectors.multipleActions().isExisting() : waitForList;
-  await fab.click();
+  (await findVisibleFAB())?.click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
@@ -225,8 +218,7 @@ const clickFastActionFAB = async ({ actionId, waitForList }) => {
 
 const getFastActionItemsLabels = async () => {
   await closeHamburgerMenu();
-  const fab = await findVisibleFAB();
-  await fab.click();
+  (await findVisibleFAB())?.click();
 
   await browser.pause(ELEMENT_DISPLAY_PAUSE);
   await fabSelectors.fastActionListContainer().waitForDisplayed();
@@ -400,7 +392,7 @@ const closeReloadModal = async (shouldUpdate, timeout) => {
     timeout = timeout || shouldUpdate ? RELOAD_SYNC_TIMEOUT : ELEMENT_DISPLAY_PAUSE;
     if (shouldUpdate) {
       await modalPage.submit(timeout);
-      await waitForAngularLoaded();
+      await waitForAngularLoaded(timeout);
     } else {
       await modalPage.cancel(timeout);
     }
@@ -418,37 +410,47 @@ const syncAndNotWaitForSuccess = async () => {
   await syncButton().click();
 };
 
-const syncAndWaitForSuccess = async (expectReload, timeout = RELOAD_SYNC_TIMEOUT, retry = 10) => {
-  if (retry < 0) {
-    throw new Error('Failed to sync after 10 retries');
-  }
-  try {
-    await openHamburgerMenu();
-    if (!await hamburgerMenuSelectors.syncInProgress().isDisplayed({ withinViewport: true })) {
-      await hamburgerMenuSelectors.syncButton().click();
-    }
+const syncAndWaitForSuccess = async (timeout = RELOAD_SYNC_TIMEOUT) => {
+  let retry = 10;
+  let reloadModalShown = false;
+  do {
+    retry--;
 
-    await hamburgerMenuSelectors.syncInProgress().waitForDisplayed({ timeout, reverse: true });
-    await browser.waitUntil(async () => {
-      return (await hamburgerMenuSelectors.syncSuccess().isDisplayed()) ||
-             (await modalPage.isDisplayed());
-    }, { timeout });
+    try {
+      await openHamburgerMenu();
+      if (!await hamburgerMenuSelectors.syncInProgress().isDisplayed({ withinViewport: true })) {
+        await hamburgerMenuSelectors.syncButton().click();
+      }
 
-    if (await modalPage.isDisplayed()) {
-      await closeReloadModal(true, RELOAD_SYNC_TIMEOUT);
-    }
-    await openHamburgerMenu();
+      await hamburgerMenuSelectors.syncInProgress().waitForDisplayed({ timeout, reverse: true });
+      await browser.waitUntil(async () => {
+        return (await hamburgerMenuSelectors.syncSuccess().isDisplayed()) ||
+               (await modalPage.isDisplayed());
+      }, { timeout });
 
-    if (await hamburgerMenuSelectors.syncFailed().isDisplayed() ||
-        await hamburgerMenuSelectors.syncUnknown().isDisplayed()) {
-      throw new Error('Failed to sync');
+      // there are some animations happening and a race condition where the previous wait finishes, but the modal is
+      // still not displayed, but appears later and interferes.
+      await browser.pause(200);
+      if (await modalPage.isDisplayed()) {
+        reloadModalShown = true;
+        await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+        await openHamburgerMenu();
+      }
+
+      if (await hamburgerMenuSelectors.syncFailed().isDisplayed() ||
+          await hamburgerMenuSelectors.syncUnknown().isDisplayed()) {
+        throw new Error('Failed to sync');
+      }
+
+      return reloadModalShown;
+    } catch (err) {
+      if (err.message !== 'Failed to sync') {
+        console.error(err);
+      }
     }
-  } catch (err) {
-    if (err.message !== 'Failed to sync') {
-      console.error(err);
-    }
-    return await syncAndWaitForSuccess(expectReload, timeout, retry - 1);
-  }
+  } while (retry);
+
+  throw new Error('Failed to sync after 10 retries');
 };
 
 const hideModalOverlay = () => {
@@ -463,16 +465,15 @@ const hideModalOverlay = () => {
 
 const sync = async ({
   reload = false,
-  expectReload = false,
   serviceWorkerUpdate = false,
   timeout = RELOAD_SYNC_TIMEOUT
 } = {}) => {
   await hideModalOverlay();
 
-  await syncAndWaitForSuccess(expectReload, timeout);
+  const reloadModalShown = await syncAndWaitForSuccess(timeout);
   // service worker updates require downloading all resources, and then it triggers the update modal.
   // sometimes this action is not timely with a quick sync.
-  serviceWorkerUpdate && await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
+  (serviceWorkerUpdate && !reloadModalShown) && await closeReloadModal(false, RELOAD_SYNC_TIMEOUT);
 
   if (reload) {
     await browser.refresh();
@@ -664,4 +665,5 @@ module.exports = {
   getErrorLog,
   createFormDoc,
   reloadSession,
+  getGenericAria,
 };

@@ -51,6 +51,7 @@ const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
 const impact = require('./controllers/impact');
+const targetController = require('./controllers/target');
 const credentials = require('./controllers/credentials');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
@@ -446,6 +447,9 @@ app.get('/api/v1/forms{/}', forms.list);
 app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
+app.get('/api/v1/target', targetController.v1.getAll);
+app.get('/api/v1/target/:id', targetController.v1.get);
+
 app.get('/api/v1/users', users.list);
 app.get('/api/v2/users/:username', users.v2.get);
 app.get('/api/v2/users', users.v2.list);
@@ -485,6 +489,8 @@ app.postJson('/api/v1/places/:id', function(req, res) {
 
 app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
+app.postJson('/api/v1/place', place.v1.create);
+app.putJson('/api/v1/place/:uuid', place.v1.update);
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
@@ -500,12 +506,16 @@ app.postJson('/api/v1/people', function(req, res) {
 
 app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
+app.postJson('/api/v1/person', person.v1.create);
+app.putJson('/api/v1/person/:uuid', person.v1.update);
 
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
 app.get('/api/v1/contact/:uuid', contact.v1.get);
 
 app.get('/api/v1/report/uuid', report.v1.getUuids);
 app.get('/api/v1/report/:uuid', report.v1.get);
+app.postJson('/api/v1/report', report.v1.create);
+app.putJson('/api/v1/report/:uuid', report.v1.update);
 
 app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
