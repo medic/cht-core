@@ -2,6 +2,7 @@ const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
+const { viewUrl } = require('@medic/constants');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -91,8 +92,7 @@ if (UNIT_TEST_ENV) {
   };
   module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
   module.exports.queryMedic = (viewPath, queryParams, body) => {
-    const [ddoc, view] = viewPath.split('/');
-    const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
+    const url = viewPath === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/${viewUrl(viewPath)}`;
     const requestFn = body ? request.post : request.get;
     return requestFn({
       url,

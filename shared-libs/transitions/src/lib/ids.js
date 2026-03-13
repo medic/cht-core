@@ -1,4 +1,5 @@
 const logger = require('@medic/logger');
+const { VIEWS } = require('@medic/constants');
 
 const ID_LENGTH_DOC_ID = 'shortcode-id-length';
 const ID_LENGTH_PARAM = 'current_length';
@@ -103,7 +104,7 @@ const putIdLengthDoc = (db, idLengthDoc) => {
  */
 const findUnusedId = (db, keys) => {
   return db.medic
-    .query('medic/docs_by_shortcode', { keys })
+    .query(VIEWS.DOCS_BY_SHORTCODE, { keys })
     .then(results => {
       if (results.rows.length === keys.length) {
         // there are no unused keys in this batch

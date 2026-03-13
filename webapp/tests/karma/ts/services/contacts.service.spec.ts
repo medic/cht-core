@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 
+import { VIEWS } from '@medic/constants';
 import { ContactsService } from '@mm-services/contacts.service';
 import { DbService } from '@mm-services/db.service';
 import { CacheService } from '@mm-services/cache.service';
@@ -148,10 +149,10 @@ describe('Contacts Service', () => {
     };
 
     query
-      .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: ['clinic'] })
+      .withArgs(VIEWS.CONTACTS_BY_TYPE, { include_docs: true, reduce: false, key: ['clinic'] })
       .resolves({ rows: [{ doc: clinicA }, { doc: clinicB }] });
     query
-      .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: ['health_center'] })
+      .withArgs(VIEWS.CONTACTS_BY_TYPE, { include_docs: true, reduce: false, key: ['health_center'] })
       .resolves({ rows: [{ doc: healthCenter }] });
 
     return service.get(['clinic']).then(actual => {

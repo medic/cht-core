@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/medic/medic/tree/master/shared-libs/rules-engine#readme",
   "dependencies": {
+    "@medic/constants": "file:../constants",
     "@medic/calendar-interval": "file:../calendar-interval",
     "@medic/registration-utils": "file:../registration-utils"
   }

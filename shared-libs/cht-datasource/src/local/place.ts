@@ -19,6 +19,7 @@ import {
 } from './libs/lineage';
 import { assertPlaceInput } from '../libs/parameter-validators';
 import * as LocalContact from './contact';
+import { VIEWS } from '../libs/constants';
 
 const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[], person?: boolean } | undefined> = {
   district_hospital: { id: 'district_hospital' },
@@ -130,7 +131,7 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getDocsByPage = queryDocsByKey(medicDb, VIEWS.CONTACTS_BY_TYPE);
 
     return async (
       placeType: ContactTypeQualifier,

@@ -4,6 +4,7 @@ const logger = require('@medic/logger');
 const phoneNumberParser = require('@medic/phone-number');
 const config = require('../../transitions/src/config');
 const { Qualifier, Report } = require('@medic/cht-datasource');
+const { VIEWS } = require('@medic/constants');
 
 let db;
 let dataContext;
@@ -143,7 +144,7 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  const results = await db.medic.query('medic-client/contacts_by_phone', { key: value });
+  const results = await db.medic.query(VIEWS.CONTACTS_BY_PHONE, { key: value });
   return !results?.rows?.length;
 };
 

@@ -4,6 +4,7 @@ const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
 
+const { VIEWS } = require('@medic/constants');
 const { chtDocs } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
@@ -346,8 +347,8 @@ describe('pouchdb provider', () => {
         userSettingsId: 'org.couchdb.user:username',
       });
       expect(db.query.args).to.deep.equal([
-        ['medic-client/reports_by_subject', { keys: ['abc'], include_docs: true, ...defaultQueryParams }],
-        ['medic-client/tasks_by_contact', { keys: ['requester-abc'], include_docs: true, ...defaultQueryParams }],
+        [VIEWS.REPORTS_BY_SUBJECT, { keys: ['abc'], include_docs: true, ...defaultQueryParams }],
+        [VIEWS.TASKS_BY_CONTACT, { keys: ['requester-abc'], include_docs: true, ...defaultQueryParams }],
       ]);
     });
     it('cht contact yields', async() => {
@@ -368,11 +369,11 @@ describe('pouchdb provider', () => {
 
       expect(db.query.args).to.deep.equal([
         [
-          'medic-client/reports_by_subject',
+          VIEWS.REPORTS_BY_SUBJECT,
           { keys: [chtDocs.contact._id, 'abc', chtDocs.contact.patient_id], include_docs: true, ...defaultQueryParams },
         ],
         [
-          'medic-client/tasks_by_contact',
+          VIEWS.TASKS_BY_CONTACT,
           { keys: [`requester-${chtDocs.contact._id}`, 'requester-abc'], include_docs: true, ...defaultQueryParams }
         ],
       ]);
@@ -438,11 +439,11 @@ describe('pouchdb provider', () => {
 
       expect(db.query.args).to.deep.equal([
         [
-          'medic-client/reports_by_subject',
+          VIEWS.REPORTS_BY_SUBJECT,
           { keys: [ ...contactIds, 'place_id', 'patient_id' ], include_docs: true, ...defaultQueryParams },
         ],
         [
-          'medic-client/tasks_by_contact',
+          VIEWS.TASKS_BY_CONTACT,
           { keys: contactIds.map(id => `requester-${id}`), include_docs: true, ...defaultQueryParams }
         ],
       ]);
@@ -477,11 +478,11 @@ describe('pouchdb provider', () => {
 
       expect(db.query.args).to.deep.equal([
         [
-          'medic-client/reports_by_subject',
+          VIEWS.REPORTS_BY_SUBJECT,
           { include_docs: true, ...defaultQueryParams },
         ],
         [
-          'medic-client/tasks_by_contact',
+          VIEWS.TASKS_BY_CONTACT,
           { include_docs: true, ...defaultQueryParams }
         ],
       ]);

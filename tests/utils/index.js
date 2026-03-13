@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
-const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA, VIEWS } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -877,7 +877,7 @@ const createUsers = async (users, meta = false, password_change_required = false
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .query(VIEWS.DOC_BY_TYPE, { include_docs: true, key: ['user-settings'] })
   .then(response => response.rows.map(row => row.doc));
 
 /**

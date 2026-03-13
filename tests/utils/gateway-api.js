@@ -1,4 +1,5 @@
 const testUtils = require('@utils');
+const { VIEWS } = require('@medic/constants');
 const uuid = require('uuid').v4;
 
 const CHW_CONTACT_NUMBER = '+32049832049';
@@ -102,7 +103,7 @@ const getMessageContents = () => {
 };
 
 const allMessageDocs = () => {
-  return testUtils.db.query('medic-client/messages_by_contact_date',
+  return testUtils.db.query(VIEWS.MESSAGES_BY_CONTACT_DATE,
     { reduce: false, include_docs: true })
     .then(res => res.rows.map(row => row.doc));
 };

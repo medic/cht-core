@@ -4,7 +4,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, REPLICATED_DDOCS } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';
 const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges"}';
@@ -2477,20 +2477,26 @@ describe('db-doc handler', () => {
   });
 
   describe('interactions with ddocs', () => {
-    it('allows GETting _design/medic-client blocks all other ddoc GET requests', () => {
+    it('allows GETting replicated ddocs blocks all other ddoc GET requests', () => {
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: `/${REPLICATED_DDOCS[1]}` }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: `/${REPLICATED_DDOCS[2]}` }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: `/${REPLICATED_DDOCS[3]}` }, offlineRequestOptions)),
+          utils.requestOnTestDb(_.defaults({ path: `/${REPLICATED_DDOCS[4]}` }, offlineRequestOptions)),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, offlineRequestOptions)).catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, offlineRequestOptions)).catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, offlineRequestOptions)).catch(err => err)
         ])
         .then(results => {
-          chai.expect(results[0]._id).to.equal('_design/medic-client');
+          chai.expect(results[0]._id).to.equal(REPLICATED_DDOCS[1]);
+          chai.expect(results[1]._id).to.equal(REPLICATED_DDOCS[2]);
+          chai.expect(results[2]._id).to.equal(REPLICATED_DDOCS[3]);
+          chai.expect(results[3]._id).to.equal(REPLICATED_DDOCS[4]);
 
-          chai.expect(results[1]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
-          chai.expect(results[2]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
-          chai.expect(results[3]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
+          chai.expect(results[4]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
+          chai.expect(results[5]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
+          chai.expect(results[6]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
         });
     });
 
@@ -2502,7 +2508,7 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnTestDb(_.defaults({ path: `/${REPLICATED_DDOCS[1]}` }, request, offlineRequestOptions))
             .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
             .catch(err => err),
@@ -2526,7 +2532,7 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnTestDb(_.defaults({ path: `/${REPLICATED_DDOCS[1]}` }, request, offlineRequestOptions))
             .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
             .catch(err => err),
@@ -2534,7 +2540,7 @@ describe('db-doc handler', () => {
             .catch(err => err),
           utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnMedicDb(_.defaults({ path: `/${REPLICATED_DDOCS[1]}` }, request, offlineRequestOptions))
             .catch(err => err),
           utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
             .catch(err => err),

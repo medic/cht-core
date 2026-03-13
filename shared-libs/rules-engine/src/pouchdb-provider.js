@@ -8,6 +8,7 @@
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
+const { VIEWS } = require('@medic/constants');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
 const MAX_QUERY_KEYS = 500;
@@ -39,14 +40,14 @@ const medicPouchProvider = db => {
     // For users with ~1000 contacts it is ~50x faster to provider a start/end key instead of specifying all ids
     allTasks: prefix => {
       const options = { startkey: `${prefix}-`, endkey: `${prefix}-\ufff0`, include_docs: true };
-      return docsOf(dbQuery('medic-client/tasks_by_contact', options));
+      return docsOf(dbQuery(VIEWS.TASKS_BY_CONTACT, options));
     },
 
     allTaskData: userSettingsDoc => {
       const userSettingsId = userSettingsDoc?._id;
       return Promise.all([
-        docsOf(dbQuery('medic-client/contacts_by_type', { include_docs: true, reduce: false })),
-        docsOf(dbQuery('medic-client/reports_by_subject', { include_docs: true })),
+        docsOf(dbQuery(VIEWS.CONTACTS_BY_TYPE, { include_docs: true, reduce: false })),
+        docsOf(dbQuery(VIEWS.REPORTS_BY_SUBJECT, { include_docs: true })),
         self.allTasks('requester'),
       ])
         .then(([contactDocs, reportDocs, taskDocs]) => ({ contactDocs, reportDocs, taskDocs, userSettingsId }));
@@ -54,7 +55,7 @@ const medicPouchProvider = db => {
 
     contactsBySubjectId: async (subjectIds) => {
       const keys = subjectIds.map(key => ['shortcode', key]);
-      const results = await db.query('medic-client/contacts_by_reference', { keys, include_docs: true });
+      const results = await db.query(VIEWS.CONTACTS_BY_REFERENCE, { keys, include_docs: true });
 
       const shortcodeIds = results.rows.map(result => result.doc._id);
       const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
@@ -108,12 +109,12 @@ const medicPouchProvider = db => {
 
     tasksByRelation: (contactIds, prefix) => {
       const keys = contactIds.map(contactId => `${prefix}-${contactId}`);
-      return docsOf(dbQuery( 'medic-client/tasks_by_contact', { keys, include_docs: true }));
+      return docsOf(dbQuery( VIEWS.TASKS_BY_CONTACT, { keys, include_docs: true }));
     },
 
     allTaskRowsByOwner: (contactIds) => {
       const keys = contactIds.map(contactId => (['owner', 'all', contactId]));
-      return rowsOf(dbQuery( 'medic-client/tasks_by_contact', { keys }));
+      return rowsOf(dbQuery( VIEWS.TASKS_BY_CONTACT, { keys }));
     },
 
     allTaskRows: () => {
@@ -122,7 +123,7 @@ const medicPouchProvider = db => {
         endkey: ['owner', 'all', '\ufff0'],
       };
 
-      return rowsOf(dbQuery( 'medic-client/tasks_by_contact', options));
+      return rowsOf(dbQuery( VIEWS.TASKS_BY_CONTACT, options));
     },
 
     taskDataFor: async (contactIds, userSettingsDoc) => {
@@ -139,7 +140,7 @@ const medicPouchProvider = db => {
       const keys = Array.from(subjectIds);
 
       const [reportDocs, taskDocs] = await Promise.all([
-        docsOf(dbQuery('medic-client/reports_by_subject', { keys, include_docs: true })),
+        docsOf(dbQuery(VIEWS.REPORTS_BY_SUBJECT, { keys, include_docs: true })),
         self.tasksByRelation(contactIds, 'requester'),
       ]);
 

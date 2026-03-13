@@ -4,6 +4,7 @@ import { Doc } from '../../../src/libs/doc';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import * as Qualifier from '../../../src/qualifier';
 import { queryByFreetext, useNouveauIndexes } from '../../../src/local/libs/nouveau';
+import { NOUVEAU_INDEXES, nouveauUrl } from '../../../src/libs/constants';
 
 describe('nouveau', () => {
   let dbFetch: SinonStub;
@@ -43,11 +44,12 @@ describe('nouveau', () => {
           sort: 'reported_date'
         };
 
-        const result = await queryByFreetext(db, 'reports_by_freetext')(qualifier, body.bookmark, body.limit);
+        const query = queryByFreetext(db, NOUVEAU_INDEXES.REPORTS_BY_FREETEXT);
+        const result = await query(qualifier, body.bookmark, body.limit);
 
         expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
-          '_design/medic/_nouveau/reports_by_freetext',
+          nouveauUrl(NOUVEAU_INDEXES.REPORTS_BY_FREETEXT),
           { ...expectedOpts, body: JSON.stringify(body) }
         )).to.be.true;
       });
@@ -70,11 +72,12 @@ describe('nouveau', () => {
           sort: 'sort_order'
         };
 
-        const result = await queryByFreetext(db, 'contacts_by_freetext')(qualifier, body.bookmark, body.limit);
+        const query = queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT);
+        const result = await query(qualifier, body.bookmark, body.limit);
 
         expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
-          '_design/medic/_nouveau/contacts_by_freetext',
+          nouveauUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT),
           { ...expectedOpts, body: JSON.stringify(body) }
         )).to.be.true;
       });
@@ -98,11 +101,11 @@ describe('nouveau', () => {
         sort: 'sort_order'
       };
 
-      const result = await queryByFreetext(db, 'contacts_by_freetext')(qualifier, null, 3);
+      const result = await queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)(qualifier, null, 3);
 
       expect(result).to.deep.equal({ data: ['doc1', 'doc2', 'doc3'], cursor: 'new-bookmark' });
       expect(dbFetch.calledOnceWithExactly(
-        '_design/medic/_nouveau/contacts_by_freetext',
+        nouveauUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT),
         { ...expectedOpts, body: JSON.stringify(body) }
       )).to.be.true;
     });
@@ -117,11 +120,11 @@ describe('nouveau', () => {
         sort: 'sort_order'
       };
 
-      const result = await queryByFreetext(db, 'contacts_by_freetext')(qualifier, 'bookmark1', 3);
+      const result = await queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)(qualifier, 'bookmark1', 3);
 
       expect(result).to.deep.equal({ data: ['doc1', 'doc2'], cursor: null });
       expect(dbFetch.calledOnceWithExactly(
-        '_design/medic/_nouveau/contacts_by_freetext',
+        nouveauUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT),
         { ...expectedOpts, body: JSON.stringify(body) }
       )).to.be.true;
     });
@@ -141,11 +144,11 @@ describe('nouveau', () => {
       };
 
       await expect(
-        queryByFreetext(db, 'contacts_by_freetext')(qualifier, null, 10)
+        queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)(qualifier, null, 10)
       ).to.be.rejectedWith('Internal Server Error');
 
       expect(dbFetch.calledOnceWithExactly(
-        '_design/medic/_nouveau/contacts_by_freetext',
+        nouveauUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT),
         { ...expectedOpts, body: JSON.stringify(body) }
       )).to.be.true;
     });
@@ -170,11 +173,11 @@ describe('nouveau', () => {
           sort: 'sort_order'
         };
 
-        const result = await queryByFreetext(db, 'contacts_by_freetext')(qualifier, null, 10);
+        const result = await queryByFreetext(db, NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)(qualifier, null, 10);
 
         expect(result).to.deep.equal({ data: [], cursor: null });
         expect(dbFetch.calledOnceWithExactly(
-          '_design/medic/_nouveau/contacts_by_freetext',
+          nouveauUrl(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT),
           { ...expectedOpts, body: JSON.stringify(body) }
         )).to.be.true;
       });

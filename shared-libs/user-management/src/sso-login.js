@@ -1,11 +1,12 @@
 const config = require('./libs/config');
 const db = require('./libs/db');
 const passwords = require('./libs/passwords');
+const { VIEWS } = require('@medic/constants');
 
 const isSsoLoginEnabled = () => !!config.get('oidc_provider');
 
 const getUsersByOidcUsername = async (oidcUsername) => db.users
-  .query('users/users_by_field', { include_docs: true, key: ['oidc_username', oidcUsername] })
+  .query(VIEWS.USERS_BY_FIELD, { include_docs: true, key: ['oidc_username', oidcUsername] })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getUserIdWithDuplicateOidcUsername = async (oidcUsername, userDocId) => {

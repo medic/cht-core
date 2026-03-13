@@ -108,7 +108,7 @@ describe('Telemetry', () => {
     await commonPage.goToReports();
     await commonPage.sync();
 
-    const clientDdoc = await utils.getDoc('_design/medic-client');
+    const sharedDdoc = await utils.getDoc('_design/shared');
 
 
     const telemetryEntry = (await getTelemetryFromUserMetaDb(user.username, user.password))[0];
@@ -117,11 +117,11 @@ describe('Telemetry', () => {
       'metadata.month': yesterday.month() + 1,
       'metadata.day': yesterday.date(),
       'metadata.user': user.username,
-      'metadata.versions.app': clientDdoc.build_info.version,
+      'metadata.versions.app': sharedDdoc.build_info.version,
     });
 
-    const version = TAG || utils.escapeBranchName(BRANCH) || clientDdoc.build_info.base_version;
-    expect(clientDdoc.build_info.version).to.include(version);
+    const version = TAG || utils.escapeBranchName(BRANCH) || sharedDdoc.build_info.base_version;
+    expect(sharedDdoc.build_info.version).to.include(version);
   });
 
   describe('search matches telemetry', () => {

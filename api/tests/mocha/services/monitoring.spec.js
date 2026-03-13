@@ -9,7 +9,10 @@ const deployInfo = require('../../../src/services/deploy-info');
 const service = require('../../../src/services/monitoring');
 const { getBundledDdocs } = require('../../../src/services/setup/utils');
 const { DATABASES } = require('../../../src/services/setup/databases');
-const { SENTINEL_METADATA } = require('@medic/constants');
+const { NOUVEAU_INDEXES, SENTINEL_METADATA, VIEWS } = require('@medic/constants');
+
+// Extract the ddoc name from a view/index path like 'shared/doc_by_type' → 'shared'
+const getDdoc = (viewPath) => viewPath.split('/')[0];
 
 let clock;
 
@@ -66,56 +69,24 @@ const dbInfos = [
 
 const VIEW_INDEXES_BY_DB = {
   [`${environment.db}`]: [
-    'medic',
-    'medic-admin',
-    'medic-client',
-    'medic-conflicts',
-    'medic-sms',
+    // Note: medic and medic-client are no longer included as all views have been moved to other ddocs
+    getDdoc(VIEWS.MESSAGES_BY_STATE),
+    getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
+    getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+    getDdoc(VIEWS.DOC_BY_TYPE),
+    getDdoc(VIEWS.REPORTS_BY_DATE),
+    getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
+    getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
   ],
-  [`${environment.db}-sentinel`]: ['sentinel'],
-  [`${environment.db}-users-meta`]: ['users-meta'],
-  '_users': ['users'],
+  [`${environment.db}-sentinel`]: [getDdoc(VIEWS.OUTBOUND_PUSH_TASKS)],
+  [`${environment.db}-users-meta`]: [getDdoc(VIEWS.DEVICE_BY_USER)],
+  '_users': [getDdoc(VIEWS.USERS_BY_FIELD)],
 };
 
 const VIEW_INDEX_INFO_BY_DESIGN = {
-  'medic': {
-    name: 'medic',
-    view_index: {
-      sizes: {
-        active: 600,
-        file: 7007
-      }
-    }
-  },
-  'medic-admin': {
-    name: 'medic-admin',
-    view_index: {
-      sizes: {
-        active: 6533400,
-        file: 7005334
-      }
-    }
-  },
-  'medic-client': {
-    name: 'medic-client',
-    view_index: {
-      sizes: {
-        active: 22600,
-        file: 33700
-      }
-    }
-  },
-  'medic-conflicts': {
-    name: 'medic-conflicts',
-    view_index: {
-      sizes: {
-        active: 6,
-        file: 7
-      }
-    }
-  },
-  'medic-sms': {
-    name: 'medic-sms',
+  // Note: medic and medic-client removed as all views have been moved to other ddocs
+  [getDdoc(VIEWS.MESSAGES_BY_STATE)]: {
+    name: getDdoc(VIEWS.MESSAGES_BY_STATE),
     view_index: {
       sizes: {
         active: 100,
@@ -123,8 +94,62 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'sentinel': {
-    name: 'sentinel',
+  [getDdoc(VIEWS.DATA_RECORDS_BY_TYPE)]: {
+    name: getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 200
+      }
+    }
+  },
+  [getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED)]: {
+    name: getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 200
+      }
+    }
+  },
+  [getDdoc(VIEWS.REPORTS_BY_DATE)]: {
+    name: getDdoc(VIEWS.REPORTS_BY_DATE),
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 200
+      }
+    }
+  },
+  [getDdoc(VIEWS.DOC_BY_TYPE)]: {
+    name: getDdoc(VIEWS.DOC_BY_TYPE),
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 200
+      }
+    }
+  },
+  [getDdoc(VIEWS.DOC_SUMMARIES_BY_ID)]: {
+    name: getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 200
+      }
+    }
+  },
+  [getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY)]: {
+    name: getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
+    view_index: {
+      sizes: {
+        active: 100,
+        file: 200
+      }
+    }
+  },
+  [getDdoc(VIEWS.OUTBOUND_PUSH_TASKS)]: {
+    name: getDdoc(VIEWS.OUTBOUND_PUSH_TASKS),
     view_index: {
       sizes: {
         active: 700,
@@ -132,8 +157,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'users-meta': {
-    name: 'users-meta',
+  [getDdoc(VIEWS.DEVICE_BY_USER)]: {
+    name: getDdoc(VIEWS.DEVICE_BY_USER),
     view_index: {
       sizes: {
         active: 600,
@@ -141,8 +166,8 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
       }
     }
   },
-  'users': {
-    name: 'users',
+  [getDdoc(VIEWS.USERS_BY_FIELD)]: {
+    name: getDdoc(VIEWS.USERS_BY_FIELD),
     view_index: {
       sizes: {
         active: 600,
@@ -153,13 +178,13 @@ const VIEW_INDEX_INFO_BY_DESIGN = {
 };
 
 const NOUVEAU_DDOCS_BY_DB = {
-  [environment.db]: ['medic'],
+  [environment.db]: [getDdoc(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT), getDdoc(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)],
 };
 
 const NOUVEAU_INDEX_INFO_BY_DDOC = {
-  'medic': {
-    reports_by_freetext: {
-      name: '_design/medic/reports_by_freetext',
+  [getDdoc(NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT)]: {
+    [NOUVEAU_INDEXES.REPORTS_BY_FREETEXT.split('/')[1]]: {
+      name: `_design/${NOUVEAU_INDEXES.REPORTS_BY_FREETEXT}`,
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -168,8 +193,8 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
         signature: 'cfd67cbb4800308021b6547bcf21cbf99b9476186b5251f317b221225714c5d3',
       },
     },
-    contacts_by_freetext: {
-      name: '_design/medic/contacts_by_freetext',
+    [NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT.split('/')[1]]: {
+      name: `_design/${NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT}`,
       search_index: {
         update_seq: 1956891,
         purge_seq: 0,
@@ -178,18 +203,37 @@ const NOUVEAU_INDEX_INFO_BY_DDOC = {
         signature: '46de1dfc576838494f798264571dc59658db7ea164915dd459a7752c31591ae6',
       },
     },
-    'docs_by_replication_key': {
-      name: '_design/medic/docs_by_replication_key',
-      search_index: { 
+  },
+  [getDdoc(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)]: {
+    [NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY.split('/')[1]]: {
+      name: `_design/${NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY}`,
+      search_index: {
         update_seq: 1263237,
         purge_seq: 0,
         num_docs: 1261007,
         disk_size: 218427370,
-        signature: '779b1288c85ec5019d5d6a86124b99c12aa729b5edc2d145ff0d09d10cd0f3fb' 
+        signature: '779b1288c85ec5019d5d6a86124b99c12aa729b5edc2d145ff0d09d10cd0f3fb'
       }
     }
   },
 };
+
+const getExpectedViewInfoArgs = () => Object.entries(VIEW_INDEXES_BY_DB).flatMap(
+  ([dbName, ddocs]) => ddocs.map(
+    ddoc => [{ json: true, url: `${environment.serverUrl}/${dbName}/_design/${ddoc}/_info` }]
+  )
+);
+
+const getExpectedNouveauInfoArgs = () => Object.entries(NOUVEAU_DDOCS_BY_DB).flatMap(
+  ([dbName, ddocs]) => ddocs.flatMap(
+    ddoc => Object.keys(NOUVEAU_INDEX_INFO_BY_DDOC[ddoc]).map(
+      indexName => [{
+        json: true,
+        url: `${environment.serverUrl}/${dbName}/_design/${ddoc}/_nouveau_info/${indexName}`,
+      }]
+    )
+  )
+);
 
 const setUpMocks = () => {
   sinon.stub(deployInfo, 'get').resolves({ version: '5.3.2' });
@@ -218,7 +262,7 @@ const setUpMocks = () => {
   sinon.stub(db.sentinel, 'get').withArgs(SENTINEL_METADATA.TRANSITIONS_SEQ)
     .resolves({ processed_seq: '50-xyz' });
   const medicQuery = sinon.stub(db.medic, 'query');
-  medicQuery.withArgs('medic-admin/message_queue')
+  medicQuery.withArgs(VIEWS.MESSAGE_QUEUE)
     .resolves({ rows: [] })
     .onCall(0).resolves({ rows: [
       { key: [ 'scheduled' ], value: 15 },
@@ -227,23 +271,23 @@ const setUpMocks = () => {
       { key: [ 'delivered' ], value: 10 },
     ] });
   medicQuery
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
+    .withArgs(VIEWS.MESSAGE_QUEUE, sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
     .resolves({ rows: [{ key: undefined, value: 20 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
+    .withArgs(VIEWS.MESSAGE_QUEUE, sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
     .resolves({ rows: [{ key: undefined, value: 15 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
+    .withArgs(VIEWS.MESSAGE_QUEUE, sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
     .resolves({ rows: [{ key: undefined, value: 5 }] });
 
-  medicQuery.withArgs('medic-conflicts/conflicts')
+  medicQuery.withArgs(VIEWS.CONFLICTS)
     .resolves({ rows: [ { value: 40 } ] });
   sinon.stub(db.sentinel, 'query')
     .resolves({ rows: [ { value: 3 } ] });
   sinon.stub(db.medicUsersMeta, 'query')
     .resolves({ rows: [ { value: 2 } ] });
   sinon.stub(db.medicLogs, 'query')
-    .withArgs('logs/replication_limit')
+    .withArgs(VIEWS.REPLICATION_LIMIT)
     .resolves({ rows: [ { value: 1 } ] })
-    .withArgs('logs/connected_users', { startkey: 0, reduce: true })
+    .withArgs(VIEWS.CONNECTED_USERS, { startkey: 0, reduce: true })
     .resolves({ rows: [ { value: 2 } ] });
 };
 
@@ -258,7 +302,7 @@ const generateRows = (statusCounters) => {
 };
 
 const setupV2Mocks = (statusCounters) => {
-  const view = 'medic-sms/messages_by_last_updated_state';
+  const view = VIEWS.MESSAGES_BY_LAST_UPDATED_STATE;
   const finalRows = generateRows({
     sent: statusCounters.sent,
     delivered: statusCounters.delivered,
@@ -319,7 +363,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.074747464888782,
+          fragmentation: 2,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -330,17 +374,17 @@ describe('Monitoring service', () => {
           nouveau_indexes: [
             {
               file_size: 76815351,
-              name: 'medic/contacts_by_freetext',
+              name: NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT,
               doc_count: 207734,
             },
             {
               file_size: 157258510,
-              name: 'medic/reports_by_freetext',
+              name: NOUVEAU_INDEXES.REPORTS_BY_FREETEXT,
               doc_count: 183741,
             },
             {
               file_size: 218427370,
-              name: 'medic/docs_by_replication_key',
+              name: NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY,
               doc_count: 1261007,
             },
           ],
@@ -404,26 +448,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.replication_limit.count).to.equal(1);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
         [{
           json: true,
           url: `${environment.serverUrl}${environment.db}/_changes`,
@@ -459,7 +485,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 1.074747464888782,
+          fragmentation: 2,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -470,17 +496,17 @@ describe('Monitoring service', () => {
           nouveau_indexes: [
             {
               file_size: 76815351,
-              name: 'medic/contacts_by_freetext',
+              name: NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT,
               doc_count: 207734,
             },
             {
               file_size: 157258510,
-              name: 'medic/reports_by_freetext',
+              name: NOUVEAU_INDEXES.REPORTS_BY_FREETEXT,
               doc_count: 183741,
             },
             {
               file_size: 218427370,
-              name: 'medic/docs_by_replication_key',
+              name: NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY,
               doc_count: 1261007,
             },
           ],
@@ -571,26 +597,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.connected_users.count).to.equal(2);
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
         [{
           json: true,
           url: `${environment.serverUrl}${environment.db}/_changes`,
@@ -612,9 +620,9 @@ describe('Monitoring service', () => {
     sinon.stub(db.sentinel, 'query').rejects();
     sinon.stub(db.medicUsersMeta, 'query').rejects();
     sinon.stub(db.medicLogs, 'query')
-      .withArgs('logs/replication_limit')
+      .withArgs(VIEWS.REPLICATION_LIMIT)
       .rejects()
-      .withArgs('logs/connected_users', { startkey: 0, reduce: true })
+      .withArgs(VIEWS.CONNECTED_USERS, { startkey: 0, reduce: true })
       .rejects();
 
     return service.jsonV1().then(actual => {
@@ -694,26 +702,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.replication_limit).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
       ]);
     });
   });
@@ -832,26 +822,8 @@ describe('Monitoring service', () => {
       chai.expect(actual.connected_users).to.deep.equal({ count: -1 });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-admin/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-client/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-conflicts/_info` }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/contacts_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/reports_by_freetext`,
-        }],
-        [{
-          json: true,
-          url: `${environment.serverUrl}/${environment.db}/_design/medic/_nouveau_info/docs_by_replication_key`,
-        }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic-sms/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-sentinel/_design/sentinel/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/${environment.db}-users-meta/_design/users-meta/_info` }],
-        [{ json: true, url: `${environment.serverUrl}/_users/_design/users/_info` }],
+        ...getExpectedViewInfoArgs(),
+        ...getExpectedNouveauInfoArgs(),
       ]);
     });
   });

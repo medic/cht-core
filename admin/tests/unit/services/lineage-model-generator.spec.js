@@ -1,4 +1,5 @@
 describe('LineageModelGenerator service', () => {
+  const { VIEWS } = require('@medic/constants');
 
   'use strict';
 
@@ -54,7 +55,7 @@ describe('LineageModelGenerator service', () => {
       ] }));
       return service.contact('a').then(model => {
         chai.expect(dbQuery.callCount).to.equal(1);
-        chai.expect(dbQuery.args[0][0]).to.equal('medic-client/docs_by_id_lineage');
+        chai.expect(dbQuery.args[0][0]).to.equal(VIEWS.DOCS_BY_ID_LINEAGE);
         chai.expect(dbQuery.args[0][1]).to.deep.equal({
           startkey: [ 'a' ],
           endkey: [ 'a', {} ],

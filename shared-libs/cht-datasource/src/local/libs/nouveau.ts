@@ -8,12 +8,12 @@ import {
 } from '../../qualifier';
 import { escapeKeys } from '@medic/nouveau';
 import { getDocById } from './doc';
+import { NOUVEAU_INDEXES, nouveauUrl } from '../../libs/constants';
 
-const MEDIC_NOUVEAU_PATH = '_design/medic/_nouveau';
 const jsonContentTypeHeaders = new Headers({ 'Content-Type': 'application/json' });
-const SORT_BY_VIEW: Record<string, string> = {
-  'contacts_by_freetext': 'sort_order',
-  'reports_by_freetext': 'reported_date',
+const SORT_BY_INDEX: Record<string, string> = {
+  [NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT]: 'sort_order',
+  [NOUVEAU_INDEXES.REPORTS_BY_FREETEXT]: 'reported_date',
 };
 
 /**
@@ -63,10 +63,10 @@ export const queryByFreetext = (
       bookmark: cursor,
       limit,
       q: getQueryByTypeFreetext(qualifier),
-      sort: SORT_BY_VIEW[index],
+      sort: SORT_BY_INDEX[index],
     })
   };
-  const response = await fetchWithDb(db, `${MEDIC_NOUVEAU_PATH}/${index}`, opts);
+  const response = await fetchWithDb(db, nouveauUrl(index), opts);
   if (!response.ok) {
     throw new Error(response.statusText);
   }

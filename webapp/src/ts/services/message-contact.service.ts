@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -37,7 +38,7 @@ export class MessageContactService {
   private getMessages(params) {
     return this.dbService
       .get()
-      .query('medic-client/messages_by_contact_date', params)
+      .query(VIEWS.MESSAGES_BY_CONTACT_DATE, params)
       .then(response => {
         if (!response.rows) {
           return [];

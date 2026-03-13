@@ -11,6 +11,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { SettingsService } from '../../../src/local/libs/data-context';
 import * as Input from '../../../src/input';
 import * as Report from '../../../src/report';
+import { VIEWS } from '../../../src/libs/constants';
 
 describe('local lineage lib', () => {
   let debug: SinonStub;
@@ -39,7 +40,7 @@ describe('local lineage lib', () => {
     const result = await fn(uuid);
 
     expect(result).to.deep.equal([]);
-    expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
+    expect(queryDocsByRange.calledOnceWithExactly(medicDb, VIEWS.DOCS_BY_ID_LINEAGE)).to.be.true;
     expect(queryFn.calledOnceWithExactly([uuid], [uuid, {}])).to.be.true;
   });
 

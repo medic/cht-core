@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
+const { VIEWS } = require('@medic/constants');
 const assert = chai.assert;
 const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
@@ -525,18 +526,18 @@ describe('functional transitions', () => {
 
       sinon.stub(db.medic, 'query')
       // update_clinics
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
+        .withArgs(VIEWS.CONTACTS_BY_PHONE, { key: 'phone1', include_docs: false, limit: 1 })
         .resolves({ rows: [{ id: 'contact1', key: 'phone1' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: false, limit: 1 })
+        .withArgs(VIEWS.CONTACTS_BY_PHONE, { key: 'phone2', include_docs: false, limit: 1 })
         .resolves({ rows: [{ key: 'phone2' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: false, limit: 1 })
+        .withArgs(VIEWS.CONTACTS_BY_PHONE, { key: 'phone3', include_docs: false, limit: 1 })
         .resolves({ rows: [{ id: 'contact3', key: 'phone3' }] })
         //update_sent_by
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: true })
+        .withArgs(VIEWS.CONTACTS_BY_PHONE, { key: 'phone1', include_docs: true })
         .resolves({ rows: [{ id: 'contact1', doc: contact1 }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: true })
+        .withArgs(VIEWS.CONTACTS_BY_PHONE, { key: 'phone2', include_docs: true })
         .resolves({ rows: [{ key: 'phone2' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: true })
+        .withArgs(VIEWS.CONTACTS_BY_PHONE, { key: 'phone3', include_docs: true })
         .resolves({ rows: [{ id: 'contact3', doc: contact3 }] });
 
       getContactWithLineage.resolves(contact1);

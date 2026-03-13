@@ -5,7 +5,7 @@ const moment = require('moment');
 const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
 const testForm = require('./test-stubs');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, VIEWS, viewUrl } = require('@medic/constants');
 
 const contacts = [
   {
@@ -93,7 +93,7 @@ const nursingHomeType = {
 const getContactsByReference = shortcodes => {
   const keys = shortcodes.map(shortcode => ['shortcode', shortcode]);
   const qs = { keys: JSON.stringify(keys), include_docs: true };
-  return utils.requestOnTestDb({ path: '/_design/medic-client/_view/contacts_by_reference', qs });
+  return utils.requestOnTestDb({ path: `/${viewUrl(VIEWS.CONTACTS_BY_REFERENCE)}`, qs });
 };
 
 const getIds = docs => docs.map(doc => doc._id);

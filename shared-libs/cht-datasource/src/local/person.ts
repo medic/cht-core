@@ -12,6 +12,7 @@ import { assertFieldsUnchanged, getReportedDateTimestamp, validateCursor } from 
 import * as Input from '../input';
 import { assertHasValidParentType, assertSameParentLineage, fetchHydratedDoc, minifyDoc } from './libs/lineage';
 import { assertPersonInput } from '../libs/parameter-validators';
+import { VIEWS } from '../libs/constants';
 
 const DEFAULT_PERSON_TYPE = {
   id: 'person',
@@ -87,7 +88,7 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
-    const getDocsByPage = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getDocsByPage = queryDocsByKey(medicDb, VIEWS.CONTACTS_BY_TYPE);
 
     return async (
       personType: ContactTypeQualifier,

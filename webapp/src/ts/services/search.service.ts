@@ -3,6 +3,7 @@ import * as _ from 'lodash-es';
 import * as moment from 'moment';
 import * as Search from '@medic/search';
 import * as CalendarInterval from '@medic/calendar-interval';
+import { VIEWS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -69,7 +70,7 @@ export class SearchService {
     const getVisitsInInterval = () => {
       return this.dbService
         .get()
-        .query('medic-client/visits_by_date', { start_key: interval.start, end_key: interval.end })
+        .query(VIEWS.VISITS_BY_DATE, { start_key: interval.start, end_key: interval.end })
         .then((result) => {
           result.rows.forEach((row) => {
             if (visitStats[row.value]) {
@@ -96,13 +97,13 @@ export class SearchService {
       let query;
       if (this.sessionService.isOnlineOnly()) {
         query = this.dbService.get().query(
-          'medic-client/contacts_by_last_visited',
+          VIEWS.CONTACTS_BY_LAST_VISITED,
           { reduce: true, group: true, keys: searchResults }
         );
       } else {
         // querying with keys in PouchDB is very unoptimal
         query = this.dbService.get().query(
-          'medic-client/contacts_by_last_visited',
+          VIEWS.CONTACTS_BY_LAST_VISITED,
           { reduce: true, group: true }
         );
       }

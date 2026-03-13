@@ -15,6 +15,7 @@ const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
 const { Person, Place, Qualifier, Contact } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
+const { VIEWS } = require('@medic/constants');
 
 const USER_PREFIX = 'org.couchdb.user:';
 
@@ -114,7 +115,7 @@ const queryDocs = (db, view, key) => db
   .query(view, { include_docs: true, key })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
-const getAllUserSettings = () => queryDocs(db.medic, 'medic-client/doc_by_type', ['user-settings']);
+const getAllUserSettings = () => queryDocs(db.medic, VIEWS.DOC_BY_TYPE, ['user-settings']);
 
 const getSettingsByIds = async (ids) => {
   const { rows } = await db.medic.allDocs({ keys: ids, include_docs: true });
@@ -129,10 +130,10 @@ const getAllUsers = async () => db.users
 
 const getUsers = async (facilityId, contactId) => {
   if (!contactId) {
-    return queryDocs(db.users, 'users/users_by_field', ['facility_id', facilityId]);
+    return queryDocs(db.users, VIEWS.USERS_BY_FIELD, ['facility_id', facilityId]);
   }
 
-  const usersForContactId = await queryDocs(db.users, 'users/users_by_field', ['contact_id', contactId]);
+  const usersForContactId = await queryDocs(db.users, VIEWS.USERS_BY_FIELD, ['contact_id', contactId]);
   if (!facilityId) {
     return usersForContactId;
   }

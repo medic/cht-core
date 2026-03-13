@@ -1,4 +1,4 @@
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, REPLICATED_DDOCS } = require('@medic/constants');
 const utils = require('./utils');
 const { setUiStatus, displayTooManyDocsWarning } = require('./ui-status');
 
@@ -125,7 +125,7 @@ const getReplicationLog = async (localDb) => {
 };
 const isReplicationNeeded = async (localDb, userCtx) => {
   const requiredDocs = [
-    '_design/medic-client',
+    ...REPLICATED_DDOCS,
     DOC_IDS.SETTINGS,
     `org.couchdb.user:${userCtx.name}`,
   ];

@@ -5,6 +5,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const utils = require('../lib/utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const { Contact, Person, Qualifier } = require('@medic/cht-datasource');
+const { VIEWS } = require('@medic/constants');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
 
@@ -22,7 +23,7 @@ const getContactByRefid = doc => {
   };
 
   return db.medic
-    .query('medic-client/contacts_by_reference', params)
+    .query(VIEWS.CONTACTS_BY_REFERENCE, params)
     .then(data => {
       if (!data.rows.length) {
         return;
@@ -60,7 +61,7 @@ const getContactByPhone = doc => {
 
   const getContactWithLineage = dataContext.bind(Contact.v1.getWithLineage);
   return db.medic
-    .query('medic-client/contacts_by_phone', params)
+    .query(VIEWS.CONTACTS_BY_PHONE, params)
     .then(data => {
       if (!data.rows.length || !data.rows[0].id) {
         return;

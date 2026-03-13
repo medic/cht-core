@@ -17,6 +17,7 @@ import {
 import { Doc } from '../../libs/doc';
 import { getDocsByIds, queryDocsByRange } from './doc';
 import logger from '@medic/logger';
+import { VIEWS } from '../../libs/constants';
 import lineageFactory from '@medic/lineage';
 import * as Report from '../../report';
 import * as Input from '../../input';
@@ -33,7 +34,7 @@ import { isEqual } from 'lodash';
  * @internal
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
-  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
+  const fn = queryDocsByRange(medicDb, VIEWS.DOCS_BY_ID_LINEAGE);
   return (id: string) => fn([id], [id, {}]);
 };
 

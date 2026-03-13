@@ -1,21 +1,30 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
+const { NOUVEAU_INDEXES, VIEWS } = require('@medic/constants');
+
+const getDdoc = (viewPath) => viewPath.split('/')[0];
 
 const VIEW_INDEXES_BY_DB = {
   'medic-test': [
-    'medic',
-    'medic-admin',
-    'medic-client',
-    'medic-conflicts',
-    'medic-sms',
+    getDdoc(VIEWS.MESSAGES_BY_STATE),
+    getDdoc(VIEWS.DOCS_BY_REPLICATION_KEY),
+    getDdoc(VIEWS.DOC_SUMMARIES_BY_ID),
+    getDdoc(VIEWS.DOC_BY_TYPE),
+    getDdoc(VIEWS.REPORTS_BY_DATE),
+    getDdoc(VIEWS.CONTACTS_BY_LAST_VISITED),
+    getDdoc(VIEWS.DATA_RECORDS_BY_TYPE),
   ],
-  'medic-test-sentinel': ['sentinel'],
-  'medic-test-users-meta': ['users-meta'],
-  _users: ['users'],
+  'medic-test-sentinel': [getDdoc(VIEWS.OUTBOUND_PUSH_TASKS)],
+  'medic-test-users-meta': [getDdoc(VIEWS.DEVICE_BY_USER)],
+  _users: [getDdoc(VIEWS.USERS_BY_FIELD)],
 };
 
 const NOUVEAU_INDEXES_BY_DB = {
-  'medic-test': ['medic/contacts_by_freetext', 'medic/reports_by_freetext', 'medic/docs_by_replication_key'],
+  'medic-test': [
+    NOUVEAU_INDEXES.CONTACTS_BY_FREETEXT,
+    NOUVEAU_INDEXES.REPORTS_BY_FREETEXT,
+    NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY,
+  ],
 };
 
 const getAppVersion = async () => {

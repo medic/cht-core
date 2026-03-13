@@ -1,5 +1,6 @@
 const utils = require('@utils');
 const constants = require('@constants');
+const { NOUVEAU_INDEXES, VIEWS, nouveauUrl, viewUrl } = require('@medic/constants');
 const _ = require('lodash');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -275,7 +276,7 @@ describe('server', () => {
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(2);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
+        expect(haproxyRequests[1]).to.include(viewUrl(VIEWS.DOCS_BY_ID_LINEAGE));
       });
 
       it('should propagate ID via couch-request', async () => {
@@ -366,8 +367,8 @@ describe('server', () => {
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
-        expect(haproxyRequests[6]).to.include('/medic-test/_design/medic/_nouveau/docs_by_replication_key');
+        expect(haproxyRequests[5]).to.include(`/medic-test/${viewUrl(VIEWS.CONTACTS_BY_DEPTH)}`);
+        expect(haproxyRequests[6]).to.include(`/medic-test/${nouveauUrl(NOUVEAU_INDEXES.DOCS_BY_REPLICATION_KEY)}`);
         expect(haproxyRequests[7]).to.include('/medic-test-purged-cache/purged-docs-');
         expect(haproxyRequests[8]).to.include('/medic-test-purged-role-');
         expect(haproxyRequests[9]).to.include('/medic-test-logs/replication-count-');

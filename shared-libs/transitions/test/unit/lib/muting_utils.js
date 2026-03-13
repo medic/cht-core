@@ -1,6 +1,7 @@
 const mutingUtils = require('../../../src/lib/muting_utils');
 const sinon = require('sinon');
 const chai = require('chai');
+const { VIEWS } = require('@medic/constants');
 const _ = require('lodash');
 const db = require('../../../src/db');
 const utils = require('../../../src/lib/utils');
@@ -322,7 +323,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['my-place'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['my-place'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -421,7 +422,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['my-place'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['my-place'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -504,7 +505,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['p2'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['p2'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -554,7 +555,7 @@ describe('mutingUtils', () => {
         chai.expect(result).to.deep.equal([]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['contact'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['contact'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -657,7 +658,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['p2'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['p2'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -752,7 +753,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['p2'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['p2'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -854,7 +855,7 @@ describe('mutingUtils', () => {
         ]]);
 
         chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal(['medic/contacts_by_depth', { key: ['p2'] }]);
+        chai.expect(db.medic.query.args[0]).to.deep.equal([VIEWS.CONTACTS_BY_DEPTH, { key: ['p2'] }]);
 
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{

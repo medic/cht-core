@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const moment = require('moment');
 const utils = require('@utils');
+const { VIEWS } = require('@medic/constants');
 
 describe('Import Records', () => {
 
@@ -58,7 +59,7 @@ describe('Import Records', () => {
             an_optional_date: '2018-11-10'
           }
         }))
-        .then(() => utils.db.query('medic-client/reports_by_form', {
+        .then(() => utils.db.query(VIEWS.REPORTS_BY_FORM, {
           key: ['TEST'],
           include_docs: true,
           reduce: false
@@ -99,7 +100,7 @@ describe('Import Records', () => {
             a_number: 42
           }
         }))
-        .then(() => utils.db.query('medic-client/reports_by_form', {
+        .then(() => utils.db.query(VIEWS.REPORTS_BY_FORM, {
           key: ['TEST'],
           include_docs: true,
           reduce: false
@@ -137,7 +138,7 @@ describe('Import Records', () => {
             an_optional_date: '2018-11-10'
           }
         }))
-        .then(() => utils.db.query('medic-client/reports_by_form', {
+        .then(() => utils.db.query(VIEWS.REPORTS_BY_FORM, {
           key: ['TEST'],
           include_docs: true,
           reduce: false

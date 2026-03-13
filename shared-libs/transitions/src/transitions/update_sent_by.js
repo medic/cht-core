@@ -1,4 +1,5 @@
 const transitionUtils = require('./utils');
+const { VIEWS } = require('@medic/constants');
 const db = require('../db');
 const NAME = 'update_sent_by';
 
@@ -24,7 +25,7 @@ module.exports = {
     const doc = change.doc;
 
     return db.medic
-      .query('medic-client/contacts_by_phone', { key: doc.from, include_docs: true })
+      .query(VIEWS.CONTACTS_BY_PHONE, { key: doc.from, include_docs: true })
       .then(result => {
         const sentBy = result.rows &&
                              result.rows.length &&

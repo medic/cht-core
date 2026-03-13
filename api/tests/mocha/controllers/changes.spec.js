@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const db = require('../../../src/db');
 const serverUtils = require('../../../src/server-utils');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, REPLICATED_DDOCS } = require('@medic/constants');
 
 const controller =  require('../../../src/controllers/changes');
 let req;
@@ -27,14 +27,14 @@ describe('Changes controller', () => {
     sinon.stub(db.medic, 'changes').resolves({
       changes: [
         { id: DOC_IDS.SERVICE_WORKER_META },
-        { id: '_design/medic-client', },
+        { id: REPLICATED_DDOCS[1], },
         { id: 'org.couchdb.user:user', },
         { id: DOC_IDS.SETTINGS },
       ],
     });
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
-      '_design/medic-client',
+      ...REPLICATED_DDOCS,
       DOC_IDS.SERVICE_WORKER_META,
       DOC_IDS.SETTINGS,
       'org.couchdb.user:user',
@@ -42,7 +42,7 @@ describe('Changes controller', () => {
     expect(res.json.args).to.deep.equal([[{
       changes: [
         { id: DOC_IDS.SERVICE_WORKER_META },
-        { id: '_design/medic-client', },
+        { id: REPLICATED_DDOCS[1], },
         { id: 'org.couchdb.user:user', },
         { id: DOC_IDS.SETTINGS },
       ],
