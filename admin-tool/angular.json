@@ -17,6 +17,7 @@
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "../api/build/static/admin-tool",
+            "baseHref": "/admin-tool/",
             "index": "src/index.html",
             "main": "src/ts/main.ts",
             "polyfills": "src/ts/polyfills.ts",

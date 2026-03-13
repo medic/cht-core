@@ -297,9 +297,13 @@ app.all(adminAppPrefix, (req, res, next) => {
   next();
 });
 app.all('/admin{/{*thing}}', authorization.handleAuthErrors, authorization.offlineUserFirewall);
+app.all('/admin-tool{/{*thing}}', authorization.handleAuthErrors, authorization.offlineUserFirewall);
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
+app.get('/admin-tool{/{*path}}', (req, res) => {
+  res.sendFile(path.join(resources.adminToolPath, 'index.html'));
+});
 app.get('/extension-libs', extensionLibs.list);
 app.get('/extension-libs/:name', extensionLibs.get);
 app.get(`${routePrefix}login`, login.get);

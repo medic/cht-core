@@ -3,12 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/medic/medic.git"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },  
   "scripts": {
-    "build": "ng build",
-    "build-watch": "npm run build -- --configuration=development --watch=true",
-    "start": "ng serve",
+    "postinstall": "patch-package && ng cache clean",
+    "unit:mocha": "mocha --config tests/mocha/.mocharc.js",
+    "unit:mocha:tz": "TZ=Canada/Pacific npm run unit:mocha && TZ=Africa/Monrovia npm run unit:mocha && TZ=Pacific/Auckland npm run unit:mocha",
     "unit": "ng test admin-tool",
-    "lint": "../node_modules/.bin/eslint --color --cache src tests"
+    "build": "ng build",
+    "build-watch": "npm run build -- --configuration=development --watch=true"
   },
   "dependencies": {
     "@angular/animations": "19.1.7",
@@ -36,7 +46,7 @@
   "resolutions": {
     "**/jquery": "3.5.1"
   },
-  "devDependencies": {
+  "devDependencies": {    
     "@angular-builders/custom-webpack": "^19.0.0",
     "@angular-devkit/build-angular": "^19.1.8",
     "@angular/cli": "^19.1.8",
