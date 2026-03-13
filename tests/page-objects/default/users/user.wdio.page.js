@@ -12,7 +12,6 @@ const passwordToggleButton = () => $('#password-toggle');
 const saveUserButton = () => $('a[test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
 const usernameTextSelector = '[test-id="username-list"]';
-const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
 const userList = () => $$('[test-id="user-list"]');
 const usernameErrorMessage = () => $('span.help-block.ng-binding');
@@ -46,21 +45,20 @@ const openAddUserDialog = async () => {
 };
 
 const getUsernameRow = async (username) => {
-  await usernameText().waitForDisplayed();
+  await commonElements.waitForLoaders();
   const elems = await userList();
-  const found = await elems.filter(async elem => await elem.$$(usernameTextSelector)[0].getText() === username);
-  return found.length === 0? undefined : found[0];
+  for (const elem of elems) {
+    const usernameElem = await elem.$(usernameTextSelector);
+    if (await usernameElem.isExisting() && await usernameElem.getText() === username) {
+      return elem;
+    }
+  }
 };
 
 const openEditUserDialog = async (username) => {
   const element = await getUsernameRow(username);
-
-  if (!element) {
-    return;
-  }
-
-  element.waitForDisplayed();
-  element.click();
+  await element.waitForDisplayed();
+  await element.click();
   await addUserDialog().waitForDisplayed();
   await browser.pause(500);
 };
@@ -179,7 +177,7 @@ const logout = async () => {
 };
 
 const getAllUsernames = async () => {
-  await usernameText().waitForDisplayed();
+  await commonElements.waitForLoaders();
   return commonElements.getTextForElements(usernameTextList);
 };
 

@@ -9,7 +9,7 @@ import { DOC_IDS } from '@medic/constants';
 })
 export class ResourceIconsService {
   private readonly CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
-  private readonly RESOURCE_DOC_IDS = [DOC_IDS.RESOURCES, 'branding', 'partners'];
+  private readonly RESOURCE_DOC_IDS = [DOC_IDS.RESOURCES, 'branding', DOC_IDS.PARTNERS];
 
   private initResources;
 

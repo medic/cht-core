@@ -47,6 +47,7 @@ describe('Generating short codes', () => {
     await sentinelUtils.waitForSentinel();
     await commonElements.goToReports();
     await reportsPage.leftPanelSelectors.firstReport().click();
+    await commonElements.waitForLoaders();
 
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.senderName).to.contain(contact.name);

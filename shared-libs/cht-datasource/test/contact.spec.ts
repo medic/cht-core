@@ -136,7 +136,7 @@ describe('contact', () => {
       const limit = 3;
       const stringifiedLimit = '3';
       const contactTypeQualifier = { contactType: 'person' } as const;
-      const freetextQualifier = { freetext: 'freetext'} as const;
+      const freetextQualifier = { freetext: 'freetext' } as const;
       const qualifier = {
         ...contactTypeQualifier,
         ...freetextQualifier,
@@ -236,7 +236,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidContactTypeQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
+            `Must be a contact type and/or freetext qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
@@ -251,7 +251,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidFreetextQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
+            `Must be a contact type and/or freetext qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
@@ -303,7 +303,7 @@ describe('contact', () => {
           expect(getIdsPage.notCalled).to.be.true;
         });
       });
-      
+
       [
         {},
         '',
@@ -330,7 +330,7 @@ describe('contact', () => {
 
     describe('getUuids', () => {
       const contactTypeQualifier = { contactType: 'person' } as const;
-      const freetextQualifier = { freetext: 'freetext'} as const;
+      const freetextQualifier = { freetext: 'freetext' } as const;
       const qualifier = {
         ...contactTypeQualifier,
         ...freetextQualifier,
@@ -356,7 +356,7 @@ describe('contact', () => {
         isFreetextQualifier.returns(true);
         getPagedGenerator.returns(mockGenerator);
 
-        const generator =   Contact.v1.getUuids(dataContext)(qualifier);
+        const generator = Contact.v1.getUuids(dataContext)(qualifier);
 
         expect(generator).to.deep.equal(mockGenerator);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
