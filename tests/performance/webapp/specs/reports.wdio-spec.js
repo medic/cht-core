@@ -8,6 +8,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const user = userFactory.build();
 const utils = require('@utils');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
 
 const LOAD_TIMEOUT = 40000;
 
@@ -183,5 +184,32 @@ describe('reports', () => {
       await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
       pagePerformance.record();
     });
+
+    it('measure filter by form and status', async () => {
+      await commonPage.goToReports();
+      await reportsPage.waitForReportsLoaded();
+
+      await reportsPage.openSidebarFilter();
+      pagePerformance.track('reports - filter by form and status');
+      await reportsPage.filterByForm('Pregnancy home visit');
+      await reportsPage.filterByStatus('Not reviewed');
+      await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+      pagePerformance.record();
+    });
+  });
+
+  it('measure search', async () => {
+    await commonPage.goToReports();
+    await reportsPage.waitForReportsLoaded();
+
+    pagePerformance.track('reports - search - first');
+    await searchPage.performSearch('pregnancy_home_visit', LOAD_TIMEOUT);
+    await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+    pagePerformance.record();
+
+    pagePerformance.track('reports - search - second');
+    await searchPage.performSearch('pregnancy', LOAD_TIMEOUT);
+    await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
+    pagePerformance.record();
   });
 });

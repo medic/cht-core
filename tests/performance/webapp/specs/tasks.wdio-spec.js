@@ -45,6 +45,7 @@ describe('tasks', () => {
     }
 
     it('should sync tasks', async () => {
+      // this needs to be in a test. I tried to sync in the `after` and the browser became unresponsive
       await commonElements.goToAboutPage();
       await commonElements.sync({ timeout: LOAD_TIMEOUT });
     });
