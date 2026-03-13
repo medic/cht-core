@@ -41,24 +41,6 @@
     "@angular-devkit/build-angular": "^19.1.8",
     "@angular/cli": "^19.1.8",
     "@angular/compiler-cli": "19.1.7",
-    "@angular/localize": "19.1.7",
-    "@types/chai": "^4.3.6",
-    "@types/chai-as-promised": "^7.1.6",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^18.0.0",
-    "@types/sinon": "^21.0.0",
-    "@types/sinon-chai": "^3.2.12",
-    "chai": "^4.3.8",
-    "chai-as-promised": "^7.1.1",
-    "karma": "^6.4.2",
-    "karma-chrome-launcher": "^3.2.0",
-    "karma-coverage": "^2.2.1",
-    "karma-mocha": "^2.0.1",
-    "karma-mocha-reporter": "^2.2.5",
-    "less": "^4.2.2",
-    "mocha": "^11.7.4",
-    "sinon": "^21.0.1",
-    "sinon-chai": "^3.7.0",
-    "typescript": "~5.7.0"
+    "@angular/localize": "19.1.7"
   }
 }
