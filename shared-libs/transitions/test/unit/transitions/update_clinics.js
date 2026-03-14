@@ -466,6 +466,69 @@ describe('update clinic', () => {
     });
   });
 
+  it('should return undefined when refid result is not a known contact type', () => {
+    const doc = {
+      type: 'data_record',
+      from: '+12345',
+      refid: '1000',
+      content_type: 'xml',
+    };
+
+    const result = {
+      _id: 'some-id',
+      type: 'unknown_type',
+      name: 'Unknown',
+    };
+
+    // config has no contact_types matching 'unknown_type', so getContactType returns undefined
+    config.getAll.returns({ contact_types: [{ id: 'clinic' }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: result }] });
+
+    return transition.onMatch({ doc }).then(changed => {
+      // no contact found (getContactByRefid returned undefined), and it's xml so no error
+      assert(!changed);
+      assert(!doc.contact);
+    });
+  });
+
+  it('should update clinic by refid when result is a person type', async () => {
+    const doc = {
+      type: 'data_record',
+      from: '+12345',
+      refid: '1000',
+    };
+
+    const personDoc = {
+      _id: 'person-id',
+      type: 'person',
+      name: 'A Person',
+      phone: '+34567890123',
+    };
+
+    const personWithLineage = {
+      _id: 'person-id',
+      type: 'person',
+      name: 'A Person',
+      phone: '+34567890123',
+      parent: { _id: 'parent-id' },
+    };
+
+    // contact_types includes a person type with person: true
+    config.getAll.returns({ contact_types: [{ id: 'person', person: true }] });
+    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: personDoc }] });
+    const getPersonWithLineage = sinon.stub().resolves(personWithLineage);
+    dataContext.bind.returns(getPersonWithLineage);
+
+    const changed = await transition.onMatch({ doc });
+
+    assert(changed);
+    assert(doc.contact);
+    assert.equal(doc.contact._id, 'person-id');
+    assert.equal(doc.contact.name, 'A Person');
+    assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
+    assert.isTrue(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('person-id')));
+  });
+
   it('should handle contacts of hardcoded type with a contact_type property', () => {
     const doc = {
       type: 'data_record',

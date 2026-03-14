@@ -262,6 +262,63 @@ describe('Replication Helper Views Lib', () => {
     });
   });
 
+  describe('reset', () => {
+    it('clears all view maps when loadViewMaps is called with a ddoc without _id', () => {
+      const ddoc = {
+        _id: '_design/ddoc',
+        views: {
+          view1: { map: 'function(a) { return emit(a); }' }
+        }
+      };
+      lib.loadViewMaps(ddoc, ['view1']);
+      lib.__get__('viewMapStrings').should.have.property('ddoc');
+
+      lib.loadViewMaps({}, []);
+      lib.__get__('viewMapStrings').should.deep.equal({});
+      lib.__get__('viewMapFns').should.deep.equal({});
+      lib.__get__('nouveauViewMapStrings').should.deep.equal({});
+      lib.__get__('nouveauViewMapFns').should.deep.equal({});
+    });
+  });
+
+  describe('nouveau index edge cases', () => {
+    it('should not store when value is null', () => {
+      const fnString = `
+      function(doc) {
+        index('string', 'val_1', null, { store: true });
+        index('string', 'val_2', doc.val, { store: true });
+      }
+      `;
+      const ddoc = {
+        _id: '_design/ddoc',
+        nouveau: {
+          viewName: { index: fnString }
+        }
+      };
+      lib.loadViewMaps(ddoc, [], ['viewName']);
+      const fn = lib.getNouveauViewMapFn('ddoc', 'viewName');
+      fn({ val: 'one' }).should.deep.equal({ val_2: 'one' });
+    });
+
+    it('should not store when value is undefined', () => {
+      const fnString = `
+      function(doc) {
+        index('string', 'val_1', undefined, { store: true });
+        index('string', 'val_2', doc.val, { store: true });
+      }
+      `;
+      const ddoc = {
+        _id: '_design/ddoc',
+        nouveau: {
+          viewName: { index: fnString }
+        }
+      };
+      lib.loadViewMaps(ddoc, [], ['viewName']);
+      const fn = lib.getNouveauViewMapFn('ddoc', 'viewName');
+      fn({ val: 'one' }).should.deep.equal({ val_2: 'one' });
+    });
+  });
+
   describe('getViewMapString', () => {
     it('returns correct view', () => {
       const fnStringView1 = 'function(a) { return a; }';
@@ -383,4 +440,5 @@ describe('Replication Helper Views Lib', () => {
       lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 'Medic', value: null }]);
     });
   });
+
 });

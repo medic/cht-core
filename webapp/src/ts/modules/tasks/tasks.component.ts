@@ -136,7 +136,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToChanges();
     this.subscribeToRulesEngine();
-    this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
     this.refreshTasks();
@@ -163,7 +162,6 @@ export class TasksComponent implements OnInit, OnDestroy {
       const isEnabled = await this.rulesEngineService.isEnabled();
       this.tasksDisabled = !isEnabled;
       const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-      this.hasTasks = taskDocs.length > 0;
 
       const emissions = taskDocs.map(taskDoc => taskDoc.emission);
       const subjects = await this.getLineagesFromTaskDocs(emissions);
@@ -172,11 +170,9 @@ export class TasksComponent implements OnInit, OnDestroy {
         ...this.getTaskLineage(subjects, task)
       }));
       this.tasksActions.setTasksList(tasksWithLineage);
-
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;
-      this.hasTasks = false;
       this.tasksActions.setTasksList([]);
     } finally {
       this.loading = false;

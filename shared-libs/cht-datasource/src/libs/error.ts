@@ -13,3 +13,17 @@ export class InvalidArgumentError extends Error {
     this.name = 'InvalidArgumentError';
   }
 }
+
+/**
+ * Represents an error that occurs when an identified resource could not be found in the datastore.
+ */
+export class ResourceNotFoundError extends Error {
+  /**
+   * Constructor
+   * @param message a descriptive error message why the error was raised
+   */
+  constructor(message: string) {
+    super(message);
+    this.name = 'ResourceNotFoundError';
+  }
+}

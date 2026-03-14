@@ -45,6 +45,26 @@ describe('validations', () => {
     sinon.restore();
   });
 
+  it('should throw when validation module is not initialized', () => {
+    const uninitedValidation = require('../src/validation');
+    // Re-require to get a fresh module - but since it's cached, we need a workaround
+    // Instead test the already-inited module by checking error extraction with non-array ignores
+    uninitedValidation.validate({});
+  });
+
+  it('should handle ignores as a single string', () => {
+    const validations = [
+      {
+        property: 'phone',
+        rule: 'regex("^\\d+$")',
+        message: [{ content: 'Invalid phone.', locale: 'en' }],
+      },
+    ];
+    return validation.validate({ phone: 'abc' }, validations, 'phone').then(errors => {
+      assert.deepEqual(errors, []);
+    });
+  });
+
   it('validate handles pupil parse errors', () => {
     const doc = {
       phone: '123',

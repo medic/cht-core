@@ -2,6 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const registrationUtils = require('@medic/registration-utils');
 const taskUtils = require('@medic/task-utils');
+const logger = require('@medic/logger');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 describe('utils util', () => {
@@ -392,6 +393,163 @@ describe('utils util', () => {
 
       expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION)).to.be.false;
       expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, 60000)).to.be.false;
+    });
+  });
+
+  describe('getReportsWithSameParentAndForm', () => {
+    it('should reject when formName is missing', () => {
+      return utils
+        .getReportsWithSameParentAndForm({})
+        .then(() => expect.fail('Expected rejection'))
+        .catch(err => {
+          err.should.equal('Missing required argument `formName` for match query.');
+          db.medic.query.callCount.should.equal(0);
+        });
+    });
+
+    it('should reject when parentId is missing', () => {
+      return utils
+        .getReportsWithSameParentAndForm({ formName: 'myForm', doc: {} })
+        .then(() => expect.fail('Expected rejection'))
+        .catch(err => {
+          err.should.equal('Missing required argument `parentId` for match query.');
+          db.medic.query.callCount.should.equal(0);
+        });
+    });
+
+    it('should reject when doc.contact.parent._id is missing', () => {
+      return utils
+        .getReportsWithSameParentAndForm({
+          formName: 'myForm',
+          doc: { contact: { parent: {} } }
+        })
+        .then(() => expect.fail('Expected rejection'))
+        .catch(err => {
+          err.should.equal('Missing required argument `parentId` for match query.');
+          db.medic.query.callCount.should.equal(0);
+        });
+    });
+
+    it('should query the view with correct parameters when valid options are provided', () => {
+      db.medic.query.resolves({ rows: [{ id: 'report1' }, { id: 'report2' }] });
+      return utils
+        .getReportsWithSameParentAndForm({
+          formName: 'myForm',
+          doc: { contact: { parent: { _id: 'parent1' } } }
+        })
+        .then(result => {
+          result.should.deep.equal([{ id: 'report1' }, { id: 'report2' }]);
+          db.medic.query.callCount.should.equal(1);
+          db.medic.query.args[0][0].should.equal('medic/reports_by_form_and_parent');
+          db.medic.query.args[0][1].should.deep.equal({
+            startkey: ['myForm', 'parent1'],
+            endkey: ['myForm', 'parent1'],
+            include_docs: true,
+            reduce: false,
+          });
+        });
+    });
+  });
+
+  describe('getReportsWithinTimeWindow', () => {
+    it('should query the view with correct time window parameters', () => {
+      const rows = [
+        { doc: { _id: 'r1', reported_date: 1000 } },
+        { doc: { _id: 'r2', reported_date: 2000 } },
+      ];
+      db.medic.query.resolves({ rows: rows });
+
+      const latestTimestamp = 1000000;
+      const timeWindowInDays = 3;
+      const expectedMillis = 3 * 24 * 60 * 60 * 1000; // 3 days in ms
+      const expectedStartTimestamp = latestTimestamp - expectedMillis;
+
+      return utils.getReportsWithinTimeWindow(latestTimestamp, timeWindowInDays).then(result => {
+        result.should.deep.equal([{ _id: 'r1', reported_date: 1000 }, { _id: 'r2', reported_date: 2000 }]);
+        db.medic.query.callCount.should.equal(1);
+        db.medic.query.args[0][0].should.equal('medic-client/reports_by_date');
+        db.medic.query.args[0][1].should.deep.equal({
+          endkey: [expectedStartTimestamp],
+          startkey: [latestTimestamp],
+          include_docs: true,
+          descending: true,
+        });
+      });
+    });
+
+    it('should allow overriding default options', () => {
+      db.medic.query.resolves({ rows: [] });
+
+      const customOptions = {
+        endkey: [500],
+        startkey: [9000],
+        include_docs: false,
+        descending: false,
+      };
+
+      return utils.getReportsWithinTimeWindow(1000000, 3, customOptions).then(result => {
+        result.should.deep.equal([]);
+        db.medic.query.callCount.should.equal(1);
+        db.medic.query.args[0][1].should.deep.equal(customOptions);
+      });
+    });
+  });
+
+  describe('getContact', () => {
+    it('should log a warning when more than one contact document for shortcode', () => {
+      sinon.stub(logger, 'warn');
+      db.medic.query.resolves({
+        rows: [
+          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
+          { id: 'contact2', doc: { _id: 'contact2', name: 'Bob' } },
+        ]
+      });
+
+      return utils.getContact('shortcode123').then(result => {
+        result.should.deep.equal({ _id: 'contact1', name: 'Alice' });
+        logger.warn.callCount.should.equal(1);
+        logger.warn.args[0][0].should.equal('More than one contact document for shortcode shortcode123');
+      });
+    });
+
+    it('should return the contact doc', () => {
+      db.medic.query.resolves({
+        rows: [
+          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
+        ]
+      });
+
+      return utils.getContact('shortcode123').then(result => {
+        result.should.deep.equal({ _id: 'contact1', name: 'Alice' });
+      });
+    });
+
+    it('should return contact id', () => {
+      db.medic.query.resolves({
+        rows: [
+          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
+        ]
+      });
+
+      return utils.getContactUuid('shortcode123').then(result => {
+        result.should.equal('contact1');
+      });
+    });
+
+    it('should log warning and return first contact id when multiple matches via getContactUuid', () => {
+      sinon.stub(logger, 'warn');
+      db.medic.query.resolves({
+        rows: [
+          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
+          { id: 'contact2', doc: { _id: 'contact2', name: 'Bob' } },
+        ]
+      });
+
+      return utils.getContactUuid('myshortcode').then(result => {
+        result.should.equal('contact1');
+        logger.warn.callCount.should.equal(1);
+        logger.warn.args[0][0].should.equal('More than one contact document for shortcode myshortcode');
+      });
     });
   });
 });

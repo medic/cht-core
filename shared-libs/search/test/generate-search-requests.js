@@ -488,6 +488,10 @@ describe('GenerateSearchRequests service', () => {
     });
   });
 
+  it('throws for unknown type', () => {
+    chai.expect(() => service('unknown_type', {})).to.throw('Unknown type: unknown_type');
+  });
+
   it('should add map function to contact type request if sorting by date last visited', () => {
     const result = service('contacts', { types: { selected: [ 'clinic' ] } }, { sortByLastVisitedDate: true } );
     chai.expect(result.length).to.equal(2);
@@ -500,5 +504,18 @@ describe('GenerateSearchRequests service', () => {
     chai.expect(map({ value: 'false false Felicia' }))
       .to.deep.equal({ value: 'false false Felicia', sort: 'false false' });
     chai.expect(map({ value: 'true false Moses' })).to.deep.equal({ value: 'true false Moses', sort: 'true false' });
+  });
+
+  it('should return sortByLastVisitedDate request with map that transforms key and value', () => {
+    const result = service('contacts', { types: { selected: [ 'clinic' ] } }, { sortByLastVisitedDate: true } );
+    chai.expect(result.length).to.equal(2);
+    chai.expect(result[1].view).to.equal('medic-client/contacts_by_last_visited');
+    chai.expect(result[1].params).to.deep.equal({ reduce: true, group: true });
+    const mapFn = result[1].map;
+    chai.expect(mapFn).to.be.a('function');
+    const row = { key: 'abc', value: { max: 12345 } };
+    const mapped = mapFn(row);
+    chai.expect(mapped.id).to.equal('abc');
+    chai.expect(mapped.value).to.equal(12345);
   });
 });

@@ -1,8 +1,11 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
+const { expect } = require('chai');
 const jsc = require('jsverify');
+const rewire = require('rewire');
 const ids = require('../../src/lib/ids.js');
 const db = require('../../src/db');
+const logger = require('@medic/logger');
 
 const mockDb = (idFilterLogicFn) => {
   sinon.stub(db.medic, 'query').callsFake((view, options) => {
@@ -90,6 +93,88 @@ describe('ids', () => {
       assert(patientId);
       assert.equal(patientId.length, LENGTH);
     });
+  });
+
+  it('generateId throws when length is greater than MAX_ID_LENGTH (13)', () => {
+    expect(() => ids._generate(14)).to.throw('id length of 14 is too long');
+    expect(() => ids._generate(20)).to.throw('id length of 20 is too long');
+  });
+
+  it('getIdLengthDoc throws when db.get rejects with a non-404 error', () => {
+    const db = mockDb(() => []);
+    db.medic.get.rejects({ status: 500, message: 'server error' });
+
+    return ids.generator(db).next().value.then(
+      () => assert.fail('should have thrown'),
+      err => {
+        assert.equal(err.status, 500);
+        assert.equal(err.message, 'server error');
+      }
+    );
+  });
+
+  it('getIdLengthDoc returns default doc when db.get rejects with a 404 error', () => {
+    const db = mockDb(() => []);
+    db.medic.get.rejects({ status: 404 });
+
+    return ids.generator(db).next().value.then(patientId => {
+      assert(patientId);
+      // Default doc has current_length = 5 (INITIAL_ID_LENGTH), so generated ID should be length 5
+      assert.equal(patientId.length, 5);
+    });
+  });
+
+  it('putIdLengthDoc throws when db.put rejects with a non-409 error', () => {
+    // Force a length increase so putIdLengthDoc is called:
+    // Return all ids as "used" for length 5, then return none for length 6
+    const db = mockDb(idsList => {
+      if (idsList[0].length === 5) {
+        return idsList; // all used
+      }
+      return []; // none used at length 6
+    });
+    db.medic.put.rejects({ status: 500, message: 'put server error' });
+
+    return ids.generator(db).next().value.then(
+      () => assert.fail('should have thrown'),
+      err => {
+        assert.equal(err.status, 500);
+        assert.equal(err.message, 'put server error');
+      }
+    );
+  });
+
+  it('putIdLengthDoc warns and resolves when db.put rejects with a 409 error', () => {
+    sinon.stub(logger, 'warn');
+    // Force a length increase so putIdLengthDoc is called
+    const db = mockDb(idsList => {
+      if (idsList[0].length === 5) {
+        return idsList; // all used
+      }
+      return []; // none used at length 6
+    });
+
+    db.medic.put.rejects({ status: 409 });
+
+    return ids.generator(db).next().value.then(patientId => {
+      assert(patientId);
+      assert.equal(patientId.length, 6);
+      assert.isAtLeast(logger.warn.callCount, 1);
+      const warnCalls = logger.warn.args.map(args => args[0]);
+      const has409Warning = warnCalls.some(msg => typeof msg === 'string' && msg.includes('409'));
+      assert(has409Warning, 'should have logged a 409 warning');
+    });
+  });
+
+  it('generator throws when MAX_IDS_TO_GENERATE is too high compared to INITIAL_ID_LENGTH', () => {
+    const idsRewired = rewire('../../src/lib/ids.js');
+    // Set MAX_IDS_TO_GENERATE high enough that MAX_IDS_TO_GENERATE * 10 > 10^INITIAL_ID_LENGTH
+    // INITIAL_ID_LENGTH = 5, so 10^5 = 100000. We need MAX * 10 > 100000, so MAX > 10000
+    idsRewired.__set__('MAX_IDS_TO_GENERATE', 100000);
+
+    expect(() => {
+      idsRewired.generator(db).next();
+    }).to.throw('MAX_IDS_TO_GENERATE too high compared to DEFAULT_ID_LENGTH');
   });
 
 });

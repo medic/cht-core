@@ -239,6 +239,51 @@ describe('infodoc', () => {
       });
     });
 
+    it('should merge medic infodoc into sentinel when sentinel has no transitions', () => {
+      const change = {
+        id: 'test',
+        doc: { _id: 'test', _rev: '1-abc', transitions: { from_doc: true } }
+      };
+
+      const sentinelInfoDoc = {
+        _id: 'test-info',
+        _rev: '1-s',
+        type: 'info',
+        doc_id: 'test',
+        initial_replication_date: 'new-date',
+        latest_replication_date: 'new-date'
+      };
+
+      const medicInfoDoc = {
+        _id: 'test-info',
+        _rev: '1-m',
+        type: 'info',
+        doc_id: 'test',
+        extra_field: 'from medic',
+        initial_replication_date: 'old-date',
+        latest_replication_date: 'old-date',
+        transitions: { old_transition: true }
+      };
+
+      sinon.stub(db.sentinel, 'allDocs').resolves({
+        rows: [{ key: 'test-info', doc: sentinelInfoDoc }]
+      });
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [{ key: 'test-info', doc: medicInfoDoc }]
+      });
+      sinon.stub(db.medic, 'bulkDocs').resolves();
+      sinon.stub(db.sentinel, 'bulkDocs').resolves([{ ok: true, rev: '2-s' }]);
+
+      return lib.get(change).then(result => {
+        assert.equal(result.extra_field, 'from medic');
+        assert.equal(result.initial_replication_date, 'old-date');
+        assert.deepEqual(result.transitions, { old_transition: true });
+        assert.isTrue(medicInfoDoc._deleted);
+        assert.equal(db.sentinel.bulkDocs.callCount, 1);
+        assert.equal(db.medic.bulkDocs.callCount, 1);
+      });
+    });
+
     it('should work with a mix of all', () => {
       const changes = [
         { id: 'a', doc: {_id: 'a', _rev: '1-abc'} },
@@ -481,6 +526,58 @@ describe('infodoc', () => {
       });
     });
 
+    it('should use infodoc directly when sentinel returns 404', () => {
+      const change = {
+        id: 'some',
+        info: {
+          _id: 'some-info',
+          transitions: { one: { ok: true } }
+        }
+      };
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.saveTransitions(change).then(() => {
+        assert.equal(db.sentinel.put.callCount, 1);
+        assert.deepEqual(db.sentinel.put.args[0][0], change.info);
+      });
+    });
+
+    it('should use default value when infodoc property is falsy', () => {
+      const serverInfo = { _id: 'some-info', doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(serverInfo);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      const change = { id: 'some', info: {} };
+      return lib.saveTransitions(change).then(() => {
+        assert.deepEqual(db.sentinel.put.args[0][0].transitions, {});
+      });
+    });
+
+    it('should throw non-404 errors from sentinel get', () => {
+      const change = { id: 'some', info: { transitions: {} } };
+      sinon.stub(db.sentinel, 'get').rejects({ status: 500 });
+
+      return lib.saveTransitions(change)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 500);
+        });
+    });
+
+    it('should throw non-409 errors from sentinel put', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').rejects({ status: 500 });
+
+      const change = { id: 'some', info: { transitions: { one: true } } };
+      return lib.saveTransitions(change)
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 500);
+        });
+    });
+
     it('should handle conflicts correctly', () => {
       const info = { _id: 'some-info', doc_id: 'some' };
       const change = {
@@ -558,6 +655,27 @@ describe('infodoc', () => {
         sentinelPut = sinon.stub(db.sentinel, 'put');
       });
       afterEach(() => sinon.restore());
+
+      it('throws non-404 errors from get', () => {
+        sentinelGet.rejects({ status: 500 });
+
+        return lib.recordDocumentWrite('blah')
+          .then(() => assert.fail('should have thrown'))
+          .catch(err => {
+            assert.equal(err.status, 500);
+          });
+      });
+
+      it('throws non-409 errors from put', () => {
+        sentinelGet.resolves({ _id: 'blah-info', latest_replication_date: 'old' });
+        sentinelPut.rejects({ status: 500 });
+
+        return lib.recordDocumentWrite('blah')
+          .then(() => assert.fail('should have thrown'))
+          .catch(err => {
+            assert.equal(err.status, 500);
+          });
+      });
 
       it('creates a new infodoc if it does not exist', () => {
         sentinelGet.rejects({status: 404});
