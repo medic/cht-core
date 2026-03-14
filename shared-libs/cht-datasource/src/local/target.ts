@@ -1,3 +1,4 @@
+import { DOC_TYPES } from '../libs/constants';
 import { LocalDataContext } from './libs/data-context';
 import { fetchAndFilter, getDocById, getDocsByIds, getDocIdsByIdRange } from './libs/doc';
 import {
@@ -42,7 +43,7 @@ const getTargetIds = async (
 export namespace v1 {
   const isTarget = (doc: Nullable<Doc>): doc is Target.v1.Target => {
     return isRecord(doc)
-      && doc.type === 'target'
+      && doc.type === DOC_TYPES.TARGET
       && hasField(doc, { name: 'user', type: 'string' })
       && hasField(doc, { name: 'owner', type: 'string' })
       && hasField(doc, { name: 'reporting_period', type: 'string' })
