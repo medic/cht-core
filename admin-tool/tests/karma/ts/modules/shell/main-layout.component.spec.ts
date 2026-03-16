@@ -1,16 +1,24 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { MainLayoutComponent } from '@admin-tool-modules/shell/main-layout.component';
 import { HeaderComponent } from '@admin-tool-components/header/header.component';
 import { SidebarComponent } from '@admin-tool-components/sidebar/sidebar.component';
+import { AuthService } from '@admin-tool-services/auth.service';
 
 describe('MainLayoutComponent', () => {
   let component: MainLayoutComponent;
   let fixture: ComponentFixture<MainLayoutComponent>;
 
   beforeEach(waitForAsync(() => {
+    const authService = {
+      has: sinon.stub().resolves(true),
+      any: sinon.stub().resolves(true),
+      online: sinon.stub().returns(true),
+    };
+
     return TestBed
       .configureTestingModule({
         imports: [
@@ -18,6 +26,9 @@ describe('MainLayoutComponent', () => {
           MainLayoutComponent,
           HeaderComponent,
           SidebarComponent,
+        ],
+        providers: [
+          { provide: AuthService, useValue: authService },
         ],
       })
       .compileComponents()
@@ -27,6 +38,8 @@ describe('MainLayoutComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  afterEach(() => sinon.restore());
 
   it('should create the main layout component', () => {
     expect(component).to.exist;
