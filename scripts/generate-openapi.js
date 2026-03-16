@@ -11,6 +11,7 @@ const DATASOURCE_DIR = path.resolve(__dirname, '../shared-libs/cht-datasource/sr
 const TSCONFIG = path.resolve(__dirname, '../shared-libs/cht-datasource/tsconfig.build.json');
 
 const TYPE_SOURCES = [
+  'contact.ts',
   'person.ts',
   'input.ts',
 ].map(file => path.join(DATASOURCE_DIR, file));
@@ -58,12 +59,24 @@ const SWAGGER_OPTIONS = {
             'Token identifying which page to retrieve. Omit for the first page. ' +
             'Subsequent pages can be retrieved by providing the cursor returned with the previous page.',
         },
-        entityLimit: {
+        limitEntity: {
           in: 'query',
           name: 'limit',
           schema: { type: 'number', default: 100, minimum: 1 },
           description: 'The maximum number of entities to return. Defaults to 100.',
         },
+        limitId: {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'number', default: 10000, minimum: 1 },
+          description: 'The maximum number of identifiers to return. Defaults to 10000.',
+        },
+        withLineage: {
+          in: 'query',
+          name: 'with_lineage',
+          schema: { type: 'string', 'enum': ['true'] }, // TODO Do we need string?
+          description: 'Include the full parent lineage.'
+        }
       },
       responses: {
         NotFound: { description: 'Entity not found' },

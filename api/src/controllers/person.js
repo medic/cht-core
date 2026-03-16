@@ -36,12 +36,7 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: The id of the person to retrieve
-     *       - in: query
-     *         name: with_lineage
-     *         schema:
-     *           type: string
-     *           enum: ['true']
-     *         description: When set to 'true', includes the full parent place lineage
+     *       - $ref: '#/components/parameters/withLineage'
      *     responses:
      *       '200':
      *         description: The person record
@@ -93,7 +88,7 @@ module.exports = {
      *           type: string
      *         description: The contact_type id for the type of persons to fetch
      *       - $ref: '#/components/parameters/cursor'
-     *       - $ref: '#/components/parameters/entityLimit'
+     *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
      *       '200':
      *         description: A page of person records
