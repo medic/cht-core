@@ -13,6 +13,7 @@ const TSCONFIG = path.resolve(__dirname, '../shared-libs/cht-datasource/tsconfig
 const TYPE_SOURCES = [
   'contact.ts',
   'person.ts',
+  'report.ts',
   'input.ts',
 ].map(file => path.join(DATASOURCE_DIR, file));
 
@@ -74,7 +75,7 @@ const SWAGGER_OPTIONS = {
         withLineage: {
           in: 'query',
           name: 'with_lineage',
-          schema: { type: 'string', 'enum': ['true'] }, // TODO Do we need string?
+          schema: { 'enum': ['true'] },
           description: 'Include the full parent lineage.'
         }
       },

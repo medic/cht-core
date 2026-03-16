@@ -181,14 +181,18 @@ module.exports = {
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/v1.UpdatePersonInput'
+     *             oneOf:
+     *               - $ref: '#/components/schemas/v1.Person'
+     *               - $ref: '#/components/schemas/v1.PersonWithLineage'
      *     responses:
      *       '200':
      *         description: The updated person record
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/v1.Person'
+     *               oneOf:
+     *                 - $ref: '#/components/schemas/v1.Person'
+     *                 - $ref: '#/components/schemas/v1.PersonWithLineage'
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
