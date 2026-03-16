@@ -1,0 +1,47 @@
+<div class="loader" *ngIf="loading"></div>
+
+<div *ngIf="!loading">
+
+  <p *ngIf="error" class="alert alert-danger" role="alert">
+    Error fetching users
+  </p>
+
+  <div class="container-fluid" *ngIf="!error">
+
+    <div class="row selection-heading">
+      <div class="col-xs-3">User Name</div>
+      <div class="col-xs-3">Full Name</div>
+      <div class="col-xs-3">Phone Number</div>
+      <div class="col-xs-1">Facility</div>
+      <div class="col-xs-1">Contact</div>
+      <div class="col-xs-1"></div>
+    </div>
+
+    <div
+      class="row selection"
+      *ngFor="let user of users"
+      (click)="!user.inactive && editUser(user)"
+      [class.inactive]="user.inactive"
+    >
+      <div class="col-xs-3">{{ user.name }}</div>
+      <div class="col-xs-3">{{ user.fullname }}</div>
+      <div class="col-xs-3">{{ user.phone }}</div>
+      <div class="col-xs-1">
+        <i class="fa fa-check" *ngIf="user.facility_id"></i>
+      </div>
+      <div class="col-xs-1">
+        <i class="fa fa-check" *ngIf="user.contact_id"></i>
+      </div>
+      <div class="col-xs-1 delete">
+        <button
+          class="btn btn-sm btn-danger"
+          *ngIf="!user.inactive"
+          (click)="deleteUser(user, $event)"
+        >
+          <i class="fa fa-trash-o"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

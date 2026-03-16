@@ -1,0 +1,40 @@
+@border-color: #ddd;
+@hover-color: #f5f5f5;
+@inactive-color: #aaa;
+
+.selection-heading{
+    font-weight: bold;
+    padding: 8px 0;
+    margin-bottom: 2px solid @border-color;
+    color: #555;
+}
+
+.selection{
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    &:hover{
+        background-color: @hover-color;
+    }
+    &.inactive{
+        color: @inactive-color;
+        cursor: default;
+
+        & :hover {
+            background-color: transparent;
+        }
+    }
+
+}
+
+.delete{
+    text-align: right;
+}
+
+.loader{
+    text-align: center;
+    padding: 20px;
+    color: #555;
+}    
+
