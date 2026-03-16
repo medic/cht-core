@@ -70,7 +70,7 @@ module.exports = {
      * /api/v1/person:
      *   get:
      *     summary: Get persons
-     *     operationId: v1PersonGetAll
+     *     operationId: v1PersonGet
      *     description: >
      *       Returns a paginated array of persons for the given contact type. Use the `cursor` returned in each response
      *       to retrieve subsequent pages. See also [Get Person by id](#/Person/v1PersonIdGet) for retrieving a single
@@ -107,6 +107,8 @@ module.exports = {
      *               required:
      *                 - data
      *                 - cursor
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
      *       '401':
      *         $ref: '#/components/responses/Unauthorized'
      *       '403':

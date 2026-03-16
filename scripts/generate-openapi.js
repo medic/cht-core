@@ -13,6 +13,7 @@ const TSCONFIG = path.resolve(__dirname, '../shared-libs/cht-datasource/tsconfig
 const TYPE_SOURCES = [
   'contact.ts',
   'person.ts',
+  'place.ts',
   'report.ts',
   'input.ts',
 ].map(file => path.join(DATASOURCE_DIR, file));
