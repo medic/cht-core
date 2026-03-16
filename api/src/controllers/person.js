@@ -19,26 +19,28 @@ module.exports = {
   v1: {
     /**
      * @openapi
-     * /api/v1/person/{uuid}:
+     * /api/v1/person/{id}:
      *   get:
-     *     summary: Get a person by UUID
-     *     operationId: getPersonByUuid
+     *     summary: Get a person by id
+     *     operationId: v1PersonIdGet
      *     description: Returns a person contact record. Optionally includes the full parent place lineage.
      *     tags:
      *       - Person
+     *     x-since: 4.9.0
+     *     x-permissions:
+     *       hasAll: [can_view_contacts]
      *     parameters:
      *       - in: path
-     *         name: uuid
+     *         name: id
      *         required: true
      *         schema:
      *           type: string
-     *         description: The UUID of the person to retrieve
+     *         description: The id of the person to retrieve
      *       - in: query
      *         name: with_lineage
      *         schema:
      *           type: string
-     *           enum:
-     *             - 'true'
+     *           enum: ['true']
      *         description: When set to 'true', includes the full parent place lineage
      *     responses:
      *       '200':
@@ -46,13 +48,15 @@ module.exports = {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/v1.Person'
-     *       '404':
-     *         description: Person not found
+     *               oneOf:
+     *                 - $ref: '#/components/schemas/v1.Person'
+     *                 - $ref: '#/components/schemas/v1.PersonWithLineage'
      *       '401':
-     *         description: Not authenticated
+     *         $ref: '#/components/responses/Unauthorized'
      *       '403':
-     *         description: Insufficient permissions (requires can_view_contacts)
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
      */
     get: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
@@ -77,10 +81,13 @@ module.exports = {
      * /api/v1/person:
      *   post:
      *     summary: Create a new person
-     *     operationId: createPerson
-     *     description: Creates a new person contact record.
+     *     operationId: v1PersonPost
+     *     description: Creates a new person record.
      *     tags:
      *       - Person
+     *     x-since: 5.2.0
+     *     x-permissions:
+     *       hasAny: [can_create_people, can_edit]
      *     requestBody:
      *       required: true
      *       content:
@@ -95,11 +102,11 @@ module.exports = {
      *             schema:
      *               $ref: '#/components/schemas/v1.Person'
      *       '400':
-     *         description: Invalid input (missing required fields, invalid types, etc.)
+     *         $ref: '#/components/responses/BadRequest'
      *       '401':
-     *         description: Not authenticated
+     *         $ref: '#/components/responses/Unauthorized'
      *       '403':
-     *         description: Insufficient permissions (requires can_create_people or can_edit)
+     *         $ref: '#/components/responses/Forbidden'
      */
     create: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_people', 'can_edit'] });
@@ -107,6 +114,47 @@ module.exports = {
       return res.json(personDoc);
     }),
 
+    /**
+     * @openapi
+     * /api/v1/person/{id}:
+     *   put:
+     *     summary: Update a person
+     *     operationId: v1PersonIdPut
+     *     description: Updates an existing person contact record.
+     *     tags:
+     *       - Person
+     *     x-since: 5.2.0
+     *     x-permissions:
+     *       hasAny: [can_update_people, can_edit]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The id of the person to update
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/v1.UpdatePersonInput'
+     *     responses:
+     *       '200':
+     *         description: The updated person record
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/v1.Person'
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     */
     update: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_update_people', 'can_edit'] });
       const { params: { uuid }, body } = req;

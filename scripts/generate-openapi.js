@@ -42,7 +42,15 @@ const SWAGGER_OPTIONS = {
       }
     },
     servers: [{ url: '/' }],
-    components: { schemas: {} },
+    components: {
+      schemas: {},
+      responses: {
+        NotFound: { description: 'Entity not found' },
+        BadRequest: { description: 'Invalid input (missing required fields, invalid types, etc.)' },
+        Unauthorized: { description: 'Not authenticated' },
+        Forbidden: { description: 'Insufficient permissions' }
+      }
+    },
   },
   apis: [path.resolve(__dirname, '../api/src/controllers/**/*.js')],
 };
