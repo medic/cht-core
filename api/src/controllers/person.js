@@ -69,6 +69,54 @@ module.exports = {
 
       return res.json(person);
     }),
+
+    /**
+     * @openapi
+     * /api/v1/person:
+     *   get:
+     *     summary: Get persons
+     *     operationId: v1PersonGetAll
+     *     description: >
+     *       Returns a paginated array of persons for the given contact type. Use the `cursor` returned in each response
+     *       to retrieve subsequent pages. See also [Get Person by id](#/Person/v1PersonIdGet) for retrieving a single
+     *       person.
+     *     tags:
+     *       - Person
+     *     x-since: 4.11.0
+     *     x-permissions:
+     *       hasAll: [can_view_contacts]
+     *     parameters:
+     *       - in: query
+     *         name: type
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The contact_type id for the type of persons to fetch
+     *       - $ref: '#/components/parameters/cursor'
+     *       - $ref: '#/components/parameters/entityLimit'
+     *     responses:
+     *       '200':
+     *         description: A page of person records
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   description: The results for this page
+     *                   items:
+     *                     $ref: '#/components/schemas/v1.Person'
+     *                 cursor:
+     *                   $ref: '#/components/schemas/PageCursor'
+     *               required:
+     *                 - data
+     *                 - cursor
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
       const personType = Qualifier.byContactType(req.query.type);

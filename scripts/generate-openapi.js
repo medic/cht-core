@@ -43,7 +43,28 @@ const SWAGGER_OPTIONS = {
     },
     servers: [{ url: '/' }],
     components: {
-      schemas: {},
+      schemas: {
+        PageCursor: {
+          type: ['string', 'null'],
+          description: 'Token for retrieving the next page. A `null` value indicates there are no more pages.',
+        },
+      },
+      parameters: {
+        cursor: {
+          in: 'query',
+          name: 'cursor',
+          schema: { type: 'string' },
+          description:
+            'Token identifying which page to retrieve. Omit for the first page. ' +
+            'Subsequent pages can be retrieved by providing the cursor returned with the previous page.',
+        },
+        entityLimit: {
+          in: 'query',
+          name: 'limit',
+          schema: { type: 'number', default: 100, minimum: 1 },
+          description: 'The maximum number of entities to return. Defaults to 100.',
+        },
+      },
       responses: {
         NotFound: { description: 'Entity not found' },
         BadRequest: { description: 'Invalid input (missing required fields, invalid types, etc.)' },
