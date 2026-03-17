@@ -8,6 +8,7 @@ import { Doc } from './libs/doc';
 export namespace v1 {
   /**
    * Input data for a contact.
+   * @internal
    */
   export interface ContactInput extends DataObject {
     readonly type: string
