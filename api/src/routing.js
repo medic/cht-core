@@ -124,6 +124,13 @@ const handleJsonOrCsvRequest = (method, path, callback) => {
   });
 };
 
+/**
+ * @openapi
+ * tags:
+ *   - name: Info
+ *     description: Operations for getting server info
+ */
+
 app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
@@ -394,11 +401,57 @@ app.all('/setup/finish', function(req, res) {
   res.status(200).send('Setup services are not currently available');
 });
 
+/**
+ * @openapi
+ * /api/info:
+ *   get:
+ *     summary: Get the version of the CHT server
+ *     operationId: apiInfoGet
+ *     description: Returns the version of the CHT server.
+ *     tags:
+ *       - Info
+ *     responses:
+ *       '200':
+ *         description: The API info data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   type: string
+ *               required: [version]
+ */
 app.get('/api/info', function(req, res) {
   const p = require('../package.json');
   res.json({ version: p.version });
 });
 
+/**
+ * @openapi
+ * /api/deploy-info:
+ *   get:
+ *     summary: Get deploy information
+ *     operationId: apiDeployInfoGet
+ *     description: Returns build and deploy information for the running CHT instance.
+ *     tags:
+ *       - Info
+ *     responses:
+ *       '200':
+ *         description: The deploy info data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   type: string
+ *                   description: The version of the deployed CHT instance
+ *               required: [version]
+ *               additionalProperties: true
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 app.get('/api/deploy-info', async (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);

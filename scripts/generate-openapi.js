@@ -89,7 +89,10 @@ const SWAGGER_OPTIONS = {
       }
     },
   },
-  apis: [path.resolve(__dirname, '../api/src/controllers/**/*.js')],
+  apis: [
+    path.resolve(__dirname, '../api/src/routing.js'),
+    path.resolve(__dirname, '../api/src/controllers/**/*.js'),
+  ],
 };
 
 const SPECTRAL_OPTIONS = { extends: [[oas, 'all']], rules: {} };
@@ -153,6 +156,7 @@ const main = async () => {
   const swaggerSpec = swaggerJsdoc(SWAGGER_OPTIONS);
   const tsSchemas = generateTsSchemas();
   Object.assign(swaggerSpec.components.schemas, tsSchemas);
+  swaggerSpec.tags.sort((a, b) => a.name.localeCompare(b.name));
   await lintSpec(swaggerSpec);
   // TODO Currently publishing with cht-datasource docs site.
   const outputPath = path.resolve(__dirname, '../shared-libs/cht-datasource/docs/openapi.json');
