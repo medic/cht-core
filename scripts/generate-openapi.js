@@ -15,6 +15,7 @@ const TYPE_SOURCES = [
   'person.ts',
   'place.ts',
   'report.ts',
+  'target.ts',
   'input.ts',
 ].map(file => path.join(DATASOURCE_DIR, file));
 
