@@ -145,11 +145,10 @@ const lintSpec = async (spec) => {
     severity, code, message, path
   }) => console.log(`  [${DIAGNOSTIC_SEVERITY[severity]}] ${code}: ${message} (at ${path.join('.')})`));
 
-  const errors = results.filter(r => r.severity === 0);
+  const errors = results.filter(r => r.severity <= 1);
   if (errors.length > 0) {
     throw new Error(`OpenAPI spec has ${errors.length} validation error(s)`);
   }
-  // TODO Consider failing for warnings
 };
 
 const main = async () => {
