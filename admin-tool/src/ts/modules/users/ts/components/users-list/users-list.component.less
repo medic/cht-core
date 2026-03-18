@@ -2,39 +2,64 @@
 @hover-color: #f5f5f5;
 @inactive-color: #aaa;
 
-.selection-heading{
-    font-weight: bold;
-    padding: 8px 0;
-    margin-bottom: 2px solid @border-color;
-    color: #555;
+legend {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  border-bottom: 1px solid @border-color;
+  padding-bottom: 5px;
 }
 
-.selection{
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-    &:hover{
-        background-color: @hover-color;
-    }
-    &.inactive{
-        color: @inactive-color;
-        cursor: default;
+.btn-toolbar {
+  margin-bottom: 20px;
 
-        & :hover {
-            background-color: transparent;
-        }
-    }
-
+  .btn {
+    margin-right: 5px;
+  }
 }
 
-.delete{
+.selection-heading {
+  font-weight: bold;
+  padding: 8px 0;
+  border-bottom: 2px solid @border-color;
+  color: #555;
+}
+
+.selection {
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  .delete {
+    visibility: hidden;
     text-align: right;
+  }
+
+  &:hover {
+    background-color: @hover-color;
+
+    .delete {
+      visibility: visible;
+    }
+  }
+
+  &.inactive {
+    color: @inactive-color;
+    cursor: default;
+
+    &:hover {
+      background-color: transparent;
+
+      .delete {
+        visibility: hidden;  // inactivos nunca muestran el botón
+      }
+    }
+  }
 }
 
-.loader{
-    text-align: center;
-    padding: 20px;
-    color: #555;
-}    
-
+.loader {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+}
