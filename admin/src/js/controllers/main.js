@@ -41,11 +41,4 @@ angular.module('controllers').controller('MainCtrl',
     $scope.logout = function() {
       Session.logout();
     };
-    $scope.checkActive = state => {
-      if (state === 'targets' && $state.is('targets-edit')) {
-        // a special case for a route that doesn't match our usual pattern
-        return true;
-      }
-      return $state.includes(state);
-    };
   });
