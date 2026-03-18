@@ -54,7 +54,71 @@ const listFormsJSON = forms => {
   return JSON.stringify(forms.map(form => form.internalId + '.xml'));
 };
 
+/**
+ * @openapi
+ * tags:
+ *   - name: Forms
+ *     description: Operations for XForms
+ */
 module.exports = {
+  /**
+   * @openapi
+   * /api/v1/forms:
+   *   get:
+   *     summary: List installed forms
+   *     operationId: v1FormsGet
+   *     description: >
+   *       Returns a list of currently installed forms. By default returns a JSON array of form filenames. If the
+   *       `X-OpenRosa-Version` header is set to `1.0`, returns an OpenRosa xformsList compatible XML response instead.
+   *     tags:
+   *       - Forms
+   *     parameters:
+   *       - in: header
+   *         name: X-OpenRosa-Version
+   *         schema:
+   *           enum: ['1.0']
+   *         description: If set to "1.0", returns XML formatted forms list compatible with the OpenRosa FormListAPI.
+   *     responses:
+   *       '200':
+   *         description: List of installed forms
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: string
+   *               example: ["anc_visit.xml", "anc_registration.xml"]
+   *           text/xml:
+   *             schema:
+   *               type: string
+   *               description: OpenRosa xformsList compatible XML.
+   *               example: |
+   *                 ```.xml
+   *                 <?xml version="1.0" encoding="UTF-8"?>
+   *                 <xforms xmlns="http://openrosa.org/xforms/xformsList">
+   *                   <xform>
+   *                     <name>Visit</name>
+   *                     <formID>ANCVisit</formID>
+   *                     <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
+   *                     <downloadUrl>http://medic.local/api/v1/forms/anc_visit.xml</downloadUrl>
+   *                   </xform>
+   *                   <xform>
+   *                     <name>Registration with LMP</name>
+   *                     <formID>PregnancyRegistration</formID>
+   *                     <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
+   *                     <downloadUrl>http://medic.local/api/v1/forms/anc_registration.xml</downloadUrl>
+   *                   </xform>
+   *                   <xform>
+   *                     <name>Stop</name>
+   *                     <formID>Stop</formID>
+   *                     <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
+   *                     <downloadUrl>http://medic.local/api/v1/forms/off.xml</downloadUrl>
+   *                   </xform>
+   *                 </xforms>
+   *                 ```
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   */
   list: (req, res) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
@@ -72,6 +136,40 @@ module.exports = {
       })
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  /**
+   * @openapi
+   * /api/v1/forms/{form}:
+   *   get:
+   *     summary: Get a form definition
+   *     operationId: v1FormsFormGet
+   *     description: >
+   *       Returns the form definition for a given form ID and format. The form parameter should
+   *       include the format extension (e.g. `pregnancyregistration.xml`). Currently only `xml`
+   *       format is supported.
+   *     tags:
+   *       - Forms
+   *     parameters:
+   *       - in: path
+   *         name: form
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: "Form identifier with format extension (e.g. `pregnancyregistration.xml`)."
+   *     responses:
+   *       '200':
+   *         description: The form definition
+   *         content:
+   *           text/xml:
+   *             schema:
+   *               type: string
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '404':
+   *         $ref: '#/components/responses/NotFound'
+   */
   get: (req, res) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
@@ -110,6 +208,52 @@ module.exports = {
       })
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  /**
+   * @openapi
+   * /api/v1/forms/validate:
+   *   post:
+   *     summary: Validate an XForm
+   *     operationId: v1FormsValidatePost
+   *     description: >
+   *       Validates the XForm XML passed in the request body.
+   *     tags:
+   *       - Forms
+   *     x-since: 3.12.0
+   *     x-permissions:
+   *       hasAll: [can_configure]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/xml:
+   *           schema:
+   *             type: string
+   *             description: The XForm XML to validate.
+   *     responses:
+   *       '200':
+   *         description: Form validation passed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 ok:
+   *                   type: boolean
+   *       '400':
+   *         description: Form validation failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 error:
+   *                   type: string
+   *                   description: Description of the validation error.
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
   validate: (req, res) => {
     return auth
       .check(req, 'can_configure')
