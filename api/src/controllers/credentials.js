@@ -15,6 +15,51 @@ const checkAuth = req => {
 };
 
 module.exports = {
+  /**
+   * @openapi
+   * /api/v1/credentials/{key}:
+   *   put:
+   *     summary: Set a credential
+   *     operationId: v1CredentialsKeyPut
+   *     description: >
+   *       Securely store a credential for authentication with third-party systems such as SMS
+   *       aggregators and HMIS. The credential key is provided as a path parameter and the
+   *       password as plain text in the request body. Only database admins can access this
+   *       endpoint.
+   *     tags:
+   *       - Config
+   *     x-since: 4.0.0
+   *     parameters:
+   *       - in: path
+   *         name: key
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The credential key identifier.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         text/plain:
+   *           schema:
+   *             type: string
+   *             description: The credential password/secret value.
+   *     responses:
+   *       '200':
+   *         description: Credential stored successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 ok:
+   *                   const: true
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
   put: (req, res) => {
     const key = req.params.key;
     const password = req.body;

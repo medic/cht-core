@@ -124,13 +124,6 @@ const handleJsonOrCsvRequest = (method, path, callback) => {
   });
 };
 
-/**
- * @openapi
- * tags:
- *   - name: Info
- *     description: Operations for getting server info
- */
-
 app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
@@ -409,7 +402,7 @@ app.all('/setup/finish', function(req, res) {
  *     operationId: apiInfoGet
  *     description: Returns the version of the CHT server.
  *     tags:
- *       - Info
+ *       - Monitoring
  *     responses:
  *       '200':
  *         description: The API info data
@@ -435,7 +428,7 @@ app.get('/api/info', function(req, res) {
  *     operationId: apiDeployInfoGet
  *     description: Returns build and deploy information for the running CHT instance.
  *     tags:
- *       - Info
+ *       - Monitoring
  *     responses:
  *       '200':
  *         description: The deploy info data
