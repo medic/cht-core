@@ -49,10 +49,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   const: true
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':

@@ -52,6 +52,12 @@ const SWAGGER_OPTIONS = {
           type: ['string', 'null'],
           description: 'Token for retrieving the next page. A `null` value indicates there are no more pages.',
         },
+        OkResponse: {
+          type: 'object',
+          properties: {
+            ok: { const: true },
+          },
+        },
       },
       parameters: {
         cursor: {

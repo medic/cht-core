@@ -172,10 +172,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
@@ -207,10 +204,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
@@ -248,10 +242,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
@@ -281,10 +272,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         $ref: '#/components/responses/BadRequest'
    *       '401':
@@ -314,10 +302,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    *       '403':
@@ -340,10 +325,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    *       '403':
@@ -403,10 +385,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    *       '403':
@@ -431,10 +410,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    *       '403':

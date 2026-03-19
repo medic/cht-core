@@ -229,10 +229,7 @@ module.exports = {
    *         content:
    *           application/json:
    *             schema:
-   *               type: object
-   *               properties:
-   *                 ok:
-   *                   type: boolean
+   *               $ref: '#/components/schemas/OkResponse'
    *       '400':
    *         description: Form validation failed
    *         content:
