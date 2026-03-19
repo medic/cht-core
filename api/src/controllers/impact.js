@@ -10,12 +10,6 @@ const checkUserPermissions = async (req) => {
   }
 };
 
-/**
- * @openapi
- * tags:
- *   - name: Impact
- *     description: Operations for impact metrics
- */
 module.exports = {
   v1: {
     /**
@@ -26,7 +20,7 @@ module.exports = {
      *     operationId: v1ImpactGet
      *     description: Returns aggregated impact metrics including user, contact, and report counts.
      *     tags:
-     *       - Impact
+     *       - Monitoring
      *     x-since: 5.0.0
      *     responses:
      *       '200':

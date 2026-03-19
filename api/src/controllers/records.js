@@ -34,9 +34,6 @@ const process = (req, res, options) => {
 
 /**
  * @openapi
- * tags:
- *   - name: Records
- *     description: Operations for creating records for JSON forms
  * components:
  *   schemas:
  *     RecordSuccess:
@@ -109,7 +106,7 @@ module.exports = {
    *
    *       Creates a new record based on a configured form. Accepts form-encoded or JSON data.
    *     tags:
-   *       - Records
+   *       - SMS
    *     x-permissions:
    *       hasAll: [can_create_records]
    *     parameters:
@@ -144,7 +141,7 @@ module.exports = {
    *     operationId: v2RecordsPost
    *     description: Creates a new record based on a configured form. Accepts either form-encoded or JSON data.
    *     tags:
-   *       - Records
+   *       - SMS
    *     x-permissions:
    *       hasAll: [can_create_records]
    *     requestBody:

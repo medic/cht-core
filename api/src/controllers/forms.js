@@ -54,12 +54,6 @@ const listFormsJSON = forms => {
   return JSON.stringify(forms.map(form => form.internalId + '.xml'));
 };
 
-/**
- * @openapi
- * tags:
- *   - name: Forms
- *     description: Operations for XForms
- */
 module.exports = {
   /**
    * @openapi
@@ -71,7 +65,7 @@ module.exports = {
    *       Returns a list of currently installed forms. By default returns a JSON array of form filenames. If the
    *       `X-OpenRosa-Version` header is set to `1.0`, returns an OpenRosa xformsList compatible XML response instead.
    *     tags:
-   *       - Forms
+   *       - Config
    *     parameters:
    *       - in: header
    *         name: X-OpenRosa-Version
@@ -148,7 +142,7 @@ module.exports = {
    *       include the format extension (e.g. `pregnancyregistration.xml`). Currently only `xml`
    *       format is supported.
    *     tags:
-   *       - Forms
+   *       - Config
    *     parameters:
    *       - in: path
    *         name: form
@@ -218,7 +212,7 @@ module.exports = {
    *     description: >
    *       Validates the XForm XML passed in the request body.
    *     tags:
-   *       - Forms
+   *       - Config
    *     x-since: 3.12.0
    *     x-permissions:
    *       hasAll: [can_configure]
