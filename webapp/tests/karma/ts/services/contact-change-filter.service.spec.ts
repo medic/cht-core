@@ -362,6 +362,85 @@ describe('ContactChangeFilter service', () => {
     });
   });
 
+  describe('isRelevantChange', () => {
+    it('returns true when change matches contact directly', () => {
+      const change = { id: 'contact1', doc: { _id: 'contact1' } };
+      const contact = { doc: { _id: 'contact1' } };
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns true when change is a relevant child contact', () => {
+      const change = { id: 'child1', doc: { _id: 'child1', type: 'person', parent: { _id: 'contact1' } } };
+      const contact = { doc: { _id: 'contact1' } };
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns true when change is a relevant report for the contact', () => {
+      const change = {
+        id: 'report1',
+        doc: {
+          _id: 'report1',
+          form: 'stock_report',
+          type: 'data_record',
+          fields: { patient_id: 'contact1' }
+        }
+      };
+      const contact = { doc: { _id: 'contact1', patient_id: 'patient1' } };
+      contactTypesIncludes.returns(false);
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns true when change is a relevant report for a child contact', () => {
+      const change = {
+        id: 'report1',
+        doc: {
+          _id: 'report1',
+          form: 'assessment',
+          type: 'data_record',
+          fields: { patient_id: 'child_patient1' }
+        }
+      };
+      const contact = {
+        doc: { _id: 'contact1' },
+        children: [
+          {
+            type: { id: 'person' },
+            contacts: [
+              { doc: { _id: 'child1', patient_id: 'child_patient1' } }
+            ]
+          }
+        ]
+      };
+      contactTypesIncludes.returns(false);
+      expect(service.isRelevantChange(change, contact)).to.equal(true);
+    });
+
+    it('returns false when change is unrelated', () => {
+      const change = {
+        id: 'other1',
+        doc: {
+          _id: 'other1',
+          form: 'some_form',
+          type: 'data_record',
+          fields: { patient_id: 'someone_else' }
+        }
+      };
+      const contact = {
+        doc: { _id: 'contact1', patient_id: 'patient1' },
+        children: [],
+        lineage: []
+      };
+      contactTypesIncludes.returns(false);
+      expect(service.isRelevantChange(change, contact)).to.equal(false);
+    });
+
+    it('returns false for invalid inputs', () => {
+      expect(service.isRelevantChange({}, {})).to.equal(false);
+      expect(service.isRelevantChange(undefined, undefined)).to.equal(false);
+      expect(service.isRelevantChange({ id: '1' }, { doc: { _id: '2' } })).to.equal(false);
+    });
+  });
+
   describe('isDeleted', () => {
     it('returns true when deleted', () => {
       const change = { doc: { _id: '123' }, deleted: true };
