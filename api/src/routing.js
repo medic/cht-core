@@ -654,6 +654,64 @@ app.get('/api/v1/place/:uuid', place.v1.get);
 app.postJson('/api/v1/place', place.v1.create);
 app.putJson('/api/v1/place/:uuid', place.v1.update);
 
+/**
+ * @openapi
+ * /api/v1/people:
+ *   post:
+ *     summary: Create a person
+ *     operationId: v1PeoplePost
+ *     deprecated: true
+ *     description: >
+ *       Use [POST /api/v1/person](#/Person/v1PersonPost) instead.
+ *       Create a new person contact. A place can be created inline or referenced by UUID.
+ *     tags:
+ *       - Person
+ *     x-permissions:
+ *       hasAll: [can_edit, can_create_people]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The person's name.
+ *               type:
+ *                 type: string
+ *                 description: >
+ *                   ID of the contact_type for the new person. Defaults to `person` for backwards compatibility.
+ *               place:
+ *                 description: Place UUID or inline object.
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *                     additionalProperties: true
+ *               reported_date:
+ *                 type: number
+ *                 description: Timestamp of when the record was reported or created. Defaults to now.
+ *             required: [name]
+ *             additionalProperties: true
+ *     responses:
+ *       '200':
+ *         description: Person created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 rev:
+ *                   type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ */
 app.postJson('/api/v1/people', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_people'])
