@@ -76,8 +76,7 @@ module.exports = {
    *     description: >
    *       Returns a simple response to verify that the cht-gateway SMS endpoint is available.
    *       See the [cht-gateway documentation](https://github.com/medic/cht-gateway) for more details.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     x-permissions:
    *       hasAll: [can_access_gateway_api]
    *     responses:
@@ -110,8 +109,7 @@ module.exports = {
    *       Processes incoming messages and delivery status updates from cht-gateway, and returns
    *       outgoing messages that are ready to be sent.
    *       See the [cht-gateway documentation](https://github.com/medic/cht-gateway) for more details.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     x-permissions:
    *       hasAll: [can_access_gateway_api]
    *     requestBody:

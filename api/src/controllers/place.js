@@ -24,8 +24,7 @@ module.exports = {
      *     summary: Get a place by id
      *     operationId: v1PlaceIdGet
      *     description: Returns a place contact record. Optionally includes the full parent place lineage.
-     *     tags:
-     *       - Place
+     *     tags: [Place]
      *     x-since: 4.10.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
@@ -74,8 +73,7 @@ module.exports = {
      *       Returns a paginated array of places for the given contact type. Use the `cursor` returned in each response
      *       to retrieve subsequent pages. See also [Get Place by id](#/Place/v1PlaceIdGet) for retrieving a single
      *       place.
-     *     tags:
-     *       - Place
+     *     tags: [Place]
      *     x-since: 4.12.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
@@ -103,9 +101,7 @@ module.exports = {
      *                     $ref: '#/components/schemas/v1.Place'
      *                 cursor:
      *                   $ref: '#/components/schemas/PageCursor'
-     *               required:
-     *                 - data
-     *                 - cursor
+     *               required: [data, cursor]
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
@@ -127,8 +123,7 @@ module.exports = {
      *     summary: Create a new place
      *     operationId: v1PlacePost
      *     description: Creates a new place record.
-     *     tags:
-     *       - Place
+     *     tags: [Place]
      *     x-since: 5.2.0
      *     x-permissions:
      *       hasAny: [can_create_places, can_edit]
@@ -165,8 +160,7 @@ module.exports = {
      *     summary: Update a place
      *     operationId: v1PlaceIdPut
      *     description: Updates an existing place contact record.
-     *     tags:
-     *       - Place
+     *     tags: [Place]
      *     x-since: 5.2.0
      *     x-permissions:
      *       hasAny: [can_update_places, can_edit]

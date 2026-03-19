@@ -63,8 +63,7 @@ module.exports = {
    *       Webhook endpoint for receiving incoming SMS messages from the Africa's Talking gateway.
    *       Requires a valid incoming key passed as a query parameter. See the
    *       [documentation](/building/messaging/gateways/africas-talking/) for more details.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     parameters:
    *       - in: query
    *         name: key
@@ -128,8 +127,7 @@ module.exports = {
    *       Webhook endpoint for receiving SMS delivery status reports from the Africa's Talking gateway.
    *       Requires a valid incoming key passed as a query parameter. See the
    *       [documentation](/building/messaging/gateways/africas-talking/) for more details.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     parameters:
    *       - in: query
    *         name: key

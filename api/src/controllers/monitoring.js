@@ -150,8 +150,7 @@ module.exports = {
    *         querying the metric - check the API logs for details.
    *       - If no response or an error response is received the instance is unreachable. Thus, this API can be used
    *         as an uptime monitoring endpoint.
-   *     tags:
-   *       - Monitoring
+   *     tags: [Monitoring]
    *     parameters:
    *       - in: query
    *         name: connected_user_interval
@@ -229,8 +228,7 @@ module.exports = {
    *     description: >
    *       Returns a range of metrics about the instance for automated monitoring, allowing tracking of trends over
    *       time and alerting about potential issues. No authentication is required.
-   *     tags:
-   *       - Monitoring
+   *     tags: [Monitoring]
    *     x-since: 3.12.0
    *     parameters:
    *       - in: query

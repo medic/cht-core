@@ -12,8 +12,7 @@ module.exports = {
    *     description: >
    *       Returns the quantity of documents replicated by each user. Optionally filter by username. Only allowed for
    *       database admins.
-   *     tags:
-   *       - Users
+   *     tags: [Users]
    *     x-since: 3.11.0
    *     parameters:
    *       - in: query

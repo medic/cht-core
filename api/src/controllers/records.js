@@ -105,8 +105,7 @@ module.exports = {
    *       Use [POST /api/v2/records](#/Records/v2RecordsPost) instead.
    *
    *       Creates a new record based on a configured form. Accepts form-encoded or JSON data.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     x-permissions:
    *       hasAll: [can_create_records]
    *     parameters:
@@ -140,8 +139,7 @@ module.exports = {
    *     summary: Create a record
    *     operationId: v2RecordsPost
    *     description: Creates a new record based on a configured form. Accepts either form-encoded or JSON data.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     x-permissions:
    *       hasAll: [can_create_records]
    *     requestBody:

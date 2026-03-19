@@ -26,8 +26,7 @@ module.exports = {
    *       aggregators and HMIS. The credential key is provided as a path parameter and the
    *       password as plain text in the request body. Only database admins can access this
    *       endpoint.
-   *     tags:
-   *       - Config
+   *     tags: [Config]
    *     x-since: 4.0.0
    *     parameters:
    *       - in: path

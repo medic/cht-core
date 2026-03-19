@@ -39,8 +39,7 @@ module.exports = {
      *     summary: Get a target by id
      *     operationId: v1TargetIdGet
      *     description: Returns a target record.
-     *     tags:
-     *       - Target
+     *     tags: [Target]
      *     x-since: 5.1.0
      *     parameters:
      *       - in: path
@@ -84,8 +83,7 @@ module.exports = {
      *       Returns a paginated array of targets for the given contact and reporting period. Use the `cursor` returned
      *       in each response to retrieve subsequent pages. See also [Get Target by id](#/Target/v1TargetIdGet) for
      *       retrieving a single target.
-     *     tags:
-     *       - Target
+     *     tags: [Target]
      *     x-since: 5.1.0
      *     parameters:
      *       - in: query
@@ -125,9 +123,7 @@ module.exports = {
      *                     $ref: '#/components/schemas/v1.Target'
      *                 cursor:
      *                   $ref: '#/components/schemas/PageCursor'
-     *               required:
-     *                 - data
-     *                 - cursor
+     *               required: [data, cursor]
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':

@@ -24,8 +24,7 @@ module.exports = {
      *     summary: Get a person by id
      *     operationId: v1PersonIdGet
      *     description: Returns a person contact record. Optionally includes the full parent place lineage.
-     *     tags:
-     *       - Person
+     *     tags: [Person]
      *     x-since: 4.9.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
@@ -75,8 +74,7 @@ module.exports = {
      *       Returns a paginated array of persons for the given contact type. Use the `cursor` returned in each response
      *       to retrieve subsequent pages. See also [Get Person by id](#/Person/v1PersonIdGet) for retrieving a single
      *       person.
-     *     tags:
-     *       - Person
+     *     tags: [Person]
      *     x-since: 4.11.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
@@ -104,9 +102,7 @@ module.exports = {
      *                     $ref: '#/components/schemas/v1.Person'
      *                 cursor:
      *                   $ref: '#/components/schemas/PageCursor'
-     *               required:
-     *                 - data
-     *                 - cursor
+     *               required: [data, cursor]
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
@@ -128,8 +124,7 @@ module.exports = {
      *     summary: Create a new person
      *     operationId: v1PersonPost
      *     description: Creates a new person record.
-     *     tags:
-     *       - Person
+     *     tags: [Person]
      *     x-since: 5.2.0
      *     x-permissions:
      *       hasAny: [can_create_people, can_edit]
@@ -166,8 +161,7 @@ module.exports = {
      *     summary: Update a person
      *     operationId: v1PersonIdPut
      *     description: Updates an existing person contact record.
-     *     tags:
-     *       - Person
+     *     tags: [Person]
      *     x-since: 5.2.0
      *     x-permissions:
      *       hasAny: [can_update_people, can_edit]

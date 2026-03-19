@@ -25,8 +25,7 @@ module.exports = {
      *     operationId: v1ReportIdGet
      *     description: >
      *       Returns a report record. Optionally includes the full contact, patient, and/or place lineage.
-     *     tags:
-     *       - Report
+     *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
@@ -74,8 +73,7 @@ module.exports = {
      *     operationId: v1ReportUuidGet
      *     description: >
      *       Returns a paginated array of report identifiers matching the given freetext search term.
-     *     tags:
-     *       - Report
+     *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
@@ -105,9 +103,7 @@ module.exports = {
      *                     type: string
      *                 cursor:
      *                   $ref: '#/components/schemas/PageCursor'
-     *               required:
-     *                 - data
-     *                 - cursor
+     *               required: [data, cursor]
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
@@ -129,8 +125,7 @@ module.exports = {
      *     summary: Create a new report
      *     operationId: v1ReportPost
      *     description: Creates a new report.
-     *     tags:
-     *       - Report
+     *     tags: [Report]
      *     x-since: 5.2.0
      *     x-permissions:
      *       hasAny: [can_create_records, can_edit]
@@ -167,8 +162,7 @@ module.exports = {
      *     summary: Update a report
      *     operationId: v1ReportIdPut
      *     description: Updates an existing report.
-     *     tags:
-     *       - Report
+     *     tags: [Report]
      *     x-since: 5.2.0
      *     x-permissions:
      *       hasAny: [can_update_reports, can_edit]

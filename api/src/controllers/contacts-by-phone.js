@@ -23,8 +23,7 @@ module.exports = {
    *     description: >
    *       Accepts a phone number and returns fully hydrated contacts that match. If multiple
    *       contacts are found, all are returned. Returns 404 when no matches are found.
-   *     tags:
-   *       - Contact
+   *     tags: [Contact]
    *     x-since: 3.10.0
    *     parameters:
    *       - in: query
@@ -63,8 +62,7 @@ module.exports = {
    *     description: >
    *       Accepts a phone number and returns fully hydrated contacts that match. If multiple
    *       contacts are found, all are returned. Returns 404 when no matches are found.
-   *     tags:
-   *       - Contact
+   *     tags: [Contact]
    *     x-since: 3.10.0
    *     requestBody:
    *       required: true

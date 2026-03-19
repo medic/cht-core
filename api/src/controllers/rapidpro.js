@@ -61,8 +61,7 @@ module.exports = {
    *       Webhook endpoint for receiving incoming SMS messages from the RapidPro gateway.
    *       Authenticated via an `Authorization: Token <key>` header. See the
    *       [documentation](/building/messaging/gateways/rapidpro/) for more details.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     requestBody:
    *       required: true
    *       content:
@@ -103,8 +102,7 @@ module.exports = {
    *       Webhook endpoint for receiving incoming SMS messages from the RapidPro gateway.
    *       Authenticated via an `Authorization: Token <key>` header. See the
    *       [documentation](/building/messaging/gateways/rapidpro/) for more details.
-   *     tags:
-   *       - SMS
+   *     tags: [SMS]
    *     requestBody:
    *       required: true
    *       content:

@@ -77,8 +77,7 @@ module.exports = {
    *       Accepts a JSON array of document uuids and returns fully hydrated documents, in the same
    *       order in which they were requested. When documents are not found, an entry with the
    *       missing uuid and an error is added instead.
-   *     tags:
-   *       - Bulk
+   *     tags: [Bulk]
    *     parameters:
    *       - in: query
    *         name: doc_ids
@@ -112,8 +111,7 @@ module.exports = {
    *       Accepts a JSON array of document uuids and returns fully hydrated documents, in the same
    *       order in which they were requested. When documents are not found, an entry with the
    *       missing uuid and an error is added instead.
-   *     tags:
-   *       - Bulk
+   *     tags: [Bulk]
    *     x-permissions:
    *       isOnline: true
    *     requestBody:

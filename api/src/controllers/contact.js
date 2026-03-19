@@ -23,8 +23,7 @@ module.exports = {
      *     operationId: v1ContactIdGet
      *     description: >
      *       Returns a contact record (person or place). Optionally includes the full parent place lineage.
-     *     tags:
-     *       - Contact
+     *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
@@ -73,8 +72,7 @@ module.exports = {
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
      *       At least one of `type` or `freetext` must be provided.
-     *     tags:
-     *       - Contact
+     *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
@@ -111,9 +109,7 @@ module.exports = {
      *                     type: string
      *                 cursor:
      *                   $ref: '#/components/schemas/PageCursor'
-     *               required:
-     *                 - data
-     *                 - cursor
+     *               required: [data, cursor]
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':

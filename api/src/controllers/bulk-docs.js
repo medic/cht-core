@@ -53,8 +53,7 @@ module.exports = {
    *       If an error is encountered part-way through the response (eg on the third batch), it’s impossible to send
    *       new headers to indicate a 5xx error, so the connection will simply be terminated (as recommended here
    *       https://github.com/expressjs/express/issues/2700).
-   *     tags:
-   *       - Bulk
+   *     tags: [Bulk]
    *     x-permissions:
    *       hasAll: [can_edit]
    *     requestBody:

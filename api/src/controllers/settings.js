@@ -19,8 +19,7 @@ module.exports = {
    *     summary: Get app settings
    *     operationId: v1SettingsGet
    *     description: Returns the app settings in JSON format.
-   *     tags:
-   *       - Config
+   *     tags: [Config]
    *     responses:
    *       '200':
    *         description: The app settings
@@ -47,8 +46,7 @@ module.exports = {
    *     summary: Get deprecated transitions
    *     operationId: v1SettingsDeprecatedTransitionsGet
    *     description: Returns a list of deprecated transitions configured in the app settings.
-   *     tags:
-   *       - Config
+   *     tags: [Config]
    *     responses:
    *       '200':
    *         description: Deprecated transitions
@@ -96,8 +94,7 @@ module.exports = {
    *     description: >
    *       Update the app settings. By default, the provided properties are merged with existing
    *       settings. Use query parameters to control replacement behavior.
-   *     tags:
-   *       - Config
+   *     tags: [Config]
    *     x-permissions:
    *       hasAll: [can_edit, can_configure]
    *     parameters:

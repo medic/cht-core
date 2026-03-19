@@ -121,8 +121,7 @@ module.exports = {
    *     summary: Check if an upgrade can be performed
    *     operationId: v2UpgradeCanUpgradeGet
    *     description: Returns whether the instance is in a state where an upgrade can be performed.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     responses:
@@ -156,8 +155,7 @@ module.exports = {
    *       `/api/v1/upgrade/stage` and then `/api/v1/upgrade/complete` once staging has finished.
    *       This is asynchronous. Progress can be followed by watching the `horti-upgrade` document.
    *       Calling this endpoint will eventually cause api and sentinel to restart.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     requestBody:
@@ -188,8 +186,7 @@ module.exports = {
    *       `/api/v2/upgrade/stage` and then `/api/v2/upgrade/complete` once staging has finished.
    *       This is asynchronous. Progress can be followed via [GET /api/v2/upgrade](#/Upgrade/v2UpgradeGet).
    *       Calling this endpoint will eventually cause api and sentinel to restart.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     requestBody:
@@ -226,8 +223,7 @@ module.exports = {
    *       Stages an upgrade to the provided version. Does as much of the upgrade as possible without actually
    *       swapping versions over and restarting. An upgrade has been staged when the `horti-upgrade` document
    *       has `"action": "stage"` and `"staging_complete": true`.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     requestBody:
@@ -256,8 +252,7 @@ module.exports = {
    *     description: >
    *       Stages an upgrade to the provided version. Does as much of the upgrade as possible without actually
    *       swapping versions over and restarting.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     requestBody:
@@ -292,8 +287,7 @@ module.exports = {
    *     description: >
    *       Use [POST /api/v2/upgrade/complete](#/Upgrade/v2UpgradeCompletePost) instead.
    *       Completes a staged upgrade. Returns a 404 if there is no upgrade in the staged position.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     responses:
@@ -315,8 +309,7 @@ module.exports = {
    *     operationId: v2UpgradeCompletePost
    *     description: >
    *       Completes a staged upgrade. Returns a 404 if there is no upgrade in the staged position.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     responses:
@@ -342,8 +335,7 @@ module.exports = {
    *     summary: Get upgrade status
    *     operationId: v2UpgradeGet
    *     description: Returns the current upgrade status, indexer progress, and builds server URL.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     responses:
@@ -375,8 +367,7 @@ module.exports = {
    *     summary: Abort an upgrade
    *     operationId: v2UpgradeDelete
    *     description: Aborts an in-progress upgrade.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     responses:
@@ -400,8 +391,7 @@ module.exports = {
    *     summary: Update the service worker
    *     operationId: v2UpgradeServiceWorkerPost
    *     description: Triggers an update of the service worker cache.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     responses:
@@ -432,8 +422,7 @@ module.exports = {
    *     description: >
    *       Compares the provided build version against the currently deployed version, returning
    *       differences in design documents.
-   *     tags:
-   *       - Upgrade
+   *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]
    *     requestBody:

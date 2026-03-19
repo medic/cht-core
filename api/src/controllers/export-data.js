@@ -130,8 +130,7 @@ module.exports = {
    *     description: >
    *       Exports target data formatted as a DHIS2 dataValueSet. The data can be filtered to a specific section
    *       of the contact hierarchy or for a given time interval.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_dhis]
    *     parameters:
@@ -178,8 +177,7 @@ module.exports = {
    *     operationId: v2ExportDhisPost
    *     description: >
    *       Exports target data formatted as a DHIS2 dataValueSet. Accepts filters in the request body.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_dhis]
    *     requestBody:
@@ -228,8 +226,7 @@ module.exports = {
    *       [search library](https://github.com/medic/cht-core/tree/master/shared-libs/search) to ensure identical
    *       results to the front-end. Filters can be passed as query parameters using form-style encoding
    *       (e.g. `filters[forms][selected][0][code]=immunization_visit`).
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_messages]
    *     parameters:
@@ -283,8 +280,7 @@ module.exports = {
    *     summary: Export reports
    *     operationId: v2ExportReportsPost
    *     description: Exports reports as CSV. Accepts filters in the request body.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_messages]
    *     requestBody:
@@ -363,8 +359,7 @@ module.exports = {
    *       | To Phone           | The phone number the message is or will be sent to. Only applies to outgoing.        |
    *       | Message Body       | The content of the message.                                                          |
    *       
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_messages]
    *     parameters:
@@ -400,8 +395,7 @@ module.exports = {
    *     description: >
    *       Exports messages as CSV. Accepts filters in the request body. See
    *       [GET](#/Export/v2ExportMessagesGet) for output column details.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_messages]
    *     requestBody:
@@ -451,8 +445,7 @@ module.exports = {
    *       | type         | The contact type. For configurable hierarchies, this will always be `contact`. |
    *       | contact_type | The configurable contact type. Will be empty if using the default hierarchy.   |
    *       | place_id     | The generated short place ID for use in SMS.                                   |
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_contacts]
    *     parameters:
@@ -481,8 +474,7 @@ module.exports = {
    *     description: >
    *       Exports contacts as a CSV. Accepts filters in the request body. See [GET](#/Export/v2ExportContactsGet) for
    *       output column details.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_contacts]
    *     requestBody:
@@ -510,8 +502,7 @@ module.exports = {
    *     summary: Export feedback
    *     operationId: v2ExportFeedbackGet
    *     description: Exports user feedback data as CSV.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_feedback]
    *     parameters:
@@ -527,8 +518,7 @@ module.exports = {
    *     summary: Export feedback
    *     operationId: v2ExportFeedbackPost
    *     description: Exports user feedback data as CSV. Accepts options in the request body.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     x-permissions:
    *       isOnline: true
    *       hasAny: [can_export_all, can_export_feedback]
@@ -558,8 +548,7 @@ module.exports = {
    *       This endpoint is deprecated as it can negatively impact server performance. Deployments should avoid using
    *       this endpoint or use it only when end users will not be impacted. An improved endpoint is
    *       [being planned](https://github.com/medic/cht-core/issues/10298) for a later date.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     deprecated: true
    *     x-since: 4.7.0
    *     x-permissions:
@@ -581,8 +570,7 @@ module.exports = {
    *       This endpoint is deprecated as it can negatively impact server performance. Deployments should avoid using
    *       this endpoint or use it only when end users will not be impacted. An improved endpoint is
    *       [being planned](https://github.com/medic/cht-core/issues/10298) for a later date.
-   *     tags:
-   *       - Export
+   *     tags: [Export]
    *     deprecated: true
    *     x-since: 4.7.0
    *     x-permissions:

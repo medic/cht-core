@@ -19,8 +19,7 @@ module.exports = {
      *     summary: Get impact metrics
      *     operationId: v1ImpactGet
      *     description: Returns aggregated impact metrics including user, contact, and report counts.
-     *     tags:
-     *       - Monitoring
+     *     tags: [Monitoring]
      *     x-since: 5.0.0
      *     responses:
      *       '200':

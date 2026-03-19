@@ -401,8 +401,7 @@ app.all('/setup/finish', function(req, res) {
  *     summary: Get the version of the CHT server
  *     operationId: apiInfoGet
  *     description: Returns the version of the CHT server.
- *     tags:
- *       - Monitoring
+ *     tags: [Monitoring]
  *     responses:
  *       '200':
  *         description: The API info data
@@ -427,8 +426,7 @@ app.get('/api/info', function(req, res) {
  *     summary: Get deploy information
  *     operationId: apiDeployInfoGet
  *     description: Returns build and deploy information for the running CHT instance.
- *     tags:
- *       - Monitoring
+ *     tags: [Monitoring]
  *     responses:
  *       '200':
  *         description: The deploy info data
@@ -518,8 +516,7 @@ app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getU
  *       Use [POST /api/v1/place](#/Place/v1PlacePost) instead.
  *       Create a new place and optionally a contact. The parent can be referenced by UUID or
  *       created inline. A contact can also be created inline or referenced by UUID.
- *     tags:
- *       - Place
+ *     tags: [Place]
  *     x-permissions:
  *       hasAll: [can_edit, can_create_places]
  *     requestBody:
@@ -590,8 +587,7 @@ app.postJson('/api/v1/places', function(req, res) {
  *     description: >
  *       Use [PUT /api/v1/place/{id}](#/Place/v1PlaceIdPut) instead.
  *       Update a place and optionally its contact.
- *     tags:
- *       - Place
+ *     tags: [Place]
  *     x-permissions:
  *       hasAll: [can_edit, can_update_places]
  *     parameters:
@@ -657,8 +653,7 @@ app.putJson('/api/v1/place/:uuid', place.v1.update);
  *     description: >
  *       Use [POST /api/v1/person](#/Person/v1PersonPost) instead.
  *       Create a new person contact. A place can be created inline or referenced by UUID.
- *     tags:
- *       - Person
+ *     tags: [Person]
  *     x-permissions:
  *       hasAll: [can_edit, can_create_people]
  *     requestBody:
