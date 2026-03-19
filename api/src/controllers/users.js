@@ -293,7 +293,7 @@ module.exports = {
    *     description: >
    *       Use [GET /api/v2/users](#/Users/v2UsersGet) instead.
    *       Returns a list of users and their profile data.
-   *     tags: [Users]
+   *     tags: [User]
    *     x-permissions:
    *       hasAll: [can_view_users]
    *     responses:
@@ -334,7 +334,7 @@ module.exports = {
    *
    *       Passing a single user in the request’s body will return a single object whereas passing an array of users
    *       will return an array of objects.
-   *     tags: [Users]
+   *     tags: [User]
    *     x-permissions:
    *       hasAll: [can_edit, can_create_users]
    *     requestBody:
@@ -393,7 +393,7 @@ module.exports = {
    *       but cannot modify `type`, `roles`, `contact`, or `place`. Password changes require
    *       Basic Auth (either the header or in the URL). This is to ensure the password is known at
    *       time of request, and no one is hijacking a cookie.
-   *     tags: [Users]
+   *     tags: [User]
    *     x-permissions:
    *       hasAll: [can_edit, can_update_users]
    *     parameters:
@@ -475,7 +475,7 @@ module.exports = {
    *     summary: Delete a user
    *     operationId: v1UsersUsernameDelete
    *     description: Delete a user. Does not affect the person or place associated with the user.
-   *     tags: [Users]
+   *     tags: [User]
    *     x-permissions:
    *       hasAll: [can_edit, can_delete_users]
    *     parameters:
@@ -521,7 +521,7 @@ module.exports = {
    *       can query for any user by providing `role` and `facility_id` query parameters. (When requested as an
    *       online user, the number of tasks are never counted and never returned, so `warn_docs` is always equal to
    *       `total_docs`.)
-   *     tags: [Users]
+   *     tags: [User]
    *     parameters:
    *       - in: query
    *         name: facility_id
@@ -588,7 +588,7 @@ module.exports = {
      *     description: >
      *       Returns a user's profile data. Users with `can_view_users` permission can view any
      *       user. Users can also view their own profile.
-     *     tags: [Users]
+     *     tags: [User]
      *     x-since: 4.7.0
      *     x-permissions:
      *       hasAll: [can_view_users]
@@ -657,7 +657,7 @@ module.exports = {
      *     summary: List users
      *     operationId: v2UsersGet
      *     description: Returns a list of users and their profile data including roles.
-     *     tags: [Users]
+     *     tags: [User]
      *     x-since: 4.1.0
      *     x-permissions:
      *       hasAll: [can_view_users]
@@ -720,7 +720,7 @@ module.exports = {
      *       progress status that gets updated throughout the import and finalized upon completion. These entries are
      *       saved in the `medic-logs` database and you can access them by querying documents with a key that starts
      *       with `bulk-user-upload-`.
-     *     tags: [Users]
+     *     tags: [User]
      *     x-since: 3.16.0
      *     x-permissions:
      *       hasAll: [can_edit, can_create_users]
@@ -794,7 +794,7 @@ module.exports = {
      *     summary: Create a user
      *     operationId: v3UsersPost
      *     description: Creates a user that can be associated with multiple facilities.
-     *     tags: [Users]
+     *     tags: [User]
      *     x-permissions:
      *       hasAll: [can_edit, can_create_users]
      *     requestBody:
@@ -843,7 +843,7 @@ module.exports = {
      *       but cannot modify `type`, `roles`, `contact`, or `place`. Password changes require
      *       Basic Auth (either the header or in the URL). This is to ensure the password is known at
      *       time of request, and no one is hijacking a cookie.
-     *     tags: [Users]
+     *     tags: [User]
      *     x-permissions:
      *       hasAll: [can_edit, can_update_users]
      *     parameters:
