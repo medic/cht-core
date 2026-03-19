@@ -514,6 +514,67 @@ app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
+/**
+ * @openapi
+ * /api/v1/places:
+ *   post:
+ *     summary: Create a place
+ *     operationId: v1PlacesPost
+ *     deprecated: true
+ *     description: >
+ *       Use [POST /api/v1/place](#/Place/v1PlacePost) instead.
+ *       Create a new place and optionally a contact. The parent can be referenced by UUID or
+ *       created inline. A contact can also be created inline or referenced by UUID.
+ *     tags:
+ *       - Place
+ *     x-permissions:
+ *       hasAll: [can_edit, can_create_places]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the place.
+ *               type:
+ *                 type: string
+ *                 description: "The place type (e.g. `clinic`, `health_center`, `district_hospital`)."
+ *               parent:
+ *                 description: Parent place UUID or inline object. Required unless creating a top-level place.
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *                     additionalProperties: true
+ *               contact:
+ *                 description: Contact person UUID or inline object.
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *                     additionalProperties: true
+ *             required: [name, type]
+ *             additionalProperties: true
+ *     responses:
+ *       '200':
+ *         description: Place created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 rev:
+ *                   type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ */
 app.postJson('/api/v1/places', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_places'])
@@ -526,6 +587,54 @@ app.postJson('/api/v1/places', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
+/**
+ * @openapi
+ * /api/v1/places/{id}:
+ *   post:
+ *     summary: Update a place
+ *     operationId: v1PlacesIdPost
+ *     deprecated: true
+ *     description: >
+ *       Use [PUT /api/v1/place/{id}](#/Place/v1PlaceIdPut) instead.
+ *       Update a place and optionally its contact.
+ *     tags:
+ *       - Place
+ *     x-permissions:
+ *       hasAll: [can_edit, can_update_places]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the place to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             additionalProperties: true
+ *             description: Place properties to update.
+ *     responses:
+ *       '200':
+ *         description: Place updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 rev:
+ *                   type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ */
 app.postJson('/api/v1/places/:id', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_update_places'])
