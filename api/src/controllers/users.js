@@ -175,7 +175,7 @@ const verifyUpdateRequest = async (req) => {
 /**
  * @openapi
  * tags:
- *   - name: Users
+ *   - name: User
  *     description: Operations for user management
  * components:
  *   schemas:
