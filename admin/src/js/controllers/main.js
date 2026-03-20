@@ -2,7 +2,6 @@ angular.module('controllers').controller('MainCtrl',
   function (
     $log,
     $scope,
-    $state,
     $window,
     Auth,
     Language,
