@@ -1,11 +1,8 @@
 <div *ngIf="canConfigure; else noAccess">
-  <!-- Título y botones -->
   <legend>Users</legend>
   <div class="btn-toolbar">
-    <button class="btn btn-primary" (click)="addUser()">Add User</button>
-    <button class="btn btn-primary" (click)="importUsers()">
-      Import from file
-    </button>
+    <a class="btn btn-primary" (click)="addUser()">Add User</a>
+    <a class="btn btn-primary" (click)="importUsers()">Import from file</a>
   </div>
 
   <div class="loader" *ngIf="loading"></div>
@@ -25,11 +22,16 @@
         <div class="col-xs-1"></div>
       </div>
 
+      <div *ngIf="users.length === 0" class="text-center empty-state">
+        <p>No users found.</p>
+      </div>
+
       <div
         class="row selection"
         *ngFor="let user of users"
-        (click)="!user.inactive && editUser(user)"
+        (click)="onRowClick(user)"
         [class.inactive]="user.inactive"
+        [title]="user.inactive ? 'Deleted user' : ''"
       >
         <div class="col-xs-3">{{ user.username }}</div>
         <div class="col-xs-3">{{ user.fullname }}</div>
@@ -45,6 +47,7 @@
             class="btn btn-sm btn-danger"
             *ngIf="!user.inactive"
             (click)="deleteUser(user, $event)"
+            aria-label="Delete user"
           >
             <i class="fa fa-trash-o"></i>
           </button>
@@ -53,7 +56,7 @@
     </div>
   </div>
 </div>
-<!-- Sin permisos -->
+
 <ng-template #noAccess>
   <p class="alert alert-danger" role="alert">
     No tienes permisos para ver esta sección.

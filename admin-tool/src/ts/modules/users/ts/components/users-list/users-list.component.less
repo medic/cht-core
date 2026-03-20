@@ -31,6 +31,7 @@ legend {
   cursor: pointer;
   transition: background-color 0.15s ease;
 
+
   .delete {
     visibility: hidden;
     text-align: right;
@@ -52,10 +53,15 @@ legend {
       background-color: transparent;
 
       .delete {
-        visibility: hidden;  // inactivos nunca muestran el botón
+        visibility: hidden;
       }
     }
   }
+}
+
+.empty-state {
+  padding: 40px 0;
+  color: @inactive-color;
 }
 
 .loader {

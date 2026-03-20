@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { UsersListComponent } from './users-list.component';
+import { UsersListComponent } from '@admin-tool-modules/users/ts/components/users-list/users-list.component';
 import { AuthService } from '@admin-tool-services/auth.service';
 import { UsersService } from '@admin-tool-services/users.service';
 
@@ -114,7 +114,6 @@ describe('UsersListComponent', () => {
       const editStub = sinon.stub(component, 'editUser');
       const inactiveUser = mockUser({ inactive: true });
 
-      // simula el guard del template: !user.inactive && editUser(user)
       if (!inactiveUser.inactive) {
         component.editUser(inactiveUser);
       }
@@ -168,6 +167,30 @@ describe('UsersListComponent', () => {
       const event = { stopPropagation: sinon.stub() } as any;
       component.deleteUser(mockUser(), event);
       expect(event.stopPropagation.callCount).to.equal(1);
+    });
+
+    it('should call addUser without errors', () => {
+      expect(() => component.addUser()).to.not.throw();
+    });
+
+    it('should call importUsers without errors', () => {
+      expect(() => component.importUsers()).to.not.throw();
+    });
+
+    it('should call editUser without errors', () => {
+      expect(() => component.editUser(mockUser())).to.not.throw();
+    });
+
+    it('should not call editUser when onRowClick called with inactive user', () => {
+      const editStub = sinon.stub(component, 'editUser');
+      component.onRowClick(mockUser({ inactive: true }));
+      expect(editStub.callCount).to.equal(0);
+    });
+
+    it('should call editUser when onRowClick called with active user', () => {
+      const editStub = sinon.stub(component, 'editUser');
+      component.onRowClick(mockUser({ inactive: false }));
+      expect(editStub.callCount).to.equal(1);
     });
   });
 
@@ -226,12 +249,16 @@ describe('UsersListComponent', () => {
 
     it('should show loading indicator while fetching users', async () => {
       authService.has.resolves(true);
-      // getUsers nunca resuelve para atrapar el estado loading
-      usersService.getUsers.returns(new Promise(() => {}));
+
+      let resolveUsers: any;
+      usersService.getUsers.returns(new Promise(resolve => resolveUsers = resolve));
 
       fixture.detectChanges();
+      await fixture.whenStable();
 
       expect(component.loading).to.equal(true);
+
+      resolveUsers([]);
     });
   });
 });
