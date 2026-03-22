@@ -293,4 +293,5 @@ export interface TasksFilters {
   taskOverdue?: boolean;
   taskTypes?: { selected: string[] };
   facilities?: { selected: string[] };
+  search?: string;
 }

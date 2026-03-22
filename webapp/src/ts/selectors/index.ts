@@ -6,6 +6,48 @@ interface TaskWithLineage extends TaskEmission {
   lineageIds: string[];
 }
 
+const normalizeSearchText = (value?: string): string => {
+  if (!value) {
+    return '';
+  }
+
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+};
+
+const splitSearchTerms = (search?: string): string[] => {
+  const normalized = normalizeSearchText(search);
+  return normalized ? normalized.split(/\s+/).filter(Boolean) : [];
+};
+
+const fuzzyMatch = (text?: string, term?: string): boolean => {
+  if (!term) {
+    return true;
+  }
+
+  const normalizedText = normalizeSearchText(text);
+  if (!normalizedText) {
+    return false;
+  }
+
+  if (normalizedText.includes(term)) {
+    return true;
+  }
+
+  let termIndex = 0;
+  for (let i = 0; i < normalizedText.length && termIndex < term.length; i++) {
+    if (normalizedText[i] === term[termIndex]) {
+      termIndex += 1;
+    }
+  }
+
+  return termIndex === term.length;
+};
+
 const getGlobalState = (state): GlobalState => state.global || {};
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
@@ -24,6 +66,25 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
     filtered = filtered.filter(task => {
       return task.lineageIds.some(id => filters.facilities?.selected.includes(id));
     });
+  }
+
+  if (filters.search) {
+    const terms = splitSearchTerms(filters.search);
+    if (terms.length) {
+      filtered = filtered.filter(task => {
+        const candidates = [
+          task?.contact?.name,
+          ...(task?.lineage || []),
+          task?.title,
+        ].filter(Boolean);
+
+        if (!candidates.length) {
+          return false;
+        }
+
+        return terms.every(term => candidates.some(candidate => fuzzyMatch(candidate, term)));
+      });
+    }
   }
 
   return filtered;
