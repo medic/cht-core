@@ -609,6 +609,93 @@ describe('Selectors', () => {
         const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
         expect(result).to.deep.equal([]);
       });
+
+      it('should filter by freetext matching contact name, lineage, or title', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Alice Johnson' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['contact2']
+            },
+            {
+              _id: 'task3',
+              title: 'ANC Visit',
+              contact: { name: 'Carol' },
+              lineage: ['Village Gamma'],
+              lineageIds: ['contact3']
+            },
+          ],
+        };
+
+        const globalStateByName = { filters: { search: 'alice' } } as any;
+        const resultByName = Selectors.getFilteredTasksList.projector(tasksState, globalStateByName);
+        expect(resultByName).to.deep.equal([tasksState.tasksList[0]]);
+
+        const globalStateByLineage = { filters: { search: 'beta' } } as any;
+        const resultByLineage = Selectors.getFilteredTasksList.projector(tasksState, globalStateByLineage);
+        expect(resultByLineage).to.deep.equal([tasksState.tasksList[1]]);
+
+        const globalStateByTitle = { filters: { search: 'anc' } } as any;
+        const resultByTitle = Selectors.getFilteredTasksList.projector(tasksState, globalStateByTitle);
+        expect(resultByTitle).to.deep.equal([tasksState.tasksList[2]]);
+      });
+
+      it('should support fuzzy matching and multiple terms', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'John Doe' },
+              lineage: ['Village Beta'],
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Jane Roe' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact2']
+            },
+          ],
+        };
+
+        const fuzzyState = { filters: { search: 'jhn' } } as any;
+        const fuzzyResult = Selectors.getFilteredTasksList.projector(tasksState, fuzzyState);
+        expect(fuzzyResult).to.deep.equal([tasksState.tasksList[0]]);
+
+        const multiTermState = { filters: { search: 'john beta' } } as any;
+        const multiTermResult = Selectors.getFilteredTasksList.projector(tasksState, multiTermState);
+        expect(multiTermResult).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should normalize diacritics in search', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Élodie' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact1']
+            },
+          ],
+        };
+
+        const globalState = { filters: { search: 'elodie' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
     });
   });
 });
