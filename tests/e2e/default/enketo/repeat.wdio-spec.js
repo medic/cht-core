@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const hierarchyFactory = require('@factories/cht/generate');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
@@ -25,7 +26,7 @@ describe('RepeatForm', () => {
     await utils.saveDocs(hierarchy.places);
     await utils.createUsers([hierarchy.user]);
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-count`));
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-button`));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat_translation`));
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-select`));
   });
 
@@ -92,7 +93,7 @@ describe('RepeatForm', () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
       await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'sw' });
-      await openRepeatForm('repeat-translation-button');
+      await openRepeatForm('repeat_translation');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state: - SV')).to.be.true;
       await assertLabels({ selector: cityLabelPath, count: 0, labelText: 'Select a city: - SV' });
@@ -110,7 +111,7 @@ describe('RepeatForm', () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
       await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'en' });
-      await openRepeatForm('repeat-translation-button');
+      await openRepeatForm('repeat_translation');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state:')).to.be.true;
 
@@ -123,6 +124,32 @@ describe('RepeatForm', () => {
 
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
+    });
+
+    it('should save repeat fields to the submitted document', async () => {
+      const enUserName = 'User name';
+      await loginPage.changeLanguage('en', enUserName);
+      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'en' });
+      await openRepeatForm('repeat_translation');
+
+      // Select the state field
+      await commonEnketoPage.selectRadioButton('Select a state:', 'Victoria');
+
+      // Add a repeat item and fill it
+      await repeatForm();
+      await commonEnketoPage.selectRadioButton('Select a city:', 'Melbourne');
+      await commonEnketoPage.setInputValue('Name:', 'Alice');
+
+      await genericForm.submitForm();
+
+      // Verify the saved document contains the repeat fields
+      const reportId = await reportsPage.getCurrentReportId();
+      const report = await utils.getDoc(reportId);
+      expect(report.fields.basic.state_1).to.equal('VIC');
+      expect(report.fields.basic.rep).to.be.an('array');
+      expect(report.fields.basic.rep.length).to.be.greaterThan(0);
+      expect(report.fields.basic.rep[0].city_1).to.equal('melbourne');
+      expect(report.fields.basic.rep[0].name).to.equal('Alice');
     });
   });
 

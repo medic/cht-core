@@ -11,6 +11,9 @@
                     <text id="/repeat_translation/basic/rep/city_1:label">
                         <value>Select a city:</value>
                     </text>
+                    <text id="/repeat_translation/basic/rep/name:label">
+                        <value>Name:</value>
+                    </text>
                     <text id="/repeat_translation/basic/state_1/VIC:label">
                         <value>Victoria</value>
                     </text>
@@ -28,6 +31,9 @@
                     <text id="/repeat_translation/basic/rep/city_1:label">
                         <value>Select a city: - SV</value>
                     </text>
+                    <text id="/repeat_translation/basic/rep/name:label">
+                        <value>Jina:</value>
+                    </text>
                     <text id="/repeat_translation/basic/state_1/VIC:label">
                         <value>VIC (SV)</value>
                     </text>
@@ -40,21 +46,23 @@
                 </translation>
             </itext>
             <instance>
-                <repeat id="repeat_translation" prefix="J1!repeat_translation!" delimiter="#" version="2019-08-09">
+                <repeat_translation id="repeat_translation" prefix="J1!repeat_translation!" delimiter="#" version="2019-08-09">
                     <basic>
                         <state_1/>
                         <rep jr:template="">
                             <city_1/>
+                            <name/>
                         </rep>
                     </basic>
                     <meta tag="hidden">
                         <instanceID/>
                     </meta>
-                </repeat>
+                </repeat_translation>
             </instance>
             <instance id="contact-summary"/>
             <bind nodeset="/repeat_translation/basic/state_1" type="select1"/>
             <bind nodeset="/repeat_translation/basic/rep/city_1" type="select1"/>
+            <bind nodeset="/repeat_translation/basic/rep/name" type="string"/>
             <bind nodeset="/repeat_translation/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
         </model>
     </h:head>
@@ -78,6 +86,9 @@
                             <value>melbourne</value>
                         </item>
                     </select1>
+                    <input ref="/repeat_translation/basic/rep/name">
+                        <label ref="jr:itext('/repeat_translation/basic/rep/name:label')"/>
+                    </input>
                 </repeat>
             </group>
         </group>
