@@ -219,7 +219,7 @@ const fieldParsers = {
     }
     logger.warn(`The provided phone number ${raw} is invalid`);
 
-    // Returning raw here becuase what to do with invalid phone
+    // Returning raw here because what to do with invalid phone
     // is defined in transitions so error will be thrown there if required.
     // Warning is logged just in case.
     return raw;
