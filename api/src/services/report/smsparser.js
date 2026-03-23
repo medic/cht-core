@@ -171,8 +171,7 @@ const fieldParsers = {
   string: (raw, field, key) => {
     if (field.list) {
       const cleaned = stripInvisibleCharacters(raw);
-      for (const i of field.list) {
-        const item = field.list[i];
+      for (const item of field.list) {
         if (item[0] === cleaned) {
           return item[1];
         }
