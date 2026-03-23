@@ -343,12 +343,12 @@ exports.parse = (def, doc) => {
  * @returns {Array} - An array of values from the raw sms message
  */
 exports.parseArray = (def, doc) => {
-  const parser = getParser(def, doc);
-  const obj = parser(def, doc);
-
   if (!def || !def.fields) {
     return [];
   }
+
+  const parser = getParser(def, doc);
+  const obj = parser(def, doc);
 
   // collect field keys into array
   const arr = Object.keys(def.fields).map(k => obj[k]);
