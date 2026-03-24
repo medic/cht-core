@@ -2,6 +2,7 @@ angular.module('controllers').controller('MainCtrl',
   function (
     $log,
     $scope,
+    $state,
     $window,
     Auth,
     Language,
@@ -39,5 +40,8 @@ angular.module('controllers').controller('MainCtrl',
     $scope.webAppUrl = Location.path;
     $scope.logout = function() {
       Session.logout();
+    };
+    $scope.checkActive = state => {
+      return $state.includes(state);
     };
   });
