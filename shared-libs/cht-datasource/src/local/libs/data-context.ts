@@ -1,7 +1,6 @@
 import { Doc } from '../../libs/doc';
-import { AbstractDataContext, hasField, isRecord } from '../../libs/core';
+import { AbstractDataContext, DataObject, hasField, isRecord } from '../../libs/core';
 import { DataContext } from '../../libs/data-context';
-import { ddocExists } from './doc';
 
 /**
  * {@link PouchDB.Database}s to be used as the local data source.
@@ -13,7 +12,7 @@ export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
  * service is used. Settings data returned from future calls to service methods should reflect the current state of the
  * system's settings at the time and not just the state of the settings when the service was first created.
  */
-export type SettingsService = Readonly<{ getAll: () => Doc }>;
+export type SettingsService = Readonly<{ getAll: () => DataObject }>;
 
 /** @internal */
 export class LocalDataContext extends AbstractDataContext {
@@ -59,9 +58,4 @@ export const getLocalDataContext = (
   assertSettingsService(settings);
   assertSourceDatabases(sourceDatabases);
   return new LocalDataContext(sourceDatabases.medic, settings);
-};
-
-/** @internal */
-export const isOffline = async (db: PouchDB.Database<Doc>): Promise<boolean> => {
-  return ddocExists(db, '_design/medic-offline-freetext');
 };

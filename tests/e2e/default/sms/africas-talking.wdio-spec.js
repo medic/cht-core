@@ -151,9 +151,10 @@ describe('Africas Talking api', () => {
       await waitForLogs.promise;
       // make sure the requests were sent before loading reports
       await (await utils.waitForApiLogs(/Sending 0 messages/)).promise;
+      await (await utils.waitForApiLogs(/Sending 0 messages/)).promise;
 
       await commonPage.goToReports(pregnancyReportWithTasks._id);
-      expect(await reportsPage.rightPanelSelectors.reportTasks().isDisplayed()).to.be.true;
+      await reportsPage.rightPanelSelectors.reportTasks().waitForDisplayed();
       const task1 = await reportsPage.getTaskDetails(1, 1);
       expect(task1).to.deep.include({
         message: 'message1',

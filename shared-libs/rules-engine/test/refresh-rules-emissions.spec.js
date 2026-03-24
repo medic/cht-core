@@ -151,6 +151,45 @@ describe('refresh-rules-emissions', () => {
     });
   });
 
+  describe('disambiguateEmissions', () => {
+    let disambiguateEmissions;
+    beforeEach(() => {
+      disambiguateEmissions = refreshRulesEmissionsContact.__get__('disambiguateEmissions');
+    });
+
+    it('should keep more ready emission when duplicates exist', () => {
+      const readyEmission = mockEmission(0, { _id: 'dup' });
+      const draft = mockEmission(MS_IN_DAY + 10, { _id: 'dup' });
+      const laterDraft = mockEmission(MS_IN_DAY + 20, { _id: 'dup' });
+      const result = disambiguateEmissions([laterDraft, readyEmission, draft], NOW);
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.deep.equal(readyEmission);
+    });
+  });
+
+  describe('options', () => {
+    let rulesEmitter;
+
+    beforeEach(() => {
+      rulesEmitter = {
+        getEmissionsFor: sinon.stub().resolves({ tasks: [{ _id: 't2' }], targets: [{ _id: 't1' }] }),
+      };
+      refreshRulesEmissionsContact.__set__('rulesEmitter', rulesEmitter);
+    });
+
+    it('returns empty tasks when enableTasks is false', async () => {
+      const actual = await refreshRulesEmissionsContact({}, NOW, { enableTasks: false, enableTargets: true });
+      expect(actual.updatedTaskDocs).to.deep.eq([]);
+      expect(actual.targetEmissions).to.deep.eq([{ _id: 't1' }]);
+    });
+
+    it('returns empty targets when enableTargets is false', async () => {
+      const actual = await refreshRulesEmissionsContact({}, NOW, { enableTasks: true, enableTargets: false });
+      expect(actual.updatedTaskDocs).to.deep.eq([]);
+      expect(actual.targetEmissions).to.deep.eq([]);
+    });
+  });
+
   describe('getCancellationUpdates', () => {
     const mockTaskDoc = (emissionId, augment) => Object.assign(
       { emission: { _id: emissionId }, stateHistory: [] },

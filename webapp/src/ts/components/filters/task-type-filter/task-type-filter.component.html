@@ -1,0 +1,12 @@
+<div class="mm-task-type-filter" [id]="fieldId" *ngIf="taskTypes.length">
+  <ul class="filter-options">
+    <li
+      *ngFor="let taskType of taskTypes"
+      [class.selected]="filter?.selected.has(taskType)"
+      [class.disabled]="disabled">
+      <a role="menuitem" tabindex="-1" [attr.data-value]="taskType" (click)="!disabled && filter?.toggle(taskType)">
+        {{ taskType | translate }}
+      </a>
+    </li>
+  </ul>
+</div>

@@ -1,10 +1,12 @@
-<section class="mm-search-bar-container" [class.disabled]="disabled">
-  <div class="search-bar-left-icon">
-    <span class="fa fa-search" *ngIf="showSearchIcon()" (click)="toggleMobileSearch()"></span>
-    <a class="fa fa-chevron-left search-bar-clear" *ngIf="showClearIcon()" (click)="clear()"></a>
-  </div>
+<section class="mm-search-bar-container" [class.disabled]="disabled" [class.filter-only]="!showFreetext">
+  <ng-container *ngIf="showFreetext">
+    <div class="search-bar-left-icon">
+      <span class="fa fa-search" *ngIf="showSearchIcon()" (click)="toggleMobileSearch()"></span>
+      <a class="fa fa-chevron-left search-bar-clear" *ngIf="showClearIcon()" (click)="clear()"></a>
+    </div>
 
-  <mm-freetext-filter class="filter" (search)="search.emit()" [disabled]="disabled"></mm-freetext-filter>
+    <mm-freetext-filter class="filter" (search)="search.emit()" [disabled]="disabled"></mm-freetext-filter>
+  </ng-container>
 
   <mm-sort-filter
     *ngIf="showSort"

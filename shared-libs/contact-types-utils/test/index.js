@@ -448,36 +448,36 @@ describe('ContactType Utils', () => {
       chai.expect(result).to.deep.equal(['person', 'place', 'xyz']);
     });
 
-    it('should return empty array when config is null', () => {
+    it('should return hardcoded types when config is null', () => {
       const result = utils.getContactTypeIds(null);
 
-      chai.expect(result).to.deep.equal([]);
+      chai.expect(result).to.deep.equal(utils.HARDCODED_TYPES);
     });
 
-    it('should return empty array when config is undefined', () => {
+    it('should return hardcoded types when config is undefined', () => {
       const result = utils.getContactTypeIds(undefined);
 
-      chai.expect(result).to.deep.equal([]);
+      chai.expect(result).to.deep.equal(utils.HARDCODED_TYPES);
     });
 
-    it('should return empty array when contact_types is not an array', () => {
+    it('should return hardcoded types when contact_types is not an array', () => {
       const config = {
         contact_types: 'not an array'
       };
 
       const result = utils.getContactTypeIds(config);
 
-      chai.expect(result).to.deep.equal([]);
+      chai.expect(result).to.deep.equal(utils.HARDCODED_TYPES);
     });
 
-    it('should return empty array when contact_types is not defined/declared', () => {
+    it('should return hardcoded types when contact_types is not defined/declared', () => {
       const config = {
         some_other_property: 'value'
       };
 
       const result = utils.getContactTypeIds(config);
 
-      chai.expect(result).to.deep.equal([]);
+      chai.expect(result).to.deep.equal(utils.HARDCODED_TYPES);
     });
 
     it('should handle contact types without id property', () => {

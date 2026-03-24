@@ -18,6 +18,7 @@ const angularEslintEslintPlugin = require('@angular-eslint/eslint-plugin');
 const angularEslintEslintPluginTemplate = require('@angular-eslint/eslint-plugin-template');
 const templateParser = require('@angular-eslint/template-parser');
 const stylisticPlugin = require('@stylistic/eslint-plugin');
+const Path = require('node:path');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -538,7 +539,7 @@ module.exports = defineConfig([
 
       parserOptions: {
         project: 'tsconfig.json',
-        tsconfigRootDir: 'shared-libs/cht-datasource/'
+        tsconfigRootDir: Path.join(__dirname, 'shared-libs/cht-datasource')
       },
     },
     plugins: {
@@ -622,6 +623,7 @@ module.exports = defineConfig([
     },
     rules: {
       ['@typescript-eslint/no-unused-expressions']: 'off',
+      ['@typescript-eslint/no-require-imports']: 'off'
     },
   }
 ]);

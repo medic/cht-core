@@ -3,6 +3,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
+const { expect } = require('chai');
 
 describe('Person API', () => {
   const contact0 = utils.deepFreeze(personFactory.build({ name: 'contact0', role: 'chw' }));
@@ -243,6 +244,252 @@ describe('Person API', () => {
         .to.be.rejectedWith(
           `400 - {"code":400,"error":"The cursor must be a string or null for first page: [\\"-1\\"]."}`
         );
+    });
+  });
+
+  describe('POST /api/v1/person', async () => {
+    const postOptions = {
+      path: `/api/v1/person`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    };
+
+    it(`creates a person`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: place0._id,
+        date_of_birth: '1996-06-09',
+        phone: '+1234567890',
+        patient_id: 'patient-id-123',
+        sex: 'female',
+        hello: 'world',
+        reported_date: 1770397800
+      };
+
+      const personDoc = await utils.request({ ...postOptions, body: personInput });
+
+      expect(personDoc).excluding([ '_rev', '_id' ]).to.deep.equal({
+        ...personInput,
+        type: 'contact',
+        contact_type: 'person',
+        parent: { _id: place0._id, parent: place0.parent }
+      });
+    });
+
+    it(`creates a person with minimum data`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: place2._id
+      };
+
+      const personDoc = await utils.request({ ...postOptions, body: personInput });
+
+      expect(personDoc).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal({
+        ...personInput,
+        type: 'contact',
+        contact_type: 'person',
+        parent: { _id: place2._id }
+      });
+      expect(personDoc.reported_date).to.be.a('number');
+    });
+
+    it(`throws error for non-person type`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'clinic',
+        parent: contact0._id
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `[${personInput.type}] is not a valid person type.`,
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body: personInput })).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error for non-existent parent`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: 'invalid-id'
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent contact [${personInput.parent}] not found.`,
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body: personInput })).to.be.rejectedWith(expectedError);
+    });
+
+    it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
+      const personInput = {
+        name: 'apoorva',
+        type: 'person',
+        parent: contact0._id
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent contact of type [person] is not allowed for type [${personInput.type}].`,
+      })}`;
+
+      await expect(utils.request({ ...postOptions, body: personInput })).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['does not have can_create_people or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: place2._id
+        };
+        const opts = {
+          ...postOptions,
+          body: personInput,
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+  });
+
+  describe('PUT /api/v1/person/:uuid', async () => {
+    const endpoint = `/api/v1/person`;
+    const putOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    };
+    let originalPerson;
+
+    beforeEach(async () => {
+      const doc = personFactory.build({
+        name: 'apoorva',
+        parent: {
+          _id: place0._id,
+          parent: {
+            _id: place1._id,
+            parent: { _id: place2._id }
+          },
+        },
+        phone: '1234567890',
+        date_of_birth: '2000-02-01',
+        role: 'patient',
+        reported_date: 1770397800
+      });
+      const { rev } = await utils.saveDoc(doc);
+      originalPerson = {
+        ...doc,
+        _rev: rev
+      };
+    });
+
+    it(`updates a person`, async () => {
+      const updatePersonInput = {
+        ...originalPerson,
+        name: 'apoorva 2',
+        hello: 'world'
+      };
+      delete updatePersonInput.phone;
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPerson._id}`,
+        body: updatePersonInput
+      };
+
+      const updatePersonDoc = await utils.request(opts);
+
+      expect(updatePersonDoc).excluding([ '_rev' ]).to.deep.equal(updatePersonInput);
+    });
+
+    it(`updates a person when lineage data is provided`, async () => {
+      const updatePersonInput = {
+        ...originalPerson,
+        name: 'apoorva 2',
+        parent: {
+          ...place0,
+          parent: {
+            ...place1,
+            parent: { ...place2 }
+          }
+        }
+      };
+      delete updatePersonInput.parent.parent.parent.parent;
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPerson._id}`,
+        body: updatePersonInput
+      };
+
+      const updatePerson = await utils.request(opts);
+
+      // Given lineage data is returned
+      expect(updatePerson).excludingEvery(['_rev', 'reported_date']).to.deep.equal(updatePersonInput);
+      const updatedDoc = await utils.getDoc(originalPerson._id);
+      // Doc is written with minified lineage
+      expect(updatedDoc).excluding('_rev').to.deep.equal({
+        ...updatePersonInput,
+        parent: originalPerson.parent
+      });
+    });
+
+    it(`throws error when updating parent lineage`, async () => {
+      const updatePersonInput = {
+        ...originalPerson,
+        parent: {
+          _id: place0._id,
+          parent: { _id: place2._id },
+        },
+      };
+      const opts = {
+        ...putOptions,
+        path: `${endpoint}/${originalPerson._id}`,
+        body: updatePersonInput
+      };
+      const expectedError = `400 - ${JSON.stringify({
+        code: 400,
+        error: `Parent lineage does not match.`
+      })}`;
+
+      await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+    });
+
+    [
+      ['any document', 'does-not-exist'],
+      ['a person', place0._id],
+    ].forEach(([test, id]) => {
+      it(`throws error when id does not match ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${id}`,
+          body: originalPerson
+        };
+        const expectedError = `404 - ${JSON.stringify({
+          code: 404,
+          error: `Person record [${id}] not found.`
+        })}`;
+
+        await expect(utils.request(opts)).to.be.rejectedWith(expectedError);
+      });
+    });
+
+    [
+      ['does not have can_update_reports or can_edit permissions', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([test, user]) => {
+      it(`throws error when user ${test}`, async () => {
+        const opts = {
+          ...putOptions,
+          path: `${endpoint}/${originalPerson._id}`,
+          body: originalPerson,
+          auth: { username: user.username, password: user.password },
+        };
+
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
     });
   });
 });

@@ -50,7 +50,7 @@ For more information check out the [community guidelines](https://docs.community
 
 ## Copyright
 
-Copyright 2013-2025 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2026 Medic Mobile, Inc. <hello@medic.org>
 
 ## License
 

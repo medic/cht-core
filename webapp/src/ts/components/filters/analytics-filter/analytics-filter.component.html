@@ -23,6 +23,7 @@
     <button class="btn open-filter" (click)="openSidebar()">
       <mat-icon class="mat-icon-filter" svgIcon="icon-filter"></mat-icon>
       <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
+      <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters.toString() | translate }}</span>
     </button>
   </div>
 </div>

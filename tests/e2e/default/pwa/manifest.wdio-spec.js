@@ -60,10 +60,6 @@ describe('manifest.json', () => {
     }
   };
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
-  });
-
   it('should work without branding doc', async () => {
     await updateBranding();
     const response = await utils.request('/manifest.json');
@@ -106,5 +102,4 @@ describe('manifest.json', () => {
     expect(response).to.deep.equal(expected);
     await assertIconsExist(response);
   });
-
 });

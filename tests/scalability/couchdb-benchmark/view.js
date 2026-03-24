@@ -61,7 +61,9 @@ const waitForIndexing = async () => {
 const createAndIndexView = async () => {
   const options = { uri: `${utils.db}/${ddoc._id}`, body: ddoc };
   await request.put(options);
+  const start = performance.now();
   await waitForIndexing();
+  return parseInt(performance.now() - start);
 };
 
 
@@ -91,9 +93,10 @@ const test = async (params) => {
 };
 
 module.exports = async () => {
-  await createAndIndexView();
-
   const results = [];
+  const indexingDuration = await createAndIndexView();
+  results.push({ scenario: { limit: 'indexing' }, duration: indexingDuration });
+
   for (const scenario of scenarios) {
     const duration = await test(scenario);
     results.push({ scenario, duration });

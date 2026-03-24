@@ -16,7 +16,6 @@ import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('AnalyticsComponent', () => {
@@ -27,7 +26,6 @@ describe('AnalyticsComponent', () => {
   let sessionService;
   let userSettingsService;
   let telemetryService;
-  let targetAggregatesService;
   let store;
 
   beforeEach(waitForAsync(() => {
@@ -44,9 +42,6 @@ describe('AnalyticsComponent', () => {
       isAdmin: sinon.stub().returns(false)
     };
     telemetryService = { record: sinon.stub() };
-    targetAggregatesService = {
-      isEnabled: sinon.stub().resolves(false),
-    };
     globalActions = {
       unsetSelected: sinon.stub(GlobalActions.prototype, 'unsetSelected')
     };
@@ -68,7 +63,6 @@ describe('AnalyticsComponent', () => {
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
           { provide: TelemetryService, useValue: telemetryService },
-          { provide: TargetAggregatesService, useValue: targetAggregatesService },
           { provide: UserSettingsService, useValue: userSettingsService }
         ]
       })

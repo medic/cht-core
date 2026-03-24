@@ -200,19 +200,10 @@ describe('db-sync', () => {
 
   describe('meta db replication', () => {
     const createMetaDoc = async (doc) => {
-      const { err, result } = await browser.executeAsync((doc, callback) => {
+      return await browser.execute(async (doc) => {
         const db = window.CHTCore.DB.get({ meta: true });
-        return db
-          .put(doc)
-          .then(result => callback({ result }))
-          .catch(err => callback({ err }));
+        return await db.put(doc);
       }, doc);
-
-      if (err) {
-        throw err;
-      }
-
-      return result;
     };
 
     it('should replicate meta db up', async () => {

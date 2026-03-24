@@ -1539,4 +1539,143 @@ describe('messageUtils', () => {
       expect(translate.callCount).to.equal(0);
     });
   });
+
+  describe('applyPhoneReplacement', () => {
+    let applyPhoneReplacement;
+    beforeEach(() => {
+      applyPhoneReplacement = utils.__get__('applyPhoneReplacement');
+    });
+
+    it('replaces matching phone prefix', () => {
+      const config = { outgoing_phone_replace: { match: '0', replace: '+254' } };
+      expect(applyPhoneReplacement(config, '0712345678')).to.equal('+254712345678');
+    });
+
+    it('does not replace when prefix does not match', () => {
+      const config = { outgoing_phone_replace: { match: '0', replace: '+254' } };
+      expect(applyPhoneReplacement(config, '+254712345678')).to.equal('+254712345678');
+    });
+
+    it('uses empty string when replace is not set', () => {
+      const config = { outgoing_phone_replace: { match: '00' } };
+      expect(applyPhoneReplacement(config, '00712345678')).to.equal('712345678');
+    });
+  });
+
+  describe('applyPhoneFilters', () => {
+    let applyPhoneFilters;
+    beforeEach(() => {
+      applyPhoneFilters = utils.__get__('applyPhoneFilters');
+    });
+
+    it('applies matching filters', () => {
+      const config = {
+        outgoing_phone_filters: [
+          { match: '\\+', replace: '00' }
+        ]
+      };
+      expect(applyPhoneFilters(config, '+254712')).to.equal('00254712');
+    });
+
+    it('skips filters without match or replace', () => {
+      const config = {
+        outgoing_phone_filters: [
+          null,
+          { match: '\\+' },
+          { replace: '00' },
+          { match: '-', replace: 'X' }
+        ]
+      };
+      expect(applyPhoneFilters(config, '07-12')).to.equal('07X12');
+    });
+  });
+
+  describe('resolveAncestor', () => {
+    let resolveAncestor;
+    beforeEach(() => {
+      resolveAncestor = utils.__get__('resolveAncestor');
+    });
+
+    it('returns null when ancestor chain is too short', () => {
+      const context = { contact: { parent: {} } };
+      expect(resolveAncestor(context, 5)).to.equal(null);
+    });
+  });
+
+  describe('generate edge cases', () => {
+    it('returns error when message is empty', () => {
+      const config = {};
+      const translate = sinon.stub().returns('');
+      const doc = {};
+      const content = { translationKey: 'some.key' };
+      const messages = utils.generate(config, translate, doc, content, '+1234');
+      expect(messages[0].error).to.equal('messages.errors.message.empty');
+    });
+
+    it('returns error when translated message equals the translation key', () => {
+      const config = {};
+      const translate = sinon.stub().returns('some.key');
+      const doc = {};
+      const content = { translationKey: 'some.key' };
+      const messages = utils.generate(config, translate, doc, content, '+1234');
+      expect(messages[0].error).to.equal('messages.errors.message.empty');
+    });
+  });
+
+  describe('template edge cases', () => {
+    it('returns empty string when content has no template', () => {
+      const actual = utils.template({}, sinon.stub().returns(''), {}, { translationKey: 'missing' });
+      expect(actual).to.equal('');
+    });
+  });
+
+  describe('extendedTemplateContext', () => {
+    it('merges templateContext from extras', () => {
+      const doc = {};
+      const extras = { templateContext: { custom_field: 'value' } };
+      const ctx = utils._extendedTemplateContext(doc, extras);
+      expect(ctx.custom_field).to.equal('value');
+    });
+  });
+
+  describe('getLocale', () => {
+    it('falls back to locale_outgoing', () => {
+      const config = { locale_outgoing: 'sw' };
+      const doc = {};
+      expect(utils.getLocale(config, doc)).to.equal('sw');
+    });
+  });
+
+  describe('_getRecipient edge cases', () => {
+    it('returns contact.phone when from is not set', () => {
+      const doc = { contact: { phone: '+555' } };
+      expect(utils._getRecipient(doc, 'reporting_unit')).to.equal('+555');
+    });
+
+    it('resolves health_center from context when patient and place are absent', () => {
+      const doc = {
+        from: '+111',
+        contact: {
+          parent: {
+            type: CONTACT_TYPES.HEALTH_CENTER,
+            contact: { phone: '+999' }
+          }
+        }
+      };
+      expect(utils._getRecipient(doc, CONTACT_TYPES.HEALTH_CENTER)).to.equal('+999');
+    });
+
+    it('resolves district from place', () => {
+      const doc = {
+        from: '+111',
+        place: {
+          parent: {
+            type: 'district_hospital',
+            contact: { phone: '+888' }
+          }
+        }
+      };
+      expect(utils._getRecipient(doc, 'district')).to.equal('+888');
+    });
+  });
 });

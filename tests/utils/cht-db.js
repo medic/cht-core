@@ -1,7 +1,7 @@
 /* global window */
 
 const getFeedbackDocsByDb = async () => {
-  return await browser.executeAsync(feedbackDocsReadScript);
+  return await browser.execute(feedbackDocsReadScript);
 };
 
 const clearFeedbackDocs = async () => {
@@ -13,7 +13,7 @@ const clearFeedbackDocs = async () => {
       return row.doc;
     });
   }
-  return await browser.executeAsync(feedbackDocDeleteScript, deletes);
+  return await browser.execute(feedbackDocDeleteScript, deletes);
 };
 
 const getFeedbackDocs = async () => {
@@ -24,14 +24,14 @@ const getFeedbackDocs = async () => {
     .map(row => row.doc);
 };
 
-const feedbackDocDeleteScript = async (feedbackDocs, done) => {
+const feedbackDocDeleteScript = async (feedbackDocs) => {
   const results = {};
   for (const [dbName, docs] of Object.entries(feedbackDocs)) {
     // eslint-disable-next-line no-undef
     const metaDb = new PouchDB(dbName);
     results[dbName] = await metaDb.bulkDocs(docs);
   }
-  done(results);
+  return results;
 };
 
 const addReadDocsScript = async () => {
@@ -41,13 +41,13 @@ const addReadDocsScript = async () => {
 };
 
 const addReadDocs = async () => {
-  return await executeAsync(addReadDocsScript);
+  return await browser.execute(addReadDocsScript);
 };
 
-const feedbackDocsReadScript = async (done) => {
+const feedbackDocsReadScript = async () => {
   // sometimes tests end when the user is _not_ on an angular page
   if (!window.PouchDB) {
-    return done(Promise.resolve([]));
+    return [];
   }
   // This is running inside the browser. indexedDB and PouchDB is available there.
   // eslint-disable-next-line no-undef
@@ -61,104 +61,60 @@ const feedbackDocsReadScript = async (done) => {
     const result = await metaDb.allDocs({ include_docs: true, startkey: 'feedback-', endkey: 'feedback-\ufff0' });
     feedbackDocs[nameStripped] = result.rows;
   }
-  done(feedbackDocs);
+  return feedbackDocs;
 };
 
 const createDoc = async (doc) => {
-  const { err, result } = await browser.executeAsync((doc, callback) => {
+  return await browser.execute(async (doc) => {
     const db = window.CHTCore.DB.get();
-    return db
-      .put(doc)
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
+    return await db.put(doc);
   }, doc);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
 };
 
 const createDocs = async (docs) => {
-  const { err, result } = await browser.executeAsync((docs, callback) => {
+  await browser.execute(async (docs) => {
     const db = window.CHTCore.DB.get();
-    return db
-      .bulkDocs(docs)
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
-  }, docs);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
-};
-
-const executeAsync = async (fn, ...args) => {
-  // https://w3c.github.io/webdriver/#dfn-execute-async-script doesn't accept functions as params
-  const fnString = fn.toString();
-  const { err, result } = await browser.executeAsync((fnString, ...args) => {
-    const fn = new Function(`const r = ${fnString}; return r`)();
-    const callback = args.pop();
-    return fn(...args)
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
-  }, fnString, ...args);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
+    return await db.bulkDocs(docs);
+  }, docs.map(doc => JSON.parse(JSON.stringify(doc))));
 };
 
 const updateDoc = async (docId, changes, overwrite = false) => {
-  return await executeAsync((docId, changes, overwrite) => {
+  return await browser.execute(async (docId, changes, overwrite) => {
     const db = window.CHTCore.DB.get();
-    return db
-      .get(docId)
-      .then(doc => {
-        if (overwrite) {
-          doc = { _rev: doc._rev, _id: doc._id };
-        }
-
-        Object.assign(doc, changes);
-        return db.put(doc);
-      });
+    let doc = await db.get(docId);
+    if (overwrite) {
+      doc = { _rev: doc._rev, _id: doc._id };
+    }
+    doc = { ...doc, ...changes};
+    return await db.put(doc);
   }, docId, changes, overwrite);
 };
 
-const getDoc = async (docId) => {
-  return await executeAsync((docId) => {
-    return window.CHTCore.DB.get().get(docId, { conflicts: true });
-  }, docId);
+const getDoc = async (docId, attachments = false) => {
+  return await browser.execute(async (docId, attachments) => {
+    return await window.CHTCore.DB.get().get(docId, { conflicts: true, attachments: attachments });
+  }, docId, attachments);
 };
 
 const deleteDoc = async (docId) => {
-  return await executeAsync((docId) => {
+  return await browser.execute(async (docId) => {
     const db = window.CHTCore.DB.get();
-    return db
-      .get(docId)
-      .then(doc => {
-        doc._deleted = true;
-        return db.put(doc);
-      });
+    const doc = await db.get(docId);
+    doc._deleted = true;
+    return await db.put(doc);
   }, docId);
 };
 
-const getDocs = async (docIds) => {
-  return await executeAsync((docIds) => {
-    const options = docIds ? { keys: docIds, include_docs: true, attachments: true } : {};
-    return window.CHTCore.DB.get()
-      .allDocs(options)
-      .then(result => docIds ? result.rows.map(row => row.doc) : result.rows);
-  }, docIds);
+const getDocs = async (docIds, params = {}) => {
+  return await browser.execute(async (docIds, params) => {
+    const options = docIds ? { keys: docIds, ...params } : { ...params };
+    const result = await window.CHTCore.DB.get().allDocs(options);
+    return result.rows;
+  }, docIds, params);
 };
 
 const info = async () => {
-  return await executeAsync(() => window.CHTCore.DB.get().info());
+  return await browser.execute(async () => await window.CHTCore.DB.get().info());
 };
 
 module.exports = {

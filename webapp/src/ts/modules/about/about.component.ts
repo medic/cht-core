@@ -3,6 +3,9 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
+const constants = require('@medic/constants');
+const DOC_IDS = constants.DOC_IDS;
+
 import { DbService } from '@mm-services/db.service';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { Selectors } from '@mm-selectors/index';
@@ -98,7 +101,7 @@ export class AboutComponent implements OnInit, OnDestroy {
 
   private getPartners() {
     this.resourceIconsService
-      .getDocResources('partners')
+      .getDocResources(DOC_IDS.PARTNERS)
       .then(partners => this.partners = partners)
       .catch(error => {
         if (error.status !== 404) { // Partners doc is not compulsory.

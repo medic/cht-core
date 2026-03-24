@@ -204,6 +204,36 @@ describe('utils', () => {
     });
   });
 
+  describe('addError', () => {
+    it('addError does nothing when error is falsy', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, null);
+      utils.addError(doc, undefined);
+      assert.equal(doc.errors.length, 0);
+    });
+
+    it('addError does nothing when error object has no message', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, { code: 'some_code' });
+      assert.equal(doc.errors.length, 0);
+    });
+
+    it('addError does nothing for non-string non-object error', () => {
+      const doc = { errors: [] };
+      utils.addError(doc, 42);
+      utils.addError(doc, true);
+      assert.equal(doc.errors.length, 0);
+    });
+
+    it('addError converts string error to object with code', () => {
+      const doc = {};
+      utils.addError(doc, 'some error message');
+      assert.equal(doc.errors.length, 1);
+      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].message, 'some error message');
+    });
+  });
+
   describe('isValidSubmission', () => {
     it('should return false with invalid params', () => {
       assert(!utils.isValidSubmission());

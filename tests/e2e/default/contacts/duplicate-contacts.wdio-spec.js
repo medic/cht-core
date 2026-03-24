@@ -8,14 +8,11 @@ const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdi
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const moment = require('moment');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { getTelemetryDbName, destroyDbInBrowser, getTelemetryFromBrowser } = require('@utils/telemetry');
-const { USERNAME } = require('@constants');
+const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 
 describe('Duplicate contact detection', () => {
   const CREATED_ON = '4 Apr, 2025';
-  const TELEMETRY_DB_NAME= getTelemetryDbName(USERNAME, new Date());
   const CREATE_PERSON_FORM_ID = 'form:contact:person:create';
-  const getTelemetry = key => getTelemetryFromBrowser(TELEMETRY_DB_NAME, key);
 
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
@@ -52,7 +49,7 @@ describe('Duplicate contact detection', () => {
   });
 
   afterEach(async () => {
-    await destroyDbInBrowser(TELEMETRY_DB_NAME);
+    await destroyTelemetryDb();
     await utils.revertDb([/^form:/], true);
     await updateCreatePersonFormDoc({});
   });

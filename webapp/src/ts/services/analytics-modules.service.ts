@@ -4,6 +4,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 
 export const AGGREGATE_TARGETS_ID = 'target-aggregates';
+export const TARGETS_ID = 'targets';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class AnalyticsModulesService {
 
   private getTargetsModule(settings) {
     return {
-      id: 'targets',
+      id: TARGETS_ID,
       label: 'analytics.targets',
       route: ['/', 'analytics', 'targets'],
       available: () => !!(settings.tasks && settings.tasks.targets)
