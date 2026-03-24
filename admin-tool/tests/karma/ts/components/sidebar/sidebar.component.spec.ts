@@ -1,17 +1,28 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { SidebarComponent } from '@admin-tool-components/sidebar/sidebar.component';
+import { AuthService } from '@admin-tool-services/auth.service';
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
   let fixture: ComponentFixture<SidebarComponent>;
 
   beforeEach(waitForAsync(() => {
+    const authService = {
+      has: sinon.stub().resolves(true),
+      any: sinon.stub().resolves(true),
+      online: sinon.stub().returns(true),
+    };
+
     return TestBed
       .configureTestingModule({
         imports: [SidebarComponent, RouterTestingModule],
+        providers: [
+          { provide: AuthService, useValue: authService },
+        ],
       })
       .compileComponents()
       .then(() => {
@@ -20,6 +31,8 @@ describe('SidebarComponent', () => {
         fixture.detectChanges();
       });
   }));
+
+  afterEach(() => sinon.restore());
 
   it('should create the sidebar component', () => {
     expect(component).to.exist;

@@ -1,36 +1,36 @@
 <div class="navigation">
   <ul>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/display">Display</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/users">Users</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/authorization">Authorization</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/sms">SMS</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/forms">Forms</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/targets">Targets</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/images">Images</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_view_outgoing_messages'">
       <a routerLink="/message-queue">Message Queue</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_upgrade'">
       <a routerLink="/upgrade">Upgrade</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_export_all'">
       <a routerLink="/export">Export</a>
     </li>
-    <li routerLinkActive="active-nav">
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
       <a routerLink="/backup">Backup</a>
     </li>
   </ul>

@@ -29,6 +29,8 @@
     "@angular/platform-browser": "19.1.7",
     "@angular/platform-browser-dynamic": "19.1.7",
     "@angular/router": "19.1.7",
+    "@medic/cht-datasource": "file:../shared-libs/cht-datasource",
+    "@medic/constants": "file:../shared-libs/constants",
     "@messageformat/core": "^3.4.0",
 "@ngx-translate/core": "^16.0.4",
     "bootstrap": "^3.4.1",

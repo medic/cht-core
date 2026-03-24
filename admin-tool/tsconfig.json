@@ -20,7 +20,9 @@
       "@admin-tool-components/*": ["src/ts/components/*"],
       "@admin-tool-environments/*": ["src/ts/environments/*"],
       "@admin-tool-modules/*": ["src/ts/modules/*"],
-      "@admin-tool-services/*": ["src/ts/services/*"]
+      "@admin-tool-services/*": ["src/ts/services/*"],
+      "@admin-tool-directives/*": ["src/ts/directives/*"],
+      "@admin-tool-providers/*": ["src/ts/providers/*"]
     },
     "strictNullChecks": true,
     "alwaysStrict": true,
