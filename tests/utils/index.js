@@ -53,6 +53,7 @@ const CONTAINER_NAMES = {};
 const originalTranslations = {};
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
+const COMPOSE_OVERRIDE_FILE = path.resolve(__dirname, '../cht-core-test.override.yml');
 const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
@@ -900,6 +901,7 @@ const listenForApi = async () => {
 
 const dockerComposeCmd = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
+  composeFiles.push('-f', COMPOSE_OVERRIDE_FILE);
   params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
   return runCommand(params);
@@ -1181,40 +1183,12 @@ const generateComposeFiles = async () => {
     couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
-  const INJECT_SERVICES = ['api', 'sentinel'];
-
   for (const file of COMPOSE_FILES) {
     const templatePath = getTemplateComposeFilePath(file);
     const testComposePath = getTestComposeFilePath(file);
 
     const template = await fs.promises.readFile(templatePath, 'utf-8');
-    let compiled = mustache.render(template, view);
-
-    INJECT_SERVICES.forEach((svc) => {
-      const svcHeader = `\n  ${svc}:`;
-      const start = compiled.indexOf(svcHeader);
-      if (start === -1) {
-        return;
-      }
-      
-      const rest = compiled.slice(start + 1);
-      
-      const nextServiceMatch = rest.search(/\n {2}[a-zA-Z0-9_-]+:/);
-      const block = nextServiceMatch === -1 ? rest : rest.slice(0, nextServiceMatch + 1);
-
-      const envMarker = '\n    environment:\n';
-      const envIdxInBlock = block.indexOf(envMarker);
-
-      if (envIdxInBlock !== -1) {
-        const insertPos = start + 1 + envIdxInBlock + envMarker.length;
-        const logLine = '      - "LOG_LEVEL=${LOG_LEVEL:-debug}"\n';
-        compiled = compiled.slice(0, insertPos) + logLine + compiled.slice(insertPos);
-      } else {
-        const serviceLineEnd = compiled.indexOf('\n', start + 1) + 1;
-        const insertion = '    environment:\n      - "LOG_LEVEL=${LOG_LEVEL:-debug}"\n';
-        compiled = compiled.slice(0, serviceLineEnd) + insertion + compiled.slice(serviceLineEnd);
-      }
-    });
+    const compiled = mustache.render(template, view);
     await fs.promises.writeFile(testComposePath, compiled);
   }
 };
