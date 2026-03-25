@@ -10,8 +10,10 @@ import {
 import * as chai from 'chai';
 import chaiExclude from 'chai-exclude';
 import chaiAsPromised from 'chai-as-promised';
+import sinonChai from 'sinon-chai';
 chai.use(chaiExclude);
 chai.use(chaiAsPromised);
+chai.use(sinonChai);
 chai.config.truncateThreshold = 0;
 
 // First, initialize the Angular testing environment.

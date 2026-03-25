@@ -3,9 +3,11 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
-import { SummaryPipe } from '@mm-pipes/message.pipe';
-import { TitlePipe } from '@mm-pipes/message.pipe';
+import { LineagePipe, SummaryPipe, TitlePipe } from '@mm-pipes/message.pipe';
+import { Selectors } from '@mm-selectors/index';
+import { FormatProvider } from '@mm-providers/format.provider';
 
 describe('messages pipe', () => {
   @Component({
@@ -137,4 +139,166 @@ describe('messages pipe', () => {
     });
   });
 
+});
+
+describe('LineagePipe', () => {
+  let pipe: LineagePipe;
+  let store: MockStore;
+  let formatProvider;
+
+  beforeEach(() => {
+    formatProvider = { lineage: sinon.stub().returnsArg(0) };
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideMockStore({
+          selectors: [
+            { selector: Selectors.getIsOnlineOnly, value: false },
+            { selector: Selectors.getUserFacilities, value: [] },
+          ]
+        }),
+        { provide: FormatProvider, useValue: formatProvider },
+        LineagePipe,
+      ]
+    });
+
+    store = TestBed.inject(MockStore);
+    pipe = TestBed.inject(LineagePipe);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe('removeUserFacility', () => {
+    it('should not filter lineage for online users', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, true);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      pipe.transform(['Place 1', 'Place 2', 'Facility A']);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2', 'Facility A']);
+    });
+
+    it('should not filter lineage for users with multiple facilities', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }, { name: 'Facility B' }]);
+      store.refreshState();
+
+      pipe.transform(['Place 1', 'Place 2', 'Facility A']);
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2', 'Facility A']);
+
+      pipe.transform(['Place 1', 'Place 2', 'Facility B']);
+      expect(formatProvider.lineage.args[1][0]).to.deep.equal(['Place 1', 'Place 2', 'Facility B']);
+    });
+
+    it('should not filter lineage when user has no facilities', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, []);
+      store.refreshState();
+
+      pipe.transform(['Place 1', 'Place 2', 'Facility A']);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2', 'Facility A']);
+    });
+
+    it('should not filter lineage when no lineage matches user facility', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility X' }]);
+      store.refreshState();
+
+      pipe.transform(['Place 1', 'Place 2', 'Facility A']);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2', 'Facility A']);
+    });
+
+    it('should remove user facility from end of string array lineage', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = ['Place 1', 'Place 2', 'Facility A'];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2']);
+    });
+
+    it('should remove user facility from end of object array lineage', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = [{ name: 'Place 1' }, { name: 'Place 2' }, { name: 'Facility A' }];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal([{ name: 'Place 1' }, { name: 'Place 2' }]);
+    });
+
+    it('should not remove facility if it is not at the end of lineage', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = ['Facility A', 'Place 1', 'Place 2'];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Facility A', 'Place 1', 'Place 2']);
+    });
+
+    it('should filter out null/undefined values from lineage', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = ['Place 1', null, 'Place 2', undefined, 'Facility A'];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2']);
+    });
+
+    it('should handle empty lineage array', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = [];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal([]);
+    });
+
+    it('should handle lineage with only null values', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = [null, undefined, null];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal([]);
+    });
+
+    it('should pass through non-array values unchanged', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: 'Facility A' }]);
+      store.refreshState();
+
+      const lineage = { parent: { name: 'Place 1' } };
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal({ parent: { name: 'Place 1' } });
+    });
+
+    it('should handle facility with undefined name', () => {
+      store.overrideSelector(Selectors.getIsOnlineOnly, false);
+      store.overrideSelector(Selectors.getUserFacilities, [{ name: undefined }]);
+      store.refreshState();
+
+      const lineage = ['Place 1', 'Place 2'];
+      pipe.transform(lineage);
+
+      expect(formatProvider.lineage.args[0][0]).to.deep.equal(['Place 1', 'Place 2']);
+    });
+  });
 });

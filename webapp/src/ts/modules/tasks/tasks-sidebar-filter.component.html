@@ -1,0 +1,91 @@
+<section class="sidebar-filter">
+  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }" (click)="toggleSidebarFilter()"></div>
+
+  <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
+    <div class="sidebar-header">
+      <p class="sidebar-title">{{ 'tasks.sidebar.filter.title' | translate }}</p>
+      <a class="sidebar-reset" [class.disabled]="disabled" (click)="resetFilters()">{{ 'tasks.sidebar.filter.reset' | translate }}</a>
+      <a class="sidebar-close" (click)="toggleSidebarFilter()">
+        <mat-icon svgIcon="icon-close"></mat-icon>
+      </a>
+    </div>
+
+    <div class="sidebar-body">
+      <mat-accordion multi>
+        <!-- 1. Overdue -->
+        <mat-expansion-panel id="overdue-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.overdueFilter,
+                label: 'tasks.sidebar.filter.overdue',
+                filters: [ 'overdueFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-overdue-filter
+              class="filter"
+              fieldId="overdueFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled">
+            </mm-overdue-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
+
+        <!-- 2. Task Type -->
+        <mat-expansion-panel id="task-type-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.taskTypeFilter,
+                label: 'tasks.sidebar.filter.type',
+                filters: [ 'taskTypeFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-task-type-filter
+              class="filter"
+              fieldId="taskTypeFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled">
+            </mm-task-type-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
+
+        <!-- 3. Place - hidden when only one facility -->
+        <mat-expansion-panel id="place-filter-accordion" *ngIf="showPlaceFilter">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.placeFilter,
+                label: 'tasks.sidebar.filter.place',
+                filters: [ 'placeFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-facility-filter
+              class="filter"
+              fieldId="placeFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled">
+            </mm-facility-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+  </div>
+</section>
+
+<ng-template #headerTemplate let-numSelected="numSelected" let-label="label" let-filters="filters">
+  <p class="title">{{ label | translate }}</p>
+  <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
+    <span>{{ numSelected | translate }}</span>
+    <span class="fa fa-times" (click)="clearFilters(filters); $event.stopPropagation();"></span>
+  </div>
+</ng-template>

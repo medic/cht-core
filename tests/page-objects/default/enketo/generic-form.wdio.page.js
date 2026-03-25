@@ -27,7 +27,6 @@ const nextPage = async (numberOfPages = 1, waitForLoad = true) => {
 
   for (let i = 0; i < numberOfPages; i++) {
     const currentPageId = (await currentFormView()).elementId;
-    await nextButton().waitForDisplayed();
     await nextButton().click();
     waitForLoad && await browser.waitUntil(async () => (await currentFormView()).elementId !== currentPageId);
   }
@@ -45,9 +44,7 @@ const searchContact = async (label, searchTerm) => {
 
 const selectContact = async (contactName, label, searchTerm = '') => {
   await searchContact(label, searchTerm || contactName);
-  const contact = await $(`.name*=${contactName}`);
-  await contact.waitForDisplayed();
-  await contact.click();
+  await $(`.name*=${contactName}`).click();
 
   await browser.waitUntil(async () => {
     return (await select2Selection(label).getText()).toLowerCase().endsWith(contactName.toLowerCase());
@@ -123,21 +120,19 @@ const getDuplicateContactHeadings = async () => {
 
 const getDuplicateContactSummaryField = async (index, fieldName) => {
   const duplicateContact = (await duplicateContacts())[index];
-  const contactSummary = await duplicateContact.$('#contact_summary');
   await duplicateContact.click();
+  const contactSummary = await duplicateContact.$('#contact_summary');
   await contactSummary.waitForDisplayed();
   const field = await contactSummary.$(`.cell.${fieldName}`);
   return (await field.$('p:not(.summary_label)')).getText();
 };
 
 const checkAcknowledgeDuplicatesBox = async () => {
-  const checkBox = await acknowledgeCheckBox();
-  await checkBox.click();
+  await acknowledgeCheckBox().click();
 };
 
 const openDuplicateContact = async () => {
-  const openButton = await openDuplicateButton();
-  await openButton.click();
+  await openDuplicateButton().click();
 };
 
 module.exports = {

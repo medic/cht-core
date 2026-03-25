@@ -51,6 +51,40 @@ describe(`rules-emitter rulesAreDeclarative: true`, () => {
       const second = rulesEmitter.initialize(settingsDoc);
       expect(second).to.eq(true);
     });
+
+    it('uses custom emitter when provided', () => {
+      const customEmitter = {
+        initialize: sinon.stub().returns(true),
+        getContact: sinon.stub(),
+        startSession: sinon.stub(),
+        shutdown: sinon.stub(),
+      };
+      const settingsDoc = { rules: 'some rules', customEmitter };
+      const result = rulesEmitter.initialize(settingsDoc);
+      expect(result).to.eq(true);
+      expect(customEmitter.initialize.calledOnce).to.be.true;
+    });
+  });
+
+  describe('getEmissionsFor', () => {
+    it('throws when emitter is not enabled', () => {
+      expect(() => rulesEmitter.getEmissionsFor([], [])).to.throw('not enabled');
+    });
+
+    it('throws when contactDocs is not an array', () => {
+      rulesEmitter.initialize(settingsWithRules(' '));
+      expect(() => rulesEmitter.getEmissionsFor('not-array', [])).to.throw('contactDocs is expected to be an array');
+    });
+
+    it('throws when reportDocs is not an array', () => {
+      rulesEmitter.initialize(settingsWithRules(' '));
+      expect(() => rulesEmitter.getEmissionsFor([], 'not-array')).to.throw('reportDocs is expected to be an array');
+    });
+
+    it('throws when taskDocs is not an array', () => {
+      rulesEmitter.initialize(settingsWithRules(' '));
+      expect(() => rulesEmitter.getEmissionsFor([], [], 'not-array')).to.throw('taskDocs is expected to be an array');
+    });
   });
 
   it('single contact emits simple task and target', async () => {

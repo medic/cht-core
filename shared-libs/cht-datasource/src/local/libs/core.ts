@@ -1,5 +1,6 @@
-import { Nullable } from '../../libs/core';
+import { DataObject, Nullable } from '../../libs/core';
 import { InvalidArgumentError } from '../../libs/error';
+import { FreetextQualifier } from '../../qualifier';
 
 /** @internal */
 export const validateCursor = (cursor: Nullable<string>): number => {
@@ -11,20 +12,36 @@ export const validateCursor = (cursor: Nullable<string>): number => {
 };
 
 /** @internal */
-export const normalizeFreetext = (
-  freetext: string,
-): string => {
-  return freetext.trim().toLowerCase();
+export const normalizeFreetextQualifier = <T extends FreetextQualifier> (qualifier: T): T => {
+  return {
+    ...qualifier,
+    freetext: qualifier.freetext.trim().toLowerCase()
+  };
 };
 
-/** @internal */
-export type QueryKey = string | string[];
+/** @internal*/
+export const assertFieldsUnchanged = (
+  original: DataObject,
+  updated: DataObject,
+  keys: string[]
+): void => {
+  const changedFields = keys.filter((key) => original[key] !== updated[key]);
+  if (changedFields.length) {
+    throw new InvalidArgumentError(`The [${changedFields}] fields must not be changed.`);
+  }
+};
+
+const convertToUnixTimestamp = (date: string | number): number => {
+  const timestamp = new Date(date).getTime();
+  if (Number.isNaN(timestamp)) {
+    throw new InvalidArgumentError(`Invalid date value [${date}].`);
+  }
+
+  return timestamp;
+};
+
 
 /** @internal */
-export interface QueryParams {
-  key?: QueryKey;
-  startKey?: QueryKey;
-  endKey?: QueryKey;
-  limit?: number;
-  cursor?: Nullable<string>;
-}
+export const getReportedDateTimestamp = (
+  reportedDate?: string | number
+): number => convertToUnixTimestamp(reportedDate ?? Date.now());

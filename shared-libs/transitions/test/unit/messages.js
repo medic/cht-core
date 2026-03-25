@@ -4,6 +4,8 @@ const config = require('../../src/config');
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const { CONTACT_TYPES } = require('@medic/constants');
+const logger = require('@medic/logger');
+const messageUtils = require('@medic/message-utils');
 
 describe('messages', () => {
   beforeEach(() => config.init({
@@ -186,6 +188,21 @@ describe('messages', () => {
     assert.deepInclude(doc.tasks[1].messages[0], { to: '123', message: 'Thank you.' });
   });
 
+  it('addMessage with unique=true handles empty messages array from generate', () => {
+    config.getAll.returns({ outgoing_deny_list: '+denied' });
+    const doc = {
+      form: 'x',
+      from: '+denied',
+      tasks: [ { messages: [{ to: '+123', message: 'existing' }] } ]
+    };
+    sinon.stub(messageUtils, 'generate').returns([undefined]);
+    messages.addMessage(doc, { message: 'test' }, '+123', {}, true);
+
+    assert.equal(doc.tasks.length, 2);
+    assert.deepEqual(doc.tasks[0], { messages: [{ to: '+123', message: 'existing' }] });
+    assert.deepOwnInclude(doc.tasks[1], { messages: [undefined], state: 'denied', state_details: undefined });
+  });
+
   it('addMessage does not duplicate messages when requested to ensure uniqueness', () => {
     const validPhone = '+40755895896';
     const sender = '+1234567';
@@ -310,6 +327,12 @@ describe('messages', () => {
       });
     };
 
+    it('returns false when message is from gateway number', () => {
+      config.get.withArgs('gateway_number').returns('+254700000000');
+      config.getAll.returns({});
+      assert.equal(messages.isOutgoingAllowed('+254700000000'), false);
+    });
+
     it('outgoing_deny_list', () => {
       /*
         * Support comma separated string config to match an outgoing phone number
@@ -386,6 +409,47 @@ describe('messages', () => {
       ];
 
       isOutgoingAllowedTests(tests, 'outgoing_deny_shorter_than');
+    });
+  });
+
+  describe('addError', () => {
+    it('handles error object without message property', () => {
+      sinon.stub(logger, 'warn');
+      sinon.stub(messageUtils, 'template').returns('processed error');
+      sinon.stub(utils, 'addError');
+      const doc = { errors: [] };
+
+      messages.addError(doc, { code: 'some_code' });
+
+      assert.equal(logger.warn.callCount, 1);
+      assert.equal(logger.warn.args[0][0], 'Message property missing on error object.');
+      assert.equal(utils.addError.callCount, 1);
+    });
+
+    it('handles error that is not an object or string', () => {
+      sinon.stub(logger, 'warn');
+      sinon.stub(messageUtils, 'template').returns('processed error');
+      sinon.stub(utils, 'addError');
+      const doc = { errors: [] };
+
+      messages.addError(doc, 42);
+
+      assert.equal(logger.warn.callCount, 1);
+      assert.equal(logger.warn.args[0][0], 'Error should be an object or string.');
+      assert.equal(utils.addError.callCount, 1);
+    });
+
+    it('catches errors thrown during template processing', () => {
+      sinon.stub(messageUtils, 'template').throws(new Error('template parse failure'));
+      sinon.stub(utils, 'addError');
+      const doc = { errors: [] };
+
+      messages.addError(doc, 'some error message');
+
+      assert.equal(utils.addError.callCount, 1);
+      const errorArg = utils.addError.args[0][1];
+      assert.include(errorArg.message, 'template parse failure');
+      assert.equal(errorArg.code, 'parse_error');
     });
   });
 

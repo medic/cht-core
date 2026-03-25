@@ -15,7 +15,7 @@ describe('impact', () => {
     return docs;
   };
 
-  afterEach(() => utils.revertDb([], true));
+  afterEach(() => utils.revertDb());
 
   describe('v1', () => {
     it('return impact data on expected format', async () => {
@@ -27,7 +27,9 @@ describe('impact', () => {
             { type: 'person', count: 1 }
           ]
         },
-        users: { count: 0 },
+        users: {
+          count: 1
+        },
         reports: {
           by_form: [],
           count: 0
@@ -51,7 +53,9 @@ describe('impact', () => {
             { type: 'person', count: 3 }
           ]
         },
-        users: { count: 1 },
+        users: {
+          count: 2
+        },
         reports: {
           by_form: [],
           count: 0
@@ -70,7 +74,9 @@ describe('impact', () => {
 
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: { count: 0 },
+        users: {
+          count: 1
+        },
         contacts:
         {
           count: 4,
@@ -96,7 +102,9 @@ describe('impact', () => {
       await utils.saveDocs(reports);
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equal({
-        users: { count: 0 },
+        users: {
+          count: 1
+        },
         contacts: {
           count: 1,
           by_type: [
@@ -123,7 +131,7 @@ describe('impact', () => {
       const result = await utils.request({ path: '/api/v1/impact' });
       chai.expect(result).to.deep.equalInAnyOrder({
         users: {
-          count: 0
+          count: 1
         },
         contacts: {
           count: 1,

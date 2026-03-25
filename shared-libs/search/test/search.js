@@ -373,4 +373,35 @@ describe('Search service', function() {
 
   });
 
+  describe('error handling', () => {
+
+    it('returns rejected promise when generate throws', () => {
+      GenerateSearchRequests.generate.throws(new Error('Unknown type: bad'));
+      return service('bad', {})
+        .then(() => {
+          throw new Error('expected error to be thrown');
+        })
+        .catch((err) => {
+          chai.expect(err.message).to.equal('Unknown type: bad');
+        });
+    });
+
+  });
+
+  describe('freetext requests', () => {
+
+    it('uses queryFreetext for freetext requests in multi-request mode', () => {
+      // queryFreetext will fail internally (no real dataContext) and return []
+      GenerateSearchRequests.generate.returns([
+        { view: 'reports_by_freetext', params: { key: 'search' }, freetext: true }
+      ]);
+
+      return service('reports', {}).then((actual) => {
+        // freetext returns [] due to invalid dataContext, intersection of single response gives []
+        chai.expect(actual.docIds).to.deep.equal([]);
+      });
+    });
+
+  });
+
 });

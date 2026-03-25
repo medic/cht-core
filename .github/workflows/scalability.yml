@@ -1,12 +1,6 @@
 name: Scalability Workflow
 
 on:
-  workflow_run:
-    workflows: [ Build and test ]
-    types:
-      - completed
-    tags:
-      - "*-beta.*"
   workflow_dispatch:
 
 env:

@@ -23,7 +23,7 @@ const READ_ONLY_IDS = [
   DOC_IDS.SERVICE_WORKER_META,
   'zscore-charts',
   DOC_IDS.SETTINGS,
-  'partners'
+  DOC_IDS.PARTNERS
 ];
 const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';

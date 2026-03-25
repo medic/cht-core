@@ -48,7 +48,7 @@ describe('DuplicateContactsComponent', () => {
       short_name: 'tn',
       date_of_birth: '1966-04-11',
       dob_type: 'exact',
-      reported_date: new Date('1740472311000')
+      reported_date: 1740472311000
     };
     component.navigateToDuplicate();
 
@@ -71,7 +71,7 @@ describe('DuplicateContactsComponent', () => {
         short_name: 'tn',
         date_of_birth: '1966-04-11',
         dob_type: 'exact',
-        reported_date: new Date('1740472311000')
+        reported_date: 1740472311000
       };
 
       await component.loadContactSummary();
@@ -99,7 +99,7 @@ describe('DuplicateContactsComponent', () => {
         short_name: 'tn',
         date_of_birth: '1966-04-11',
         dob_type: 'exact',
-        reported_date: new Date('1740472311000')
+        reported_date: 1740472311000
       };
 
       await component.loadContactSummary();
@@ -125,7 +125,7 @@ describe('DuplicateContactsComponent', () => {
         short_name: 'tn',
         date_of_birth: '1966-04-11',
         dob_type: 'exact',
-        reported_date: new Date('1740472311000')
+        reported_date: 1740472311000
       };
       expect(component.contactSummary).to.be.undefined;
       expect(component.isLoading).to.be.false;
