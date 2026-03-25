@@ -103,14 +103,7 @@ const SWAGGER_OPTIONS = {
 
 const SPECTRAL_OPTIONS = { extends: [[oas, 'all']], rules: {} };
 
-const transformSchema = (obj) => {
-  if (obj === null || typeof obj !== 'object') {
-    return obj;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(transformSchema);
-  }
-
+const transformObject = (obj) => {
   const result = {};
   for (const [key, value] of Object.entries(obj)) {
     if (key === '$ref') {
@@ -124,15 +117,24 @@ const transformSchema = (obj) => {
   if (result.additionalProperties) {
     result.additionalProperties = true;
   }
-
   return result;
+};
+
+const transformSchema = (schema) => {
+  if (schema === null || typeof schema !== 'object') {
+    return schema;
+  }
+  if (Array.isArray(schema)) {
+    return schema.map(transformSchema);
+  }
+  return transformObject(schema);
 };
 
 const generateTsSchemas = () => {
   const schemas = {};
   TYPE_SOURCES
     .map(path => ({ ...TSJ_OPTIONS, path }))
-    .map(tsj.createGenerator)
+    .map(opts => tsj.createGenerator(opts))
     .map(generator => generator.createSchema())
     .map(({ definitions }) => ({ ...definitions, '*': undefined }))
     .forEach((definitions) => Object.assign(schemas, definitions));
@@ -167,8 +169,7 @@ const main = async () => {
   fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec));
 };
 
-main()
-  .catch((err) => {
-    console.error(err.message);
-    process.exit(1);
-  });
+main().catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});
