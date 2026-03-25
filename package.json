@@ -31,7 +31,6 @@
     "dev-sentinel": "npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix sentinel run-watch",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && node scripts/build/cli localDockerComposeFiles",
     "update-service-worker": "node scripts/build/cli updateServiceWorker",
-    "generate-openapi": "node ./scripts/generate-openapi.js",
     "-- DEV TEST SCRIPTS": "-----------------------------------------------------------------------------------------------",
     "integration-all-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all",
     "integration-replication": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-replication",

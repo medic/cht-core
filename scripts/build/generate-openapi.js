@@ -5,10 +5,10 @@ const tsj = require('ts-json-schema-generator');
 const { Spectral, Document } = require('@stoplight/spectral-core');
 const Parsers = require('@stoplight/spectral-parsers');
 const { oas } = require('@stoplight/spectral-rulesets');
-const { version } = require('../package.json');
+const { version } = require('../../package.json');
 
-const DATASOURCE_DIR = path.resolve(__dirname, '../shared-libs/cht-datasource/src');
-const TSCONFIG = path.resolve(__dirname, '../shared-libs/cht-datasource/tsconfig.build.json');
+const DATASOURCE_DIR = path.resolve(__dirname, '../../shared-libs/cht-datasource/src');
+const TSCONFIG = path.resolve(__dirname, '../../shared-libs/cht-datasource/tsconfig.build.json');
 
 const TYPE_SOURCES = [
   'contact.ts',
@@ -96,8 +96,8 @@ const SWAGGER_OPTIONS = {
     },
   },
   apis: [
-    path.resolve(__dirname, '../api/src/routing.js'),
-    path.resolve(__dirname, '../api/src/controllers/**/*.js'),
+    path.resolve(__dirname, '../../api/src/routing.js'),
+    path.resolve(__dirname, '../../api/src/controllers/**/*.js'),
   ],
 };
 
@@ -163,9 +163,8 @@ const main = async () => {
   Object.assign(swaggerSpec.components.schemas, tsSchemas);
   swaggerSpec.tags.sort((a, b) => a.name.localeCompare(b.name));
   await lintSpec(swaggerSpec);
-  // TODO Currently publishing with cht-datasource docs site.
-  const outputPath = path.resolve(__dirname, '../shared-libs/cht-datasource/docs/openapi.json');
-  fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2) + '\n');
+  const outputPath = path.resolve(__dirname, '../../shared-libs/cht-datasource/docs/openapi.json');
+  fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec));
 };
 
 main()
