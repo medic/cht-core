@@ -5,11 +5,21 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 
 const userFactory = require('@factories/cht/users/users');
+const utils = require('@utils');
 const user = userFactory.build();
 
 const LOAD_TIMEOUT = 120000;
 
 describe('tasks', () => {
+  after(async () => {
+    await utils.updatePermissions(
+      user.roles,
+      [],
+      ['can_view_tasks', 'can_view_analytics'],
+      { ignoreReload: true }
+    );
+  });
+
   describe('with initial calculation', () => {
     before(async () => {
       await loginPage.login({ ...user, loadPage: false, createUser: false });

@@ -7,7 +7,6 @@ const searchPage = require('@page-objects/default/search/search.wdio.page');
 
 const userFactory = require('@factories/cht/users/users');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const user = userFactory.build();
 
 const LOAD_TIMEOUT = 40000;
@@ -17,12 +16,6 @@ describe('contacts', () => {
     await loginPage.login({ ...user, loadPage: false, createUser: false });
     pagePerformance.track('initial replication with tasks');
     await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
-    pagePerformance.record();
-
-    await commonElements.goToTasks(false);
-    pagePerformance.track('tasks - first load without calculation');
-    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
-    await tasksPage.getTasks(LOAD_TIMEOUT);
     pagePerformance.record();
   });
 
