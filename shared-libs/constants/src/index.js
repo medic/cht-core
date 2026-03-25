@@ -150,13 +150,13 @@ Object.freeze(VIEWS);
 // Returns the ddoc name for a given view path, e.g. getDdoc(VIEWS.CONTACTS_BY_DEPTH) => 'medic'
 const getDdoc = (viewPath) => {
   const entry = _viewToDdoc[viewPath];
-  return entry && entry.ddoc;
+  return entry && entry.ddoc; // NOSONAR - can't use ?. because browserify-ngannotate can't parse it
 };
 
 // Returns the view name for a given view path, e.g. getViewName(VIEWS.CONTACTS_BY_DEPTH) => 'contacts_by_depth'
 const getViewName = (viewPath) => {
   const entry = _viewToDdoc[viewPath];
-  return entry && entry.view;
+  return entry && entry.view; // NOSONAR - can't use ?. because browserify-ngannotate can't parse it
 };
 
 // User Roles
@@ -164,43 +164,55 @@ const USER_ROLES = {
   ONLINE: 'mm-online',
 };
 
-// CouchDB Nouveau index paths (ddoc/index)
-const NOUVEAU_INDEXES = {
-  // medic ddoc
-  CONTACTS_BY_FREETEXT: 'medic/contacts_by_freetext',
-  REPORTS_BY_FREETEXT: 'medic/reports_by_freetext',
-  DOCS_BY_REPLICATION_KEY: 'medic/docs_by_replication_key',
+// Mapping of ddoc -> nouveau indexes, same structure as VIEWS_BY_DDOC.
+const NOUVEAU_BY_DDOC = {
+  'medic': {
+    'medic': [
+      'contacts_by_freetext',
+      'reports_by_freetext',
+      'docs_by_replication_key',
+    ],
+  },
 };
 
-// Register nouveau indexes in the lookup
-Object.values(NOUVEAU_INDEXES).forEach(path => {
-  const [ddoc, view] = path.split('/');
-  _viewToDdoc[path] = { ddoc, view };
-});
+// Build NOUVEAU_INDEXES from the ddoc mapping, same as VIEWS.
+const NOUVEAU_INDEXES = {};
+for (const [db, ddocs] of Object.entries(NOUVEAU_BY_DDOC)) {
+  for (const [ddoc, indexes] of Object.entries(ddocs)) {
+    for (const index of indexes) {
+      const key = index.toUpperCase();
+      const path = `${ddoc}/${index}`;
+      NOUVEAU_INDEXES[key] = path;
+      _viewToDdoc[path] = { db, ddoc, view: index };
+    }
+  }
+}
+
+Object.freeze(NOUVEAU_INDEXES);
 
 // Converts a view path to the CouchDB URL segment
 // e.g. 'medic-client/doc_by_type' => '_design/medic-client/_view/doc_by_type'
 const viewUrl = (viewPath) => {
-  const entry = _viewToDdoc[viewPath] || {};
-  const ddoc = entry.ddoc || viewPath.split('/')[0];
-  const view = entry.view || viewPath.split('/')[1];
+  const entry = _viewToDdoc[viewPath];
+  const ddoc = entry ? entry.ddoc : viewPath.split('/')[0]; // NOSONAR
+  const view = entry ? entry.view : viewPath.split('/')[1]; // NOSONAR
   return `_design/${ddoc}/_view/${view}`;
 };
 
 // Converts a nouveau index path like 'medic/docs_by_replication_key'
 // to '_design/medic/_nouveau/docs_by_replication_key'
 const nouveauUrl = (indexPath) => {
-  const entry = _viewToDdoc[indexPath] || {};
-  const ddoc = entry.ddoc || indexPath.split('/')[0];
-  const view = entry.view || indexPath.split('/')[1];
+  const entry = _viewToDdoc[indexPath];
+  const ddoc = entry ? entry.ddoc : indexPath.split('/')[0]; // NOSONAR
+  const view = entry ? entry.view : indexPath.split('/')[1]; // NOSONAR
   return `_design/${ddoc}/_nouveau/${view}`;
 };
 
 // Converts a nouveau index path to its info URL segment
 const nouveauInfoUrl = (indexPath) => {
-  const entry = _viewToDdoc[indexPath] || {};
-  const ddoc = entry.ddoc || indexPath.split('/')[0];
-  const view = entry.view || indexPath.split('/')[1];
+  const entry = _viewToDdoc[indexPath];
+  const ddoc = entry ? entry.ddoc : indexPath.split('/')[0]; // NOSONAR
+  const view = entry ? entry.view : indexPath.split('/')[1]; // NOSONAR
   return `_design/${ddoc}/_nouveau_info/${view}`;
 };
 
@@ -209,6 +221,7 @@ module.exports = {
   DOC_IDS,
   DOC_TYPES,
   HTTP_HEADERS,
+  NOUVEAU_BY_DDOC,
   NOUVEAU_INDEXES,
   REPLICATED_DDOCS,
   SENTINEL_METADATA,
