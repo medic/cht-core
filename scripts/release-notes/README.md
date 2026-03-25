@@ -1,52 +1,19 @@
 # Release notes generator script
 
-**Caution** - Avoid storing your [GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?creating-a-token=#keeping-your-personal-access-tokens-secure) in clear text.  Ideally release notes are only securely created in GitHub Actions as it avoids local tokens use.  Token are [dangerous](https://github.blog/security/hardening-repositories-against-credential-theft/) in the wrong hands.
-
-## Install & Setup
-
-Make sure you have the utils installed:
-
-* `git` [installed](https://git-scm.com/install/)
-* `gh` [installed](https://cli.github.com/)
-
-After that, make sure you have:
-
-* Logged in to `gh` by running `gh auth login`
-* A GitHub account with read access to CHT Core Repo
 
 ## Usage
 
-Start by manually running the CI job, specifying the milestone (`5.2.0` in this case), but using the `gh` command locally on your workstation:
+To generate release notes for a milestone:
 
-```shell
-gh workflow run release-notes.yml -f milestone=5.2.0
-```
+1. Go to the [Release Notes Action](https://github.com/medic/cht-core/actions/workflows/release-notes.yml)
+2. Click "Run workflow" to open the modal
+3. Enter your milestone in the "Milestone to build release notes from" field
+4. Click "Run workflow"
 
-If the job is successful, this text will show in the CI output in the "Install Deps & Run Node Script" section (we'll cover if it failed below):
+![running.on.gh.png](running.on.gh.png)
 
-```
--------
-Logging in to GitHub with token that is 40 chars
-Targeting CHT Core milestone 5.2.0
-Skip commit validation set to TRUE
-Gathering release note contents...
-Done! See release-notes.md file if local or see artifact if CI
--------
-```
 
-Below that in the "Upload release note artifacts", you can see the URL to download the release notes markdown file:
-
-```
-Artifact release-notes.zip successfully finalized. Artifact ID 5398446373
-Artifact release-notes has been successfully uploaded! Final size is 2382 bytes. Artifact ID is 5398446373
-Artifact download URL: https://github.com/medic/cht-core/actions/runs/21731472536/artifacts/5398446373
-```
-
-Here's a screenshot with `#1` showing the "Install Deps & Run Node Script" section `#2` showing the  "Upload release note artifacts" section.
-
-![success.png](success.png)
-
-Alternately, at the more high level view for the job, there's a nice GUI linked to the same artifact.
+If the job is successful, **reload the action page**. Then the build artifact with the final release notes will be available.
 
 ![artifacts.png](artifacts.png)
 
@@ -88,22 +55,32 @@ And a screenshot of the same:
 
 ### Skipping commit checks in CI
 
-To force CI to generate the release notes markdown and skip any commit checks, pass in an extra `skip` argument:
+To force the action to generate the release notes markdown and skip any commit validation, pass in an extra `skip` argument via the dropdown:
 
-```shell
-gh workflow run release-notes.yml -f milestone=5.2.0 -f skip_commit_checks='--skip-commit-validation'
-```
+![skip.validation.png](skip.validation.png)
 
 ## Development
 
-First, get all setup making sure each item is done in order:
+**Caution** - Avoid storing your [GitHub token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?creating-a-token=#keeping-your-personal-access-tokens-secure) in clear text.  Ideally release notes are only securely created in GitHub Actions as it avoids local tokens use.  Token are [dangerous](https://github.blog/security/hardening-repositories-against-credential-theft/) in the wrong hands.
 
-1. Have `node` and `npm` [installed](https://nodejs.org/en/download)
-2. Have a local and up to date clone of [CHT Core](https://github.com/medic/cht-core)
-3. Run `npm ci` in the `scripts` directory of CHT Core
-4. Ensure you're logged in to `gh` via  `gh auth login`
 
-Then you can call the script locally when you're in the `scripts/release-notes` directory which takes the name of the milestone (e.g. `5.2.0`) as it's argument:
+### Install & Setup
+
+Make sure you have the utils installed:
+
+* `git` [installed](https://git-scm.com/install/)
+* `gh` [installed](https://cli.github.com/)
+* `node` and `npm` [installed](https://nodejs.org/en/download)
+
+Then, in order:
+
+1. Have a local and up to date clone of [CHT Core](https://github.com/medic/cht-core)
+2. Run `npm ci` in the `scripts` directory of CHT Core
+3. Ensure you're logged in to `gh` via `gh auth login`
+
+### Running locally
+
+Call the script locally when you're in the `scripts/release-notes` directory which takes the name of the milestone (e.g. `5.2.0`) as it's argument:
 
 ```shell
 GITHUB_TOKEN=$(gh auth token) node index.js 5.2.0
@@ -117,4 +94,24 @@ To force node to generate the release notes markdown and skip any commit checks,
 
 ```shell
 GITHUB_TOKEN=$(gh auth token) node index.js 5.2.0 --skip-commit-validation
+```
+
+### Calling Github actions 
+
+To call the action locally using `gh` to run remotely in Github, make this call:
+
+```shell
+gh workflow run release-notes.yml -f milestone=5.2.0
+```
+
+You can skip validation optionally as well:
+
+```shell
+gh workflow run release-notes.yml -f milestone=5.2.0 -f skip_commit_checks='--skip-commit-validation'
+```
+
+Finally, you  may want to easily call the action on your branch after you have pushed it. Assuming your branch is called `mrjones-awesome-branch-of-much-love`, call it like so:
+
+```shell
+gh workflow run release-notes.yml -f milestone=5.2.0 --ref mrjones-awesome-branch-of-much-love 
 ```

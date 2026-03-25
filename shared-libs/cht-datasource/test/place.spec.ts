@@ -157,6 +157,16 @@ describe('place', () => {
         expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
       });
 
+      it('uses default cursor and limit when not provided', async () => {
+        isContactTypeQualifier.returns(true);
+        getPage.resolves(pageData);
+
+        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier);
+
+        expect(result).to.equal(pageData);
+        expect(getPage.calledOnceWithExactly(placeTypeQualifier, null, 100)).to.be.true;
+      });
+
       it('retrieves places from the data context when cursor is not null', async () => {
         isContactTypeQualifier.returns(true);
         getPage.resolves(pageData);

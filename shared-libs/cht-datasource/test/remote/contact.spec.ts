@@ -106,6 +106,50 @@ describe('remote contact', () => {
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(qualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          freetext: freetext,
+          type: contactType,
+        })).to.be.true;
+      });
+
+      it('omits type param when qualifier is freetext-only', async () => {
+        const freetextOnly = { freetext };
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(freetextOnly, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          freetext,
+        })).to.be.true;
+      });
+
+      it('omits freetext param when qualifier is contactType-only', async () => {
+        const typeOnly = { contactType };
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(typeOnly, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          type: contactType,
+        })).to.be.true;
+      });
     });
   });
 });

@@ -213,7 +213,6 @@ describe('TasksComponent', () => {
 
     expect(component.loading).to.be.false;
     expect(component.tasksDisabled).to.be.false;
-    expect(component.hasTasks).to.be.true;
     expect(!!component.errorStack).to.be.false;
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
   });

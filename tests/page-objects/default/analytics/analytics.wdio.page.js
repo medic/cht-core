@@ -2,8 +2,13 @@ const TARGET_MET_COLOR = '#76b0b0';
 const TARGET_UNMET_COLOR = '#000000';
 
 const goToTargets = () => browser.url('/#/analytics/targets');
-const noSelectedTarget = () => $('.empty-selection');
 const filterOptionLabel = () => $('.filter-option-label');
+
+const noTargetFound = () => $('aria/No target found.');
+const noAdminTargets = () => $(
+  'aria/Targets are disabled for admin users. If you need to see targets, login as a normal user.'
+);
+const disabledTargetAggregates = () => $('aria/Target aggregates are disabled');
 const targets = () => $$('.target');
 const targetWrap = () => $('.page .targets');
 const targetTitle = (targetElement) => targetElement.$('.heading .title h2');
@@ -64,12 +69,14 @@ const getTargets = async ({ includeSubtitle = false } = {}) => {
 };
 
 module.exports = {
-  noSelectedTarget,
   filterOptionLabel,
+  noTargetFound,
+  noAdminTargets,
   goToTargets,
   getTargets,
   emptySelectionError,
   emptySelectionNoError,
+  disabledTargetAggregates,
   TARGET_MET_COLOR,
   TARGET_UNMET_COLOR
 };

@@ -91,19 +91,52 @@ describe('people controller', () => {
 
   });
 
-  describe('createPerson', () => {
-
-    it('returns error from db insert', done => {
-      sinon.stub(controller, '_validatePerson').returns();
-      sinon.stub(places, 'getOrCreatePlace').resolves();
-      db.medic.post.returns(Promise.reject('yucky'));
-      controller.createPerson({}).catch(err => {
-        chai.expect(err).to.equal('yucky');
-        done();
+  describe('getOrCreatePerson', () => {
+    it('creates and returns person when given new object', () => {
+      sinon.stub(controller, 'createPerson').resolves({ id: 'new-id' });
+      sinon.stub(controller, '_getPerson').resolves({ _id: 'new-id', name: 'Test' });
+      return controller.getOrCreatePerson({ name: 'Test', type: 'person' }).then(result => {
+        chai.expect(result._id).to.equal('new-id');
+        chai.expect(controller.createPerson.callCount).to.equal(1);
+        chai.expect(controller._getPerson.calledWith('new-id')).to.be.true;
       });
     });
 
-    it('rejects invalid reported_date.', done => {
+    it('rejects existing object with _rev', () => {
+      return controller
+        .getOrCreatePerson({ _id: 'x', _rev: '1' })
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.include('Person must be a new object');
+        });
+    });
+  });
+
+  describe('createPerson', () => {
+
+    it('does not override existing type', () => {
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
+      sinon.stub(controller, '_validatePerson').returns();
+      db.medic.post.resolves({ id: 'new-id' });
+      return controller.createPerson({ type: 'person', name: 'Test' }).then(() => {
+        chai.expect(db.medic.post.args[0][0].type).to.equal('person');
+      });
+    });
+
+    it('returns error from db insert', () => {
+      sinon.stub(controller, '_validatePerson').returns();
+      sinon.stub(places, 'getOrCreatePlace').resolves();
+      db.medic.post.returns(Promise.reject('yucky'));
+      return controller
+        .createPerson({})
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err).to.equal('yucky');
+        });
+    });
+
+    it('rejects invalid reported_date.', () => {
       const person = {
         name: 'Test',
         reported_date: 'x'
@@ -111,12 +144,14 @@ describe('people controller', () => {
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
-      controller.createPerson(person).catch(err => {
-        chai.expect(err.code).to.equal(400);
-        chai.expect(err.message).to.equal('Reported date is invalid: x');
-        chai.expect(config.get.args[0]).to.deep.equal([]);
-        done();
-      });
+      return controller
+        .createPerson(person)
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('Reported date is invalid: x');
+          chai.expect(config.get.args[0]).to.deep.equal([]);
+        });
     });
 
     it('accepts valid reported_date in ms since epoch.', () => {

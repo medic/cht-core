@@ -9,6 +9,16 @@ describe('Minify', function() {
   });
 
   describe('minifyLineage', function() {
+    it('returns falsy parent as-is', function() {
+      chai.expect(lineage.minifyLineage(null)).to.be.null;
+      chai.expect(lineage.minifyLineage(undefined)).to.be.undefined;
+    });
+
+    it('returns parent without _id as-is', function() {
+      const parent = { name: 'test' };
+      chai.expect(lineage.minifyLineage(parent)).to.deep.equal(parent);
+    });
+
     it('removes everything except id', function() {
       const parent = {
         _id: 'abc',

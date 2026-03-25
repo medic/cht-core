@@ -272,6 +272,17 @@ describe('TokenLogin service', () => {
         });
     });
 
+    it('should throw invalid when token does not match', () => {
+      db.medic.get.resolves({ user: 'org.couchdb.user:user1' });
+      db.users.get.resolves({ token_login: { active: true, token: 'different_token' } });
+      return service
+        .getUserByToken('sometoken')
+        .then(() => chai.assert.fail('Should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ status: 401, error: 'invalid' });
+        });
+    });
+
     it('should throw when match is expired', () => {
       db.medic.get.resolves({ user: 'org.couchdb.user:user' });
       db.users.get.resolves({ token_login: { active: true, token: 'the_token', expiration_date: 0 } });
@@ -708,6 +719,71 @@ describe('TokenLogin service', () => {
           chai.expect(actual).to.deep.equal(response);
         });
       });
+
+      it('should handle old token login doc without tasks', () => {
+        const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
+        db.medic.get
+          .withArgs('userID').resolves({
+            _id: 'userID',
+            name: 'user',
+            roles: ['a', 'b'],
+            token_login: { active: true, expiration_date: 123 },
+          })
+          .withArgs('token:login:ddd').resolves({
+            _id: 'token:login:ddd',
+            type: DOC_TYPES.TOKEN_LOGIN,
+            user: 'userID',
+          });
+
+        db.users.get.withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+          token_login: {
+            active: true,
+            expiration_date: 123,
+            token: 'ddd',
+          }
+        });
+
+        db.medic.put.resolves();
+        db.users.put.resolves();
+
+        return service.manageTokenLogin({ token_login: false }, response).then(actual => {
+          chai.expect(db.medic.put.callCount).to.equal(1);
+          chai.expect(db.medic.put.args[0][0]._id).to.equal('userID');
+          chai.expect(actual).to.deep.equal(response);
+        });
+      });
+
+      it('should throw when clearOldTokenLoginDoc encounters non-404 error', () => {
+        const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
+        db.medic.get
+          .withArgs('userID').resolves({
+            _id: 'userID',
+            name: 'user',
+            roles: ['a', 'b'],
+            token_login: { active: true, expiration_date: 123 },
+          })
+          .withArgs('token:login:eee').rejects({ status: 500, message: 'server error' });
+
+        db.users.get.withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+          token_login: {
+            active: true,
+            expiration_date: 123,
+            token: 'eee',
+          }
+        });
+
+        return service.manageTokenLogin({ token_login: false }, response)
+          .then(() => chai.assert.fail('Should have thrown'))
+          .catch(err => {
+            chai.expect(err.status).to.equal(500);
+          });
+      });
     });
 
     describe('enabling token login', () => {
@@ -717,6 +793,33 @@ describe('TokenLogin service', () => {
         addMessage = sinon.stub();
         config.getTransitionsLib.returns({ messages: { addMessage } });
         config.get.withArgs('app_url').returns('http://host');
+      });
+
+      it('should throw when app_url is not configured', () => {
+        config.get.withArgs('token_login').returns({ message: 'the sms', enabled: true });
+        config.get.withArgs('app_url').returns(undefined);
+        const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
+
+        db.medic.get.withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+          phone: '+40755232323',
+        });
+
+        db.users.get.withArgs('userID').resolves({
+          _id: 'userID',
+          name: 'user',
+          roles: ['a', 'b'],
+        });
+
+        db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
+
+        return service.manageTokenLogin({ token_login: true }, response)
+          .then(() => chai.assert.fail('Should have thrown'))
+          .catch(err => {
+            chai.expect(err.message).to.equal('app_url configuration is required for token login');
+          });
       });
 
       it('should generate password, token, create sms and update user docs', () => {

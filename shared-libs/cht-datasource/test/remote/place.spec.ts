@@ -128,6 +128,19 @@ describe('remote place', () => {
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Place.v1.getPage(remoteContext)(personTypeQualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          type: placeType,
+        })).to.be.true;
+      });
     });
 
     describe('createPlace', () => {

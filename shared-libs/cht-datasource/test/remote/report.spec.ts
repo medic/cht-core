@@ -134,6 +134,19 @@ describe('remote report', () => {
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Report.v1.getUuidsPage(remoteContext)(qualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          freetext: freetext,
+        })).to.be.true;
+      });
     });
 
     describe('create', () => {

@@ -3,6 +3,13 @@ const sinon = require('sinon');
 const utilsFactory = require('../src/bulk-docs-utils');
 const { Contact } = require('@medic/cht-datasource');
 
+describe('Bulk Docs utils factory', () => {
+  it('defaults dependencies to empty object when not provided', () => {
+    const factory = utilsFactory();
+    chai.expect(factory).to.have.all.keys('updateParentContacts', 'getDuplicateErrors');
+  });
+});
+
 describe('Bulk Docs utils', () => {
   let utils;
   let bind;
@@ -93,6 +100,19 @@ describe('Bulk Docs utils', () => {
         chai.expect(updatedParents.documentByParentId[clinic._id]).to.deep.equal(person);
         chai.expect(bind.calledOnceWithExactly(Contact.v1.get)).to.be.true;
         chai.expect(getContact.calledOnceWithExactly({ uuid: clinic._id })).to.be.true;
+      });
+    });
+
+    it('resolves with no updates when doc has no parent', () => {
+      const person = {
+        _id: 'a',
+        type: 'person',
+        name: 'sally'
+      };
+      return utils.updateParentContacts([person]).then(updatedParents => {
+        chai.expect(bind.notCalled).to.be.true;
+        chai.expect(getContact.notCalled).to.be.true;
+        chai.expect(updatedParents.docs).to.have.length(0);
       });
     });
 

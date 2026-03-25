@@ -1,5 +1,6 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const sentinelUtils = require('@utils/sentinel');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
@@ -21,17 +22,17 @@ const submitReplyBtn = () => replyMessageActions().$('.submit');
 const messages = () => $$(`${MESSAGE_CONTENT} li`);
 
 const openMessage = async (identifier) => {
-  const message = messageInList(identifier);
-  await message.click();
+  await messageInList(identifier).waitForStable();
+  await messageInList(identifier).click();
+  await $(MESSAGE_CONTENT).waitForDisplayed();
 };
 
 const getMessageInListDetails = async (identifier) => {
-  const sms = messageInList(identifier);
-  const lineageValue = await sms.$('.horizontal.lineage').isExisting() ?
-    await sms.$('.horizontal.lineage').getText() : '';
+  const lineageValue = await messageInList(identifier).$('.horizontal.lineage').isExisting() ?
+    await messageInList(identifier).$('.horizontal.lineage').getText() : '';
   return {
-    heading: await sms.$('.heading h4').getText(),
-    summary: await sms.$('.summary').getText(),
+    heading: await messageInList(identifier).$('.heading h4').getText(),
+    summary: await messageInList(identifier).$('.summary').getText(),
     lineage: lineageValue,
   };
 };
@@ -49,21 +50,28 @@ const navigateFromConversationToContact = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const getMessageContent = async (index = 1) => {
-  const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
-  await sms.waitForDisplayed();
+const getLastMessageContent = async () => {
+  const sms = () => $(`${MESSAGE_CONTENT} li:last-child`);
   return {
-    content: await sms.$('p[test-id="sms-content"]').getText(),
-    state: await sms.$('.state').getText(),
-    dataId: await sms.getAttribute('data-id'),
+    content: await sms().$('p[test-id="sms-content"]').getText(),
+    state: await sms().$('.state').getText(),
+    dataId: await sms().getAttribute('data-id'),
+  };
+};
+
+const getMessageContent = async (index = 1) => {
+  const sms = () => $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
+  return {
+    content: await sms().$('p[test-id="sms-content"]').getText(),
+    state: await sms().$('.state').getText(),
+    dataId: await sms().getAttribute('data-id'),
   };
 };
 
 const searchSelect = async (recipient, option) => {
   await recipientField().setValue(recipient);
   await $('.loading-results').waitForDisplayed({ reverse: true });
-  const selection = $('.select2-results__options').$(`.*=${option}`);
-  await selection.click();
+  await $('.select2-results__options').$(`.*=${option}`).click();
   await browser.waitUntil(async () => await $('.select2-selection__choice').isDisplayed(), 1000);
 };
 
@@ -73,6 +81,7 @@ const sendMessage = async (message, recipient, entryText) => {
   await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
+  await sentinelUtils.waitForSentinel();
 };
 
 const sendMessageDesktop = async (message, recipient, entryText) => {
@@ -89,12 +98,14 @@ const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
+  await sentinelUtils.waitForSentinel();
 };
 
 const sendMessageToContact = async (message) => {
   await messageText().setValue(message);
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
+  await sentinelUtils.waitForSentinel();
 };
 
 const exportMessages = async () => {
@@ -113,6 +124,7 @@ const sendReply = async (message) => {
   await replyMessageActions().waitForExist();
   await submitReplyBtn().click();
   await browser.waitUntil(async () => await getAmountOfMessagesByPhone() > numberOfMessages);
+  await sentinelUtils.waitForSentinel();
 };
 
 const replyAddRecipients = async (message) => {
@@ -141,6 +153,7 @@ module.exports = {
   getMessageInListDetails,
   getMessageHeader,
   getMessageContent,
+  getLastMessageContent,
   sendMessageDesktop,
   sendMessageOnMobile,
   sendReplyNewRecipient,

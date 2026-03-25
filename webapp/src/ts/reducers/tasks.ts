@@ -1,9 +1,73 @@
 import { createReducer, on } from '@ngrx/store';
+import * as moment from 'moment';
 
 import { Actions as GlobalActions } from '@mm-actions/global';
 import { Actions } from '@mm-actions/tasks';
 import { TaskEmission } from '@mm-services/rules-engine.service';
-import { orderByDueDateAndPriority } from '@medic/task-utils';
+
+/**
+ * Sort tasks by due date and priority
+ * Sorting rules (in order):
+ * 1. Valid priorities sort first (higher value = higher priority)
+ * 2. Equal priorities sort by due date (earlier = higher priority)
+ * 3. Invalid/missing values sort last while maintaining original order
+ */
+export const orderByDueDateAndPriority = (t1, t2) => {
+  const getDueDate = dueDate => {
+    if (typeof dueDate !== 'number' && typeof dueDate !== 'string') {
+      return Number.NaN;
+    }
+    const numericDate = Number(dueDate);
+    if (!Number.isNaN(numericDate)) {
+      return numericDate;
+    }
+    if (moment(dueDate).isValid()) {
+      return moment(dueDate).valueOf();
+    }
+    return Number.NaN;
+  };
+  const getPriorityValue = priority => {
+    if (typeof priority === 'number' && priority >= 0) {
+      return priority;
+    }
+    return Number.NaN;
+  };
+
+  const lhsDate = getDueDate(t1?.dueDate);
+  const rhsDate = getDueDate(t2?.dueDate);
+  const lhsPriority = getPriorityValue(t1?.priority);
+  const rhsPriority = getPriorityValue(t2?.priority);
+
+  const compareDates = () => {
+    if (Number.isNaN(lhsDate) && Number.isNaN(rhsDate)) {
+      return 0;
+    }
+    if (Number.isNaN(lhsDate)) {
+      return 1;
+    }
+    if (Number.isNaN(rhsDate)) {
+      return -1;
+    }
+    return lhsDate - rhsDate;
+  };
+
+  if (Number.isNaN(lhsPriority) && Number.isNaN(rhsPriority)) {
+    return compareDates();
+  }
+
+  if (Number.isNaN(lhsPriority)) {
+    return 1;
+  }
+  if (Number.isNaN(rhsPriority)) {
+    return -1;
+  }
+
+  if (lhsPriority !== rhsPriority) {
+    return rhsPriority - lhsPriority;
+  }
+
+  return compareDates();
+};
 
 const initialState = {
   tasksList: [] as TaskEmission[],

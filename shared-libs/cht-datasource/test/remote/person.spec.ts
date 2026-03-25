@@ -128,6 +128,19 @@ describe('remote person', () => {
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/person')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
       });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Person.v1.getPage(remoteContext)(personTypeQualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          type: personType,
+        })).to.be.true;
+      });
     });
 
     describe('createPerson', () => {

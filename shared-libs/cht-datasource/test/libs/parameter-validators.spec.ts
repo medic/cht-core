@@ -9,6 +9,9 @@ import {
   assertPlaceInput,
   assertReportInput,
   assertTypeQualifier,
+  isContactType,
+  isFreetextType,
+  isContactTypeAndFreetextType,
   assertUuidQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
@@ -158,6 +161,41 @@ describe('libs parameter-validators', () => {
 
     it('should handle undefined input appropriately', () => {
       expect(() => assertContactTypeFreetextQualifier(undefined)).to.throw(InvalidArgumentError);
+    });
+  });
+
+  describe('isContactType', () => {
+    it('should return true for a contact type qualifier', () => {
+      expect(isContactType({ contactType: 'person' } as ContactTypeQualifier)).to.be.true;
+    });
+
+    it('should return false for a freetext-only qualifier', () => {
+      expect(isContactType({ freetext: 'search' } as FreetextQualifier)).to.be.false;
+    });
+  });
+
+  describe('isFreetextType', () => {
+    it('should return true for a freetext qualifier', () => {
+      expect(isFreetextType({ freetext: 'search' } as FreetextQualifier)).to.be.true;
+    });
+
+    it('should return false for a contact type-only qualifier', () => {
+      expect(isFreetextType({ contactType: 'person' } as ContactTypeQualifier)).to.be.false;
+    });
+  });
+
+  describe('isContactTypeAndFreetextType', () => {
+    it('should return true when qualifier has both contactType and freetext', () => {
+      const qualifier = { contactType: 'person', freetext: 'search' } as ContactTypeQualifier & FreetextQualifier;
+      expect(isContactTypeAndFreetextType(qualifier)).to.be.true;
+    });
+
+    it('should return false when qualifier has only contactType', () => {
+      expect(isContactTypeAndFreetextType({ contactType: 'person' } as ContactTypeQualifier)).to.be.false;
+    });
+
+    it('should return false when qualifier has only freetext', () => {
+      expect(isContactTypeAndFreetextType({ freetext: 'search' } as FreetextQualifier)).to.be.false;
     });
   });
 

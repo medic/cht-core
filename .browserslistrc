@@ -12,5 +12,5 @@
 #
 # See the CHT dependency matrix at: https://docs.communityhealthtoolkit.org/core/releases/#dependencies
 
-Chrome >= 90
+Chrome >= 107
 last 4 Firefox versions

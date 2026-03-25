@@ -109,6 +109,20 @@ describe('CHT Script API - getDatasource', () => {
         expect(byContactType.calledOnceWithExactly(placeType)).to.be.true;
       });
 
+      it('getPageByType uses default cursor and limit', async () => {
+        const expectedPlaces: Page<Place.v1.Place> = {data: [], cursor: null};
+        const placeGetPage = sinon.stub().resolves(expectedPlaces);
+        dataContextBind.returns(placeGetPage);
+        const placeType = 'place';
+        const placeTypeQualifier = { contactType: placeType };
+        sinon.stub(Qualifier, 'byContactType').returns(placeTypeQualifier);
+
+        const returnedPlaces = await place.getPageByType(placeType);
+
+        expect(returnedPlaces).to.equal(expectedPlaces);
+        expect(placeGetPage.calledOnceWithExactly(placeTypeQualifier, null, 100)).to.be.true;
+      });
+
       it('getByType', () => {
         const mockAsyncGenerator = fakeGenerator();
 
@@ -262,6 +276,20 @@ describe('CHT Script API - getDatasource', () => {
         expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
 
+      it('getPageByType uses default cursor and limit', async () => {
+        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: null};
+        const personGetPage = sinon.stub().resolves(expectedPeople);
+        dataContextBind.returns(personGetPage);
+        const personType = 'person';
+        const personTypeQualifier = { contactType: personType };
+        sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const returnedPeople = await person.getPageByType(personType);
+
+        expect(returnedPeople).to.equal(expectedPeople);
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, null, 100)).to.be.true;
+      });
+
       it('getByType', () => {
         const mockAsyncGenerator = fakeGenerator();
 
@@ -330,6 +358,23 @@ describe('CHT Script API - getDatasource', () => {
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
 
+      it('getUuidsPageByTypeFreetext uses default cursor and limit', async () => {
+        const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
+        const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
+        dataContextBind.returns(contactGetIdsPage);
+        const freetext = 'abc';
+        const contactType = 'person';
+        const qualifier = { contactType, freetext };
+        sinon.stub(Qualifier, 'and').returns(qualifier);
+        sinon.stub(Qualifier, 'byFreetext').returns({ freetext });
+        sinon.stub(Qualifier, 'byContactType').returns({ contactType });
+
+        const returnedContactIds = await contact.getUuidsPageByTypeFreetext(freetext, contactType);
+
+        expect(returnedContactIds).to.equal(expectedContactIds);
+        expect(contactGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
       it('getUuidsPageByTypeFreetext', async () => {
         const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
@@ -379,6 +424,20 @@ describe('CHT Script API - getDatasource', () => {
         expect(byFreetext.notCalled).to.be.true;
       });
 
+      it('getUuidsPageByType uses default cursor and limit', async () => {
+        const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
+        const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
+        dataContextBind.returns(contactGetIdsPage);
+        const contactType = 'person';
+        const contactTypeQualifier = { contactType };
+        sinon.stub(Qualifier, 'byContactType').returns(contactTypeQualifier);
+
+        const returnedContactIds = await contact.getUuidsPageByType(contactType);
+
+        expect(returnedContactIds).to.equal(expectedContactIds);
+        expect(contactGetIdsPage.calledOnceWithExactly(contactTypeQualifier, null, 10000)).to.be.true;
+      });
+
       it('getUuidsPageByFreetext', async () => {
         const expectedContactIds: Page<Contact.v1.Contact> = { data: [], cursor: null };
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
@@ -399,6 +458,20 @@ describe('CHT Script API - getDatasource', () => {
         ).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
         expect(byContactType.notCalled).to.be.true;
+      });
+
+      it('getUuidsPageByFreetext uses default cursor and limit', async () => {
+        const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
+        const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
+        dataContextBind.returns(contactGetIdsPage);
+        const freetext = 'abc';
+        const freetextQualifier = { freetext };
+        sinon.stub(Qualifier, 'byFreetext').returns(freetextQualifier);
+
+        const returnedContactIds = await contact.getUuidsPageByFreetext(freetext);
+
+        expect(returnedContactIds).to.equal(expectedContactIds);
+        expect(contactGetIdsPage.calledOnceWithExactly(freetextQualifier, null, 10000)).to.be.true;
       });
 
       it('getUuidsByTypeFreetext', () => {
@@ -526,6 +599,20 @@ describe('CHT Script API - getDatasource', () => {
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
       });
 
+      it('getUuidsPageByFreetext uses default cursor and limit', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = {data: [], cursor: null};
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const freetext = 'abc';
+        const qualifier = { freetext };
+        sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const returnedContactIds = await report.getUuidsPageByFreetext(freetext);
+
+        expect(returnedContactIds).to.equal(expectedReportIds);
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
       it('getUuidsByFreetext', () => {
         const mockAsyncGenerator = fakeGenerator();
 
@@ -628,6 +715,24 @@ describe('CHT Script API - getDatasource', () => {
         expect(returnedTarget).to.equal(expectedTarget);
         expect(dataContextBind.calledOnceWithExactly(Target.v1.get)).to.be.true;
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+      });
+
+      it('getPageByReportingPeriodContactIds uses default cursor and limit', async () => {
+        const expectedTarget = {};
+        const reportGet = sinon.stub().resolves(expectedTarget);
+        dataContextBind.returns(reportGet);
+        const qualifier = Qualifier.and(
+          Qualifier.byReportingPeriod('2020-01'),
+          Qualifier.byContactIds(['my-first-contact-uuid', 'my-second-contact-uuid'])
+        );
+
+        const returnedTarget = await target.getPageByReportingPeriodContactIds(
+          qualifier.reportingPeriod,
+          qualifier.contactIds
+        );
+
+        expect(returnedTarget).to.equal(expectedTarget);
+        expect(reportGet.calledOnceWithExactly(qualifier, null, 100)).to.be.true;
       });
 
       it('getPageByReportingPeriodContactIds - multiple contact Ids', async () => {

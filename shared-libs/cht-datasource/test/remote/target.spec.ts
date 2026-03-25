@@ -140,6 +140,21 @@ describe('remote target', () => {
           cursor
         })).to.be.true;
       });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: doc, cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+        const qualifier = and(byReportingPeriod('2025-01'), byContactId(doc[0].owner));
+
+        const result = await Target.v1.getPage(remoteContext)(qualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          reporting_period: qualifier.reportingPeriod,
+          contact_id: doc[0].owner,
+        })).to.be.true;
+      });
     });
   });
 });

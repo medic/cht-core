@@ -64,6 +64,16 @@ describe('Lineage', function() {
   });
 
   describe('fillContactsInDocs', function() {
+    it('skips null docs in the array', function() {
+      const docs = [null, { _id: 'doc1', contact: { _id: 'contact1' } }];
+      const contacts = [{ _id: 'contact1', type: 'person' }];
+
+      lineage.fillContactsInDocs(docs, contacts);
+
+      chai.expect(docs[0]).to.be.null;
+      chai.expect(docs[1].contact).to.deep.equal(contacts[0]);
+    });
+
     it('populates the contact field for relevant docs', function() {
       // Given
       const docs = [
@@ -151,12 +161,76 @@ describe('Lineage', function() {
     });
   });
 
+  describe('fetchHydratedDoc', function() {
+    it('supports callback as second argument', function(done) {
+      query.resolves({ rows: [] });
+      get.resolves({ _id: 'a', type: 'person' });
+
+      lineage.fetchHydratedDoc('a', function(err, result) {
+        chai.expect(err).to.be.null;
+        chai.expect(result._id).to.equal('a');
+        done();
+      });
+    });
+
+    it('passes error to callback', function(done) {
+      query.rejects(new Error('db fail'));
+
+      lineage.fetchHydratedDoc('a', function(err) {
+        chai.expect(err.message).to.equal('db fail');
+        done();
+      });
+    });
+
+    it('throws when lineage is empty and throwWhenMissingLineage is true', function() {
+      query.resolves({ rows: [] });
+
+      return lineage.fetchHydratedDoc('a', { throwWhenMissingLineage: true })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err.message).to.include('Document not found: a');
+          chai.expect(err.code).to.equal(404);
+        });
+    });
+  });
+
+  describe('fetchHydratedDocs', function() {
+    it('returns empty array for empty docIds', function() {
+      return lineage.fetchHydratedDocs([]).then(result => {
+        chai.expect(result).to.deep.equal([]);
+      });
+    });
+
+    it('throws non-404 errors for single doc', function() {
+      const err = new Error('server error');
+      err.status = 500;
+      query.rejects(err);
+
+      return lineage.fetchHydratedDocs(['a'])
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(e => {
+          chai.expect(e.message).to.equal('server error');
+        });
+    });
+  });
+
   describe('hydrateDocs', function() {
     it('works on empty array', function() {
       const docs = [];
 
       return lineage.hydrateDocs(docs).then((hydratedDocs) => {
         chai.expect(hydratedDocs).to.have.length(0);
+      });
+    });
+
+    it('handles reports without contact id', function() {
+      const docs = [
+        { _id: 'r1', type: 'data_record' },
+      ];
+
+      return lineage.hydrateDocs(docs).then(result => {
+        chai.expect(result).to.have.length(1);
+        chai.expect(result[0]._id).to.equal('r1');
       });
     });
 
