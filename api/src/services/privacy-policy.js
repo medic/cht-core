@@ -4,7 +4,7 @@ const logger = require('@medic/logger');
 const config = require('../config');
 const { NotFoundError } = require('../errors');
 
-const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
+const { DOC_IDS } = require('@medic/constants');
 
 const getAttachmentName = (doc, locale) => {
   const policies = doc.privacy_policies;
@@ -19,11 +19,12 @@ const getAttachment = (doc, locale) => {
 };
 
 const getDoc = (options=({})) => {
-  return db.medic.get(PRIVACY_POLICY_DOC_ID, options)
+  return db.medic.get(DOC_IDS.PRIVACY_POLICIES, options)
     .then(doc => {
       const policies = doc.privacy_policies;
       if (!policies || !Object.keys(policies).length) { // invalid doc
-        throw new NotFoundError(`Invalid ${PRIVACY_POLICY_DOC_ID} doc: missing required "privacy_policies" property`);
+        const docId = DOC_IDS.PRIVACY_POLICIES;
+        throw new NotFoundError(`Invalid ${docId} doc: missing required "privacy_policies" property`);
       }
       return doc;
     })
