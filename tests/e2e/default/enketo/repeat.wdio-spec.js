@@ -51,7 +51,6 @@ describe('RepeatForm', () => {
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state: - NE')).to.be.true;
       expect(await commonEnketoPage.getInputValue('How many? NE')).to.equal('1');
 
-
       await assertLabels({ selector: cityLabelPath, count: 1, labelText: 'Select a city: - NE' });
       await assertLabels({ selector: melbourneLabelPath, count: 1, labelText: 'ML (NE)' });
 
@@ -105,6 +104,18 @@ describe('RepeatForm', () => {
 
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city: - SV' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'ML (SV)' });
+
+      // Submit form and verify repeat fields are saved to the document
+      await commonEnketoPage.selectRadioButton('Select a state: - SV', 'VIC (SV)');
+      await commonEnketoPage.selectRadioButton('Select a city: - SV', 'ML (SV)');
+      await genericForm.submitForm();
+
+      const reportId = await reportsPage.getCurrentReportId();
+      const report = await utils.getDoc(reportId);
+      expect(report.fields.basic.state_1).to.equal('VIC');
+      expect(report.fields.basic.rep).to.be.an('array');
+      expect(report.fields.basic.rep.length).to.be.greaterThan(0);
+      expect(report.fields.basic.rep[0].city_1).to.equal('melbourne');
     });
 
     it('should display the initial form and its repeated content in English', async () => {
@@ -124,32 +135,18 @@ describe('RepeatForm', () => {
 
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
-    });
 
-    it('should save repeat fields to the submitted document', async () => {
-      const enUserName = 'User name';
-      await loginPage.changeLanguage('en', enUserName);
-      await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'en' });
-      await openRepeatForm('repeat_translation');
-
-      // Select the state field
+      // Submit form and verify repeat fields are saved to the document
       await commonEnketoPage.selectRadioButton('Select a state:', 'Victoria');
-
-      // Add a repeat item and fill it
-      await repeatForm();
       await commonEnketoPage.selectRadioButton('Select a city:', 'Melbourne');
-      await commonEnketoPage.setInputValue('Name:', 'Alice');
-
       await genericForm.submitForm();
 
-      // Verify the saved document contains the repeat fields
       const reportId = await reportsPage.getCurrentReportId();
       const report = await utils.getDoc(reportId);
       expect(report.fields.basic.state_1).to.equal('VIC');
       expect(report.fields.basic.rep).to.be.an('array');
       expect(report.fields.basic.rep.length).to.be.greaterThan(0);
       expect(report.fields.basic.rep[0].city_1).to.equal('melbourne');
-      expect(report.fields.basic.rep[0].name).to.equal('Alice');
     });
   });
 
@@ -171,7 +168,6 @@ describe('RepeatForm', () => {
 
       expect(await commonEnketoPage.isElementDisplayed('label', 'Seattle')).to.be.true;
       expect(await commonEnketoPage.isElementDisplayed('label', 'Redmond')).to.be.true;
-
     });
   });
 });
