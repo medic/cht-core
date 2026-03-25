@@ -123,8 +123,14 @@ describe('node-logger internals', () => {
   });
 
   describe('create', () => {
-    it('uses info level in production environment', () => {
-      nodeLogger.__set__('env', 'production');
+    it('defaults to info level when LOG_LEVEL is not set', () => {
+      nodeLogger.__set__('logLevel', 'info');
+      const logger = nodeLogger.create('YYYY-MM-DD');
+      expect(logger).to.be.ok;
+    });
+
+    it('uses LOG_LEVEL when set', () => {
+      nodeLogger.__set__('logLevel', 'debug');
       const logger = nodeLogger.create('YYYY-MM-DD');
       expect(logger).to.be.ok;
     });
