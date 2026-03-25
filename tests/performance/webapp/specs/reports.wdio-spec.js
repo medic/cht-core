@@ -28,7 +28,7 @@ describe('reports', () => {
   it('measure reports initial load', async () => {
     await commonElements.goToReports('', false);
     pagePerformance.track('reports - first load');
-    await reportsPage.waitForReportsLoaded('reports', LOAD_TIMEOUT);
+    await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
 
     pagePerformance.track('reports - first scroll');
