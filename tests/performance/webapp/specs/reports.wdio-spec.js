@@ -7,7 +7,6 @@ const userFactory = require('@factories/cht/users/users');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const user = userFactory.build();
 const utils = require('@utils');
-const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
@@ -20,12 +19,6 @@ describe('reports', () => {
     pagePerformance.track('initial replication with tasks');
     await commonElements.waitForAngularLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
-
-    await commonElements.goToTasks(false);
-    pagePerformance.track('tasks - first load without calculation');
-    await commonElements.waitForPageLoaded(LOAD_TIMEOUT);
-    await tasksPage.getTasks(LOAD_TIMEOUT);
-    pagePerformance.record();
   });
 
   beforeEach(async () => {
@@ -35,7 +28,7 @@ describe('reports', () => {
   it('measure reports initial load', async () => {
     await commonElements.goToReports('', false);
     pagePerformance.track('reports - first load');
-    await reportsPage.waitForReportsLoaded('reports', LOAD_TIMEOUT);
+    await reportsPage.waitForReportsLoaded(LOAD_TIMEOUT);
     pagePerformance.record();
 
     pagePerformance.track('reports - first scroll');
