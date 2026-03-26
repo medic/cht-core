@@ -102,7 +102,7 @@ module.exports = {
    *     operationId: v1RecordsPost
    *     deprecated: true
    *     description: |
-   *       Use [POST /api/v2/records](#/Records/v2RecordsPost) instead.
+   *       Use [POST /api/v2/records](#/SMS/v2RecordsPost) instead.
    *
    *       Creates a new record based on a configured form. Accepts form-encoded or JSON data.
    *     tags: [SMS]

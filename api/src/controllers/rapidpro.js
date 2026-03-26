@@ -54,7 +54,7 @@ module.exports = {
    * /api/v1/sms/radpidpro/incoming-messages:
    *   post:
    *     summary: Receive incoming SMS from RapidPro
-   *     operationId: v1SmsRadpidproProIncomingMessagesPost
+   *     operationId: v1SmsRadpidproIncomingMessagesPost
    *     deprecated: true
    *     description: >
    *       Use [POST /api/v2/sms/rapidpro/incoming-messages](#/SMS/v2SmsRapidProIncomingMessagesPost) instead.

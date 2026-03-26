@@ -145,7 +145,6 @@ module.exports = {
    *                       type: string
    *                       description: The message id.
    *                     status:
-   *                       type: string
    *                       enum: [UNSENT, PENDING, SENT, DELIVERED, FAILED]
    *                       description: The delivery status from the gateway.
    *                     reason:

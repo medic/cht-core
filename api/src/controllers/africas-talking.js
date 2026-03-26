@@ -146,7 +146,6 @@ module.exports = {
    *                 type: string
    *                 description: The gateway message reference.
    *               status:
-   *                 type: string
    *                 enum: [Sent, Submitted, Buffered, Rejected, Success, Failed]
    *                 description: The delivery status from Africa's Talking.
    *               failureReason:

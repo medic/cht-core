@@ -291,7 +291,7 @@ module.exports = {
    *     operationId: v1UsersGet
    *     deprecated: true
    *     description: >
-   *       Use [GET /api/v2/users](#/Users/v2UsersGet) instead.
+   *       Use [GET /api/v2/users](#/User/v2UsersGet) instead.
    *       Returns a list of users and their profile data.
    *     tags: [User]
    *     x-permissions:
@@ -326,8 +326,8 @@ module.exports = {
    *     operationId: v1UsersPost
    *     deprecated: true
    *     description: |
-   *       Use [POST /api/v3/users](#/Users/v3UsersPost) to create a single user or
-   *       [POST /api/v2/users](#/Users/v2UsersPost) to create multiple users.
+   *       Use [POST /api/v3/users](#/User/v3UsersPost) to create a single user or
+   *       [POST /api/v2/users](#/User/v2UsersPost) to create multiple users.
    *       Create new users with a place and a contact. Accepts a single user object or an array of user objects
    *       (since CHT `3.15.0`). Users are created in parallel and the creation is not aborted even if one of the
    *       users fails to be created.
@@ -387,7 +387,7 @@ module.exports = {
    *     operationId: v1UsersUsernamePost
    *     deprecated: true
    *     description: >
-   *       Use [POST /api/v3/users/{username}](#/Users/v3UsersUsernamePost) instead.
+   *       Use [POST /api/v3/users/{username}](#/User/v3UsersUsernamePost) instead.
    *       Update property values on a user account. Users with `can_edit` and `can_update_users`
    *       permissions can update any user. Users can update themselves without these permissions,
    *       but cannot modify `type`, `roles`, `contact`, or `place`. Password changes require

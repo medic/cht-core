@@ -108,7 +108,6 @@ module.exports = {
    *       - in: query
    *         name: overwrite
    *         schema:
-   *           type: string
    *           enum: ['true']
    *         description: >
    *           Whether to replace the entire settings document with the input document.
