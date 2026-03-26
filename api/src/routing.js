@@ -668,6 +668,7 @@ app.putJson('/api/v1/place/:uuid', place.v1.update);
  *                 description: The person's name.
  *               type:
  *                 type: string
+ *                 default: person
  *                 description: >
  *                   ID of the contact_type for the new person. Defaults to `person` for backwards compatibility.
  *               place:

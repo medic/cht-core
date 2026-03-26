@@ -72,18 +72,18 @@ const SWAGGER_OPTIONS = {
           in: 'query',
           name: 'limit',
           schema: { type: 'number', default: 100, minimum: 1 },
-          description: 'The maximum number of entities to return. Defaults to 100.',
+          description: 'The maximum number of entities to return.',
         },
         limitId: {
           in: 'query',
           name: 'limit',
           schema: { type: 'number', default: 10000, minimum: 1 },
-          description: 'The maximum number of identifiers to return. Defaults to 10000.',
+          description: 'The maximum number of identifiers to return.',
         },
         withLineage: {
           in: 'query',
           name: 'with_lineage',
-          schema: { 'enum': ['true'] },
+          schema: { 'enum': ['true', 'false'], default: 'false' },
           description: 'Include the full parent lineage.'
         }
       },

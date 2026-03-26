@@ -161,7 +161,9 @@ module.exports = {
      *   put:
      *     summary: Update a report
      *     operationId: v1ReportIdPut
-     *     description: Updates an existing report.
+     *     description: >
+     *       Updates an existing report.  Fields omitted on the request will be removed from the record.
+     *       Any included lineage data will be minified on the stored record.
      *     tags: [Report]
      *     x-since: 5.2.0
      *     x-permissions:

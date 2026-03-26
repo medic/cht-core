@@ -160,7 +160,9 @@ module.exports = {
      *   put:
      *     summary: Update a person
      *     operationId: v1PersonIdPut
-     *     description: Updates an existing person contact record.
+     *     description: >
+     *       Updates an existing person contact record. Fields omitted on the request will be removed from the record.
+     *       Any included lineage data will be minified on the stored record.
      *     tags: [Person]
      *     x-since: 5.2.0
      *     x-permissions:

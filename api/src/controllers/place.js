@@ -159,7 +159,9 @@ module.exports = {
      *   put:
      *     summary: Update a place
      *     operationId: v1PlaceIdPut
-     *     description: Updates an existing place contact record.
+     *     description: >
+     *       Updates an existing place contact record.  Fields omitted on the request will be removed from the record.
+     *       Any included lineage data will be minified on the stored record.
      *     tags: [Place]
      *     x-since: 5.2.0
      *     x-permissions:

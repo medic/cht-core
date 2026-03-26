@@ -62,7 +62,9 @@ const getVerifiedValue = (value) => {
  *           description: The unique key for the user's device.
  *         date:
  *           type: string
- *           description: The date the telemetry entry was taken (YYYY-MM-DD).
+ *           description: >
+ *             The date the telemetry entry was taken (YYYY-MM-DD), see
+ *             [relevant docs](/technical-overview/data/performance/telemetry/).
  *         browser:
  *           type: object
  *           properties:
@@ -74,7 +76,9 @@ const getVerifiedValue = (value) => {
  *               description: The version of the browser used.
  *         apk:
  *           type: string
- *           description: The version code of the Android app.
+ *           description: >
+ *             The [version code](https://developer.android.com/reference/android/R.styleable#AndroidManifest_versionCode)
+ *             of the Android app.
  *         android:
  *           type: string
  *           description: The version of Android OS.
@@ -101,7 +105,8 @@ const getVerifiedValue = (value) => {
  *         type: object
  *         properties:
  *           humanReadable:
- *             enum: ['true']
+ *             enum: ['true', 'false']
+ *             default: 'false'
  *             description: Set to "true" to format dates as ISO 8601 instead of epoch timestamps.
  *   responses:
  *     CsvExport:
@@ -175,7 +180,9 @@ module.exports = {
    *   post:
    *     summary: Export DHIS2 target data
    *     operationId: v2ExportDhisPost
+   *     deprecated: true
    *     description: >
+   *       Use [GET /api/v2/export/dhis](#/Export/v2ExportDhisGet) instead.
    *       Exports target data formatted as a DHIS2 dataValueSet. Accepts filters in the request body.
    *     tags: [Export]
    *     x-permissions:
@@ -279,7 +286,10 @@ module.exports = {
    *   post:
    *     summary: Export reports
    *     operationId: v2ExportReportsPost
-   *     description: Exports reports as CSV. Accepts filters in the request body.
+   *     deprecated: true
+   *     description: >
+   *       Use [GET /api/v2/export/reports](#/Export/v2ExportReportsGet) instead.
+   *       Exports reports as CSV. Accepts filters in the request body.
    *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_messages]
@@ -342,7 +352,7 @@ module.exports = {
    *     description: |
    *       Exports messages as CSV.
    *       
-   *       ### Columns
+   *       ### Response Columns
    *
    *       | Column             | Description                                                                          |
    *       | ------------------ | ------------------------------------------------------------------------------------ |
@@ -392,7 +402,9 @@ module.exports = {
    *   post:
    *     summary: Export messages
    *     operationId: v2ExportMessagesPost
+   *     deprecated: true
    *     description: >
+   *       Use [GET /api/v2/export/messages](#/Export/v2ExportMessagesGet) instead.
    *       Exports messages as CSV. Accepts filters in the request body. See
    *       [GET](#/Export/v2ExportMessagesGet) for output column details.
    *     tags: [Export]
@@ -434,7 +446,7 @@ module.exports = {
    *       Exports contacts as a CSV. Filters use the same query format as the
    *       [search library](https://github.com/medic/cht-core/tree/master/shared-libs/search).
    *
-   *       ### Columns
+   *       ### Response Columns
    *
    *       | Column       | Description                                                                    |
    *       | -------------| -------------------------------------------------------------------------------|
@@ -456,7 +468,7 @@ module.exports = {
    *           properties:
    *             search:
    *               type: string
-   *               description: A freetext search term.
+   *               description: A freetext search term. (e.g. `GET /api/v2/export/contacts?filters[search]=jim`)
    *           additionalProperties: true
    *         style: deepObject
    *         explode: true
@@ -471,7 +483,9 @@ module.exports = {
    *   post:
    *     summary: Export contacts
    *     operationId: v2ExportContactsPost
+   *     deprecated: true
    *     description: >
+   *       Use [GET /api/v2/export/contacts](#/Export/v2ExportContactsGet) instead.
    *       Exports contacts as a CSV. Accepts filters in the request body. See [GET](#/Export/v2ExportContactsGet) for
    *       output column details.
    *     tags: [Export]
@@ -505,8 +519,6 @@ module.exports = {
    *     tags: [Export]
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_feedback]
-   *     parameters:
-   *       - $ref: '#/components/parameters/exportOptionsQuery'
    *     responses:
    *       '200':
    *         $ref: '#/components/responses/CsvExport'
@@ -517,7 +529,10 @@ module.exports = {
    *   post:
    *     summary: Export feedback
    *     operationId: v2ExportFeedbackPost
-   *     description: Exports user feedback data as CSV. Accepts options in the request body.
+   *     deprecated: true
+   *     description: >
+   *       Use [GET /api/v2/export/feedback](#/Export/v2ExportFeedbackGet) instead.
+   *       Exports user feedback data as CSV.
    *     tags: [Export]
    *     x-permissions:
    *       isOnline: true
@@ -527,9 +542,7 @@ module.exports = {
    *         application/json:
    *           schema:
    *             type: object
-   *             properties:
-   *               options:
-   *                 $ref: '#/components/schemas/ExportOptions'
+   *             additionalProperties: true
    *     responses:
    *       '200':
    *         $ref: '#/components/responses/CsvExport'
@@ -542,12 +555,17 @@ module.exports = {
    *     summary: Export user device information
    *     operationId: v2ExportUserDevicesGet
    *     description: |
-   *       Returns a JSON array of CHT-related software versions and device information for each user device.
-   *       This information is derived from the latest telemetry entry for each user device.
-   *
    *       This endpoint is deprecated as it can negatively impact server performance. Deployments should avoid using
    *       this endpoint or use it only when end users will not be impacted. An improved endpoint is
    *       [being planned](https://github.com/medic/cht-core/issues/10298) for a later date.
+   *
+   *       Returns a JSON array of CHT-related software versions and device information for each user device.
+   *       This information is derived from the latest telemetry entry for each user device.
+   *
+   *       If a particular user has used multiple devices, an entry will be included for each device. Reference the
+   *       date value to determine which devices have been recently used. If multiple users used the same physical
+   *       device (e.g. they were logged into the same phone at different times), an entry will be included for each
+   *       user.
    *     tags: [Export]
    *     deprecated: true
    *     x-since: 4.7.0
@@ -563,15 +581,12 @@ module.exports = {
    *   post:
    *     summary: Export user device information
    *     operationId: v2ExportUserDevicesPost
-   *     description: |
+   *     deprecated: true
+   *     description: >
+   *       Use [GET /api/v2/export/user-devices](#/Export/v2ExportUserDevicesGet) instead.
    *       Returns a JSON array of CHT-related software versions and device information for each user device.
    *       This endpoint may negatively impact server performance.
-   *
-   *       This endpoint is deprecated as it can negatively impact server performance. Deployments should avoid using
-   *       this endpoint or use it only when end users will not be impacted. An improved endpoint is
-   *       [being planned](https://github.com/medic/cht-core/issues/10298) for a later date.
    *     tags: [Export]
-   *     deprecated: true
    *     x-since: 4.7.0
    *     x-permissions:
    *       hasAny: [can_export_all, can_export_devices_details]

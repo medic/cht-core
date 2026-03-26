@@ -63,14 +63,17 @@ module.exports = {
    *     operationId: v1FormsGet
    *     description: >
    *       Returns a list of currently installed forms. By default returns a JSON array of form filenames. If the
-   *       `X-OpenRosa-Version` header is set to `1.0`, returns an OpenRosa xformsList compatible XML response instead.
+   *       `X-OpenRosa-Version` header is set to `1.0`, returns an OpenRosa `xformsList` compatible XML response
+   *       instead.
    *     tags: [Config]
    *     parameters:
    *       - in: header
    *         name: X-OpenRosa-Version
    *         schema:
    *           enum: ['1.0']
-   *         description: If set to "1.0", returns XML formatted forms list compatible with the OpenRosa FormListAPI.
+   *         description: >
+   *           If set to "1.0", returns XML formatted forms list compatible with the
+   *           [OpenRosa FormListAPI](https://bitbucket.org/javarosa/javarosa/wiki/FormListAPI).
    *     responses:
    *       '200':
    *         description: List of installed forms
@@ -83,32 +86,33 @@ module.exports = {
    *               example: ["anc_visit.xml", "anc_registration.xml"]
    *           text/xml:
    *             schema:
-   *               type: string
+   *               type: object
+   *               xml:
+   *                 name: xforms
+   *                 namespace: 'http://openrosa.org/xforms/xformsList'
    *               description: OpenRosa xformsList compatible XML.
-   *               example: |
-   *                 ```.xml
-   *                 <?xml version="1.0" encoding="UTF-8"?>
-   *                 <xforms xmlns="http://openrosa.org/xforms/xformsList">
-   *                   <xform>
-   *                     <name>Visit</name>
-   *                     <formID>ANCVisit</formID>
-   *                     <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
-   *                     <downloadUrl>http://medic.local/api/v1/forms/anc_visit.xml</downloadUrl>
-   *                   </xform>
-   *                   <xform>
-   *                     <name>Registration with LMP</name>
-   *                     <formID>PregnancyRegistration</formID>
-   *                     <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
-   *                     <downloadUrl>http://medic.local/api/v1/forms/anc_registration.xml</downloadUrl>
-   *                   </xform>
-   *                   <xform>
-   *                     <name>Stop</name>
-   *                     <formID>Stop</formID>
-   *                     <hash>md5:1f0f096602ed794a264ab67224608cf4</hash>
-   *                     <downloadUrl>http://medic.local/api/v1/forms/off.xml</downloadUrl>
-   *                   </xform>
-   *                 </xforms>
-   *                 ```
+   *               properties:
+   *                 xform:
+   *                   type: array
+   *                   xml:
+   *                     wrapped: false
+   *                   items:
+   *                     type: object
+   *                     xml:
+   *                       name: xform
+   *                     properties:
+   *                       name:
+   *                         type: string
+   *                         example: Visit
+   *                       formID:
+   *                         type: string
+   *                         example: ANCVisit
+   *                       hash:
+   *                         type: string
+   *                         example: 'md5:1f0f096602ed794a264ab67224608cf4'
+   *                       downloadUrl:
+   *                         type: string
+   *                         example: 'http://medic.local/api/v1/forms/anc_visit.xml'
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    */

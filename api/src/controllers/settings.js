@@ -101,14 +101,14 @@ module.exports = {
    *       - in: query
    *         name: replace
    *         schema:
-   *           enum: ['true']
-   *         description: >
-   *           Whether to replace existing settings for the given properties or to merge.
-   *           Defaults to merging.
+   *           enum: ['true', 'false']
+   *           default: 'false'
+   *         description: Whether to replace existing settings for the given properties or to merge.
    *       - in: query
    *         name: overwrite
    *         schema:
-   *           enum: ['true']
+   *           enum: ['true', 'false']
+   *           default: 'false'
    *         description: >
    *           Whether to replace the entire settings document with the input document.
    *           If both `replace` and `overwrite` are set, `overwrite` takes precedence.

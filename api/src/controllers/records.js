@@ -101,9 +101,8 @@ module.exports = {
    *     summary: Create a record
    *     operationId: v1RecordsPost
    *     deprecated: true
-   *     description: |
+   *     description: >
    *       Use [POST /api/v2/records](#/SMS/v2RecordsPost) instead.
-   *
    *       Creates a new record based on a configured form. Accepts form-encoded or JSON data.
    *     tags: [SMS]
    *     x-permissions:
@@ -138,7 +137,9 @@ module.exports = {
    *   post:
    *     summary: Create a record
    *     operationId: v2RecordsPost
-   *     description: Creates a new record based on a configured form. Accepts either form-encoded or JSON data.
+   *     description: >
+   *       Creates a new record based on a configured [JSON form](/building/reference/app-settings/forms/).
+   *       Accepts either form-encoded or JSON data.
    *     tags: [SMS]
    *     x-permissions:
    *       hasAll: [can_create_records]
