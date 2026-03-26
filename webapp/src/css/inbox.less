@@ -998,11 +998,6 @@ mm-fast-action-button.mobile-only {
       .page {
         max-width: 100%;
       }
-      .page:not(.target-aggregates) {
-        > div {
-          margin: 0 auto;
-        }
-      }
 
       .target-aggregates {
         /* position this absolute div in the horizontal center */
@@ -1018,6 +1013,16 @@ mm-fast-action-button.mobile-only {
         &.sidebar-open {
           margin-right: 0;
           z-index: initial;
+        }
+      }
+
+      .targets-page {
+        &.sidebar-open {
+          display: flex;
+        }
+
+        .sidebar-filter-wrapper {
+          position: inherit;
         }
       }
     }
@@ -1113,19 +1118,6 @@ mm-search-bar {
       &:active {
         box-shadow: none;
       }
-
-      .open-filter-label {
-        margin-right: 6px;
-      }
-
-      .filter-counter {
-        color: @chip-text-color;
-        font-size: @font-XXXXS;
-        background: @chip-background-color;
-        border-radius: 50%;
-        padding: 1px 5px;
-        vertical-align: middle;
-      }
     }
 
     .fa {
@@ -1135,6 +1127,34 @@ mm-search-bar {
 
     &.disabled .search-bar-left-icon .fa {
       color: @inactive-color;
+    }
+  }
+}
+
+mm-analytics-filters .analytics-sidebar-filter {
+  display: flex;
+  align-items: center;
+  padding-right: 5px;
+
+  .btn.open-filter {
+    position: relative;
+  }
+}
+
+mm-search-bar .mm-search-bar-container,
+mm-analytics-filters .analytics-sidebar-filter {
+  .btn.open-filter {
+    .open-filter-label {
+      margin-right: 6px;
+    }
+
+    .filter-counter {
+      color: @chip-text-color;
+      font-size: @font-XXXXS;
+      background: @chip-background-color;
+      border-radius: 50%;
+      padding: 1px 5px;
+      vertical-align: middle;
     }
   }
 }
@@ -1774,7 +1794,6 @@ mm-sidebar-menu .mat-sidenav-container {
     .header,
     .app-menu-button,
     .ellipsis-title,
-    mm-analytics-filters,
     mm-multiselect-bar,
     mm-search-bar {
       display: none;
@@ -1887,16 +1906,18 @@ mm-sidebar-menu .mat-sidenav-container {
       .search-bar-left-icon {
         margin: 0 12px 0 0;
       }
+    }
+  }
+  mm-search-bar .mm-search-bar-container,
+  mm-analytics-filters .analytics-sidebar-filter {
+    .btn.open-filter {
+      margin: 0;
+      padding: 0 5px;
 
-      .btn.open-filter {
-        margin: 0;
-        padding: 0 5px;
-
-        .filter-counter {
-          position: absolute;
-          top: -6px;
-          right: 1px;
-        }
+      .filter-counter {
+        position: absolute;
+        top: -6px;
+        right: 1px;
       }
     }
   }

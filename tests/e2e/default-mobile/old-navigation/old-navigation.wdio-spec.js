@@ -10,6 +10,7 @@ const taskPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const targetAggregatesPage = require('@page-objects/default/targets/target-aggregates.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Old Navigation', () => {
@@ -40,14 +41,13 @@ describe('Old Navigation', () => {
     const permissions = settings.permissions;
     permissions.can_aggregate_targets = offlineUser.roles;
     permissions.can_view_old_navigation = offlineUser.roles;
-    await utils.updateSettings({ tasks, permissions }, true);
+    await utils.updateSettings({ tasks, permissions }, { ignoreReload: true });
 
     await loginPage.login({username: offlineUser.username, password: offlineUser.password, loadPage: false});
     await oldNavigationPage.waitForPageLoaded();
   });
 
   after(async () => {
-    await utils.revertSettings(true);
     await utils.deleteUsers([offlineUser]);
   });
 
@@ -55,7 +55,7 @@ describe('Old Navigation', () => {
     const message = 'Navigations test';
     await messagesPage.sendMessageOnMobile(message, person.name, person.phone );
     await messagesPage.openMessage(person._id);
-
+    await commonPage.waitForLoaders();
     const { name } = await oldNavigationPage.getHeaderTitleOnMobile();
     expect(name).to.equal(person.name);
 
@@ -71,6 +71,7 @@ describe('Old Navigation', () => {
       pregnancyReport._id,
       '~pregnancy-danger-sign-follow-up~anc.pregnancy_danger_sign_followup'
     );
+    await commonPage.waitForLoaders();
     const { name } = await oldNavigationPage.getHeaderTitleOnMobile();
     expect(name).to.equal('Pregnancy danger sign follow-up');
   });
@@ -78,6 +79,7 @@ describe('Old Navigation', () => {
   it('should navigate to the Reports section and open the first report listed', async () => {
     await oldNavigationPage.goToReports();
     await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.firstReport());
+    await commonPage.waitForLoaders();
     const openReportInfo = await reportsPage.getOpenReportInfo();
     expect(openReportInfo.patientName).to.equal(person.name);
     expect(openReportInfo.reportName).to.equal('Pregnancy registration');
@@ -86,6 +88,7 @@ describe('Old Navigation', () => {
   it('should navigate to the People section and open the created Health Center', async () => {
     await oldNavigationPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
+    await commonPage.waitForLoaders();
     expect(await contactPage.getContactInfoName()).to.equal(healthCenter.name);
   });
 

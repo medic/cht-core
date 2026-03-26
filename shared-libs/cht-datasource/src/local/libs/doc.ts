@@ -1,30 +1,52 @@
 import logger from '@medic/logger';
-import { Nullable, Page } from '../../libs/core';
+import { DataObject, Nullable, Page } from '../../libs/core';
 import { Doc, isDoc } from '../../libs/doc';
 
 /** @internal */
-export const getDocById = (db: PouchDB.Database<Doc>) => async (uuid: string): Promise<Nullable<Doc>> => db
-  .get(uuid)
+export const getDocById = (db: PouchDB.Database<Doc>) => async (id: string): Promise<Nullable<Doc>> => db
+  .get(id)
   .then(doc => isDoc(doc) ? doc : null)
   .catch((err: unknown) => {
     if ((err as PouchDB.Core.Error).status === 404) {
       return null;
     }
 
-    logger.error(`Failed to fetch doc with id [${uuid}]`, err);
+    logger.error(`Failed to fetch doc with id [${id}]`, err);
     throw err;
   });
 
-/** @internal */
-export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (uuids: string[]): Promise<Doc[]> => {
-  const keys = Array.from(new Set(uuids.filter(uuid => uuid.length)));
-  if (!keys.length) {
-    return [];
+/**
+ * Retrieves the identified documents from the database. The order of the provided array is preserved in the returned
+ * array of docs regardless of whether all the docs exist or not (or if all the provided ids are valued or not).
+ * @internal
+ */
+export const getDocsByIds = (db: PouchDB.Database<Doc>) => async (
+  ids: (string | undefined)[]
+): Promise<Nullable<Doc>[]> => {
+  if (!ids.some(Boolean)) {
+    return Array.from({ length: ids.length }, () => null);
   }
-  const response = await db.allDocs({ keys, include_docs: true });
+  const response = await db.allDocs({ keys: ids.map(id => id ?? ''), include_docs: true });
   return response.rows
     .map(({ doc }) => doc)
-    .filter((doc): doc is Doc => isDoc(doc));
+    .map(doc => isDoc(doc) ? doc : null);
+};
+
+/** @internal */
+export const getDocIdsByIdRange = (db: PouchDB.Database<Doc>) => async (
+  startkey: string,
+  endkey: string,
+  limit?: number,
+  skip = 0
+): Promise<string[]> => {
+  const response = await db.allDocs({
+    startkey,
+    endkey,
+    include_docs: false,
+    limit,
+    skip,
+  });
+  return response.rows.map(({ id }) => id);
 };
 
 const queryDocs = (
@@ -66,7 +88,7 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
-const queryDocUuids = (
+const queryDocIds = (
   db: PouchDB.Database<Doc>,
   view: string,
   options: PouchDB.Query.Options<Doc, Record<string, unknown>>
@@ -75,7 +97,7 @@ const queryDocUuids = (
   .then(({ rows }) => rows.map(({ id }) => id as string));
 
 /** @internal */
-export const queryDocUuidsByRange = (
+export const queryDocIdsByRange = (
   db: PouchDB.Database<Doc>,
   view: string
 ) => async (
@@ -83,7 +105,7 @@ export const queryDocUuidsByRange = (
   endkey: unknown,
   limit?: number,
   skip = 0
-): Promise<string[]> => queryDocUuids(
+): Promise<string[]> => queryDocIds(
   db,
   view,
   {
@@ -96,14 +118,14 @@ export const queryDocUuidsByRange = (
 );
 
 /** @internal */
-export const queryDocUuidsByKey = (
+export const queryDocIdsByKey = (
   db: PouchDB.Database<Doc>,
   view: string
 ) => async (
   key: unknown,
   limit: number,
   skip: number
-): Promise<string[]> => queryDocUuids(db, view, { include_docs: false, reduce: false, key, limit, skip });
+): Promise<string[]> => queryDocIds(db, view, { include_docs: false, reduce: false, key, limit, skip });
 
 /**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
@@ -115,7 +137,7 @@ export const queryDocUuidsByKey = (
  */
 export const fetchAndFilter = <T>(
   getFunction: (limit: number, skip: number) => Promise<Nullable<T>[]>,
-  filterFunction: (doc: Nullable<T>, uuid?: string) => boolean,
+  filterFunction: (doc: Nullable<T>, id?: string) => boolean,
   limit: number,
 ): typeof recursionInner => {
   const recursionInner = async (
@@ -127,7 +149,7 @@ export const fetchAndFilter = <T>(
     const noMoreResults = docs.length < currentLimit;
     const newDocs = docs.filter((doc): doc is T => filterFunction(doc));
     const overFetchCount = currentDocs.length + newDocs.length - limit || 0;
-    const totalDocs = [...currentDocs, ...newDocs].slice(0, limit);
+    const totalDocs = [ ...currentDocs, ...newDocs ].slice(0, limit);
 
     if (noMoreResults) {
       return { data: totalDocs, cursor: null };
@@ -155,18 +177,18 @@ export const fetchAndFilter = <T>(
 };
 
 /** @internal */
-export const fetchAndFilterUuids = (
+export const fetchAndFilterIds = (
   getFunction: (limit: number, skip: number) => Promise<string[]>,
   limit: number,
 ): ReturnType<typeof fetchAndFilter<string>> => {
-  const uuidSet = new Set<string>();
-  const filterFn = (uuid: Nullable<string>): boolean => {
-    if (!uuid) {
+  const idSet = new Set<string>();
+  const filterFn = (id: Nullable<string>): boolean => {
+    if (!id) {
       return false;
     }
-    const { size } = uuidSet;
-    uuidSet.add(uuid);
-    return uuidSet.size !== size;
+    const { size } = idSet;
+    idSet.add(id);
+    return idSet.size !== size;
   };
 
   return fetchAndFilter(
@@ -174,4 +196,29 @@ export const fetchAndFilterUuids = (
     filterFn,
     limit
   );
+};
+
+/** @internal */
+export const createDoc = (db: PouchDB.Database) => async (data: DataObject): Promise<Doc> => {
+  const { id, rev, ok } = await db.post(data);
+  if (!ok) {
+    throw new Error('Error creating document.');
+  }
+  return {
+    ...data,
+    _id: id,
+    _rev: rev
+  };
+};
+
+/** @internal */
+export const updateDoc = (db: PouchDB.Database<Doc>) => async (data: Doc): Promise<Doc> => {
+  const { ok, rev } = await db.put(data);
+  if (!ok) {
+    throw new Error('Error updating document.');
+  }
+  return {
+    ...data,
+    _rev: rev
+  };
 };

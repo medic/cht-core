@@ -1,5 +1,5 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilterUuids, getDocById, queryDocUuidsByKey, queryDocUuidsByRange } from './libs/doc';
+import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
@@ -10,7 +10,7 @@ import {
 } from '../qualifier';
 import * as Contact from '../contact';
 import { DataObject, Nullable, Page } from '../libs/core';
-import { Doc } from '../libs/doc';
+import { Doc, isDoc } from '../libs/doc';
 import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { InvalidArgumentError } from '../libs/error';
@@ -27,10 +27,10 @@ const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQual
 };
 
 const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
-  const queryViewFreetextByKey = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-  const queryViewFreetextByRange = queryDocUuidsByRange(medicDb, 'medic-offline-freetext/contacts_by_freetext');
-  const queryViewTypeFreetextByKey = queryDocUuidsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
-  const queryViewTypeFreetextByRange = queryDocUuidsByRange(
+  const queryViewFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_freetext');
+  const queryViewFreetextByRange = queryDocIdsByRange(medicDb, 'medic-offline-freetext/contacts_by_freetext');
+  const queryViewTypeFreetextByKey = queryDocIdsByKey(medicDb, 'medic-offline-freetext/contacts_by_type_freetext');
+  const queryViewTypeFreetextByRange = queryDocIdsByRange(
     medicDb, 'medic-offline-freetext/contacts_by_type_freetext'
   );
 
@@ -62,28 +62,24 @@ const getOfflineFreetextQueryFn = (medicDb: PouchDB.Database<Doc>) => {
 
 /** @internal */
 export namespace v1 {
-  const isContact =
-    (settings: SettingsService) => (doc: Nullable<Doc>, uuid?: string): doc is Contact.v1.Contact => {
-      if (!doc) {
-        if (uuid) {
-          logger.warn(`No contact found for identifier [${uuid}].`);
-        }
-        return false;
-      }
-
-      if (!contactTypeUtils.isContact(settings.getAll(), doc)) {
-        logger.warn(`Document [${doc._id}] is not a valid contact.`);
-        return false;
-      }
-      return true;
-    };
+  /** @internal */
+  export const isContact = (
+    settings: SettingsService,
+    doc?: Nullable<Doc>
+  ): doc is Contact.v1.Contact => {
+    if (!isDoc(doc)) {
+      return false;
+    }
+    return contactTypeUtils.isContact(settings.getAll(), doc);
+  };
 
   /** @internal */
   export const get = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocById = getDocById(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.Contact>> => {
       const doc = await getMedicDocById(identifier.uuid);
-      if (!isContact(settings)(doc, identifier.uuid)) {
+      if (!isContact(settings, doc)) {
+        logger.warn(`Document [${identifier.uuid}] is not a valid contact.`);
         return null;
       }
 
@@ -96,7 +92,8 @@ export namespace v1 {
     const fetchHydratedMedicDoc = fetchHydratedDoc(medicDb);
     return async (identifier: UuidQualifier): Promise<Nullable<Contact.v1.ContactWithLineage>> => {
       const contact = await fetchHydratedMedicDoc(identifier.uuid);
-      if (!isContact(settings)(contact, identifier.uuid)) {
+      if (!isContact(settings, contact)) {
+        logger.warn(`Document [${identifier.uuid}] is not a valid contact.`);
         return null;
       }
 
@@ -107,7 +104,7 @@ export namespace v1 {
   /** @internal */
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
-    const queryViewByType = queryDocUuidsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
@@ -124,7 +121,7 @@ export namespace v1 {
         // Simple contact type query
         const skip = validateCursor(cursor);
         const getPageFn = (limit: number, skip: number) => queryViewByType([qualifier.contactType], limit, skip);
-        return await fetchAndFilterUuids(getPageFn, limit)(limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 
       const freetextQualifier = normalizeFreetextQualifier(qualifier);
@@ -136,7 +133,7 @@ export namespace v1 {
       // Use client-side offline freetext views.
       const skip = validateCursor(cursor);
       const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
-      return fetchAndFilterUuids(getPageFn, limit)(limit, skip);
+      return fetchAndFilterIds(getPageFn, limit)(limit, skip);
     };
   };
 }

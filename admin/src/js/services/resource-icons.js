@@ -12,7 +12,7 @@ angular.module('inboxServices').factory('ResourceIcons',
     'ngInject';
 
     const CSS_CLASS = ['resource-icon', 'header-logo', 'partner-image'];
-    const ICON_DOC_IDS = [DOC_IDS.RESOURCES, 'branding', 'partners'];
+    const ICON_DOC_IDS = [DOC_IDS.RESOURCES, 'branding', DOC_IDS.PARTNERS];
 
     const cache = {
       resources: {

@@ -1,24 +1,51 @@
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
-import * as Place from '../../src/remote/place';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 
 describe('remote place', () => {
   const remoteContext = {} as RemoteDataContext;
+  const sandbox = sinon.createSandbox();
+  const postResourceOuter = sandbox.stub();
+  const putResourceOuter = sandbox.stub();
+
+  let Place: typeof import('../../src/remote/place');
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
+  let postResourceInner: SinonStub;
+  let putResourceInner: SinonStub;
+
+  before(() => {
+    sinon
+      .stub(RemoteEnv, 'postResource')
+      .withArgs('api/v1/place')
+      .returns(postResourceOuter);
+    sinon
+      .stub(RemoteEnv, 'putResource')
+      .withArgs('api/v1/place')
+      .returns(putResourceOuter);
+
+    Reflect.deleteProperty(require.cache, require.resolve('../../src/remote/place'));
+    Place = require('../../src/remote/place');
+  });
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postResourceInner = sinon.stub();
+    postResourceOuter.returns(postResourceInner);
+    putResourceInner = sinon.stub();
+    putResourceOuter.returns(putResourceInner);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    sandbox.reset();
+  });
 
   describe('v1', () => {
     const identifier = { uuid: 'uuid' } as const;
@@ -81,7 +108,7 @@ describe('remote place', () => {
       };
 
       it('returns places', async () => {
-        const doc = [{ type: 'place' }, {type: 'place'}];
+        const doc = [{ type: 'place' }, { type: 'place' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -100,6 +127,57 @@ describe('remote place', () => {
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/place')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Place.v1.getPage(remoteContext)(personTypeQualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          type: placeType,
+        })).to.be.true;
+      });
+    });
+
+    describe('createPlace', () => {
+      it('creates a place for a valid input', async () => {
+        const placeInput = {
+          type: 'place',
+          name: 'user-1',
+          parent: 'p1'
+        };
+        const expectedDoc = { ...placeInput, _id: '2', _rev: '1' };
+        postResourceInner.resolves(expectedDoc);
+
+        const result = await Place.v1.create(remoteContext)(placeInput);
+
+        expect(result).to.deep.equal(expectedDoc);
+        expect(postResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
+      });
+    });
+
+    describe('update', () => {
+      it('updates a place for a valid input', async () => {
+        const placeInput = {
+          type: 'place',
+          name: 'user-1',
+          parent: 'p1',
+          _id: '1',
+          _rev: '1'
+        };
+        const expectedDoc = { ...placeInput, _id: '1', _rev: '2' };
+        putResourceInner.resolves(expectedDoc);
+
+        const result = await Place.v1.update(remoteContext)(placeInput);
+
+        expect(result).to.deep.equal(expectedDoc);
+        expect(putResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(putResourceInner.calledOnceWithExactly(placeInput)).to.be.true;
       });
     });
   });

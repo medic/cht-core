@@ -1,8 +1,15 @@
 import { expect } from 'chai';
-import { normalizeFreetextQualifier, validateCursor } from '../../../src/local/libs/core';
+import sinon from 'sinon';
+import {
+  assertFieldsUnchanged,
+  getReportedDateTimestamp, normalizeFreetextQualifier,
+  validateCursor
+} from '../../../src/local/libs/core';
 import { InvalidArgumentError } from '../../../src';
 
 describe('local core lib', () => {
+  afterEach(() => sinon.restore());
+
   describe('validateCursor', () => {
     it('should return the numeric value when given a valid numeric string', () => {
       expect(validateCursor('0')).to.equal(0);
@@ -78,6 +85,48 @@ describe('local core lib', () => {
     it('should handle already normalized values', () => {
       const result = normalizeFreetextQualifier({ freetext: 'already:normalized' });
       expect(result).to.deep.equal({ freetext: 'already:normalized' });
+    });
+  });
+
+  describe('assertFieldsUnchanged', () => {
+    it('should not throw when specified fields are unchanged', () => {
+      const original = { _id: '123', _rev: '1', name: 'test' };
+      const updated = { _id: '123', _rev: '1', name: 'updated' };
+
+      expect(() => assertFieldsUnchanged(original, updated, ['_id', '_rev'])).to.not.throw();
+    });
+
+    it('should throw InvalidArgumentError when a field has changed', () => {
+      const original = { _id: '123', _rev: '1' };
+      const updated = { _id: '456', _rev: '2' };
+
+      expect(() => assertFieldsUnchanged(original, updated, ['_id', '_rev']))
+        .to.throw(InvalidArgumentError, 'The [_id,_rev] fields must not be changed.');
+    });
+  });
+
+  describe('getReportedDateTimestamp', () => {
+    it('should return timestamp from a valid date string', () => {
+      const result = getReportedDateTimestamp('2023-06-15T12:00:00.000Z');
+      expect(result).to.equal(new Date('2023-06-15T12:00:00.000Z').getTime());
+    });
+
+    it('should return timestamp from a numeric value', () => {
+      const timestamp = 1687003200000;
+      const result = getReportedDateTimestamp(timestamp);
+      expect(result).to.equal(timestamp);
+    });
+
+    it('should return Date.now() when reportedDate is not provided', () => {
+      const dateNow = sinon.stub(Date, 'now').returns(1234567890000);
+      const result = getReportedDateTimestamp();
+      expect(result).to.equal(1234567890000);
+      expect(dateNow.calledOnce).to.be.true;
+    });
+
+    it('should throw InvalidArgumentError for invalid date string', () => {
+      expect(() => getReportedDateTimestamp('invalid-date'))
+        .to.throw(InvalidArgumentError, 'Invalid date value [invalid-date].');
     });
   });
 });

@@ -75,7 +75,7 @@ describe('validate doc update', () => {
       'translations': { type: DOC_TYPES.TRANSLATIONS },
       'extension-libs': { _id: 'extension-libs' },
       'header logo': { _id: 'branding' },
-      'partners': { _id: 'partners' }
+      'partners': { _id: DOC_IDS.PARTNERS },
     }).forEach(([ name, doc ]) => {
       it(name, () => {
         allowedOnServer(adminCtx, doc);
@@ -111,8 +111,8 @@ describe('validate doc update', () => {
       },
       {
         name: 'partners',
-        oldDoc: { _id: 'partners' },
-        newDoc: { _id: 'partners', field: 'mine' }
+        oldDoc: { _id: DOC_IDS.PARTNERS },
+        newDoc: { _id: DOC_IDS.PARTNERS, field: 'mine' }
       },
     ].forEach(({ name, oldDoc, newDoc }) => {
       it(name, () => {

@@ -1,6 +1,6 @@
+import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
-import * as RemoteEnv from '../../src/remote/libs/data-context';
 import * as Contact from '../../src/remote/contact';
 import { expect } from 'chai';
 
@@ -21,7 +21,7 @@ describe('remote contact', () => {
   afterEach(() => sinon.restore());
 
   describe('v1', () => {
-    const identifier = {uuid: 'uuid'} as const;
+    const identifier = { uuid: 'uuid' } as const;
 
     describe('get', () => {
       it('returns a contact by UUID', async () => {
@@ -86,7 +86,7 @@ describe('remote contact', () => {
       };
 
       it('returns array of contact identifiers', async () => {
-        const doc = [{ type: 'person' }, {type: 'person'}];
+        const doc = [{ type: 'person' }, { type: 'person' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -105,6 +105,50 @@ describe('remote contact', () => {
         expect(result).to.deep.equal([]);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
         expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(qualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          freetext: freetext,
+          type: contactType,
+        })).to.be.true;
+      });
+
+      it('omits type param when qualifier is freetext-only', async () => {
+        const freetextOnly = { freetext };
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(freetextOnly, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          freetext,
+        })).to.be.true;
+      });
+
+      it('omits freetext param when qualifier is contactType-only', async () => {
+        const typeOnly = { contactType };
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getUuidsPage(remoteContext)(typeOnly, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          type: contactType,
+        })).to.be.true;
       });
     });
   });

@@ -152,6 +152,23 @@ describe('TaskUtils shared lib - setTaskState function', function() {
       .to.deep.equal({ state: 'oldState', state_details: 'oldDetails', timestamp: '000' });
   });
 
+  it('should not add history when state, details, and gatewayRef all match', () => {
+    const task = {
+      state: 'sent',
+      state_details: 'details',
+      gateway_ref: 'abc',
+      state_history: [{
+        state: 'sent',
+        state_details: 'details',
+        timestamp: '111'
+      }]
+    };
+
+    const result = taskUtils.setTaskState(task, 'sent', 'details', 'abc');
+    chai.expect(result).to.equal(false);
+    chai.expect(task.state_history.length).to.equal(1);
+  });
+
   it('should add the gateway_ref when given', () => {
     const task = {};
     const result = taskUtils.setTaskState(task, 'newState', 'details', 'abc');

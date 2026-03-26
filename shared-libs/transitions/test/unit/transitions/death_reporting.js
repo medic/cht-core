@@ -25,6 +25,28 @@ describe('death_reporting', () => {
     done();
   });
 
+  describe('init', () => {
+    it('should throw when mark_deceased_forms is not configured', () => {
+      config.get.returns({});
+      expect(() => transition.init()).to.throw('Configuration error');
+    });
+
+    it('should throw when mark_deceased_forms is empty array', () => {
+      config.get.returns({ mark_deceased_forms: [] });
+      expect(() => transition.init()).to.throw('Configuration error');
+    });
+
+    it('should throw when mark_deceased_forms is not an array', () => {
+      config.get.returns({ mark_deceased_forms: 'not-array' });
+      expect(() => transition.init()).to.throw('Configuration error');
+    });
+
+    it('should not throw when mark_deceased_forms is valid', () => {
+      config.get.returns({ mark_deceased_forms: ['form-a'] });
+      expect(() => transition.init()).to.not.throw();
+    });
+  });
+
   describe('onMatch', () => {
     let getPerson;
 

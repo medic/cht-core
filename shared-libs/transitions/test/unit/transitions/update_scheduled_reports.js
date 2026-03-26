@@ -181,6 +181,93 @@ describe('update_scheduled_reports', () => {
       });
     });
 
+    it('should not query when parent type is not a leaf place type', () => {
+      const doc = {
+        type: 'data_record',
+        form: 'form',
+        contact: { parent: { _id: 'hc1', type: CONTACT_TYPES.HEALTH_CENTER } },
+        fields: {
+          week: 9,
+          year: 2018
+        }
+      };
+      sinon.stub(db.medic, 'query');
+
+      return transition._getDuplicates(doc).then(result => {
+        assert.equal(result, undefined);
+        assert.equal(db.medic.query.callCount, 0);
+      });
+    });
+
+    it('should resolve when config.get returns null for contact_types', () => {
+      config.get.returns(null);
+      const doc = {
+        type: 'data_record',
+        form: 'form',
+        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        fields: {
+          week: 9,
+          year: 2018
+        }
+      };
+      sinon.stub(db.medic, 'query');
+
+      return transition._getDuplicates(doc).then(result => {
+        assert.equal(result, undefined);
+        assert.equal(db.medic.query.callCount, 0);
+      });
+    });
+
+    it('use week view when doc has week_number property', () => {
+      const doc = {
+        type: 'data_record',
+        form: 'form',
+        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        fields: {
+          week_number: 15,
+          year: 2018
+        }
+      };
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ doc }] });
+      return transition._getDuplicates(doc).then(result => {
+        assert.equal(
+          db.medic.query.args[0][0],
+          'medic/reports_by_form_year_week_parent_reported_date'
+        );
+        assert.deepEqual(db.medic.query.args[0][1], {
+          include_docs: true,
+          startkey: ['form', 2018, 15, 'clinic'],
+          endkey: ['form', 2018, 15, 'clinic', {}],
+        });
+        assert.deepEqual(result, [{ doc }]);
+      });
+    });
+
+    it('use month view when doc has month_num property', () => {
+      const doc = {
+        type: 'data_record',
+        form: 'form',
+        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        fields: {
+          month_num: 7,
+          year: 2018
+        }
+      };
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ doc }] });
+      return transition._getDuplicates(doc).then(result => {
+        assert.equal(
+          db.medic.query.args[0][0],
+          'medic/reports_by_form_year_month_parent_reported_date'
+        );
+        assert.deepEqual(db.medic.query.args[0][1], {
+          include_docs: true,
+          startkey: ['form', 2018, 7, 'clinic'],
+          endkey: ['form', 2018, 7, 'clinic', {}],
+        });
+        assert.deepEqual(result, [{ doc }]);
+      });
+    });
+
     it('use week view when doc has week property', () => {
       const doc = {
         type: 'data_record',
@@ -440,6 +527,25 @@ describe('update_scheduled_reports', () => {
         assert.equal(result, undefined);
         assert.equal(db.medic.bulkDocs.callCount, 1);
         assert.equal(db.medic.bulkDocs.args[0][0].length, 2);
+      });
+    });
+
+    it('should resolve without querying when doc has neither week nor month fields', () => {
+      sinon.stub(db.medic, 'query');
+      const change = {
+        doc: {
+          _id: 'xyz',
+          form: 'z',
+          contact: { parent: { _id: 'clinic', type: 'clinic' } },
+          fields: {
+            year: 2013,
+          },
+          reported_date: 200,
+        },
+      };
+      return transition.onMatch(change).then(result => {
+        assert.isUndefined(result);
+        assert.equal(db.medic.query.callCount, 0);
       });
     });
   });

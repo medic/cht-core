@@ -5,9 +5,8 @@ const logger = require('@medic/logger');
 const db = require('../../../src/db');
 const { stub } = require('sinon');
 const outbound = require('@medic/outbound');
+const infodocLib = require('@medic/infodoc');
 const markForOutbound = require('../../../src/transitions/mark_for_outbound');
-
-config.init();
 
 describe('mark for outbound', () => {
   describe('onMatch', () => {
@@ -16,6 +15,10 @@ describe('mark for outbound', () => {
     let clock;
 
     beforeEach(() => {
+      config.init({
+        get: sinon.stub(),
+        getAll: sinon.stub().returns({}),
+      });
       change = {
         doc: { type: RECORD_NAME, id: 'RANDOM_UUID' },
         info: {},
@@ -58,6 +61,12 @@ describe('mark for outbound', () => {
         .onMatch(change)
         .then(() => {
           assert.equal(outbound.send.callCount, 1);
+          assert.deepEqual(outbound.send.args[0], [
+            configDoc['test-push-1'],
+            'test-push-1',
+            change.doc,
+            {}
+          ]);
           assert.equal(db.sentinel.put.callCount, 1);
           assert.equal(db.sentinel.get.callCount, 2);
           assert.equal(logger.info.callCount, 1);
@@ -89,6 +98,19 @@ describe('mark for outbound', () => {
         .onMatch(change)
         .then(() => {
           assert.equal(outbound.send.callCount, 2);
+          assert.deepEqual(outbound.send.args[0], [
+            configDoc['test-push-1'],
+            'test-push-1',
+            change.doc,
+            {}
+          ]);
+
+          assert.deepEqual(outbound.send.args[1], [
+            configDoc['test-push-3'],
+            'test-push-3',
+            change.doc,
+            {}
+          ]);
           assert.equal(db.sentinel.put.callCount, 1);
           assert.equal(db.sentinel.get.callCount, 1);
           assert.equal(logger.info.callCount, 1);
@@ -99,6 +121,108 @@ describe('mark for outbound', () => {
           assert.isTrue(db.sentinel.put.args[0][0].queue.includes('test-push-2'));
           assert.isTrue(db.sentinel.put.args[0][0].queue.includes('test-push-3'));
         });
+    });
+
+    it('returns false when no relevant configs exist', () => {
+      const configDoc = {
+        'test-push-1': {
+          relevant_to: `doc.type === 'unknown_type'`,
+        },
+      };
+
+      config.get.returns(configDoc);
+
+      return markForOutbound
+        .onMatch(change)
+        .then(result => {
+          assert.equal(result, false);
+          assert.equal(outbound.send.callCount, 0);
+          assert.equal(db.sentinel.get.callCount, 0);
+        });
+    });
+
+    it('handles config.get returning null for outbound config in relevantTo', () => {
+      config.get.returns(null);
+
+      return markForOutbound
+        .onMatch(change)
+        .then(result => {
+          assert.equal(result, false);
+          assert.equal(outbound.send.callCount, 0);
+        });
+    });
+
+    it('saves completed tasks when outbound send succeeds', () => {
+      const configDoc = {
+        'test-push-1': {
+          relevant_to: `doc.type === '${RECORD_NAME}'`,
+        },
+      };
+
+      change.info = {
+        doc_id: 'test-doc-id',
+        completed_tasks: ['task1'],
+      };
+
+      config.get.returns(configDoc);
+      outbound.send.resolves(true);
+      sinon.stub(infodocLib, 'saveCompletedTasks').resolves();
+
+      return markForOutbound
+        .onMatch(change)
+        .then(result => {
+          assert.equal(result, false);
+          assert.equal(outbound.send.callCount, 1);
+          assert.deepEqual(outbound.send.args[0], [
+            configDoc['test-push-1'],
+            'test-push-1',
+            change.doc,
+            change.info,
+          ]);
+
+          assert.equal(infodocLib.saveCompletedTasks.callCount, 1);
+          assert.deepEqual(infodocLib.saveCompletedTasks.args[0], [
+            'test-doc-id',
+            change.info,
+            ['task1'],
+          ]);
+        });
+    });
+
+    it('throws non-404 errors from sentinel get', () => {
+      const configDoc = {
+        'test-push-1': {
+          relevant_to: `doc.type === '${RECORD_NAME}'`,
+        },
+      };
+
+      config.get.returns(configDoc);
+      outbound.send.rejects(new Error('send failed'));
+      db.sentinel.get.rejects({ status: 500, message: 'server error' });
+
+      return markForOutbound
+        .onMatch(change)
+        .then(() => assert.fail('Should have thrown'))
+        .catch(err => {
+          assert.equal(err.status, 500);
+        });
+    });
+  });
+
+  describe('filter', () => {
+    it('returns true when outbound config has entries', () => {
+      config.get.returns({ 'push-1': {} });
+      assert.isTrue(markForOutbound.filter({}));
+    });
+
+    it('returns false when outbound config is empty', () => {
+      config.get.returns({});
+      assert.isFalse(markForOutbound.filter({}));
+    });
+
+    it('returns false when outbound config is undefined', () => {
+      config.get.returns(undefined);
+      assert.isFalse(markForOutbound.filter({}));
     });
   });
 });

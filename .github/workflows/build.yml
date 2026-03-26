@@ -230,24 +230,24 @@ jobs:
 
   tests:
     needs: build
-    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '107' && '-minimum-browser' || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     
     env:
       CHROME_VERSION: ${{ matrix.chrome-version }}
-      JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '90' && '-minimum-browser' || '' }}
+      JOB_NAME: ${{ matrix.cmd }}-${{ matrix.suite || '' }}${{ matrix.chrome-version == '107' && '-minimum-browser' || '' }}
 
     strategy:
       fail-fast: false
       matrix:
         cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
-        chrome-version: ['90', 'latest']
+        chrome-version: ['107', 'latest']
         suite: [all]
         include:
           - cmd: ci-webdriver-default
             suite: core
-            chrome-version: 90
+            chrome-version: 107
           - cmd: ci-webdriver-default
             suite: core
             chrome-version: latest
@@ -255,7 +255,7 @@ jobs:
             suite: data
           - cmd: ci-webdriver-default
             suite: enketo
-            chrome-version: 90
+            chrome-version: 107
           - cmd: ci-webdriver-default
             suite: enketo
             chrome-version: latest
@@ -263,13 +263,13 @@ jobs:
             suite: lowLevel
           - cmd: ci-webdriver-default
             suite: workflows
-        exclude: # temporary until all suites run on Chrome 90
+        exclude: # temporary until all suites run on Chrome 107
           - cmd: ci-integration-all
-            chrome-version: 90
+            chrome-version: 107
           - cmd: ci-integration-sentinel
-            chrome-version: 90
+            chrome-version: 107
           - cmd: ci-webdriver-default-mobile
-            chrome-version: 90
+            chrome-version: 107
     steps:
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -318,26 +318,26 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci
 
-    - name: Cache Chrome 90 Installer
-      if: ${{ matrix.chrome-version == '90' }}
+    - name: Cache Chrome 107 Installer
+      if: ${{ matrix.chrome-version == '107' }}
       id: cache-chrome
       uses: actions/cache@v4
       with:
-        path: /tmp/chrome90
-        key: chrome90-${{ runner.os }}-90.0.4430.72
+        path: /tmp/chrome107
+        key: chrome107-${{ runner.os }}-107.0.5304.87
         restore-keys: |
-          chrome90-${{ runner.os }}-
-          chrome90-
-    - name: Download Chrome 90
-      if: ${{ matrix.chrome-version == '90' && steps.cache-chrome.outputs.cache-hit != 'true' }}
+          chrome107-${{ runner.os }}-
+          chrome107-
+    - name: Download Chrome 107
+      if: ${{ matrix.chrome-version == '107' && steps.cache-chrome.outputs.cache-hit != 'true' }}
       run: |
-        mkdir -p /tmp/chrome90
-        wget -O "/tmp/chrome90/google-chrome-stable_current_amd64.deb" https://www.slimjet.com/chrome/download-chrome.php?file=files/90.0.4430.72/google-chrome-stable_current_amd64.deb
-    - name: Install Chrome 90
-      if: ${{ matrix.chrome-version == '90' }}
+        mkdir -p /tmp/chrome107
+        wget -O "/tmp/chrome107/google-chrome-stable_current_amd64.deb" https://mirror.cs.uchicago.edu/google-chrome/pool/main/g/google-chrome-stable/google-chrome-stable_107.0.5304.87-1_amd64.deb
+    - name: Install Chrome 107
+      if: ${{ matrix.chrome-version == '107' }}
       run: |
-        sudo dpkg -i "/tmp/chrome90/google-chrome-stable_current_amd64.deb"
-        npm install chromedriver@^90.0.1
+        sudo dpkg -i "/tmp/chrome107/google-chrome-stable_current_amd64.deb"
+        npm install chromedriver@^107.0.3
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 

@@ -9,6 +9,21 @@ export type Nullable<T> = T | null;
 export const isNotNull = <T>(value: T | null): value is T => value !== null;
 
 /**
+ * A string representation of a date value (optionally including the time). Valid values are supported parameters
+ * for the `Date.parse()` function and the `Date()` constructor.
+ * @see https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date-time-string-format
+ */
+export type DateTimeString = string; // NOSONAR
+
+/** @internal */
+export const isDateTimeString = (value: unknown): value is DateTimeString => {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  return !Number.isNaN(Date.parse(value));
+};
+
+/**
  * An array that is guaranteed to have at least one element.
  */
 export type NonEmptyArray<T> = [T, ...T[]];
@@ -51,6 +66,17 @@ export const isDataObject = (value: unknown): value is DataObject => {
     .every((v) => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertDataObject (
+  value: unknown,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is DataObject {
+  if (!isDataObject(value)) {
+    throw new ErrorClass('Not a valid JSON object value.');
+  }
+}
+
 /**
  * Ideally, this function should only be used at the edge of this library (when returning potentially cross-referenced
  * data objects) to avoid unintended consequences if any of the objects are edited in-place. This function should not
@@ -84,20 +110,70 @@ export const isRecord = (value: unknown): value is Record<string, unknown> => {
   return value !== null && typeof value === 'object';
 };
 
+type FieldType = 'string' | 'number' | 'boolean' | 'function' | 'object';
+interface FieldTypeToValue {
+  string: string
+  number: number
+  boolean: boolean
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  function: Function,
+  object: object
+}
+interface FieldDescriptor<N extends string, K extends FieldType> {
+  name: N;
+  type: K;
+}
+
 /** @internal */
-export const hasField = <T extends Record<string, unknown>>(
+export const hasField = <T extends Record<string, unknown>, N extends string, K extends FieldType>(
   value: T,
-  field: { name: keyof T, type: string }
-): value is T & Record<typeof field.name, string> => {
-  const valueField = value[field.name];
-  return typeof valueField === field.type;
+  { name, type }: FieldDescriptor<N, K>
+): value is T & Record<N, FieldTypeToValue[K]> => typeof value[name] === type;
+
+const isBlankString = (value: unknown): boolean => typeof value === 'string' && !value.trim();
+
+/** @internal */
+export const hasStringFieldWithValue = <T extends Record<string, unknown>, N extends string>(
+  value: T,
+  fieldName: N
+): value is T & Record<N, string> => {
+  return hasField(value, { name: fieldName, type: 'string' }) && !isBlankString(value[fieldName]);
 };
 
 /** @internal */
-export const hasFields = (
+export const assertDoesNotHaveField = (
   value: Record<string, unknown>,
-  fields: NonEmptyArray<{ name: string, type: string }>
-): boolean => fields.every(field => hasField(value, field));
+  name: string,
+  ErrorClass: new (message: string) => Error = Error
+): void => {
+  if (!(value[name] === undefined || value[name] === null)) {
+    throw new ErrorClass(`The [${name}] field must not be set.`);
+  }
+};
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertHasOptionalField <T extends Record<string, unknown>, N extends string, K extends FieldType>(
+  value: T,
+  { name, type }: FieldDescriptor<N, K>,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is T & Record<N, FieldTypeToValue[K] | undefined> {
+  if (name in value && !hasField(value, { name, type })) {
+    throw new ErrorClass(`The [${name}] field must have the type [${type}].`);
+  }
+}
+
+/** @internal */
+// eslint-disable-next-line func-style
+export function assertHasRequiredField <T extends Record<string, unknown>, N extends string, K extends FieldType>(
+  value: T,
+  { name, type }: FieldDescriptor<N, K>,
+  ErrorClass: new (message: string) => Error = Error
+): asserts value is T & Record<N, FieldTypeToValue[K]> {
+  if (!hasField(value, { name, type }) || isBlankString(value[name])) {
+    throw new ErrorClass(`The [${name}] field must have a [${type}] value.`);
+  }
+}
 
 /** @internal */
 export interface Identifiable extends DataObject {
@@ -106,7 +182,7 @@ export interface Identifiable extends DataObject {
 
 /** @internal */
 export const isIdentifiable = (value: unknown): value is Identifiable => isRecord(value)
-  && hasField(value, { name: '_id', type: 'string' });
+  && hasStringFieldWithValue(value, '_id');
 
 /** @internal */
 export const findById = <T extends Identifiable>(values: T[], id: string): Nullable<T> => values

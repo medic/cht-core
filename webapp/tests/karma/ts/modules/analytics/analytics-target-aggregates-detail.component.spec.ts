@@ -14,7 +14,7 @@ import { TargetAggregatesService } from '@mm-services/target-aggregates.service'
 import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
-import { ReportingPeriod } from '@mm-modules/analytics/analytics-target-aggregates-sidebar-filter.component';
+import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 
 describe('AnalyticsTargetAggregatesDetailComponent', () => {
   let component: AnalyticsTargetAggregatesDetailComponent;

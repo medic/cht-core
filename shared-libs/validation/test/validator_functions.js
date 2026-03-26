@@ -107,6 +107,138 @@ describe('validator functions', () => {
 
   });
 
+  describe('lenmin', () => {
+    it('should return true when length is greater than min', () => {
+      assert.isTrue(validatorFunctions.lenmin(null, 'abcd', 3));
+    });
+    it('should return true when length equals min', () => {
+      assert.isTrue(validatorFunctions.lenmin(null, 'abc', 3));
+    });
+    it('should return false when length is less than min', () => {
+      assert.isFalse(validatorFunctions.lenmin(null, 'ab', 3));
+    });
+  });
+
+  describe('lenmax', () => {
+    it('should return true when length is less than max', () => {
+      assert.isTrue(validatorFunctions.lenmax(null, 'ab', 3));
+    });
+    it('should return true when length equals max', () => {
+      assert.isTrue(validatorFunctions.lenmax(null, 'abc', 3));
+    });
+    it('should return false when length exceeds max', () => {
+      assert.isFalse(validatorFunctions.lenmax(null, 'abcd', 3));
+    });
+  });
+
+  describe('lenequals', () => {
+    it('should return true when length matches', () => {
+      assert.isTrue(validatorFunctions.lenequals(null, 'abc', '3'));
+    });
+    it('should return false when length does not match', () => {
+      assert.isFalse(validatorFunctions.lenequals(null, 'abcd', '3'));
+    });
+  });
+
+  describe('min', () => {
+    it('should return true when value is greater than min', () => {
+      assert.isTrue(validatorFunctions.min(null, '10', 5));
+    });
+    it('should return false when value is less than min', () => {
+      assert.isFalse(validatorFunctions.min(null, '3', 5));
+    });
+  });
+
+  describe('max', () => {
+    it('should return true when value is less than max', () => {
+      assert.isTrue(validatorFunctions.max(null, '3', 5));
+    });
+    it('should return false when value exceeds max', () => {
+      assert.isFalse(validatorFunctions.max(null, '10', 5));
+    });
+  });
+
+  describe('between', () => {
+    it('should return true when value is between min and max', () => {
+      assert.isTrue(validatorFunctions.between(null, '5', 1, 10));
+    });
+    it('should return true when value equals min', () => {
+      assert.isTrue(validatorFunctions.between(null, '1', 1, 10));
+    });
+    it('should return false when value is outside range', () => {
+      assert.isFalse(validatorFunctions.between(null, '11', 1, 10));
+    });
+  });
+
+  describe('required', () => {
+    it('should return true for truthy value', () => {
+      assert.isTrue(validatorFunctions.required(null, 'hello'));
+    });
+    it('should return false for empty string', () => {
+      assert.isFalse(validatorFunctions.required(null, ''));
+    });
+    it('should return false for null', () => {
+      assert.isFalse(validatorFunctions.required(null, null));
+    });
+  });
+
+  describe('optional', () => {
+    it('should always return true', () => {
+      assert.isTrue(validatorFunctions.optional());
+    });
+  });
+
+  describe('numeric', () => {
+    it('should return true for numeric string', () => {
+      assert.isTrue(validatorFunctions.numeric(null, '123'));
+    });
+    it('should return true for float', () => {
+      assert.isTrue(validatorFunctions.numeric(null, '1.5'));
+    });
+    it('should return false for non-numeric string', () => {
+      assert.isFalse(validatorFunctions.numeric(null, 'abc'));
+    });
+  });
+
+  describe('alpha', () => {
+    it('should return true for alpha string', () => {
+      assert.isTrue(validatorFunctions.alpha(null, 'abc'));
+    });
+    it('should return false for string with numbers', () => {
+      assert.isFalse(validatorFunctions.alpha(null, 'abc123'));
+    });
+  });
+
+  describe('alphanumeric', () => {
+    it('should return true for alphanumeric string', () => {
+      assert.isTrue(validatorFunctions.alphanumeric(null, 'abc123'));
+    });
+    it('should return false for string with special chars', () => {
+      assert.isFalse(validatorFunctions.alphanumeric(null, 'abc@123'));
+    });
+  });
+
+  describe('email', () => {
+    it('should return true for valid email', () => {
+      assert.isTrue(validatorFunctions.email(null, 'test@example.com'));
+    });
+    it('should return false for invalid email', () => {
+      assert.isFalse(validatorFunctions.email(null, 'not-an-email'));
+    });
+  });
+
+  describe('regex', () => {
+    it('should return true when value matches regex', () => {
+      assert.isTrue(validatorFunctions.regex(null, '123', '^\\d+$'));
+    });
+    it('should return false when value does not match regex', () => {
+      assert.isFalse(validatorFunctions.regex(null, 'abc', '^\\d+$'));
+    });
+    it('should support flags', () => {
+      assert.isTrue(validatorFunctions.regex(null, 'ABC', '^abc$', 'i'));
+    });
+  });
+
   describe('equalsto', () => {
 
     const allValues = {

@@ -4,15 +4,15 @@ const config = require('../../src/config');
 const sinon = require('sinon');
 const messageUtils = require('@medic/message-utils');
 const utils = require('../../src/lib/utils');
+const logger = require('@medic/logger');
 
 describe('schedules', () => {
   let schedules;
 
   beforeEach(() => {
     config.init({
-      getAll: sinon
-        .stub()
-        .returns({}),
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns(),
     });
 
     schedules = require('../../src/lib/schedules');
@@ -691,6 +691,96 @@ describe('schedules', () => {
 
       assert.equal(doc.scheduled_tasks.length, 1);
       assert.equal(doc.scheduled_tasks[0].messages[0].message, 'hello kitty');
+    });
+  });
+
+  describe('getScheduleConfig', () => {
+    it('returns undefined when no matching schedule is found', () => {
+      config.get.withArgs('schedules').returns([
+        { name: 'schedule_a' },
+        { name: 'schedule_b' },
+      ]);
+      const result = schedules.getScheduleConfig('nonexistent_schedule');
+      assert.isUndefined(result);
+    });
+  });
+
+  describe('assignSchedule edge cases', () => {
+    it('returns false when docStart is undefined', () => {
+      const doc = {
+        form: 'x',
+        // deliberately omitting 'lmp_date' so docStart is undefined
+      };
+      const added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'lmp_date',
+        messages: [
+          {
+            group: 1,
+            offset: '1 week',
+            message: [{ content: 'Test.', locale: 'en' }]
+          }
+        ]
+      });
+      assert.equal(added, false);
+      assert.isUndefined(doc.scheduled_tasks);
+    });
+
+    it('adds parse error when messageUtils.generate throws', () => {
+      sinon.stub(messageUtils, 'generate').throws(new Error('generate failed'));
+      sinon.stub(utils, 'addError');
+
+      const doc = {
+        form: 'x',
+        reported_date: moment().valueOf(),
+      };
+      const added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+          {
+            group: 1,
+            offset: '1 week',
+            message: [{ content: 'Test {{serial_number}}.', locale: 'en' }]
+          }
+        ]
+      });
+
+      assert.equal(added, false);
+      assert.equal(utils.addError.callCount, 1);
+      assert.include(utils.addError.args[0][1].message, 'generate failed');
+      assert.equal(utils.addError.args[0][1].code, 'parse_error');
+    });
+
+    it('logs error and skips message when offset is invalid', () => {
+      sinon.stub(logger, 'error');
+
+      const doc = {
+        form: 'x',
+        reported_date: moment().valueOf(),
+      };
+      const added = schedules.assignSchedule(doc, {
+        name: 'duckland',
+        start_from: 'reported_date',
+        messages: [
+          {
+            group: 1,
+            offset: 'bad offset',
+            message: [{ content: 'Test.', locale: 'en' }]
+          }
+        ]
+      });
+
+      assert.equal(added, false);
+      assert.equal(logger.error.callCount, 1);
+      assert.include(
+        logger.error.args[0][0],
+        'bad offset cannot be parsed as a valid offset'
+      );
+      assert.include(
+        logger.error.args[0][0],
+        'duckland'
+      );
     });
   });
 });

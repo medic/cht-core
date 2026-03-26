@@ -8,14 +8,12 @@ describe('bfcache', () => {
   beforeEach(async () => {
     await loginPage.login({
       username: constants.USERNAME,
-      password: constants.PASSWORD,
-      createUser: true,
+      password: constants.PASSWORD
     });
   });
 
   afterEach(async () => {
-    await browser.deleteCookies();
-    await browser.url('/');
+    await commonPage.reloadSession();
   });
 
   describe('login page', () => {
@@ -46,9 +44,9 @@ describe('bfcache', () => {
 
   describe('admin app', () => {
     it('should redirect to login page when session is expired', async () => {
-      await usersAdminPage.goToAdminUser();
-      await browser.deleteCookies('AuthSession');
       await usersAdminPage.goToAdminUpgrade();
+      await browser.deleteCookies('AuthSession');
+      await usersAdminPage.goToAdminUser();
       await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='), { timeout: 1000 });
       await browser.back();
       await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='));
