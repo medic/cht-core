@@ -323,8 +323,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
     });
     this.trackSave = this.performanceService.track();
-
-
+    
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
 
