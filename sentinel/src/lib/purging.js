@@ -11,6 +11,8 @@ const request = require('@medic/couch-request');
 const nouveau = require('@medic/nouveau');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
+const _ = require('lodash');
+
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
@@ -125,27 +127,31 @@ const getAlreadyPurgedDocs = (roleHashes, ids) => {
     });
 };
 
-const getPurgeFn = () => {
+const getFn = (name) => {
   const purgeConfig = config.get('purge');
-  if (!purgeConfig || !purgeConfig.fn) {
+
+  if (!purgeConfig || !purgeConfig[name]) {
     return;
   }
 
   let purgeFn;
   try {
-    purgeFn = eval(`(${purgeConfig.fn})`);
+    purgeFn = eval(`(${purgeConfig[name]})`);
   } catch (err) {
-    logger.error('Failed to parse purge function: %o', err);
+    logger.error(`Failed to parse purge ${name} function: %o`, err);
     return;
   }
 
   if (typeof purgeFn !== 'function') {
-    logger.error('Configured purge function is not a function');
+    logger.error(`Configured purge ${name} function is not a function`);
     return;
   }
 
   return purgeFn;
 };
+
+const getPurgeFn = () => getFn('fn');
+const getPurgeSummaryFn = () => getFn('summary_fn');
 
 const updatePurgedDocs = (rolesHashes, ids, alreadyPurged, toPurge) => {
   const docs = {};
@@ -176,6 +182,26 @@ const updatePurgedDocs = (rolesHashes, ids, alreadyPurged, toPurge) => {
     }
     return getPurgeDb(hash).bulkDocs({ docs: docs[hash] });
   }));
+};
+
+const updatePurgingSummaries = async (groups) => {
+  const contactsToUpdate = [];
+  Object.values(groups).forEach(group => {
+    if (!group.contact) {
+      return;
+    }
+
+    if (!_.isEqual(group.contact.purge_summary, group.purgeSummary)) {
+      group.contact.purge_summary = group.purgeSummary;
+      contactsToUpdate.push(group.contact);
+    }
+  });
+
+  if (!contactsToUpdate.length) {
+    return;
+  }
+
+  await db.medic.bulkDocs({ docs: contactsToUpdate });
 };
 
 const validPurgeResults = (result) => result && Array.isArray(result);
@@ -344,7 +370,7 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
 
       const idsToPurge = purgeFn(
         { roles: roles[hash] },
-        group.contact,
+        _.cloneDeep(group.contact),
         group.reports,
         group.messages,
         cht.getDatasource(dataContext),
@@ -357,6 +383,20 @@ const getDocsToPurge = (purgeFn, groups, roles) => {
       idsToPurge.forEach(id => {
         toPurge[hash][id] = group.ids.includes(id);
       });
+
+      const summaryPurgeFn = getPurgeSummaryFn();
+      if (summaryPurgeFn) {
+        group.purgeSummary = summaryPurgeFn(
+          _.cloneDeep(group.contact),
+          group.reports,
+          group.messages,
+          idsToPurge,
+          cht.getDatasource(dataContext),
+          permissionSettings
+        );
+      } else {
+        group.purgeSummary = undefined;
+      }
     });
   });
 
@@ -421,6 +461,9 @@ const batchedContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '')
     .then(alreadyPurged => {
       const toPurge = getDocsToPurge(purgeFn, groups, roles);
       return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
+    })
+    .then(() => {
+      return updatePurgingSummaries(groups);
     })
     .then(() => ({ nextKey, nextKeyDocId, nextBatch }))
     .catch(err => {

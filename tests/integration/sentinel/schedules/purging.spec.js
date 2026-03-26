@@ -336,6 +336,14 @@ const purgeFn = function(userCtx, contact, reports, messages) {
   return ids;
 };
 
+const purgeSummaryFn = function(contact, reports, messages, idsToPurge) {
+  const summary = {
+    purged_reports: idsToPurge,
+  };
+
+  return summary;
+};
+
 const reversePurgeFn = function(userCtx, contact, reports, messages) {
   const ids = [];
 
@@ -352,6 +360,7 @@ const reversePurgeFn = function(userCtx, contact, reports, messages) {
 
 const purgeSettings = {
   fn: purgeFn.toString(),
+  summary_fn: purgeSummaryFn.toString(),
   text_expression: 'every 1 seconds'
 };
 
@@ -467,6 +476,11 @@ describe('Server side purge', () => {
 
     chai.expect(purgedIdsUser1).to.have.members(purgedDocsUser1);
     chai.expect(purgedIdsUser2).to.have.members(purgedDocsUser2);
+
+    const clinic1 = await utils.getDoc('clinic1');
+    const contact1 = await utils.getDoc('contact1');
+    expect(clinic1.purge_summary).to.deep.equal({ purged_reports: ['report2', 'message2'] });
+    expect(contact1.purge_summary).to.deep.equal({ purged_reports: ['report6', 'report5', 'message4'] });
   });
 
   it('should clear purged cache when settings are updated', async () => {
@@ -484,7 +498,7 @@ describe('Server side purge', () => {
     chai.expect(user2Docs).to.not.include('report8');
   });
 
-  it('should clear purged cache when purging runs again', () => {
+  it('should clear purged cache when purging runs again',  () => {
     const purgedIdsUser1 = ['report2', 'report5', 'report6', 'message2', 'message4'];
     const purgedIdsUser2 = [
       'report1',
@@ -500,6 +514,7 @@ describe('Server side purge', () => {
       .then(result => {
         seq = result;
         purgeSettings.fn = reversePurgeFn.toString();
+        purgeSettings.summary_fn = '';
         return utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
       })
       .then(() => sentinelUtils.waitForPurgeCompletion(seq))
@@ -512,8 +527,10 @@ describe('Server side purge', () => {
       .then(() => Promise.all([
         requestDocs('user1'),
         requestDocs('user2'),
+        utils.getDoc('clinic1'),
+        utils.getDoc('contact1'),
       ]))
-      .then(([user1Docs, user2Docs]) => {
+      .then(([user1Docs, user2Docs, clinic1, contact1]) => {
         const user1DocIds = getDocIds(user1Docs);
         const user2ChangeIds = getDocIds(user2Docs);
 
@@ -532,6 +549,9 @@ describe('Server side purge', () => {
           'task1~user2', 'task2~user2', 'task3~user2',
         ]);
         user2ChangeIds.forEach(id => chai.expect(purgedIdsUser2).to.not.include(id));
+
+        expect(clinic1.purge_summary).to.deep.equal(undefined);
+        expect(contact1.purge_summary).to.deep.equal(undefined);
       });
   });
 
