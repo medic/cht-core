@@ -85,7 +85,7 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
       }
 
       const idsToPurge = result.results
-        .filter(change => !change.deleted && isTelemetryOrFeedback(change.id))
+        .filter(change => !change.deleted && isReplicableDoc(change.id))
         .map(change => change.id);
 
       if (!idsToPurge) {
@@ -102,14 +102,16 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
     .then(nextSeq => nextSeq && batchedPurge(sourceDb, targetDb, nextSeq));
 };
 
-const isTelemetryOrFeedback = (docId) => docId.startsWith('telemetry-') || docId.startsWith('feedback-');
+const isReplicableDoc = (docId) => {
+  return docId.startsWith('telemetry-') || docId.startsWith('feedback-') || docId.startsWith('interaction-');
+};
 
 const replicateDb = (sourceDb, targetDb) => {
-  // Replicate only telemetry and feedback docs
+  // Replicate telemetry, feedback, and interaction-log docs
   return sourceDb.info().then(info => {
     return sourceDb.replicate
       .to(targetDb, {
-        filter: doc => !doc._deleted && isTelemetryOrFeedback(doc._id),
+        filter: doc => !doc._deleted && isReplicableDoc(doc._id),
       })
       .then(() => purgeFeedback(sourceDb, info, targetDb));
   });

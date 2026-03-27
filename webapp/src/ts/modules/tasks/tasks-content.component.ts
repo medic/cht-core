@@ -13,7 +13,8 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SimpleDatePipe } from '@mm-pipes/date.pipe';
@@ -38,6 +39,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     chtDatasourceService: CHTDatasourceService,
     private router:Router,
     private tasksForContactService:TasksForContactService,
+    private readonly interactionTrackingService:InteractionTrackingService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -154,6 +156,9 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const taskIndex = this.tasksList.indexOf(task);
+    this.interactionTrackingService.record('task:open', task.title, String(taskIndex));
+
     this.geoHandle = this.geolocationService.init();
     this.globalActions.settingSelected();
 
@@ -264,6 +269,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       this.globalActions.setCancelCallback(cancelCallback.bind({}, this.tasksActions, this.router));
     } else {
       const cancelCallback = () => {
+        this.interactionTrackingService.record('task:back');
         this.tasksActions.setSelectedTask(null);
         this.formService.unload(this.form);
         this.form = null;
@@ -278,6 +284,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     this.contentError = false;
     this.resetFormError();
     if (action.type === 'report') {
+      this.interactionTrackingService.record('task:form_open', action.form);
       this.loadingForm = true;
       this.formId = action.form;
       return this.xmlFormsService
@@ -319,6 +326,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.interactionTrackingService.record('task:form_save', this.formId);
+
     this.trackEditDuration?.stop({
       name: [ 'enketo', 'tasks', this.formId, this.trackMetadata.action, 'user_edit_time' ].join(':'),
     });
@@ -340,6 +349,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.globalActions.unsetSelected();
         this.globalActions.clearNavigation();
 
+        this.interactionTrackingService.record('task:complete', this.formId);
         this.router.navigate(['/tasks', 'group']);
       })
       .then(() => {
@@ -356,6 +366,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   }
 
   navigationCancel() {
+    this.interactionTrackingService.record('task:cancel', this.formId);
     this.globalActions.navigationCancel();
   }
 

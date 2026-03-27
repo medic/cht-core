@@ -4,6 +4,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
@@ -48,6 +49,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     private tasksForContactService:TasksForContactService,
     private contactViewModelGeneratorService:ContactViewModelGeneratorService,
     private telemetryService:TelemetryService,
+    private readonly interactionTrackingService:InteractionTrackingService,
     private ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -86,6 +88,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.interactionTrackingService.record('task_group:leave');
     this.subscription.unsubscribe();
     this.globalActions.clearNavigation();
     this.tasksActions.clearTaskGroup();
@@ -191,6 +194,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
       this.setNavigation(true);
       this.tasks = filteredTasks;
+      this.interactionTrackingService.record('task_group:show', undefined, String(filteredTasks.length));
       this.globalActions.setLoadingContent(false);
     } catch (err) {
       console.error('Error loading tasks group', err);
@@ -245,6 +249,8 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
 
     const emissionId = this.getEmissionIdFromNavigation();
     if (emissionId && this.isGroupTask(emissionId)) {
+      const task = this.tasks.find((t: any) => t?._id === emissionId);
+      this.interactionTrackingService.record('task_group:select', task?.title);
       return true;
     }
 

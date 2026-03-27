@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
-import { debounce as _debounce } from 'lodash-es';
+import { debounce as _debounce, throttle as _throttle } from 'lodash-es';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -12,6 +12,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -43,6 +44,7 @@ import { TasksSidebarFilterComponent } from './tasks-sidebar-filter.component';
 })
 export class TasksComponent implements OnInit, OnDestroy {
   @ViewChild(TasksSidebarFilterComponent) tasksSidebarFilter?: TasksSidebarFilterComponent;
+  @ViewChild('taskListContainer', { read: ElementRef }) taskListContainer?: ElementRef;
 
   constructor(
     private readonly store: Store,
@@ -51,6 +53,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private readonly rulesEngineService: RulesEngineService,
     private readonly performanceService: PerformanceService,
     private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly interactionTrackingService: InteractionTrackingService,
     private readonly telemetryService: TelemetryService,
   ) {
     this.tasksActions = new TasksActions(store);
@@ -73,6 +76,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private tasksLoaded;
   private debouncedReload;
+  private scrollHandler;
 
   private subscribeToStore() {
     const assignment$ = this.store
@@ -140,15 +144,41 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
     this.refreshTasks();
+
+    this.interactionTrackingService.startSession('tasks');
+    this.interactionTrackingService.record('task_list:open');
+    this.initScrollTracking();
   }
 
   ngOnDestroy() {
+    this.removeScrollTracking();
+    this.interactionTrackingService.record('task_list:leave');
+    this.interactionTrackingService.flush();
     this.subscription.unsubscribe();
     this.tasksActions.clearTaskList();
     this.tasksActions.setTasksLoaded(false);
     this.tasksActions.setSelectedTask(null);
     this.globalActions.unsetSelected();
     this.tasksActions.clearTaskGroup();
+  }
+
+  private initScrollTracking() {
+    this.scrollHandler = _throttle(() => {
+      this.interactionTrackingService.record('task_list:scroll');
+    }, 2000);
+
+    // Defer to next tick so the DOM element is available
+    setTimeout(() => {
+      const el = document.getElementById('tasks-list');
+      el?.addEventListener('scroll', this.scrollHandler, { passive: true });
+    });
+  }
+
+  private removeScrollTracking() {
+    if (this.scrollHandler) {
+      const el = document.getElementById('tasks-list');
+      el?.removeEventListener('scroll', this.scrollHandler);
+    }
   }
 
   refreshTaskList() {
@@ -181,6 +211,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.recordPerformance();
       if (!this.tasksLoaded) {
         this.tasksActions.setTasksLoaded(true);
+        this.interactionTrackingService.record('task_list:loaded', undefined, String(this.tasksList?.length || 0));
       }
     }
   }
