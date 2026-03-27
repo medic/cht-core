@@ -26,7 +26,7 @@ describe('RepeatForm', () => {
     await utils.saveDocs(hierarchy.places);
     await utils.createUsers([hierarchy.user]);
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-count`));
-    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat_translation`));
+    await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-button`));
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/repeat-translation-select`));
   });
 
@@ -36,8 +36,8 @@ describe('RepeatForm', () => {
   });
 
   const selectorPrefix = '#report-form .active';
-  const cityLabelPath = `${selectorPrefix}.question-label[data-itext-id="/repeat_translation/basic/rep/city_1:label"]`;
-  const melbourneLabelPath = `${selectorPrefix}[data-itext-id="/repeat_translation/basic/rep/city_1/melbourne:label"]`;
+  const cityLabelPath = `${selectorPrefix}.question-label[data-itext-id="/data/basic/rep/city_1:label"]`;
+  const melbourneLabelPath = `${selectorPrefix}[data-option-value="melbourne"]`;
 
   describe('Repeat form with count input', () => {
 
@@ -92,7 +92,7 @@ describe('RepeatForm', () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
       await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'sw' });
-      await openRepeatForm('repeat_translation');
+      await openRepeatForm('repeat-translation-button');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state: - SV')).to.be.true;
       await assertLabels({ selector: cityLabelPath, count: 0, labelText: 'Select a city: - SV' });
@@ -113,8 +113,7 @@ describe('RepeatForm', () => {
       const reportId = await reportsPage.getCurrentReportId();
       const report = await utils.getDoc(reportId);
       expect(report.fields.basic.state_1).to.equal('VIC');
-      expect(report.fields.basic.rep).to.be.an('array');
-      expect(report.fields.basic.rep.length).to.be.greaterThan(0);
+      expect(report.fields.basic.rep.length).to.equal(3);
       expect(report.fields.basic.rep[0].city_1).to.equal('melbourne');
     });
 
@@ -122,7 +121,7 @@ describe('RepeatForm', () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
       await loginPage.login({ username: hierarchy.user.username, password: hierarchy.user.password, locale: 'en' });
-      await openRepeatForm('repeat_translation');
+      await openRepeatForm('repeat-translation-button');
 
       expect(await commonEnketoPage.isElementDisplayed('span', 'Select a state:')).to.be.true;
 
@@ -144,8 +143,7 @@ describe('RepeatForm', () => {
       const reportId = await reportsPage.getCurrentReportId();
       const report = await utils.getDoc(reportId);
       expect(report.fields.basic.state_1).to.equal('VIC');
-      expect(report.fields.basic.rep).to.be.an('array');
-      expect(report.fields.basic.rep.length).to.be.greaterThan(0);
+      expect(report.fields.basic.rep.length).to.equal(3);
       expect(report.fields.basic.rep[0].city_1).to.equal('melbourne');
     });
   });
