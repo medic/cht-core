@@ -1,27 +1,26 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { of } from 'rxjs';
 
-import { HttpClient } from '@angular/common/http';
 import { SessionService } from '@admin-tool-services/session.service';
 import { AuthService } from '@admin-tool-services/auth.service';
 import { CHTDatasourceService } from '@admin-tool-services/cht-datasource.service';
+import { SettingsService } from '@admin-tool-services/settings.service';
 
 describe('AuthService', () => {
   let service: AuthService;
   let sessionService;
   let chtDatasourceService: CHTDatasourceService;
-  let http;
+  let settingsService;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
-    http = { get: sinon.stub().returns(of({})) };
+    settingsService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
-        { provide: HttpClient, useValue: http },
+        { provide: SettingsService, useValue: settingsService },
       ]
     });
 
@@ -36,7 +35,7 @@ describe('AuthService', () => {
   describe('has', () => {
     it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
-      http.get.returns(of({ permissions: {} }));
+      settingsService.get.resolves({ permissions: {} });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.has('can_configure');
@@ -46,7 +45,7 @@ describe('AuthService', () => {
 
     it('should return true when user is db admin', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      http.get.returns(of({ permissions: { can_backup_facilities: ['national_admin'] } }));
+      settingsService.get.resolves({ permissions: { can_backup_facilities: ['national_admin'] } });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.has(['can_backup_facilities']);
@@ -56,7 +55,7 @@ describe('AuthService', () => {
 
     it('should return false when user does not have permission', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
-      http.get.returns(of({ permissions: { can_backup_facilities: ['national_admin'] } }));
+      settingsService.get.resolves({ permissions: { can_backup_facilities: ['national_admin'] } });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.has('can_backup_facilities');
@@ -66,12 +65,12 @@ describe('AuthService', () => {
 
     it('should return true when user has all permissions', async () => {
       sessionService.userCtx.returns({ roles: ['national_admin'] });
-      http.get.returns(of({
+      settingsService.get.resolves({
         permissions: {
           can_backup_facilities: ['national_admin'],
           can_export_messages: ['national_admin', 'district_admin'],
         }
-      }));
+      });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.has(['can_backup_facilities', 'can_export_messages']);
@@ -81,7 +80,7 @@ describe('AuthService', () => {
 
     it('should return false when admin and !permission', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      http.get.returns(of({ permissions: {} }));
+      settingsService.get.resolves({ permissions: {} });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.has(['!can_backup_facilities']);
@@ -91,9 +90,7 @@ describe('AuthService', () => {
 
     it('should return true when user has !permission they lack', async () => {
       sessionService.userCtx.returns({ roles: ['analytics'] });
-      http.get.returns(of({
-        permissions: { can_backup_facilities: ['national_admin'] }
-      }));
+      settingsService.get.resolves({ permissions: { can_backup_facilities: ['national_admin'] } });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.has(['!can_backup_facilities']);
@@ -103,7 +100,7 @@ describe('AuthService', () => {
 
     it('should throw error when server is offline (503)', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
-      http.get.returns(of({ permissions: {} }));
+      settingsService.get.resolves({ permissions: {} });
       chtDatasourceService['initialized'] = null;
       // Stub get() to reject with 503
       sinon.stub(chtDatasourceService, 'get').rejects({ status: 503 });
@@ -130,7 +127,7 @@ describe('AuthService', () => {
   describe('any', () => {
     it('should delegate to has() when not an array', async () => {
       sessionService.userCtx.returns({ roles: ['national_admin'] });
-      http.get.returns(of({ permissions: { can_configure: ['national_admin'] } }));
+      settingsService.get.resolves({ permissions: { can_configure: ['national_admin'] } });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.any('can_configure');
@@ -140,7 +137,7 @@ describe('AuthService', () => {
 
     it('should return false when no session', async () => {
       sessionService.userCtx.returns(null);
-      http.get.returns(of({ permissions: {} }));
+      settingsService.get.resolves({ permissions: {} });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.any([['can_edit'], ['can_configure']]);
@@ -150,7 +147,7 @@ describe('AuthService', () => {
 
     it('should return true when admin and no disallowed permissions', async () => {
       sessionService.userCtx.returns({ roles: ['_admin'] });
-      http.get.returns(of({ permissions: { can_edit: ['chw'] } }));
+      settingsService.get.resolves({ permissions: { can_edit: ['chw'] } });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.any([['can_backup_facilities'], ['can_export_messages']]);
@@ -160,12 +157,12 @@ describe('AuthService', () => {
 
     it('should return true when user has all permissions in one group', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
-      http.get.returns(of({
+      settingsService.get.resolves({
         permissions: {
           can_backup_facilities: ['national_admin', 'district_admin'],
           can_export_messages: ['national_admin', 'district_admin'],
         }
-      }));
+      });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.any([
@@ -188,12 +185,12 @@ describe('AuthService', () => {
 
     it('should return false when user has none of the permissions in any group', async () => {
       sessionService.userCtx.returns({ roles: ['district_admin'] });
-      http.get.returns(of({
+      settingsService.get.resolves({
         permissions: {
           can_backup_facilities: ['national_admin'],
           can_backup_people: ['national_admin'],
         }
-      }));
+      });
       chtDatasourceService['initialized'] = null;
 
       const result = await service.any([

@@ -9,5 +9,6 @@ declare global {
   interface Window {
     $: any;
     jQuery: any;
+    PouchDB: any;
   }
 }

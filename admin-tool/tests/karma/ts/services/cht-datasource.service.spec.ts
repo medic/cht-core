@@ -1,25 +1,24 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { of } from 'rxjs';
 
-import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@admin-tool-services/cht-datasource.service';
 import { SessionService } from '@admin-tool-services/session.service';
+import { SettingsService } from '@admin-tool-services/settings.service';
 
 describe('CHTDatasourceService', () => {
   let service: CHTDatasourceService;
   let sessionService;
-  let http;
+  let settingsService;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub() };
-    http = { get: sinon.stub() };
+    settingsService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
-        { provide: HttpClient, useValue: http },
+        { provide: SettingsService, useValue: settingsService },
       ]
     });
 
@@ -34,22 +33,22 @@ describe('CHTDatasourceService', () => {
     it('should initialize and fetch settings', async () => {
       const settings = { permissions: { can_configure: ['admin'] } };
       sessionService.userCtx.returns({ name: 'admin', roles: ['_admin'] });
-      http.get.withArgs('/api/v1/settings').returns(of(settings));
+      settingsService.get.resolves(settings);
 
       await service.isInitialized();
 
-      expect(http.get.calledWith('/api/v1/settings')).to.be.true;
+      expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.userCtx.callCount).to.equal(1);
     });
 
     it('should only initialize once', async () => {
       sessionService.userCtx.returns({ name: 'admin', roles: ['_admin'] });
-      http.get.returns(of({}));
+      settingsService.get.resolves({});
 
       await service.isInitialized();
       await service.isInitialized();
 
-      expect(http.get.callCount).to.equal(1);
+      expect(settingsService.get.callCount).to.equal(1);
     });
   });
 
@@ -58,7 +57,7 @@ describe('CHTDatasourceService', () => {
       const settings = { permissions: { can_configure: ['national_admin'] } };
       const userCtx = { name: 'admin', roles: ['national_admin'] };
       sessionService.userCtx.returns(userCtx);
-      http.get.withArgs('/api/v1/settings').returns(of(settings));
+      settingsService.get.resolves(settings);
 
       const datasource = await service.get();
 
@@ -71,7 +70,7 @@ describe('CHTDatasourceService', () => {
       const settings = { permissions: { can_configure: ['national_admin'] } };
       const userCtx = { name: 'admin', roles: ['national_admin'] };
       sessionService.userCtx.returns(userCtx);
-      http.get.withArgs('/api/v1/settings').returns(of(settings));
+      settingsService.get.resolves(settings);
 
       const datasource = await service.get();
       const result = datasource.v1.hasPermissions('can_configure');
@@ -82,7 +81,7 @@ describe('CHTDatasourceService', () => {
     it('hasPermissions should use provided user roles over service userCtx', async () => {
       const settings = { permissions: { can_configure: ['national_admin'] } };
       sessionService.userCtx.returns({ roles: ['chw'] });
-      http.get.withArgs('/api/v1/settings').returns(of(settings));
+      settingsService.get.resolves(settings);
 
       const datasource = await service.get();
       const result = datasource.v1.hasPermissions('can_configure', { roles: ['national_admin'] });
@@ -94,7 +93,7 @@ describe('CHTDatasourceService', () => {
       const settings = { permissions: { can_configure: ['national_admin'] } };
       const userCtx = { name: 'chw', roles: ['chw'] };
       sessionService.userCtx.returns(userCtx);
-      http.get.withArgs('/api/v1/settings').returns(of(settings));
+      settingsService.get.resolves(settings);
 
       const datasource = await service.get();
       const result = datasource.v1.hasPermissions('can_configure');
@@ -105,7 +104,7 @@ describe('CHTDatasourceService', () => {
     it('hasAnyPermission should return true when user has at least one group of permissions', async () => {
       const settings = { permissions: { can_configure: ['national_admin'], can_view: ['chw'] } };
       sessionService.userCtx.returns({ roles: ['chw'] });
-      http.get.withArgs('/api/v1/settings').returns(of(settings));
+      settingsService.get.resolves(settings);
 
       const datasource = await service.get();
       const result = datasource.v1.hasAnyPermission([['can_configure'], ['can_view']]);
@@ -117,7 +116,7 @@ describe('CHTDatasourceService', () => {
       const serviceSettings = { permissions: { can_configure: ['national_admin'] } };
       const customSettings = { permissions: { can_configure: ['chw'] } };
       sessionService.userCtx.returns({ roles: ['chw'] });
-      http.get.withArgs('/api/v1/settings').returns(of(serviceSettings));
+      settingsService.get.resolves(serviceSettings);
 
       const datasource = await service.get();
       const result = datasource.v1.hasAnyPermission([['can_configure']], undefined, customSettings);
