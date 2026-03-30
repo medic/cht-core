@@ -85,7 +85,7 @@ describe('InteractionTrackingService', () => {
       expect(doc.sessions).to.have.length(1);
       expect(doc.sessions[0].events).to.have.length(1);
       expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
-      expect(doc.sessions[0].events[0].ts).to.be.a('number');
+      expect(doc.sessions[0].events[0].timestamp).to.be.a('number');
     });
 
     it('should record ref and detail when provided', async () => {
