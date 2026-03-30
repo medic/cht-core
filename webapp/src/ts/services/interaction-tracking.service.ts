@@ -8,7 +8,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 
 interface InteractionEvent {
   action: string;
-  ts: number;
+  timestamp: number;
   ref?: string;
   detail?: string;
 }
@@ -93,7 +93,7 @@ export class InteractionTrackingService {
         return;
       }
 
-      const event: InteractionEvent = { action, ts: Date.now() };
+      const event: InteractionEvent = { action, timestamp: Date.now() };
       if (ref) {
         event.ref = ref;
       }
@@ -144,7 +144,7 @@ export class InteractionTrackingService {
     }
   }
 
-  private async getOrCreateDailyDoc(metaDb): Promise<InteractionLogDoc> {
+  private async getOrCreateDailyDoc(metaDb: any): Promise<InteractionLogDoc> {
     const dailyDocId = this.getDailyDocId();
     try {
       return await metaDb.get(dailyDocId);
