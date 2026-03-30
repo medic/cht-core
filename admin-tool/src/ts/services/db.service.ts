@@ -12,7 +12,7 @@ const POUCHDB_OPTIONS = {
 };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DbService {
   private cache: Record<string, any> = {};
@@ -55,11 +55,11 @@ export class DbService {
       promiseEmitter.catch = emitter.catch.bind(emitter);
       promiseEmitter.cancel = emitter.cancel.bind(emitter);
 
-      events.forEach(event => {
+      events.forEach((event) => {
         emitter.on(event, (...eventArgs) => promiseEmitter.emit(event, ...eventArgs));
       });
 
-      promiseEmitter.on('error', error => console.error(error));
+      promiseEmitter.on('error', (error) => console.error(error));
       return promiseEmitter;
     };
   }
@@ -72,7 +72,9 @@ export class DbService {
 
     Object.defineProperty(db, 'replicate', {
       set() {},
-      get() { return getter; }
+      get() {
+        return getter;
+      },
     });
   }
 

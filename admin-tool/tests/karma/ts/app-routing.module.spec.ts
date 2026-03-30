@@ -15,7 +15,6 @@ import { routes as exportRoutes } from '@admin-tool-modules/export/export.routes
 import { routes as backupRoutes } from '@admin-tool-modules/backup/backup.routes';
 
 import { AppRoutingModule } from '../../../src/ts/app-routing.module';
-import { DisplayComponent } from '@admin-tool-modules/display/display.component';
 import { UsersComponent } from '@admin-tool-modules/users/users.component';
 import { AuthorizationComponent } from '@admin-tool-modules/authorization/authorization.component';
 import { SmsComponent } from '@admin-tool-modules/sms/sms.component';
@@ -26,6 +25,7 @@ import { MessageQueueComponent } from '@admin-tool-modules/message-queue/message
 import { UpgradeComponent } from '@admin-tool-modules/upgrade/upgrade.component';
 import { ExportComponent } from '@admin-tool-modules/export/export.component';
 import { BackupComponent } from '@admin-tool-modules/backup/backup.component';
+import { DisplayHeaderComponent } from '@admin-tool-modules/display/display-header/display-header.component';
 
 describe('AppRoutingModule', () => {
   beforeEach(() => {
@@ -40,10 +40,10 @@ describe('AppRoutingModule', () => {
   });
 
   describe('route definitions', () => {
-    it('display routes should point to /display with DisplayComponent', () => {
+    it('display routes should point to /display with DisplayHeaderComponent', () => {
       expect(displayRoutes).to.have.length(1);
       expect(displayRoutes[0].path).to.equal('display');
-      expect(displayRoutes[0].component).to.equal(DisplayComponent);
+      expect(displayRoutes[0].component).to.equal(DisplayHeaderComponent);
     });
 
     it('users routes should point to /users with UsersComponent', () => {

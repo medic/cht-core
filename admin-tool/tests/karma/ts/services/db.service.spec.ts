@@ -14,9 +14,7 @@ describe('DbService', () => {
 
   const getService = () => {
     TestBed.configureTestingModule({
-      providers: [
-        { provide: LocationService, useValue: locationService },
-      ]
+      providers: [{ provide: LocationService, useValue: locationService }],
     });
     service = TestBed.inject(DbService);
   };
@@ -121,7 +119,10 @@ describe('DbService', () => {
     it('should forward change events from the underlying emitter', (done) => {
       const listeners: Record<string, Function> = {};
       const changeEmitter = {
-        on: (event, cb) => { listeners[event] = cb; return changeEmitter; },
+        on: (event, cb) => {
+          listeners[event] = cb;
+          return changeEmitter;
+        },
         then: sinon.stub(),
         catch: sinon.stub(),
         cancel: sinon.stub(),
@@ -144,7 +145,10 @@ describe('DbService', () => {
     it('should wrap the sync method to return an event emitter', (done) => {
       const listeners: Record<string, Function> = {};
       const syncEmitter = {
-        on: (event, cb) => { listeners[event] = cb; return syncEmitter; },
+        on: (event, cb) => {
+          listeners[event] = cb;
+          return syncEmitter;
+        },
         then: sinon.stub(),
         catch: sinon.stub(),
         cancel: sinon.stub(),

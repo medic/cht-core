@@ -15,7 +15,7 @@ describe('ChangesService', () => {
     on: (type, cb) => {
       store[type] = cb;
       return onProvider(store);
-    }
+    },
   });
 
   beforeEach(waitForAsync(() => {
@@ -31,15 +31,15 @@ describe('ChangesService', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [
-        { provide: DbService, useValue: dbService },
-      ]
+      providers: [{ provide: DbService, useValue: dbService }],
     });
 
     service = TestBed.inject(ChangesService);
   }));
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it('should call info on init and start watching changes', async () => {
     await Promise.resolve(); // allow init promise to settle
@@ -120,7 +120,11 @@ describe('ChangesService', () => {
 
     it('should support multiple concurrent subscriptions', (done) => {
       let count = 0;
-      const finish = () => { if (++count === 2) done(); };
+      const finish = () => {
+        if (++count === 2) {
+          done();
+        }
+      };
 
       service.subscribe({ key: 'first', callback: finish });
       service.subscribe({ key: 'second', callback: finish });
@@ -162,7 +166,7 @@ describe('ChangesService', () => {
         on: (type, cb) => {
           changeCallbacks[type] = cb;
           return watchWithCancel;
-        }
+        },
       };
       changesStub.callsFake(() => watchWithCancel);
 
@@ -176,7 +180,7 @@ describe('ChangesService', () => {
         })),
       });
       TestBed.configureTestingModule({
-        providers: [{ provide: DbService, useValue: dbService }]
+        providers: [{ provide: DbService, useValue: dbService }],
       });
       const svc = TestBed.inject(ChangesService);
       await Promise.resolve();
