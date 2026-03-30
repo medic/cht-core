@@ -14,7 +14,7 @@ const db = require('../../../src/db');
 const chtDatasource = require('@medic/cht-datasource');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, SENTINEL_METADATA } = require('@medic/constants');
 const dataContext = require('../../../src/data-context');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 
@@ -143,9 +143,9 @@ describe('ServerSidePurge', () => {
         chai.expect(db.get.args[1]).to.deep.equal(['dummy-purged-role-hash2']);
         chai.expect(db.get.args[2]).to.deep.equal(['dummy-purged-role-hash3']);
         chai.expect(purgedb.put.callCount).to.equal(3);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['a'] })).to.equal(true);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['b'] })).to.equal(true);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['c'] })).to.equal(true);
+        chai.expect(purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['a'] })).to.equal(true);
+        chai.expect(purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['b'] })).to.equal(true);
+        chai.expect(purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['c'] })).to.equal(true);
       });
     });
 
@@ -165,9 +165,11 @@ describe('ServerSidePurge', () => {
         chai.expect(db.get.args[1]).to.deep.equal(['not-medic-purged-role-hash-']);
         chai.expect(db.get.args[2]).to.deep.equal(['not-medic-purged-role-hash--']);
         chai.expect(purgedb.put.callCount).to.equal(3);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['1'] })).to.equal(true);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['2', '3'] })).to.equal(true);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['4', '5', '6'] })).to.equal(true);
+        chai.expect(purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['1'] })).to.equal(true);
+        chai.expect(purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['2', '3'] })).to.equal(true);
+        chai.expect(
+          purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['4', '5', '6'] })
+        ).to.equal(true);
       });
     });
 
@@ -181,7 +183,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.get.callCount).to.equal(1);
         chai.expect(db.get.args[0]).to.deep.equal(['not-medic-purged-role-hash']);
         chai.expect(purgedb.put.callCount).to.equal(1);
-        chai.expect(purgedb.put.calledWith({ _id: '_local/info', roles: ['1'] })).to.equal(true);
+        chai.expect(purgedb.put.calledWith({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: ['1'] })).to.equal(true);
       });
     });
 
