@@ -34,7 +34,7 @@ describe('Privacy policy', () => {
       });
 
       it('should show the correct privacy policy on login', async () => {
-        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), englishTexts, user.isOffline);
+        await privacyPage.waitAndAcceptPolicy(englishTexts, user.isOffline);
         expect(await commonPage.tabsSelector.messagesTab().isDisplayed()).to.be.true;
       });
 
@@ -46,7 +46,7 @@ describe('Privacy policy', () => {
 
       it('should display when navigating to the privacy policy page', async () => {
         await privacyPage.goToPrivacyPolicyConfig();
-        await privacyPage.waitForPolicy(await privacyPage.privacyConfig(), englishTexts);
+        await privacyPage.waitForPolicyOnPage(englishTexts);
       });
 
       it('should not show on subsequent login', async () => {
@@ -59,14 +59,14 @@ describe('Privacy policy', () => {
       it('should show french policy on secondary login', async () => {
         await commonPage.reloadSession();
         await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
-        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
+        await privacyPage.waitAndAcceptPolicy(frenchTexts);
         expect(await commonPage.tabsSelector.messagesTab().isDisplayed()).to.be.true;
       });
 
       it('should show if the user changes their language', async () => {
         await browser.setCookies({ name: 'locale', value: 'es' });
         await browser.refresh();
-        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), spanishTexts);
+        await privacyPage.waitAndAcceptPolicy(spanishTexts);
         expect(await commonPage.tabsSelector.messagesTab().isDisplayed()).to.be.true;
       });
 
@@ -86,7 +86,7 @@ describe('Privacy policy', () => {
         );
 
         await browser.setCookies({ name: 'locale', value: 'en' });
-        await browser.refresh();
+        await commonPage.refresh();
 
         await privacyPage.updatePrivacyPolicy(updatedPolicy);
 
@@ -95,7 +95,7 @@ describe('Privacy policy', () => {
         }
 
         await browser.refresh();
-        await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), text);
+        await privacyPage.waitAndAcceptPolicy(text);
 
         expect(await commonPage.tabsSelector.messagesTab().isDisplayed()).to.be.true;
       });
@@ -127,7 +127,7 @@ describe('Privacy policy', () => {
     });
 
     it('should not fail due to document conflict for new offline user', async () => {
-      await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
+      await privacyPage.waitForPolicy(englishTexts);
       await privacyPage.acceptPrivacyPolicy();
       await commonPage.sync();
       expect(await commonPage.tabsSelector.messagesTab().isDisplayed()).to.be.true;
