@@ -86,7 +86,7 @@ describe('Privacy policy', () => {
         );
 
         await browser.setCookies({ name: 'locale', value: 'en' });
-        await browser.refresh();
+        await commonPage.refresh();
 
         await privacyPage.updatePrivacyPolicy(updatedPolicy);
 
