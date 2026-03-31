@@ -1,0 +1,7 @@
+services:
+  api:
+    environment:
+      - "LOG_LEVEL=debug"
+  sentinel:
+    environment:
+      - "LOG_LEVEL=debug"
