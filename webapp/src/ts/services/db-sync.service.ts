@@ -14,46 +14,11 @@ import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { DOC_IDS, DOC_TYPES } from '@medic/constants';
-
-const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS];
-const READ_ONLY_IDS = [
-  DOC_IDS.RESOURCES,
-  'branding',
-  DOC_IDS.SERVICE_WORKER_META,
-  'zscore-charts',
-  DOC_IDS.SETTINGS,
-  DOC_IDS.PARTNERS
-];
-const DDOC_PREFIX = ['_design/'];
 const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
-const BATCH_SIZE = 100;
 const MAX_SUCCESSIVE_SYNCS = 2;
-
-const readOnlyFilter = function(doc) {
-  // Never replicate "purged" documents upwards
-  const keys = Object.keys(doc);
-  if (keys.length === 4 &&
-    keys.includes('_id') &&
-    keys.includes('_rev') &&
-    keys.includes('_deleted') &&
-    keys.includes('purged')) {
-    return false;
-  }
-
-  // don't try to replicate read only docs back to the server
-  return (
-    READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-    READ_ONLY_IDS.indexOf(doc._id) === -1 &&
-    doc._id.indexOf(DDOC_PREFIX) !== 0
-  );
-};
-// PouchDB uses this value to generate a replication id. Because of non-deterministic minification, there's a high risk
-// of invalidating existent replication checkpointers after upgrade, causing users to restart upwards replication.
-readOnlyFilter.toString = () => '';
 
 export enum SyncStatus {
   Unknown = 'unknown',
@@ -108,7 +73,7 @@ export class DBSyncService {
     return !this.sessionService.isOnlineOnly();
   }
 
-  private replicateToRetry({ batchSize=BATCH_SIZE }={}) {
+  private async replicateToRetry() {
     const telemetryEntry = new DbSyncTelemetry(
       this.telemetryService,
       this.performanceService,
@@ -117,39 +82,17 @@ export class DBSyncService {
       this.getLastReplicationDate(),
     );
 
-    const options = {
-      filter: readOnlyFilter,
-      batch_size: batchSize
-    };
-
-    const remote = this.dbService.get({ remote: true });
-    return this.dbService.get()
-      .replicate
-      .to(remote, options)
-      .on('denied', (err) => {
-        console.error('Denied replicating to remote server', err);
-        this.dbSyncRetryService.retryForbiddenFailure(err);
-        telemetryEntry.recordDenied();
-      })
-      .on('error', (err) => {
-        console.error('Error replicating to remote server', err);
-        telemetryEntry.recordFailure(err, this.knownOnlineState);
-      })
-      .then(info => {
-        console.debug(`Replication to successful`, info);
-        this.setLastReplicatedSeq(info?.last_seq);
-        telemetryEntry.recordSuccess(info);
-      })
-      .catch(err => {
-        if (err.code === 413 && batchSize > 1) {
-          batchSize = Math.floor(batchSize / 2);
-          console.warn('Error attempting to replicate too much data to the server. ' +
-            `Trying again with batch size of ${batchSize}`);
-          return this.replicateToRetry({ batchSize });
-        }
-        console.error('Error replicating to remote server', err);
-        throw err;
-      });
+    try {
+      const result = await this.replicationService.replicateTo();
+      console.debug('Replication to successful', result);
+      const currentSeq = await this.getCurrentSeq();
+      this.setLastReplicatedSeq(currentSeq);
+      telemetryEntry.recordSuccess(result);
+    } catch (err) {
+      console.error('Error replicating to remote server', err);
+      telemetryEntry.recordFailure(err, this.knownOnlineState);
+      throw err;
+    }
   }
 
   private async replicateTo() {
@@ -282,6 +225,9 @@ export class DBSyncService {
       return Promise.resolve();
     }
 
+    // TODO: Replace PouchDB replication with custom protocol when MongoDB adapter is implemented.
+    // The meta DB is small (feedback, telemetry, read status) and per-user, with no auth filtering needed.
+    // For now, it continues using PouchDB's native replication against the meta CouchDB database.
     const telemetryEntry = new DbSyncTelemetry(this.telemetryService, this.performanceService, 'meta', 'sync');
     const remote = this.dbService.get({ meta: true, remote: true });
     const local = this.dbService.get({ meta: true });

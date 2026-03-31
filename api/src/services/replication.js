@@ -50,8 +50,50 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
   return toDelete;
 };
 
+const pushDocs = async (userCtx, docs) => {
+  if (!docs.length) {
+    return [];
+  }
+
+  const authorizationContext = await authorization.getAuthorizationContext(userCtx);
+  const docObjs = docs.map(doc => ({
+    doc,
+    viewResults: authorization.getViewResults(doc),
+    get id() {
+      return this.doc._id;
+    },
+  }));
+  const filteredDocObjs = authorization.filterAllowedDocs(authorizationContext, docObjs);
+  const filteredDocs = filteredDocObjs.map(docObj => docObj.doc);
+
+  let dbResults = [];
+  if (filteredDocs.length) {
+    dbResults = await db.medic.bulkDocs(filteredDocs, { new_edits: false });
+  }
+
+  // With new_edits: false, CouchDB returns errors only (empty array on full success).
+  // Build a lookup of any errors by doc ID.
+  const errorById = {};
+  for (const result of dbResults) {
+    if (result && result.id && result.error) {
+      errorById[result.id] = result;
+    }
+  }
+
+  return docs.map(doc => {
+    if (filteredDocs.indexOf(doc) === -1) {
+      return { id: doc._id, error: 'forbidden' };
+    }
+    if (errorById[doc._id]) {
+      return errorById[doc._id];
+    }
+    return { ok: true, id: doc._id, rev: doc._rev };
+  });
+};
+
 module.exports = {
   getDocIdsRevPairs,
   getContext,
   getDocIdsToDelete,
+  pushDocs,
 };

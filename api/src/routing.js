@@ -705,6 +705,13 @@ app.post(
   authorization.onlineUserPassThrough,
   replication.getDocIdsToDelete,
 );
+app.post(
+  '/api/v1/replication/push-docs',
+  jsonParser,
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.pushDocs,
+);
 
 const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 

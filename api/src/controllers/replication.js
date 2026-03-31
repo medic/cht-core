@@ -17,11 +17,26 @@ module.exports = {
       return serverUtils.serverError(err, req, res);
     }
   },
+
   getDocIdsToDelete: async (req, res) => {
     const docIds = req.body?.doc_ids;
     try {
       const docIdsToDelete = await replication.getDocIdsToDelete(req.userCtx, docIds);
       return res.json({ doc_ids: docIdsToDelete });
+    } catch (err) {
+      return serverUtils.serverError(err, req, res);
+    }
+  },
+
+  pushDocs: async (req, res) => {
+    const docs = req.body?.docs;
+    if (!docs || !Array.isArray(docs)) {
+      return res.status(400).json({ error: 'bad_request', reason: 'POST body must include `docs` array.' });
+    }
+
+    try {
+      const results = await replication.pushDocs(req.userCtx, docs);
+      return res.json({ results });
     } catch (err) {
       return serverUtils.serverError(err, req, res);
     }
