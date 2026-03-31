@@ -23,6 +23,7 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -35,6 +36,7 @@ describe('TasksComponent', () => {
   let store;
   let lineageModelGeneratorService;
   let telemetryService;
+  let interactionTrackingService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -53,6 +55,7 @@ describe('TasksComponent', () => {
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
     telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -78,6 +81,7 @@ describe('TasksComponent', () => {
         { provide: SessionService, useValue: { isOnlineOnly: sinon.stub().returns(false) } },
         { provide: DbService, useValue: { get: sinon.stub().resolves() } },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
       ],
     });
 

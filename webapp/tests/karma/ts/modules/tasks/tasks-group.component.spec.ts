@@ -18,6 +18,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 
 const nextTick = () => new Promise(r => setTimeout(r));
 
@@ -33,6 +34,7 @@ describe('TasksGroupComponent', () => {
   let contactViewModelGeneratorService;
   let telemetryService;
   let tasksForContactService;
+  let interactionTrackingService;
 
   beforeEach(() => {
     const mockedSelectors = [
@@ -49,6 +51,7 @@ describe('TasksGroupComponent', () => {
       getIdsForTasks: sinon.stub(),
       getTasksBreakdown: sinon.stub().resolves({}),
     };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -62,6 +65,7 @@ describe('TasksGroupComponent', () => {
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
         { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } }, // used by TaskDueDatePipe
       ],
     });

@@ -19,6 +19,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 
 describe('TasksContentComponent', () => {
@@ -41,6 +42,7 @@ describe('TasksContentComponent', () => {
   let component: TasksContentComponent;
   let fixture: ComponentFixture<TasksContentComponent>;
   let chtDatasourceService;
+  let interactionTrackingService;
   
   beforeEach(() => {
     stopPerformanceTrackStub = sinon.stub();
@@ -57,6 +59,7 @@ describe('TasksContentComponent', () => {
     chtDatasourceService = {
       bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -79,6 +82,7 @@ describe('TasksContentComponent', () => {
         { provide: Router, useValue: router },
         { provide: TasksForContactService, useValue: tasksForContactService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
         { provide: HttpClient, useValue: {} },
       ],
     });
