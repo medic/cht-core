@@ -219,7 +219,7 @@ describe('db-sync', () => {
     });
 
     it('should replicate meta db down', async () => {
-      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
       expect(await reportsPage.getUnreadCount()).to.equal('3');
 
