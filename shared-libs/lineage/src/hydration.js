@@ -47,6 +47,21 @@ const getContactIds = (contacts) => {
 };
 
 module.exports = function(Promise, DB) {
+  const assembleLineage = function(doc, parentIds, ancestors) {
+    const docsMap = new Map();
+    ancestors.forEach(function(a) {
+      if (a && a._id) {
+        docsMap.set(a._id, a);
+      }
+    });
+
+    const result = [doc];
+    parentIds.forEach(function(parentId) {
+      result.push(docsMap.get(parentId) || null);
+    });
+    return result;
+  };
+
   const fillParentsInDocs = function(doc, lineage) {
     if (!doc || !lineage.length) {
       return doc;
@@ -237,13 +252,7 @@ module.exports = function(Promise, DB) {
           return [doc];
         }
         return fetchDocs(parentIds).then(function(ancestors) {
-          const docsMap = new Map();
-          ancestors.forEach(function(a) { docsMap.set(a._id, a); });
-          const result = [doc];
-          parentIds.forEach(function(parentId) {
-            result.push(docsMap.get(parentId) || null);
-          });
-          return result;
+          return assembleLineage(doc, parentIds, ancestors);
         });
       })
       .catch(function(err) {

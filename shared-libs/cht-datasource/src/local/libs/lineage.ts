@@ -15,7 +15,7 @@ import {
   Nullable
 } from '../../libs/core';
 import { Doc } from '../../libs/doc';
-import { getDocsByIds, queryDocsByRange } from './doc';
+import { getDocsByIds } from './doc';
 import logger from '@medic/logger';
 import lineageFactory from '@medic/lineage';
 import * as Report from '../../report';
@@ -27,6 +27,18 @@ import { InvalidArgumentError } from '../../libs/error';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { isEqual } from 'lodash';
 
+const getParentIds = (doc: Doc): string[] => {
+  const parentIds: string[] = [];
+  let current = doc.type === 'data_record' ? doc.contact : doc.parent;
+  while (isRecord(current)) {
+    if (typeof current._id === 'string') {
+      parentIds.push(current._id);
+    }
+    current = current.parent;
+  }
+  return parentIds;
+};
+
 /**
  * Returns the identified document along with the parent documents recorded for its lineage. The returned array is
  * sorted such that the identified document is the first element and the parent documents are in order of lineage.
@@ -37,14 +49,7 @@ export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string)
   return async (id: string) => {
     try {
       const doc = await medicDb.get(id);
-      const parentIds: string[] = [];
-      let current = doc.type === 'data_record' ? doc.contact : doc.parent;
-      while (isRecord(current)) {
-        if (typeof current._id === 'string') {
-          parentIds.push(current._id);
-        }
-        current = current.parent;
-      }
+      const parentIds = getParentIds(doc);
       if (parentIds.length === 0) {
         return [doc];
       }
