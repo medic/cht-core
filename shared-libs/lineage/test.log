@@ -1,0 +1,837 @@
+
+> @medic/lineage@1.0.0 test
+> nyc --nycrcPath='../nyc.config.js' mocha ./test --require test/setup.js
+
+
+
+  Lineage
+    fetchLineageById
+      ✔ queries db with correct parameters
+    fetchContacts
+      ✔ fetches contacts with correct parameters
+      ✔ does not fetch contacts that it has already got via lineage
+    fillContactsInDocs
+      ✔ skips null docs in the array
+      ✔ populates the contact field for relevant docs
+    fillParentsInDocs
+      ✔ populates parent fields throughout lineage
+      ✔ correctly populates parent fields for reports
+    fetchHydratedDoc
+      ✔ supports callback as second argument
+      ✔ passes error to callback
+      ✔ throws when lineage is empty and throwWhenMissingLineage is true
+    fetchHydratedDocs
+      ✔ returns empty array for empty docIds
+      ✔ throws non-404 errors for single doc
+    hydrateDocs
+      ✔ works on empty array
+      ✔ handles reports without contact id
+      ✔ works on docs without contacts or parents
+
+  Lineage
+    fetchLineageById
+      ✔ returns correct lineage
+    fetchLineageByIds
+      ✔ returns correct lineages
+    fetchContacts
+      ✔ clones any reused contacts
+    fetchHydratedDoc
+      ✔ returns errors from query
+      ✔ returns unmodified doc when there is no lineage and no contact
+      1) handles doc with unknown parent by leaving just the stub
+      2) handles doc with unknown contact by leaving just the stub
+      ✔ handles missing contacts
+      3) attaches the full lineage for reports with patient_id
+      4) attaches patient lineage when using patient_uuid field
+      5) attaches patient lineage when using patient_id field that contains a uuid
+      6) attaches the full lineage for reports with place_id
+      7) attaches the full lineage for reports with place_id containing a uuid
+      8) attaches the full lineage for reports with place_id and patient_id
+      9) should work when patient is not found
+      10) should work when place is not found
+      ✔ attaches the contacts
+      11) attaches re-used contacts, minify handles the circular references
+      ✔ minifying the result returns the starting document for a report
+      ✔ minifying the result returns the starting document for a place
+      ✔ works for SMS reports
+      ✔ handles doc with empty-object parent by removing it
+      ✔ should hydrate linked docs from contacts
+      ✔ should not hydrate linked docs from reports 
+    hydrateDocs
+      ✔ binds contacts and parents
+      ✔ ignores db-fetch errors
+      ✔ minifying the result returns the starting documents
+      ✔ does not return a report with circular references
+      ✔ handles person with circular reference ids
+      ✔ handles place with circular reference ids
+      ✔ handles report with circular reference ids
+      ✔ should not recurse more than needed
+      ✔ processing a doc with itself as a parent does not error out
+      ✔ processing a doc with itself as a grandparent does not error out
+      ✔ processing a doc with itself as a grandparent referenced through intermediate docs does not error out
+      ✔ should hydrate linked docs from contacts, but not from reports
+      ✔ should re-use docs from provided list
+    fetchHydratedDocs
+      ✔ should crash with bad param
+      ✔ should work with one contact
+      12) should work with one report
+      ✔ should work with one non-existent doc
+      ✔ should work with multiple docs
+      ✔ should hydrate linked docs for contacts, but not for reports
+
+  Minify
+    minifyLineage
+      ✔ returns falsy parent as-is
+      ✔ returns parent without _id as-is
+      ✔ removes everything except id
+    minify
+      ✔ handles null argument
+      ✔ minifies the parent
+      ✔ minifies the contact and lineage
+      ✔ removes the patient
+      ✔ removes the place
+      ✔ errors out on potential infinite recursion
+      ✔ should minify linked docs for contacts
+      ✔ should not minify linked docs for reports
+      ✔ should only minify linked docs if valid
+
+
+  58 passing (219ms)
+  12 failing
+
+  1) Lineage
+       fetchHydratedDoc
+         handles doc with unknown parent by leaving just the stub:
+
+      AssertionError: expected { _id: 'stub_parents', …(3) } to deeply equal { _id: 'stub_parents', …(3) }
+      + expected - actual
+
+         "contact": {
+           "_id": "something"
+         }
+         "parent": {
+      -    "_id": "dummyDoc"
+      -    "name": "district"
+      +    "_id": "something_else"
+      +    "parent": {
+      +      "_id": "dummyDoc"
+      +      "name": "district"
+      +    }
+         }
+         "type": "clinic"
+       }
+      
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:618:55
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  2) Lineage
+       fetchHydratedDoc
+         handles doc with unknown contact by leaving just the stub:
+
+      AssertionError: expected { Object (_id, form, ...) } to deeply equal { _id: 'stub_contacts', …(3) }
+      + expected - actual
+
+         "contact": {
+           "_id": "something"
+           "parent": {
+             "_id": "dummyDoc"
+      +      "name": "district"
+           }
+         }
+         "form": {}
+         "type": "data_record"
+      
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:632:55
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  3) Lineage
+       fetchHydratedDoc
+         attaches the full lineage for reports with patient_id:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report"
+      -  "_rev": "1-84140bd0f8e0997eaa7060226eebbf17"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "name": "report_parentContact_name"
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "name": "report_grandparentContact_name"
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "patient_id": "12345"
+      -  }
+         "form": "A"
+      +  "parent": [undefined]
+         "patient": {
+      -    "_id": "report_patient"
+      -    "_rev": "1-85cf4d70d5f13efc2dd9e843c036db6e"
+           "name": "patient_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+               "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+      -        "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+      -          "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+      -        }
+      -        "name": "report_grandparent_name"
+      -      }
+           }
+      -    "patient_id": "12345"
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:653:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  4) Lineage
+       fetchHydratedDoc
+         attaches patient lineage when using patient_uuid field:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report2"
+      -  "_rev": "1-1e0bd6cbfb59bbc332bda6c6414cd297"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "patient_id": ""
+      -    "patient_uuid": "report_patient"
+      -  }
+         "form": "A"
+      +  "parent": [undefined]
+         "patient": {
+      -    "_id": "report_patient"
+      -    "_rev": "1-85cf4d70d5f13efc2dd9e843c036db6e"
+           "name": "patient_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+      -        "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+      -        "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+      -          "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+      -        }
+      -        "name": "report_grandparent_name"
+      -      }
+           }
+      -    "patient_id": "12345"
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:690:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  5) Lineage
+       fetchHydratedDoc
+         attaches patient lineage when using patient_id field that contains a uuid:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report3"
+      -  "_rev": "1-951e95a2f59b1bd766f093dd764d2272"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "patient_id": "report_patient"
+      -  }
+         "form": "A"
+      +  "parent": [undefined]
+         "patient": {
+      -    "_id": "report_patient"
+      -    "_rev": "1-85cf4d70d5f13efc2dd9e843c036db6e"
+           "name": "patient_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+      -        "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+      -        "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+      -          "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+      -        }
+      -        "name": "report_grandparent_name"
+      -      }
+           }
+      -    "patient_id": "12345"
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:720:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  6) Lineage
+       fetchHydratedDoc
+         attaches the full lineage for reports with place_id:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report_with_place"
+      -  "_rev": "1-0af5527f2ad728975619eed655faa8d7"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "name": "report_parentContact_name"
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "name": "report_grandparentContact_name"
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "place_id": "54321"
+      -  }
+         "form": "A"
+      +  "parent": [undefined]
+         "place": {
+      -    "_id": "report_place"
+      -    "_rev": "1-d2e1eab40f2e58eb1650c7ed7970210b"
+           "name": "place_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+               "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+      -        "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+      -          "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+      -        }
+      -        "name": "report_grandparent_name"
+      -      }
+           }
+      -    "place_id": "54321"
+      -    "reported_date": "5"
+      -    "type": "clinic"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:750:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  7) Lineage
+       fetchHydratedDoc
+         attaches the full lineage for reports with place_id containing a uuid:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report_with_place_uuid"
+      -  "_rev": "1-dbeef6a38bfc6a3ed5c21781d6c6338c"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "name": "report_parentContact_name"
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "name": "report_grandparentContact_name"
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "place_id": "report_place"
+      -  }
+         "form": "A"
+      +  "parent": [undefined]
+         "place": {
+      -    "_id": "report_place"
+      -    "_rev": "1-d2e1eab40f2e58eb1650c7ed7970210b"
+           "name": "place_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+               "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+      -        "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+      -          "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+      -        }
+      -        "name": "report_grandparent_name"
+      -      }
+           }
+      -    "place_id": "54321"
+      -    "reported_date": "5"
+      -    "type": "clinic"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:787:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  8) Lineage
+       fetchHydratedDoc
+         attaches the full lineage for reports with place_id and patient_id:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report_with_place_and_patient"
+      -  "_rev": "1-d75dd101052194a341462effa12f97a4"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -      }
+      -    }
+      -    "reported_date": "5"
+      -    "type": "person"
+      -  }
+      -  "fields": {
+      -    "patient_id": "12345"
+      -    "place_id": "54321"
+      -  }
+      -  "form": "A"
+      -  "patient": {
+      -    "_id": "report_patient"
+      -    "_rev": "1-85cf4d70d5f13efc2dd9e843c036db6e"
+      -    "name": "patient_name"
+      -    "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+               "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+               "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+                 "name": "report_grandparentContact_name"
+                 "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+               }
+               "name": "report_grandparent_name"
+             }
+           }
+      -    "patient_id": "12345"
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      +  "form": "A"
+      +  "parent": [undefined]
+      +  "patient": {
+      +    "name": "patient_name"
+      +    "parent": {
+      +      "contact": {
+      +        "name": "report_parentContact_name"
+      +      }
+      +      "name": "report_parent_name"
+      +    }
+      +  }
+         "place": {
+      -    "_id": "report_place"
+      -    "_rev": "1-d2e1eab40f2e58eb1650c7ed7970210b"
+           "name": "place_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "1-127936780d96f56159b0dfe1ddc49c6e"
+               "name": "report_parentContact_name"
+               "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+      -      "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+      -        "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+      -          "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+      -        }
+      -        "name": "report_grandparent_name"
+      -      }
+           }
+      -    "place_id": "54321"
+      -    "reported_date": "5"
+      -    "type": "clinic"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:823:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  9) Lineage
+       fetchHydratedDoc
+         should work when patient is not found:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report4"
+      -  "_rev": "1-b4cd6494e2282cfcda8203194f6733cb"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "patient_id": "something"
+      -  }
+         "form": "A"
+      -  "type": "data_record"
+      +  "parent": [undefined]
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:870:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  10) Lineage
+       fetchHydratedDoc
+         should work when place is not found:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+      -  "_id": "report5"
+      -  "_rev": "1-2f521446a981bfec946bb3fb1e65942c"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "phone": "+123"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "phone": "+456"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "place_id": "something"
+      -  }
+         "form": "A"
+      -  "type": "data_record"
+      +  "parent": [undefined]
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:892:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  11) Lineage
+       fetchHydratedDoc
+         attaches re-used contacts, minify handles the circular references:
+     TypeError: Cannot read properties of undefined (reading 'hydrated')
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:931:46
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+  12) Lineage
+       fetchHydratedDocs
+         should work with one report:
+
+      AssertionError: Expected "name" field to be defined at path "/contact/parent".
+      + expected - actual
+
+       {
+         "_id": "report"
+      -  "_rev": "1-84140bd0f8e0997eaa7060226eebbf17"
+         "contact": {
+      -    "_id": "report_contact"
+      -    "_rev": "1-0b7b88d94c5eb79909c567f0405ad6ef"
+           "name": "report_contact_name"
+           "parent": {
+      -      "_id": "report_parent"
+      +      "contact": {
+      +        "name": "report_parentContact_name"
+      +      }
+      +      "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      +        "contact": {
+      +          "name": "report_grandparentContact_name"
+      +        }
+      +        "name": "report_grandparent_name"
+             }
+           }
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "fields": {
+      -    "patient_id": "12345"
+      -  }
+      -  "form": "A"
+         "patient": {
+      -    "_id": "report_patient"
+      -    "_rev": "1-85cf4d70d5f13efc2dd9e843c036db6e"
+           "name": "patient_name"
+           "parent": {
+      -      "_id": "report_parent"
+      -      "_rev": "1-1043866e738b00f02fa0a38f1b3aa81b"
+             "contact": {
+      -        "_id": "report_parentContact"
+      -        "_rev": "3-0253eb97360222140f0cde806200f076"
+               "name": "report_parentContact_name"
+      -        "phone": "+123"
+      -        "reported_date": "5"
+      -        "type": "person"
+             }
+             "name": "report_parent_name"
+             "parent": {
+      -        "_id": "report_grandparent"
+      -        "_rev": "1-46d806688da3e855379b2c8084712074"
+               "contact": {
+      -          "_id": "report_grandparentContact"
+      -          "_rev": "1-cd383c17d0ba97b6c7bc82ab8c213b6b"
+                 "name": "report_grandparentContact_name"
+      -          "phone": "+456"
+      -          "reported_date": "5"
+      -          "type": "person"
+               }
+               "name": "report_grandparent_name"
+             }
+           }
+      -    "patient_id": "12345"
+      -    "reported_date": "5"
+      -    "type": "person"
+         }
+      -  "type": "data_record"
+       }
+      
+      at chai.assert.shallowDeepEqual (/Users/shivamchaudhary/Programming_Projects/medic/cht-core/node_modules/chai-shallow-deep-equal/chai-shallow-deep-equal.js:98:44)
+      at /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage/test/integration.js:1647:16
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+
+
+
+=============================== Coverage summary ===============================
+Statements   : 99.08% ( 326/329 )
+Branches     : 96.02% ( 145/151 )
+Functions    : 100% ( 93/93 )
+Lines        : 99.02% ( 306/309 )
+================================================================================
+npm error Lifecycle script `test` failed with error:
+npm error code 12
+npm error path /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage
+npm error workspace @medic/lineage@1.0.0
+npm error location /Users/shivamchaudhary/Programming_Projects/medic/cht-core/shared-libs/lineage
+npm error command failed
+npm error command sh -c nyc --nycrcPath='../nyc.config.js' mocha ./test --require test/setup.js

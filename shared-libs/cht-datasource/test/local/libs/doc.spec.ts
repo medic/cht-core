@@ -245,11 +245,11 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc1._id);
+      const result = await queryDocsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc1._id);
 
       expect(result).to.deep.equal([doc0, doc1, doc2]);
 
-      expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         include_docs: true,
         startkey: doc0._id,
         endkey: doc1._id,
@@ -271,10 +271,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(true);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc2._id, limit, skip);
+      const result = await queryDocsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc2._id, limit, skip);
 
       expect(result).to.deep.equal([doc0, null, doc2]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         startkey: doc0._id,
         endkey: doc2._id,
         include_docs: true,
@@ -291,10 +291,10 @@ describe('local doc lib', () => {
       });
       isDoc.returns(false);
 
-      const result = await queryDocsByRange(db, 'medic-client/docs_by_id_lineage')(doc0._id, doc0._id, limit, skip);
+      const result = await queryDocsByRange(db, 'medic-client/contacts_by_type')(doc0._id, doc0._id, limit, skip);
 
       expect(result).to.deep.equal([null]);
-      expect(dbQuery.calledOnceWithExactly('medic-client/docs_by_id_lineage', {
+      expect(dbQuery.calledOnceWithExactly('medic-client/contacts_by_type', {
         startkey: doc0._id,
         endkey: doc0._id,
         include_docs: true,

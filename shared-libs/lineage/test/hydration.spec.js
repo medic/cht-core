@@ -24,15 +24,15 @@ describe('Lineage', function() {
 
   describe('fetchLineageById', function() {
     it('queries db with correct parameters', function() {
-      query.resolves({ rows: [] });
+      get.resolves({ _id: 'banana', parent: { _id: 'apple' } });
+      allDocs.resolves({ rows: [{ doc: { _id: 'apple' } }] });
       const id = 'banana';
 
       return lineage.fetchLineageById(id).then(() => {
-        chai.expect(query.callCount).to.equal(1);
-        chai.expect(query.getCall(0).args[0]).to.equal('medic-client/docs_by_id_lineage');
-        chai.expect(query.getCall(0).args[1].startkey).to.deep.equal([ id ]);
-        chai.expect(query.getCall(0).args[1].endkey).to.deep.equal([ id, {} ]);
-        chai.expect(query.getCall(0).args[1].include_docs).to.deep.equal(true);
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.getCall(0).args[0]).to.equal('banana');
+        chai.expect(allDocs.callCount).to.equal(1);
+        chai.expect(allDocs.getCall(0).args[0]).to.deep.equal({ keys: ['apple'], include_docs: true });
       });
     });
   });
@@ -164,7 +164,6 @@ describe('Lineage', function() {
 
   describe('fetchHydratedDoc', function() {
     it('supports callback as second argument', function(done) {
-      query.resolves({ rows: [] });
       get.resolves({ _id: 'a', type: 'person' });
 
       lineage.fetchHydratedDoc('a', function(err, result) {
@@ -175,7 +174,7 @@ describe('Lineage', function() {
     });
 
     it('passes error to callback', function(done) {
-      query.rejects(new Error('db fail'));
+      get.rejects(new Error('db fail'));
 
       lineage.fetchHydratedDoc('a', function(err) {
         chai.expect(err.message).to.equal('db fail');
@@ -184,7 +183,7 @@ describe('Lineage', function() {
     });
 
     it('throws when lineage is empty and throwWhenMissingLineage is true', function() {
-      query.resolves({ rows: [] });
+      get.rejects({ status: 404 });
 
       return lineage.fetchHydratedDoc('a', { throwWhenMissingLineage: true })
         .then(() => chai.expect.fail('should have thrown'))
@@ -205,7 +204,7 @@ describe('Lineage', function() {
     it('throws non-404 errors for single doc', function() {
       const err = new Error('server error');
       err.status = 500;
-      query.rejects(err);
+      get.rejects(err);
 
       return lineage.fetchHydratedDocs(['a'])
         .then(() => chai.expect.fail('should have thrown'))

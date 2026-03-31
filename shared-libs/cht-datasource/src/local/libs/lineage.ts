@@ -33,8 +33,30 @@ import { isEqual } from 'lodash';
  * @internal
  */
 export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string) => Promise<Nullable<Doc>[]> => {
-  const fn = queryDocsByRange(medicDb, 'medic-client/docs_by_id_lineage');
-  return (id: string) => fn([id], [id, {}]);
+  const getMedicDocsById = getDocsByIds(medicDb);
+  return async (id: string) => {
+    try {
+      const doc = await medicDb.get(id);
+      const parentIds: string[] = [];
+      let current = doc.type === 'data_record' ? doc.contact : doc.parent;
+      while (isRecord(current)) {
+        if (typeof current._id === 'string') {
+          parentIds.push(current._id);
+        }
+        current = current.parent;
+      }
+      if (parentIds.length === 0) {
+        return [doc];
+      }
+      const ancestors = await getMedicDocsById(parentIds);
+      return [doc, ...ancestors];
+    } catch (err: any) {
+      if (err.status === 404) {
+        return [];
+      }
+      throw err;
+    }
+  };
 };
 
 /** @internal */

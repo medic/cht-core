@@ -30,18 +30,26 @@ describe('local lineage lib', () => {
 
   it('getLineageDocsById', async () => {
     const uuid = '123';
-    const queryFn = sinon.stub().resolves([]);
-    const queryDocsByRange = sinon
-      .stub(LocalDoc, 'queryDocsByRange')
-      .returns(queryFn);
-    const medicDb = { hello: 'world' } as unknown as PouchDB.Database<Doc>;
+    const doc = { _id: uuid, parent: { _id: 'parent1' } };
+    const parentDoc = { _id: 'parent1' };
+    medicGet.resolves(doc);
+    const getDocsByIdsInner = sinon.stub().resolves([parentDoc]);
+    const getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
 
     const fn = Lineage.getLineageDocsById(medicDb);
     const result = await fn(uuid);
 
+    expect(result).to.deep.equal([doc, parentDoc]);
+    expect(medicGet.calledOnceWithExactly(uuid)).to.be.true;
+    expect(getDocsByIdsOuter.calledOnceWithExactly(medicDb)).to.be.true;
+    expect(getDocsByIdsInner.calledOnceWithExactly(['parent1'])).to.be.true;
+  });
+
+  it('getLineageDocsById handles 404', async () => {
+    medicGet.rejects({ status: 404 });
+    const fn = Lineage.getLineageDocsById(medicDb);
+    const result = await fn('missing');
     expect(result).to.deep.equal([]);
-    expect(queryDocsByRange.calledOnceWithExactly(medicDb, 'medic-client/docs_by_id_lineage')).to.be.true;
-    expect(queryFn.calledOnceWithExactly([uuid], [uuid, {}])).to.be.true;
   });
 
   describe('getPrimaryContactIds', () => {

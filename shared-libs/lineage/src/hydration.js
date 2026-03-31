@@ -229,16 +229,28 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
+    return DB.get(id)
+      .then(function(doc) {
+        const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
+        const parentIds = extractParentIds(startParent);
+        if (!parentIds.length) {
+          return [doc];
+        }
+        return fetchDocs(parentIds).then(function(ancestors) {
+          const docsMap = new Map();
+          ancestors.forEach(function(a) { docsMap.set(a._id, a); });
+          const result = [doc];
+          parentIds.forEach(function(parentId) {
+            result.push(docsMap.get(parentId) || null);
+          });
+          return result;
         });
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return [];
+        }
+        throw err;
       });
   };
 
