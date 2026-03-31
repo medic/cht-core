@@ -8,6 +8,11 @@ cht_image_tag: "{{cht_image_tag}}" # TEMPLATE: This is a template variable, not 
 api:
   service:
     type: ClusterIP # DEFAULT: Good default for internal services
+  log_level: "info" # DEFAULT: Log level for API service
+
+# Sentinel Service configuration
+sentinel:
+  log_level: "info" # DEFAULT: Log level for Sentinel service
 
 # If images are cached, the same image tag will never be pulled twice. For development, this means that it's not
 # possible to upgrade to a newer version of the same branch, as the old image will always be reused.
