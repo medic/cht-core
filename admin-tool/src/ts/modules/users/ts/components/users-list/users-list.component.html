@@ -1,0 +1,78 @@
+@if (canConfigure) {
+  <legend translate>Users</legend>
+  <div class="btn-toolbar">
+    <button id="add-user" class="btn btn-primary" (click)="addUser()">
+      <span translate>users.manage.add_single_user</span>
+    </button>
+    <button id="add-users" class="btn btn-primary" (click)="importUsers()">
+      <span translate>users.manage.import_users</span>
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loader"></div>
+  } @else {
+    @if (error) {
+      <p class="alert alert-danger" role="alert" translate>
+        Error fetching users
+      </p>
+    } @else {
+      <div class="container-fluid">
+        <div class="row selection-heading">
+          <div class="col-xs-3" translate>User Name</div>
+          <div class="col-xs-3" translate>Full Name</div>
+          <div class="col-xs-3" translate>Phone Number</div>
+          <div class="col-xs-1" translate>Facility</div>
+          <div class="col-xs-1" translate>Contact</div>
+          <div class="col-xs-1"></div>
+        </div>
+
+        @if (users.length === 0) {
+          <div class="text-center empty-state">
+            <p translate>No users found.</p>
+          </div>
+        } @else {
+          @for (user of users; track user.id) {
+            <div
+              class="row selection"
+              (click)="onRowClick(user)"
+              [class.inactive]="user.inactive"
+              [title]="user.inactive ? 'Deleted user' : ''"
+            >
+              <div class="col-xs-3">{{ user.username }}</div>
+              <div class="col-xs-3">{{ user.fullname }}</div>
+              <div class="col-xs-3">{{ user.phone }}</div>
+              @if (user.facility_id) {
+                <div class="col-xs-1">
+                  <i class="fa fa-check" aria-label="Has facility"></i>
+                </div>
+              } @else {
+                <div class="col-xs-1"></div>
+              }
+              @if (user.contact_id) {
+                <div class="col-xs-1">
+                  <i class="fa fa-check" aria-label="Has contact"></i>
+                </div>
+              } @else {
+                <div class="col-xs-1"></div>
+              }
+              @if (!user.inactive) {
+                <div class="col-xs-1 delete">
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="deleteUser(user, $event)"
+                    aria-label="Delete user"
+                  >
+                    <i class="fa fa-trash-o"></i>
+                  </button>
+                </div>
+              } @else {
+                <div class="col-xs-1"></div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+  }
+}

@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from 'chai';
-
+import sinon from 'sinon';
 import { UsersComponent } from '@admin-tool-modules/users/users.component';
+import { AuthService } from '@admin-tool-services/auth.service';
+import { UsersService } from '@admin-tool-services/users.service';
 
 describe('UsersComponent', () => {
   let component: UsersComponent;
@@ -11,6 +13,10 @@ describe('UsersComponent', () => {
     return TestBed
       .configureTestingModule({
         imports: [UsersComponent],
+        providers: [
+          { provide: AuthService, useValue: { has: sinon.stub().resolves(false) } },
+          { provide: UsersService, useValue: { getUsers: sinon.stub().resolves([]) } },
+        ]
       })
       .compileComponents()
       .then(() => {
@@ -20,17 +26,14 @@ describe('UsersComponent', () => {
       });
   }));
 
+  afterEach(() => sinon.restore());
+
   it('should create the users component', () => {
     expect(component).to.exist;
   });
 
-  it('should render the Users heading', () => {
+  it('should render the users-list component', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h2')!.textContent).to.contain('Users');
-  });
-
-  it('should render a placeholder description paragraph', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('p')).to.exist;
+    expect(compiled.querySelector('users-list')).to.exist;
   });
 });

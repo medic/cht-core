@@ -1,6 +1,14 @@
-import { ApplicationConfig, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  APP_INITIALIZER,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { provideHttpClient, HttpInterceptorFn, withInterceptors } from '@angular/common/http';
+import {
+  provideHttpClient,
+  HttpInterceptorFn,
+  withInterceptors,
+} from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,7 +26,12 @@ const initSession = (session: SessionService) => () => session.init();
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    importProvidersFrom(BrowserModule, AppRoutingModule, RouterModule, TranslateModule.forRoot()),
+    importProvidersFrom(
+      BrowserModule,
+      AppRoutingModule,
+      RouterModule,
+      TranslateModule.forRoot(),
+    ),
     provideHttpClient(withInterceptors([credentialsInterceptor])),
     provideAnimations(),
     CookieService,

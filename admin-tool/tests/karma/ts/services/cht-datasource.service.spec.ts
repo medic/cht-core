@@ -19,7 +19,7 @@ describe('CHTDatasourceService', () => {
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
-      ]
+      ],
     });
 
     service = TestBed.inject(CHTDatasourceService);
@@ -84,7 +84,9 @@ describe('CHTDatasourceService', () => {
       settingsService.get.resolves(settings);
 
       const datasource = await service.get();
-      const result = datasource.v1.hasPermissions('can_configure', { roles: ['national_admin'] });
+      const result = datasource.v1.hasPermissions('can_configure', {
+        roles: ['national_admin'],
+      });
 
       expect(result).to.be.true;
     });
@@ -102,24 +104,35 @@ describe('CHTDatasourceService', () => {
     });
 
     it('hasAnyPermission should return true when user has at least one group of permissions', async () => {
-      const settings = { permissions: { can_configure: ['national_admin'], can_view: ['chw'] } };
+      const settings = {
+        permissions: { can_configure: ['national_admin'], can_view: ['chw'] },
+      };
       sessionService.userCtx.returns({ roles: ['chw'] });
       settingsService.get.resolves(settings);
 
       const datasource = await service.get();
-      const result = datasource.v1.hasAnyPermission([['can_configure'], ['can_view']]);
+      const result = datasource.v1.hasAnyPermission([
+        ['can_configure'],
+        ['can_view'],
+      ]);
 
       expect(result).to.be.true;
     });
 
     it('hasAnyPermission should use provided settings over service settings', async () => {
-      const serviceSettings = { permissions: { can_configure: ['national_admin'] } };
+      const serviceSettings = {
+        permissions: { can_configure: ['national_admin'] },
+      };
       const customSettings = { permissions: { can_configure: ['chw'] } };
       sessionService.userCtx.returns({ roles: ['chw'] });
       settingsService.get.resolves(serviceSettings);
 
       const datasource = await service.get();
-      const result = datasource.v1.hasAnyPermission([['can_configure']], undefined, customSettings);
+      const result = datasource.v1.hasAnyPermission(
+        [['can_configure']],
+        undefined,
+        customSettings,
+      );
 
       expect(result).to.be.true;
     });
