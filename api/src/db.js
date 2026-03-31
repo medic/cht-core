@@ -2,6 +2,7 @@ const PouchDB = require('pouchdb-core');
 const logger = require('@medic/logger');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
+const { wrapCouch } = require('@medic/db-adapter');
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
@@ -95,17 +96,17 @@ if (UNIT_TEST_ENV) {
   const getDbUrl = name => `${environment.serverUrl}/${name}`;
 
   DB.setMaxListeners(0);
-  module.exports.medic = DB;
-  module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch: fetchFn });
-  module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch: fetchFn });
-  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch: fetchFn });
+  module.exports.medic = wrapCouch(DB);
+  module.exports.medicUsersMeta = wrapCouch(new PouchDB(`${environment.couchUrl}-users-meta`, { fetch: fetchFn }));
+  module.exports.medicLogs = wrapCouch(new PouchDB(`${environment.couchUrl}-logs`, { fetch: fetchFn }));
+  module.exports.sentinel = wrapCouch(new PouchDB(`${environment.couchUrl}-sentinel`, { fetch: fetchFn }));
+  module.exports.vault = wrapCouch(new PouchDB(`${environment.couchUrl}-vault`, { fetch: fetchFn }));
   module.exports.createVault = () => module.exports.vault.info();
-  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
-  module.exports.builds = new PouchDB(environment.buildsUrl);
+  module.exports.users = wrapCouch(new PouchDB(getDbUrl('_users'), { fetch: fetchFn }));
+  module.exports.builds = wrapCouch(new PouchDB(environment.buildsUrl));
 
   // Get the DB with the given name
-  module.exports.get = name => new PouchDB(getDbUrl(name), { fetch: fetchFn });
+  module.exports.get = name => wrapCouch(new PouchDB(getDbUrl(name), { fetch: fetchFn }));
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -118,9 +119,10 @@ if (UNIT_TEST_ENV) {
     }
   };
 
-  // Resolves with the PouchDB object if the DB with the given name exists
+  // Resolves with the adapter-wrapped DB if the DB with the given name exists
   module.exports.exists = name => {
-    const db = new PouchDB(getDbUrl(name), { skip_setup: true, fetch: fetchFn });
+    const pouchDb = new PouchDB(getDbUrl(name), { skip_setup: true, fetch: fetchFn });
+    const db = wrapCouch(pouchDb);
     return db
       .info()
       .then(result => {

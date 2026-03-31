@@ -202,7 +202,8 @@ describe('db', () => {
       db.__set__('PouchDB', pouch);
 
       const result = await db.exists('thedbname');
-      expect(result).to.equal(dbObject);
+      expect(result._db).to.equal(dbObject);
+      expect(result.backendType).to.equal('couchdb');
       expect(pouch.callCount).to.equal(1);
       expect(pouch.args[0][0]).to.equal(`${env.serverUrl}/thedbname`);
       expect(pouch.args[0][1].skip_setup).to.equal(true);
@@ -219,7 +220,7 @@ describe('db', () => {
       const result = await db.exists('thedbname');
       expect(result).to.equal(false);
       expect(db.close.callCount).to.equal(1);
-      expect(db.close.args).to.deep.equal([[dbObject]]);
+      expect(db.close.args[0][0]._db).to.equal(dbObject);
     });
 
     it('should close db if info request returns an error', async () => {
@@ -233,7 +234,7 @@ describe('db', () => {
       const result = await db.exists('thedbname');
       expect(result).to.equal(false);
       expect(db.close.callCount).to.equal(1);
-      expect(db.close.args).to.deep.equal([[dbObject]]);
+      expect(db.close.args[0][0]._db).to.equal(dbObject);
     });
   });
 

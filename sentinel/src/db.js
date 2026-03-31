@@ -2,6 +2,7 @@ const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
+const { wrapCouch } = require('@medic/db-adapter');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -74,10 +75,10 @@ if (UNIT_TEST_ENV) {
     });
   };
 
-  module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn});
+  module.exports.medic = wrapCouch(new PouchDB(couchUrl, { fetch: fetchFn }));
+  module.exports.sentinel = wrapCouch(new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn}));
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
-  module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
+  module.exports.get = db => wrapCouch(new PouchDB(`${environment.serverUrl}/${db}`));
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
       return;
@@ -89,7 +90,7 @@ if (UNIT_TEST_ENV) {
       logger.error('Error when closing db: %o', err);
     }
   };
-  module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
+  module.exports.users = wrapCouch(new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn }));
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
