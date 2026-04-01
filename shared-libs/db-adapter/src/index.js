@@ -1,10 +1,13 @@
 const CouchAdapter = require('./couch/couch-adapter');
+const MongoAdapter = require('./mongo/mongo-adapter');
 const logger = require('@medic/logger');
 
 const BACKENDS = {
   couchdb: 'couchdb',
-  // mongodb: 'mongodb',  // Future
+  mongodb: 'mongodb',
 };
+
+let mongoClient = null;
 
 const getBackend = () => {
   return process.env.DB_BACKEND || BACKENDS.couchdb;
@@ -12,7 +15,6 @@ const getBackend = () => {
 
 /**
  * Wraps a PouchDB instance in a CouchAdapter.
- * This is the primary entry point for Phase 1 migration.
  *
  * @param {object} pouchDb - An already-constructed PouchDB instance
  * @returns {CouchAdapter} The wrapped adapter
@@ -22,19 +24,52 @@ const wrapCouch = (pouchDb) => {
 };
 
 /**
+ * Creates a MongoAdapter for the given database name.
+ * Requires MONGO_URL environment variable (e.g. 'mongodb://localhost:27017').
+ *
+ * @param {string} dbName - The database name
+ * @param {string} [collectionName='docs'] - The collection name
+ * @returns {MongoAdapter}
+ */
+const wrapMongo = (dbName, collectionName = 'docs') => {
+  if (!mongoClient) {
+    throw new Error('MongoDB client not initialized. Call initMongo() first.');
+  }
+  const db = mongoClient.db(dbName);
+  const collection = db.collection(collectionName);
+  return new MongoAdapter(collection, db, dbName);
+};
+
+/**
+ * Initialize the shared MongoDB client connection.
+ * Must be called before creating MongoDB adapters.
+ *
+ * @param {MongoClient} client - An already-connected MongoClient instance
+ */
+const initMongo = (client) => {
+  mongoClient = client;
+};
+
+/**
  * Creates a database adapter for the configured backend.
  *
- * For 'couchdb' backend: requires a pre-constructed PouchDB instance.
- * Future backends (e.g. 'mongodb') will accept connection config instead.
+ * For 'couchdb': requires a pre-constructed PouchDB instance.
+ * For 'mongodb': requires a database name string.
  *
- * @param {object} pouchDbOrConfig - PouchDB instance (for couchdb) or config object (for future backends)
- * @returns {CouchAdapter} A database adapter instance
+ * @param {object|string} pouchDbOrDbName - PouchDB instance (couchdb) or database name string (mongodb)
+ * @param {object} [opts] - Options
+ * @param {string} [opts.collection] - MongoDB collection name (default: 'docs')
+ * @returns {CouchAdapter|MongoAdapter}
  */
-const createAdapter = (pouchDbOrConfig) => {
+const createAdapter = (pouchDbOrDbName, opts = {}) => {
   const backend = getBackend();
 
   if (backend === BACKENDS.couchdb) {
-    return wrapCouch(pouchDbOrConfig);
+    return wrapCouch(pouchDbOrDbName);
+  }
+
+  if (backend === BACKENDS.mongodb) {
+    return wrapMongo(pouchDbOrDbName, opts.collection);
   }
 
   logger.error(`Unsupported database backend: ${backend}`);
@@ -44,6 +79,9 @@ const createAdapter = (pouchDbOrConfig) => {
 module.exports = {
   createAdapter,
   wrapCouch,
+  wrapMongo,
+  initMongo,
   CouchAdapter,
+  MongoAdapter,
   BACKENDS,
 };

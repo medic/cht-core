@@ -4,11 +4,12 @@
   "description": "Database adapter abstraction layer supporting multiple backends",
   "main": "src/index.js",
   "scripts": {
-    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test"
+    "test": "nyc mocha ./test"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@medic/logger": "file:../logger"
+    "@medic/logger": "file:../logger",
+    "mongodb": "^6.12.0"
   }
 }

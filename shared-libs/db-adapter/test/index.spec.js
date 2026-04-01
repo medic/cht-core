@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const { createAdapter, wrapCouch, CouchAdapter, BACKENDS } = require('../src/index');
+const { createAdapter, wrapCouch, wrapMongo, initMongo, CouchAdapter, MongoAdapter, BACKENDS } = require('../src/index');
 
 const createMockPouchDb = () => ({
   get: sinon.stub(),
@@ -19,6 +19,17 @@ const createMockPouchDb = () => ({
   compact: sinon.stub(),
   viewCleanup: sinon.stub(),
   destroy: sinon.stub(),
+});
+
+const createMockMongoClient = () => ({
+  db: sinon.stub().returns({
+    collection: sinon.stub().returns({
+      findOne: sinon.stub(),
+      find: sinon.stub(),
+      insertOne: sinon.stub(),
+    }),
+    command: sinon.stub(),
+  }),
 });
 
 describe('db-adapter index', () => {
@@ -41,6 +52,10 @@ describe('db-adapter index', () => {
     it('should define couchdb backend', () => {
       expect(BACKENDS.couchdb).to.equal('couchdb');
     });
+
+    it('should define mongodb backend', () => {
+      expect(BACKENDS.mongodb).to.equal('mongodb');
+    });
   });
 
   describe('wrapCouch', () => {
@@ -49,6 +64,20 @@ describe('db-adapter index', () => {
       const adapter = wrapCouch(pouchDb);
       expect(adapter).to.be.instanceOf(CouchAdapter);
       expect(adapter.backendType).to.equal('couchdb');
+    });
+  });
+
+  describe('wrapMongo', () => {
+    it('should create a MongoAdapter', () => {
+      initMongo(createMockMongoClient());
+      const adapter = wrapMongo('medic');
+      expect(adapter).to.be.instanceOf(MongoAdapter);
+      expect(adapter.backendType).to.equal('mongodb');
+    });
+
+    it('should throw if mongo client not initialized', () => {
+      initMongo(null);
+      expect(() => wrapMongo('medic')).to.throw('MongoDB client not initialized');
     });
   });
 
@@ -65,6 +94,13 @@ describe('db-adapter index', () => {
       const pouchDb = createMockPouchDb();
       const adapter = createAdapter(pouchDb);
       expect(adapter.backendType).to.equal('couchdb');
+    });
+
+    it('should create a MongoAdapter when DB_BACKEND is mongodb', () => {
+      process.env.DB_BACKEND = 'mongodb';
+      initMongo(createMockMongoClient());
+      const adapter = createAdapter('medic');
+      expect(adapter.backendType).to.equal('mongodb');
     });
 
     it('should throw for unsupported backend', () => {
