@@ -44,6 +44,12 @@ const updateScheduledTasks = (doc, context, dueDates, clearFailing=false) => {
   let updatedTasks = false;
   // set task to pending for gateway to pick up
   doc.scheduled_tasks.forEach(task => {
+    // only process tasks that are still in 'scheduled' state - skip tasks that have already
+    // progressed to other states (e.g. pending, sent, delivered) to prevent re-sending
+    if (task.state !== 'scheduled') {
+      return;
+    }
+
     // use the same due calculation as the `messages_by_state` view
     let due = task.due || task.timestamp || doc.reported_date;
     if (typeof due !== 'string') {
