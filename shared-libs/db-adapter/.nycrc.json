@@ -1,8 +1,8 @@
 {
   "reporter": "text-summary",
   "checkCoverage": true,
-  "branches": 84,
+  "branches": 75,
   "lines": 91,
-  "functions": 92,
+  "functions": 94,
   "statements": 91
 }

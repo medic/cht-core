@@ -1,6 +1,7 @@
 const { ObjectId } = require('mongodb');
 const revisions = require('./mongo-revisions');
 const changes = require('./mongo-changes');
+const views = require('./mongo-views');
 
 const NOT_FOUND_ERROR = (id) => {
   const err = new Error('missing');
@@ -204,9 +205,8 @@ class MongoAdapter {
     };
   }
 
-  // Stub - view queries will be implemented in Phase 5 (mongo-views.js)
-  async query(_view, _opts) {
-    throw new Error(`View queries not yet implemented for MongoDB backend. View: ${_view}`);
+  async query(view, opts) {
+    return views.queryView(view, this._collection, opts);
   }
 
   changes(opts = {}) {

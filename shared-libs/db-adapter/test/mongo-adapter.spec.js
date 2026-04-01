@@ -474,14 +474,27 @@ describe('MongoAdapter', () => {
   });
 
   describe('query', () => {
-    it('should throw not implemented error', async () => {
+    it('should throw for unregistered view', async () => {
       const { adapter } = createAdapter();
       try {
-        await adapter.query('medic/contacts_by_depth');
+        await adapter.query('unknown/view');
         expect.fail('should have thrown');
       } catch (err) {
-        expect(err.message).to.include('not yet implemented');
+        expect(err.message).to.include('View not implemented');
       }
+    });
+
+    it('should delegate to view registry for registered views', async () => {
+      const { adapter, collection } = createAdapter();
+      collection.find.returns({
+        sort: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([{ _id: 'm1', type: 'meta' }]),
+      });
+
+      const result = await adapter.query('medic-client/doc_by_type', { key: ['meta'], include_docs: true });
+      expect(result.rows).to.have.length(1);
+      expect(result.rows[0].doc._id).to.equal('m1');
     });
   });
 
