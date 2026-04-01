@@ -110,46 +110,4 @@ describe('Initial Replication controller', () => {
     });
   });
 
-  describe('pushDocs', () => {
-    it('should return 400 when docs is missing', async () => {
-      const pushReq = { userCtx: { name: 'michael' }, body: {} };
-      const pushRes = { json: sinon.stub(), status: sinon.stub().returnsThis() };
-
-      await controller.pushDocs(pushReq, pushRes);
-
-      expect(pushRes.status.args).to.deep.equal([[400]]);
-      expect(pushRes.json.args[0][0].error).to.equal('bad_request');
-    });
-
-    it('should return 400 when docs is not an array', async () => {
-      const pushReq = { userCtx: { name: 'michael' }, body: { docs: 'not-array' } };
-      const pushRes = { json: sinon.stub(), status: sinon.stub().returnsThis() };
-
-      await controller.pushDocs(pushReq, pushRes);
-
-      expect(pushRes.status.args).to.deep.equal([[400]]);
-    });
-
-    it('should delegate to service and return results', async () => {
-      const docs = [{ _id: 'doc1', type: 'report' }];
-      const results = [{ ok: true, id: 'doc1', rev: '2-abc' }];
-      sinon.stub(replicationService, 'pushDocs').resolves(results);
-      const pushReq = { userCtx: { name: 'michael' }, body: { docs } };
-
-      await controller.pushDocs(pushReq, res);
-
-      expect(replicationService.pushDocs.args).to.deep.equal([[{ name: 'michael' }, docs]]);
-      expect(res.json.args).to.deep.equal([[{ results }]]);
-    });
-
-    it('should handle service errors', async () => {
-      sinon.stub(replicationService, 'pushDocs').rejects({ status: 500 });
-      sinon.stub(serverUtils, 'serverError');
-      const pushReq = { userCtx: { name: 'michael' }, body: { docs: [] } };
-
-      await controller.pushDocs(pushReq, res);
-
-      expect(serverUtils.serverError.callCount).to.equal(1);
-    });
-  });
 });

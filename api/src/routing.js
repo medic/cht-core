@@ -377,10 +377,7 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
   // auditing and do other things as well, look to how the _changes feed is
   // handled.
   if (isMongo) {
-    // With MongoDB backend, CouchDB-specific endpoints are not available
-    app.all(url, function(req, res) {
-      res.status(404).json({ error: 'not_found', reason: 'CouchDB endpoint not available with MongoDB backend' });
-    });
+    // With MongoDB backend, skip to let compat router handle these
   } else {
     app.all(url, function(req, res) {
       proxy.web(req, res);
@@ -590,11 +587,84 @@ app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
-const onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy);
-const onlineUserChangesProxy = _.partial(
-  authorization.onlineUserProxy,
-  proxyForChanges
-);
+let onlineUserProxy;
+let onlineUserChangesProxy;
+
+if (isMongo) {
+  // For MongoDB, online users get direct adapter-backed responses.
+  // Offline users go through normal handler chain.
+  const mongoOnlineUserProxy = (req, res, next) => {
+    if (!req.userCtx || auth.isOnlineOnly(req.userCtx)) {
+      // For CouchDB API paths — let fall through to compat router
+      if (req.path.startsWith('/_') || req.path.includes('_design') || req.params?.docId === '_local') {
+        return next('route');
+      }
+      // For online users, serve docs/attachments directly from adapter
+      const docId = req.params?.docId;
+      const attId = req.params?.attachmentId;
+      if (docId && attId && req.method === 'GET') {
+        // Attachment request
+        return db.medic.getAttachment(docId, attId)
+          .then(async (data) => {
+            const doc = await db.medic.get(docId);
+            const att = doc._attachments?.[attId];
+            res.set('Content-Type', att?.content_type || 'application/octet-stream');
+            // MongoDB returns Binary objects — use .buffer to get the underlying Buffer
+            const buf = data?.buffer ? data.buffer : (Buffer.isBuffer(data) ? data : Buffer.from(data));
+            res.send(buf);
+          })
+          .catch(err => {
+            const status = err.status || 404;
+            res.status(status).json({ error: 'not_found', reason: 'missing' });
+          });
+      }
+      if (docId && !attId && req.method === 'GET') {
+        return db.medic.get(docId)
+          .then(doc => res.json(doc))
+          .catch(err => {
+            const status = err.status || 500;
+            res.status(status).json({ error: err.name || 'error', reason: err.message });
+          });
+      }
+      if (docId && req.method === 'PUT') {
+        const doc = { ...req.body, _id: docId };
+        return db.medic.put(doc)
+          .then(result => res.status(201).json(result))
+          .catch(err => {
+            const status = err.status || 500;
+            res.status(status).json({ error: err.name || 'error', reason: err.message });
+          });
+      }
+      if (docId && req.method === 'DELETE') {
+        return db.medic.remove(docId, req.query.rev)
+          .then(result => res.json(result))
+          .catch(err => {
+            const status = err.status || 500;
+            res.status(status).json({ error: err.name || 'error', reason: err.message });
+          });
+      }
+      // For non-doc requests, pass through
+      return next('route');
+    }
+    return authorization.getUserSettings(req, res, next);
+  };
+  onlineUserProxy = mongoOnlineUserProxy;
+  // For changes, serve online users directly via compat handler
+  const { createHandlers } = require('@medic/db-adapter/src/mongo/compat/couch-http-handler');
+  const changesCompat = createHandlers(() => db.medic);
+  onlineUserChangesProxy = (req, res, next) => {
+    if (!req.userCtx || auth.isOnlineOnly(req.userCtx)) {
+      return changesCompat.changes(req, res);
+    }
+    return authorization.getUserSettings(req, res, next);
+  };
+} else {
+  onlineUserProxy = _.partial(authorization.onlineUserProxy, proxy);
+  onlineUserChangesProxy = _.partial(
+    authorization.onlineUserProxy,
+    proxyForChanges
+  );
+}
 
 // DB replication endpoint
 const changesHandler = require('./controllers/changes').request;
@@ -653,6 +723,22 @@ app.post(
   bulkDocs.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
+
+// MongoDB CouchDB compatibility layer — mounted before docPath/attachmentPath routes
+// so that _local, _changes, _all_docs, _bulk_get, _bulk_docs, view queries, and
+// attachment requests are handled directly by the compat router for ALL users.
+if (isMongo) {
+  const { createCouchRouter } = require('@medic/db-adapter/src/mongo/compat/couch-router');
+  const mongoDbName = environment.db || 'medic';
+
+  app.use(`/${mongoDbName}`, createCouchRouter(() => db.medic));
+  app.use(new RegExp(`^/${mongoDbName}-user-([^/]+)-meta`), createCouchRouter((req) => {
+    const username = req.params[0];
+    return db.get(`${mongoDbName}-user-${username}-meta`);
+  }));
+  app.use(`/${mongoDbName}-sentinel`, createCouchRouter(() => db.sentinel));
+  app.use('/_users', createCouchRouter(() => db.users));
+}
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
@@ -725,13 +811,6 @@ app.post(
   authorization.onlineUserPassThrough,
   replication.getDocIdsToDelete,
 );
-app.post(
-  '/api/v1/replication/push-docs',
-  jsonParser,
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  replication.pushDocs,
-);
 
 const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 
@@ -743,14 +822,18 @@ app.all('/medic-user-*"name"-meta{/{*path}}', (req, res, next) => {
 });
 
 // AuthZ for this endpoint should be handled by couchdb
-app.get(`${metaRoutePrefix}_changes`, (req, res) => {
-  proxyForChanges.web(req, res);
-});
+if (!isMongo) {
+  app.get(`${metaRoutePrefix}_changes`, (req, res) => {
+    proxyForChanges.web(req, res);
+  });
+}
 
 // Attempting to create the user's personal meta db
 app.put(metaRoutePrefix, createUserDb);
 // AuthZ for this endpoint should be handled by couchdb, allow offline users to access this directly
 app.all(`${metaRoutePrefix}{*any}`, authorization.setAuthorized);
+
+// Meta DB requests for MongoDB are handled by the compat router mounted earlier
 
 const writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
@@ -823,36 +906,38 @@ app.get('/service-worker.js', (req, res) => {
  * Set cache control on static resources. Must be hacked in to
  * ensure we set the value first.
  */
-proxy.on('proxyReq', function(proxyReq, req, res) {
-  if (
-    !staticResources.test(req.url) &&
-    req.url.indexOf(appPrefix) !== -1
-  ) {
-    // requesting other application files
-    writeHeaders(req, res, [], true);
-  } else {
-    // everything else
-    writeHeaders(req, res);
-  }
+if (!isMongo) {
+  proxy.on('proxyReq', function(proxyReq, req, res) {
+    if (
+      !staticResources.test(req.url) &&
+      req.url.indexOf(appPrefix) !== -1
+    ) {
+      // requesting other application files
+      writeHeaders(req, res, [], true);
+    } else {
+      // everything else
+      writeHeaders(req, res);
+    }
 
-  writeParsedBody(proxyReq, req);
-});
+    writeParsedBody(proxyReq, req);
+  });
 
-proxyForChanges.on('proxyReq', (proxyReq, req) => {
-  writeParsedBody(proxyReq, req);
-});
+  proxyForChanges.on('proxyReq', (proxyReq, req) => {
+    writeParsedBody(proxyReq, req);
+  });
 
-// because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
-proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
-  if (proxyRes.statusCode === 401) {
-    return serverUtils.notLoggedIn(req, res);
-  }
+  // because these are longpolls, we need to manually flush the CouchDB heartbeats through compression
+  proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
+    if (proxyRes.statusCode === 401) {
+      return serverUtils.notLoggedIn(req, res);
+    }
 
-  copyProxyHeaders(proxyRes, res);
+    copyProxyHeaders(proxyRes, res);
 
-  proxyRes.pipe(res);
-  proxyRes.on('data', () => res.flush());
-});
+    proxyRes.pipe(res);
+    proxyRes.on('data', () => res.flush());
+  });
+}
 
 /**
  * Make sure requests to these urls sans trailing / are redirected to the
@@ -867,6 +952,9 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
 
 // allow offline users to access the app
 app.all(`${appPrefix}*param`, authorization.setAuthorized);
+
+// Note: MongoDB compat router is mounted earlier (before docPath routes) to handle
+// _local, _changes, _all_docs, _bulk_get, _bulk_docs, views, and attachments.
 
 // block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through

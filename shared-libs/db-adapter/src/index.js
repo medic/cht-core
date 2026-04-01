@@ -51,6 +51,22 @@ const initMongo = (client) => {
 };
 
 /**
+ * Connect to MongoDB and initialize the shared client.
+ * Handles MongoClient creation so callers don't need to import mongodb directly.
+ *
+ * @param {string} url - MongoDB connection URL
+ * @returns {Promise<MongoClient>} The connected client
+ */
+const connectMongo = async (url) => {
+  const { MongoClient } = require('mongodb');
+  const connectUrl = url.includes('directConnection') ? url : `${url}/?directConnection=true`;
+  const client = new MongoClient(connectUrl);
+  await client.connect();
+  initMongo(client);
+  return client;
+};
+
+/**
  * Creates a database adapter for the configured backend.
  *
  * For 'couchdb': requires a pre-constructed PouchDB instance.
@@ -81,6 +97,7 @@ module.exports = {
   wrapCouch,
   wrapMongo,
   initMongo,
+  connectMongo,
   CouchAdapter,
   MongoAdapter,
   BACKENDS,

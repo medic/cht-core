@@ -474,14 +474,11 @@ describe('MongoAdapter', () => {
   });
 
   describe('query', () => {
-    it('should throw for unregistered view', async () => {
-      const { adapter } = createAdapter();
-      try {
-        await adapter.query('unknown/view');
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err.message).to.include('View not implemented');
-      }
+    it('should return empty results for unregistered view with no design doc', async () => {
+      const { adapter, collection } = createAdapter();
+      collection.findOne.resolves(null);
+      const result = await adapter.query('unknown/view');
+      expect(result.rows).to.deep.equal([]);
     });
 
     it('should delegate to view registry for registered views', async () => {
@@ -662,7 +659,7 @@ describe('MongoAdapter', () => {
       expect(result.results[0].docs[0].error.error).to.equal('not_found');
     });
 
-    it('should include attachment data when attachments option is true', async () => {
+    it('should include attachment data as base64 when attachments option is true', async () => {
       const { adapter, collection } = createAdapter();
       const data = Buffer.from('content');
       collection.findOne.resolves({
@@ -672,7 +669,8 @@ describe('MongoAdapter', () => {
       });
 
       const result = await adapter.get('doc1', { attachments: true });
-      expect(result._attachments['file.txt'].data).to.deep.equal(data);
+      expect(result._attachments['file.txt'].data).to.equal(data.toString('base64'));
+      expect(result._attachments['file.txt'].digest).to.match(/^md5-/);
       expect(result._attachments['file.txt'].stub).to.be.undefined;
     });
   });

@@ -77,10 +77,18 @@ process
   const startupLog = require('./src/services/setup/startup-log');
 
   try {
-    startupLog.start('checks');
-    logger.info('Running installation checks…');
-    await checkInstall.run();
-    logger.info('Installation checks passed');
+    if (isMongo) {
+      // Skip CouchDB-specific ddoc staging and view indexing.
+      // MongoDB views are handled by the adapter's view registry.
+      // Mark steps as started so startupLog reports completion.
+      startupLog.start('checks');
+      logger.info('Skipping CouchDB installation checks (MongoDB backend)');
+    } else {
+      startupLog.start('checks');
+      logger.info('Running installation checks…');
+      await checkInstall.run();
+      logger.info('Installation checks passed');
+    }
 
     startupLog.start('config');
     logger.info('Loading configuration…');
@@ -88,18 +96,31 @@ process
     logger.info('Configuration loaded successfully');
     configWatcher.listen();
 
-    startupLog.start('migrate');
-    logger.info('Running db migrations…');
-    await migrations.run();
-    logger.info('Database migrations completed successfully');
+    if (isMongo) {
+      startupLog.start('migrate');
+      logger.info('Skipping CouchDB migrations (MongoDB backend)');
+    } else {
+      startupLog.start('migrate');
+      logger.info('Running db migrations…');
+      await migrations.run();
+      logger.info('Database migrations completed successfully');
+    }
 
     logger.info('Generating manifest');
     await manifest.generate();
     logger.info('Manifest generated successfully');
 
     logger.info('Generating service worker');
-    await generateServiceWorker.run(true);
-    logger.info('Service worker generated successfully');
+    try {
+      await generateServiceWorker.run(true);
+      logger.info('Service worker generated successfully');
+    } catch (swErr) {
+      if (isMongo) {
+        logger.warn('Service worker generation failed (non-fatal for MongoDB): %o', swErr.message);
+      } else {
+        throw swErr;
+      }
+    }
   } catch (err) {
     logger.error('Fatal error initialising API');
     logger.error('%o', err);

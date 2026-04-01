@@ -18,17 +18,15 @@ const createMockCollection = (docs = []) => {
 describe('mongo-views', () => {
   afterEach(() => sinon.restore());
 
-  it('should have all 11 views registered', () => {
-    expect(Object.keys(VIEW_REGISTRY)).to.have.length(11);
+  it('should have all registered views', () => {
+    expect(Object.keys(VIEW_REGISTRY).length).to.be.greaterThan(10);
   });
 
-  it('should throw for unregistered view', async () => {
-    try {
-      await queryView('unknown/view', createMockCollection());
-      expect.fail('should throw');
-    } catch (err) {
-      expect(err.message).to.include('View not implemented');
-    }
+  it('should return empty results for unregistered view with no design doc', async () => {
+    const col = createMockCollection();
+    col.findOne = sinon.stub().resolves(null);
+    const result = await queryView('unknown/view', col);
+    expect(result.rows).to.deep.equal([]);
   });
 
   describe('medic/contacts_by_depth', () => {

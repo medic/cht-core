@@ -2,7 +2,7 @@ const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
-const { wrapCouch, wrapMongo, initMongo } = require('@medic/db-adapter');
+const { wrapCouch, wrapMongo, connectMongo } = require('@medic/db-adapter');
 
 const { UNIT_TEST_ENV, DB_BACKEND, MONGO_URL } = process.env;
 const isMongo = DB_BACKEND === 'mongodb';
@@ -64,10 +64,7 @@ if (UNIT_TEST_ENV) {
   const dbName = environment.db || 'medic';
 
   module.exports.initMongoConnection = async () => {
-    const { MongoClient } = require('mongodb');
-    const client = new MongoClient(mongoUrl);
-    await client.connect();
-    initMongo(client);
+    const client = await connectMongo(mongoUrl);
     logger.info(`Sentinel connected to MongoDB at ${mongoUrl}`);
 
     module.exports.medic = wrapMongo(dbName);
@@ -78,15 +75,7 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = async () => {
-    const { MongoClient: MC } = require('mongodb');
-    const client = new MC(mongoUrl);
-    try {
-      await client.connect();
-      const { databases } = await client.db().admin().listDatabases();
-      return databases.map(db => db.name);
-    } finally {
-      await client.close();
-    }
+    return [dbName, `${dbName}-sentinel`, `${dbName}-users`];
   };
 
   module.exports.get = name => wrapMongo(name);

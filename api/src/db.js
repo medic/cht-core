@@ -1,7 +1,7 @@
 const logger = require('@medic/logger');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
-const { wrapCouch, wrapMongo, initMongo } = require('@medic/db-adapter');
+const { wrapCouch, wrapMongo, connectMongo } = require('@medic/db-adapter');
 
 const { UNIT_TEST_ENV, DB_BACKEND, MONGO_URL } = process.env;
 const isMongo = DB_BACKEND === 'mongodb';
@@ -80,17 +80,27 @@ if (UNIT_TEST_ENV) {
   });
 } else if (isMongo) {
   // --- MongoDB backend ---
-  const { MongoClient } = require('mongodb');
   const service = 'api';
   environment.setService(service);
 
   const mongoUrl = MONGO_URL || 'mongodb://localhost:27017';
   const dbName = environment.db || 'medic';
 
+  // Create placeholder objects so modules that access db.medic at require time
+  // (e.g., data-context.js) don't fail. These get replaced with real adapters
+  // in initMongoConnection().
+  const placeholder = { backendType: 'mongodb' };
+  module.exports.medic = placeholder;
+  module.exports.medicUsersMeta = placeholder;
+  module.exports.medicLogs = placeholder;
+  module.exports.sentinel = placeholder;
+  module.exports.vault = placeholder;
+  module.exports.users = placeholder;
+  module.exports.builds = placeholder;
+  module.exports.cache = placeholder;
+
   module.exports.initMongoConnection = async () => {
-    const client = new MongoClient(mongoUrl);
-    await client.connect();
-    initMongo(client);
+    const client = await connectMongo(mongoUrl);
     logger.info(`Connected to MongoDB at ${mongoUrl}`);
 
     module.exports.medic = wrapMongo(dbName);
@@ -129,16 +139,10 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.allDbs = async () => {
-    const { MongoClient: MC } = require('mongodb');
-    const client = new MC(MONGO_URL || 'mongodb://localhost:27017');
-    try {
-      await client.connect();
-      const admin = client.db().admin();
-      const { databases } = await admin.listDatabases();
-      return databases.map(db => db.name);
-    } finally {
-      await client.close();
-    }
+    return [
+      dbName, `${dbName}-sentinel`, `${dbName}-logs`,
+      `${dbName}-users-meta`, `${dbName}-vault`, `${dbName}-users`,
+    ];
   };
 
   module.exports.activeTasks = async () => [];

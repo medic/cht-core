@@ -105,6 +105,15 @@ const createChangesFeed = (db, docsCollection, opts = {}) => {
   if (opts.live) {
     startLiveFeed(db, docsCollection, opts, emitter, () => cancelled);
   } else {
+    // Make non-live emitter thenable (like PouchDB's changes object)
+    // so that `await db.changes(opts)` resolves with the result.
+    const promise = new Promise((resolve, reject) => {
+      emitter.on('complete', resolve);
+      emitter.on('error', reject);
+    });
+    emitter.then = (onFulfilled, onRejected) => promise.then(onFulfilled, onRejected);
+    emitter.catch = (onRejected) => promise.catch(onRejected);
+
     startOneShotFeed(db, opts, emitter);
   }
 
@@ -265,8 +274,18 @@ const buildWatchPipeline = (opts) => {
  */
 const ensureIndexes = async (db) => {
   const changelog = db.collection(CHANGELOG_COLLECTION);
-  await changelog.createIndex({ _seq: 1 }, { unique: true });
-  await changelog.createIndex({ id: 1, _seq: 1 });
+  const safeCreateIndex = async (collection, keys, opts = {}) => {
+    try {
+      await collection.createIndex(keys, opts);
+    } catch (err) {
+      // 85 = IndexOptionsConflict (index already exists with different name) — safe to ignore
+      if (err.code !== 85) {
+        throw err;
+      }
+    }
+  };
+  await safeCreateIndex(changelog, { _seq: 1 }, { unique: true });
+  await safeCreateIndex(changelog, { id: 1, _seq: 1 });
 };
 
 module.exports = {

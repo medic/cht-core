@@ -27,18 +27,4 @@ module.exports = {
       return serverUtils.serverError(err, req, res);
     }
   },
-
-  pushDocs: async (req, res) => {
-    const docs = req.body?.docs;
-    if (!docs || !Array.isArray(docs)) {
-      return res.status(400).json({ error: 'bad_request', reason: 'POST body must include `docs` array.' });
-    }
-
-    try {
-      const results = await replication.pushDocs(req.userCtx, docs);
-      return res.json({ results });
-    } catch (err) {
-      return serverUtils.serverError(err, req, res);
-    }
-  },
 };

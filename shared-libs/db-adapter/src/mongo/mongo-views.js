@@ -531,6 +531,191 @@ const isInRange = (key, opts) => {
   return true;
 };
 
+/**
+ * medic-client/reports_by_date
+ * Emits [reported_date] for data_records with forms.
+ * Queried with: { limit, descending, skip }
+ */
+const reportsByDate = async (collection, opts) => {
+  const query = {
+    type: 'data_record',
+    form: { $exists: true, $ne: null },
+    _deleted: { $ne: true },
+  };
+
+  const sort = opts.descending ? { reported_date: -1 } : { reported_date: 1 };
+  const cursor = collection.find(query).sort(sort);
+  if (opts.skip) { cursor.skip(opts.skip); }
+  if (opts.limit) { cursor.limit(opts.limit); }
+
+  const docs = await cursor.toArray();
+  const rows = docs.map(doc => {
+    const row = { id: doc._id, key: [doc.reported_date], value: doc.reported_date };
+    if (opts.include_docs) { row.doc = doc; }
+    return row;
+  });
+
+  return formatViewResult(rows, opts);
+};
+
+/**
+ * medic/doc_summaries_by_id
+ * Emits doc _id with a summary object for reports and contacts.
+ * Queried with: { keys: [docIds] }
+ */
+const docSummariesById = async (collection, opts) => {
+  const query = { _deleted: { $ne: true } };
+  if (opts.keys) {
+    query._id = { $in: opts.keys };
+  }
+
+  const docs = await collection.find(query).toArray();
+  const rows = [];
+
+  const getLineage = (contact) => {
+    const parts = [];
+    while (contact) {
+      if (contact._id) { parts.push(contact._id); }
+      contact = contact.parent;
+    }
+    return parts;
+  };
+
+  for (const doc of docs) {
+    if (doc.type === 'data_record' && doc.form) {
+      const subject = {};
+      const ref = doc.patient_id || doc.fields?.patient_id || doc.fields?.patient_uuid || doc.place_id || doc.fields?.place_id;
+      if (doc.fields?.patient_name) { subject.name = doc.fields.patient_name; }
+      if (ref) { subject.value = ref; subject.type = 'reference'; }
+      else if (subject.name) { subject.value = subject.name; subject.type = 'name'; }
+
+      rows.push({
+        id: doc._id,
+        key: doc._id,
+        value: {
+          _rev: doc._rev,
+          from: doc.from || doc.sent_by,
+          phone: doc.contact?.phone,
+          form: doc.form,
+          read: doc.read,
+          valid: !doc.errors || !doc.errors.length,
+          verified: doc.verified,
+          reported_date: doc.reported_date,
+          contact: doc.contact?._id,
+          lineage: getLineage(doc.contact?.parent),
+          subject,
+          case_id: doc.case_id || doc.fields?.case_id,
+        },
+      });
+    } else if (['contact', 'clinic', 'district_hospital', 'health_center', 'person'].includes(doc.type)) {
+      rows.push({
+        id: doc._id,
+        key: doc._id,
+        value: {
+          _rev: doc._rev,
+          name: doc.name || doc.phone,
+          phone: doc.phone,
+          type: doc.type,
+          contact_type: doc.contact_type,
+          contact: doc.contact?._id,
+          lineage: getLineage(doc.parent),
+          date_of_death: doc.date_of_death,
+          muted: doc.muted,
+        },
+      });
+    }
+  }
+
+  return formatViewResult(rows, opts);
+};
+
+/**
+ * medic-client/contacts_by_parent
+ * Emits [parentId, type] for contacts with a parent.
+ * Queried with: { startkey: [parentId], endkey: [parentId, {}], include_docs: true }
+ */
+const contactsByParent = async (collection, opts) => {
+  const contactTypes = ['contact', 'district_hospital', 'health_center', 'clinic', 'person'];
+  const query = { type: { $in: contactTypes }, _deleted: { $ne: true }, 'parent._id': { $exists: true } };
+
+  const parentId = opts.startkey?.[0] || opts.key?.[0];
+  if (parentId) {
+    query['parent._id'] = parentId;
+  }
+  if (opts.keys) {
+    query['parent._id'] = { $in: opts.keys.map(k => Array.isArray(k) ? k[0] : k) };
+  }
+
+  const docs = await collection.find(query).toArray();
+  const rows = docs.map(doc => {
+    const type = doc.type === 'contact' ? doc.contact_type : doc.type;
+    const row = { id: doc._id, key: [doc.parent._id, type], value: null };
+    if (opts.include_docs) { row.doc = doc; }
+    return row;
+  });
+
+  return formatViewResult(rows, opts);
+};
+
+/**
+ * medic-client/docs_by_id_lineage
+ * Emits [docId, depth] walking up parent lineage.
+ * Queried with: { startkey: [id], endkey: [id, {}], include_docs: true }
+ */
+const docsByIdLineage = async (collection, opts) => {
+  // Extract the target doc ID from startkey
+  const targetId = opts.startkey?.[0] || opts.key?.[0];
+  if (!targetId) {
+    return formatViewResult([], opts);
+  }
+
+  const doc = await collection.findOne({ _id: targetId });
+  if (!doc) {
+    return formatViewResult([], opts);
+  }
+
+  const rows = [];
+  const contactTypes = ['contact', 'district_hospital', 'health_center', 'clinic', 'person'];
+
+  if (contactTypes.includes(doc.type)) {
+    // Contact — walk its own lineage
+    let current = doc;
+    let depth = 0;
+    while (current && current._id) {
+      const row = { id: doc._id, key: [doc._id, depth], value: { _id: current._id } };
+      if (opts.include_docs) {
+        if (depth === 0) {
+          row.doc = doc;
+        } else {
+          row.doc = await collection.findOne({ _id: current._id });
+        }
+      }
+      rows.push(row);
+      depth++;
+      current = current.parent;
+    }
+  } else if (doc.type === 'data_record' && doc.form) {
+    // Report — emit self then walk contact lineage
+    const row0 = { id: doc._id, key: [doc._id, 0], value: null };
+    if (opts.include_docs) { row0.doc = doc; }
+    rows.push(row0);
+
+    let contact = doc.contact;
+    let depth = 1;
+    while (contact && contact._id) {
+      const row = { id: doc._id, key: [doc._id, depth], value: { _id: contact._id } };
+      if (opts.include_docs) {
+        row.doc = await collection.findOne({ _id: contact._id });
+      }
+      rows.push(row);
+      depth++;
+      contact = contact.parent;
+    }
+  }
+
+  return formatViewResult(rows, opts);
+};
+
 // ---- Registry ----
 
 const VIEW_REGISTRY = {
@@ -545,6 +730,62 @@ const VIEW_REGISTRY = {
   'medic-conflicts/conflicts': conflicts,
   'medic-admin/message_queue': messageQueue,
   'medic-admin/contacts_by_dhis_orgunit': contactsByDhisOrgunit,
+  'medic-client/reports_by_date': reportsByDate,
+  'medic/doc_summaries_by_id': docSummariesById,
+  'medic-client/docs_by_id_lineage': docsByIdLineage,
+  'medic-client/contacts_by_parent': contactsByParent,
+};
+
+/**
+ * Generic view fallback — runs the CouchDB map function from the design doc
+ * stored in MongoDB against all matching documents.
+ */
+const genericViewFallback = async (viewName, collection, opts) => {
+  const [ddoc, view] = viewName.split('/');
+  const ddocId = `_design/${ddoc}`;
+
+  // Load the design doc from MongoDB
+  const designDoc = await collection.findOne({ _id: ddocId });
+  if (!designDoc?.views?.[view]?.map) {
+    // Design doc or view not found — return empty results instead of crashing
+    return formatViewResult([], opts);
+  }
+
+  const mapFnStr = designDoc.views[view].map;
+  const rows = [];
+
+  // Get all non-deleted docs (or filtered by keys if querying by _id)
+  const query = { _deleted: { $ne: true } };
+  const docs = await collection.find(query).toArray();
+
+  // Run the map function against each document
+  for (const doc of docs) {
+    try {
+      const emitted = [];
+      const emit = (key, value) => emitted.push({ key, value });
+      // eslint-disable-next-line no-new-func
+      const mapFn = new Function('doc', 'emit', mapFnStr.replace(/^function\s*\([^)]*\)\s*\{/, '').replace(/\}$/, ''));
+      mapFn(doc, emit);
+
+      for (const { key, value } of emitted) {
+        if (keyMatch(key, opts) && isInRange(key, opts)) {
+          const row = { id: doc._id, key, value };
+          if (opts.include_docs) { row.doc = doc; }
+          rows.push(row);
+        }
+      }
+    } catch (e) {
+      // Skip docs that cause map function errors
+    }
+  }
+
+  // Apply limit
+  let result = rows;
+  if (opts.descending) { result.reverse(); }
+  if (opts.skip) { result = result.slice(opts.skip); }
+  if (opts.limit) { result = result.slice(0, opts.limit); }
+
+  return formatViewResult(result, opts);
 };
 
 /**
@@ -556,10 +797,11 @@ const VIEW_REGISTRY = {
  */
 const queryView = async (viewName, collection, opts = {}) => {
   const handler = VIEW_REGISTRY[viewName];
-  if (!handler) {
-    throw new Error(`View not implemented: ${viewName}`);
+  if (handler) {
+    return handler(collection, opts);
   }
-  return handler(collection, opts);
+  // Fallback: try to run the CouchDB map function from the design doc
+  return genericViewFallback(viewName, collection, opts);
 };
 
 module.exports = {

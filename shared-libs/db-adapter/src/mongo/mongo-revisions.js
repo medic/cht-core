@@ -22,9 +22,31 @@ const parseRevGeneration = (rev) => {
   return isNaN(gen) ? 0 : gen;
 };
 
+const buildRevisions = (currentRev, newRev) => {
+  const gen = parseRevGeneration(newRev);
+  const newHash = newRev.split('-')[1];
+  const ids = [newHash];
+  if (currentRev) {
+    ids.push(currentRev.split('-')[1]);
+  }
+  return { start: gen, ids };
+};
+
+const mergeRevisions = (existing, newRev) => {
+  const gen = parseRevGeneration(newRev);
+  const newHash = newRev.split('-')[1];
+  if (!existing) {
+    return { start: gen, ids: [newHash] };
+  }
+  const ids = [newHash, ...existing.ids];
+  return { start: gen, ids };
+};
+
 module.exports = {
   generateFirstRev,
   generateNextRev,
   generateRevHash,
   parseRevGeneration,
+  buildRevisions,
+  mergeRevisions,
 };

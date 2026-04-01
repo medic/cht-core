@@ -268,6 +268,57 @@ class MongoAdapter {
     await this._collection.drop();
   }
 
+  async revsDiff(body) {
+    const result = {};
+    for (const [docId, revs] of Object.entries(body)) {
+      const doc = await this._collection.findOne({ _id: docId });
+      const missing = [];
+      for (const rev of revs) {
+        if (!doc || doc._rev !== rev) {
+          const hasRev = doc?._revisions?.ids?.includes(rev.split('-')[1]);
+          if (!hasRev) {
+            missing.push(rev);
+          }
+        }
+      }
+      if (missing.length) {
+        result[docId] = { missing };
+      }
+    }
+    return result;
+  }
+
+  async getLocal(id) {
+    const localId = id.startsWith('_local/') ? id : `_local/${id}`;
+    const doc = await this._db.collection('_local').findOne({ _id: localId });
+    if (!doc) {
+      throw NOT_FOUND_ERROR(localId);
+    }
+    return doc;
+  }
+
+  async putLocal(doc) {
+    const localId = doc._id.startsWith('_local/') ? doc._id : `_local/${doc._id}`;
+    // Increment the local rev number
+    const existing = await this._db.collection('_local').findOne({ _id: localId });
+    const currentRev = existing?._rev || doc._rev || '0-0';
+    const revNum = parseInt(currentRev.split('-')[0], 10) || 0;
+    const newRev = `0-${revNum + 1}`;
+    const toStore = { ...doc, _id: localId, _rev: newRev };
+    await this._db.collection('_local').replaceOne(
+      { _id: localId },
+      toStore,
+      { upsert: true }
+    );
+    return { ok: true, id: localId, rev: newRev };
+  }
+
+  async deleteLocal(id) {
+    const localId = id.startsWith('_local/') ? id : `_local/${id}`;
+    await this._db.collection('_local').deleteOne({ _id: localId });
+    return { ok: true, id: localId };
+  }
+
   async ensureIndexes() {
     await changes.ensureIndexes(this._db);
   }
@@ -276,7 +327,8 @@ class MongoAdapter {
 
   async _insert(doc) {
     const newRev = revisions.generateFirstRev(doc);
-    const toStore = { ...doc, _rev: newRev };
+    const newRevisions = revisions.mergeRevisions(null, newRev);
+    const toStore = { ...doc, _rev: newRev, _revisions: newRevisions };
 
     try {
       await this._collection.insertOne(toStore);
@@ -294,7 +346,10 @@ class MongoAdapter {
   async _update(doc) {
     const currentRev = doc._rev;
     const newRev = revisions.generateNextRev(currentRev, doc);
-    const toStore = { ...doc, _rev: newRev };
+    // Get existing _revisions to extend
+    const existing = await this._collection.findOne({ _id: doc._id });
+    const newRevisions = revisions.mergeRevisions(existing?._revisions, newRev);
+    const toStore = { ...doc, _rev: newRev, _revisions: newRevisions };
 
     const result = await this._collection.findOneAndReplace(
       { _id: doc._id, _rev: currentRev },
@@ -360,17 +415,54 @@ class MongoAdapter {
     // Remove MongoDB internal fields if present
     delete result.__v;
 
-    if (!opts.attachments && result._attachments) {
-      // Strip binary data from attachments, keep metadata only
-      const cleaned = {};
-      for (const [name, att] of Object.entries(result._attachments)) {
-        cleaned[name] = {
-          content_type: att.content_type,
-          length: att.length,
-          stub: true,
-        };
+    if (result._attachments) {
+      if (opts.attachments) {
+        // Include attachment data as base64 strings (CouchDB format)
+        const crypto = require('crypto');
+        const encoded = {};
+        for (const [name, att] of Object.entries(result._attachments)) {
+          const data = att.data;
+          if (!data) {
+            encoded[name] = {
+              content_type: att.content_type,
+              length: att.length || 0,
+              stub: true,
+            };
+            continue;
+          }
+          let buf;
+          if (Buffer.isBuffer(data)) {
+            buf = data;
+          } else if (data?.buffer) {
+            buf = Buffer.from(data.buffer);
+          } else if (typeof data === 'string') {
+            buf = Buffer.from(data, 'base64');
+          } else {
+            buf = Buffer.from(data);
+          }
+          const base64 = buf.toString('base64');
+          const digest = 'md5-' + crypto.createHash('md5').update(buf).digest('base64');
+          encoded[name] = {
+            content_type: att.content_type,
+            length: buf.length,
+            data: base64,
+            digest: digest,
+            revpos: 1,
+          };
+        }
+        result._attachments = encoded;
+      } else {
+        // Strip binary data from attachments, keep metadata only
+        const cleaned = {};
+        for (const [name, att] of Object.entries(result._attachments)) {
+          cleaned[name] = {
+            content_type: att.content_type,
+            length: att.length,
+            stub: true,
+          };
+        }
+        result._attachments = cleaned;
       }
-      result._attachments = cleaned;
     }
 
     return result;
