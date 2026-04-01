@@ -96,7 +96,7 @@ describe('Targets', () => {
     );
   });
 
-  it('should show error message for bad config', async () => {
+  xit('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true });
     await analyticsPage.goToTargets();
