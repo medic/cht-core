@@ -100,7 +100,7 @@ describe('LineageModelGenerator service', () => {
         { doc: grandparent }
       ] }));
       dbAllDocs.withArgs({
-        keys: sinon.match.array.contains(['x', 'd', 'e']),
+        keys: sinon.match.array.deepEquals(['x', 'd', 'e']),
         include_docs: true
       }).returns(Promise.resolve({ rows: [
         { doc: xContact },

@@ -56,7 +56,7 @@ const assembleLineage = function(doc, parentIds, ancestors) {
 
   const result = [doc];
   parentIds.forEach(function(parentId) {
-    result.push(docsMap.get(parentId) || null);
+    result.push(docsMap.get(parentId) || undefined);
   });
   return result;
 };

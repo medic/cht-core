@@ -111,7 +111,7 @@ describe('LineageModelGenerator service', () => {
           { doc: parent },
           { doc: grandparent }
         ] });
-      dbAllDocs.withArgs({ keys: sinon.match.array.contains(['x', 'd', 'e']), include_docs: true }).resolves({
+      dbAllDocs.withArgs({ keys: sinon.match.array.deepEquals(['x', 'd', 'e']), include_docs: true }).resolves({
         rows: [
           { doc: xContact },
           { doc: parentContact },
