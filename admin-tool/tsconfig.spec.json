@@ -15,6 +15,5 @@
   "include": [
     "tests/karma/**/*.spec.ts",
     "tests/karma/**/*.d.ts",
-    "src/ts/**/*.spec.ts"
   ]
 }

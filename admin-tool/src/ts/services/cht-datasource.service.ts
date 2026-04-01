@@ -1,16 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import {
-  DataContext,
-  getDatasource,
-  getRemoteDataContext,
-} from '@medic/cht-datasource';
-import { firstValueFrom } from 'rxjs';
+import { DataContext, getDatasource, getRemoteDataContext } from '@medic/cht-datasource';
 
 import { SessionService } from '@admin-tool-services/session.service';
+import { SettingsService } from '@admin-tool-services/settings.service';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class CHTDatasourceService {
   private initialized: Promise<void> | null = null;
@@ -18,15 +13,11 @@ export class CHTDatasourceService {
   private userCtx: any = null;
   private dataContext!: DataContext;
 
-  constructor(
-    private http: HttpClient,
-    private sessionService: SessionService,
-  ) {}
+  constructor(private sessionService: SessionService, private settingsService: SettingsService) {}
 
   private async init() {
     this.userCtx = this.sessionService.userCtx();
-    const settings = await firstValueFrom(this.http.get('/api/v1/settings'));
-    this.settings = settings;
+    this.settings = await this.settingsService.get();
     this.dataContext = getRemoteDataContext();
   }
 
@@ -46,23 +37,13 @@ export class CHTDatasourceService {
         ...dataSource.v1,
         hasPermissions: (permissions, user?, chtSettings?) => {
           const userRoles = user?.roles ?? this.userCtx?.roles;
-          const permsSettings =
-            chtSettings?.permissions ?? this.settings?.permissions;
-          return dataSource.v1.hasPermissions(
-            permissions,
-            userRoles,
-            permsSettings,
-          );
+          const permsSettings = chtSettings?.permissions ?? this.settings?.permissions;
+          return dataSource.v1.hasPermissions(permissions, userRoles, permsSettings);
         },
         hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
           const userRoles = user?.roles ?? this.userCtx?.roles;
-          const permsSettings =
-            chtSettings?.permissions ?? this.settings?.permissions;
-          return dataSource.v1.hasAnyPermission(
-            permissionsGroupList,
-            userRoles,
-            permsSettings,
-          );
+          const permsSettings = chtSettings?.permissions ?? this.settings?.permissions;
+          return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, permsSettings);
         },
       },
     };
