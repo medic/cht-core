@@ -1,6 +1,6 @@
 const { ObjectId } = require('mongodb');
-const { EventEmitter } = require('events');
 const revisions = require('./mongo-revisions');
+const changes = require('./mongo-changes');
 
 const NOT_FOUND_ERROR = (id) => {
   const err = new Error('missing');
@@ -58,19 +58,7 @@ class MongoAdapter {
     if (!doc._id) {
       doc._id = new ObjectId().toString();
     }
-    const newRev = revisions.generateFirstRev(doc);
-    const toStore = { ...doc, _rev: newRev };
-
-    try {
-      await this._collection.insertOne(toStore);
-    } catch (err) {
-      if (err.code === 11000) {
-        throw CONFLICT_ERROR(doc._id);
-      }
-      throw err;
-    }
-
-    return { ok: true, id: doc._id, rev: newRev };
+    return this._insert(doc);
   }
 
   async remove(docOrId, revOrOpts) {
@@ -98,6 +86,7 @@ class MongoAdapter {
       throw CONFLICT_ERROR(id);
     }
 
+    await changes.recordChange(this._db, id, newRev, true);
     return { ok: true, id, rev: newRev };
   }
 
@@ -221,17 +210,7 @@ class MongoAdapter {
   }
 
   changes(opts = {}) {
-    // Changes feed will be implemented in Phase 4 (mongo-changes.js)
-    // For now, return a stub emitter that can be cancelled
-    const emitter = new EventEmitter();
-    emitter.cancel = () => {};
-
-    if (!opts.live) {
-      // For non-live changes, resolve immediately with empty results
-      process.nextTick(() => emitter.emit('complete', { results: [], last_seq: 0 }));
-    }
-
-    return emitter;
+    return changes.createChangesFeed(this._db, this._collection, opts);
   }
 
   async getAttachment(docId, attachmentId) {
@@ -265,10 +244,11 @@ class MongoAdapter {
 
   async info() {
     const stats = await this._db.command({ collStats: this._collection.collectionName });
+    const seq = await changes.getCurrentSeq(this._db);
     return {
       db_name: this._dbName,
       doc_count: stats.count || 0,
-      update_seq: stats.count || 0,
+      update_seq: seq,
     };
   }
 
@@ -288,6 +268,10 @@ class MongoAdapter {
     await this._collection.drop();
   }
 
+  async ensureIndexes() {
+    await changes.ensureIndexes(this._db);
+  }
+
   // --- Private methods ---
 
   async _insert(doc) {
@@ -303,6 +287,7 @@ class MongoAdapter {
       throw err;
     }
 
+    await changes.recordChange(this._db, doc._id, newRev, false);
     return { ok: true, id: doc._id, rev: newRev };
   }
 
@@ -318,7 +303,6 @@ class MongoAdapter {
     );
 
     if (!result) {
-      // Check if doc exists at all
       const existing = await this._collection.findOne({ _id: doc._id });
       if (!existing) {
         throw NOT_FOUND_ERROR(doc._id);
@@ -326,6 +310,7 @@ class MongoAdapter {
       throw CONFLICT_ERROR(doc._id);
     }
 
+    await changes.recordChange(this._db, doc._id, newRev, false);
     return { ok: true, id: doc._id, rev: newRev };
   }
 
@@ -341,21 +326,29 @@ class MongoAdapter {
     }));
 
     const errors = [];
+    const errorIds = new Set();
     try {
       await this._collection.bulkWrite(operations, { ordered: false });
     } catch (err) {
       if (err.writeErrors) {
         for (const writeErr of err.writeErrors) {
-          errors.push({
-            id: docs[writeErr.index]?._id,
-            error: 'error',
-            reason: writeErr.errmsg,
-          });
+          const id = docs[writeErr.index]?._id;
+          errorIds.add(id);
+          errors.push({ id, error: 'error', reason: writeErr.errmsg });
         }
       } else {
         throw err;
       }
     }
+
+    const successDocs = docs.filter(doc => !errorIds.has(doc._id));
+    if (successDocs.length) {
+      await changes.recordChanges(
+        this._db,
+        successDocs.map(doc => ({ id: doc._id, rev: doc._rev, deleted: doc._deleted || false }))
+      );
+    }
+
     return errors;
   }
 

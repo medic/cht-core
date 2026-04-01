@@ -14,9 +14,22 @@ const createMockCollection = () => ({
   collectionName: 'docs',
 });
 
-const createMockDb = () => ({
-  command: sinon.stub(),
-});
+const createMockDb = () => {
+  const countersCol = { findOneAndUpdate: sinon.stub().resolves({ value: 1 }), findOne: sinon.stub().resolves({ value: 0 }) };
+  const changelogCol = { insertOne: sinon.stub().resolves(), insertMany: sinon.stub().resolves(), find: sinon.stub() };
+
+  const db = {
+    command: sinon.stub(),
+    collection: sinon.stub().callsFake((name) => {
+      if (name === '_counters') { return countersCol; }
+      if (name === '_changelog') { return changelogCol; }
+      return null;
+    }),
+    _countersCol: countersCol,
+    _changelogCol: changelogCol,
+  };
+  return db;
+};
 
 const createAdapter = () => {
   const collection = createMockCollection();
@@ -370,14 +383,22 @@ describe('MongoAdapter', () => {
   });
 
   describe('info', () => {
-    it('should return database info', async () => {
-      const { adapter, db } = createAdapter();
+    it('should return database info with seq from changelog', async () => {
+      const { adapter, db, collection } = createAdapter();
       db.command.resolves({ count: 42 });
+      // getCurrentSeq reads from _counters collection
+      const countersCol = { findOne: sinon.stub().resolves({ _id: '_seq_counter', value: 99 }) };
+      db.collection = sinon.stub().callsFake((name) => {
+        if (name === '_counters') {
+          return countersCol;
+        }
+        return collection;
+      });
 
       const result = await adapter.info();
       expect(result.db_name).to.equal('medic');
       expect(result.doc_count).to.equal(42);
-      expect(result.update_seq).to.equal(42);
+      expect(result.update_seq).to.equal(99);
     });
   });
 
@@ -418,16 +439,35 @@ describe('MongoAdapter', () => {
 
   describe('changes', () => {
     it('should return an emitter with cancel', () => {
-      const { adapter } = createAdapter();
+      const { adapter, db, collection } = createAdapter();
+      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const changelogCol = { find: sinon.stub().returns(cursor) };
+      const countersCol = { findOne: sinon.stub().resolves({ value: 0 }) };
+      db.collection = sinon.stub().callsFake((name) => {
+        if (name === '_changelog') { return changelogCol; }
+        if (name === '_counters') { return countersCol; }
+        return collection;
+      });
+
       const emitter = adapter.changes();
       expect(emitter.cancel).to.be.a('function');
     });
 
     it('should emit complete for non-live changes', (done) => {
-      const { adapter } = createAdapter();
+      const { adapter, db, collection } = createAdapter();
+      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const changelogCol = { find: sinon.stub().returns(cursor) };
+      const countersCol = { findOne: sinon.stub().resolves({ value: 0 }) };
+      db.collection = sinon.stub().callsFake((name) => {
+        if (name === '_changelog') { return changelogCol; }
+        if (name === '_counters') { return countersCol; }
+        return collection;
+      });
+
       const emitter = adapter.changes({ live: false });
       emitter.on('complete', (info) => {
         expect(info.results).to.deep.equal([]);
+        expect(info.last_seq).to.equal(0);
         done();
       });
     });
