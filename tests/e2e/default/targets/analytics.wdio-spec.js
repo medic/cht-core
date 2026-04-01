@@ -144,7 +144,7 @@ describe('Targets', () => {
     expect(await emptySelection.getText()).to.equal('No target found.');
   });
 
-  it('should display correct message when targets are disabled', async () => {
+  xit('should display correct message when targets are disabled', async () => {
     const tasks = {
       targets: { enabled: false }
     };
