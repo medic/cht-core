@@ -16,22 +16,24 @@ const logger = require('@medic/logger');
 const audit = require('@medic/audit');
 const isClientHuman = require('./is-client-human');
 
+const isMongo = process.env.DB_BACKEND === 'mongodb';
+
 const port = typeof environment.port !== 'undefined' && environment.port !== null ? `:${environment.port}` : '';
 const target = `${environment.protocol}//${environment.host}${port}`;
-const proxy = require('http-proxy').createProxyServer({
-  target: target, 
+const proxy = !isMongo ? require('http-proxy').createProxyServer({
+  target: target,
   changeOrigin: environment.proxies.changeOrigin
-});
-const proxyForAuth = require('http-proxy').createProxyServer({
+}) : null;
+const proxyForAuth = !isMongo ? require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
   changeOrigin: environment.proxies.changeOrigin
-});
-const proxyForChanges = require('http-proxy').createProxyServer({
+}) : null;
+const proxyForChanges = !isMongo ? require('http-proxy').createProxyServer({
   target: target,
   selfHandleResponse: true,
   changeOrigin: environment.proxies.changeOrigin
-});
+}) : null;
 const login = require('./controllers/login');
 const smsGateway = require('./controllers/sms-gateway');
 const exportData = require('./controllers/export-data');
@@ -263,17 +265,23 @@ app.get('/.well-known/assetlinks.json', wellKnownController.assetlinks);
 
 app.get('/', function(req, res) {
   if (req.headers.accept === 'application/json') {
-    // CouchDB request for /dbinfo from previous versions
-    // Required for service compatibility during upgrade.
-    proxy.web(req, res);
+    if (isMongo) {
+      db.medic.info().then(info => res.json(info)).catch(err => serverUtils.serverError(err, req, res));
+    } else {
+      proxy.web(req, res);
+    }
   } else {
     res.sendFile(path.join(resources.webappPath, 'index.html')); // Webapp's index - entry point
   }
 });
 
 app.get('/dbinfo', connectedUserLog, (req, res) => {
-  req.url = '/';
-  proxy.web(req, res);
+  if (isMongo) {
+    db.medic.info().then(info => res.json(info)).catch(err => serverUtils.serverError(err, req, res));
+  } else {
+    req.url = '/';
+    proxy.web(req, res);
+  }
 });
 
 app.get(
@@ -338,6 +346,11 @@ app.all('/_session', connectedUserLog, function(req, res) {
     // update the expiry date on the cookie to keep it fresh
     cookie.setUserCtx(res, decodeURIComponent(given));
   }
+  if (isMongo) {
+    // With MongoDB, session info comes from the cookie, not CouchDB
+    const userCtx = given ? JSON.parse(decodeURIComponent(given)) : { name: null, roles: [] };
+    return res.json({ ok: true, userCtx });
+  }
   proxy.web(req, res);
 });
 
@@ -363,9 +376,16 @@ UNAUDITED_ENDPOINTS.forEach(function(url) {
   // the file below, and these calls will all be proxies. If you want to avoid
   // auditing and do other things as well, look to how the _changes feed is
   // handled.
-  app.all(url, function(req, res) {
-    proxy.web(req, res);
-  });
+  if (isMongo) {
+    // With MongoDB backend, CouchDB-specific endpoints are not available
+    app.all(url, function(req, res) {
+      res.status(404).json({ error: 'not_found', reason: 'CouchDB endpoint not available with MongoDB backend' });
+    });
+  } else {
+    app.all(url, function(req, res) {
+      proxy.web(req, res);
+    });
+  }
 });
 
 app.get('/setup/poll', function(req, res) {
@@ -862,64 +882,75 @@ const canEdit = (req, res) => {
         serverUtils.serverError({ code: 401, message: 'not-authorized' }, req, res);
         return;
       }
+      if (isMongo) {
+        return res.status(404).json({ error: 'not_found', reason: 'Direct DB writes not available with MongoDB backend' });
+      }
       proxyForAuth.web(req, res);
     })
     .catch((err) => serverUtils.error(err, req, res));
 };
 
 const editPath = `${routePrefix}{*any}`;
-app.put(editPath, canEdit);
-app.post(editPath, canEdit);
-app.delete(editPath, canEdit);
+if (!isMongo) {
+  app.put(editPath, canEdit);
+  app.post(editPath, canEdit);
+  app.delete(editPath, canEdit);
+}
 
-app.all('*path', function(req, res) {
-  proxy.web(req, res);
-});
-
-proxy.on('error', function(err, req, res) {
-  serverUtils.serverError(JSON.stringify(err), req, res);
-});
-
-proxyForAuth.on('error', function(err, req, res) {
-  serverUtils.serverError(JSON.stringify(err), req, res);
-});
-
-proxyForChanges.on('error', (err, req, res) => {
-  serverUtils.serverError(JSON.stringify(err), req, res);
-});
-
-proxyForAuth.on('proxyReq', function(proxyReq, req) {
-  writeParsedBody(proxyReq, req);
-});
-
-proxy.on('proxyRes', (proxyRes, req, res) => {
-  if (proxyRes.statusCode === 401) {
-    serverUtils.notLoggedIn(req, res);
-  }
-});
-
-// intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
-proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
-  if (proxyRes.statusCode === 401) {
-    return serverUtils.notLoggedIn(req, res);
-  }
-
-  copyProxyHeaders(proxyRes, res);
-  let body = Buffer.from('');
-  proxyRes.on('data', data => (body = Buffer.concat([body, data])));
-
-  proxyRes.on('end', () => {
-    body = JSON.parse(body.toString());
-    if (res.interceptResponse) {
-      body = res.interceptResponse(req, res, body);
-    }
-    res.json(body);
-
-    audit.expressCallback(req, body, asyncLocalStorage.getRequest());
+if (isMongo) {
+  app.all('*path', function(req, res) {
+    res.status(404).json({ error: 'not_found', reason: 'Route not found' });
   });
-});
+} else {
+  app.all('*path', function(req, res) {
+    proxy.web(req, res);
+  });
 
-proxyForAuth.on('proxyRes', infodoc.update);
-proxy.on('proxyRes', infodoc.update);
+  proxy.on('error', function(err, req, res) {
+    serverUtils.serverError(JSON.stringify(err), req, res);
+  });
+
+  proxyForAuth.on('error', function(err, req, res) {
+    serverUtils.serverError(JSON.stringify(err), req, res);
+  });
+
+  proxyForChanges.on('error', (err, req, res) => {
+    serverUtils.serverError(JSON.stringify(err), req, res);
+  });
+
+  proxyForAuth.on('proxyReq', function(proxyReq, req) {
+    writeParsedBody(proxyReq, req);
+  });
+
+  proxy.on('proxyRes', (proxyRes, req, res) => {
+    if (proxyRes.statusCode === 401) {
+      serverUtils.notLoggedIn(req, res);
+    }
+  });
+
+  // intercept responses from filtered offline endpoints to fill in with forbidden docs stubs
+  proxyForAuth.on('proxyRes', (proxyRes, req, res) => {
+    if (proxyRes.statusCode === 401) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
+    copyProxyHeaders(proxyRes, res);
+    let body = Buffer.from('');
+    proxyRes.on('data', data => (body = Buffer.concat([body, data])));
+
+    proxyRes.on('end', () => {
+      body = JSON.parse(body.toString());
+      if (res.interceptResponse) {
+        body = res.interceptResponse(req, res, body);
+      }
+      res.json(body);
+
+      audit.expressCallback(req, body, asyncLocalStorage.getRequest());
+    });
+  });
+
+  proxyForAuth.on('proxyRes', infodoc.update);
+  proxy.on('proxyRes', infodoc.update);
+}
 
 module.exports = app;

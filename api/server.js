@@ -19,10 +19,19 @@ process
   });
 
 (async () => {
+  const isMongo = process.env.DB_BACKEND === 'mongodb';
+
   try {
-    logger.info('Running server checks…');
-    await serverChecks.check(environment.couchUrl);
-    logger.info('Checks passed successfully');
+    if (isMongo) {
+      logger.info('Initializing MongoDB connection…');
+      const db = require('./src/db');
+      await db.initMongoConnection();
+      logger.info('MongoDB connection established');
+    } else {
+      logger.info('Running server checks…');
+      await serverChecks.check(environment.couchUrl);
+      logger.info('Checks passed successfully');
+    }
 
     const uploadDefaultDocs = require('./src/upload-default-docs');
     logger.info('Extracting initial documents…');

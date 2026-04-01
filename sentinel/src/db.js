@@ -2,9 +2,10 @@ const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
-const { wrapCouch } = require('@medic/db-adapter');
+const { wrapCouch, wrapMongo, initMongo } = require('@medic/db-adapter');
 
-const { UNIT_TEST_ENV } = process.env;
+const { UNIT_TEST_ENV, DB_BACKEND, MONGO_URL } = process.env;
+const isMongo = DB_BACKEND === 'mongodb';
 
 if (UNIT_TEST_ENV) {
   const stubMe = functionName => () => {
@@ -48,13 +49,66 @@ if (UNIT_TEST_ENV) {
     changes: stubMe('changes'),
   };
 
-
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
+  module.exports.initMongoConnection = stubMe('initMongoConnection');
+} else if (isMongo) {
+  // --- MongoDB backend ---
+  const service = 'sentinel';
+  environment.setService(service);
+
+  const mongoUrl = MONGO_URL || 'mongodb://localhost:27017';
+  const dbName = environment.db || 'medic';
+
+  module.exports.initMongoConnection = async () => {
+    const { MongoClient } = require('mongodb');
+    const client = new MongoClient(mongoUrl);
+    await client.connect();
+    initMongo(client);
+    logger.info(`Sentinel connected to MongoDB at ${mongoUrl}`);
+
+    module.exports.medic = wrapMongo(dbName);
+    module.exports.sentinel = wrapMongo(`${dbName}-sentinel`);
+    module.exports.users = wrapMongo(`${dbName}-users`);
+
+    return client;
+  };
+
+  module.exports.allDbs = async () => {
+    const { MongoClient: MC } = require('mongodb');
+    const client = new MC(mongoUrl);
+    try {
+      await client.connect();
+      const { databases } = await client.db().admin().listDatabases();
+      return databases.map(db => db.name);
+    } finally {
+      await client.close();
+    }
+  };
+
+  module.exports.get = name => wrapMongo(name);
+
+  module.exports.close = db => {
+    if (db && typeof db.close === 'function') {
+      db.close();
+    }
+  };
+
+  module.exports.medicDbName = environment.db || 'medic';
+
+  // queryMedic for MongoDB — delegates to the adapter's query() method
+  module.exports.queryMedic = async (viewPath, queryParams) => {
+    if (viewPath === 'allDocs') {
+      return module.exports.medic.allDocs(queryParams);
+    }
+    return module.exports.medic.query(viewPath, queryParams);
+  };
+
 } else {
+  // --- CouchDB backend (existing behavior) ---
   const service = 'sentinel';
   environment.setService(service);
 
@@ -66,7 +120,6 @@ if (UNIT_TEST_ENV) {
   const couchUrl = environment.couchUrl;
 
   const fetchFn = (url, opts) => {
-    // Adding audit flags (haproxy) Service and user that made the request initially.
     opts.headers.set('X-Medic-Service', service);
     opts.headers.set('X-Medic-User', service);
     return PouchDB.fetch(url, opts).then(response => {
@@ -83,7 +136,6 @@ if (UNIT_TEST_ENV) {
     if (!db || db._destroyed || db._closed) {
       return;
     }
-
     try {
       db.close();
     } catch (err) {
@@ -102,4 +154,6 @@ if (UNIT_TEST_ENV) {
       body,
     });
   };
+
+  module.exports.initMongoConnection = async () => {};
 }

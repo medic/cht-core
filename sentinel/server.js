@@ -37,8 +37,17 @@ const waitForApi = () => new Promise(resolve => {
 logger.info('Running server checks...');
 
 (async () => {
+  const isMongo = process.env.DB_BACKEND === 'mongodb';
+
   try {
-    await serverChecks.check(environment.couchUrl);
+    if (isMongo) {
+      logger.info('Initializing MongoDB connection for sentinel…');
+      const db = require('./src/db');
+      await db.initMongoConnection();
+      logger.info('Sentinel MongoDB connection established');
+    } else {
+      await serverChecks.check(environment.couchUrl);
+    }
     await waitForApi();
 
     const config = require('./src/config');

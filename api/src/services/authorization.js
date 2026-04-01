@@ -650,13 +650,162 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   return hits;
 };
 
+const getDocsByReplicationKeyMongo = async (authorizationContext) => {
+  const keys = authorizationContext.subjectIds;
+
+  // System docs that everyone can access
+  const systemDocIds = [
+    'resources', 'branding', 'partners', 'service-worker-meta',
+    'zscore-charts', 'settings', 'privacy-policies',
+  ];
+
+  // Query for docs whose computed replication key matches any of the user's subject IDs.
+  // This mirrors the Nouveau index logic from docs_by_replication_key/index.js.
+  const docs = await db.medic.allDocs({
+    keys: [
+      ...systemDocIds,
+      ...keys,
+    ],
+    include_docs: false,
+  });
+
+  const hits = [];
+
+  // Add system docs with key='_all'
+  for (const row of docs.rows) {
+    if (row.error) {
+      continue;
+    }
+    if (systemDocIds.includes(row.id)) {
+      hits.push({ id: row.id, fields: { key: [ALL_KEY], type: undefined } });
+      continue;
+    }
+  }
+
+  // Find contacts by _id (contacts emit their own _id as key)
+  const contactDocs = await db.medic.allDocs({ keys, include_docs: true });
+  for (const row of contactDocs.rows) {
+    if (!row.doc || row.doc._deleted) {
+      continue;
+    }
+    const doc = row.doc;
+    const type = doc.type;
+    if (['contact', 'clinic', 'district_hospital', 'health_center', 'person'].includes(type)) {
+      hits.push({ id: doc._id, fields: { key: [doc._id], type } });
+    }
+  }
+
+  // Find forms/translations with key='_all'
+  const formQuery = { type: { $in: ['form', 'translations'] }, _deleted: { $ne: true } };
+  const formResult = await db.medic.query('medic-client/doc_by_type', { key: ['form'] });
+  for (const row of formResult.rows) {
+    hits.push({ id: row.id, fields: { key: [ALL_KEY], type: row.key[0] } });
+  }
+  const transResult = await db.medic.query('medic-client/doc_by_type', { key: ['translations'] });
+  for (const row of transResult.rows) {
+    hits.push({ id: row.id, fields: { key: [ALL_KEY], type: row.key[0] } });
+  }
+
+  // Find data_records whose subject (patient_id, place_id, contact._id) matches keys
+  // Find tasks by user, targets by owner
+  // This requires a broader query — find all docs that reference any of the subject IDs
+  const dataRecordQuery = {
+    _deleted: { $ne: true },
+    $or: [
+      { type: 'data_record', 'contact._id': { $in: keys } },
+      { type: 'data_record', patient_id: { $in: keys } },
+      { type: 'data_record', place_id: { $in: keys } },
+      { type: 'data_record', 'fields.patient_id': { $in: keys } },
+      { type: 'data_record', 'fields.place_id': { $in: keys } },
+      { type: 'data_record', 'fields.patient_uuid': { $in: keys } },
+      { type: 'task', user: { $in: keys } },
+      { type: 'target', owner: { $in: keys } },
+    ],
+  };
+
+  // Direct MongoDB query when using MongoDB backend, otherwise not reachable
+  if (db.medic.backendType === 'mongodb') {
+    const cursor = db.medic._collection.find(dataRecordQuery);
+    const matchedDocs = await cursor.toArray();
+    for (const doc of matchedDocs) {
+      const fields = computeReplicationFields(doc, keys);
+      if (fields) {
+        hits.push({ id: doc._id, fields });
+      }
+    }
+  }
+
+  return hits;
+};
+
+const computeReplicationFields = (doc, keys) => {
+  const isTruthy = (value) => value === true || value === 'true';
+
+  if (doc.type === 'data_record') {
+    let subject;
+    if (doc.form) {
+      if (doc.contact && doc.errors && doc.errors.length) {
+        for (const error of doc.errors) {
+          if (error.code === 'registration_not_found' || error.code === 'invalid_patient_id') {
+            subject = doc.contact._id;
+            break;
+          }
+        }
+      }
+      if (!subject) {
+        subject = (doc.patient_id || (doc.fields && doc.fields.patient_id)) ||
+                  (doc.place_id || (doc.fields && doc.fields.place_id)) ||
+                  (doc.fields && doc.fields.patient_uuid) ||
+                  (doc.contact && doc.contact._id);
+      }
+    } else if (doc.sms_message) {
+      subject = doc.contact && doc.contact._id;
+    } else if (doc.kujua_message) {
+      subject = doc.tasks?.[0]?.messages?.[0]?.contact?._id;
+    }
+    subject = subject || UNASSIGNED_KEY;
+
+    const keyList = [subject];
+    if (doc.fields && isTruthy(doc.fields.needs_signoff) && doc.contact) {
+      let contact = doc.contact;
+      while (contact) {
+        if (contact._id && contact._id !== subject) {
+          keyList.push(contact._id);
+        }
+        contact = contact.parent;
+      }
+    }
+
+    return {
+      key: keyList,
+      type: doc.type,
+      subject,
+      submitter: doc.form && doc.contact ? doc.contact._id : undefined,
+      private: doc.fields && isTruthy(doc.fields.private) ? 'true' : undefined,
+      needs_signoff: doc.fields && isTruthy(doc.fields.needs_signoff) ? 'true' : undefined,
+    };
+  }
+
+  if (doc.type === 'task') {
+    return { key: [doc.user], type: doc.type };
+  }
+
+  if (doc.type === 'target') {
+    return { key: [doc.owner], type: doc.type };
+  }
+
+  return null;
+};
+
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param {AuthorizationContext} authorizationContext
  * @returns {Promise<{ id: string, fields: DocByReplicationKey }[]>}
  */
 const getDocsByReplicationKey = async (authorizationContext) => {
-  return getDocsByReplicationKeyNouveau(authorizationContext).then(hits => {
+  const isMongo = db.medic.backendType === 'mongodb';
+  const fetchHits = isMongo ? getDocsByReplicationKeyMongo : getDocsByReplicationKeyNouveau;
+  return fetchHits(authorizationContext).then(hits => {
     // leverage binary search when looking up subjects
     const sortedSubjects = prepareForSortedSearch(authorizationContext.subjectIds);
 
