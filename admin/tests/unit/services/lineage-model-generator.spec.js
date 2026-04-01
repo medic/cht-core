@@ -73,7 +73,10 @@ describe('LineageModelGenerator service', () => {
         { doc: parent },
         { doc: grandparent }
       ] }));
-      dbAllDocs.withArgs({ keys: sinon.match.array.deepEquals(['d', 'e']), include_docs: true }).returns(Promise.resolve({ rows: [
+      dbAllDocs.withArgs({
+        keys: sinon.match.array.deepEquals(['d', 'e']),
+        include_docs: true
+      }).returns(Promise.resolve({ rows: [
         { doc: contactsContact },
         { doc: parentsContact }
       ] }));
@@ -96,7 +99,10 @@ describe('LineageModelGenerator service', () => {
         { doc: parent },
         { doc: grandparent }
       ] }));
-      dbAllDocs.withArgs({ keys: sinon.match.array.contains('x', 'd', 'e'), include_docs: true }).returns(Promise.resolve({ rows: [
+      dbAllDocs.withArgs({
+        keys: sinon.match.array.contains('x', 'd', 'e'),
+        include_docs: true
+      }).returns(Promise.resolve({ rows: [
         { doc: xContact },
         { doc: parentContact },
         { doc: grandparentContact }

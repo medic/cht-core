@@ -275,10 +275,13 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
-        // We now have _session, plus DB.get for the doc, plus POST /_all_docs for ancestors (so 3 total requests instead of 2).
+        // We now have _session, plus DB.get for the doc, plus POST /_all_docs for ancestors
+        // (so 3 total requests instead of 2).
         expect(haproxyRequests.length).to.be.at.least(2);
         expect(haproxyRequests[0]).to.include('_session');
-        const hasDbGetOrPost = haproxyRequests.some(r => r.includes(constants.USER_CONTACT_ID) || r.includes('_all_docs'));
+        const hasDbGetOrPost = haproxyRequests.some(r => {
+          return r.includes(constants.USER_CONTACT_ID) || r.includes('_all_docs');
+        });
         expect(hasDbGetOrPost).to.be.true;
       });
 

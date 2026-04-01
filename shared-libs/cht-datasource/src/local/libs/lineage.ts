@@ -55,8 +55,8 @@ export const getLineageDocsById = (medicDb: PouchDB.Database<Doc>): (id: string)
       }
       const ancestors = await getMedicDocsById(parentIds);
       return [doc, ...ancestors];
-    } catch (err: any) {
-      if (err.status === 404) {
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'status' in err && err.status === 404) {
         return [];
       }
       throw err;

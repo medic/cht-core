@@ -46,73 +46,74 @@ const getContactIds = (contacts) => {
   return _.uniq(ids);
 };
 
-module.exports = function(Promise, DB) {
-  const assembleLineage = function(doc, parentIds, ancestors) {
-    const docsMap = new Map();
-    ancestors.forEach(function(a) {
-      if (a && a._id) {
-        docsMap.set(a._id, a);
-      }
-    });
-
-    const result = [doc];
-    parentIds.forEach(function(parentId) {
-      result.push(docsMap.get(parentId) || null);
-    });
-    return result;
-  };
-
-  const fillParentsInDocs = function(doc, lineage) {
-    if (!doc || !lineage.length) {
-      return doc;
+const assembleLineage = function(doc, parentIds, ancestors) {
+  const docsMap = new Map();
+  ancestors.forEach(function(a) {
+    if (a?._id) {
+      docsMap.set(a._id, a);
     }
+  });
 
-    // Parent hierarchy starts at the contact for data_records
-    let currentParent;
-    if (utils.isReport(doc)) {
-      currentParent = doc.contact = lineage.shift() || doc.contact;
-    } else {
-      // It's a contact
-      currentParent = doc;
-    }
+  const result = [doc];
+  parentIds.forEach(function(parentId) {
+    result.push(docsMap.get(parentId) || null);
+  });
+  return result;
+};
 
-    const parentIds = extractParentIds(currentParent.parent);
-    lineage.forEach(function(l, i) {
-      currentParent.parent = l ? deepCopy(l) : { _id: parentIds[i] };
-      currentParent = currentParent.parent;
-    });
-
+const fillParentsInDocs = function(doc, lineage) {
+  if (!doc || !lineage.length) {
     return doc;
-  };
+  }
 
-  const fillContactsInDocs = function(docs, contacts) {
-    if (!contacts || !contacts.length) {
+  // Parent hierarchy starts at the contact for data_records
+  let currentParent;
+  if (utils.isReport(doc)) {
+    currentParent = doc.contact = lineage.shift() || doc.contact;
+  } else {
+    // It's a contact
+    currentParent = doc;
+  }
+
+  const parentIds = extractParentIds(currentParent.parent);
+  lineage.forEach(function(l, i) {
+    currentParent.parent = l ? deepCopy(l) : { _id: parentIds[i] };
+    currentParent = currentParent.parent;
+  });
+
+  return doc;
+};
+
+const fillContactsInDocs = function(docs, contacts) {
+  if (!contacts || !contacts.length) {
+    return;
+  }
+
+  docs.forEach(function(doc) {
+    if (!doc) {
+      return;
+    }
+    const id = utils.getId(doc.contact);
+    const contactDoc = getContactById(contacts, id);
+    if (contactDoc) {
+      doc.contact = deepCopy(contactDoc);
+    }
+
+    if (!utils.validLinkedDocs(doc)) {
       return;
     }
 
-    docs.forEach(function(doc) {
-      if (!doc) {
-        return;
-      }
-      const id = utils.getId(doc.contact);
+    Object.keys(doc.linked_docs).forEach(key => {
+      const id = utils.getId(doc.linked_docs[key]);
       const contactDoc = getContactById(contacts, id);
       if (contactDoc) {
-        doc.contact = deepCopy(contactDoc);
+        doc.linked_docs[key] = deepCopy(contactDoc);
       }
-
-      if (!utils.validLinkedDocs(doc)) {
-        return;
-      }
-
-      Object.keys(doc.linked_docs).forEach(key => {
-        const id = utils.getId(doc.linked_docs[key]);
-        const contactDoc = getContactById(contacts, id);
-        if (contactDoc) {
-          doc.linked_docs[key] = deepCopy(contactDoc);
-        }
-      });
     });
-  };
+  });
+};
+
+module.exports = function(Promise, DB) {
 
   const fetchContacts = function(lineage) {
     const contactIds = getContactIds(lineage);
