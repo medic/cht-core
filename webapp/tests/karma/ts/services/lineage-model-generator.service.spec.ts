@@ -55,7 +55,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage', () => {
-      const contact = { _id: 'a', _rev: '1', parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1' };
       dbGet.withArgs('a').resolves(contact);
@@ -75,7 +75,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds contacts', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const contactsContact = { _id: 'd', name: 'dave' };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'e' }, parent: { _id: 'c' } };
       const parentsContact = { _id: 'e', name: 'eliza' };
@@ -99,7 +99,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const parentContact = { _id: 'd', name: 'donny' };
@@ -129,7 +129,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('should skip lineage contact hydration if requested', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       dbGet.resolves(contact);
@@ -321,7 +321,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const report = { _id: 'a', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'a', contact: { _id: 'x' } };
+      const report = { _id: 'a', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'a', contact: { _id: 'x', parent: { _id: 'c', parent: { _id: 'd' } } } };
       const contact = { _id: 'b', _rev: '1', contact: { _id: 'y' }, parent: { _id: 'c' } };
       const parent = { _id: 'c', _rev: '1', contact: { _id: 'e' }, parent: { _id: 'd' } };
       const grandparent = { _id: 'd', _rev: '1', contact: { _id: 'f' } };
