@@ -1,21 +1,21 @@
 const moment = require('moment');
-const db = require('../db');
+const db = require('../../db');
 const logger = require('@medic/logger');
-const DOC_IDS_WARN_LIMIT = 10000;
 
-const LOG_TYPE = 'replication-count-';
+const LOG_TYPE = 'replication-fail-';
 // The count and month difference between old and new log.
 // To determine when the old log will updated with the new one.
 const LOG_COUNT_DIFF = 100;
 const LOG_MONTH_DIFF = 1;
 
-const persistLog = (info) => {
-  if (!info || !info.user) {
-    const error = new Error('Error when persisting log: Log Information missing.');
-    return Promise.reject(error);
+const persistLog = async (info) => {
+  if (!info?.user) {
+    throw new Error('Error when persisting log: Log Information missing.');
   }
 
   const logDocId = LOG_TYPE + info.user;
+
+
 
   return db.medicLogs
     .get(logDocId)

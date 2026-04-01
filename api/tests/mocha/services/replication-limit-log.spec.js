@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const replicationLimitLogService = require('../../../src/services/replication-limit-log');
+const replicationLimitLogService = require('../../../src/services/replication/replication-limit-log');
 const db = require('../../../src/db');
 const logger = require('@medic/logger');
 

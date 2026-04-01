@@ -2,14 +2,14 @@ const sinon = require('sinon');
 const chai = require('chai');
 const controller = require('../../../src/controllers/users');
 const auth = require('../../../src/auth');
-const authorization = require('../../../src/services/authorization');
+const authorization = require('../../../src/services/replication/authorization');
 const serverUtils = require('../../../src/server-utils');
-const purgedDocs = require('../../../src/services/purged-docs');
+const purgedDocs = require('../../../src/services/replication/purged-docs');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const dataContext = require('../../../src/services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
-const replicationLimitLog = require('../../../src/services/replication-limit-log');
+const replicationLimitLog = require('../../../src/services/replication/replication-limit-log');
 
 let req;
 let userCtx;

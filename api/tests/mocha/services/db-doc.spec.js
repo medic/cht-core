@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 require('chai').should();
 const rewire = require('rewire');
-const authorization = require('../../../src/services/authorization');
+const authorization = require('../../../src/services/replication/authorization');
 const db = require('../../../src/db');
 const service = rewire('../../../src/services/db-doc');
 

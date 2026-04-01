@@ -1,8 +1,8 @@
-const db = require('../db');
+const db = require('../../db');
 const authorization = require('./authorization');
 const purgedDocs = require('./purged-docs');
 const _ = require('lodash');
-const replicationLimitLog = require('../services/replication-limit-log');
+const replicationLimitLog = require('./replication-limit-log');
 
 const getContext = async (userCtx) => {
   const info = await db.medic.info();

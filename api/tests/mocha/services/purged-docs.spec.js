@@ -4,7 +4,7 @@ const rewire = require('rewire');
 
 const db = require('../../../src/db');
 const dbWatcher = require('../../../src/services/db-watcher');
-const purgedDocsCache = require('../../../src/services/purged-docs-cache');
+const purgedDocsCache = require('../../../src/services/replication/purged-docs-cache');
 const environment = require('@medic/environment');
 const purgingUtils = require('@medic/purging-utils');
 const config = require('../../../src/config');
