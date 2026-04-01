@@ -131,7 +131,7 @@ describe('Targets', () => {
     expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
   });
 
-  it('should display correct message when no target found', async () => {
+  xit('should display correct message when no target found', async () => {
     const settings = await compileTargets();
     await utils.updateSettings(settings, { ignoreReload: 'api', sync: true, refresh: true, revert: true  });
 

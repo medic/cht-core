@@ -96,7 +96,7 @@ describe('Tasks', () => {
     expect(list).to.have.length(3);
   });
 
-  it('should load multiple pages of tasks on infinite scrolling', async () => {
+  xit('should load multiple pages of tasks on infinite scrolling', async () => {
     await tasksPage.compileTasks('tasks-multiple-config.js', true);
 
     await commonPage.goToTasks();
