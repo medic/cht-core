@@ -11,6 +11,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const messageUtils = require('@medic/message-utils');
 
 const BATCH_SIZE = 1000;
+const SCHEDULED_STATE = 'scheduled';
 
 const getTemplateContext = async (doc) => {
   const context = {
@@ -46,7 +47,7 @@ const updateScheduledTasks = (doc, context, dueDates, clearFailing=false) => {
   doc.scheduled_tasks.forEach(task => {
     // only process tasks that are still in 'scheduled' state - skip tasks that have already
     // progressed to other states (e.g. pending, sent, delivered) to prevent re-sending
-    if (task.state !== 'scheduled') {
+    if (task.state !== SCHEDULED_STATE) {
       return;
     }
 
@@ -166,8 +167,8 @@ module.exports = {
     const overdue = now.clone().subtract(7, 'days');
     const opts = {
       include_docs: true,
-      endkey: JSON.stringify([ 'scheduled', now.valueOf() ]),
-      startkey: JSON.stringify([ 'scheduled', overdue.valueOf() ]),
+      endkey: JSON.stringify([ SCHEDULED_STATE, now.valueOf() ]),
+      startkey: JSON.stringify([ SCHEDULED_STATE, overdue.valueOf() ]),
       limit: BATCH_SIZE,
     };
 
