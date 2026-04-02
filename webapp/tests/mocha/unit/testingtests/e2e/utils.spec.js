@@ -30,7 +30,7 @@ describe('Test utils', () => {
         {id: DOC_IDS.SERVICE_WORKER_META, doc: {_id: DOC_IDS.SERVICE_WORKER_META}},
         {id: 'migration-log', doc: {_id: 'migration-log'}},
         {id: 'resources', doc: {_id: 'resources'}},
-        {id: 'branding', doc: {_id: 'branding'}},
+        {id: DOC_IDS.BRANDING, doc: {_id: DOC_IDS.BRANDING}},
         {id: DOC_IDS.PARTNERS, doc: {_id: DOC_IDS.PARTNERS}},
         {id: '001', doc: {type: DOC_TYPES.TRANSLATIONS}},
         {id: '002', doc: {type: 'translations-backup'}},

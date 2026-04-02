@@ -11,6 +11,7 @@ const request = require('@medic/couch-request');
 const nouveau = require('@medic/nouveau');
 const { roles } = require('@medic/user-management')(config, db, dataContext);
 const moment = require('moment');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
@@ -44,7 +45,7 @@ const initPurgeDbs = (roles) => {
   return Promise.all(Object.keys(roles).map(hash => {
     const purgeDb = getPurgeDb(hash, true);
     return purgeDb
-      .put({ _id: '_local/info', roles: roles[hash] })
+      .put({ _id: SENTINEL_METADATA.PURGE_DB_INFO, roles: roles[hash] })
       .catch(err => {
         // we don't care about conflicts
         if (err.status !== 409) {

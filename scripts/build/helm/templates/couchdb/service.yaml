@@ -6,19 +6,7 @@ metadata:
     cht.service: couchdb
   name: couchdb
 spec:
-  ports:
-    - name: couchdb-service
-      port: 5984
-      protocol: TCP
-      targetPort: 5984
-    - name: epmd
-      port: 4369
-      protocol: TCP
-      targetPort: 4369
-    - name: erlang
-      port: 9100
-      protocol: TCP
-      targetPort: 9100
+{{- include "couchdb.servicePorts" dict | nindent 2 }}
   selector:
     cht.service: couchdb
 status:
@@ -35,19 +23,7 @@ metadata:
     cht.service: couchdb-{{ $nodeNumber }}
   name: couchdb-{{ $nodeNumber }}
 spec:
-  ports:
-    - name: couchdb{{ $nodeNumber }}-service
-      port: 5984
-      protocol: TCP
-      targetPort: 5984
-    - name: epmd
-      port: 4369
-      protocol: TCP
-      targetPort: 4369
-    - name: erlang
-      port: 9100
-      protocol: TCP
-      targetPort: 9100
+{{- include "couchdb.servicePorts" (dict "nodeNumber" $nodeNumber) | nindent 2 }}
   selector:
     cht.service: couchdb-{{ $nodeNumber }}
 status:

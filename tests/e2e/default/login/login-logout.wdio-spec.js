@@ -5,6 +5,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const constants = require('@constants');
 const utils = require('@utils');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Login page functionality tests', () => {
   const auth = {
@@ -73,7 +74,7 @@ describe('Login page functionality tests', () => {
     let brandingDoc;
 
     before(async () => {
-      brandingDoc = await utils.getDoc('branding');
+      brandingDoc = await utils.getDoc(DOC_IDS.BRANDING);
     });
 
     it('should log in using username and password fields', async () => {
