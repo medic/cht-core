@@ -37,7 +37,35 @@ const wrapMongo = (dbName, collectionName = 'docs') => {
   }
   const db = mongoClient.db(dbName);
   const collection = db.collection(collectionName);
-  return new MongoAdapter(collection, db, dbName);
+  const adapter = new MongoAdapter(collection, db, dbName);
+
+  // PouchDB methods accept an optional trailing callback. MongoAdapter methods
+  // are async/Promise-only.  This proxy detects a trailing function argument
+  // and bridges it so callers like `db.put(doc, callback)` work as expected.
+  return new Proxy(adapter, {
+    get(target, prop) {
+      const value = target[prop];
+      if (typeof value !== 'function') {
+        return value;
+      }
+      return function (...args) {
+        const lastArg = args[args.length - 1];
+        if (typeof lastArg !== 'function') {
+          return value.apply(target, args);
+        }
+        const callback = args.pop();
+        const result = value.apply(target, args);
+        if (result && typeof result.then === 'function') {
+          result.then(
+            res => callback(null, res),
+            err => callback(err)
+          );
+          return result;
+        }
+        return result;
+      };
+    },
+  });
 };
 
 /**

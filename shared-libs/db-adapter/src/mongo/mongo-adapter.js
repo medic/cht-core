@@ -248,7 +248,7 @@ class MongoAdapter {
     return {
       db_name: this._dbName,
       doc_count: stats.count || 0,
-      update_seq: seq,
+      update_seq: String(seq),
     };
   }
 

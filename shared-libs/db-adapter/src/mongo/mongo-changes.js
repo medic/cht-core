@@ -4,8 +4,8 @@ const { EventEmitter } = require('events');
  * MongoDB changes feed implementation.
  *
  * Supports two modes:
- * - **Live mode** (`live: true`): Uses MongoDB Change Streams to watch for
- *   real-time changes. Emits 'change' events as documents are modified.
+ * - **Live mode** (`live: true`): Polls the changelog collection every second
+ *   for new changes. Emits 'change' events as new entries are found.
  * - **One-shot mode** (`live: false`): Queries the changelog collection for
  *   changes since a given sequence number.
  *
@@ -97,13 +97,15 @@ const createChangesFeed = (db, docsCollection, opts = {}) => {
   const emitter = new EventEmitter();
   let cancelled = false;
 
-  emitter.cancel = () => {
+  const cancelFeed = () => {
     cancelled = true;
     emitter.emit('cancelled');
   };
 
+  emitter.cancel = cancelFeed;
+
   if (opts.live) {
-    startLiveFeed(db, docsCollection, opts, emitter, () => cancelled);
+    startLiveFeed(db, docsCollection, opts, emitter, () => cancelled, cancelFeed);
   } else {
     // Make non-live emitter thenable (like PouchDB's changes object)
     // so that `await db.changes(opts)` resolves with the result.
@@ -120,74 +122,68 @@ const createChangesFeed = (db, docsCollection, opts = {}) => {
   return emitter;
 };
 
-const startLiveFeed = (db, docsCollection, opts, emitter, isCancelled) => {
-  const since = opts.since === 'now' ? null : (opts.since || 0);
+const POLL_INTERVAL = 1000; // 1 second
 
-  const startWatching = async () => {
-    // If since is a number, first replay any missed changes from the changelog
-    if (since !== null && since !== 'now') {
-      const missed = await queryChangelog(db, { since, include_docs: opts.include_docs }, docsCollection);
-      for (const change of missed.results) {
-        if (isCancelled()) {
-          return;
-        }
-        emitter.emit('change', change);
-      }
+const startLiveFeed = (db, docsCollection, opts, emitter, isCancelled, cancelFeed) => {
+  let lastSeq = opts.since === 'now' ? null : (Number(opts.since) || 0);
+  let pollTimer = null;
+
+  const cleanup = () => {
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
     }
+  };
 
+  emitter.cancel = () => {
+    cancelFeed();
+    cleanup();
+  };
+
+  const poll = async () => {
     if (isCancelled()) {
       return;
     }
 
-    // Now watch for new changes via Change Stream
-    const pipeline = buildWatchPipeline(opts);
-    let streamOpts = { fullDocument: 'updateLookup' };
+    try {
+      // On first poll with 'now', just get the current seq
+      if (lastSeq === null) {
+        lastSeq = await getCurrentSeq(db);
+      } else {
+        const result = await queryChangelog(
+          db,
+          { since: lastSeq, include_docs: opts.include_docs, doc_ids: opts.doc_ids },
+          opts.include_docs ? docsCollection : null
+        );
 
-    const stream = docsCollection.watch(pipeline, streamOpts);
+        for (const change of result.results) {
+          if (isCancelled()) {
+            return;
+          }
+          emitter.emit('change', change);
+        }
 
-    const cleanup = () => {
-      stream.close().catch(() => {});
-    };
-
-    emitter.cancel = () => {
-      emitter.emit('cancelled');
-      cleanup();
-    };
-
-    stream.on('change', async (event) => {
-      if (isCancelled()) {
-        cleanup();
-        return;
+        if (result.results.length > 0) {
+          lastSeq = Number(result.last_seq);
+        }
       }
-
-      const docId = event.documentKey._id;
-      const isDelete = event.operationType === 'delete';
-      const doc = isDelete ? null : event.fullDocument;
-      const rev = doc ? doc._rev : undefined;
-
-      // Get or estimate the seq for this change
-      const seq = await getCurrentSeq(db);
-
-      const change = {
-        id: docId,
-        seq: seq,
-        changes: [{ rev }],
-        deleted: isDelete,
-      };
-
-      if (opts.include_docs && doc) {
-        change.doc = doc;
+    } catch (err) {
+      if (!isCancelled()) {
+        emitter.emit('error', err);
       }
+    }
 
-      emitter.emit('change', change);
-    });
-
-    stream.on('error', (err) => {
-      emitter.emit('error', err);
-    });
+    schedulePoll();
   };
 
-  startWatching().catch(err => emitter.emit('error', err));
+  const schedulePoll = () => {
+    if (!isCancelled()) {
+      pollTimer = setTimeout(poll, POLL_INTERVAL);
+    }
+  };
+
+  // Start polling immediately
+  poll();
 };
 
 const startOneShotFeed = async (db, opts, emitter) => {
@@ -203,7 +199,7 @@ const startOneShotFeed = async (db, opts, emitter) => {
 };
 
 const queryChangelog = async (db, opts, docsCollection = null) => {
-  const since = opts.since || 0;
+  const since = Number(opts.since) || 0;
   const query = { _seq: { $gt: since } };
 
   if (opts.doc_ids) {
@@ -224,7 +220,7 @@ const queryChangelog = async (db, opts, docsCollection = null) => {
   for (const entry of entries) {
     const change = {
       id: entry.id,
-      seq: entry._seq,
+      seq: String(entry._seq),
       changes: [{ rev: entry.rev }],
       deleted: entry.deleted || false,
     };
@@ -237,35 +233,17 @@ const queryChangelog = async (db, opts, docsCollection = null) => {
     results.push(change);
   }
 
-  const lastSeq = entries.length > 0
+  const rawLastSeq = entries.length > 0
     ? entries[entries.length - 1]._seq
     : await getCurrentSeq(db);
+
+  // Format as CouchDB-style string (consumers call .split('-') on sequences)
+  const lastSeq = String(rawLastSeq);
 
   return {
     results,
     last_seq: lastSeq,
   };
-};
-
-const buildWatchPipeline = (opts) => {
-  const pipeline = [];
-
-  // Only watch inserts, updates, replacements, and deletes
-  pipeline.push({
-    $match: {
-      operationType: { $in: ['insert', 'update', 'replace', 'delete'] },
-    },
-  });
-
-  if (opts.doc_ids) {
-    pipeline.push({
-      $match: {
-        'documentKey._id': { $in: opts.doc_ids },
-      },
-    });
-  }
-
-  return pipeline;
 };
 
 /**

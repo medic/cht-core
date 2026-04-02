@@ -2,8 +2,10 @@
 
 /**
  * Migrate attachment binary data from CouchDB to MongoDB.
- * CouchDB's _all_docs doesn't include attachment data, so this script
- * fetches each attachment individually and stores it in MongoDB.
+ *
+ * CouchDB's _all_docs?include_docs=true returns attachment metadata (stubs)
+ * but not the actual binary data. This script finds all docs with attachments,
+ * fetches each attachment's binary data individually, and stores it in MongoDB.
  *
  * Usage:
  *   COUCH_URL=http://admin:pass@localhost:5984/medic \
@@ -15,6 +17,7 @@ const { MongoClient } = require('../../shared-libs/db-adapter/node_modules/mongo
 
 const COUCH_URL = process.env.COUCH_URL;
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017';
+const BATCH_SIZE = parseInt(process.env.BATCH_SIZE, 10) || 200;
 
 if (!COUCH_URL) {
   console.error('COUCH_URL required');
@@ -25,9 +28,6 @@ const parsedUrl = new URL(COUCH_URL);
 const couchAuth = Buffer.from(`${parsedUrl.username}:${parsedUrl.password}`).toString('base64');
 const couchBase = `${parsedUrl.protocol}//${parsedUrl.host}`;
 const dbName = parsedUrl.pathname.replace(/^\//, '');
-
-// Documents known to have attachments
-const DOCS_WITH_ATTACHMENTS = ['resources', 'branding', 'partners'];
 
 const couchFetch = async (url, binary = false) => {
   const response = await fetch(url, {
@@ -43,80 +43,105 @@ const main = async () => {
   await client.connect();
   const collection = client.db(dbName).collection('docs');
 
-  console.log('Migrating attachment binary data from CouchDB to MongoDB...\n');
+  console.log('Migrating attachment binary data from CouchDB to MongoDB...');
+  console.log(`CouchDB: ${couchBase}/${dbName}`);
+  console.log(`MongoDB: ${MONGO_URL}\n`);
 
-  for (const docId of DOCS_WITH_ATTACHMENTS) {
-    const doc = await couchFetch(`${couchBase}/${dbName}/${docId}`);
-    if (!doc || !doc._attachments) {
-      console.log(`${docId}: no attachments`);
-      continue;
+  // Scan all CouchDB docs in batches to find ones with attachments
+  let startkey = '';
+  let hasMore = true;
+  let totalDocs = 0;
+  let totalAttachments = 0;
+  let scanned = 0;
+
+  while (hasMore) {
+    const params = new URLSearchParams({
+      include_docs: 'true',
+      limit: String(BATCH_SIZE),
+      startkey: JSON.stringify(startkey),
+    });
+    if (startkey) {
+      params.set('skip', '1');
     }
 
-    const attNames = Object.keys(doc._attachments);
-    console.log(`${docId}: ${attNames.length} attachments`);
-
-    // Build the entire _attachments object to avoid dot-notation issues
-    const attachments = {};
-    for (const attName of attNames) {
-      const att = doc._attachments[attName];
-      const data = await couchFetch(`${couchBase}/${dbName}/${docId}/${encodeURIComponent(attName)}`, true);
-      if (!data) {
-        console.log(`  ${attName}: FAILED to fetch`);
-        continue;
-      }
-      attachments[attName] = {
-        data: data,
-        content_type: att.content_type,
-        length: data.length,
-      };
-      process.stdout.write(`  ${attName}: ${data.length} bytes\n`);
+    const result = await couchFetch(`${couchBase}/${dbName}/_all_docs?${params}`);
+    if (!result?.rows?.length) {
+      hasMore = false;
+      break;
     }
 
-    // Set entire _attachments object at once (avoids MongoDB dot-notation issues)
-    await collection.updateOne(
-      { _id: docId },
-      { $set: { _attachments: attachments } }
-    );
-  }
+    for (const row of result.rows) {
+      const doc = row.doc;
+      if (!doc || !doc._attachments) continue;
+      if (doc._id.startsWith('_design/')) continue;
 
-  // Also migrate any other docs that have attachments
-  const docsWithAtts = await collection.find({
-    '_attachments': { $exists: true },
-    '_id': { $nin: DOCS_WITH_ATTACHMENTS },
-  }).project({ _id: 1, _attachments: 1 }).toArray();
+      scanned++;
+      const attNames = Object.keys(doc._attachments);
 
-  for (const doc of docsWithAtts) {
-    const attNames = Object.keys(doc._attachments);
-    const needsMigration = attNames.some(name => doc._attachments[name].stub === true || !doc._attachments[name].data);
-    if (!needsMigration) continue;
-
-    console.log(`\n${doc._id}: ${attNames.length} attachments`);
-    const attachments = {};
-    let migrated = false;
-    for (const attName of attNames) {
-      if (doc._attachments[attName]?.data) {
-        attachments[attName] = doc._attachments[attName];
-        continue;
-      }
-      const data = await couchFetch(`${couchBase}/${dbName}/${doc._id}/${encodeURIComponent(attName)}`, true);
-      if (!data) continue;
-      attachments[attName] = {
-        data: data,
-        content_type: doc._attachments[attName]?.content_type,
-        length: data.length,
-      };
-      migrated = true;
-      process.stdout.write(`  ${attName}: ${data.length} bytes\n`);
-    }
-    if (migrated) {
-      await collection.updateOne(
+      // Check if MongoDB already has complete attachment data for this doc
+      const mongoDoc = await collection.findOne(
         { _id: doc._id },
-        { $set: { _attachments: attachments } }
+        { projection: { _attachments: 1 } }
       );
+
+      const existingAtts = mongoDoc?._attachments || {};
+      const needsMigration = attNames.some(name => {
+        const existing = existingAtts[name];
+        return !existing?.data || existing.stub;
+      });
+
+      if (!needsMigration) continue;
+
+      // Fetch binary data for each attachment from CouchDB
+      const attachments = {};
+      let migrated = 0;
+
+      for (const attName of attNames) {
+        // If we already have the binary data in MongoDB, keep it
+        if (existingAtts[attName]?.data && !existingAtts[attName]?.stub) {
+          attachments[attName] = existingAtts[attName];
+          continue;
+        }
+
+        const att = doc._attachments[attName];
+        const data = await couchFetch(
+          `${couchBase}/${dbName}/${encodeURIComponent(doc._id)}/${encodeURIComponent(attName)}`,
+          true
+        );
+        if (!data) {
+          console.log(`    ${doc._id}/${attName}: FAILED to fetch`);
+          continue;
+        }
+
+        attachments[attName] = {
+          data: data,
+          content_type: att.content_type,
+          length: data.length,
+        };
+        migrated++;
+      }
+
+      if (migrated > 0) {
+        // Set entire _attachments object to avoid dot-notation issues
+        await collection.updateOne(
+          { _id: doc._id },
+          { $set: { _attachments: attachments } }
+        );
+        totalDocs++;
+        totalAttachments += migrated;
+        process.stdout.write(`  ${doc._id}: ${migrated}/${attNames.length} attachments migrated\n`);
+      }
+    }
+
+    startkey = result.rows[result.rows.length - 1].key;
+    process.stdout.write(`\r  Scanned ${scanned} docs with attachments...`);
+
+    if (result.rows.length < BATCH_SIZE) {
+      hasMore = false;
     }
   }
 
-  console.log('\nDone!');
+  console.log(`\n\nDone! Migrated ${totalAttachments} attachments across ${totalDocs} documents.`);
   await client.close();
 };
 
