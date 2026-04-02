@@ -1,3 +1,5 @@
+const { DOC_IDS } = require('@medic/constants');
+
 describe('ImagesBrandingCtrl', function () {
 
   'use strict';
@@ -40,7 +42,7 @@ describe('ImagesBrandingCtrl', function () {
     //https://github.com/medic/cht-core/issues/8026
     it('should not fail when branding doc is empty', async () => {
 
-      db.get.withArgs('branding', {attachments: true}).resolves({});
+      db.get.withArgs(DOC_IDS.BRANDING, {attachments: true}).resolves({});
       $translate.resolves('some message');
       Translate.fieldIsRequired.resolves('some validation messsage');
 
@@ -52,7 +54,7 @@ describe('ImagesBrandingCtrl', function () {
     });
     it('should not fail when resources is null', async () => {
 
-      db.get.withArgs('branding', {attachments: true}).resolves({resources: null});
+      db.get.withArgs(DOC_IDS.BRANDING, {attachments: true}).resolves({resources: null});
       $translate.resolves('some message');
       Translate.fieldIsRequired.resolves('some validation messsage');
 

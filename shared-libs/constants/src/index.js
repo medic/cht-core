@@ -8,6 +8,7 @@ const DOC_IDS = {
   RESOURCES: 'resources',
   PRIVACY_POLICIES: 'privacy-policies',
   PARTNERS: 'partners',
+  BRANDING: 'branding',
 };
 
 // Contact Types
@@ -38,6 +39,8 @@ const SENTINEL_METADATA = {
 // User Roles
 const USER_ROLES = {
   ONLINE: 'mm-online',
+  ADMIN: 'admin',
+  COUCHDB_ADMIN: '_admin',
 };
 
 module.exports = {
