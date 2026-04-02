@@ -7,6 +7,7 @@ import sinon from 'sinon';
 
 import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { SessionService } from '@mm-services/session.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -19,6 +20,7 @@ describe('TasksSidebarFilterComponent', () => {
   let telemetryService;
   let sessionService;
   let placeHierarchyService;
+  let interactionTrackingService;
 
   beforeEach(async () => {
     telemetryService = { record: sinon.stub() };
@@ -27,6 +29,7 @@ describe('TasksSidebarFilterComponent', () => {
       get: sinon.stub().resolves([]),
       getDescendants: sinon.stub().resolves([]),
     };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -43,6 +46,7 @@ describe('TasksSidebarFilterComponent', () => {
         }),
         { provide: TelemetryService, useValue: telemetryService },
         { provide: SessionService, useValue: sessionService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
         { provide: PlaceHierarchyService, useValue: placeHierarchyService },
       ],
     }).compileComponents();

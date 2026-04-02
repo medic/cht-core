@@ -1,6 +1,7 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
+import { AuthService } from '@mm-services/auth.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
@@ -35,6 +36,7 @@ interface InteractionLogDoc {
   providedIn: 'root'
 })
 export class InteractionTrackingService {
+  private static readonly PERMISSION = 'can_track_task_interactions';
   private static readonly MAX_EVENTS_PER_SESSION = 500;
   private static readonly MAX_SESSIONS_PER_DAY = 200;
   private static readonly SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes of inactivity ends session
@@ -42,10 +44,12 @@ export class InteractionTrackingService {
   private currentSession: string | null = null;
   private events: InteractionEvent[] = [];
   private sessionTimer: ReturnType<typeof setTimeout> | null = null;
+  private enabled = false;
 
   private readonly visibilityHandler = () => this.onVisibilityChange();
 
   constructor(
+    private readonly authService: AuthService,
     private readonly dbService: DbService,
     private readonly sessionService: SessionService,
     private readonly versionService: VersionService,
@@ -54,6 +58,10 @@ export class InteractionTrackingService {
     @Inject(DOCUMENT) private readonly document: Document,
   ) {
     this.document.addEventListener('visibilitychange', this.visibilityHandler);
+  }
+
+  async init() {
+    this.enabled = await this.authService.has(InteractionTrackingService.PERMISSION);
   }
 
   private onVisibilityChange() {
@@ -68,6 +76,9 @@ export class InteractionTrackingService {
    */
   startSession(session: string) {
     this.ngZone.runOutsideAngular(() => {
+      if (!this.enabled) {
+        return;
+      }
       if (this.currentSession) {
         this.flush();
       }

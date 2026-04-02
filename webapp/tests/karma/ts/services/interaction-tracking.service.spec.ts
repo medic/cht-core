@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 
 import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { AuthService } from '@mm-services/auth.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
@@ -11,6 +12,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('InteractionTrackingService', () => {
   let service: InteractionTrackingService;
+  let authService;
   let dbService;
   let metaDb;
   let sessionService;
@@ -20,7 +22,7 @@ describe('InteractionTrackingService', () => {
   let consoleErrorSpy;
   let documentMock;
 
-  beforeEach(() => {
+  const configureService = (hasPermission = true) => {
     metaDb = {
       get: sinon.stub(),
       put: sinon.stub().resolves(),
@@ -29,6 +31,7 @@ describe('InteractionTrackingService', () => {
     getStub.withArgs({ meta: true }).returns(metaDb);
     dbService = { get: getStub };
 
+    authService = { has: sinon.stub().resolves(hasPermission) };
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
     versionService = { getServiceWorker: sinon.stub().resolves({ version: '4.5.0' }) };
     telemetryService = { getUniqueDeviceId: sinon.stub().returns('device-uuid-123') };
@@ -42,6 +45,7 @@ describe('InteractionTrackingService', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        { provide: AuthService, useValue: authService },
         { provide: DbService, useValue: dbService },
         { provide: SessionService, useValue: sessionService },
         { provide: VersionService, useValue: versionService },
@@ -51,6 +55,13 @@ describe('InteractionTrackingService', () => {
     });
 
     service = TestBed.inject(InteractionTrackingService);
+  };
+
+  beforeEach(async () => {
+    configureService(true);
+    service.init();
+    // Wait for the permission check to resolve
+    await Promise.resolve();
     clock = sinon.useFakeTimers({ now: new Date(2026, 2, 27, 10, 0).getTime() });
   });
 
@@ -67,7 +78,6 @@ describe('InteractionTrackingService', () => {
   describe('record()', () => {
     it('should not record events when no session is active', async () => {
       service.record('task_list:open');
-      // No session started, so flush should be a no-op
       metaDb.get.rejects({ status: 404 });
       await service.flush();
       expect(metaDb.put.called).to.be.false;
@@ -157,7 +167,7 @@ describe('InteractionTrackingService', () => {
         _id: 'interaction-2026-3-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
-        sessions: [{ session: 'tasks', eventimestamp: [{ action: 'task_list:open', timestamp: 1000 }] }],
+        sessions: [{ session: 'tasks', events: [{ action: 'task_list:open', timestamp: 1000 }] }],
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
@@ -229,7 +239,7 @@ describe('InteractionTrackingService', () => {
         _id: 'interaction-2026-3-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
-        sessions: new Array(200).fill({ session: 'tasks', eventimestamp: [{ action: 'x', timestamp: 1 }] }),
+        sessions: new Array(200).fill({ session: 'tasks', events: [{ action: 'x', timestamp: 1 }] }),
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
@@ -253,7 +263,6 @@ describe('InteractionTrackingService', () => {
       service.record('task_list:open');
       await service.flush();
 
-      // Second flush should be a no-op since session was cleared
       await service.flush();
       expect(metaDb.put.calledOnce).to.be.true;
     });
@@ -289,8 +298,6 @@ describe('InteractionTrackingService', () => {
 
       service.startSession('tasks');
       service.record('task_list:open');
-
-      // Flush explicitly before starting a new session to verify the data
       await service.flush();
 
       expect(metaDb.put.calledOnce).to.be.true;
@@ -305,7 +312,6 @@ describe('InteractionTrackingService', () => {
       service.record('task_list:open');
       await service.flush();
 
-      // Start new session and record different events
       service.startSession('tasks');
       service.record('task:open', 'delivery');
       await service.flush();
@@ -324,7 +330,6 @@ describe('InteractionTrackingService', () => {
       service.record('task_list:open');
       service.record('task_list:scroll');
 
-      // Events are buffered, not yet saved
       expect(metaDb.put.called).to.be.false;
 
       await service.flush();
@@ -350,7 +355,6 @@ describe('InteractionTrackingService', () => {
       service.startSession('tasks');
       service.record('task_list:open');
 
-      // Directly call flush to simulate what the visibilitychange handler does
       await service.flush();
 
       expect(metaDb.put.calledOnce).to.be.true;
@@ -396,6 +400,40 @@ describe('InteractionTrackingService', () => {
 
       const doc = metaDb.put.args[0][0];
       expect(doc._id).to.contain('unknown');
+    });
+  });
+
+  describe('permission check', () => {
+    it('should check can_track_task_interactions permission on init', () => {
+      expect(authService.has.calledOnce).to.be.true;
+      expect(authService.has.args[0][0]).to.equal('can_track_task_interactions');
+    });
+
+    it('should not start session when permission is denied', async () => {
+      sinon.restore();
+      TestBed.resetTestingModule();
+      configureService(false);
+      service.init();
+      await Promise.resolve();
+
+      service.startSession('tasks');
+      service.record('task_list:open');
+      await service.flush();
+
+      expect(metaDb.put.called).to.be.false;
+    });
+
+    it('should not record events when permission is denied', async () => {
+      sinon.restore();
+      TestBed.resetTestingModule();
+      configureService(false);
+      service.init();
+      await Promise.resolve();
+
+      service.record('task_list:open');
+      await service.flush();
+
+      expect(metaDb.put.called).to.be.false;
     });
   });
 });

@@ -52,6 +52,7 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -251,6 +252,7 @@ describe('AppComponent', () => {
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
+          { provide: InteractionTrackingService, useValue: { init: sinon.stub() } },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {

@@ -38,6 +38,7 @@ import { DatabaseClosedComponent } from '@mm-modals/database-closed/database-clo
 import { TranslationDocsMatcherProvider } from '@mm-providers/translation-docs-matcher.provider';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -93,8 +94,8 @@ const SYNC_STATUS = {
   ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  private globalActions: GlobalActions;
-  private analyticsActions: AnalyticsActions;
+  private readonly globalActions: GlobalActions;
+  private readonly analyticsActions: AnalyticsActions;
   setupPromise;
   translationsLoaded;
   currentTab = '';
@@ -118,47 +119,48 @@ export class AppComponent implements OnInit, AfterViewInit {
   ]);
 
   constructor (
-    private dbSyncService:DBSyncService,
-    private store:Store,
-    private translateService:TranslateService,
-    private languageService:LanguageService,
-    private setLanguageService:SetLanguageService,
-    private sessionService:SessionService,
-    private authService:AuthService,
-    private resourceIconsService:ResourceIconsService,
-    private changesService:ChangesService,
-    private updateServiceWorker:UpdateServiceWorkerService,
-    private locationService:LocationService,
-    private modalService:ModalService,
-    private router:Router,
-    private domSanitizer: DomSanitizer,
-    private feedbackService:FeedbackService,
-    private formatDateService:FormatDateService,
-    private xmlFormsService:XmlFormsService,
-    private jsonFormsService:JsonFormsService,
-    private translateFromService:TranslateFromService,
-    private countMessageService:CountMessageService,
-    private privacyPoliciesService:PrivacyPoliciesService,
-    private routeSnapshotService:RouteSnapshotService,
-    private checkDateService:CheckDateService,
-    private unreadRecordsService:UnreadRecordsService,
-    private rulesEngineService:RulesEngineService,
-    private recurringProcessManagerService:RecurringProcessManagerService,
-    private wealthQuintilesWatcherService: WealthQuintilesWatcherService,
-    private databaseConnectionMonitorService: DatabaseConnectionMonitorService,
-    private translateLocaleService:TranslateLocaleService,
-    private telemetryService:TelemetryService,
-    private performanceService:PerformanceService,
-    private transitionsService:TransitionsService,
-    private ngZone:NgZone,
-    private chtDatasourceService: CHTDatasourceService,
-    private analyticsModulesService: AnalyticsModulesService,
-    private trainingCardsService: TrainingCardsService,
-    private matIconRegistry: MatIconRegistry,
-    private browserDetectorService: BrowserDetectorService,
-    private userSettingsService: UserSettingsService,
-    private formService: FormService,
+    private readonly dbSyncService:DBSyncService,
+    private readonly store:Store,
+    private readonly translateService:TranslateService,
+    private readonly languageService:LanguageService,
+    private readonly setLanguageService:SetLanguageService,
+    private readonly sessionService:SessionService,
+    private readonly authService:AuthService,
+    private readonly resourceIconsService:ResourceIconsService,
+    private readonly changesService:ChangesService,
+    private readonly updateServiceWorker:UpdateServiceWorkerService,
+    private readonly locationService:LocationService,
+    private readonly modalService:ModalService,
+    private readonly router:Router,
+    private readonly domSanitizer: DomSanitizer,
+    private readonly feedbackService:FeedbackService,
+    private readonly formatDateService:FormatDateService,
+    private readonly xmlFormsService:XmlFormsService,
+    private readonly jsonFormsService:JsonFormsService,
+    private readonly translateFromService:TranslateFromService,
+    private readonly countMessageService:CountMessageService,
+    private readonly privacyPoliciesService:PrivacyPoliciesService,
+    private readonly routeSnapshotService:RouteSnapshotService,
+    private readonly checkDateService:CheckDateService,
+    private readonly unreadRecordsService:UnreadRecordsService,
+    private readonly rulesEngineService:RulesEngineService,
+    private readonly recurringProcessManagerService:RecurringProcessManagerService,
+    private readonly wealthQuintilesWatcherService: WealthQuintilesWatcherService,
+    private readonly databaseConnectionMonitorService: DatabaseConnectionMonitorService,
+    private readonly translateLocaleService:TranslateLocaleService,
+    private readonly telemetryService:TelemetryService,
+    private readonly performanceService:PerformanceService,
+    private readonly transitionsService:TransitionsService,
+    private readonly ngZone:NgZone,
+    private readonly chtDatasourceService: CHTDatasourceService,
+    private readonly analyticsModulesService: AnalyticsModulesService,
+    private readonly trainingCardsService: TrainingCardsService,
+    private readonly matIconRegistry: MatIconRegistry,
+    private readonly browserDetectorService: BrowserDetectorService,
+    private readonly userSettingsService: UserSettingsService,
+    private readonly formService: FormService,
     private readonly taskNotificationService: TasksNotificationService,
+    private readonly interactionTrackingService: InteractionTrackingService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
@@ -303,6 +305,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
+    this.interactionTrackingService.init();
     this.sessionService.init();
     this.warnOutdatedChrome();
 

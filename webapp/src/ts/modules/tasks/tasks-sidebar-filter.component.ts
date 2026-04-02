@@ -3,6 +3,7 @@ import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NgClass, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -56,6 +57,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   constructor(
     private readonly store: Store,
     private readonly telemetryService: TelemetryService,
+    private readonly interactionTrackingService: InteractionTrackingService,
     private readonly placeHierarchyService: PlaceHierarchyService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -137,8 +139,10 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
   private recordToggleTelemetry() {
     if (this.isOpen) {
       this.telemetryService.record('tasks:filter:open');
+      this.interactionTrackingService.record('task_filter:open');
     } else {
       this.telemetryService.record('tasks:filter:close');
+      this.interactionTrackingService.record('task_filter:close');
     }
   }
 
@@ -148,16 +152,22 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
       const count = this.filterCount[filter.fieldId] || 0;
       if (count > 0) {
         this.telemetryService.record(`tasks:filter:apply:${filter.fieldId}`, count);
+        const selected = Array.from(filter.filter?.selected || []).join(',');
+        this.interactionTrackingService.record('task_filter:select', filter.fieldId, selected);
       }
     });
   }
 
   private recordResetTelemetry() {
     this.telemetryService.record('tasks:filter:reset');
+    this.interactionTrackingService.record('task_filter:reset');
   }
 
   private recordClearTelemetry(fieldIds: string[]) {
-    fieldIds.forEach(fieldId => this.telemetryService.record(`tasks:filter:clear:${fieldId}`));
+    fieldIds.forEach(fieldId => {
+      this.telemetryService.record(`tasks:filter:clear:${fieldId}`);
+      this.interactionTrackingService.record('task_filter:clear', fieldId);
+    });
   }
 
   ngOnDestroy() {
