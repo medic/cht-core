@@ -398,7 +398,7 @@ describe('MongoAdapter', () => {
       const result = await adapter.info();
       expect(result.db_name).to.equal('medic');
       expect(result.doc_count).to.equal(42);
-      expect(result.update_seq).to.equal(99);
+      expect(result.update_seq).to.equal('99');
     });
   });
 
@@ -467,7 +467,7 @@ describe('MongoAdapter', () => {
       const emitter = adapter.changes({ live: false });
       emitter.on('complete', (info) => {
         expect(info.results).to.deep.equal([]);
-        expect(info.last_seq).to.equal(0);
+        expect(info.last_seq).to.equal('0');
         done();
       });
     });

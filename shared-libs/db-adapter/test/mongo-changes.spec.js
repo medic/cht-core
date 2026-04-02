@@ -152,9 +152,9 @@ describe('mongo-changes', () => {
       emitter.on('complete', (result) => {
         expect(result.results).to.have.length(2);
         expect(result.results[0].id).to.equal('doc1');
-        expect(result.results[0].seq).to.equal(1);
+        expect(result.results[0].seq).to.equal('1');
         expect(result.results[1].id).to.equal('doc2');
-        expect(result.last_seq).to.equal(2);
+        expect(result.last_seq).to.equal('2');
         done();
       });
     });
@@ -193,7 +193,7 @@ describe('mongo-changes', () => {
       emitter.on('complete', (result) => {
         const query = changelogCol.find.args[0][0];
         expect(query.id.$in).to.deep.equal(['doc1', 'doc2']);
-        expect(result.last_seq).to.equal(10);
+        expect(result.last_seq).to.equal('10');
         done();
       });
     });
@@ -217,42 +217,59 @@ describe('mongo-changes', () => {
   describe('createChangesFeed - live mode', () => {
     it('should return an emitter with cancel', () => {
       const db = createMockDb();
-      // Setup changelog query for replay
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
-      const changelogCol = { find: sinon.stub().returns(cursor) };
-      db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
+      const countersCol = { findOne: sinon.stub().resolves({ value: 0 }) };
+      db.collection.withArgs('_counters').returns(countersCol);
 
-      const mockStream = new (require('events').EventEmitter)();
-      mockStream.close = sinon.stub().resolves();
       const docsCol = createMockDocsCollection();
-      docsCol.watch = sinon.stub().returns(mockStream);
-
       const emitter = createChangesFeed(db, docsCol, { live: true, since: 'now' });
       expect(emitter.cancel).to.be.a('function');
 
       emitter.cancel();
     });
 
-    it('should emit error from change stream', (done) => {
+    it('should emit changes found by polling', (done) => {
       const db = createMockDb();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const countersCol = { findOne: sinon.stub().resolves({ value: 0 }) };
+      db.collection.withArgs('_counters').returns(countersCol);
+
+      let pollCount = 0;
+      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub() };
+      // First poll returns one change, subsequent polls return empty
+      cursor.toArray.callsFake(() => {
+        pollCount++;
+        if (pollCount === 1) {
+          return Promise.resolve([{ _seq: 1, id: 'doc1', rev: '1-a', deleted: false }]);
+        }
+        return Promise.resolve([]);
+      });
       const changelogCol = { find: sinon.stub().returns(cursor) };
       db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
 
-      const mockStream = new (require('events').EventEmitter)();
-      mockStream.close = sinon.stub().resolves();
       const docsCol = createMockDocsCollection();
-      docsCol.watch = sinon.stub().returns(mockStream);
+      const emitter = createChangesFeed(db, docsCol, { live: true, since: 0 });
 
-      const emitter = createChangesFeed(db, docsCol, { live: true, since: 'now' });
-
-      emitter.on('error', (err) => {
-        expect(err.message).to.equal('stream error');
+      emitter.on('change', (change) => {
+        expect(change.id).to.equal('doc1');
+        expect(change.seq).to.equal('1');
+        emitter.cancel();
         done();
       });
+    });
 
-      // Give async startWatching time to set up
-      setTimeout(() => mockStream.emit('error', new Error('stream error')), 50);
+    it('should emit error from poll failure', (done) => {
+      const db = createMockDb();
+      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().rejects(new Error('poll failed')) };
+      const changelogCol = { find: sinon.stub().returns(cursor) };
+      db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
+
+      const docsCol = createMockDocsCollection();
+      const emitter = createChangesFeed(db, docsCol, { live: true, since: 0 });
+
+      emitter.on('error', (err) => {
+        expect(err.message).to.equal('poll failed');
+        emitter.cancel();
+        done();
+      });
     });
   });
 });

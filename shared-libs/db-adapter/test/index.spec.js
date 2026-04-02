@@ -71,8 +71,36 @@ describe('db-adapter index', () => {
     it('should create a MongoAdapter', () => {
       initMongo(createMockMongoClient());
       const adapter = wrapMongo('medic');
-      expect(adapter).to.be.instanceOf(MongoAdapter);
+      // wrapMongo returns a Proxy, so instanceof won't match; check backendType instead
       expect(adapter.backendType).to.equal('mongodb');
+    });
+
+    it('should bridge trailing callback arguments to promise results', (done) => {
+      const mockClient = createMockMongoClient();
+      const mockCollection = mockClient.db().collection();
+      mockCollection.findOne = sinon.stub().resolves({ _id: 'doc1', _rev: '1-abc', value: 42 });
+      initMongo(mockClient);
+      const adapter = wrapMongo('medic');
+
+      adapter.get('doc1', (err, result) => {
+        expect(err).to.be.null;
+        expect(result._id).to.equal('doc1');
+        done();
+      });
+    });
+
+    it('should bridge callback errors from rejected promises', (done) => {
+      const mockClient = createMockMongoClient();
+      const mockCollection = mockClient.db().collection();
+      mockCollection.findOne = sinon.stub().resolves(null); // triggers 404
+      initMongo(mockClient);
+      const adapter = wrapMongo('medic');
+
+      adapter.get('doc1', (err) => {
+        expect(err).to.exist;
+        expect(err.status).to.equal(404);
+        done();
+      });
     });
 
     it('should throw if mongo client not initialized', () => {
