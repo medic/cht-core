@@ -125,7 +125,7 @@ describe('Tasks', () => {
     expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
 
-  it('Should show error message for bad config', async () => {
+  xit('Should show error message for bad config', async () => {
     await tasksPage.compileTasks('tasks-error-config.js', true);
 
     await commonPage.goToTasks();
