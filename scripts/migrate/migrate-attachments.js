@@ -33,7 +33,9 @@ const couchFetch = async (url, binary = false) => {
   const response = await fetch(url, {
     headers: { Authorization: `Basic ${couchAuth}` },
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    return null;
+  }
   return binary ? Buffer.from(await response.arrayBuffer()) : response.json();
 };
 
@@ -72,8 +74,12 @@ const main = async () => {
 
     for (const row of result.rows) {
       const doc = row.doc;
-      if (!doc || !doc._attachments) continue;
-      if (doc._id.startsWith('_design/')) continue;
+      if (!doc || !doc._attachments) {
+        continue;
+      }
+      if (doc._id.startsWith('_design/')) {
+        continue;
+      }
 
       scanned++;
       const attNames = Object.keys(doc._attachments);
@@ -90,7 +96,9 @@ const main = async () => {
         return !existing?.data || existing.stub;
       });
 
-      if (!needsMigration) continue;
+      if (!needsMigration) {
+        continue;
+      }
 
       // Fetch binary data for each attachment from CouchDB
       const attachments = {};

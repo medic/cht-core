@@ -1,6 +1,8 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const { createAdapter, wrapCouch, wrapMongo, initMongo, CouchAdapter, MongoAdapter, BACKENDS } = require('../src/index');
+const {
+  createAdapter, wrapCouch, wrapMongo, initMongo, CouchAdapter, BACKENDS,
+} = require('../src/index');
 
 const createMockPouchDb = () => ({
   get: sinon.stub(),

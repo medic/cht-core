@@ -63,7 +63,8 @@ class MongoAdapter {
   }
 
   async remove(docOrId, revOrOpts) {
-    let id, rev;
+    let id; let 
+      rev;
     if (typeof docOrId === 'string') {
       id = docOrId;
       rev = typeof revOrOpts === 'string' ? revOrOpts : undefined;
@@ -108,7 +109,8 @@ class MongoAdapter {
         Object.assign(query._id, opts.descending ? { $lte: opts.startkey } : { $gte: opts.startkey });
       }
       if (opts.endkey !== undefined) {
-        const op = opts.inclusive_end === false ? (opts.descending ? '$gt' : '$lt') : (opts.descending ? '$gte' : '$lte');
+        const op = opts.inclusive_end === false
+          ? (opts.descending ? '$gt' : '$lt') : (opts.descending ? '$gte' : '$lte');
         Object.assign(query._id, { [op]: opts.endkey });
       }
     } else if (opts.key !== undefined) {

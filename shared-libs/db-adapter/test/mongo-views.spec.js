@@ -32,7 +32,8 @@ describe('mongo-views', () => {
   describe('medic/contacts_by_depth', () => {
     it('should emit rows for matching contacts with parent hierarchy', async () => {
       const docs = [
-        { _id: 'clinic1', type: 'clinic', parent: { _id: 'hc1', parent: { _id: 'district1' } }, contact: { _id: 'person1' } },
+        { _id: 'clinic1', type: 'clinic', parent: { _id: 'hc1', parent: { _id: 'district1' } },
+          contact: { _id: 'person1' } },
         { _id: 'person1', type: 'person', parent: { _id: 'clinic1', parent: { _id: 'hc1' } }, patient_id: 'P001' },
       ];
       const col = createMockCollection(docs);

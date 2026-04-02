@@ -696,7 +696,6 @@ const getDocsByReplicationKeyMongo = async (authorizationContext) => {
   }
 
   // Find forms/translations with key='_all'
-  const formQuery = { type: { $in: ['form', 'translations'] }, _deleted: { $ne: true } };
   const formResult = await db.medic.query('medic-client/doc_by_type', { key: ['form'] });
   for (const row of formResult.rows) {
     hits.push({ id: row.id, fields: { key: [ALL_KEY], type: row.key[0] } });
@@ -738,7 +737,7 @@ const getDocsByReplicationKeyMongo = async (authorizationContext) => {
   return hits;
 };
 
-const computeReplicationFields = (doc, keys) => {
+const computeReplicationFields = (doc) => {
   const isTruthy = (value) => value === true || value === 'true';
 
   if (doc.type === 'data_record') {

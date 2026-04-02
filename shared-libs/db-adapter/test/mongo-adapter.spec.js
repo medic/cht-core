@@ -15,14 +15,21 @@ const createMockCollection = () => ({
 });
 
 const createMockDb = () => {
-  const countersCol = { findOneAndUpdate: sinon.stub().resolves({ value: 1 }), findOne: sinon.stub().resolves({ value: 0 }) };
+  const countersCol = {
+    findOneAndUpdate: sinon.stub().resolves({ value: 1 }),
+    findOne: sinon.stub().resolves({ value: 0 }),
+  };
   const changelogCol = { insertOne: sinon.stub().resolves(), insertMany: sinon.stub().resolves(), find: sinon.stub() };
 
   const db = {
     command: sinon.stub(),
     collection: sinon.stub().callsFake((name) => {
-      if (name === '_counters') { return countersCol; }
-      if (name === '_changelog') { return changelogCol; }
+      if (name === '_counters') {
+        return countersCol; 
+      }
+      if (name === '_changelog') {
+        return changelogCol; 
+      }
       return null;
     }),
     _countersCol: countersCol,
@@ -203,10 +210,15 @@ describe('MongoAdapter', () => {
   describe('allDocs', () => {
     it('should return all non-deleted docs', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _id: 'a', _rev: '1-a' },
-        { _id: 'b', _rev: '1-b' },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _id: 'a', _rev: '1-a' },
+          { _id: 'b', _rev: '1-b' },
+        ]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(2);
 
@@ -218,9 +230,14 @@ describe('MongoAdapter', () => {
 
     it('should filter by keys', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _id: 'a', _rev: '1-a' },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _id: 'a', _rev: '1-a' },
+        ]),
+      };
       collection.find.returns(cursor);
 
       const result = await adapter.allDocs({ keys: ['a', 'missing'] });
@@ -231,9 +248,14 @@ describe('MongoAdapter', () => {
 
     it('should include docs when requested', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _id: 'a', _rev: '1-a', type: 'report' },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _id: 'a', _rev: '1-a', type: 'report' },
+        ]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(1);
 
@@ -243,7 +265,12 @@ describe('MongoAdapter', () => {
 
     it('should handle startkey and endkey', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 
@@ -255,7 +282,12 @@ describe('MongoAdapter', () => {
 
     it('should handle descending order', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 
@@ -268,7 +300,12 @@ describe('MongoAdapter', () => {
 
     it('should handle endkey with inclusive_end false', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 
@@ -279,9 +316,14 @@ describe('MongoAdapter', () => {
 
     it('should handle key option', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _id: 'specific', _rev: '1-a' },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _id: 'specific', _rev: '1-a' },
+        ]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(1);
 
@@ -292,7 +334,12 @@ describe('MongoAdapter', () => {
 
     it('should handle skip and limit', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 
@@ -303,9 +350,14 @@ describe('MongoAdapter', () => {
 
     it('should return deleted status for deleted docs in keys query', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _id: 'del', _rev: '2-x', _deleted: true },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _id: 'del', _rev: '2-x', _deleted: true },
+        ]),
+      };
       collection.find.returns(cursor);
 
       const result = await adapter.allDocs({ keys: ['del'] });
@@ -314,9 +366,14 @@ describe('MongoAdapter', () => {
 
     it('should include docs for deleted docs in keys query with include_docs', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _id: 'a', _rev: '1-a' },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _id: 'a', _rev: '1-a' },
+        ]),
+      };
       collection.find.returns(cursor);
 
       const result = await adapter.allDocs({ keys: ['a'], include_docs: true });
@@ -440,12 +497,20 @@ describe('MongoAdapter', () => {
   describe('changes', () => {
     it('should return an emitter with cancel', () => {
       const { adapter, db, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       const countersCol = { findOne: sinon.stub().resolves({ value: 0 }) };
       db.collection = sinon.stub().callsFake((name) => {
-        if (name === '_changelog') { return changelogCol; }
-        if (name === '_counters') { return countersCol; }
+        if (name === '_changelog') {
+          return changelogCol;
+        }
+        if (name === '_counters') {
+          return countersCol;
+        }
         return collection;
       });
 
@@ -455,12 +520,20 @@ describe('MongoAdapter', () => {
 
     it('should emit complete for non-live changes', (done) => {
       const { adapter, db, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       const countersCol = { findOne: sinon.stub().resolves({ value: 0 }) };
       db.collection = sinon.stub().callsFake((name) => {
-        if (name === '_changelog') { return changelogCol; }
-        if (name === '_counters') { return countersCol; }
+        if (name === '_changelog') {
+          return changelogCol;
+        }
+        if (name === '_counters') {
+          return countersCol;
+        }
         return collection;
       });
 
@@ -678,11 +751,18 @@ describe('MongoAdapter', () => {
   describe('allDocs descending with inclusive_end false', () => {
     it('should use $gt for descending with inclusive_end false', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 
-      await adapter.allDocs({ descending: true, startkey: 'z', endkey: 'a', inclusive_end: false });
+      await adapter.allDocs({
+        descending: true, startkey: 'z', endkey: 'a', inclusive_end: false,
+      });
       const query = collection.find.args[0][0];
       expect(query._id.$gt).to.equal('a');
     });
@@ -691,7 +771,12 @@ describe('MongoAdapter', () => {
   describe('allDocs with only startkey', () => {
     it('should handle startkey without endkey', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 
@@ -705,7 +790,12 @@ describe('MongoAdapter', () => {
   describe('allDocs with only endkey', () => {
     it('should handle endkey without startkey', async () => {
       const { adapter, collection } = createAdapter();
-      const cursor = { sort: sinon.stub().returnsThis(), skip: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]),
+      };
       collection.find.returns(cursor);
       collection.countDocuments.resolves(0);
 

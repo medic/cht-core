@@ -65,7 +65,7 @@ const migrateDatabase = async (mongoClient, couchDbName, mongoDbName) => {
   // Check if CouchDB database exists
   try {
     await couchFetch(couchUrl);
-  } catch (err) {
+  } catch {
     console.log(`  Skipping ${couchDbName} (does not exist or not accessible)`);
     return { docs: 0, skipped: true };
   }
@@ -160,9 +160,7 @@ const migrateDatabase = async (mongoClient, couchDbName, mongoDbName) => {
 const migrateUserMetaDbs = async (mongoClient) => {
   // Discover and migrate all user-meta databases
   const allDbs = await couchFetch(`${couchBaseUrl}/_all_dbs`);
-  const metaDbs = allDbs.filter(name =>
-    name.startsWith(`${mainDbName}-user-`) && name.endsWith('-meta')
-  );
+  const metaDbs = allDbs.filter(name => name.startsWith(`${mainDbName}-user-`) && name.endsWith('-meta'));
 
   console.log(`\nFound ${metaDbs.length} user-meta databases`);
   let totalMetaDocs = 0;

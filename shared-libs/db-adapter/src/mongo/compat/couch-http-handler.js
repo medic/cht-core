@@ -22,12 +22,24 @@ const createHandlers = (getAdapter) => {
     try {
       const adapter = getAdapter(req);
       const opts = {};
-      if (req.query.revs === 'true') { opts.revs = true; }
-      if (req.query.revs_info === 'true') { opts.revs_info = true; }
-      if (req.query.conflicts === 'true') { opts.conflicts = true; }
-      if (req.query.attachments === 'true') { opts.attachments = true; }
-      if (req.query.rev) { opts.rev = req.query.rev; }
-      if (req.query.open_revs) { opts.open_revs = req.query.open_revs; }
+      if (req.query.revs === 'true') {
+        opts.revs = true; 
+      }
+      if (req.query.revs_info === 'true') {
+        opts.revs_info = true; 
+      }
+      if (req.query.conflicts === 'true') {
+        opts.conflicts = true; 
+      }
+      if (req.query.attachments === 'true') {
+        opts.attachments = true; 
+      }
+      if (req.query.rev) {
+        opts.rev = req.query.rev; 
+      }
+      if (req.query.open_revs) {
+        opts.open_revs = req.query.open_revs; 
+      }
 
       const doc = await adapter.get(req.params.docId, opts);
       res.json(doc);
@@ -64,7 +76,9 @@ const createHandlers = (getAdapter) => {
     try {
       const adapter = getAdapter(req);
       const opts = parseViewOpts(req);
-      if (req.body?.keys) { opts.keys = req.body.keys; }
+      if (req.body?.keys) {
+        opts.keys = req.body.keys; 
+      }
       const result = await adapter.allDocs(opts);
       res.json(result);
     } catch (err) {
@@ -78,7 +92,9 @@ const createHandlers = (getAdapter) => {
       const adapter = getAdapter(req);
       const docs = req.body?.docs || [];
       const opts = {};
-      if (req.body?.new_edits === false) { opts.new_edits = false; }
+      if (req.body?.new_edits === false) {
+        opts.new_edits = false; 
+      }
       const result = await adapter.bulkDocs(docs, opts);
       res.status(201).json(result);
     } catch (err) {
@@ -127,14 +143,17 @@ const createHandlers = (getAdapter) => {
         limit: parseInt(req.query.limit || req.body?.limit, 10) || undefined,
         include_docs: (req.query.include_docs || req.body?.include_docs) === 'true',
       };
-      if (req.body?.doc_ids) { opts.doc_ids = req.body.doc_ids; }
-      if (req.query.doc_ids) { opts.doc_ids = JSON.parse(req.query.doc_ids); }
+      if (req.body?.doc_ids) {
+        opts.doc_ids = req.body.doc_ids; 
+      }
+      if (req.query.doc_ids) {
+        opts.doc_ids = JSON.parse(req.query.doc_ids); 
+      }
 
       const feed = req.query.feed || req.body?.feed;
 
       if (feed === 'longpoll') {
         // Longpoll: wait for at least one change, then return
-        const heartbeat = parseInt(req.query.heartbeat || '10000', 10);
         const timeout = parseInt(req.query.timeout || '60000', 10);
 
         // First check if there are already changes
@@ -153,9 +172,6 @@ const createHandlers = (getAdapter) => {
           liveEmitter.cancel();
           res.json({ results: [], last_seq: result.last_seq, pending: 0 });
         }, timeout);
-
-        // Don't write heartbeat bytes — PouchDB expects a clean JSON response
-        const heartbeatInterval = null;
 
         liveEmitter.on('change', (change) => {
           clearTimeout(timer);
@@ -238,7 +254,9 @@ const createHandlers = (getAdapter) => {
       const designDoc = req.params.designDoc;
       const viewName = req.params.viewName;
       const opts = parseViewOpts(req);
-      if (req.body?.keys) { opts.keys = req.body.keys; }
+      if (req.body?.keys) {
+        opts.keys = req.body.keys; 
+      }
       const result = await adapter.query(`${designDoc}/${viewName}`, opts);
       res.json(result);
     } catch (err) {
@@ -298,13 +316,19 @@ const createHandlers = (getAdapter) => {
 
 const buildLocalId = (req) => {
   const parts = [req.params.localId];
-  if (req.params.rest) { parts.push(req.params.rest); }
+  if (req.params.rest) {
+    parts.push(req.params.rest); 
+  }
   return parts.join('/');
 };
 
 const parseSince = (since) => {
-  if (since === undefined || since === null || since === '') { return 0; }
-  if (since === 'now') { return 'now'; }
+  if (since === undefined || since === null || since === '') {
+    return 0; 
+  }
+  if (since === 'now') {
+    return 'now'; 
+  }
   const n = Number(since);
   return isNaN(n) ? since : n;
 };
@@ -313,22 +337,54 @@ const parseViewOpts = (req) => {
   const opts = {};
   const q = { ...req.query, ...(req.body || {}) };
 
-  if (q.include_docs === 'true' || q.include_docs === true) { opts.include_docs = true; }
-  if (q.reduce === 'true' || q.reduce === true) { opts.reduce = true; }
-  if (q.reduce === 'false' || q.reduce === false) { opts.reduce = false; }
-  if (q.group === 'true' || q.group === true) { opts.group = true; }
-  if (q.group_level !== undefined) { opts.group_level = parseInt(q.group_level, 10); }
-  if (q.descending === 'true') { opts.descending = true; }
-  if (q.inclusive_end === 'false') { opts.inclusive_end = false; }
-  if (q.limit !== undefined) { opts.limit = parseInt(q.limit, 10); }
-  if (q.skip !== undefined) { opts.skip = parseInt(q.skip, 10); }
-  if (q.key !== undefined) { opts.key = JSON.parse(q.key); }
-  if (q.keys !== undefined && typeof q.keys === 'string') { opts.keys = JSON.parse(q.keys); }
-  if (q.startkey !== undefined) { opts.startkey = JSON.parse(q.startkey); }
-  if (q.endkey !== undefined) { opts.endkey = JSON.parse(q.endkey); }
-  if (q.start_key !== undefined) { opts.startkey = JSON.parse(q.start_key); }
-  if (q.end_key !== undefined) { opts.endkey = JSON.parse(q.end_key); }
-  if (q.attachments === 'true') { opts.attachments = true; }
+  if (q.include_docs === 'true' || q.include_docs === true) {
+    opts.include_docs = true; 
+  }
+  if (q.reduce === 'true' || q.reduce === true) {
+    opts.reduce = true; 
+  }
+  if (q.reduce === 'false' || q.reduce === false) {
+    opts.reduce = false; 
+  }
+  if (q.group === 'true' || q.group === true) {
+    opts.group = true; 
+  }
+  if (q.group_level !== undefined) {
+    opts.group_level = parseInt(q.group_level, 10); 
+  }
+  if (q.descending === 'true') {
+    opts.descending = true; 
+  }
+  if (q.inclusive_end === 'false') {
+    opts.inclusive_end = false; 
+  }
+  if (q.limit !== undefined) {
+    opts.limit = parseInt(q.limit, 10); 
+  }
+  if (q.skip !== undefined) {
+    opts.skip = parseInt(q.skip, 10); 
+  }
+  if (q.key !== undefined) {
+    opts.key = JSON.parse(q.key); 
+  }
+  if (q.keys !== undefined && typeof q.keys === 'string') {
+    opts.keys = JSON.parse(q.keys); 
+  }
+  if (q.startkey !== undefined) {
+    opts.startkey = JSON.parse(q.startkey); 
+  }
+  if (q.endkey !== undefined) {
+    opts.endkey = JSON.parse(q.endkey); 
+  }
+  if (q.start_key !== undefined) {
+    opts.startkey = JSON.parse(q.start_key); 
+  }
+  if (q.end_key !== undefined) {
+    opts.endkey = JSON.parse(q.end_key); 
+  }
+  if (q.attachments === 'true') {
+    opts.attachments = true; 
+  }
 
   return opts;
 };

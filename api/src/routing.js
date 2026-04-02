@@ -971,7 +971,9 @@ const canEdit = (req, res) => {
         return;
       }
       if (isMongo) {
-        return res.status(404).json({ error: 'not_found', reason: 'Direct DB writes not available with MongoDB backend' });
+        return res.status(404).json({
+          error: 'not_found', reason: 'Direct DB writes not available with MongoDB backend'
+        });
       }
       proxyForAuth.web(req, res);
     })

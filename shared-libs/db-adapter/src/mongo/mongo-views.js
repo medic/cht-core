@@ -545,13 +545,19 @@ const reportsByDate = async (collection, opts) => {
 
   const sort = opts.descending ? { reported_date: -1 } : { reported_date: 1 };
   const cursor = collection.find(query).sort(sort);
-  if (opts.skip) { cursor.skip(opts.skip); }
-  if (opts.limit) { cursor.limit(opts.limit); }
+  if (opts.skip) {
+    cursor.skip(opts.skip); 
+  }
+  if (opts.limit) {
+    cursor.limit(opts.limit); 
+  }
 
   const docs = await cursor.toArray();
   const rows = docs.map(doc => {
     const row = { id: doc._id, key: [doc.reported_date], value: doc.reported_date };
-    if (opts.include_docs) { row.doc = doc; }
+    if (opts.include_docs) {
+      row.doc = doc; 
+    }
     return row;
   });
 
@@ -575,7 +581,9 @@ const docSummariesById = async (collection, opts) => {
   const getLineage = (contact) => {
     const parts = [];
     while (contact) {
-      if (contact._id) { parts.push(contact._id); }
+      if (contact._id) {
+        parts.push(contact._id); 
+      }
       contact = contact.parent;
     }
     return parts;
@@ -584,10 +592,16 @@ const docSummariesById = async (collection, opts) => {
   for (const doc of docs) {
     if (doc.type === 'data_record' && doc.form) {
       const subject = {};
-      const ref = doc.patient_id || doc.fields?.patient_id || doc.fields?.patient_uuid || doc.place_id || doc.fields?.place_id;
-      if (doc.fields?.patient_name) { subject.name = doc.fields.patient_name; }
-      if (ref) { subject.value = ref; subject.type = 'reference'; }
-      else if (subject.name) { subject.value = subject.name; subject.type = 'name'; }
+      const ref = doc.patient_id || doc.fields?.patient_id
+        || doc.fields?.patient_uuid || doc.place_id || doc.fields?.place_id;
+      if (doc.fields?.patient_name) {
+        subject.name = doc.fields.patient_name; 
+      }
+      if (ref) {
+        subject.value = ref; subject.type = 'reference'; 
+      } else if (subject.name) {
+        subject.value = subject.name; subject.type = 'name'; 
+      }
 
       rows.push({
         id: doc._id,
@@ -650,7 +664,9 @@ const contactsByParent = async (collection, opts) => {
   const rows = docs.map(doc => {
     const type = doc.type === 'contact' ? doc.contact_type : doc.type;
     const row = { id: doc._id, key: [doc.parent._id, type], value: null };
-    if (opts.include_docs) { row.doc = doc; }
+    if (opts.include_docs) {
+      row.doc = doc; 
+    }
     return row;
   });
 
@@ -697,7 +713,9 @@ const docsByIdLineage = async (collection, opts) => {
   } else if (doc.type === 'data_record' && doc.form) {
     // Report — emit self then walk contact lineage
     const row0 = { id: doc._id, key: [doc._id, 0], value: null };
-    if (opts.include_docs) { row0.doc = doc; }
+    if (opts.include_docs) {
+      row0.doc = doc; 
+    }
     rows.push(row0);
 
     let contact = doc.contact;
@@ -763,27 +781,35 @@ const genericViewFallback = async (viewName, collection, opts) => {
     try {
       const emitted = [];
       const emit = (key, value) => emitted.push({ key, value });
-      // eslint-disable-next-line no-new-func
+       
       const mapFn = new Function('doc', 'emit', mapFnStr.replace(/^function\s*\([^)]*\)\s*\{/, '').replace(/\}$/, ''));
       mapFn(doc, emit);
 
       for (const { key, value } of emitted) {
         if (keyMatch(key, opts) && isInRange(key, opts)) {
           const row = { id: doc._id, key, value };
-          if (opts.include_docs) { row.doc = doc; }
+          if (opts.include_docs) {
+            row.doc = doc; 
+          }
           rows.push(row);
         }
       }
-    } catch (e) {
+    } catch {
       // Skip docs that cause map function errors
     }
   }
 
   // Apply limit
   let result = rows;
-  if (opts.descending) { result.reverse(); }
-  if (opts.skip) { result = result.slice(opts.skip); }
-  if (opts.limit) { result = result.slice(0, opts.limit); }
+  if (opts.descending) {
+    result.reverse(); 
+  }
+  if (opts.skip) {
+    result = result.slice(opts.skip); 
+  }
+  if (opts.limit) {
+    result = result.slice(0, opts.limit); 
+  }
 
   return formatViewResult(result, opts);
 };

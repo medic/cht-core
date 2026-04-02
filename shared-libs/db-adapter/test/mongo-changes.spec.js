@@ -139,10 +139,13 @@ describe('mongo-changes', () => {
   describe('createChangesFeed - one-shot mode', () => {
     it('should query changelog and emit complete', (done) => {
       const db = createMockDb();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _seq: 1, id: 'doc1', rev: '1-a', deleted: false },
-        { _seq: 2, id: 'doc2', rev: '1-b', deleted: false },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _seq: 1, id: 'doc1', rev: '1-a', deleted: false },
+          { _seq: 2, id: 'doc2', rev: '1-b', deleted: false },
+        ]),
+      };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
 
@@ -161,9 +164,11 @@ describe('mongo-changes', () => {
 
     it('should respect limit option', (done) => {
       const db = createMockDb();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([
-        { _seq: 5, id: 'doc5', rev: '1-e', deleted: false },
-      ]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([
+          { _seq: 5, id: 'doc5', rev: '1-e', deleted: false },
+        ]) };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
 
@@ -179,7 +184,9 @@ describe('mongo-changes', () => {
 
     it('should filter by doc_ids', (done) => {
       const db = createMockDb();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().resolves([]) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().resolves([]) };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
 
@@ -200,7 +207,9 @@ describe('mongo-changes', () => {
 
     it('should emit error on query failure', (done) => {
       const db = createMockDb();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().rejects(new Error('query failed')) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().rejects(new Error('query failed')) };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
 
@@ -258,7 +267,9 @@ describe('mongo-changes', () => {
 
     it('should emit error from poll failure', (done) => {
       const db = createMockDb();
-      const cursor = { sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(), toArray: sinon.stub().rejects(new Error('poll failed')) };
+      const cursor = {
+        sort: sinon.stub().returnsThis(), limit: sinon.stub().returnsThis(),
+        toArray: sinon.stub().rejects(new Error('poll failed')) };
       const changelogCol = { find: sinon.stub().returns(cursor) };
       db.collection.withArgs(CHANGELOG_COLLECTION).returns(changelogCol);
 
