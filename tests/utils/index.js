@@ -959,7 +959,7 @@ const waitForNginxContainerRunning = async () => {
     await delayPromise(1000);
   }
   throw new Error(
-    `nginx container "${containerName}" did not become running within ${maxTries}s. ` +
+    `nginx container "${containerName}" did not become running within ${maxTries} tries. ` +
     'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT and NGINX_HTTPS_PORT.'
   );
 };
