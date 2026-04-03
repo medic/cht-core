@@ -161,14 +161,14 @@ describe('Contacts effects', () => {
       const setLoadingShowContent = sinon.stub(GlobalActions.prototype, 'setLoadingShowContent');
       const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
 
-      contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', model: 'contact model' });
+      contactViewModelGeneratorService.getContact.resolves({ _id: 'contactid', doc: {}, model: 'contact model' });
 
       await effects.selectContact.toPromise();
 
       expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.getContact.args[0]).to.deep.equal(['contactid', { merge: false }]);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', model: 'contact model' }]);
+      expect(setSelected.args[0]).to.deep.equal([{ _id: 'contactid', doc: {}, model: 'contact model' }]);
       expect(setLoadingShowContent.callCount).to.equal(1);
       expect(setLoadingSelectedContact.callCount).to.equal(1);
       expect(setContactsLoadingSummary.callCount).to.equal(2);
@@ -711,6 +711,21 @@ describe('Contacts effects', () => {
         expect(tasksForContactService.get.callCount).to.equal(0);
         expect(setSnackbarContent.callCount).to.equal(0);
         expect(unsetSelected.callCount).to.equal(1);
+      });
+
+      it('should handle missing contact doc', async () => {
+        const updateSelectedContactSummary: any = ContactsActions.prototype.updateSelectedContactSummary;
+        const setContactsLoadingSummary: any = ContactsActions.prototype.setContactsLoadingSummary;
+
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: undefined });
+
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
+        await effects.selectContact.toPromise();
+
+        expect(contactSummaryService.get.callCount).to.equal(0);
+        expect(updateSelectedContactSummary.callCount).to.equal(1);
+        expect(updateSelectedContactSummary.args[0][0]).to.be.undefined;
+        expect(setContactsLoadingSummary.calledWith(false)).to.be.true;
       });
     });
 

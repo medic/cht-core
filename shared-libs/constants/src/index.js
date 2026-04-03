@@ -6,7 +6,9 @@ const DOC_IDS = {
   SERVICE_WORKER_META: 'service-worker-meta',
   SETTINGS: 'settings',
   RESOURCES: 'resources',
+  PRIVACY_POLICIES: 'privacy-policies',
   PARTNERS: 'partners',
+  BRANDING: 'branding',
 };
 
 // Contact Types
@@ -29,11 +31,16 @@ const HTTP_HEADERS = {
 const SENTINEL_METADATA = {
   TRANSITIONS_SEQ: '_local/transitions-seq',
   BACKGROUND_SEQ: '_local/background-seq',
+  PURGE_LOG: '_local/purge_log',
+  PURGE_DB_INFO: '_local/info',
+  LEGACY_META_DATA: '_local/sentinel-meta-data',
 };
 
 // User Roles
 const USER_ROLES = {
   ONLINE: 'mm-online',
+  ADMIN: 'admin',
+  COUCHDB_ADMIN: '_admin',
 };
 
 module.exports = {

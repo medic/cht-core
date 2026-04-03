@@ -2,8 +2,9 @@
  * CHT Script API - Auth module
  * Provides tools related to Authentication.
  */
+const { USER_ROLES } = require('@medic/constants');
 
-const ADMIN_ROLE = '_admin';
+const ADMIN_ROLE = USER_ROLES.COUCHDB_ADMIN;
 const DISALLOWED_PERMISSION_PREFIX = '!';
 
 const isAdmin = (userRoles) => {

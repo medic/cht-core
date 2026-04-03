@@ -1,5 +1,6 @@
 const expect = require('chai').expect;
 const auth = require('../src/auth');
+const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 
 describe('CHT Script API - Auth', () => {
   describe('hasPermissions', () => {
@@ -54,7 +55,7 @@ describe('CHT Script API - Auth', () => {
         can_edit: [ 'chw_supervisor' ],
         can_configure: [ 'nurse' ]
       };
-      const userRoles = [ '_admin' ];
+      const userRoles = [COUCHDB_ADMIN];
 
       const result = auth.hasPermissions('can_create_people', userRoles, chtPermissions);
 
@@ -144,7 +145,7 @@ describe('CHT Script API - Auth', () => {
         can_export_messages: [ 'national_admin' ]
       };
 
-      const result = auth.hasPermissions([ '!can_backup_facilities' ], [ '_admin' ], chtPermissions);
+      const result = auth.hasPermissions([ '!can_backup_facilities' ], [COUCHDB_ADMIN], chtPermissions);
 
       expect(result).to.be.false;
     });
@@ -214,7 +215,7 @@ describe('CHT Script API - Auth', () => {
 
       const result = auth.hasAnyPermission(
         [[ 'can_backup_facilities' ], [ 'can_export_messages' ], [ 'some_permission' ]],
-        [ '_admin' ],
+        [COUCHDB_ADMIN],
         chtPermissions
       );
 
@@ -230,7 +231,7 @@ describe('CHT Script API - Auth', () => {
 
       const result = auth.hasAnyPermission(
         [[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ 'some_permission' ]],
-        [ '_admin' ],
+        [COUCHDB_ADMIN],
         chtPermissions
       );
 
@@ -246,7 +247,7 @@ describe('CHT Script API - Auth', () => {
 
       const result = auth.hasAnyPermission(
         [[ '!can_backup_facilities' ], [ '!can_export_messages' ], [ '!some_permission' ]],
-        [ '_admin' ],
+        [COUCHDB_ADMIN],
         chtPermissions
       );
 

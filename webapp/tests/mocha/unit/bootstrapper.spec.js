@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 require('chai').use(require('chai-as-promised'));
 const { expect, assert } = require('chai');
+const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 const pouchDbOptions = {
   local: { auto_compaction: true },
   remote: { skip_setup: true },
@@ -132,7 +133,7 @@ describe('bootstrapper', () => {
   const wait = time => new Promise(resolve => setTimeout(resolve, time));
 
   it('does nothing for admins', async () => {
-    setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
+    setUserCtxCookie({ name: 'jimbo', roles: [COUCHDB_ADMIN] });
     await bootstrapper(pouchDbOptions);
     assert.equal(pouchDb.callCount, 0);
     assert.isTrue(offlineDdocsInit.notCalled);

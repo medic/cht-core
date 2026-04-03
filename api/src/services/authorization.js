@@ -638,13 +638,15 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
       continue;
     }
 
-    hits.push(...response.hits.map(hit => ({
-      id: hit.id,
-      fields: {
-        ...hit.fields,
-        key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
-      },
-    })));
+    for (const hit of response.hits) {
+      hits.push({
+        id: hit.id,
+        fields: {
+          ...hit.fields,
+          key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
+        },
+      });
+    }
   }
 
   return hits;

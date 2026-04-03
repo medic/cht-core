@@ -27,8 +27,8 @@
     "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
     "build-cht-form": "./scripts/build/build-prepare.sh && cd webapp && npm run build:cht-form",
     "copy-api-resources": "cp -r api/src/public/* api/build/static/",
-    "dev-api": "./scripts/build/copy-static-files.sh && (npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix api run-watch)",
-    "dev-sentinel": "npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix sentinel run-watch",
+    "dev-api": "export LOG_LEVEL=debug && ./scripts/build/copy-static-files.sh && (npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix api run-watch)",
+    "dev-sentinel": "export LOG_LEVEL=debug; npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix sentinel run-watch",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && node scripts/build/cli localDockerComposeFiles",
     "update-service-worker": "node scripts/build/cli updateServiceWorker",
     "-- DEV TEST SCRIPTS": "-----------------------------------------------------------------------------------------------",
@@ -59,6 +59,7 @@
     "wdio-visual-mobile": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=mobileTests",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default/wdio.conf.js",
     "apdex-test": "wdio run ./tests/performance/apdex-score/wdio.conf.js",
+    "wdio-performance-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/performance/webapp/wdio.conf.js",
     "-- CI SCRIPTS ": "-----------------------------------------------------------------------------------------------",
     "build": "./scripts/build/build-ci.sh",
     "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck && npm run build && npm run integration-api && npm run unit",
@@ -75,7 +76,8 @@
     "test-config-covid-19": "cd config/covid-19 && npm run test",
     "test-config-default": "cd config/default && npm run test",
     "test-config-demo": "cd config/demo && npm run test",
-    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js"
+    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
+    "wdio-performance": "wdio run ./tests/performance/webapp/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-eslint/builder": "^20.1.1",
@@ -185,7 +187,7 @@
     "tail": "^2.2.6",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.7",
-    "typescript": "5.7.3",
+    "typescript": "5.8.3",
     "uglify-js": "^3.19.3",
     "util": "^0.12.5",
     "wdio-chromedriver-service": "^8.1.1",

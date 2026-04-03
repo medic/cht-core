@@ -63,6 +63,7 @@ const CONTAINER_NAMES = {};
 const originalTranslations = {};
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
+const COMPOSE_OVERRIDE_FILE = path.resolve(__dirname, '../cht-core-test.override.yml');
 const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
@@ -142,6 +143,10 @@ const loginUser = async (username = constants.USERNAME, password = constants.PAS
     body: { user: username, password: password },
     method: 'POST',
   });
+};
+
+const getUserDoc = (userName = constants.USERNAME) => {
+  return getDoc(COUCH_USER_ID_PREFIX + userName);
 };
 
 const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
@@ -437,7 +442,7 @@ const PROTECTED_DOCS = [
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
-  'branding',
+  DOC_IDS.BRANDING,
   DOC_IDS.PARTNERS,
   DOC_IDS.SETTINGS,
   /^_design/
@@ -961,6 +966,7 @@ const waitForNginxContainerRunning = async () => {
 
 const dockerComposeCmd = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
+  composeFiles.push('-f', COMPOSE_OVERRIDE_FILE);
   params = `docker compose ${composeFiles.join(' ')} -p ${PROJECT_NAME} ${params}`;
 
   return runCommand(params);
@@ -1157,7 +1163,7 @@ const addTranslations = async (languageCode, translations = {}) => {
       throw err;
     });
   };
-  
+
   const saveTranslationsDoc = async () => {
     const translationsDoc = await getTranslationsDoc(languageCode);
     if (builtinTranslations.includes(languageCode)) {
@@ -1250,7 +1256,8 @@ const generateComposeFiles = async () => {
     const testComposePath = getTestComposeFilePath(file);
 
     const template = await fs.promises.readFile(templatePath, 'utf-8');
-    await fs.promises.writeFile(testComposePath, mustache.render(template, view));
+    const compiled = mustache.render(template, view);
+    await fs.promises.writeFile(testComposePath, compiled);
   }
 };
 
@@ -1766,6 +1773,7 @@ module.exports = {
   hostURL,
   parseCookieResponse,
   setupUserDoc,
+  getUserDoc,
   request,
   requestOnTestDb,
   requestOnTestMetaDb,

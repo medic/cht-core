@@ -4,6 +4,7 @@ const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const replicationLimitLogController = require('../../../src/controllers/replication-limit-log');
 const replicationLimitLogService = require('../../../src/services/replication-limit-log');
+const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 
 describe('Replication Limit Log Controller', () => {
   let req;
@@ -59,7 +60,7 @@ describe('Replication Limit Log Controller', () => {
     });
 
     it('should respond with a log document', () => {
-      auth.getUserCtx.resolves({ roles: ['_admin'] });
+      auth.getUserCtx.resolves({ roles: [COUCHDB_ADMIN] });
       replicationLimitLogService.get.resolves({ some: 'logs' });
 
       return replicationLimitLogController

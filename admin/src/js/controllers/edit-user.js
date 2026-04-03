@@ -2,12 +2,14 @@ const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
 const CHT = require('@medic/cht-datasource');
+const constants = require('@medic/constants');
+const USER_ROLES = constants.USER_ROLES;
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
 const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
-const ADMIN_ROLE = '_admin';
+const ADMIN_ROLE = USER_ROLES.COUCHDB_ADMIN;
 const FIELDS_TO_IGNORE = [
   'currentPassword',
   'passwordConfirm',

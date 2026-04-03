@@ -22,6 +22,7 @@ import { TasksSidebarFilterComponent } from '@mm-modules/tasks/tasks-sidebar-fil
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -33,6 +34,7 @@ describe('TasksComponent', () => {
   let clock;
   let store;
   let lineageModelGeneratorService;
+  let telemetryService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -50,6 +52,7 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
+    telemetryService = { record: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -74,6 +77,7 @@ describe('TasksComponent', () => {
         // Needed because of Tasks Sidebar Filter
         { provide: SessionService, useValue: { isOnlineOnly: sinon.stub().returns(false) } },
         { provide: DbService, useValue: { get: sinon.stub().resolves() } },
+        { provide: TelemetryService, useValue: telemetryService },
       ],
     });
 
@@ -277,6 +281,23 @@ describe('TasksComponent', () => {
     expect(rulesEngineService.fetchTaskDocsForAllContacts.callCount).to.eq(1);
     expect(performanceService.track.calledOnce).to.be.true;
     expect(stopPerformanceTrackStub.calledOnceWith({ name: 'tasks:load', recordApdex: true })).to.be.true;
+  });
+
+  it('should record telemetry with visible task count on recalculation', async () => {
+    const taskDocs = [
+      { _id: '1', emission: { _id: 'e1', owner: 'a' }, owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', owner: 'b' }, owner: 'b' },
+      { _id: '3', emission: { _id: 'e3', owner: 'c' }, owner: 'c' },
+    ];
+    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+
+    await new Promise(resolve => {
+      sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+      getComponent();
+    });
+
+    expect(telemetryService.record.calledOnce).to.be.true;
+    expect(telemetryService.record.args[0]).to.deep.equal(['tasks:all-tasks', 3]);
   });
 
   it('should should record telemetry on refresh', fakeAsync(async () => {
