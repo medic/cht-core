@@ -58,7 +58,6 @@ const performanceMeasuresToMarkdownTable = (measures) => {
 class PerformanceReporter extends WDIOReporter {
   constructor(options) {
     super(options);
-    this._options = options;
   }
 
   onSuiteStart(suite) {
@@ -99,7 +98,7 @@ module.exports = {
 
   record: (name) => {
     const entry = currentSuite.entries.find(entry => {
-      return (name && entry.name === name || !name) && !entry.end;
+      return (!name || entry.name === name) && !entry.end;
     });
     if (!entry) {
       throw new Error(`No telemetry entry found for ${name}`);
@@ -108,7 +107,7 @@ module.exports = {
     entry.end = performance.now();
     entry.duration = Number.parseInt(entry.end - entry.start, 10);
 
-    console.log(entry.name, formatDuration(entry.duration), 'seconds');
+    console.log(entry.name, formatDuration(entry.duration));
   },
 
   PerformanceReporter,

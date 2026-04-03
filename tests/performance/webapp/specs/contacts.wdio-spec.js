@@ -1,4 +1,3 @@
-//const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const pagePerformance = require('@utils/performance');
 const commonElements = require('@page-objects/default/common/common.wdio.page');

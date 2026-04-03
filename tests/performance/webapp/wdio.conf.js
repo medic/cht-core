@@ -8,12 +8,8 @@ const prepData = async () => {
 
   const data = generateData();
 
-  await utils.saveDocs(data.places);
+  await utils.saveDocs([...data.places, ...data.clinics, ...data.persons, ...data.reports]);
   await utils.createUsers([data.user]);
-
-  await utils.saveDocs(data.clinics);
-  await utils.saveDocs(data.persons);
-  await utils.saveDocs(data.reports);
 
   const result = await utils.request({
     path: '/api/v1/users-info',
@@ -22,7 +18,7 @@ const prepData = async () => {
       password: data.user.password,
     },
   });
-  console.warn(result);
+  console.log(result);
 };
 
 // spec order is relevent, due to initial task calculation
