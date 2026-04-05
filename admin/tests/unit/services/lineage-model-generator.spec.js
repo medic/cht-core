@@ -44,11 +44,14 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage', () => {
-      const contact = { _id: 'a', _rev: '1', parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1' };
       dbGet.withArgs('a').returns(Promise.resolve(contact));
-      dbAllDocs.withArgs({ keys: ['b', 'c'], include_docs: true }).returns(Promise.resolve({ rows: [
+      dbAllDocs.withArgs(sinon.match({
+        keys: sinon.match.array.deepEquals(['b', 'c']),
+        include_docs: true
+      })).returns(Promise.resolve({ rows: [
         { doc: parent },
         { doc: grandparent }
       ] }));
@@ -63,13 +66,16 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds contacts', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const contactsContact = { _id: 'd', name: 'dave' };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'e' }, parent: { _id: 'c' } };
       const parentsContact = { _id: 'e', name: 'eliza' };
       const grandparent = { _id: 'c', _rev: '1' };
       dbGet.returns(Promise.resolve(contact));
-      dbAllDocs.withArgs({ keys: ['b', 'c'], include_docs: true }).returns(Promise.resolve({ rows: [
+      dbAllDocs.withArgs(sinon.match({
+        keys: sinon.match.array.deepEquals(['b', 'c']),
+        include_docs: true
+      })).returns(Promise.resolve({ rows: [
         { doc: parent },
         { doc: grandparent }
       ] }));
@@ -88,14 +94,17 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b' } };
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' }, parent: { _id: 'b', parent: { _id: 'c' } } };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' }, parent: { _id: 'c' } };
       const grandparent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const parentContact = { _id: 'd', name: 'donny' };
       const grandparentContact = { _id: 'e', name: 'erica' };
       const xContact = { _id: 'x', name: 'xavier' };
       dbGet.returns(Promise.resolve(contact));
-      dbAllDocs.withArgs({ keys: ['b', 'c'], include_docs: true }).returns(Promise.resolve({ rows: [
+      dbAllDocs.withArgs(sinon.match({
+        keys: sinon.match.array.deepEquals(['b', 'c']),
+        include_docs: true
+      })).returns(Promise.resolve({ rows: [
         { doc: parent },
         { doc: grandparent }
       ] }));
@@ -110,6 +119,10 @@ describe('LineageModelGenerator service', () => {
       return service.contact('a').then(model => {
         chai.expect(dbAllDocs.callCount).to.equal(2);
         chai.expect(dbAllDocs.args[0][0]).to.deep.equal({
+          keys: [ 'b', 'c' ],
+          include_docs: true
+        });
+        chai.expect(dbAllDocs.args[1][0]).to.deep.equal({
           keys: [ 'x', 'd', 'e' ],
           include_docs: true
         });
@@ -152,7 +165,10 @@ describe('LineageModelGenerator service', () => {
         ]
       };
       dbGet.returns(Promise.resolve(contact));
-      dbAllDocs.withArgs({ keys: ['b', 'c'], include_docs: true }).returns(Promise.resolve({ rows: [
+      dbAllDocs.withArgs(sinon.match({
+        keys: sinon.match.array.deepEquals(['b', 'c']),
+        include_docs: true
+      })).returns(Promise.resolve({ rows: [
         { doc: parent },
         { doc: grandparent }
       ] }));

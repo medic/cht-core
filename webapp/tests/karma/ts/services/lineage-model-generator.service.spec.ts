@@ -337,7 +337,7 @@ describe('LineageModelGenerator service', () => {
           { doc: parent },
           { doc: grandparent }
         ] });
-      dbAllDocs.withArgs(sinon.match({ keys: ['x', 'y', 'e', 'f'], include_docs: true })).resolves({
+      dbAllDocs.withArgs(sinon.match({ keys: ['y', 'e', 'f'], include_docs: true })).resolves({
         rows: [
           { doc: xContact },
           { doc: yContact },
@@ -347,7 +347,7 @@ describe('LineageModelGenerator service', () => {
       return service.report('a').then(model => {
         expect(dbAllDocs.callCount).to.equal(2);
         expect(dbAllDocs.args[1][0]).to.deep.equal({
-          keys: [ 'x', 'y', 'e', 'f' ],
+          keys: [ 'y', 'e', 'f' ],
           include_docs: true
         });
         expect(model.doc.contact.parent.contact).to.deep.equal(parentContact);
