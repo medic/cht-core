@@ -13,6 +13,7 @@ env:
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
   ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
   COUCHDB_LOG_LEVEL: 'debug'
+  LOG_LEVEL: 'debug'
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
@@ -166,11 +167,11 @@ jobs:
         with:
           mask-password: 'true'
 
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - uses: actions/checkout@v4
 
       - name: Set system ulimit
         uses: ./.github/actions/bump-system-ulimit
@@ -241,7 +242,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile']
+        cmd: ['ci-integration-all', 'ci-integration-sentinel', 'ci-webdriver-default-mobile', 'wdio-performance']
         chrome-version: ['107', 'latest']
         suite: [all]
         include:
@@ -270,6 +271,8 @@ jobs:
             chrome-version: 107
           - cmd: ci-webdriver-default-mobile
             chrome-version: 107
+          - cmd: wdio-performance
+            chrome-version: 107
     steps:
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -293,11 +296,11 @@ jobs:
       with:
         mask-password: 'true'
 
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-    - uses: actions/checkout@v4
     - name: Download docker images artifacts
       uses: actions/download-artifact@v4
       with:

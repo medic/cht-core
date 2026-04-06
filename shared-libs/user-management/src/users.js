@@ -15,6 +15,7 @@ const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
 const { Person, Place, Qualifier, Contact } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
+const { USER_ROLES } = require('@medic/constants');
 
 const USER_PREFIX = 'org.couchdb.user:';
 
@@ -1151,7 +1152,7 @@ module.exports = {
     return getUserDoc(userCtx.name, 'users')
       .catch(err => {
         if (err && err.status === 404) {
-          const data = { username: userCtx.name, roles: ['admin'] };
+          const data = { username: userCtx.name, roles: [USER_ROLES.ADMIN] };
           return validateNewUsername(userCtx.name)
             .then(() => createUser(data, {}))
             .then(() => createUserSettings(data, {}));
