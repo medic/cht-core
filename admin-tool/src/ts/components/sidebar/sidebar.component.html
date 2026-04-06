@@ -1,37 +1,37 @@
 <div class="navigation">
   <ul>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/display">Display</a>
+      <a routerLink="/display">{{ 'admin.display' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/users">Users</a>
+      <a routerLink="/users">{{ 'Users' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/authorization">Authorization</a>
+      <a routerLink="/authorization">{{ 'configuration.authorization' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/sms">SMS</a>
+      <a routerLink="/sms">{{ 'configuration.sms' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/forms">Forms</a>
+      <a routerLink="/forms">{{ 'Forms' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/targets">Targets</a>
+      <a routerLink="/targets">{{ 'analytics.targets' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/images">Images</a>
+      <a routerLink="/images">{{ 'images' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_view_outgoing_messages'">
-      <a routerLink="/message-queue">Message Queue</a>
+      <a routerLink="/message-queue">{{ 'admin.message.queue' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_upgrade'">
-      <a routerLink="/upgrade">Upgrade</a>
+      <a routerLink="/upgrade">{{ 'instance.upgrade' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_export_all'">
-      <a routerLink="/export">Export</a>
+      <a routerLink="/export">{{ 'import.export' | translate }}</a>
     </li>
     <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
-      <a routerLink="/backup">Backup</a>
+      <a routerLink="/backup">{{ 'settings.backuprestore' | translate }}</a>
     </li>
   </ul>
 </div>

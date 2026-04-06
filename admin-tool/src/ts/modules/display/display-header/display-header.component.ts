@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 /**
  * Layout component for the Display section of the admin tool.
@@ -9,7 +9,7 @@ import { RouterOutlet } from '@angular/router';
  */
 @Component({
   selector: 'display-header',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslatePipe],
   templateUrl: './display-header.component.html',
   styleUrl: './display-header.component.less',
 })

@@ -31,6 +31,7 @@
     "@angular/router": "19.1.7",
     "@medic/cht-datasource": "file:../shared-libs/cht-datasource",
     "@medic/constants": "file:../shared-libs/constants",
+    "@medic/translation-utils": "file:../shared-libs/translation-utils",
     "@messageformat/core": "^3.4.0",
 "@ngx-translate/core": "^16.0.4",
     "bootstrap": "^3.4.1",

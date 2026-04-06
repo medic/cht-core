@@ -3,6 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { MainLayoutComponent } from '@admin-tool-modules/shell/main-layout.component';
 import { HeaderComponent } from '@admin-tool-components/header/header.component';
 import { SidebarComponent } from '@admin-tool-components/sidebar/sidebar.component';
@@ -23,6 +24,7 @@ describe('MainLayoutComponent', () => {
       .configureTestingModule({
         imports: [
           RouterTestingModule,
+          TranslateModule.forRoot(),
           MainLayoutComponent,
           HeaderComponent,
           SidebarComponent,
