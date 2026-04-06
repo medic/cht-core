@@ -731,10 +731,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.interactionTrackingService.flush();
   }
 
-  @HostListener('document:visibilitychange')
+  @HostListener('window:visibilitychange')
   private onVisibilityChange() {
     if (document.hidden) {
-      this.interactionTrackingService.flush();
+      this.interactionTrackingService.save();
     }
   }
 

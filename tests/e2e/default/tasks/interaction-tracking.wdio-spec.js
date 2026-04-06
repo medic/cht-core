@@ -58,12 +58,13 @@ const getInteractionDocFromBrowser = async (expectedCount = 1) => {
 const triggerVisibilityChange = async () => {
   await browser.execute(() => {
     Object.defineProperty(document, 'hidden', { value: true, writable: true, configurable: true });
-    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('visibilitychange'));
   });
   await browser.pause(1000);
   await browser.execute(() => {
     Object.defineProperty(document, 'hidden', { value: false, writable: true, configurable: true });
   });
+  await browser.pause(1000);
 };
 
 describe('Interaction Tracking', () => {
@@ -76,9 +77,10 @@ describe('Interaction Tracking', () => {
     phone: '+12068881234',
     place: healthCenter._id,
     parent: healthCenter,
+    role: 'chw'
   });
 
-  const patients = Array.from({ length: 3 }, (_, i) => personFactory.build({
+  const patients = Array.from({ length: 6 }, (_, i) => personFactory.build({
     name: `Patient Interaction ${i + 1}`,
     patient_id: `patient_interaction_${i + 1}`,
     parent: clinic,
@@ -92,9 +94,10 @@ describe('Interaction Tracking', () => {
     contact: chwContact._id,
   });
 
+  const docs = [...places.values(), chwContact, ...patients];
 
   before(async () => {
-    await utils.saveDocs([...places.values(), chwContact, ...patients]);
+    await utils.saveDocs(docs);
     await utils.createUsers([chw]);
 
     const formsPath = path.join(__dirname, 'forms');
@@ -103,7 +106,7 @@ describe('Interaction Tracking', () => {
     await sentinelUtils.waitForSentinel();
   });
 
-  describe('when permission is disabled', () => {
+  describe('when can_track_task_interactions permission is disabled', () => {
     before(async () => {
       await utils.updatePermissions(['chw'], [], ['can_track_task_interactions'], { ignoreReload: true });
       await loginPage.login(chw);
@@ -115,6 +118,7 @@ describe('Interaction Tracking', () => {
     });
 
     after(async () => {
+      await triggerVisibilityChange();
       await commonPage.reloadSession();
       await clearInteractionDocsFromMetaDb(chw);
     });
@@ -129,7 +133,7 @@ describe('Interaction Tracking', () => {
     });
   });
 
-  describe.skip('when task_group permission enabled', () => {
+  describe('when task_group permission is enabled', () => {
     before(async () => {
       await utils.updatePermissions(
         ['chw'],
@@ -146,6 +150,7 @@ describe('Interaction Tracking', () => {
     });
 
     after(async () => {
+      await triggerVisibilityChange();
       await commonPage.reloadSession();
       await clearInteractionDocsFromMetaDb(chw);
     });
@@ -157,12 +162,13 @@ describe('Interaction Tracking', () => {
       // tasks group is displayed
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasks = await tasksPage.getTasksInGroup();
-      expect(groupTasks.length).to.equal(2);
+      expect(groupTasks.length).to.equal(5);
       await groupTasks[0].click();
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       await genericForm.submitForm();
 
       await triggerVisibilityChange();
+      await commonPage.goToMessages();
 
       const interactionDoc = await getInteractionDocFromBrowser();
       console.warn(interactionDoc);
@@ -171,15 +177,24 @@ describe('Interaction Tracking', () => {
       console.warn(lastSession.events);
       expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '4' },
+        { action: 'task_list:loaded', detail: '6' },
         { action: 'task:open', ref: 'person_create', detail: '0' },
         { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task_list:leave' },
+        { action: 'task:form_save', ref: 'home_visit' },
+        { action: 'task:complete', ref: 'home_visit' },
+        { action: 'task_group:show', detail: '5' },
+        { action: 'task_group:select', ref: 'person_create' },
+        { action: 'task_group:leave' },
+        { action: 'task:open', ref: 'person_create', detail: '0' },
+        { action: 'task:form_open', ref: 'home_visit' },
+        { action: 'task:form_save', ref: 'home_visit' },
+        { action: 'task:complete', ref: 'home_visit' },
+        { action: 'task_group:show', detail: '4' },
       ]);
     });
   });
 
-  describe('when permission is enabled', () => {
+  describe('when task_group is disabled', () => {
     before(async () => {
       await utils.updatePermissions(
         ['chw'],
@@ -196,6 +211,7 @@ describe('Interaction Tracking', () => {
     });
 
     after(async () => {
+      await triggerVisibilityChange();
       await commonPage.reloadSession();
       await clearInteractionDocsFromMetaDb(chw);
     });
@@ -241,7 +257,7 @@ describe('Interaction Tracking', () => {
 
       expect(allEvents).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '3' },
+        { action: 'task_list:loaded', detail: '4' },
         { action: 'task_list:scroll' },
         { action: 'task:open', ref: 'person_create', detail: '0' },
         { action: 'task:form_open', ref: 'home_visit' },
@@ -289,7 +305,7 @@ describe('Interaction Tracking', () => {
 
       expect(lastTwoSessions[0].events).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '2' },
+        { action: 'task_list:loaded', detail: '3' },
         { action: 'task:open', ref: 'person_create', detail: '0' },
         { action: 'task:form_open', ref: 'home_visit' },
         { action: 'task_list:leave' },
@@ -297,7 +313,7 @@ describe('Interaction Tracking', () => {
 
       expect(lastTwoSessions[1].events).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '2' },
+        { action: 'task_list:loaded', detail: '3' },
         { action: 'task_list:scroll' },
         { action: 'task:open', ref: 'person_create', detail: '1' },
         { action: 'task:form_open', ref: 'home_visit' },

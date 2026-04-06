@@ -109,6 +109,50 @@ describe('InteractionTrackingService', () => {
       expect(event).to.not.have.property('detail');
     });
 
+    it('should deduplicate consecutive events with the same action, ref, and detail', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('task_group:show', undefined, '5');
+      service.record('task_group:show', undefined, '5');
+      service.record('task_group:show', undefined, '5');
+      await service.flush();
+
+      const events = metaDb.put.args[0][0].sessions[0].events;
+      expect(events).to.have.length(1);
+      expect(events[0].action).to.equal('task_group:show');
+    });
+
+    it('should not deduplicate events with different ref or detail', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('task:open', 'task_a', '0');
+      service.record('task:open', 'task_b', '1');
+      service.record('task:open', 'task_b', '1');
+      service.record('task:open', 'task_a', '0');
+      await service.flush();
+
+      const events = metaDb.put.args[0][0].sessions[0].events;
+      expect(events).to.have.length(3);
+      expect(events[0].ref).to.equal('task_a');
+      expect(events[1].ref).to.equal('task_b');
+      expect(events[2].ref).to.equal('task_a');
+    });
+
+    it('should not deduplicate non-consecutive identical events', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('task_list:scroll');
+      service.record('task:open', 'task_a', '0');
+      service.record('task_list:scroll');
+      await service.flush();
+
+      const events = metaDb.put.args[0][0].sessions[0].events;
+      expect(events).to.have.length(3);
+    });
+
     it('should stop recording when MAX_EVENTS_PER_DAY is reached', async () => {
       const existingEvents = new Array(1999).fill({ action: 'x', timestamp: 1 });
       metaDb.get.resolves({

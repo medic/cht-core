@@ -99,6 +99,11 @@ export class InteractionTrackingService {
         return;
       }
 
+      const lastEvent = this.events[this.events.length - 1];
+      if (lastEvent?.action === action && lastEvent?.ref === ref && lastEvent?.detail === detail) {
+        return;
+      }
+
       const event: InteractionEvent = { action, timestamp: Date.now() };
       if (ref) {
         event.ref = ref;
