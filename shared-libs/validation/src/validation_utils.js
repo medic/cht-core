@@ -107,7 +107,7 @@ const compareDate = (doc, date, durationString, checkAfter=false) => {
       logger.error('date constraint validation: the duration is invalid');
       return false;
     }
-    const testDate = moment(date);
+    const testDate = typeof date === 'string' ? moment(date, [moment.ISO_8601, moment.RFC_2822]) : moment(date);
     if (!testDate.isValid()) {
       logger.error('date constraint validation: the date is invalid');
       return false;
