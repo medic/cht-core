@@ -157,13 +157,18 @@ const randomIp = () => {
   return `${section()}.${section()}.${section()}.${section()}`;
 };
 
+const stringifyParam = (key, value) => {
+  if (key.startsWith('start') || key.startsWith('end') || key.startsWith('doc_ids') || Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+  return value;
+};
+
 const getRequestUri = (options) => {
   let uri = (options.uri || `${constants.BASE_URL}${options.path}`);
   if (options.qs) {
     Object.keys(options.qs).forEach((key) => {
-      if (Array.isArray(options.qs[key])) {
-        options.qs[key] = JSON.stringify(options.qs[key]);
-      }
+      options.qs[key] = stringifyParam(key, options.qs[key]);
     });
     uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
   }

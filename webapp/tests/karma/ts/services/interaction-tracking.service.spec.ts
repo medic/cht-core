@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { DOCUMENT } from '@angular/common';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -20,7 +19,6 @@ describe('InteractionTrackingService', () => {
   let telemetryService;
   let clock;
   let consoleErrorSpy;
-  let documentMock;
 
   const configureService = (hasPermission = true) => {
     metaDb = {
@@ -38,11 +36,6 @@ describe('InteractionTrackingService', () => {
 
     consoleErrorSpy = sinon.spy(console, 'error');
 
-    documentMock = {
-      addEventListener: sinon.stub(),
-      hidden: false,
-    };
-
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: authService },
@@ -50,7 +43,6 @@ describe('InteractionTrackingService', () => {
         { provide: SessionService, useValue: sessionService },
         { provide: VersionService, useValue: versionService },
         { provide: TelemetryService, useValue: telemetryService },
-        { provide: DOCUMENT, useValue: documentMock },
       ]
     });
 
@@ -59,20 +51,13 @@ describe('InteractionTrackingService', () => {
 
   beforeEach(async () => {
     configureService(true);
-    service.init();
-    // Wait for the permission check to resolve
-    await Promise.resolve();
+    await service.init();
     clock = sinon.useFakeTimers({ now: new Date(2026, 2, 27, 10, 0).getTime() });
   });
 
   afterEach(() => {
     clock.restore();
     sinon.restore();
-  });
-
-  it('should register visibilitychange listener on construction', () => {
-    expect(documentMock.addEventListener.calledOnce).to.be.true;
-    expect(documentMock.addEventListener.args[0][0]).to.equal('visibilitychange');
   });
 
   describe('record()', () => {
@@ -93,6 +78,7 @@ describe('InteractionTrackingService', () => {
       expect(metaDb.put.calledOnce).to.be.true;
       const doc = metaDb.put.args[0][0];
       expect(doc.sessions).to.have.length(1);
+      expect(doc.sessions[0].startedAt).to.be.a('number');
       expect(doc.sessions[0].events).to.have.length(1);
       expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
       expect(doc.sessions[0].events[0].timestamp).to.be.a('number');
@@ -123,17 +109,38 @@ describe('InteractionTrackingService', () => {
       expect(event).to.not.have.property('detail');
     });
 
-    it('should cap events at MAX_EVENTS_PER_SESSION', async () => {
-      metaDb.get.rejects({ status: 404 });
+    it('should stop recording when MAX_EVENTS_PER_DAY is reached', async () => {
+      const existingEvents = new Array(1999).fill({ action: 'x', timestamp: 1 });
+      metaDb.get.resolves({
+        _id: 'interaction-2026-03-27-greg-device-uuid-123',
+        _rev: '1-abc',
+        type: 'interaction-log',
+        sessions: [{ session: 'tasks', startedAt: 1, events: existingEvents }],
+        metadata: { user: 'greg', deviceId: 'device-uuid-123', date: '2026-03-27', versions: ['4.5.0'] },
+      });
 
+      // First flush: doc has 1999 events, adding 3 more should only keep 1
       service.startSession('tasks');
-      for (let i = 0; i < 510; i++) {
-        service.record('task_list:scroll');
-      }
+      service.record('event_a');
+      service.record('event_b');
+      service.record('event_c');
       await service.flush();
 
-      const events = metaDb.put.args[0][0].sessions[0].events;
-      expect(events).to.have.length(500);
+      expect(metaDb.put.calledOnce).to.be.true;
+      const doc = metaDb.put.args[0][0];
+      const newSession = doc.sessions[doc.sessions.length - 1];
+      expect(newSession.events).to.have.length(1);
+      expect(newSession.events[0].action).to.equal('event_a');
+
+      // Second flush: totalEventsToday is now at the limit, so recording should be silently dropped
+      metaDb.put.resetHistory();
+      metaDb.get.resolves(doc);
+
+      service.startSession('tasks');
+      service.record('should_not_record');
+      await service.flush();
+
+      expect(metaDb.put.called).to.be.false;
     });
   });
 
@@ -154,24 +161,24 @@ describe('InteractionTrackingService', () => {
 
       expect(metaDb.put.calledOnce).to.be.true;
       const doc = metaDb.put.args[0][0];
-      expect(doc._id).to.equal('interaction-2026-3-27-greg-device-uuid-123');
+      expect(doc._id).to.equal('interaction-2026-03-27-greg-device-uuid-123');
       expect(doc.type).to.equal('interaction-log');
       expect(doc.metadata.user).to.equal('greg');
       expect(doc.metadata.deviceId).to.equal('device-uuid-123');
-      expect(doc.metadata.date).to.equal('2026-3-27');
+      expect(doc.metadata.date).to.equal('2026-03-27');
       expect(doc.metadata.versions).to.deep.equal(['4.5.0']);
     });
 
     it('should append sessions to an existing daily doc', async () => {
       const existingDoc = {
-        _id: 'interaction-2026-3-27-greg-device-uuid-123',
+        _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
-        sessions: [{ session: 'tasks', events: [{ action: 'task_list:open', timestamp: 1000 }] }],
+        sessions: [{ session: 'tasks', startedAt: 500, events: [{ action: 'task_list:open', timestamp: 1000 }] }],
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
-          date: '2026-3-27',
+          date: '2026-03-27',
           versions: ['4.5.0'],
         },
       };
@@ -186,18 +193,19 @@ describe('InteractionTrackingService', () => {
       expect(doc._rev).to.equal('1-abc');
       expect(doc.sessions).to.have.length(2);
       expect(doc.sessions[1].events[0].action).to.equal('task:open');
+      expect(doc.sessions[1].startedAt).to.be.a('number');
     });
 
     it('should add new version to versions array', async () => {
       const existingDoc = {
-        _id: 'interaction-2026-3-27-greg-device-uuid-123',
+        _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
         sessions: [],
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
-          date: '2026-3-27',
+          date: '2026-03-27',
           versions: ['4.4.0'],
         },
       };
@@ -213,14 +221,14 @@ describe('InteractionTrackingService', () => {
 
     it('should not duplicate existing version', async () => {
       const existingDoc = {
-        _id: 'interaction-2026-3-27-greg-device-uuid-123',
+        _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
         sessions: [],
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
-          date: '2026-3-27',
+          date: '2026-03-27',
           versions: ['4.5.0'],
         },
       };
@@ -234,20 +242,15 @@ describe('InteractionTrackingService', () => {
       expect(doc.metadata.versions).to.deep.equal(['4.5.0']);
     });
 
-    it('should not save when MAX_SESSIONS_PER_DAY is reached', async () => {
-      const existingDoc = {
-        _id: 'interaction-2026-3-27-greg-device-uuid-123',
+    it('should not save when MAX_EVENTS_PER_DAY is already reached in existing doc', async () => {
+      const existingEvents = new Array(2000).fill({ action: 'x', timestamp: 1 });
+      metaDb.get.resolves({
+        _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
-        sessions: new Array(200).fill({ session: 'tasks', events: [{ action: 'x', timestamp: 1 }] }),
-        metadata: {
-          user: 'greg',
-          deviceId: 'device-uuid-123',
-          date: '2026-3-27',
-          versions: ['4.5.0'],
-        },
-      };
-      metaDb.get.resolves(existingDoc);
+        sessions: [{ session: 'tasks', startedAt: 1, events: existingEvents }],
+        metadata: { user: 'greg', deviceId: 'device-uuid-123', date: '2026-03-27', versions: ['4.5.0'] },
+      });
 
       service.startSession('tasks');
       service.record('task_list:open');
@@ -342,26 +345,100 @@ describe('InteractionTrackingService', () => {
     });
   });
 
-  describe('visibilitychange', () => {
-    it('should register handler that calls flush when hidden', () => {
-      expect(documentMock.addEventListener.calledOnce).to.be.true;
-      expect(documentMock.addEventListener.args[0][0]).to.equal('visibilitychange');
-      expect(documentMock.addEventListener.args[0][1]).to.be.a('function');
+  describe('save()', () => {
+    it('should persist events without ending the session', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('task_list:open');
+      await service.save();
+
+      expect(metaDb.put.calledOnce).to.be.true;
+      const doc = metaDb.put.args[0][0];
+      expect(doc.sessions).to.have.length(1);
+      expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
+
+      // Session is still active — recording more events should work
+      service.record('task_list:scroll');
+      metaDb.get.resolves(doc);
+      metaDb.put.resetHistory();
+      await service.save();
+
+      expect(metaDb.put.calledOnce).to.be.true;
+      const updatedDoc = metaDb.put.args[0][0];
+      // Should update the same session, not create a new one
+      expect(updatedDoc.sessions).to.have.length(1);
+      expect(updatedDoc.sessions[0].events).to.have.length(2);
+      expect(updatedDoc.sessions[0].events[1].action).to.equal('task_list:scroll');
     });
 
-    it('should flush data when page becomes hidden (simulated via direct flush)', async () => {
+    it('should update existing session by startedAt instead of creating a new one', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('event_a');
+      await service.save();
+
+      const savedDoc = metaDb.put.args[0][0];
+      const startedAt = savedDoc.sessions[0].startedAt;
+
+      // Simulate doc already having the session from the first save
+      metaDb.get.resolves(savedDoc);
+      metaDb.put.resetHistory();
+
+      service.record('event_b');
+      await service.flush();
+
+      expect(metaDb.put.calledOnce).to.be.true;
+      const finalDoc = metaDb.put.args[0][0];
+      expect(finalDoc.sessions).to.have.length(1);
+      expect(finalDoc.sessions[0].startedAt).to.equal(startedAt);
+      expect(finalDoc.sessions[0].events).to.have.length(2);
+      expect(finalDoc.sessions[0].events[0].action).to.equal('event_a');
+      expect(finalDoc.sessions[0].events[1].action).to.equal('event_b');
+    });
+
+    it('should be triggered by the periodic save interval', async () => {
       metaDb.get.rejects({ status: 404 });
 
       service.startSession('tasks');
       service.record('task_list:open');
 
-      await service.flush();
+      expect(metaDb.put.called).to.be.false;
+
+      // Advance time by 5 minutes to trigger the save interval
+      await clock.tickAsync(5 * 60 * 1000);
 
       expect(metaDb.put.calledOnce).to.be.true;
+      const doc = metaDb.put.args[0][0];
+      expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
+
+      // Session should still be active — record more events
+      service.record('task_list:scroll');
+      metaDb.get.resolves(doc);
+      metaDb.put.resetHistory();
+
+      // Advance another 5 minutes
+      await clock.tickAsync(5 * 60 * 1000);
+
+      expect(metaDb.put.calledOnce).to.be.true;
+      const updatedDoc = metaDb.put.args[0][0];
+      expect(updatedDoc.sessions).to.have.length(1);
+      expect(updatedDoc.sessions[0].events).to.have.length(2);
     });
 
-    it('should not flush when no session is active', async () => {
+    it('should stop the periodic save interval when session is flushed', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('task_list:open');
       await service.flush();
+
+      metaDb.put.resetHistory();
+
+      // Advance time — the save interval should not fire after flush
+      await clock.tickAsync(5 * 60 * 1000);
+
       expect(metaDb.put.called).to.be.false;
     });
   });
@@ -375,7 +452,7 @@ describe('InteractionTrackingService', () => {
       await service.flush();
 
       const doc = metaDb.put.args[0][0];
-      expect(doc._id).to.equal('interaction-2026-3-27-greg-device-uuid-123');
+      expect(doc._id).to.equal('interaction-2026-03-27-greg-device-uuid-123');
     });
 
     it('should use different IDs for different users', async () => {
@@ -387,7 +464,7 @@ describe('InteractionTrackingService', () => {
       await service.flush();
 
       const doc = metaDb.put.args[0][0];
-      expect(doc._id).to.equal('interaction-2026-3-27-jane-device-uuid-123');
+      expect(doc._id).to.equal('interaction-2026-03-27-jane-device-uuid-123');
     });
 
     it('should fallback to "unknown" when user is not available', async () => {
@@ -413,8 +490,7 @@ describe('InteractionTrackingService', () => {
       sinon.restore();
       TestBed.resetTestingModule();
       configureService(false);
-      service.init();
-      await Promise.resolve();
+      await service.init();
 
       service.startSession('tasks');
       service.record('task_list:open');
@@ -427,8 +503,7 @@ describe('InteractionTrackingService', () => {
       sinon.restore();
       TestBed.resetTestingModule();
       configureService(false);
-      service.init();
-      await Promise.resolve();
+      await service.init();
 
       service.record('task_list:open');
       await service.flush();

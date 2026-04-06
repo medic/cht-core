@@ -1,11 +1,11 @@
-import { Inject, Injectable, NgZone } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Injectable, NgZone } from '@angular/core';
 
 import { AuthService } from '@mm-services/auth.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+const moment = require('moment');
 
 interface InteractionEvent {
   action: string;
@@ -16,6 +16,7 @@ interface InteractionEvent {
 
 interface InteractionSession {
   session: string;
+  startedAt: number;
   events: InteractionEvent[];
 }
 
@@ -37,16 +38,17 @@ interface InteractionLogDoc {
 })
 export class InteractionTrackingService {
   private static readonly PERMISSION = 'can_track_task_interactions';
-  private static readonly MAX_EVENTS_PER_SESSION = 500;
-  private static readonly MAX_SESSIONS_PER_DAY = 200;
+  private static readonly MAX_EVENTS_PER_DAY = 2000;
   private static readonly SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes of inactivity ends session
+  private static readonly SAVE_INTERVAL_MS = 5 * 60 * 1000; // persist current session every 5 minutes
 
   private currentSession: string | null = null;
+  private sessionStartedAt: number | null = null;
   private events: InteractionEvent[] = [];
   private sessionTimer: ReturnType<typeof setTimeout> | null = null;
+  private saveTimer: ReturnType<typeof setInterval> | null = null;
+  private totalEventsToday = 0;
   private enabled = false;
-
-  private readonly visibilityHandler = () => this.onVisibilityChange();
 
   constructor(
     private readonly authService: AuthService,
@@ -55,26 +57,17 @@ export class InteractionTrackingService {
     private readonly versionService: VersionService,
     private readonly telemetryService: TelemetryService,
     private readonly ngZone: NgZone,
-    @Inject(DOCUMENT) private readonly document: Document,
-  ) {
-    this.document.addEventListener('visibilitychange', this.visibilityHandler);
-  }
+  ) {}
 
-  async init() {
+  async init(): Promise<void> {
     this.enabled = await this.authService.has(InteractionTrackingService.PERMISSION);
-  }
-
-  private onVisibilityChange() {
-    if (this.document.hidden && this.currentSession) {
-      this.flush();
-    }
   }
 
   /**
    * Start a new interaction session. If a session is already active, it is flushed first.
    * @param session Name of the session context (e.g., 'tasks')
    */
-  startSession(session: string) {
+  startSession(session: string): void {
     this.ngZone.runOutsideAngular(() => {
       if (!this.enabled) {
         return;
@@ -83,8 +76,10 @@ export class InteractionTrackingService {
         this.flush();
       }
       this.currentSession = session;
+      this.sessionStartedAt = Date.now();
       this.events = [];
       this.resetSessionTimer();
+      this.startSaveInterval();
     });
   }
 
@@ -100,7 +95,7 @@ export class InteractionTrackingService {
         return;
       }
 
-      if (this.events.length >= InteractionTrackingService.MAX_EVENTS_PER_SESSION) {
+      if (this.totalEventsToday >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
         return;
       }
 
@@ -118,32 +113,60 @@ export class InteractionTrackingService {
   }
 
   /**
-   * End the current session and append it to the daily interaction log document.
+   * End the current session, persist it, and clear session state.
    */
   async flush() {
-    return this.ngZone.runOutsideAngular(() => this._flush());
+    return this.ngZone.runOutsideAngular(() => this._flush(true));
   }
 
-  private async _flush() {
+  /**
+   * Persist the current session's events without ending it.
+   */
+  async save() {
+    return this.ngZone.runOutsideAngular(() => this._flush(false));
+  }
+
+  private async _flush(endSession: boolean) {
     if (!this.currentSession || this.events.length === 0) {
-      this.clearSession();
+      if (endSession) {
+        this.clearSession();
+      }
       return;
     }
 
     const session = this.currentSession;
+    const startedAt = this.sessionStartedAt!;
     const events = [...this.events];
-    this.clearSession();
+
+    if (endSession) {
+      this.clearSession();
+    }
 
     try {
       const version = await this.getAppVersion();
       const metaDb = this.dbService.get({ meta: true });
       const doc = await this.getOrCreateDailyDoc(metaDb);
 
-      if (doc.sessions.length >= InteractionTrackingService.MAX_SESSIONS_PER_DAY) {
+      const existingSession = doc.sessions.find(s => s.startedAt === startedAt);
+      const otherEventCount = doc.sessions.reduce((sum, s) => {
+        return sum + (s.startedAt === startedAt ? 0 : s.events.length);
+      }, 0);
+
+      const remaining = InteractionTrackingService.MAX_EVENTS_PER_DAY - otherEventCount;
+      if (remaining <= 0) {
+        this.totalEventsToday = otherEventCount;
         return;
       }
 
-      doc.sessions.push({ session, events });
+      const trimmedEvents = events.slice(0, remaining);
+
+      if (existingSession) {
+        existingSession.events = trimmedEvents;
+      } else {
+        doc.sessions.push({ session, startedAt, events: trimmedEvents });
+      }
+
+      this.totalEventsToday = otherEventCount + trimmedEvents.length;
 
       if (!doc.metadata.versions.includes(version)) {
         doc.metadata.versions.push(version);
@@ -166,13 +189,13 @@ export class InteractionTrackingService {
       return {
         _id: dailyDocId,
         type: 'interaction-log',
-        sessions: [],
         metadata: {
           user: this.sessionService.userCtx()?.name,
           deviceId: this.telemetryService.getUniqueDeviceId(),
           date: this.getTodayDate(),
           versions: [],
         },
+        sessions: [],
       };
     }
   }
@@ -185,26 +208,40 @@ export class InteractionTrackingService {
   }
 
   private getTodayDate(): string {
-    const today = new Date();
-    return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    return moment().format('YYYY-MM-DD');
   }
 
-  private clearSession() {
+  private clearSession(): void {
     this.currentSession = null;
+    this.sessionStartedAt = null;
     this.events = [];
     if (this.sessionTimer) {
       clearTimeout(this.sessionTimer);
       this.sessionTimer = null;
     }
+    if (this.saveTimer) {
+      clearInterval(this.saveTimer);
+      this.saveTimer = null;
+    }
   }
 
-  private resetSessionTimer() {
+  private resetSessionTimer(): void {
     if (this.sessionTimer) {
       clearTimeout(this.sessionTimer);
     }
     this.sessionTimer = setTimeout(
       () => this.flush(),
       InteractionTrackingService.SESSION_TIMEOUT_MS,
+    );
+  }
+
+  private startSaveInterval(): void {
+    if (this.saveTimer) {
+      clearInterval(this.saveTimer);
+    }
+    this.saveTimer = setInterval(
+      () => this.save(),
+      InteractionTrackingService.SAVE_INTERVAL_MS,
     );
   }
 

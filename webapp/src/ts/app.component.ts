@@ -728,6 +728,14 @@ export class AppComponent implements OnInit, AfterViewInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+    this.interactionTrackingService.flush();
+  }
+
+  @HostListener('document:visibilitychange')
+  private onVisibilityChange() {
+    if (document.hidden) {
+      this.interactionTrackingService.flush();
+    }
   }
 
   @HostListener('window:pageshow', ['$event'])
