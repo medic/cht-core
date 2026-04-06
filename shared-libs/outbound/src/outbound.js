@@ -240,15 +240,16 @@ const updateInfo = (payload, recordInfo, configName) => {
  * Attempts to usefully parse the error so we can log it appropriately
  */
 const logSendError = (configName, recordId, error) => {
-  if (error.constructor.name === 'StatusCodeError') {
-    const {statusCode, body} = error.response;
+  const statusCode = error.statusCode || error.status;
+  const body = error.body;
 
+  if (statusCode && statusCode >= 400) {
     // We got back something from the server but it's not a 2xx
     logger.error(`Failed to push ${recordId} to ${configName}, server responsed with ${statusCode}`);
 
     let loggableBody;
     try {
-      loggableBody = JSON.stringify(body);
+      loggableBody = typeof body === 'string' ? body : JSON.stringify(body);
     } catch {
       if (body && body.length > 100) {
         loggableBody = `${body.substring(0, 100)}...`;
@@ -257,7 +258,7 @@ const logSendError = (configName, recordId, error) => {
       }
     }
     logger.error(`Response body: ${loggableBody}`);
-  } else if (error.constructor.name === 'RequestError') {
+  } else if (error.constructor.name === 'RequestError' || error.constructor.name === 'TypeError') {
     // The url was malformed, the server doesn't exist at all, etc
     logger.error(`Failed to push ${recordId} to ${configName}: ${error.message}`);
   } else if (error.constructor.name === 'OutboundError') {

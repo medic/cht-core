@@ -244,8 +244,9 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchLineageById = function(id) {
-    return DB.get(id)
+  const fetchLineageById = function(id, doc) {
+    const getDoc = doc ? Promise.resolve(doc) : DB.get(id);
+    return getDoc
       .then(function(doc) {
         const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
         const parentIds = extractParentIds(startParent);
@@ -288,7 +289,7 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
+  const fetchHydratedDoc = function(id, options = {}, callback = undefined, doc = undefined) {
     let lineage;
     let patientLineage;
     let placeLineage;
@@ -301,7 +302,7 @@ module.exports = function(Promise, DB) {
       throwWhenMissingLineage: false,
     });
 
-    return fetchLineageById(id)
+    return fetchLineageById(id, doc)
       .then(function(result) {
         lineage = result;
 
@@ -312,7 +313,7 @@ module.exports = function(Promise, DB) {
             throw err;
           } else {
             // Not a doc that has lineage, just do a normal fetch.
-            return fetchDoc(id);
+            return doc ? doc : fetchDoc(id);
           }
         }
 
@@ -344,6 +345,7 @@ module.exports = function(Promise, DB) {
         }
       });
   };
+
 
   // for data_records, include the first-level contact.
   const collectParentIds = function(docs) {
@@ -401,7 +403,7 @@ module.exports = function(Promise, DB) {
       return Promise.resolve([]);
     }
 
-    const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
+    const hydratedDocs = docs; // mutate in-place as expected by some callers
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
     let patientUuids; // a map of [k, v] pairs with [hydratedDocUuid, patientUuid]

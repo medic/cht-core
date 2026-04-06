@@ -1,6 +1,7 @@
 const authorization = require('./authorization');
 const db = require('../db');
 const _ = require('lodash');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 
 // filters response from CouchDB only to include successfully read and allowed docs
 const filterResults = (authorizationContext, result) => {
@@ -28,8 +29,11 @@ module.exports = {
         return db.medic.bulkGet(_.defaults({ docs: docs }, _.omit(query, 'latest')));
       })
       .then(result => {
-        result.results = filterResults(authorizationContext, result);
-        return result;
+        const docsToHydrate = _.compact(_.flatMap(result.results, r => r.docs.map(d => d.ok)));
+        return lineage.hydrateDocs(docsToHydrate).then(() => {
+          result.results = filterResults(authorizationContext, result);
+          return result;
+        });
       });
   },
 };

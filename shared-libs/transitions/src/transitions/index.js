@@ -48,7 +48,7 @@ let loadErrors = false;
 // applies all loaded transitions over a change
 const processChange = (change, callback) => {
   lineage
-    .fetchHydratedDoc(change.id)
+    .fetchHydratedDoc(change.id, {}, undefined, change.doc)
     .then(doc => {
       change.doc = doc;
       return infodoc.get(change).then(infoDoc => {
@@ -105,11 +105,16 @@ const processDocs = docs => {
               return callback(null, err || result);
             }
 
-            // doc was not changed by any transition, so we save the original doc
-            change.doc = docs.find(doc => doc._id === change.id);
-            saveDoc(change, (err, result) => {
-              callback(null, err || result);
-            });
+            // doc was not changed by any transition.
+            // If it's a new doc, we must save it to the medic DB anyway.
+            // If it's an existing doc, we don't need to save it.
+            if (!change.doc._rev) {
+              saveDoc(change, (err, result) => {
+                callback(null, err || result);
+              });
+            } else {
+              callback(null, { ok: true, id: change.id, rev: change.doc._rev });
+            }
           });
         });
         async.series(operations, (err, results) => {

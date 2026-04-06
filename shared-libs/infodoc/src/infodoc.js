@@ -12,6 +12,24 @@ const blankInfoDoc = (docId, knownReplicationDate) => {
   };
 };
 
+const pickOlder = (a, b) => {
+  if (a === 'unknown' || !a) {
+    return b || 'unknown';
+  }
+  if (b === 'unknown' || !b) {
+    return a || 'unknown';
+  }
+  const da = new Date(a).getTime();
+  const db = new Date(b).getTime();
+  if (isNaN(da)) {
+    return b;
+  }
+  if (isNaN(db)) {
+    return a;
+  }
+  return da < db ? a : b;
+};
+
 const findInfoDocs = (database, ids) => {
   return database
     .allDocs({ keys: ids, include_docs: true })
@@ -205,7 +223,10 @@ const bulkUpdate = infoDocs => {
         .then(freshInfoDocs => {
           freshInfoDocs.forEach(({ doc: freshInfoDoc }, idx) => {
             conflictingInfoDocs[idx]._rev = freshInfoDoc._rev;
-            conflictingInfoDocs[idx].initial_replication_date = freshInfoDoc.initial_replication_date;
+            conflictingInfoDocs[idx].initial_replication_date = pickOlder(
+              conflictingInfoDocs[idx].initial_replication_date,
+              freshInfoDoc.initial_replication_date
+            );
             conflictingInfoDocs[idx].latest_replication_date = freshInfoDoc.latest_replication_date;
 
             conflictingInfoDocs[idx].completed_tasks = freshInfoDoc.completed_tasks;
