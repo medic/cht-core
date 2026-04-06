@@ -21,10 +21,10 @@ const pickOlder = (a, b) => {
   }
   const da = new Date(a).getTime();
   const db = new Date(b).getTime();
-  if (isNaN(da)) {
+  if (Number.isNaN(da)) {
     return b;
   }
-  if (isNaN(db)) {
+  if (Number.isNaN(db)) {
     return a;
   }
   return da < db ? a : b;

@@ -279,6 +279,23 @@ module.exports = function(Promise, DB) {
     });
   };
 
+  const hydrateLineage = (lineage, contactsPromise) => {
+    let patientLineage;
+    let placeLineage;
+    return fetchSubjectLineage(lineage[0])
+      .then((lineages = {}) => {
+        patientLineage = lineages.patientLineage;
+        placeLineage = lineages.placeLineage;
+        return contactsPromise || fetchContacts(lineage.concat(patientLineage, placeLineage));
+      })
+      .then(function(contacts) {
+        fillContactsInDocs(lineage, contacts);
+        fillContactsInDocs(patientLineage, contacts);
+        fillContactsInDocs(placeLineage, contacts);
+        return mergeLineagesIntoDoc(lineage, contacts, patientLineage, placeLineage);
+      });
+  };
+
   const fetchDoc = function(id) {
     return DB.get(id)
       .catch(function(err) {
@@ -290,9 +307,6 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchHydratedDoc = function(id, options = {}, callback = undefined, doc = undefined) {
-    let lineage;
-    let patientLineage;
-    let placeLineage;
     if (typeof options === 'function') {
       callback = options;
       options = {};
@@ -303,33 +317,18 @@ module.exports = function(Promise, DB) {
     });
 
     return fetchLineageById(id, doc)
-      .then(function(result) {
-        lineage = result;
-
-        if (lineage.length === 0) {
-          if (options.throwWhenMissingLineage) {
-            const err = new Error(`Document not found: ${id}`);
-            err.code = 404;
-            throw err;
-          } else {
-            // Not a doc that has lineage, just do a normal fetch.
-            return doc ? doc : fetchDoc(id);
-          }
+      .then(function(lineage) {
+        if (lineage.length > 0) {
+          return hydrateLineage(lineage);
         }
 
-        return fetchSubjectLineage(lineage[0])
-          .then((lineages = {}) => {
-            patientLineage = lineages.patientLineage;
-            placeLineage = lineages.placeLineage;
+        if (options.throwWhenMissingLineage) {
+          const err = new Error(`Document not found: ${id}`);
+          err.code = 404;
+          throw err;
+        }
 
-            return fetchContacts(lineage.concat(patientLineage, placeLineage));
-          })
-          .then(function(contacts) {
-            fillContactsInDocs(lineage, contacts);
-            fillContactsInDocs(patientLineage, contacts);
-            fillContactsInDocs(placeLineage, contacts);
-            return mergeLineagesIntoDoc(lineage, contacts, patientLineage, placeLineage);
-          });
+        return doc || fetchDoc(id);
       })
       .then(function(result) {
         if (callback) {
