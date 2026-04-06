@@ -16,7 +16,9 @@ import { routes as backupRoutes } from '@admin-tool-modules/backup/backup.routes
 
 import { AppRoutingModule } from '../../../src/ts/app-routing.module';
 import { UsersComponent } from '@admin-tool-modules/users/users.component';
-import { AuthorizationComponent } from '@admin-tool-modules/authorization/authorization.component';
+import { 
+  AuthorizationHeaderComponent 
+} from '@admin-tool-modules/authorization/authorization-header/authorization-header.component';
 import { SmsComponent } from '@admin-tool-modules/sms/sms.component';
 import { FormsComponent } from '@admin-tool-modules/forms/forms.component';
 import { TargetsComponent } from '@admin-tool-modules/targets/targets.component';
@@ -55,7 +57,7 @@ describe('AppRoutingModule', () => {
     it('authorization routes should point to /authorization with AuthorizationComponent', () => {
       expect(authorizationRoutes).to.have.length(1);
       expect(authorizationRoutes[0].path).to.equal('authorization');
-      expect(authorizationRoutes[0].component).to.equal(AuthorizationComponent);
+      expect(authorizationRoutes[0].component).to.equal(AuthorizationHeaderComponent);
     });
 
     it('sms routes should point to /sms with SmsComponent', () => {

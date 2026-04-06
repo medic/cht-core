@@ -1,0 +1,37 @@
+@if (loadingPageStatus) {
+  <div class="loader"></div>
+} @else {
+  <div class="tab-content container-fluid">
+    <legend translate>configuration.roles</legend>
+    <div class="row selection-heading">
+      <div class="col-xs-2" translate>configuration.role</div>
+      <div class="col-xs-3" translate>translation.key</div>
+      <div class="col-xs-4" translate>Name</div>
+      <div class="col-xs-2" translate>configuration.role.offline</div>
+      <div class="col-xs-1"></div>
+    </div>
+
+    @for (role of roles; track role.key) {
+      <div class="row">
+        <div class="col-xs-2">{{ role.key }}</div>
+        <div class="col-xs-3">{{ role.value.name }}</div>
+        <div class="col-xs-4" translate>{{ role.value.name }}</div>
+        <div class="col-xs-2">
+          @if (role.value.offline) {
+            <i class="fa fa-check" aria-label="Offline"></i>
+          } @else {
+            <span aria-label="Online"></span>
+          }
+        </div>
+        <div class="col-xs-1 delete">
+          <!-- <button class="btn btn-sm btn-danger" (click)="deleteRole(role.key)">  TODO: Implement delete role functionality-->
+          <button class="btn btn-sm btn-danger" aria-label="Delete role">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+

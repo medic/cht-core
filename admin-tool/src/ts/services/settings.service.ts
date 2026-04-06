@@ -1,3 +1,4 @@
+import { RolesMap } from '@admin-tool-modules/authorization/authorization-interfaces';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -28,7 +29,7 @@ export interface DateTimeSettings {
 export interface CHTSettings {
   date_format?: string;
   reported_date_format?: string;
-  roles?: Record<string, { name: string; offline?: boolean }>;
+  roles?: RolesMap;
   permissions?: Record<string, string[]>;
   languages?: { locale: string; enabled: boolean }[];
   locale?: string;
@@ -122,5 +123,27 @@ export class SettingsService {
       date_format: changes.dateFormat,
       reported_date_format: changes.dateTimeFormat,
     });
+  }
+
+  /**
+   * Retrieves the full roles map from settings.
+   * Returns an empty object if no roles are defined.
+   *
+   * @returns {Promise<RolesMap>}
+   */
+  async getRoles(): Promise<RolesMap> {
+    const res = await this.get();
+    return res.roles || {};
+  }
+
+  /**
+   * Persists the full roles map to the API.
+   * Uses replace=true to fully overwrite the roles object in settings.
+   *
+   * @param {RolesMap} roles - the complete roles map to save
+   * @returns {Promise<void>}
+   */
+  async updateRoles(roles: RolesMap): Promise<void> {
+    return this.updateSettings({ roles }, true);
   }
 }
