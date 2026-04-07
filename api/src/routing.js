@@ -689,12 +689,14 @@ app.all(
 app.get(
   '/api/v1/initial-replication/get-ids',
   authorization.handleAuthErrors,
+  authorization.captureReplicationFailures,
   authorization.onlineUserPassThrough,
   replication.getDocIds,
 );
 app.get(
   '/api/v1/replication/get-ids',
   authorization.handleAuthErrors,
+  authorization.captureReplicationFailures,
   authorization.onlineUserPassThrough,
   replication.getDocIds,
 );

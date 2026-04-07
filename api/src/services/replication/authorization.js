@@ -377,6 +377,8 @@ const getAuthorizationContext = async (userCtx) => {
     authCtx.subjectsDepth[UNASSIGNED_KEY] = 0;
   }
 
+  authCtx.userCtx.subjectsCount = authCtx.subjectIds.length;
+
   return authCtx;
 };
 

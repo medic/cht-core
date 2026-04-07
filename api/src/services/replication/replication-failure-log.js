@@ -1,105 +1,51 @@
-const moment = require('moment');
 const db = require('../../db');
-const logger = require('@medic/logger');
+const moment = require('moment');
 
-const LOG_TYPE = 'replication-fail-';
-// The count and month difference between old and new log.
-// To determine when the old log will updated with the new one.
-const LOG_COUNT_DIFF = 100;
-const LOG_MONTH_DIFF = 1;
+const LOG_TYPE = 'replication-fail';
+const MAX_FAILURES = 50;
 
-const persistLog = async (info) => {
-  if (!info?.user) {
-    throw new Error('Error when persisting log: Log Information missing.');
-  }
+const captureFailure = async (userCtx, requestId, statusCode, duration) => {
+  const log = await getLog(userCtx.name);
 
-  const logDocId = LOG_TYPE + info.user;
-
-
-
-  return db.medicLogs
-    .get(logDocId)
-    .catch(error => {
-      if (error.status === 404) {
-        return { _id: logDocId };
-      }
-      throw error;
-    })
-    .then(doc => {
-      if (!isLogDifferent(doc, info)) {
-        return;
-      }
-
-      const logDoc = Object.assign(doc, info);
-      return db.medicLogs.put(logDoc);
-    });
-};
-
-const isLogDifferent = (oldLog, newLog) => {
-  if (!oldLog.date && !oldLog.count) {
-    return true;
-  }
-
-  const countDiff = Math.abs(oldLog.count - newLog.count);
-
-  const oldPrePurge = oldLog.all_docs_count || 0;
-  const newPrePurge = newLog.all_docs_count || 0;
-
-  const prePurgeDiff = Math.abs(oldPrePurge - newPrePurge);
-
-  if (countDiff > LOG_COUNT_DIFF || prePurgeDiff > LOG_COUNT_DIFF) {
-    return true;
-  }
-
-  const oldLogDate = moment(oldLog.date);
-  const newLogDate = moment(newLog.date);
-  const monthDiff = newLogDate.diff(oldLogDate, 'months', true);
-
-  return monthDiff > LOG_MONTH_DIFF;
-};
-
-const getLogsByType = (docPrefix) => {
-  const options = {
-    startkey: docPrefix,
-    endkey: docPrefix + '\ufff0',
-    include_docs: true
+  const failure = {
+    timestamp: moment().valueOf(),
+    status_code: statusCode,
+    duration: duration,
+    request_id: requestId,
+    subjects_count: userCtx.subjectsCount,
+    roles: userCtx.roles,
   };
 
-  return db.medicLogs
-    .allDocs(options)
-    .then((result) => result.rows.map(row => row.doc));
+  log.failures.push(failure);
+  log.total_failures++;
+  if (log.failures.length > MAX_FAILURES) {
+    log.failures = log.failures.slice(-MAX_FAILURES);
+  }
+
+  return db.medicLogs.put(log);
 };
+const getDocId = (userName) => `${LOG_TYPE}-${moment().format('YYYY-MM')}-${userName}`;
 
-const getReplicationLimitLog = (userName) => {
-  const get = !userName ? getLogsByType(LOG_TYPE) : db.medicLogs.get(LOG_TYPE + userName);
+const getLog = async (userName) => {
+  const docId = getDocId(userName);
 
-  return get
-    .then(logs => {
+  try {
+    return await db.medicLogs.get(docId);
+  } catch (err) {
+    if (err.status === 404) {
       return {
-        limit: DOC_IDS_WARN_LIMIT,
-        users: logs
+        _id: docId,
+        type: LOG_TYPE,
+        user: userName,
+        timestamp: moment().valueOf(),
+        total_failures: 0,
+        failures: [],
       };
-    });
-};
-
-const logReplicationLimit = (userName, count, prePurgeCount) => {
-  const info = {
-    user: userName,
-    date: moment().valueOf(),
-    count,
-    all_docs_count: prePurgeCount
-  };
-
-  return persistLog(info)
-    .catch(error => {
-      logger.error('Error on Log Replication Limit %o', error);
-    });
+    }
+    throw err;
+  }
 };
 
 module.exports = {
-  put: logReplicationLimit,
-  get: getReplicationLimitLog,
-  _isLogDifferent: isLogDifferent,
-  LOG_TYPE,
-  DOC_IDS_WARN_LIMIT,
+  capture: captureFailure,
 };
