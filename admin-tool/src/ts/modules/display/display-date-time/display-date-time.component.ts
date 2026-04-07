@@ -1,6 +1,7 @@
 import { SettingsService } from '@admin-tool-services/settings.service';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import moment from 'moment';
 import { ResponseStatus } from '../../global-modules-interfaces';
 
@@ -14,7 +15,7 @@ import { ResponseStatus } from '../../global-modules-interfaces';
  */
 @Component({
   selector: 'display-date-time',
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './display-date-time.component.html',
   styleUrl: './display-date-time.component.less',
 })
@@ -142,7 +143,7 @@ export class DisplayDateTimeComponent implements OnInit {
       }, 3000);
     } catch (error) {
       console.error('Error updating settings', error);
-      this.responseStatus = { state: 'error', msg: 'Error updating settings' };
+      this.responseStatus = { state: 'error', msg: 'Error saving settings' };
     }
   }
 }

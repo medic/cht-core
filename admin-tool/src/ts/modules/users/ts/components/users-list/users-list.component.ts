@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '@admin-tool-services/auth.service';
 import { UsersService } from '@admin-tool-services/users.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
@@ -12,7 +13,7 @@ import { User } from '@admin-tool-modules/users/users-interfaces';
 @Component({
   selector: 'users-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './users-list.component.html',
   styleUrl: './users-list.component.less',
 })

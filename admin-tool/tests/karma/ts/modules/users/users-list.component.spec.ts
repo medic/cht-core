@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import { TranslateModule } from '@ngx-translate/core';
 import { UsersListComponent } from '@admin-tool-modules/users/ts/components/users-list/users-list.component';
 import { AuthService } from '@admin-tool-services/auth.service';
 import { UsersService } from '@admin-tool-services/users.service';
@@ -27,7 +28,7 @@ describe('UsersListComponent', () => {
     usersService = { getUsers: sinon.stub() };
 
     await TestBed.configureTestingModule({
-      imports: [UsersListComponent],
+      imports: [UsersListComponent, TranslateModule.forRoot()],
       providers: [
         { provide: AuthService, useValue: authService },
         { provide: UsersService, useValue: usersService },

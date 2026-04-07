@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import { TranslateModule } from '@ngx-translate/core';
 import { DisplayDateTimeComponent } from '@admin-tool-modules/display/display-date-time/display-date-time.component';
 import { SettingsService } from '@admin-tool-services/settings.service';
 import moment from 'moment';
@@ -20,7 +21,7 @@ describe('DisplayDateTimeComponent', () => {
     };
 
     return TestBed.configureTestingModule({
-      imports: [DisplayDateTimeComponent],
+      imports: [DisplayDateTimeComponent, TranslateModule.forRoot()],
       providers: [{ provide: SettingsService, useValue: settingsService }],
     })
       .compileComponents()
@@ -258,7 +259,7 @@ describe('DisplayDateTimeComponent', () => {
     it('should set error message when update fails', async () => {
       settingsService.updateDateTimeSettings.rejects(new Error('error'));
       await component.setSettingsDate();
-      expect(component.responseStatus.msg).to.equal('Error updating settings');
+      expect(component.responseStatus.msg).to.equal('Error saving settings');
     });
 
     it('should call console.error when update fails', async () => {
@@ -266,6 +267,15 @@ describe('DisplayDateTimeComponent', () => {
       settingsService.updateDateTimeSettings.rejects(new Error('error'));
       await component.setSettingsDate();
       expect(consoleStub.calledOnce).to.be.true;
+    });
+
+    it('should clear success status after 3 seconds', async () => {
+      const clock = sinon.useFakeTimers();
+      await component.setSettingsDate();
+      expect(component.responseStatus.state).to.equal('success');
+      clock.tick(3001);
+      expect(component.responseStatus).to.deep.equal({});
+      clock.restore();
     });
   });
 

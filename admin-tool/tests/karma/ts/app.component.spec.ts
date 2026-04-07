@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { CookieService } from 'ngx-cookie-service';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { AppComponent } from '../../../src/ts/app.component';
 import { MainLayoutComponent } from '@admin-tool-modules/shell/main-layout.component';
 import { HeaderComponent } from '@admin-tool-components/header/header.component';
@@ -35,6 +36,7 @@ describe('AppComponent', () => {
         imports: [
           RouterTestingModule,
           HttpClientModule,
+          TranslateModule.forRoot(),
           AppComponent,
           MainLayoutComponent,
           HeaderComponent,

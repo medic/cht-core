@@ -2,9 +2,25 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { of } from 'rxjs';
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SidebarComponent } from '@admin-tool-components/sidebar/sidebar.component';
 import { AuthService } from '@admin-tool-services/auth.service';
+
+const TRANSLATIONS = {
+  'admin.display': 'Display',
+  Users: 'Users',
+  'configuration.authorization': 'Authorization',
+  'configuration.sms': 'SMS',
+  Forms: 'Forms',
+  'analytics.targets': 'Targets',
+  images: 'Images',
+  'admin.message.queue': 'Message Queue',
+  'instance.upgrade': 'Upgrade',
+  'import.export': 'Export',
+  'settings.backuprestore': 'Backup',
+};
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
@@ -19,16 +35,24 @@ describe('SidebarComponent', () => {
 
     return TestBed
       .configureTestingModule({
-        imports: [SidebarComponent, RouterTestingModule],
+        imports: [
+          SidebarComponent,
+          RouterTestingModule,
+          TranslateModule.forRoot({
+            loader: { provide: TranslateLoader, useValue: { getTranslation: () => of(TRANSLATIONS) } },
+          }),
+        ],
         providers: [
           { provide: AuthService, useValue: authService },
         ],
       })
       .compileComponents()
       .then(() => {
+        TestBed.inject(TranslateService).use('en');
         fixture = TestBed.createComponent(SidebarComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+        return fixture.whenStable();
       });
   }));
 

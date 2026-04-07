@@ -1,27 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-</head>
-<body>
-  <nav aria-label="Display Navigation">
-    <ul class="nav nav-tabs custom-tabs">
-      <li class="nav-item" routerLinkActive="active">
-        <a routerLink="/display/date-time" >Date & time</a>
-      </li>
-      <li class="nav-item" routerLinkActive="active">
-        <a routerLink="/display/languages">Languages</a>
-      </li>
-      <li class="nav-item" routerLinkActive="active">
-        <a routerLink="/display/translations">Translations</a>
-      </li>
-      <li class="nav-item" routerLinkActive="active">
-        <a routerLink="/display/privacy-policies">Privacy policies</a>
-      </li>
-    </ul>
-  </nav>
-  <router-outlet></router-outlet>
-</body>
-</html>
+<nav aria-label="Display Navigation">
+  <ul class="nav nav-tabs custom-tabs">
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/date-time">{{ 'admin.display.datetime' | translate }}</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/languages">{{ 'Languages' | translate }}</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/translations">{{ 'Translations' | translate }}</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/privacy-policies">{{ 'display.privacy.policies.title' | translate }}</a>
+    </li>
+  </ul>
+</nav>
+<router-outlet></router-outlet>
