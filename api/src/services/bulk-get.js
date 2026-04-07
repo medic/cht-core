@@ -4,13 +4,14 @@ const _ = require('lodash');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 
 // filters response from CouchDB only to include successfully read and allowed docs
-const filterResults = (authorizationContext, result) => {
+const filterResults = (authorizationContext, result, hydratedMap) => {
   return result.results.filter(resultDocs => {
     resultDocs.docs = resultDocs.docs.filter(doc => {
       if (!doc.ok) {
         return false;
       }
-      return authorization.allowedDoc(resultDocs.id, authorizationContext, authorization.getViewResults(doc.ok));
+      const hydratedDoc = hydratedMap.get(doc.ok._id);
+      return authorization.allowedDoc(resultDocs.id, authorizationContext, authorization.getViewResults(hydratedDoc || doc.ok));
     });
     return resultDocs.docs.length;
   });
@@ -30,8 +31,11 @@ module.exports = {
       })
       .then(result => {
         const docsToHydrate = _.compact(_.flatMap(result.results, r => r.docs.map(d => d.ok)));
-        return lineage.hydrateDocs(docsToHydrate).then(() => {
-          result.results = filterResults(authorizationContext, result);
+        const clones = docsToHydrate.map(doc => _.cloneDeep(doc));
+        return lineage.hydrateDocs(clones).then(() => {
+          const hydratedMap = new WeakMap();
+          docsToHydrate.forEach((doc, i) => hydratedMap.set(doc, clones[i]));
+          result.results = filterResults(authorizationContext, result, hydratedMap);
           return result;
         });
       });

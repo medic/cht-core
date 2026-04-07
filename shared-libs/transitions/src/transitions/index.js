@@ -105,18 +105,11 @@ const processDocs = docs => {
               return callback(null, err || result);
             }
 
-            // doc was not changed by any transition.
-            // If it's a new doc, we must save it to the medic DB anyway.
-            // If it's an existing doc, we don't need to save it.
-            if (change.doc._rev) {
-              // If it's an existing doc, we don't need to save it.
-              callback(null, { ok: true, id: change.id, rev: change.doc._rev });
-            } else {
-              // If it's a new doc, we must save it to the medic DB anyway.
-              saveDoc(change, (err, result) => {
-                callback(null, err || result);
-              });
-            }
+            // doc was not changed by any transition, so we save the original doc
+            change.doc = docs.find(doc => doc._id === change.id);
+            saveDoc(change, (err, result) => {
+              callback(null, err || result);
+            });
           });
         });
         async.series(operations, (err, results) => {

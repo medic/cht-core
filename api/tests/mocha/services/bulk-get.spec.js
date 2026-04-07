@@ -1,17 +1,24 @@
 const sinon = require('sinon');
 require('chai').should();
-const service = require('../../../src/services/bulk-get');
+const rewire = require('rewire');
+const service = rewire('../../../src/services/bulk-get');
 const db = require('../../../src/db');
 const authorization = require('../../../src/services/authorization');
 
 let userCtx;
 let query;
 let docs;
+let lineageStub;
 
 describe('Bulk Get service', () => {
   beforeEach(function() {
     query = {};
     userCtx = { name: 'user' };
+
+    lineageStub = {
+      hydrateDocs: sinon.stub().resolves([])
+    };
+    service.__set__('lineage', lineageStub);
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'allowedDoc').returns(true);
