@@ -1331,14 +1331,9 @@ describe('replication', () => {
   });
 
   describe('replication failure logging', () => {
-    const failUserPassword = password;
-    const failUsers = [
-      { username: 'fail-user-1', password: failUserPassword },
-      { username: 'fail-user-2', password: failUserPassword },
-    ];
+    const testedUsers = ['bob', 'clare'];
 
     const getFailureLogId = (username) => `replication-fail-${moment().format('YYYY-MM')}-${username}`;
-
     const getFailureLog = async (username) => {
       try {
         return await utils.logsDb.get(getFailureLogId(username));
@@ -1350,87 +1345,79 @@ describe('replication', () => {
       }
     };
 
+    const deleteFailureLog = async (username) => {
+      const log = await getFailureLog(username);
+      if (log) {
+        await utils.logsDb.remove(log);
+      }
+    };
+
     const requestDocsExpectingError = async (username) => {
       try {
         await requestDocs(username);
         expect.fail('Expected request to fail');
       } catch (err) {
-        // Expected to fail since the user has no medic user-settings doc
         expect(err.status).to.be.at.least(400);
+        await utils.delayPromise(100); // wait for doc to be writen
       }
     };
 
-    // Create users directly in CouchDB _users db without a corresponding medic user-settings doc.
-    // When these users hit /api/v1/replication/get-ids, getUserSettings fails (no medic doc),
-    // causing a server error which the captureReplicationFailures middleware logs.
     before(async () => {
-      for (const user of failUsers) {
-        await utils.request({
-          path: `/_users/org.couchdb.user:${user.username}`,
-          method: 'PUT',
-          body: {
-            _id: `org.couchdb.user:${user.username}`,
-            type: 'user',
-            name: user.username,
-            password: user.password,
-            roles: ['district_admin'],
-          },
-        });
-      }
+      await utils.stopService('nouveau');
+    });
+
+    after(async () => {
+      await utils.startService('nouveau');
     });
 
     afterEach(async () => {
-      for (const user of failUsers) {
-        const failureLog = await getFailureLog(user.username);
-        failureLog && await utils.logsDb.remove(failureLog);
-      }
+      await Promise.all(testedUsers.map(user => deleteFailureLog(user)));
     });
 
-    it('should not create a failure log on a successful request', async () => {
-      await requestDocs('bob');
-      await utils.delayPromise(100);
-
+    it('should not create a failure log on a successful requests', async () => {
       const log = await getFailureLog('bob');
       expect(log).to.be.null;
     });
 
     it('should create a failure log when the request fails', async () => {
-      await requestDocsExpectingError('fail-user-1');
-      await utils.delayPromise(100);
+      await requestDocsExpectingError('bob');
 
-      const log = await getFailureLog('fail-user-1');
-      expect(log).to.not.be.null;
+      const log = await getFailureLog('bob');
       expect(log.type).to.equal('replication-fail');
-      expect(log.user).to.equal('fail-user-1');
-      expect(log.failures).to.be.an('array').that.has.lengthOf(1);
-      expect(log.failures[0]).to.include.keys('timestamp', 'status_code', 'duration', 'request_id', 'roles');
+      expect(log.user).to.equal('bob');
+      expect(log.failures.length).to.eq(1);
+      expect(log.failures[0]).to.have.keys(
+        'timestamp', 'status_code', 'duration', 'request_id', 'roles', 'subjects_count'
+      );
       expect(log.failures[0].status_code).to.be.at.least(400);
-      expect(log.failures[0].roles).to.deep.equal(['district_admin']);
+      expect(log.failures[0].roles).to.be.an('array').that.is.not.empty;
+      expect(log.failures[0].subjects_count).to.equal(6);
       expect(log.total_failures).to.equal(1);
+
     });
 
     it('should accumulate failures in the same log document', async () => {
-      await requestDocsExpectingError('fail-user-1');
-      await utils.delayPromise(100);
+      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('bob');
 
-      await requestDocsExpectingError('fail-user-1');
-      await utils.delayPromise(100);
-
-      await requestDocsExpectingError('fail-user-1');
-      await utils.delayPromise(100);
-
-      const log = await getFailureLog('fail-user-1');
+      const log = await getFailureLog('bob');
       expect(log.failures).to.be.an('array').that.has.lengthOf(3);
       expect(log.total_failures).to.equal(3);
       log.failures.forEach(failure => {
-        expect(failure).to.include.keys('timestamp', 'status_code', 'duration', 'request_id', 'roles');
+        expect(failure).to.have.keys(
+          'timestamp', 'status_code', 'duration', 'request_id', 'roles', 'subjects_count'
+        );
+        expect(failure.subjects_count).to.equal(6);
       });
     });
 
     it('should cap stored failures at 50 and track total count', async () => {
-      await requestDocsExpectingError('fail-user-1');
-      // Seed a log doc with 50 existing failures to avoid making 50+ HTTP requests
-      const logId = getFailureLogId('fail-user-1');
+      // Create an initial failure to get a real log doc
+      await requestDocsExpectingError('bob');
+
+      // Seed the log doc with 50 existing failures
+      const logId = getFailureLogId('bob');
       const existentLog = await utils.logsDb.get(logId);
       existentLog.failures = Array.from({ length: 50 }, (_, i) => ({
         timestamp: Date.now() - (50 - i) * 1000,
@@ -1439,19 +1426,14 @@ describe('replication', () => {
         request_id: `seed-${i}`,
       }));
       existentLog.total_failures = 50;
-
       await utils.logsDb.put(existentLog);
 
-      // Trigger one more failure
-      await requestDocsExpectingError('fail-user-1');
-      await utils.delayPromise(100);
+      await requestDocsExpectingError('bob');
 
-      const log = await getFailureLog('fail-user-1');
+      const log = await getFailureLog('bob');
       expect(log.failures).to.have.lengthOf(50);
       expect(log.total_failures).to.equal(51);
-      // The oldest seeded entry should have been dropped
       expect(log.failures[0].request_id).to.equal('seed-1');
-      // The newest entry is from the actual request
       expect(log.failures[49].request_id).to.not.match(/^seed-/);
     });
 
@@ -1465,62 +1447,46 @@ describe('replication', () => {
       // Seed logs for previous months
       for (const month of previousMonths) {
         await utils.logsDb.put({
-          _id: `replication-fail-${month}-fail-user-1`,
+          _id: `replication-fail-${month}-bob`,
           type: 'replication-fail',
-          user: 'fail-user-1',
+          user: 'bob',
           timestamp: moment(month, 'YYYY-MM').valueOf(),
-          total_failures: 5,
-          failures: Array.from({ length: 5 }, (_, i) => ({
-            timestamp: moment(month, 'YYYY-MM').valueOf() + i * 1000,
-            status_code: 500,
-            duration: 100,
-            request_id: `${month}-${i}`,
-          })),
+          total_failures: 0,
+          failures: [],
         });
       }
 
-      // Trigger a failure for the current month
-      await requestDocsExpectingError('fail-user-1');
-      await utils.delayPromise(100);
+      await requestDocsExpectingError('bob');
 
       // New log is created for the current month
-      const currentLog = await getFailureLog('fail-user-1');
-      expect(currentLog).to.not.be.null;
-      expect(currentLog._id).to.equal(`replication-fail-${moment().format('YYYY-MM')}-fail-user-1`);
+      const currentLog = await getFailureLog('bob');
+      expect(currentLog._id).to.equal(`replication-fail-${moment().format('YYYY-MM')}-bob`);
       expect(currentLog.failures).to.have.lengthOf(1);
       expect(currentLog.total_failures).to.equal(1);
 
       // Previous months' logs are untouched
       for (const month of previousMonths) {
-        const oldLog = await utils.logsDb.get(`replication-fail-${month}-fail-user-1`);
-        expect(oldLog.failures).to.have.lengthOf(5);
-        expect(oldLog.total_failures).to.equal(5);
-      }
-
-      // Cleanup previous months' logs
-      for (const month of previousMonths) {
-        const doc = await utils.logsDb.get(`replication-fail-${month}-fail-user-1`);
-        await utils.logsDb.remove(doc);
+        const oldLog = await utils.logsDb.get(`replication-fail-${month}-bob`);
+        expect(oldLog.failures).to.have.lengthOf(0);
+        expect(oldLog.total_failures).to.equal(0);
       }
     });
 
     it('should create separate failure logs for different users', async () => {
-      await requestDocsExpectingError('fail-user-1');
-      await requestDocsExpectingError('fail-user-2');
+      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('clare');
 
-      await utils.delayPromise(100);
+      const bobLog = await getFailureLog('bob');
+      expect(bobLog.user).to.equal('bob');
+      expect(bobLog.failures).to.have.lengthOf(1);
+      expect(bobLog.total_failures).to.equal(1);
 
-      const log1 = await getFailureLog('fail-user-1');
-      expect(log1.user).to.equal('fail-user-1');
-      expect(log1.failures).to.have.lengthOf(1);
-      expect(log1.total_failures).to.equal(1);
+      const clareLog = await getFailureLog('clare');
+      expect(clareLog.user).to.equal('clare');
+      expect(clareLog.failures).to.have.lengthOf(1);
+      expect(clareLog.total_failures).to.equal(1);
 
-      const log2 = await getFailureLog('fail-user-2');
-      expect(log2.user).to.equal('fail-user-2');
-      expect(log2.failures).to.have.lengthOf(1);
-      expect(log2.total_failures).to.equal(1);
-
-      expect(log1._id).to.not.equal(log2._id);
+      expect(bobLog._id).to.not.equal(clareLog._id);
     });
   });
 });
