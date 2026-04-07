@@ -4,6 +4,7 @@ const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 const phoneNumber = require('@medic/phone-number');
 const { VIEWS } = require('@medic/constants');
+const { isPyxformTruthy } = require('../lib/pyxform-boolean');
 require( 'enketo-core/src/js/plugins' );
 
 const isContactPhoneValid = (settings, fieldValue) => {
@@ -59,7 +60,7 @@ class PhoneWidget extends Widget {
   _init() {
     const $input = $( this.element );
     const $wrapper = $input.closest('.question');
-    const uniqueTel = $wrapper.attr('data-cht-unique_tel') === 'true' || deprecated.isDeprecated($wrapper);
+    const uniqueTel = isPyxformTruthy($wrapper.attr('data-cht-unique_tel')) || deprecated.isDeprecated($wrapper);
     $input.attr('data-type-xml', uniqueTel ? 'unique_tel' : 'tel');
 
     // Add a proxy input field, which will send its input, formatted, to the real input field.

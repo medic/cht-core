@@ -21,7 +21,7 @@ describe('initial-replication', () => {
     `org.couchdb.user:${userAllowedDocs.user.username}`,
     DOC_IDS.SERVICE_WORKER_META,
     'resources',
-    'branding',
+    DOC_IDS.BRANDING,
     userAllowedDocs.user.place,
     userAllowedDocs.user.contact._id,
   ];

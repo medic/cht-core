@@ -197,7 +197,7 @@ describe('Configuration', () => {
         manifest.generate.resolves();
         generateServiceWorker.run.resolves();
 
-        return dbWatcher.medic.args[0][0]({ id: 'branding' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.BRANDING }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
 
           chai.expect(translations.run.callCount).to.equal(0);
@@ -210,7 +210,7 @@ describe('Configuration', () => {
 
         sinon.stub(process, 'exit');
 
-        return dbWatcher.medic.args[0][0]({ id: 'branding' }).then(() => {
+        return dbWatcher.medic.args[0][0]({ id: DOC_IDS.BRANDING }).then(() => {
           chai.expect(process.exit.callCount).to.equal(1);
         });
       });

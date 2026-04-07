@@ -11,6 +11,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -50,6 +51,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private readonly rulesEngineService: RulesEngineService,
     private readonly performanceService: PerformanceService,
     private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly telemetryService: TelemetryService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -169,6 +171,7 @@ export class TasksComponent implements OnInit, OnDestroy {
         ...this.getTaskLineage(subjects, task)
       }));
       this.tasksActions.setTasksList(tasksWithLineage);
+      this.telemetryService.record('tasks:all-tasks', tasksWithLineage.length);
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;

@@ -135,7 +135,7 @@ describe('Training Cards', () => {
     await browser.refresh();
 
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
-    await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), privacyPolicyFactory.english, false);
+    await privacyPage.waitAndAcceptPolicy(privacyPolicyFactory.english, false);
     await trainingCardsPage.waitForTrainingCards();
     await trainingCardsPage.quitTraining();
   });

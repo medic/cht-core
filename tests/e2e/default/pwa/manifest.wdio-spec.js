@@ -2,6 +2,7 @@ const { promisify } = require('util');
 const { readFile } = require('fs');
 const path = require('path');
 const utils = require('@utils');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('manifest.json', () => {
   const DEFAULT_MANIFEST = {
@@ -29,7 +30,7 @@ describe('manifest.json', () => {
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     if (!doc) {
       try {
-        await utils.deleteDoc('branding');
+        await utils.deleteDoc(DOC_IDS.BRANDING);
       } catch (err) {
         if (err.status === 404) {
           return; // already not there - success!
@@ -51,10 +52,10 @@ describe('manifest.json', () => {
 
   const getBrandingDoc = async () => {
     try {
-      return await utils.getDoc('branding');
+      return await utils.getDoc(DOC_IDS.BRANDING);
     } catch (e) {
       if (e.status === 404) {
-        return { _id: 'branding' };
+        return { _id: DOC_IDS.BRANDING };
       }
       throw e;
     }

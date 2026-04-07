@@ -1,6 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
+import { DOC_IDS } from '@medic/constants';
 
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { DbService } from '@mm-services/db.service';
@@ -45,7 +46,7 @@ describe('ResourceIcons service', () => {
       const resourceIcon = service.getImg('delivery', 'resources');
       expect(resourceIcon).to.equal('<span class="resource-icon" title="delivery" >&nbsp</span>');
 
-      const brandingLogo = service.getImg('logo', 'branding');
+      const brandingLogo = service.getImg('logo', DOC_IDS.BRANDING);
       expect(brandingLogo).to.equal('<span class="header-logo" data-title="logo" >&nbsp</span>');
 
       const partnersImage = service.getImg('partner', 'partners');
@@ -103,7 +104,7 @@ describe('ResourceIcons service', () => {
       const service = getService();
       tick();
 
-      const branding = service.getImg('logo', 'branding');
+      const branding = service.getImg('logo', DOC_IDS.BRANDING);
 
       const expected =
         '<span class="header-logo" data-title="logo" >' +

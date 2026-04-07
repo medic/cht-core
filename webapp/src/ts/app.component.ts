@@ -394,7 +394,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   private watchBrandingChanges() {
     this.changesService.subscribe({
       key: 'branding-icon',
-      filter: change => change.id === 'branding',
+      filter: change => change.id === DOC_IDS.BRANDING,
       callback: () => this.setAppTitle(),
     });
   }
