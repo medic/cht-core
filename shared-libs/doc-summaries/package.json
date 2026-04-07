@@ -1,0 +1,13 @@
+{
+  "name": "@medic/doc-summaries",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "nyc --nycrcPath='../nyc.config.js' mocha ./test/**/*"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@medic/contact-types-utils": "file:../contact-types-utils"
+  }
+}
