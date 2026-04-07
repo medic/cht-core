@@ -90,31 +90,33 @@ export class InteractionTrackingService {
    * @param detail Optional extra context (e.g., list position)
    */
   record(action: string, ref?: string, detail?: string) {
-    this.ngZone.runOutsideAngular(() => {
-      if (!this.currentSession) {
-        return;
-      }
+    this.ngZone.runOutsideAngular(() => this._record(action, ref, detail));
+  }
 
-      if (this.totalEventsToday >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
-        return;
-      }
+  private _record(action: string, ref?: string, detail?: string) {
+    if (!this.currentSession) {
+      return;
+    }
 
-      const lastEvent = this.events[this.events.length - 1];
-      if (lastEvent?.action === action && lastEvent?.ref === ref && lastEvent?.detail === detail) {
-        return;
-      }
+    if (this.totalEventsToday >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
+      return;
+    }
 
-      const event: InteractionEvent = { action, timestamp: Date.now() };
-      if (ref) {
-        event.ref = ref;
-      }
-      if (detail) {
-        event.detail = detail;
-      }
+    const lastEvent = this.events[this.events.length - 1];
+    if (lastEvent?.action === action && lastEvent?.ref === ref && lastEvent?.detail === detail) {
+      return;
+    }
 
-      this.events.push(event);
-      this.resetSessionTimer();
-    });
+    const event: InteractionEvent = { action, timestamp: Date.now() };
+    if (ref) {
+      event.ref = ref;
+    }
+    if (detail) {
+      event.detail = detail;
+    }
+
+    this.events.push(event);
+    this.resetSessionTimer();
   }
 
   /**
@@ -148,39 +150,45 @@ export class InteractionTrackingService {
     }
 
     try {
-      const version = await this.getAppVersion();
       const metaDb = this.dbService.get({ meta: true });
       const doc = await this.getOrCreateDailyDoc(metaDb);
-
-      const existingSession = doc.sessions.find(s => s.startedAt === startedAt);
-      const otherEventCount = doc.sessions.reduce((sum, s) => {
-        return sum + (s.startedAt === startedAt ? 0 : s.events.length);
-      }, 0);
-
-      const remaining = InteractionTrackingService.MAX_EVENTS_PER_DAY - otherEventCount;
-      if (remaining <= 0) {
-        this.totalEventsToday = otherEventCount;
-        return;
+      const updated = await this.upsertSession(doc, { session, startedAt, events });
+      if (updated) {
+        await metaDb.put(doc);
       }
-
-      const trimmedEvents = events.slice(0, remaining);
-
-      if (existingSession) {
-        existingSession.events = trimmedEvents;
-      } else {
-        doc.sessions.push({ session, startedAt, events: trimmedEvents });
-      }
-
-      this.totalEventsToday = otherEventCount + trimmedEvents.length;
-
-      if (!doc.metadata.versions.includes(version)) {
-        doc.metadata.versions.push(version);
-      }
-
-      await metaDb.put(doc);
     } catch (error) {
       console.error('Error saving interaction log', error);
     }
+  }
+
+  private async upsertSession(doc: InteractionLogDoc, { session, startedAt, events }: InteractionSession):
+  Promise<boolean> {
+    const existingSession = doc.sessions.find(s => s.startedAt === startedAt);
+    const otherEventCount = doc.sessions.reduce((sum, s) => {
+      return sum + (s.startedAt === startedAt ? 0 : s.events.length);
+    }, 0);
+
+    const remaining = InteractionTrackingService.MAX_EVENTS_PER_DAY - otherEventCount;
+    if (remaining <= 0) {
+      this.totalEventsToday = otherEventCount;
+      return false;
+    }
+
+    const trimmedEvents = events.slice(0, remaining);
+    if (existingSession) {
+      existingSession.events = trimmedEvents;
+    } else {
+      doc.sessions.push({ session, startedAt, events: trimmedEvents });
+    }
+
+    this.totalEventsToday = otherEventCount + trimmedEvents.length;
+
+    const version = await this.getAppVersion();
+    if (!doc.metadata.versions.includes(version)) {
+      doc.metadata.versions.push(version);
+    }
+
+    return true;
   }
 
   private async getOrCreateDailyDoc(metaDb: any): Promise<InteractionLogDoc> {
