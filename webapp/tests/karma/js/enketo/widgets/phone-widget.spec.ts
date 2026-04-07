@@ -24,8 +24,8 @@ describe('Enketo: Phone Widget', () => {
   const proxySelector = (name) => inputSelector(name).prev();
 
 
-  const buildHtml = (chtUniqueTel?) => {
-    const chtUniqueTelData = chtUniqueTel ? `data-cht-unique_tel="${chtUniqueTel}"` : '';
+  const buildHtml = (chtUniqueTel?: string) => {
+    const chtUniqueTelData = chtUniqueTel === undefined ? '' : `data-cht-unique_tel="${chtUniqueTel}"`;
     const html =
       `<div id="phone-widget-test">
         <label class="question non-select or-appearance-numbers or-appearance-tel" ${chtUniqueTelData}>
@@ -94,9 +94,20 @@ describe('Enketo: Phone Widget', () => {
 
   [
     ['true', 'unique_tel'],
-    ['true()', 'tel'],
-    ['TRUE', 'tel'],
+    ['TRUE', 'unique_tel'],
+    ['True', 'unique_tel'],
+    [' true ', 'unique_tel'],
+    ['\tYES\n', 'unique_tel'],
+    ['yes', 'unique_tel'],
+    ['YES', 'unique_tel'],
+    ['Yes', 'unique_tel'],
+    ['true()', 'unique_tel'],
+    [' TRUE() ', 'unique_tel'],
     ['false', 'tel'],
+    [' false ', 'tel'],
+    ['false()', 'tel'],
+    ['truthy', 'tel'],
+    ['', 'tel'],
     [undefined, 'tel']
   ].forEach(([chtUniqueTel, expectedDataType]) => {
     it(`should be placed in DOM when widget is added with the data-cht-unique_tel attribute: ${chtUniqueTel}`, () => {
@@ -114,6 +125,15 @@ describe('Enketo: Phone Widget', () => {
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
       expect(input.attr('data-type-xml')).to.equal(expectedDataType);
     });
+  });
+
+  it('should set tel when data-cht-unique_tel attribute is missing', () => {
+    buildHtml();
+    const input = inputSelector(inputName);
+
+    new PhoneWidget($(PhoneWidget.selector)[0]);
+
+    expect(input.attr('data-type-xml')).to.equal('tel');
   });
 
   it('should format input when input value change', async () => {

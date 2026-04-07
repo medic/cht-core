@@ -1,3 +1,4 @@
+const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 const Factory = require('rosie').Factory;
 
 module.exports = new Factory()
@@ -8,6 +9,6 @@ module.exports = new Factory()
   .attr('contact_id', 'e2e_contact_test_id')
   .attr('language', 'en')
   .attr('known', true)
-  .attr('roles', ['_admin']);
+  .attr('roles', [COUCHDB_ADMIN]);
 
 

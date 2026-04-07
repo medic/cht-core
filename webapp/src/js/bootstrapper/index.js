@@ -91,7 +91,7 @@
   };
 
   const hasFullDataAccess = function(userCtx) {
-    return hasRole(userCtx, '_admin') || hasRole(userCtx, ONLINE_ROLE);
+    return hasRole(userCtx, USER_ROLES.COUCHDB_ADMIN) || hasRole(userCtx, ONLINE_ROLE);
   };
 
   const doInitialReplication = async (remoteDb, localDb, userCtx) => {

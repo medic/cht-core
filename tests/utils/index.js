@@ -438,7 +438,7 @@ const PROTECTED_DOCS = [
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
   'migration-log',
   'resources',
-  'branding',
+  DOC_IDS.BRANDING,
   DOC_IDS.PARTNERS,
   DOC_IDS.SETTINGS,
   /^_design/
