@@ -123,10 +123,30 @@ describe('node-logger internals', () => {
   });
 
   describe('create', () => {
-    it('uses info level in production environment', () => {
-      nodeLogger.__set__('env', 'production');
-      const logger = nodeLogger.create('YYYY-MM-DD');
+    it('defaults to info level when LOG_LEVEL is not set', () => {
+      const originalLogLevel = process.env.LOG_LEVEL;
+      delete process.env.LOG_LEVEL;
+      const freshLogger = rewire('../src/node-logger');
+      const logger = freshLogger.create('YYYY-MM-DD');
       expect(logger).to.be.ok;
+      expect(freshLogger.__get__('logLevel')).to.equal('info');
+      if (originalLogLevel !== undefined) {
+        process.env.LOG_LEVEL = originalLogLevel;
+      }
+    });
+
+    it('uses LOG_LEVEL when set', () => {
+      const originalLogLevel = process.env.LOG_LEVEL;
+      process.env.LOG_LEVEL = 'debug';
+      const freshLogger = rewire('../src/node-logger');
+      const logger = freshLogger.create('YYYY-MM-DD');
+      expect(logger).to.be.ok;
+      expect(freshLogger.__get__('logLevel')).to.equal('debug');
+      if (originalLogLevel !== undefined) {
+        process.env.LOG_LEVEL = originalLogLevel;
+      } else {
+        delete process.env.LOG_LEVEL;
+      }
     });
   });
 

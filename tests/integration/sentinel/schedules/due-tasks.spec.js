@@ -100,6 +100,48 @@ const contacts = [
   },
 ];
 
+const reportWithDuplicateDueDate = {
+  _id: 'report_duplicate_due',
+  type: 'data_record',
+  contact: {
+    _id: 'chw1',
+    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+  },
+  fields: { patient_id: 'patient1', value: 5 },
+  reported_date: oneMonthAgo,
+  scheduled_tasks: [
+    {
+      // Task A: already sent, same due date as Task B
+      due: twoDaysAgo,
+      message_key: 'messages.one',
+      recipient: 'clinic',
+      state_history: [
+        { state: 'scheduled', timestamp: oneMonthAgo },
+        { state: 'pending', timestamp: threeDaysAgo },
+        { state: 'sent', timestamp: threeDaysAgo },
+      ],
+      state: 'sent',
+      messages: [
+        {
+          to: '111222',
+          uuid: 'uuid-already-sent',
+          message: 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 5',
+        },
+      ],
+    },
+    {
+      // Task B: stuck in scheduled, same due date as Task A, missing translation
+      due: twoDaysAgo,
+      message_key: 'non.exisiting.key',
+      recipient: 'clinic',
+      state_history: [
+        { state: 'scheduled', timestamp: oneMonthAgo },
+      ],
+      state: 'scheduled',
+    },
+  ],
+};
+
 const reports = [
   {
     _id: 'report1', // no tasks
@@ -498,5 +540,32 @@ describe('Due Tasks', () => {
       to: '555666' // health_center
     });
     chai.expect(report7.scheduled_tasks[3].messages).to.equal(undefined);
+  });
+
+  it('should not reset already-sent tasks when another task with the same due date is stuck in scheduled', async () => {
+    // Reproduction of https://github.com/medic/cht-core/issues/10802
+    // When a document has two scheduled_tasks with the same due date and one is stuck in
+    // 'scheduled' state (e.g. missing translation), dueTasks should NOT reset the other
+    // task that has already been sent back to 'pending'.
+    await sentinelUtils.waitForSentinel();
+    await utils.toggleSentinelTransitions();
+    await utils.saveDoc(reportWithDuplicateDueDate);
+    await utils.toggleSentinelTransitions();
+    await utils.runSentinelTasks();
+    await sentinelUtils.waitForSentinel([reportWithDuplicateDueDate._id]);
+
+    // Wait briefly for dueTasks scheduler to process
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    const report = await utils.getDoc(reportWithDuplicateDueDate._id);
+
+    // Task A (already sent) should NOT have been changed to pending
+    chai.expect(report.scheduled_tasks[0].state).to.equal('sent',
+      'Already-sent task should not be reset to pending when another task with the same due date is scheduled');
+
+    // Task B (stuck with missing translation) should remain scheduled
+    chai.expect(report.scheduled_tasks[1].state).to.equal('scheduled',
+      'Task with missing translation should remain in scheduled state');
+    chai.expect(report.scheduled_tasks[1].messages).to.equal(undefined);
   });
 });

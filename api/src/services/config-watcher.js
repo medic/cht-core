@@ -177,7 +177,7 @@ const listen = () => {
       return handleFormChange(change);
     }
 
-    if (change.id === 'branding') {
+    if (change.id === DOC_IDS.BRANDING) {
       return handleBrandingChanges();
     }
 
