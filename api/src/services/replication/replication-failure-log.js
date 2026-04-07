@@ -46,6 +46,17 @@ const getLog = async (userName) => {
   }
 };
 
+const getByMonth = async (month) => {
+  const prefix = `${LOG_TYPE}-${month}`;
+  const result = await db.medicLogs.allDocs({
+    startkey: `${prefix}-`,
+    endkey: `${prefix}-\ufff0`,
+    include_docs: true,
+  });
+  return result.rows.map(row => row.doc);
+};
+
 module.exports = {
   capture: captureFailure,
+  getByMonth,
 };

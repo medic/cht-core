@@ -1,10 +1,10 @@
-const db = require('../../../src/db');
+const db = require('../../../../src/db');
 const sinon = require('sinon');
-const config = require('../../../src/config');
-const auth = require('../../../src/auth');
+const config = require('../../../../src/config');
+const auth = require('../../../../src/auth');
 const viewMapUtils = require('@medic/view-map-utils');
 const rewire = require('rewire');
-const service = rewire('../../../src/services/authorization');
+const service = rewire('../../../../src/services/replication/authorization');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 

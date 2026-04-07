@@ -1334,21 +1334,28 @@ describe('replication', () => {
     const testedUsers = ['bob', 'clare'];
 
     const getFailureLogId = (username) => `replication-fail-${moment().format('YYYY-MM')}-${username}`;
-    const getFailureLog = async (username) => {
-      try {
-        return await utils.logsDb.get(getFailureLogId(username));
-      } catch (err) {
-        if (err.status === 404) {
-          return null;
-        }
-        throw err;
+
+    const getFailureLogs = (month) => {
+      const options = { path: '/api/v1/replication/get-failure-logs' };
+      if (month) {
+        options.path += `?month=${month}`;
       }
+      return utils.request(options);
+    };
+
+    const getFailureLog = async (username, month) => {
+      const response = await getFailureLogs(month);
+      return response.logs.find(log => log.user === username) || null;
     };
 
     const deleteFailureLog = async (username) => {
-      const log = await getFailureLog(username);
-      if (log) {
-        await utils.logsDb.remove(log);
+      try {
+        const doc = await utils.logsDb.get(getFailureLogId(username));
+        await utils.logsDb.remove(doc);
+      } catch (err) {
+        if (err.status !== 404) {
+          throw err;
+        }
       }
     };
 
@@ -1375,8 +1382,9 @@ describe('replication', () => {
     });
 
     it('should not create a failure log on a successful requests', async () => {
-      const log = await getFailureLog('bob');
-      expect(log).to.be.null;
+      const response = await getFailureLogs();
+      const bobLog = response.logs.find(log => log.user === 'bob');
+      expect(bobLog).to.be.undefined;
     });
 
     it('should create a failure log when the request fails', async () => {
@@ -1459,14 +1467,20 @@ describe('replication', () => {
       await requestDocsExpectingError('bob');
 
       // New log is created for the current month
-      const currentLog = await getFailureLog('bob');
-      expect(currentLog._id).to.equal(`replication-fail-${moment().format('YYYY-MM')}-bob`);
+      const currentMonth = moment().format('YYYY-MM');
+      const currentResponse = await getFailureLogs(currentMonth);
+      const currentLog = currentResponse.logs.find(log => log.user === 'bob');
+      expect(currentLog).to.not.be.undefined;
+      expect(currentLog._id).to.equal(`replication-fail-${currentMonth}-bob`);
       expect(currentLog.failures).to.have.lengthOf(1);
       expect(currentLog.total_failures).to.equal(1);
+      expect(currentResponse.month).to.equal(currentMonth);
 
       // Previous months' logs are untouched
       for (const month of previousMonths) {
-        const oldLog = await utils.logsDb.get(`replication-fail-${month}-bob`);
+        const oldResponse = await getFailureLogs(month);
+        const oldLog = oldResponse.logs.find(log => log.user === 'bob');
+        expect(oldLog).to.not.be.undefined;
         expect(oldLog.failures).to.have.lengthOf(0);
         expect(oldLog.total_failures).to.equal(0);
       }
@@ -1476,12 +1490,15 @@ describe('replication', () => {
       await requestDocsExpectingError('bob');
       await requestDocsExpectingError('clare');
 
-      const bobLog = await getFailureLog('bob');
+      const response = await getFailureLogs();
+      expect(response.logs.length).to.be.at.least(2);
+
+      const bobLog = response.logs.find(log => log.user === 'bob');
       expect(bobLog.user).to.equal('bob');
       expect(bobLog.failures).to.have.lengthOf(1);
       expect(bobLog.total_failures).to.equal(1);
 
-      const clareLog = await getFailureLog('clare');
+      const clareLog = response.logs.find(log => log.user === 'clare');
       expect(clareLog.user).to.equal('clare');
       expect(clareLog.failures).to.have.lengthOf(1);
       expect(clareLog.total_failures).to.equal(1);
