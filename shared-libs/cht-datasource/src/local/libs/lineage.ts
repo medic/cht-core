@@ -17,7 +17,7 @@ import {
 import { Doc } from '../../libs/doc';
 import { getDocsByIds, queryDocsByRange } from './doc';
 import logger from '@medic/logger';
-import { VIEWS } from '../../libs/constants';
+import { VIEWS } from '@medic/constants';
 import lineageFactory from '@medic/lineage';
 import * as Report from '../../report';
 import * as Input from '../../input';

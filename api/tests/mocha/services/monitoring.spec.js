@@ -81,11 +81,11 @@ const makeViewIndexInfo = (name, active = 100, file = 200) => ({
 });
 
 const VIEW_INDEX_INFO_BY_DESIGN = {
-  [ddocName(DDOC_IDS.MEDIC)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC), 100, 700),
-  [ddocName(DDOC_IDS.MEDIC_ADMIN)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_ADMIN)),
-  [ddocName(DDOC_IDS.MEDIC_CLIENT)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_CLIENT)),
-  [ddocName(DDOC_IDS.MEDIC_CONFLICTS)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_CONFLICTS)),
-  [ddocName(DDOC_IDS.MEDIC_SMS)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_SMS)),
+  [ddocName(DDOC_IDS.MEDIC)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC), 600, 7007),
+  [ddocName(DDOC_IDS.MEDIC_ADMIN)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_ADMIN), 6533400, 7005334),
+  [ddocName(DDOC_IDS.MEDIC_CLIENT)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_CLIENT), 22600, 33700),
+  [ddocName(DDOC_IDS.MEDIC_CONFLICTS)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_CONFLICTS), 6, 7),
+  [ddocName(DDOC_IDS.MEDIC_SMS)]: makeViewIndexInfo(ddocName(DDOC_IDS.MEDIC_SMS), 100, 700),
   'sentinel': makeViewIndexInfo('sentinel', 700, 700),
   'users-meta': makeViewIndexInfo('users-meta', 600, 700),
   'users': makeViewIndexInfo('users', 600, 700),
@@ -275,7 +275,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 2,
+          fragmentation: 1.074747464888782,
           name: 'mydb',
           update_sequence: 100,
           sizes: {
@@ -397,7 +397,7 @@ describe('Monitoring service', () => {
         medic: {
           doc_count: 20,
           doc_del_count: 10,
-          fragmentation: 2,
+          fragmentation: 1.074747464888782,
           name: 'mydb',
           update_sequence: 100,
           sizes: {

@@ -8,7 +8,7 @@ import {
 } from '../../qualifier';
 import { escapeKeys } from '@medic/nouveau';
 import { getDocById } from './doc';
-import { NOUVEAU_INDEXES, nouveauUrl } from '../../libs/constants';
+import { NOUVEAU_INDEXES, nouveauUrl } from '@medic/constants';
 
 const jsonContentTypeHeaders = new Headers({ 'Content-Type': 'application/json' });
 const SORT_BY_INDEX: Record<string, string> = {

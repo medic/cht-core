@@ -19,7 +19,8 @@ import {
   normalizeFreetextQualifier,
   validateCursor
 } from './libs/core';
-import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../libs/constants';
+import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { NOUVEAU_INDEXES, VIEWS } from '@medic/constants';
 import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';

@@ -9,6 +9,3 @@ export const END_OF_ALPHABET_MARKER = '\ufff0';
 
 /** @internal */
 export const ISO_8601_DATE_PATTERN = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z)$/;
-
-/** @ignore */
-export { VIEWS, NOUVEAU_INDEXES, nouveauUrl } from '@medic/constants';

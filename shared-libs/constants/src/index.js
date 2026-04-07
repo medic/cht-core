@@ -118,12 +118,7 @@ const VIEWS_BY_DDOC = {
       'users_by_field',
     ],
   },
-  'medic-user': {
-    'medic-user': [
-      'read',
-    ],
-  },
-  'logs': {
+'logs': {
     'logs': [
       'connected_users',
       'replication_limit',

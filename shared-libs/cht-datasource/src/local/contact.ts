@@ -15,7 +15,8 @@ import logger from '@medic/logger';
 import contactTypeUtils from '@medic/contact-types-utils';
 import { InvalidArgumentError } from '../libs/error';
 import { normalizeFreetextQualifier, validateCursor } from './libs/core';
-import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../libs/constants';
+import { END_OF_ALPHABET_MARKER } from '../libs/constants';
+import { NOUVEAU_INDEXES, VIEWS } from '@medic/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 

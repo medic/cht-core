@@ -1082,6 +1082,13 @@ describe('Authorization service', () => {
 
       service
         .allowedDoc(
+          DDOC_IDS.MEDIC_CLIENT,
+          { userCtx: userCtxMultiFacility },
+          { docsByReplicationKey: [{ key: '_all', value: null}], contactsByDepth: null}
+        )
+        .should.equal(true);
+      service
+        .allowedDoc(
           'org.couchdb.user:' + userCtx.name,
           { userCtx: userCtxMultiFacility },
           { docsByReplicationKey: null, contactsByDepth: null }
