@@ -157,10 +157,10 @@ const hasVisibleLoader = async () => {
   return false;
 };
 
-const waitForLoaderToDisappear = async (element) => {
+const waitForLoaderToDisappear = async (element, timeout = 10000) => {
   const loaderSelector = '.loader';
   const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
-  await loader.waitForDisplayed({ reverse: true });
+  await loader.waitForDisplayed({ reverse: true, timeout });
 };
 
 const waitForLoaders = async (timeout = 5000) => {
@@ -360,20 +360,24 @@ const goToMessages = async () => {
   await tabsSelector.messagesTab().waitForDisplayed();
 };
 
-const goToTasks = async () => {
+const goToTasks = async (waitForload = true) => {
   await goToUrl(`/#/tasks`);
   await tabsSelector.taskTab().waitForDisplayed();
-  await waitForPageLoaded();
+  if (waitForload) {
+    await waitForPageLoaded();
+  }
 };
 
-const goToReports = async (reportId = '') => {
+const goToReports = async (reportId = '', waitForLoad = true) => {
   await goToUrl(`/#/reports/${reportId}`);
-  await waitForPageLoaded();
+  if (waitForLoad) {
+    await waitForPageLoaded();
+  }
 };
 
-const goToPeople = async (contactId = '', shouldLoad = true) => {
+const goToPeople = async (contactId = '', waitForLoad = true) => {
   await goToUrl(`/#/contacts/${contactId}`);
-  if (shouldLoad) {
+  if (waitForLoad) {
     await waitForPageLoaded();
   }
 };
@@ -541,11 +545,20 @@ const isMenuOptionVisible = async (action) => {
   return await kebabMenuSelectors[action]().isDisplayed();
 };
 
-const loadNextInfiniteScrollPage = async () => {
+const countInboxItems = async () => await $$('.inbox-items .content-row').length;
+const noMoreElements = (elementTag) => $(`aria/No more ${elementTag}`);
+const loadNextInfiniteScrollPage = async (elementTag, timeout) => {
+  const initialInboxItemsCount = await countInboxItems();
   await browser.execute(() => {
-    $('.inbox-items .content-row:last-child').get(0).scrollIntoView();
+    const container = document.querySelector('.items-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   });
-  await waitForLoaderToDisappear(await $('.left-pane'));
+  await browser.waitUntil(
+    async () => (await countInboxItems()) > initialInboxItemsCount || (await noMoreElements(elementTag).isDisplayed()),
+    { timeout, timeoutMsg: 'Infinite scroll did not load new items' }
+  );
 };
 
 const getErrorLog = async () => {

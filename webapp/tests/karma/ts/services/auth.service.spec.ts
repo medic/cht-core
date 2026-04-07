@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { of } from 'rxjs';
+import { USER_ROLES } from '@medic/constants';
+const { COUCHDB_ADMIN } = USER_ROLES;
 
 import { HttpClient } from '@angular/common/http';
 import { SessionService } from '@mm-services/session.service';
@@ -85,7 +87,7 @@ describe('Auth Service', () => {
     });
 
     it('should return true when user is db admin', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: { can_edit: ['chw'] } });
       chtDatasourceService.init();
 
@@ -237,7 +239,7 @@ describe('Auth Service', () => {
     });
 
     it('should return false when admin and !permission', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: {} });
       chtDatasourceService.init();
 
@@ -327,7 +329,7 @@ describe('Auth Service', () => {
     });
 
     it('should return true when admin and no disallowed permissions', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
       chtDatasourceService.init();
 
@@ -337,7 +339,7 @@ describe('Auth Service', () => {
     });
 
     it('should return true when admin and some disallowed permissions', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
       chtDatasourceService.init();
 
@@ -347,7 +349,7 @@ describe('Auth Service', () => {
     });
 
     it('should return false when admin and all disallowed permissions', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: {} });
       chtDatasourceService.init();
 

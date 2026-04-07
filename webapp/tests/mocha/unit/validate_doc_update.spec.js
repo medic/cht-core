@@ -74,7 +74,7 @@ describe('validate doc update', () => {
       'forms': { type: 'form' },
       'translations': { type: DOC_TYPES.TRANSLATIONS },
       'extension-libs': { _id: 'extension-libs' },
-      'header logo': { _id: 'branding' },
+      'header logo': { _id: DOC_IDS.BRANDING },
       'partners': { _id: DOC_IDS.PARTNERS },
     }).forEach(([ name, doc ]) => {
       it(name, () => {
@@ -105,9 +105,9 @@ describe('validate doc update', () => {
         newDoc: { _id: 'extension-libs', field: 'mine' }
       },
       {
-        name: 'branding',
-        oldDoc: { _id: 'branding' },
-        newDoc: { _id: 'branding', field: 'mine' }
+        name: DOC_IDS.BRANDING,
+        oldDoc: { _id: DOC_IDS.BRANDING },
+        newDoc: { _id: DOC_IDS.BRANDING, field: 'mine' }
       },
       {
         name: 'partners',

@@ -1199,7 +1199,7 @@ describe('DBSync service', () => {
     });
 
     it('does not replicate the branding doc', () => {
-      const actual = filterFunction({ _id: 'branding' });
+      const actual = filterFunction({ _id: DOC_IDS.BRANDING });
       expect(actual).to.equal(false);
     });
 

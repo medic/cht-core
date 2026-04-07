@@ -211,7 +211,7 @@ describe('db-sync', () => {
       const { rev } = await createMetaDoc(localDoc);
       localDoc._rev = rev;
 
-      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
 
       const [remoteDoc] = await utils.getMetaDocs(restrictedUserName, [localDoc._id]);
@@ -219,14 +219,14 @@ describe('db-sync', () => {
     });
 
     it('should replicate meta db down', async () => {
-      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
       expect(await reportsPage.getUnreadCount()).to.equal('3');
 
       const readReport = { _id: `read:report:${report2}` };
       await utils.saveMetaDocs(restrictedUserName, [readReport]);
 
-      await browser.refresh(); // meta databases sync every 30 minutes
+      await commonElements.refresh(); // meta databases sync every 30 minutes
       await commonElements.sync();
 
       // if the test fails, it helps to see which reports are read or not in the failpic

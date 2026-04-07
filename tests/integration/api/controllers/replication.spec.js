@@ -7,7 +7,7 @@ const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
   DOC_IDS.SETTINGS,
   'resources',
-  'branding',
+  DOC_IDS.BRANDING,
   // 'partners',
   '_design/medic-client'
 ];

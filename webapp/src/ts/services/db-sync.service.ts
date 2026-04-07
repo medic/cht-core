@@ -19,7 +19,7 @@ import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS];
 const READ_ONLY_IDS = [
   DOC_IDS.RESOURCES,
-  'branding',
+  DOC_IDS.BRANDING,
   DOC_IDS.SERVICE_WORKER_META,
   'zscore-charts',
   DOC_IDS.SETTINGS,
