@@ -11,7 +11,8 @@ const filterResults = (authorizationContext, result, hydratedMap) => {
         return false;
       }
       const hydratedDoc = hydratedMap.get(doc.ok._id);
-      return authorization.allowedDoc(resultDocs.id, authorizationContext, authorization.getViewResults(hydratedDoc || doc.ok));
+      const viewResults = authorization.getViewResults(hydratedDoc || doc.ok);
+      return authorization.allowedDoc(resultDocs.id, authorizationContext, viewResults);
     });
     return resultDocs.docs.length;
   });
