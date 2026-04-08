@@ -94,19 +94,24 @@ export class InteractionTrackingService {
   }
 
   private _record(action: string, ref?: string, detail?: string) {
-    if (!this.currentSession) {
+    if (!this.currentSession || this.totalEventsToday >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
       return;
     }
 
-    if (this.totalEventsToday >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
+    if (this.isDuplicate(action, ref, detail)) {
       return;
     }
 
+    this.events.push(this.buildEvent(action, ref, detail));
+    this.resetSessionTimer();
+  }
+
+  private isDuplicate(action: string, ref?: string, detail?: string): boolean {
     const lastEvent = this.events[this.events.length - 1];
-    if (lastEvent?.action === action && lastEvent?.ref === ref && lastEvent?.detail === detail) {
-      return;
-    }
+    return lastEvent?.action === action && lastEvent?.ref === ref && lastEvent?.detail === detail;
+  }
 
+  private buildEvent(action: string, ref?: string, detail?: string): InteractionEvent {
     const event: InteractionEvent = { action, timestamp: Date.now() };
     if (ref) {
       event.ref = ref;
@@ -114,9 +119,7 @@ export class InteractionTrackingService {
     if (detail) {
       event.detail = detail;
     }
-
-    this.events.push(event);
-    this.resetSessionTimer();
+    return event;
   }
 
   /**
@@ -134,20 +137,21 @@ export class InteractionTrackingService {
   }
 
   private async _flush(endSession: boolean) {
-    if (!this.currentSession || this.events.length === 0) {
-      if (endSession) {
-        this.clearSession();
-      }
-      return;
-    }
+    const hasData = this.currentSession && this.events.length > 0;
 
-    const session = this.currentSession;
-    const startedAt = this.sessionStartedAt!;
-    const events = [...this.events];
+    if (hasData) {
+      await this._persist();
+    }
 
     if (endSession) {
       this.clearSession();
     }
+  }
+
+  private async _persist() {
+    const session = this.currentSession!;
+    const startedAt = this.sessionStartedAt!;
+    const events = [...this.events];
 
     try {
       const metaDb = this.dbService.get({ meta: true });
