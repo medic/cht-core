@@ -4,7 +4,7 @@ const chtConfUtils = require('@utils/cht-conf');
 
 const TASK_LIST_SELECTOR = '#tasks-list';
 const TASK_FORM_SELECTOR = '#task-report';
-const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
+const TASKS_GROUP_SELECTOR = '#tasks-group .material';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
