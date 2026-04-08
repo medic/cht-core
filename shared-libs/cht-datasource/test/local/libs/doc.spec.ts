@@ -17,7 +17,7 @@ import {
 } from '../../../src/local/libs/doc';
 import { expect } from 'chai';
 import { Nullable } from '../../../src';
-import { VIEWS } from '../../../src/libs/constants';
+import { VIEWS } from '@medic/constants';
 
 describe('local doc lib', () => {
   let dbGet: SinonStub;

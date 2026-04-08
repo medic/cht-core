@@ -4,7 +4,7 @@ import { Doc } from '../../../src/libs/doc';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import * as Qualifier from '../../../src/qualifier';
 import { queryByFreetext, useNouveauIndexes } from '../../../src/local/libs/nouveau';
-import { NOUVEAU_INDEXES, nouveauUrl } from '../../../src/libs/constants';
+import { NOUVEAU_INDEXES, nouveauUrl } from '@medic/constants';
 
 describe('nouveau', () => {
   let dbFetch: SinonStub;

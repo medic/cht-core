@@ -9,7 +9,8 @@ import { expect } from 'chai';
 import * as Lineage from '../../src/local/libs/lineage';
 import * as Nouveau from '../../src/local/libs/nouveau';
 import * as Qualifier from '../../src/qualifier';
-import { END_OF_ALPHABET_MARKER, NOUVEAU_INDEXES, VIEWS } from '../../src/libs/constants';
+import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
+import { NOUVEAU_INDEXES, VIEWS } from '@medic/constants';
 import { InvalidArgumentError } from '../../src';
 
 describe('local contact', () => {

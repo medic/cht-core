@@ -11,7 +11,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { SettingsService } from '../../../src/local/libs/data-context';
 import * as Input from '../../../src/input';
 import * as Report from '../../../src/report';
-import { VIEWS } from '../../../src/libs/constants';
+import { VIEWS } from '@medic/constants';
 
 describe('local lineage lib', () => {
   let debug: SinonStub;

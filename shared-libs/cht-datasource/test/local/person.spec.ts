@@ -11,7 +11,7 @@ import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
-import { VIEWS } from '../../src/libs/constants';
+import { VIEWS } from '@medic/constants';
 
 describe('local person', () => {
   let localContext: LocalDataContext;

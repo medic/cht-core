@@ -11,7 +11,7 @@ import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
 import * as LocalContact from '../../src/local/contact';
-import { VIEWS } from '../../src/libs/constants';
+import { VIEWS } from '@medic/constants';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
