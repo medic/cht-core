@@ -1,13 +1,39 @@
 @import (reference) "../../../../css/variables.less";
 
+.form-group.required label::after {
+  content: '*';
+  margin-left: 0.25rem;
+}
+.medium {
+  max-width: 26rem;
+}
+.loader.inline {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: 0.1875rem;
+}
+.has-error {
+  .help-block {
+    color: @red;
+    font-weight: bold;
+  }
+  .form-control {
+    border-color: @red;
+  }
+}
+.error {
+  color: @red;
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
 .tab-content {
-  padding: 1rem 0;
+  padding: 0.5rem 0;
 
   legend {
     font-size: 1.625rem;
     color: @gray-dark;
     border-bottom: 0.0625rem solid @gray-light;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .selection-heading {

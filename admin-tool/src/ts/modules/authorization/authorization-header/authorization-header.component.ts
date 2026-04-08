@@ -1,6 +1,7 @@
 import { AuthDirective } from '@admin-tool-directives/auth.directive';
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 /**
  * Layout component for the Authorization section of the admin tool.
@@ -12,7 +13,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
  */
 @Component({
   selector: 'authorization-header',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, AuthDirective],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, AuthDirective, TranslatePipe],
   templateUrl: './authorization-header.component.html',
   styleUrl: './authorization-header.component.less',
 })
