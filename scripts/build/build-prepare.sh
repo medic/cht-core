@@ -8,7 +8,7 @@ echo "build-prepare: building ddocs"
 npm run build-ddocs
 
 echo "build-prepare: compiling enketo css"
-sass webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map
+sass webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=slash-div
 
 echo "build-prepare: building admin app"
 node ./scripts/build/build-angularjs-template-cache.js
