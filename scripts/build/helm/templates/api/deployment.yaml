@@ -19,6 +19,8 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
         - env:
+            - name: NODE_ENV
+              value: '{{ .Values.api.node_env | default "production" }}'
             - name: LOG_LEVEL
               value: '{{ .Values.api.log_level | default "info" }}'
             - name: BUILDS_URL
@@ -38,3 +40,4 @@ spec:
           resources: {}
       restartPolicy: Always
 
+      

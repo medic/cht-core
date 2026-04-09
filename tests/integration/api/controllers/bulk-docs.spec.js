@@ -5,7 +5,7 @@ const _ = require('lodash');
 const utils = require('@utils');
 const sUtils = require('@utils/sentinel');
 const constants = require('@constants');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -390,25 +390,25 @@ describe('bulk-docs handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:online',
+        user: PREFIXES.COUCH_USER + 'online',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'allowed_target',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_target',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:online',
       },
     ];
@@ -908,12 +908,12 @@ describe('bulk-docs handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
@@ -965,12 +965,12 @@ describe('bulk-docs handler', () => {
       {
         _id: 'new_allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'new_denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'new_allowed_target',
@@ -1056,12 +1056,12 @@ describe('bulk-docs handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
@@ -1113,12 +1113,12 @@ describe('bulk-docs handler', () => {
       {
         _id: 'new_allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'new_denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'new_allowed_target',

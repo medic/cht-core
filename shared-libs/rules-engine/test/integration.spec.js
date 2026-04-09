@@ -8,6 +8,7 @@ const sinon = require('sinon');
 
 const RulesEngine = require('../src');
 const rulesEmitter = require('../src/rules-emitter');
+const { PREFIXES } = require('@medic/constants');
 
 const { expect } = chai;
 chai.use(chaiExclude);
@@ -18,7 +19,7 @@ let rulesEngine;
 
 const TEST_START = 1500000000000;
 const TARGET_INTERVAL = moment(TEST_START).startOf('month').format('YYYY-MM');
-const TASK_ID_PREFIX = (taskId) => `task~org.couchdb.user:username~${taskId}`;
+const TASK_ID_PREFIX = (taskId) => `task~${PREFIXES.COUCH_USER}username~${taskId}`;
 const FACILITY_REMINDER_TASK_ID = 'report~pregnancy-facility-visit-reminder~anc.facility_reminder';
 const PREGNANCY_REMINDER_12_TASK_ID = 'pregReg~pregnancy-home-visit-week12~anc.pregnancy_home_visit.known_lmp';
 const PREGNANCY_REMINDER_20_TASK_ID = 'pregReg~pregnancy-home-visit-week20~anc.pregnancy_home_visit.known_lmp';
@@ -175,7 +176,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
       const targetDoc = db.bulkDocs.args[1][0].docs[0];
       expect(targetDoc).to.deep.include({
-        _id: `target~${TARGET_INTERVAL}~user~org.couchdb.user:username`,
+        _id: `target~${TARGET_INTERVAL}~user~${PREFIXES.COUCH_USER}username`,
         reporting_period: TARGET_INTERVAL,
       });
       expect(targetDoc.targets).to.deep.include({
@@ -227,14 +228,15 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
         type: 'target',
-        user: 'org.couchdb.user:username',
+        user: PREFIXES.COUCH_USER + 'username',
         owner: 'user',
         reporting_period: TARGET_INTERVAL,
       });
 
       expect(db.bulkDocs.args[2][0].length).to.eq(1);
       expect(db.bulkDocs.args[2][0][0]).to.deep.include({
-        _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${NOW}`,
+        _id: 
+        `task~${PREFIXES.COUCH_USER}username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${NOW}`,
         requester: 'patient',
         owner: 'patient',
         state: 'Failed',
@@ -258,7 +260,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
       const dateNext = moment(TEST_START + MS_IN_DAY * 39).format('YYYY-MM');
       expect(db.bulkDocs.args[3][0].docs[0]).to.deep.include({
-        _id: `target~${dateNext}~user~org.couchdb.user:username`,
+        _id: `target~${dateNext}~user~${PREFIXES.COUCH_USER}username`,
         type: 'target',
         owner: 'user',
         reporting_period: dateNext,
@@ -280,7 +282,7 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
         type: 'target',
-        user: 'org.couchdb.user:username',
+        user: PREFIXES.COUCH_USER + 'username',
         owner: 'user',
       });
       expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
@@ -758,7 +760,7 @@ describe(`Rules Engine Integration Tests`, () => {
     const taskEmissions = await rulesEngine.fetchTasksFor(['patient']);
     expect(taskEmissions).to.have.property('length', 1);
     expect(taskEmissions[0]).to.include({
-      _id: `task~org.couchdb.user:username~${expectedEmission._id}~${TEST_START}`,
+      _id: `task~${PREFIXES.COUCH_USER}username~${expectedEmission._id}~${TEST_START}`,
     });
   });
 });
@@ -774,7 +776,8 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   );
   expect(db.bulkDocs.callCount).to.eq(2);
   expect(tasks[0]).to.deep.include({
-    _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
+    _id: 
+    `task~${PREFIXES.COUCH_USER}username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
     state: 'Ready',
     requester: 'patient',
     owner: 'patient',

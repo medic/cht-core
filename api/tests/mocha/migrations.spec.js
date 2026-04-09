@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const migrations = require('../../src/migrations');
 const db = require('../../src/db');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('migrations', () => {
 
@@ -23,7 +24,7 @@ describe('migrations', () => {
     sinon.stub(migrations, 'get').resolves([ { name: 'xyz' } ]);
     return migrations.run().then(() => {
       chai.expect(getLog.callCount).to.equal(1);
-      chai.expect(getLog.args[0][0]).to.equal('migration-log');
+      chai.expect(getLog.args[0][0]).to.equal(DOC_IDS.MIGRATION_LOG);
     });
   });
 
@@ -40,7 +41,7 @@ describe('migrations', () => {
         run: () => Promise.reject(new Error('should not be called'))
       }
     ];
-    const log = { _id: 'migration-log', migrations: [ 'abc' ], type: 'meta' };
+    const log = { _id: DOC_IDS.MIGRATION_LOG, migrations: [ 'abc' ], type: 'meta' };
     const getLog = sinon.stub(db.medic, 'get').resolves(log);
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
@@ -48,7 +49,7 @@ describe('migrations', () => {
       chai.expect(getLog.callCount).to.equal(2);
       chai.expect(put.callCount).to.equal(1);
       chai.expect(put.firstCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'abc', 'xyz' ],
         type: 'meta'
       });
@@ -69,21 +70,21 @@ describe('migrations', () => {
       }
     ];
     const getLog = sinon.stub(db.medic, 'get');
-    getLog.onCall(0).resolves({ _id: 'migration-log', type: 'meta', migrations: [ ] });
-    getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [ ] });
-    getLog.onCall(2).resolves({ _id: 'migration-log', type: 'meta', migrations: [ 'xyz' ] });
+    getLog.onCall(0).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ ] });
+    getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ ] });
+    getLog.onCall(2).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ 'xyz' ] });
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
     return migrations.run().then(() => {
       chai.expect(getLog.callCount).to.equal(3);
       chai.expect(put.callCount).to.equal(2);
       chai.expect(put.firstCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'xyz' ],
         type: 'meta'
       });
       chai.expect(put.secondCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'xyz', 'abc' ],
         type: 'meta'
       });
@@ -109,10 +110,10 @@ describe('migrations', () => {
       }
     ];
     const getLog = sinon.stub(db.medic, 'get');
-    getLog.onCall(0).resolves({ _id: 'migration-log', type: 'meta', migrations: [ ] });
-    getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [ ] });
-    getLog.onCall(2).resolves({ _id: 'migration-log', type: 'meta', migrations: [ 'b' ] });
-    getLog.onCall(3).resolves({ _id: 'migration-log', type: 'meta', migrations: [ 'b', 'a' ] });
+    getLog.onCall(0).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ ] });
+    getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ ] });
+    getLog.onCall(2).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ 'b' ] });
+    getLog.onCall(3).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ 'b', 'a' ] });
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
     return migrations.run().then(() => {
@@ -143,8 +144,8 @@ describe('migrations', () => {
       }
     ];
     const getLog = sinon.stub(db.medic, 'get');
-    getLog.onCall(0).resolves({ _id: 'migration-log', type: 'meta', migrations: [ ] });
-    getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [ ] });
+    getLog.onCall(0).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ ] });
+    getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ ] });
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
     return migrations.run().catch(err => {
@@ -152,7 +153,7 @@ describe('migrations', () => {
       chai.expect(getLog.callCount).to.equal(2);
       chai.expect(put.callCount).to.equal(1);
       chai.expect(put.firstCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'a' ],
         type: 'meta'
       });
@@ -167,8 +168,8 @@ describe('migrations', () => {
     }];
     const getLog = sinon.stub(db.medic, 'get');
     getLog.onCall(0).returns(Promise.reject({ status: 404 }));
-    getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [] });
-    getLog.onCall(2).resolves({ _id: 'migration-log', type: 'meta', migrations: [] });
+    getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [] });
+    getLog.onCall(2).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [] });
     const query = sinon.stub(db.medic, 'query').resolves({ rows: [ ] });
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
@@ -176,12 +177,12 @@ describe('migrations', () => {
       chai.expect(query.callCount).to.equal(1);
       chai.expect(put.callCount).to.equal(2);
       chai.expect(put.firstCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ ],
         type: 'meta'
       });
       chai.expect(put.secondCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'xyz' ],
         type: 'meta'
       });
@@ -197,7 +198,7 @@ describe('migrations', () => {
     const oldLog = { _id: 1, type: 'meta', migrations: [ 'xyz' ] };
     const getLog = sinon.stub(db.medic, 'get');
     getLog.onCall(0).returns(Promise.reject({ status: 404 }));
-    getLog.onCall(1).resolves({ _id: 'migration-log', type: 'meta', migrations: [ 'xyz' ] });
+    getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ 'xyz' ] });
     const query = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: oldLog } ] });
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
@@ -205,7 +206,7 @@ describe('migrations', () => {
       chai.expect(query.callCount).to.equal(1);
       chai.expect(put.callCount).to.equal(2);
       chai.expect(put.firstCall.args[0]).to.deep.equal({
-        _id: 'migration-log',
+        _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'xyz' ],
         type: 'meta'
       });

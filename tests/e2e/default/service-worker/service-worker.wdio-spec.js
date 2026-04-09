@@ -4,6 +4,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Service worker cache', () => {
   const DEFAULT_TRANSLATIONS = {
@@ -144,7 +145,7 @@ describe('Service worker cache', () => {
 
   it('branding updates trigger login page refresh', async () => {
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    const branding = await utils.getDoc('branding');
+    const branding = await utils.getDoc(DOC_IDS.BRANDING);
     branding.title = 'Not Medic';
     await utils.saveDoc(branding);
     await waitForLogs.promise;

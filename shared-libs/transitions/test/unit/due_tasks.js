@@ -1971,4 +1971,83 @@ describe('due tasks', () => {
     });
   });
 
+  it('should not set already-sent tasks to pending when another task with the same due date is scheduled', () => {
+    // Reproduction of https://github.com/medic/cht-core/issues/10802
+    //
+    // Scenario: A document has two scheduled_tasks with the same due date.
+    // Task A (e.g. "Vaccination Day") has been sent successfully.
+    // Task B (e.g. "Age Based") is stuck in scheduled state because it cannot generate messages.
+    // The view returns the doc because of Task B. dueTasks collects the due date,
+    // then iterates ALL scheduled_tasks matching that due date — including Task A.
+    // Bug: Task A gets reset from sent back to pending.
+    const due = moment();
+    const id = 'report-with-duplicate-due';
+
+    const doc = {
+      scheduled_tasks: [
+        {
+          // Task A: already sent successfully
+          due: due.toISOString(),
+          state: 'sent',
+          state_history: [
+            { state: 'scheduled', timestamp: moment().subtract(10, 'days').toISOString() },
+            { state: 'pending', timestamp: moment().subtract(1, 'day').toISOString() },
+            { state: 'sent', timestamp: moment().subtract(1, 'day').toISOString() },
+          ],
+          type: 'Immunization Reminders Vaccination Day',
+          messages: [
+            {
+              to: '+1234567890',
+              uuid: 'msg-uuid-1',
+              message: 'Please visit the health facility',
+            },
+          ],
+        },
+        {
+          // Task B: stuck in scheduled, same due date, no messages (generation fails)
+          due: due.toISOString(),
+          state: 'scheduled',
+          state_history: [
+            { state: 'scheduled', timestamp: moment().subtract(10, 'days').toISOString() },
+          ],
+          type: 'Immunization Reminders Age Based',
+          message_key: 'some.translation.key',
+          recipient: 'clinic',
+          // no messages — generation will fail
+        },
+      ],
+    };
+
+    // The view returns this doc because Task B is in 'scheduled' state
+    const view = sinon.stub(request, 'get').resolves({
+      rows: [
+        {
+          id: id,
+          key: ['scheduled', due.valueOf()],
+          doc: doc,
+        },
+      ],
+    });
+
+    sinon.stub(schedule._lineage, 'hydrateDocs').resolves([doc]);
+    sinon.stub(utils, 'getRegistrations').resolves([]);
+    // translate returns empty to simulate failed message generation for Task B
+    sinon.stub(utils, 'translate').returns('');
+
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({});
+
+    return schedule.execute().then(() => {
+      assert.equal(view.callCount, 1);
+
+      // Task A should NOT have been touched — it's already sent
+      assert.equal(doc.scheduled_tasks[0].state, 'sent', 'Task A (already sent) should not have its state changed');
+
+      // Task B should still be scheduled (message generation failed)
+      assert.equal(doc.scheduled_tasks[1].state, 'scheduled', 'Task B should remain scheduled');
+
+      // The document should NOT be saved since no valid state changes occurred
+      assert.equal(saveDoc.callCount, 0, 'Document should not be saved when no tasks were validly updated');
+    });
+  });
+
 });

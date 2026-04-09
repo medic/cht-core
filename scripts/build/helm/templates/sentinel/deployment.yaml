@@ -18,6 +18,8 @@ spec:
     spec:
       containers:
         - env:
+            - name: NODE_ENV
+              value: '{{ .Values.sentinel.node_env | default "production" }}'
             - name: LOG_LEVEL
               value: '{{ .Values.sentinel.log_level | default "info" }}'
             - name: API_HOST
@@ -35,3 +37,4 @@ spec:
           resources: {}
       restartPolicy: Always
 status: {}
+

@@ -3,7 +3,7 @@ chai.use(require('chai-shallow-deep-equal'));
 const utils = require('@utils');
 const mockIdProvider = require('../../../utils/mock-oidc-provider');
 const { DB_NAME } = require('@constants');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';
@@ -66,7 +66,7 @@ const expectLoginToFail = (response) => {
 };
 
 const getUser = (user) => {
-  const getUserId = n => `org.couchdb.user:${n}`;
+  const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
   const opts = { path: `/_users/${getUserId(user.username)}` };
   return utils.request(opts);
 };

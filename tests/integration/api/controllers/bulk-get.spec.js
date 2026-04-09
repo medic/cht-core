@@ -3,7 +3,7 @@ const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
 const chaiExclude = require('chai-exclude');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
@@ -112,7 +112,7 @@ describe('bulk-get handler', () => {
             { id: 'ICanBeAnything', rev: results[0].rev },
             { id: 'NEW_PLACE' },
             { id: 'PARENT_PLACE' },
-            { id: 'org.couchdb.user:offline' }
+            { id: PREFIXES.COUCH_USER + 'offline' }
           ]
         };
 
@@ -137,8 +137,8 @@ describe('bulk-get handler', () => {
         });
 
         chai.expect(result.results[3]).to.deep.nested.include({
-          id: 'org.couchdb.user:offline',
-          'docs[0].ok._id': 'org.couchdb.user:offline'
+          id: PREFIXES.COUCH_USER + 'offline',
+          'docs[0].ok._id': PREFIXES.COUCH_USER + 'offline'
         });
       });
   });
@@ -186,25 +186,25 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:online',
+        user: PREFIXES.COUCH_USER + 'online',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'allowed_target',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_target',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:online',
       },
     ];
@@ -550,12 +550,12 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
@@ -635,12 +635,12 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
