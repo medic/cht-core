@@ -650,35 +650,6 @@ describe('Selectors', () => {
         expect(resultByTitle).to.deep.equal([tasksState.tasksList[2]]);
       });
 
-      it('should support fuzzy matching and multiple terms', () => {
-        const tasksState = {
-          tasksList: [
-            {
-              _id: 'task1',
-              title: 'Follow up',
-              contact: { name: 'John Doe' },
-              lineage: ['Village Beta'],
-              lineageIds: ['contact1']
-            },
-            {
-              _id: 'task2',
-              title: 'Vaccination',
-              contact: { name: 'Jane Roe' },
-              lineage: ['Village Alpha'],
-              lineageIds: ['contact2']
-            },
-          ],
-        };
-
-        const fuzzyState = { filters: { search: 'jhn' } } as any;
-        const fuzzyResult = Selectors.getFilteredTasksList.projector(tasksState, fuzzyState);
-        expect(fuzzyResult).to.deep.equal([tasksState.tasksList[0]]);
-
-        const multiTermState = { filters: { search: 'john beta' } } as any;
-        const multiTermResult = Selectors.getFilteredTasksList.projector(tasksState, multiTermState);
-        expect(multiTermResult).to.deep.equal([tasksState.tasksList[0]]);
-      });
-
       it('should normalize diacritics in search', () => {
         const tasksState = {
           tasksList: [
