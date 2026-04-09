@@ -402,7 +402,7 @@ module.exports = function(Promise, DB) {
       return Promise.resolve([]);
     }
 
-    const hydratedDocs = docs; // mutate in-place as expected by some callers
+    const hydratedDocs = deepCopy(docs); // a copy of the original docs which we will incrementally hydrate and return
     const knownDocs = [...hydratedDocs]; // an array of all documents which we have fetched
 
     let patientUuids; // a map of [k, v] pairs with [hydratedDocUuid, patientUuid]
