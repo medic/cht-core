@@ -56,7 +56,7 @@ import { PrivacyPolicyComponent } from '@mm-modules/privacy-policy/privacy-polic
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { SnackbarComponent } from '@mm-components/snackbar/snackbar.component';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
-import { DOC_IDS, DOC_TYPES } from '@medic/constants';
+import { HTTP_HEADERS, DOC_IDS, DOC_TYPES, PREFIXES } from '@medic/constants';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -244,7 +244,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         .apply(dbFetch, args)
         .then((response) => {
           // ignore 401 that could come through other channels than CHT API
-          if (response.status === 401 && response.headers?.get('logout-authorization') === 'CHT-Core API') {
+          if (response.status === 401 && response.headers?.get(HTTP_HEADERS.LOGOUT_AUTHORIZATION) === 'CHT-Core API') {
             this.showSessionExpired();
             setTimeout(() => {
               console.info('Redirect to login after 1 minute of inactivity');
@@ -435,7 +435,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         return (
           userCtx &&
           userCtx.name &&
-          change.id === `org.couchdb.user:${userCtx.name}`
+          change.id === `${PREFIXES.COUCH_USER}${userCtx.name}`
         );
       },
       callback: () => {

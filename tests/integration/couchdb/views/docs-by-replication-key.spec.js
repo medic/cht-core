@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
+const { PREFIXES } = require('@medic/constants');
 
 describe('docs_by_replication_key', () => {
   let docByPlaceIds;
@@ -138,14 +139,14 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'task_created_by_user',
       type: 'task',
-      user: 'org.couchdb.user:username',
+      user: PREFIXES.COUCH_USER + 'username',
       requester: 'someuser',
       owner: 'testpatient',
     },
     {
       _id: 'target_created_by_user',
       type: 'target',
-      user: 'org.couchdb.user:username',
+      user: PREFIXES.COUCH_USER + 'username',
       owner: 'testuser',
     },
   ];
@@ -228,14 +229,14 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'task_created_by_other_user',
       type: 'task',
-      user: 'org.couchdb.user:not_username',
+      user: PREFIXES.COUCH_USER + 'not_username',
       requester: 'someuser',
       owner: 'testpatient',
     },
     {
       _id: 'target_created_by_other_user',
       type: 'target',
-      user: 'org.couchdb.user:not_username',
+      user: PREFIXES.COUCH_USER + 'not_username',
       owner: 'not_someuser',
     },
   ];
@@ -305,7 +306,8 @@ describe('docs_by_replication_key', () => {
     return await utils
       .saveDocs(alldocs)
       .then(() => {
-        const keys = [ '_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username' ];
+        const keys = [ '_all', 'testuser', 'testplace', 
+          'testpatient', 'testuserplace', PREFIXES.COUCH_USER + 'username' ];
         return getChanges(keys);
       })
       .then((docs) => {

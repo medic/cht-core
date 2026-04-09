@@ -9,7 +9,7 @@ const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 
 const { assert } = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const userCtx = {
   name: 'user',
   contact_id: 'contact_id',
@@ -212,7 +212,7 @@ describe('Authorization service', () => {
       return service
         .getAuthorizationContext({ facility_id: 'aaa', name: 'agatha' })
         .then(result => {
-          result.subjectIds.should.have.members(['_all', '_unassigned', 'org.couchdb.user:agatha']);
+          result.subjectIds.should.have.members(['_all', '_unassigned', PREFIXES.COUCH_USER + 'agatha']);
         });
     });
 
@@ -229,7 +229,7 @@ describe('Authorization service', () => {
       return service
         .getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' })
         .then(result => {
-          result.subjectIds.should.have.members([1, 2, '_all', 's1', 's2', 'org.couchdb.user:peter']);
+          result.subjectIds.should.have.members([1, 2, '_all', 's1', 's2', PREFIXES.COUCH_USER + 'peter']);
           result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2]]);
           result.should.deep.include({
             contactDepth: 2,
@@ -252,7 +252,7 @@ describe('Authorization service', () => {
       return service
         .getAuthorizationContext({ facility_id: ['a', 'b'], name: 'peter' })
         .then(result => {
-          result.subjectIds.should.have.members([1, 2, '_all', 's1', 's2', 'org.couchdb.user:peter']);
+          result.subjectIds.should.have.members([1, 2, '_all', 's1', 's2', PREFIXES.COUCH_USER + 'peter']);
           result.contactsByDepthKeys.should.deep.equal([
             ['a', 0], ['a', 1], ['a', 2], ['b', 0], ['b', 1], ['b', 2]
           ]);
@@ -279,7 +279,8 @@ describe('Authorization service', () => {
       return service
         .getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' })
         .then(result => {
-          result.subjectIds.should.have.members(['1', '2', '3', '_all', 's1', 's2', 'org.couchdb.user:peter', 'aaa']);
+          result.subjectIds.should.have.members(['1', '2', '3', '_all', 's1', 's2', 
+            PREFIXES.COUCH_USER + 'peter', 'aaa']);
           result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2]]);
           result.should.deep.include({
             contactDepth: 2,
@@ -316,7 +317,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext({ facility_id: ['aaa', 'bbb'], name: 'peter' })
         .then(result => {
           result.subjectIds.should.have.members([
-            'org.couchdb.user:peter', '_all',
+            PREFIXES.COUCH_USER + 'peter', '_all',
             '1', '2', '3', 's1', 's2', 'aaa',
             '11', '22', '33', 's11', 's22', 'bbb',
           ]);
@@ -360,7 +361,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' })
         .then(result => {
           result.subjectIds.should.have.members([
-            '1', '2', '_unassigned', '_all', 's1', 's2', 'org.couchdb.user:peter', 'aaa'
+            '1', '2', '_unassigned', '_all', 's1', 's2', PREFIXES.COUCH_USER + 'peter', 'aaa'
           ]);
           result.contactsByDepthKeys.should.deep.equal([['aaa', 0], ['aaa', 1], ['aaa', 2], ['aaa', 3]]);
           result.should.deep.include({
@@ -396,7 +397,7 @@ describe('Authorization service', () => {
         .getAuthorizationContext({ facility_id: ['aaa', 'bbb'], name: 'peter' })
         .then(result => {
           result.subjectIds.should.have.members([
-            '_unassigned', '_all', 'org.couchdb.user:peter',
+            '_unassigned', '_all', PREFIXES.COUCH_USER + 'peter',
             '1', '2', 's1', 's2', 'aaa',
             '11', '22', 's11', 's22', 'bbb'
           ]);
@@ -443,7 +444,7 @@ describe('Authorization service', () => {
       const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
 
       result.subjectIds.should.have.members([
-        '_all', 'org.couchdb.user:peter',
+        '_all', PREFIXES.COUCH_USER + 'peter',
         '1', 's1', 'aaa', 'contact', 'contact2', 'contact_id', 'contact2_id'
       ]);
       result.contactsByDepthKeys.should.deep.equal([
@@ -475,7 +476,7 @@ describe('Authorization service', () => {
       const result = await service.getAuthorizationContext({ facility_id: ['aaa'], name: 'peter' });
 
       result.subjectIds.should.have.members([
-        '_all', 'org.couchdb.user:peter',
+        '_all', PREFIXES.COUCH_USER + 'peter',
         '1', 's1', 'aaa', 'contact', 'contact2', 'contact_id', 'contact2_id'
       ]);
       result.contactsByDepthKeys.should.deep.equal([
@@ -530,7 +531,7 @@ describe('Authorization service', () => {
       const result = await service.getAuthorizationContext({ facility_id: ['aaa', 'bbb'], name: 'peter' });
 
       result.subjectIds.should.have.members([
-        '_all', 'org.couchdb.user:peter',
+        '_all', PREFIXES.COUCH_USER + 'peter',
         '1', 's1', 'aaa', '2', 's2', 'bbb', '3', 's3',
         'contact1', 'contact2', 'contact1_id', 'contact2_id', 'contact3', 'contact3_id', 'contact4', 'contact4_id'
       ]);
@@ -928,7 +929,7 @@ describe('Authorization service', () => {
     it('should return medic-client and user-settings doc', () => {
       const authCtx = { userCtx: { name: 'joe' } };
       service.filterAllowedDocIds(authCtx, []).should.deep.equal([
-        '_design/medic-client', 'org.couchdb.user:joe'
+        '_design/medic-client', PREFIXES.COUCH_USER + 'joe'
       ]);
     });
 
@@ -939,20 +940,20 @@ describe('Authorization service', () => {
         { id: 'r3', fields: { key: 'contact' } },
       ];
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
-      result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
+      result.should.deep.equal(['_design/medic-client', PREFIXES.COUCH_USER + 'user', 'r1', 'r2', 'r3']);
     });
 
     it('should include tasks if no options are passed', () => {
       const docsByReplicationKey = [
         { id: 'r1', fields: { key: 'place', submitter: 'p', type: 'data_record' } },
-        { id: 'task1', fields: { key: 'org.couchdb.user:user', type: 'task' } },
+        { id: 'task1', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'r3', fields: { key: 'contact', type: 'person' } },
-        { id: 'task2', fields: { key: 'org.couchdb.user:user', type: 'task' } },
+        { id: 'task2', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
       ];
 
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.have.members([
-        '_design/medic-client', 'org.couchdb.user:user',
+        '_design/medic-client', PREFIXES.COUCH_USER + 'user',
         'r1', 'task1', 'r3', 'task2'
       ]);
     });
@@ -960,18 +961,18 @@ describe('Authorization service', () => {
     it('should exclude tasks if param is passed', () => {
       const docsByRepKey = [
         { id: 'r1', fields: { key: 'place', submitter: 'p', type: 'data_record' } },
-        { id: 'task1', fields: { key: 'org.couchdb.user:user', type: 'task' } },
+        { id: 'task1', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'ts-r2', fields: { key: 'place', submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', fields: { key: 'org.couchdb.user:user', type: 'task' } },
+        { id: 'ts-task3', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'r3', fields: { key: 'contact', type: 'person' } },
-        { id: 'task2', fields: { key: 'org.couchdb.user:user', type: 'task' } },
+        { id: 'task2', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'ts-r5', fields: { key: 'place', type: 'clinic' } },
       ];
 
       const ctx = { userCtx: { name: 'user' } };
       const result = service.filterAllowedDocIds(ctx, docsByRepKey, { includeTasks: false });
       result.should.have.members([
-        '_design/medic-client', 'org.couchdb.user:user',
+        '_design/medic-client', PREFIXES.COUCH_USER + 'user',
         'r1', 'ts-r2', 'r3', 'ts-r5',
       ]);
     });
@@ -1049,7 +1050,7 @@ describe('Authorization service', () => {
         .should.equal(true);
       service
         .allowedDoc(
-          'org.couchdb.user:' + userCtx.name,
+          PREFIXES.COUCH_USER + userCtx.name,
           { userCtx },
           { docsByReplicationKey: null, contactsByDepth: null }
         )
@@ -1064,7 +1065,7 @@ describe('Authorization service', () => {
         .should.equal(true);
       service
         .allowedDoc(
-          'org.couchdb.user:' + userCtx.name,
+          PREFIXES.COUCH_USER + userCtx.name,
           { userCtx: userCtxMultiFacility },
           { docsByReplicationKey: null, contactsByDepth: null }
         )
@@ -2017,25 +2018,25 @@ describe('Authorization service', () => {
       });
 
       it('should return true for own task', () => {
-        feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user' ];
+        feed.subjectIds = [ 'facility_id', 'contact_id', PREFIXES.COUCH_USER + 'user' ];
         viewResults = {
-          docsByReplicationKey: { key: ['org.couchdb.user:user'], type: 'task' },
+          docsByReplicationKey: { key: [PREFIXES.COUCH_USER + 'user'], type: 'task' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(true);
       });
 
       it('should return false for unowned task', () => {
-        feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user' ];
+        feed.subjectIds = [ 'facility_id', 'contact_id', PREFIXES.COUCH_USER + 'user' ];
         viewResults = {
-          docsByReplicationKey: { key: ['org.couchdb.user:otheruser'], type: 'task' },
+          docsByReplicationKey: { key: [PREFIXES.COUCH_USER + 'otheruser'], type: 'task' },
           contactsByDepth: [],
         };
         service.allowedDoc(report, feed, viewResults).should.equal(false);
       });
 
       it('should return true for known contacts targets', () => {
-        feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user', 'chw1', 'chw2' ];
+        feed.subjectIds = [ 'facility_id', 'contact_id', PREFIXES.COUCH_USER + 'user', 'chw1', 'chw2' ];
         viewResults = {
           docsByReplicationKey: { key: ['contact_id'], type: 'target' },
           contactsByDepth: [],
@@ -2060,7 +2061,7 @@ describe('Authorization service', () => {
       });
 
       it('should return false for unknown contacts targets', () => {
-        feed.subjectIds = [ 'facility_id', 'contact_id', 'org.couchdb.user:user', 'chw1', 'chw2' ];
+        feed.subjectIds = [ 'facility_id', 'contact_id', PREFIXES.COUCH_USER + 'user', 'chw1', 'chw2' ];
         viewResults = {
           docsByReplicationKey: { key: ['omg1'], type: 'target' },
           contactsByDepth: [],
@@ -2640,7 +2641,7 @@ describe('Authorization service', () => {
         .then(result => {
           result.should.deep.equal({
             userCtx,
-            subjectIds: ['_all', 'org.couchdb.user:user'],
+            subjectIds: ['_all', PREFIXES.COUCH_USER + 'user'],
             contactsByDepthKeys: [ ['facility_id'] ],
             replicatePrimaryContacts: false,
             subjectsDepth: {},
@@ -2658,7 +2659,7 @@ describe('Authorization service', () => {
         .then(result => {
           result.should.deep.equal({
             userCtx,
-            subjectIds: ['_all', 'org.couchdb.user:user'],
+            subjectIds: ['_all', PREFIXES.COUCH_USER + 'user'],
             contactsByDepthKeys: [ ['facility_id'] ],
             replicatePrimaryContacts: false,
             subjectsDepth: {},
@@ -2678,7 +2679,7 @@ describe('Authorization service', () => {
       return service
         .getScopedAuthorizationContext(userCtx, [{ doc: docs[0] }, { doc: docs[1], viewResults: {} }, { doc: docs[2] }])
         .then(result => {
-          result.subjectIds.should.deep.equal(['_all', 'org.couchdb.user:user']);
+          result.subjectIds.should.deep.equal(['_all', PREFIXES.COUCH_USER + 'user']);
           contactsByDepth.callCount.should.equal(2);
           contactsByDepth.args.should.deep.equal([[docs[0]], [docs[2]]]);
           docsByReplicationKey.callCount.should.equal(2);
@@ -2835,7 +2836,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.args.should.deep.equal([ [c1], [c2], [c3], [c4], [c5]]);
 
           result.subjectIds.should.have.members([
-            'c1', '123456', 'c3', 'c5', 'place5', '_all', 'org.couchdb.user:user'
+            'c1', '123456', 'c3', 'c5', 'place5', '_all', PREFIXES.COUCH_USER + 'user'
           ]);
         });
     });
@@ -3017,7 +3018,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(7);
 
           result.subjectIds.should.have.members([
-            'c1', 'patient1doc', 'patient1', 'patient3doc', '_all', 'org.couchdb.user:user'
+            'c1', 'patient1doc', 'patient1', 'patient3doc', '_all', PREFIXES.COUCH_USER + 'user'
           ]);
         });
     });
@@ -3169,7 +3170,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(8);
 
           result.subjectIds.should.have.members([
-            'c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', 'org.couchdb.user:user'
+            'c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', PREFIXES.COUCH_USER + 'user'
           ]);
         });
     });
@@ -3304,7 +3305,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(4);
 
           result.subjectIds.should.have.members([
-            'c1', 'contact1', 'patient1doc', 'patient1', '_all', 'org.couchdb.user:user'
+            'c1', 'contact1', 'patient1doc', 'patient1', '_all', PREFIXES.COUCH_USER + 'user'
           ]);
         });
     });
@@ -3328,7 +3329,7 @@ describe('Authorization service', () => {
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
-          result.subjectIds.should.have.members(['_all', '_unassigned', 'org.couchdb.user:user']);
+          result.subjectIds.should.have.members(['_all', '_unassigned', PREFIXES.COUCH_USER + 'user']);
         });
     });
 
@@ -3351,7 +3352,7 @@ describe('Authorization service', () => {
       return service
         .getScopedAuthorizationContext(userCtx, docObjs)
         .then(result => {
-          result.subjectIds.should.have.members(['_all', 'org.couchdb.user:user']);
+          result.subjectIds.should.have.members(['_all', PREFIXES.COUCH_USER + 'user']);
         });
     });
 
@@ -3439,7 +3440,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(2);
 
           result.subjectIds.should.have.members([
-            'c1', 'patient1doc', 'patient1', '_all', 'org.couchdb.user:user'
+            'c1', 'patient1doc', 'patient1', '_all', PREFIXES.COUCH_USER + 'user'
           ]);
           result.subjectsDepth.should.deep.equal({
             'c1': 1,
@@ -3557,7 +3558,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(4);
 
           result.subjectIds.should.have.members([
-            'c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', 'org.couchdb.user:user'
+            'c1', 'patient1doc', 'patient1', 'p1', 'facility_id', '_all', PREFIXES.COUCH_USER + 'user'
           ]);
           result.subjectsDepth.should.deep.equal({
             'c1': 1,
@@ -3655,7 +3656,7 @@ describe('Authorization service', () => {
           docsByReplicationKey.callCount.should.equal(2);
           docsByReplicationKey.args.should.deep.equal([ [c1], [c2]]);
 
-          result.subjectIds.should.have.members([ 'c1', '123456', '_all', 'org.couchdb.user:user' ]);
+          result.subjectIds.should.have.members([ 'c1', '123456', '_all', PREFIXES.COUCH_USER + 'user' ]);
           result.subjectsDepth.should.deep.equal({
             'c1': 2,
             '123456': 2,
@@ -3738,7 +3739,8 @@ describe('Authorization service', () => {
       });
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
-      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact_id', '123456', 'place_id']);
+      result.subjectIds.should.have.members([ '_all', PREFIXES.COUCH_USER + 'user', 
+        'contact_id', '123456', 'place_id']);
       db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
         'medic/contacts_by_primary_contact',
         {
@@ -3817,7 +3819,7 @@ describe('Authorization service', () => {
       });
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
-      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user', 'contact', '123456', 'place_id']);
+      result.subjectIds.should.have.members([ '_all', PREFIXES.COUCH_USER + 'user', 'contact', '123456', 'place_id']);
       db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
         'medic/contacts_by_primary_contact',
         {
@@ -3907,7 +3909,7 @@ describe('Authorization service', () => {
       });
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
-      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
+      result.subjectIds.should.have.members([ '_all', PREFIXES.COUCH_USER + 'user']);
       db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
         'medic/contacts_by_primary_contact',
         {
@@ -3982,7 +3984,7 @@ describe('Authorization service', () => {
       });
 
       const result = await service.getScopedAuthorizationContext(userCtx, docObjs);
-      result.subjectIds.should.have.members([ '_all', 'org.couchdb.user:user']);
+      result.subjectIds.should.have.members([ '_all', PREFIXES.COUCH_USER + 'user']);
       db.medic.query.withArgs( 'medic/contacts_by_primary_contact').args.should.deep.equal([[
         'medic/contacts_by_primary_contact',
         {

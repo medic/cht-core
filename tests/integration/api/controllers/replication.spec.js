@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
@@ -217,22 +217,22 @@ describe('replication', () => {
     let supervisorIds;
 
     beforeEach(() => {
-      bobsIds = ['org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'];
-      stevesIds = ['org.couchdb.user:steve', 'fixture:user:steve', 'fixture:steveville'];
+      bobsIds = [PREFIXES.COUCH_USER + 'bob', 'fixture:user:bob', 'fixture:bobville'];
+      stevesIds = [PREFIXES.COUCH_USER + 'steve', 'fixture:user:steve', 'fixture:steveville'];
       steveClaresIds = [
-        'org.couchdb.user:steveclare',
+        PREFIXES.COUCH_USER + 'steveclare',
         'fixture:user:clare', 'fixture:user:steve',
         'fixture:steveville', 'fixture:clareville',
       ];
-      chwIds = ['org.couchdb.user:chw', 'fixture:user:chw', 'fixture:chwville'];
+      chwIds = [PREFIXES.COUCH_USER + 'chw', 'fixture:user:chw', 'fixture:chwville'];
       chwBossIds = [
-        'org.couchdb.user:chw-boss',
+        PREFIXES.COUCH_USER + 'chw-boss',
         'fixture:user:chw-boss',
         'fixture:chw-bossville',
         'fixture:chwville',
       ];
       supervisorIds = [
-        'org.couchdb.user:supervisor',
+        PREFIXES.COUCH_USER + 'supervisor',
         'fixture:user:supervisor',
         'fixture:chw-bossville',
         'fixture:managerville',
@@ -554,7 +554,7 @@ describe('replication', () => {
             // depth = 1
             _id: 'task~chw',
             type: 'task',
-            user: 'org.couchdb.user:chw',
+            user: PREFIXES.COUCH_USER + 'chw',
           },
           {
             // depth = 1, submitted by the user themselves

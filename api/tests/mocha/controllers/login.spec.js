@@ -21,6 +21,7 @@ const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
 const sso = require('../../../src/services/sso-login');
 const logger = require('@medic/logger');
+const { PREFIXES } = require('@medic/constants');
 
 let controller;
 
@@ -384,8 +385,8 @@ describe('login controller', () => {
       };
       sinon.stub(users, 'getUserDoc').resolves(userDoc);
       sinon.stub(users, 'updateUser').resolves({
-        user: { id: 'org.couchdb.user:sharon' },
-        'user-settings': { id: 'org.couchdb.user:sharon' }
+        user: { id: PREFIXES.COUCH_USER + 'sharon' },
+        'user-settings': { id: PREFIXES.COUCH_USER + 'sharon' }
       });
       sinon.stub(request, 'get').resolves({
         status: 200,
