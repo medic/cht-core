@@ -1,16 +1,18 @@
 import { createSelector } from '@ngrx/store';
 import { GlobalState, TasksFilters } from '@mm-reducers/global';
 import { TaskEmission } from '@mm-services/rules-engine.service';
+import Fuse from 'fuse.js';
 
 interface TaskWithLineage extends TaskEmission {
   lineageIds: string[];
 }
 
-const normalizeSearchText = (value?: string): string => {
+const getGlobalState = (state): GlobalState => state.global || {};
+
+const normalizeText = (value?: string): string => {
   if (!value) {
     return '';
   }
-
   return value
     .toString()
     .toLowerCase()
@@ -19,36 +21,37 @@ const normalizeSearchText = (value?: string): string => {
     .trim();
 };
 
-const splitSearchTerms = (search?: string): string[] => {
-  const normalized = normalizeSearchText(search);
-  return normalized ? normalized.split(/\s+/).filter(Boolean) : [];
-};
-
-const fuzzyMatch = (text?: string, term?: string): boolean => {
-  if (!term) {
+const taskMatchesSearch = (task: TaskWithLineage, search: string): boolean => {
+  if (!search?.trim()) {
     return true;
   }
 
-  const normalizedText = normalizeSearchText(text);
-  if (!normalizedText) {
+  const normalizedSearch = normalizeText(search);
+
+  const candidates = [
+    task?.contact?.name,
+    ...(task?.lineage || []),
+    task?.title,
+  ].filter(Boolean) as string[];
+
+  if (!candidates.length) {
     return false;
   }
 
-  if (normalizedText.includes(term)) {
+  const substringMatch = candidates.some(c => normalizeText(c).includes(normalizedSearch));
+  if (substringMatch) {
     return true;
   }
 
-  let termIndex = 0;
-  for (let i = 0; i < normalizedText.length && termIndex < term.length; i++) {
-    if (normalizedText[i] === term[termIndex]) {
-      termIndex += 1;
-    }
-  }
+  const fuse = new Fuse(candidates, {
+    threshold: 0.2,       
+    distance: 50,
+    minMatchCharLength: 3, 
+    ignoreLocation: true,
+  });
 
-  return termIndex === term.length;
+  return fuse.search(search).length > 0;
 };
-
-const getGlobalState = (state): GlobalState => state.global || {};
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
   let filtered = tasks;
@@ -69,22 +72,7 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
   }
 
   if (filters.search) {
-    const terms = splitSearchTerms(filters.search);
-    if (terms.length) {
-      filtered = filtered.filter(task => {
-        const candidates = [
-          task?.contact?.name,
-          ...(task?.lineage || []),
-          task?.title,
-        ].filter(Boolean);
-
-        if (!candidates.length) {
-          return false;
-        }
-
-        return terms.every(term => candidates.some(candidate => fuzzyMatch(candidate, term)));
-      });
-    }
+    filtered = filtered.filter(task => taskMatchesSearch(task, filters.search!));
   }
 
   return filtered;
