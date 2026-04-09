@@ -4,7 +4,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';
 const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges"}';
@@ -1162,7 +1162,7 @@ describe('db-doc handler', () => {
       const allowedTask = {
         _id: 'task1',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
         emission: {},
@@ -1179,7 +1179,7 @@ describe('db-doc handler', () => {
       const allowedTarget = {
         _id: 'target1',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
@@ -1187,7 +1187,7 @@ describe('db-doc handler', () => {
       const deniedTarget = {
         _id: 'target2',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
       };
@@ -1210,7 +1210,7 @@ describe('db-doc handler', () => {
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, supervisorRequestOptions)),
           utils
-            .requestOnTestDb(_.defaults({ path: '/org.couchdb.user:offline' }, supervisorRequestOptions))
+            .requestOnTestDb(_.defaults({ path: `/${PREFIXES.COUCH_USER}offline` }, supervisorRequestOptions))
             .catch(err => err),
           utils
             .requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, supervisorRequestOptions))
@@ -1558,7 +1558,7 @@ describe('db-doc handler', () => {
       const allowedTask = {
         _id: 'task1',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
         emission: {},
@@ -1575,14 +1575,14 @@ describe('db-doc handler', () => {
       const allowedTarget = {
         _id: 'target1',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
       const deniedTarget = {
         _id: 'target2',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
       };
@@ -1897,7 +1897,7 @@ describe('db-doc handler', () => {
       const allowedTask = {
         _id: 'task1',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
         emission: {},
@@ -1914,14 +1914,14 @@ describe('db-doc handler', () => {
       const allowedTarget = {
         _id: 'target1',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
       const deniedTarget = {
         _id: 'target2',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
       };

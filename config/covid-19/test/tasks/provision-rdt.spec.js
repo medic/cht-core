@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const TestHarness = require('cht-conf-test-harness');
 const formInputs = require('../form-inputs');
+const { PREFIXES } = require('@medic/constants');
 
 const RDT_PROVISION_RUNNING = {
   provision: {
@@ -55,7 +56,7 @@ describe('Covid-19 RDT - Tasks', () => {
 
     const task = tasks[0];
     expect(task).to.include({
-      user: 'org.couchdb.user:chw_area_contact_id',
+      user: PREFIXES.COUCH_USER + 'chw_area_contact_id',
       requester: 'patient_id',
       owner: 'patient_id',
       state: 'Ready'
@@ -192,7 +193,7 @@ describe('Covid-19 RDT - Tasks', () => {
     expect(tasks.length).to.equal(1);
     const updatedTask = tasks[0];
     expect(updatedTask).to.include({
-      user: 'org.couchdb.user:chw_area_contact_id',
+      user: PREFIXES.COUCH_USER + 'chw_area_contact_id',
       requester: 'patient_id',
       owner: 'patient_id',
       state: 'Ready'
@@ -255,7 +256,7 @@ describe('Covid-19 RDT - Tasks', () => {
     expect(tasks.length).to.equal(1);
     const updatedTask = tasks[0];
     expect(updatedTask).to.include({
-      user: 'org.couchdb.user:chw_area_contact_id',
+      user: PREFIXES.COUCH_USER + 'chw_area_contact_id',
       requester: 'patient_id',
       owner: 'patient_id',
       state: 'Ready'

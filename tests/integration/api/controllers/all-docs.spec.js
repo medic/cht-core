@@ -2,7 +2,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const expect = chai.expect;
@@ -17,7 +17,7 @@ const parentPlace = {
 };
 
 const getIdsForUser = (user) => [
-  `org.couchdb.user:${user}`,
+  `${PREFIXES.COUCH_USER}${user}`,
   DOC_IDS.SETTINGS,
   '_design/medic-client',
   DOC_IDS.SERVICE_WORKER_META
@@ -84,8 +84,8 @@ const DOCS_TO_KEEP = [
 const restrictedKeys = [
   'fixture:online',
   'fixture:user:online',
-  'org.couchdb.user:online',
-  'migration-log',
+  PREFIXES.COUCH_USER + 'online',
+  DOC_IDS.MIGRATION_LOG,
   /^_design\/medic-(?!client).+$/
 ];
 
@@ -93,7 +93,7 @@ const unrestrictedKeys = [
   DOC_IDS.SERVICE_WORKER_META,
   'fixture:offline',
   'fixture:user:offline',
-  'org.couchdb.user:offline',
+  PREFIXES.COUCH_USER + 'offline',
   '_design/medic-client',
   'resources',
   DOC_IDS.SETTINGS,
@@ -155,10 +155,10 @@ describe('all_docs handler', () => {
       { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: lineage }, type: 'data_record', form: 'a' },
       { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: lineage }, type: 'clinic' },
       { _id: 'denied_report', contact: { _id: 'fixture:online', parent: lineage }, type: 'data_record', form: 'a' },
-      { _id: 'allowed_task', user: 'org.couchdb.user:offline', type: 'task', owner: 'fixture:user:offline' },
-      { _id: 'denied_task', user: 'org.couchdb.user:online', type: 'task', owner: 'fixture:user:offline' },
-      { _id: 'allowed_target', user: 'org.couchdb.user:offline', type: 'target', owner: 'fixture:user:offline' },
-      { _id: 'denied_target', user: 'org.couchdb.user:online', type: 'target', owner: 'fixture:user:online' },
+      { _id: 'allowed_task', user: PREFIXES.COUCH_USER + 'offline', type: 'task', owner: 'fixture:user:offline' },
+      { _id: 'denied_task', user: PREFIXES.COUCH_USER + 'online', type: 'task', owner: 'fixture:user:offline' },
+      { _id: 'allowed_target', user: PREFIXES.COUCH_USER + 'offline', type: 'target', owner: 'fixture:user:offline' },
+      { _id: 'denied_target', user: PREFIXES.COUCH_USER + 'online', type: 'target', owner: 'fixture:user:online' },
     ];
 
     return utils
@@ -562,12 +562,12 @@ describe('all_docs handler', () => {
         {
           _id: 'task~supervisor',
           type: 'task',
-          user: 'org.couchdb.user:supervisor',
+          user: PREFIXES.COUCH_USER + 'supervisor',
         },
         {
           _id: 'task~offline',
           type: 'task',
-          user: 'org.couchdb.user:offline',
+          user: PREFIXES.COUCH_USER + 'offline',
         }
       ];
 

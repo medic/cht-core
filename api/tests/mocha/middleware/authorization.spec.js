@@ -4,6 +4,7 @@ require('chai').should();
 const middleware = require('../../../src/middleware/authorization');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
+const { HTTP_HEADERS } = require('@medic/constants');
 const replicationFailureLog = require('../../../src/services/replication/replication-failure-log');
 const logger = require('@medic/logger');
 
@@ -61,7 +62,7 @@ describe('Authorization middleware', () => {
 
     it('should save medic-replication-id header in the `req` object', () => {
       auth.getUserCtx.resolves({ name: 'user' });
-      testReq.headers['medic-replication-id'] = 'some random uuid';
+      testReq.headers[HTTP_HEADERS.MEDIC_REPLICATION_ID] = 'some random uuid';
       return middleware
         .getUserCtx(testReq, testRes, next)
         .then(() => {

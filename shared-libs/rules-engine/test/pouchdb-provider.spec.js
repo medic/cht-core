@@ -3,13 +3,14 @@ const chaiExclude = require('chai-exclude');
 const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
+const { PREFIXES } = require('@medic/constants');
 
 const { chtDocs } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
 const { expect } = chai;
 chai.use(chaiExclude);
 
-const mockUserSettingsDoc = { _id: 'org.couchdb.user:username' };
+const mockUserSettingsDoc = { _id: PREFIXES.COUCH_USER + 'username' };
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
   type: 'data_record',
@@ -216,21 +217,21 @@ describe('pouchdb provider', () => {
   describe('commitTargetDoc', () => {
     const targets = [{ id: 'target' }];
     const userContactDoc = { _id: 'user' };
-    const userSettingsDoc = { _id: 'org.couchdb.user:username' };
+    const userSettingsDoc = { _id: PREFIXES.COUCH_USER + 'username' };
 
     it('create and update a doc', async () => {
       const docTag = '2019-07';
       await pouchdbProvider(db).commitTargetDoc(targets, docTag, { userContactDoc, userSettingsDoc });
 
-      const targetDocId = 'target~2019-07~user~org.couchdb.user:username';
+      const targetDocId = `target~2019-07~user~${PREFIXES.COUCH_USER}username`;
 
       const firstTargetDoc = await db.get(targetDocId);
       expect(firstTargetDoc).excluding('_rev').to.deep.eq({
-        _id: 'target~2019-07~user~org.couchdb.user:username',
+        _id: `target~2019-07~user~${PREFIXES.COUCH_USER}username`,
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
         owner: 'user',
-        user: 'org.couchdb.user:username',
+        user: PREFIXES.COUCH_USER + 'username',
         targets,
         reporting_period: '2019-07',
       });
@@ -243,11 +244,11 @@ describe('pouchdb provider', () => {
       await pouchdbProvider(db).commitTargetDoc(nextTargets, docTag, { userContactDoc, userSettingsDoc },  true);
       const secondTargetDoc = await db.get(targetDocId);
       expect(secondTargetDoc).excluding('_rev').to.deep.eq({
-        _id: 'target~2019-07~user~org.couchdb.user:username',
+        _id: `target~2019-07~user~${PREFIXES.COUCH_USER}username`,
         updated_date: moment().startOf('day').valueOf(),
         type: 'target',
         owner: 'user',
-        user: 'org.couchdb.user:username',
+        user: PREFIXES.COUCH_USER + 'username',
         targets: nextTargets,
         reporting_period: '2019-07',
       });
@@ -343,7 +344,7 @@ describe('pouchdb provider', () => {
         contactDocs: [],
         reportDocs: [],
         taskDocs: [],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
       expect(db.query.args).to.deep.equal([
         ['medic-client/reports_by_subject', { keys: ['abc'], include_docs: true, ...defaultQueryParams }],
@@ -363,7 +364,7 @@ describe('pouchdb provider', () => {
           readyTask,
           taskRequestedByChtContact,
         ],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
 
       expect(db.query.args).to.deep.equal([
@@ -391,7 +392,7 @@ describe('pouchdb provider', () => {
           readyTask,
           taskRequestedByChtContact,
         ],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
     });
 
@@ -401,7 +402,7 @@ describe('pouchdb provider', () => {
         contactDocs: [chtDocs.place],
         reportDocs: [reportConnectedByPlaceUuid],
         taskDocs: [cancelledTaskForPlace, readyTaskForPlace, taskRequestedByChtPlace],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
     });
 
@@ -427,7 +428,7 @@ describe('pouchdb provider', () => {
           readyTask,
           taskRequestedByChtContact
         ],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
     });
 
@@ -466,7 +467,7 @@ describe('pouchdb provider', () => {
           readyTask,
           taskRequestedByChtContact
         ],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
     });
 
@@ -505,7 +506,7 @@ describe('pouchdb provider', () => {
           readyTaskForPlace,
           taskRequestedByChtPlace,
         ],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
     });
   });

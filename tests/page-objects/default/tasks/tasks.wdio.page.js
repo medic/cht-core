@@ -4,7 +4,7 @@ const chtConfUtils = require('@utils/cht-conf');
 
 const TASK_LIST_SELECTOR = '#tasks-list';
 const TASK_FORM_SELECTOR = '#task-report';
-const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
+const TASKS_GROUP_SELECTOR = '#tasks-group .material';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
@@ -20,14 +20,14 @@ const sidebarFilterSelectors = {
 };
 
 const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
-const getTasks = async () => {
+const getTasks = async (timeout = 10000) => {
   let tasks;
   await browser.waitUntil(async () => {
     const tasksList = await $(TASK_LIST_SELECTOR);
     tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
     return await tasksList.isDisplayed() && tasks.length > 0;
   }, {
-    timeout: 10000,
+    timeout,
     timeoutMsg: 'Expected tasks list to be displayed with at least one task'
   });
 
