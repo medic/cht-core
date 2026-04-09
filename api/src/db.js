@@ -9,6 +9,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 const asyncLocalStorage = require('./services/async-storage');
 const audit = require('@medic/audit');
 const { REQUEST_ID_HEADER } = require('./server-utils');
+const { HTTP_HEADERS } = require('@medic/constants');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -80,7 +81,7 @@ if (UNIT_TEST_ENV) {
 
   const fetchFn = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
-    opts.headers.set('X-Medic-Service', service);
+    opts.headers.set(HTTP_HEADERS.MEDIC_SERVICE, service);
     const requestMetadata = asyncLocalStorage.getRequest();
     if (requestMetadata.requestId) {
       opts.headers.set(REQUEST_ID_HEADER, requestMetadata.requestId);

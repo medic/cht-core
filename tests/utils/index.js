@@ -440,7 +440,7 @@ const PROTECTED_DOCS = [
   constants.USER_CONTACT_ID,
   `${COUCH_USER_ID_PREFIX}${constants.USERNAME}`,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
-  'migration-log',
+  DOC_IDS.MIGRATION_LOG,
   'resources',
   DOC_IDS.BRANDING,
   DOC_IDS.PARTNERS,

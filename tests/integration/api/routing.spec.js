@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, HTTP_HEADERS } = require('@medic/constants');
 const moment = require('moment');
 const semver = require('semver');
 
@@ -144,7 +144,7 @@ describe('routing', () => {
             .catch(err => err)
             .then(result => {
               expect(result.status).to.equal(401);
-              expect(result.headers.get('logout-authorization')).to.equal('CHT-Core API');
+              expect(result.headers.get(HTTP_HEADERS.LOGOUT_AUTHORIZATION)).to.equal('CHT-Core API');
               expect(result.body.error).to.equal('unauthorized');
             });
         });

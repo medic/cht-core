@@ -74,7 +74,7 @@ describe('validate doc update', () => {
       'service-worker-meta doc': { _id: DOC_IDS.SERVICE_WORKER_META },
       'forms': { type: 'form' },
       'translations': { type: DOC_TYPES.TRANSLATIONS },
-      'extension-libs': { _id: 'extension-libs' },
+      'extension-libs': { _id: DOC_IDS.EXTENSION_LIBS },
       'header logo': { _id: DOC_IDS.BRANDING },
       'partners': { _id: DOC_IDS.PARTNERS },
     }).forEach(([ name, doc ]) => {
@@ -101,9 +101,9 @@ describe('validate doc update', () => {
         newDoc: { _id: 'messages-en', type: 'feedback' }
       },
       {
-        name: 'extension-libs',
-        oldDoc: { _id: 'extension-libs' },
-        newDoc: { _id: 'extension-libs', field: 'mine' }
+        name: DOC_IDS.EXTENSION_LIBS,
+        oldDoc: { _id: DOC_IDS.EXTENSION_LIBS },
+        newDoc: { _id: DOC_IDS.EXTENSION_LIBS, field: 'mine' }
       },
       {
         name: DOC_IDS.BRANDING,

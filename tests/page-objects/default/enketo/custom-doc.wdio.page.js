@@ -1,4 +1,5 @@
 const uuid = require('uuid').v4;
+const { DOC_IDS } = require('@medic/constants');
 
 // TEST - extension-lib-form.wdio.spec.js
 const EXTENSION_LIB = `
@@ -26,7 +27,7 @@ module.exports = function(first, second) {
 `;
 
 const extensionLibDoc = {
-  _id: 'extension-libs',
+  _id: DOC_IDS.EXTENSION_LIBS,
   _attachments: {
     'average.js': {
       content_type: 'application/x-javascript',

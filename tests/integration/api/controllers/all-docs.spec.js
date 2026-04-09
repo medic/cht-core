@@ -85,7 +85,7 @@ const restrictedKeys = [
   'fixture:online',
   'fixture:user:online',
   PREFIXES.COUCH_USER + 'online',
-  'migration-log',
+  DOC_IDS.MIGRATION_LOG,
   /^_design\/medic-(?!client).+$/
 ];
 

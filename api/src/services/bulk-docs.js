@@ -3,6 +3,7 @@ const authorization = require('./authorization');
 const _ = require('lodash');
 const logger = require('@medic/logger');
 const db = require('../db');
+const { STANDARD_HTTP_HEADERS } = require('@medic/constants');
 
 const utils = require('@medic/bulk-docs-utils')({
   Promise: Promise,
@@ -237,7 +238,7 @@ module.exports = {
     const ids = docs.map(doc => doc._id);
     const batches = generateBatches(ids, batchSize);
     res.type('application/json');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader(STANDARD_HTTP_HEADERS.CONTENT_TYPE_OPTIONS, 'nosniff');
     res.write('[');
     res.flush();
     return batches
