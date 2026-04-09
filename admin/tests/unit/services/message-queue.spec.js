@@ -1071,7 +1071,9 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient1', id: 'recipien_id' }]});
-      allDocs.resolves({ rows: [{ doc: { _id: 'recipien_id', type: 'person', phone: 'recipient1', name: 'recipient' }}]});
+      allDocs.resolves({
+        rows: [{ doc: { _id: 'recipien_id', type: 'person', phone: 'recipient1', name: 'recipient' }}]
+      });
 
       return service.query('tab').then((result) => {
         chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(4);

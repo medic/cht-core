@@ -102,8 +102,13 @@ angular.module('services').factory('MessageQueue',
         })
         .then(function(response) {
           const summaries = response.rows
-            .map(function(row) { return docSummaries.summarise(row.doc); })
-            .filter(function(summary) { return summary; });
+            .map(function(row) {
+              return docSummaries.summarise(row.doc);
+            })
+            // filter out deleted/missing docs
+            .filter(function(summary) {
+              return summary;
+            });
 
           messages.forEach(function(message) {
             message.recipient = findSummary(summaries, message);
