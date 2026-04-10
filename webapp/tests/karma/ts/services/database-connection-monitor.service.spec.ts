@@ -8,30 +8,16 @@ import { DatabaseConnectionMonitorService } from '@mm-services/database-connecti
 describe('DatabaseConnectionMonitorService', () => {
   let service: DatabaseConnectionMonitorService;
   let subscriptions;
-  let originalPouchDB;
 
-  const triggerPouchDbDOMException = () => {
-    let db = window.PouchDB('test', { auto_compaction: true });
-    const write = i => {
-      return db
-        .put({ _id: i + 'a', bar: 'bar' })
-        .then(() => write(i + 1));
-    };
-    write(0);
-    db.destroy();
-    db = window.PouchDB('test', { auto_compaction: true });
-  };
+  const DB_CLOSED_MESSAGE = 'Failed to execute \'transaction\' on \'IDBDatabase\': The database connection is closing.';
 
   beforeEach(() => {
     subscriptions = new Subscription();
-    originalPouchDB = window.PouchDB;
-    window.PouchDB = require('pouchdb-browser').default;
     TestBed.configureTestingModule({});
     service = TestBed.inject(DatabaseConnectionMonitorService);
   });
 
   afterEach(() => {
-    window.PouchDB = originalPouchDB;
     subscriptions.unsubscribe();
   });
 
@@ -42,22 +28,26 @@ describe('DatabaseConnectionMonitorService', () => {
       .subscribe(callback);
     subscriptions.add(subscription);
 
-    new Promise((resolve, reject) => reject('foo'));
+    window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', {
+      promise: Promise.resolve(),
+      reason: { message: 'some other error' },
+    }));
 
     expect(callback.callCount).to.equal(0);
   });
 
-  it('should resolve from DOMException', (done) => {
-    const callback = sinon.stub().callsFake(() => {
-      expect(callback.callCount).to.equal(1);
-      done();
-    });
-
+  it('should resolve from DOMException', () => {
+    const callback = sinon.stub();
     const subscription = service
       .listenForDatabaseClosed()
       .subscribe(callback);
     subscriptions.add(subscription);
 
-    triggerPouchDbDOMException();
+    window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', {
+      promise: Promise.resolve(),
+      reason: { message: DB_CLOSED_MESSAGE },
+    }));
+
+    expect(callback.callCount).to.equal(1);
   });
 });
