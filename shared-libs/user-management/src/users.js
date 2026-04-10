@@ -273,6 +273,8 @@ const createPlace = data => {
   });
 };
 
+// TODO: Refactor to use Place.v1.update from @medic/cht-datasource
+// once parent changes are no longer supported and conflict-retry is handled.
 const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
   if (!data.place) {
     return;

@@ -5,7 +5,7 @@ const utils = require('./libs/utils');
 const db = require('./libs/db');
 const dataContext = require('./libs/data-context');
 const lineage = require('./libs/lineage');
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Place, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
@@ -119,24 +119,40 @@ const createPlace = async (place) => {
   await module.exports._validatePlace(place);
   const { exists: contactExists, contact } = await preparePlaceContact(place.contact);
   delete place.contact;
-  const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
-  place.reported_date = date.valueOf();
-  if (place.parent) {
-    place.parent = lineage.minifyLineage(place.parent);
+
+  // Pre-process reported_date to epoch ms for cht-datasource compatibility.
+  // Validity is already checked by _validatePlace above.
+  if (place.reported_date) {
+    place.reported_date = utils.parseDate(place.reported_date).valueOf();
   }
-  if (!contact) {
-    return await db.medic.post(place);
+
+  const parentId = place.parent
+    ? (typeof place.parent === 'string' ? place.parent : place.parent._id)
+    : undefined;
+
+  const createPlaceFn = dataContext.bind(Place.v1.create);
+
+  try {
+    if (!contact) {
+      const result = await createPlaceFn({ ...place, parent: parentId });
+      return { id: result._id, rev: result._rev };
+    }
+    if (contactExists) {
+      const result = await createPlaceFn({ ...place, parent: parentId, contact: contact._id });
+      return { id: result._id, rev: result._rev, contact: { id: contact._id } };
+    }
+    // New contact: create place first, then person, then update place with contact
+    const placeResult = await createPlaceFn({ ...place, parent: parentId });
+    contact.place = placeResult._id;
+    const person = await people.getOrCreatePerson(contact);
+    const result = await updatePlace(placeResult._id, { contact: person._id });
+    return { ...result, contact: { id: person._id } };
+  } catch (err) {
+    if (err instanceof InvalidArgumentError) {
+      return Promise.reject({ code: 400, message: err.message });
+    }
+    throw err;
   }
-  if (contactExists) {
-    place.contact = contact._id;
-    const resp = await db.medic.post(place);
-    return { ...resp, contact: { id: contact._id } };
-  }
-  const placeResponse = await db.medic.post(place);
-  contact.place = placeResponse.id;
-  const person = await people.getOrCreatePerson(contact);
-  const result = await updatePlace(placeResponse.id, { contact: person._id });
-  return { ...result, contact: { id: person._id } };
 };
 
 /*
@@ -165,6 +181,9 @@ const createPlaces = place => {
   // create place when all parents are resolved
   return self._createPlace(place);
 };
+
+// TODO: Refactor to use Place.v1.update from @medic/cht-datasource
+// once parent changes are no longer supported in this function.
 
 /*
  * Given a valid place, update editable fields.
