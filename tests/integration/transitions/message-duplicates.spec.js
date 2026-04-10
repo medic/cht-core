@@ -1,6 +1,7 @@
 const chai = require('chai');
 const uuid = require('uuid').v4;
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const apiUtils = require('./utils');
 
 const settings = {
@@ -43,7 +44,14 @@ const postMessages = (messages) => {
       watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ])
-    .then(([changes]) => changes.map(change => change.id));
+    .then(([changes]) => changes.map(change => change.id))
+    // Wait for sentinel to process the registration transition that adds `tasks` to the
+    // sms_message docs. Without this the test races sentinel and sometimes reads the doc
+    // before tasks have been added (see flake: doc.tasks.length === 0).
+    .then(async ids => {
+      await sentinelUtils.waitForSentinel(ids);
+      return ids;
+    });
 };
 
 const getRecipient = doc => doc.tasks[0].messages[0].to;
@@ -158,10 +166,6 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          if (doc.tasks.length > 1) {
-            // this test has been flaking on GHA only (no repro locally)
-            console.log(JSON.stringify(doc, null, 2));
-          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
