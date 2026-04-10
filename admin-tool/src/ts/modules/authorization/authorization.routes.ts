@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthorizationHeaderComponent } from './authorization-header/authorization-header.component';
 import { AuthorizationRolesComponent } from './authorization-roles/authorization-roles.component';
+import { AuthorizationPermissionsComponent } from './authorization-permissions/authorization-permissions.component';
 
 /**
  * Routes for the Authorization module.
@@ -19,6 +20,10 @@ export const routes: Routes = [
         path: '',
         redirectTo: 'permissions',
         pathMatch: 'full',
+      },
+      {
+        path: 'permissions',
+        component: AuthorizationPermissionsComponent,
       },
       {
         path: 'roles',

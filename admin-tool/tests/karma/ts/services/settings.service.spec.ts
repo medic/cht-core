@@ -105,8 +105,6 @@ describe('SettingsService', () => {
       } catch (e) {
         expect(e).to.equal(error);
       }
-
-      // cache cleared — next call should try again
       dbService.get().get.resolves({ _id: 'medic-client', settings: { locale: 'fr' } });
       const settings = await service.get();
       expect(settings).to.deep.equal({ locale: 'fr' });
@@ -147,12 +145,8 @@ describe('SettingsService', () => {
 
     it('should propagate error when request fails', async () => {
       http.put.returns(throwError(() => ({ status: 500 })));
-      try {
-        await service.updateSettings({ date_format: 'DD/MM/YYYY' });
-        expect.fail('should have thrown');
-      } catch (err: any) {
-        expect(err.status).to.equal(500);
-      }
+      const result = service.updateSettings({ date_format: 'DD/MM/YYYY' });
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
   describe('getDateTimeSettings', () => {
@@ -186,12 +180,8 @@ describe('SettingsService', () => {
 
     it('should propagate error when get fails', async () => {
       dbService.get().get.rejects({ status: 500 });
-      try {
-        await service.getDateTimeSettings();
-        expect.fail('should have thrown');
-      } catch (err: any) {
-        expect(err.status).to.equal(500);
-      }
+      const result = service.getDateTimeSettings();
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
   describe('updateDateTimeSettings', () => {
@@ -219,15 +209,11 @@ describe('SettingsService', () => {
 
     it('should propagate error when updateSettings fails', async () => {
       http.put.returns(throwError(() => ({ status: 500 })));
-      try {
-        await service.updateDateTimeSettings({
-          dateFormat: 'DD/MM/YYYY',
-          dateTimeFormat: 'MM/DD/YYYY HH:mm:ss',
-        });
-        expect.fail('should have thrown');
-      } catch (err: any) {
-        expect(err.status).to.equal(500);
-      }
+      const result = service.updateDateTimeSettings({
+        dateFormat: 'DD/MM/YYYY',
+        dateTimeFormat: 'MM/DD/YYYY HH:mm:ss',
+      });
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
   describe('getRoles', () => {
@@ -249,12 +235,8 @@ describe('SettingsService', () => {
 
     it('should propagate error when get fails', async () => {
       dbService.get().get.rejects({ status: 500 });
-      try {
-        await service.getRoles();
-        expect.fail('should have thrown');
-      } catch (err: any) {
-        expect(err.status).to.equal(500);
-      }
+      const result = service.getRoles();
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
   describe('updateRoles', () => {
@@ -280,12 +262,58 @@ describe('SettingsService', () => {
 
     it('should propagate error when request fails', async () => {
       http.put.returns(throwError(() => ({ status: 500 })));
-      try {
-        await service.updateRoles({ chw: { name: 'usertype.chw' } });
-        expect.fail('should have thrown');
-      } catch (err: any) {
-        expect(err.status).to.equal(500);
-      }
+      const result = service.updateRoles({ chw: { name: 'usertype.chw' } });
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
+    });
+  });
+  describe('getPermissions', () => {
+    it('should return permissions from settings', async () => {
+      const mockPermissions = {
+        can_configure: ['program_officer', 'crfo'],
+        can_edit: ['chw', 'national_admin'],
+      };
+      dbService.get().get.resolves({ settings: { permissions: mockPermissions } });
+      const result = await service.getPermissions();
+      expect(result).to.deep.equal(mockPermissions);
+    });
+
+    it('should return empty object when permissions is undefined', async () => {
+      dbService.get().get.resolves({ settings: {} });
+      const result = await service.getPermissions();
+      expect(result).to.deep.equal({});
+    });
+
+    it('should propagate error when get fails', async () => {
+      dbService.get().get.rejects({ status: 500 });
+      const result = service.getPermissions();
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
+    });
+  });
+  describe('updatePermissions', () => {
+    it('should call updateSettings with permissions and replace=true', async () => {
+      http.put.returns(of(void 0));
+      const mockPermissions = { can_configure: ['program_officer'] };
+      await service.updatePermissions(mockPermissions);
+      expect(http.put.calledWith('/api/v1/settings')).to.be.true;
+    });
+
+    it('should send replace=true', async () => {
+      http.put.returns(of(void 0));
+      await service.updatePermissions({ can_configure: ['program_officer'] });
+      expect(http.put.args[0][2].params).to.deep.include({ replace: 'true' });
+    });
+
+    it('should send permissions in the body', async () => {
+      http.put.returns(of(void 0));
+      const mockPermissions = { can_configure: ['program_officer'] };
+      await service.updatePermissions(mockPermissions);
+      expect(http.put.args[0][1]).to.deep.equal({ permissions: mockPermissions });
+    });
+
+    it('should propagate error when request fails', async () => {
+      http.put.returns(throwError(() => ({ status: 500 })));
+      const result = service.updatePermissions({ can_configure: ['program_officer'] });
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
 });

@@ -1,4 +1,4 @@
-import { RolesMap } from '@admin-tool-modules/authorization/authorization-interfaces';
+import { RolesMap, PermissionsMap } from '@admin-tool-modules/authorization/authorization-interfaces';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -30,7 +30,7 @@ export interface CHTSettings {
   date_format?: string;
   reported_date_format?: string;
   roles?: RolesMap;
-  permissions?: Record<string, string[]>;
+  permissions?: PermissionsMap;
   languages?: { locale: string; enabled: boolean }[];
   locale?: string;
   locale_outgoing?: string;
@@ -146,4 +146,27 @@ export class SettingsService {
   async updateRoles(roles: RolesMap): Promise<void> {
     return this.updateSettings({ roles }, true);
   }
+
+  /**
+   * Retrieves the full permissions map from settings.
+   * Returns an empty object if no permissions are defined.
+   *
+   * @returns {Promise<PermissionsMap>}
+   */
+  async getPermissions(): Promise<PermissionsMap> {
+    const res = await this.get();
+    return res.permissions || {};
+  }
+
+  /**
+   * Persists the full permissions map to the API.
+   * Uses replace=true to fully overwrite the permissions object in settings.
+   *
+   * @param {PermissionsMap} permissions - the complete permissions map to save
+   * @returns {Promise<void>}
+   */
+  async updatePermissions(permissions: PermissionsMap): Promise<void> {
+    return this.updateSettings({ permissions }, true);
+  }
+
 }
