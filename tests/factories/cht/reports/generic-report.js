@@ -1,5 +1,6 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
+const { DOC_TYPES } = require('@medic/constants');
 
 const minify = parent => {
   if (!parent || !parent._id) {
@@ -24,7 +25,7 @@ const report = () => {
     .option('submitter', null)
     .sequence('_id', uuid.v4)
     .attrs({
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: () => new Date().getTime(),
     })
     .attr('contact', ['submitter'], submitter => {
@@ -50,7 +51,7 @@ const report = () => {
 const reportWithTasks = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
-    .attr('type', 'data_record')
+    .attr('type', DOC_TYPES.DATA_RECORD)
     .attr('form', 'a')
     .attr('reported_date', () => Date.now())
     .attr('errors', [])

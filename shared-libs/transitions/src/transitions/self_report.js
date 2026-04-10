@@ -5,6 +5,7 @@ const NAME = 'self_report';
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const dataContext = require('../data-context');
 const getConfig = () => config.get(NAME) || [];
+const { DOC_TYPES } = require('@medic/constants');
 
 const getConfiguredForm = (form) => form && getConfig().find(item => item && item.form === form);
 
@@ -16,7 +17,7 @@ module.exports = {
     return Boolean(
       doc &&
       doc.from &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       getConfiguredForm(doc.form) &&
       !hasPatientId(doc) &&
       !transitionUtils.hasRun(info, NAME)

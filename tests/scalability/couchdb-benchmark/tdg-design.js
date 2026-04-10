@@ -1,4 +1,4 @@
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const now = Date.now();
 
@@ -46,7 +46,7 @@ const getInfant = context => getPerson(context, 'patient');
 const getPregnancyDangerSign = (patient) => {
   return {
     form: 'pregnancy_danger_sign',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
     reported_date: now,
     fields: {
@@ -69,7 +69,7 @@ const getPregnancyDangerSign = (patient) => {
 const deathReport = (patient) => {
   return {
     form: 'death_report',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
     reported_date: now,
     fields: {
@@ -87,7 +87,7 @@ const deathReport = (patient) => {
 const pregnancyRegistration = (patient) => {
   return {
     form: 'pregnancy',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
     reported_date: now,
     fields: {
@@ -157,7 +157,7 @@ const pregnancyRegistration = (patient) => {
 const getPNCDangerSignFollowUpBaby = (patient) => {
   return {
     form: 'pnc_danger_sign_follow_up_baby',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
     reported_date: now,
     fields: {
@@ -182,7 +182,7 @@ const getPNCDangerSignFollowUpBaby = (patient) => {
 const getPregnancyHomeVisit = (patient) => {
   return {
     form: 'pregnancy_home_visit',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
     reported_date: now,
     fields: {

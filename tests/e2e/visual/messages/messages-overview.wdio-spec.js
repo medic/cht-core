@@ -5,6 +5,7 @@ const dataFactory = require('@factories/cht/generate');
 const utils = require('@utils');
 const { generateScreenshot, resizeWindowForScreenshots, isMobile } = require('@utils/screenshots');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('Messages Overview', () => {
   const docs = dataFactory.createHierarchy({
@@ -41,7 +42,7 @@ describe('Messages Overview', () => {
     for (const conv of conversations) {
       for (const message of conv.messages) {
         const smsDoc = {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: conv.phone,
           form: undefined,
           errors: [],

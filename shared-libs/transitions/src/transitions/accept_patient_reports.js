@@ -7,6 +7,7 @@ const transitionUtils = require('./utils');
 const date = require('../date');
 const db = require('../db');
 const NAME = 'accept_patient_reports';
+const { DOC_TYPES } = require('@medic/constants');
 
 const _hasConfig = doc => {
   return Boolean(getConfig(doc.form));
@@ -247,7 +248,7 @@ module.exports = {
   filter: function({ doc, info }) {
     return Boolean(
       doc &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       doc.form &&
       doc.reported_date &&
       !transitionUtils.hasRun(info, NAME) &&

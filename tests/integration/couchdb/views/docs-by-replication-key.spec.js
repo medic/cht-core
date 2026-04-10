@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 describe('docs_by_replication_key', () => {
   let docByPlaceIds;
@@ -16,21 +17,21 @@ describe('docs_by_replication_key', () => {
       _id: 'report_about_patient',
       reported_date: 1,
       form: 'V',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'testpatient',
     },
     {
       _id: 'report_about_patient_2',
       reported_date: 1,
       form: 'V',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: { patient_id: 'testpatient' },
     },
     {
       _id: 'report_about_place',
       reported_date: 1,
       form: 'V',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       place_id: 'testplace',
     },
     {
@@ -47,7 +48,7 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'test_kujua_message',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       kujua_message: true,
       tasks: [
         { messages: [ { contact: { _id: 'testuser' } } ] },
@@ -57,14 +58,14 @@ describe('docs_by_replication_key', () => {
       _id: 'report_with_contact',
       reported_date: 1,
       form: 'V',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: { _id: 'testuser' },
     },
     {
       _id: 'report_with_unknown_patient_id',
       reported_date: 1,
       form: 'V',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'unknown_patient',
       contact: { _id: 'testuser' },
       errors: [ { code: 'registration_not_found' } ],
@@ -73,7 +74,7 @@ describe('docs_by_replication_key', () => {
       _id: 'report_with_invalid_patient_id',
       reported_date: 1,
       form: 'V',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'invalid_patient',
       contact: { _id: 'testuser' },
       errors: [ { code: 'invalid_patient_id' } ],
@@ -95,7 +96,7 @@ describe('docs_by_replication_key', () => {
         _id: 'report_about_patient_deleted',
         reported_date: 1,
         form: 'V',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         patient_id: 'testpatient',
         _deleted: true,
       },
@@ -107,7 +108,7 @@ describe('docs_by_replication_key', () => {
         _id: 'report_about_patient_2_deleted',
         reported_date: 1,
         form: 'V',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'testpatient' },
         _deleted: true,
       },
@@ -119,18 +120,18 @@ describe('docs_by_replication_key', () => {
         _id: 'report_with_contact_deleted',
         reported_date: 1,
         form: 'V',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: { _id: 'testuser' },
       },
     }, {
       _id: 'needs_signoff_within_branch',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' } } },
       fields: { patient_id: 'somepatient', needs_signoff: true },
     },
     {
       _id: 'report_with_patient_uuid',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'V',
       contact: { _id: 'someuser' },
       fields: { patient_uuid: 'testpatient' },
@@ -138,14 +139,14 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'task_created_by_user',
       type: 'task',
-      user: 'org.couchdb.user:username',
+      user: PREFIXES.COUCH_USER + 'username',
       requester: 'someuser',
       owner: 'testpatient',
     },
     {
       _id: 'target_created_by_user',
       type: 'target',
-      user: 'org.couchdb.user:username',
+      user: PREFIXES.COUCH_USER + 'username',
       owner: 'testuser',
     },
   ];
@@ -164,7 +165,7 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'test_not_assigned_kujua_message',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       kujua_message: true,
       tasks: [
         { messages: [ { contact: 'not_the_testuser' } ] },
@@ -173,7 +174,7 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'test_data_record_wrong_user',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: 'not_the_testuser',
     },
     {
@@ -202,40 +203,40 @@ describe('docs_by_replication_key', () => {
       tombstone: {
         _id: 'test_data_record_wrong_user_deleted',
         reported_date: 1,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: 'not_the_testuser',
         _deleted: true,
       },
     },
     {
       _id: 'needs_signoff_outside_branch',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: { _id: 'user2', parent: { _id: 'parent2', parent: { _id: 'not_testuserplace', parent: {}}}},
       fields: { patient_id: 'somepatient', needs_signoff: true },
     },
     {
       _id: 'needs_signoff_within_branch_falsy',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: { _id: 'user1', parent: { _id: 'parent1', parent: { _id: 'testuserplace' }}},
       fields: { patient_id: 'somepatient', needs_signoff: false },
     },
     {
       _id: 'report_with_patient_uuid_other_patient',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: { _id: 'someuser' },
       fields: { patient_uuid: 'not_the_testpatient' },
     },
     {
       _id: 'task_created_by_other_user',
       type: 'task',
-      user: 'org.couchdb.user:not_username',
+      user: PREFIXES.COUCH_USER + 'not_username',
       requester: 'someuser',
       owner: 'testpatient',
     },
     {
       _id: 'target_created_by_other_user',
       type: 'target',
-      user: 'org.couchdb.user:not_username',
+      user: PREFIXES.COUCH_USER + 'not_username',
       owner: 'not_someuser',
     },
   ];
@@ -245,27 +246,27 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'test_kujua_message_no_tasks',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       kujua_message: true,
     },
     {
       _id: 'test_kujua_message_empty_tasks',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       kujua_message: true,
       tasks: [],
     },
     {
       _id: 'test_kujua_message_no_contact',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       kujua_message: true,
       tasks: [ { messages: [] } ],
     },
     {
       _id: 'test_kujua_message_incoming_no_contact',
       reported_date: 1,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     },
     {
       _id: 'test_kujua_message_no_tasks_deleted____tombstone',
@@ -273,7 +274,7 @@ describe('docs_by_replication_key', () => {
       tombstone: {
         _id: 'test_kujua_message_no_tasks_deleted',
         reported_date: 1,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         kujua_message: true,
         _deleted: true,
       }
@@ -305,7 +306,8 @@ describe('docs_by_replication_key', () => {
     return await utils
       .saveDocs(alldocs)
       .then(() => {
-        const keys = [ '_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username' ];
+        const keys = [ '_all', 'testuser', 'testplace', 
+          'testpatient', 'testuserplace', PREFIXES.COUCH_USER + 'username' ];
         return getChanges(keys);
       })
       .then((docs) => {

@@ -5,10 +5,11 @@ const serverUtils = require('../server-utils');
 const formsService = require('../services/forms');
 const generateXform = require('../services/generate-xform');
 const logger = require('@medic/logger');
+const { HTTP_HEADERS } = require('@medic/constants');
 
 const XML_RESPONSE_HEADERS = {
   'Content-Type': 'text/xml; charset=utf-8',
-  'X-OpenRosa-Version': '1.0',
+  [HTTP_HEADERS.OPENROSA_VERSION]: '1.0',
 };
 
 const JSON_RESPONSE_HEADERS = {

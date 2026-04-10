@@ -2,6 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('default_responses', () => {
   after(() => utils.revertDb([], true));
@@ -14,7 +15,7 @@ describe('default_responses', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '1234567890',
       errors: [{
         code: 'sys.empty'
@@ -42,7 +43,7 @@ describe('default_responses', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '1234567890',
       errors: [{
         code: 'sys.empty'
@@ -77,7 +78,7 @@ describe('default_responses', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '1234567890',
       errors: [{
         code: 'sys.form_not_found'
@@ -112,7 +113,7 @@ describe('default_responses', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: [{
         code: 'sys.form_not_found'
       }],

@@ -8,6 +8,7 @@ const { roles, users } = require('@medic/user-management')(config, db, dataConte
 const { PermissionError } = require('./errors');
 const contentLengthRegex = /^content-length$/i;
 const contentTypeRegex = /^content-type$/i;
+const { HTTP_HEADERS } = require('@medic/constants');
 
 const get = (path, headers) => {
   const getHeaders = { ...headers };
@@ -71,7 +72,7 @@ module.exports = {
       })
       .then(auth => {
         if (auth?.userCtx?.name) {
-          req.headers['X-Medic-User'] = auth.userCtx.name;
+          req.headers[HTTP_HEADERS.MEDIC_USER] = auth.userCtx.name;
           return auth.userCtx;
         }
         throw { code: 500, message: 'Failed to authenticate' };
