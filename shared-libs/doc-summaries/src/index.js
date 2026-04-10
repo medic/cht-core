@@ -1,4 +1,3 @@
-// NOSONAR_BEGIN - this is an old function preserved as-is, not changing it for sonar
 const contactTypesUtils = require('@medic/contact-types-utils');
 
 const SUBJECT_FIELDS = ['patient_id', 'patient_uuid', 'patient_name', 'place_id'];
@@ -16,10 +15,10 @@ const getLineage = (contact) => {
 
 const isMissingSubjectError = (error) => {
   return error.code === 'sys.missing_fields' &&
-    error.fields &&
-    error.fields.some(field => SUBJECT_FIELDS.includes(field));
+    error.fields?.some(field => SUBJECT_FIELDS.includes(field));
 };
 
+// NOSONAR_BEGIN - preserving these functions as-is, not changing for sonar
 const getSubject = (doc) => {
   const subject = {};
   const reference =
@@ -47,15 +46,17 @@ const getSubject = (doc) => {
 
   return subject;
 };
+// NOSONAR_END
 
 const isContact = (doc) => {
-  const type = doc && doc.type;
+  const type = doc?.type;
   if (!type) {
     return false;
   }
   return type === 'contact' || contactTypesUtils.isHardcodedType(type);
 };
 
+// NOSONAR_BEGIN - preserving this function as-is, not changing for sonar
 const summarise = (doc) => {
   if (!doc) {
     return;
@@ -94,6 +95,7 @@ const summarise = (doc) => {
     };
   }
 };
+// NOSONAR_END
 
 module.exports = {
   summarise,
@@ -101,4 +103,3 @@ module.exports = {
   getLineage,
   getSubject,
 };
-// NOSONAR_END
