@@ -92,9 +92,56 @@ services:
     networks:
       - cht-net
 
+  neo4j:
+    image: neo4j:5-community
+    restart: always
+    hostname: neo4j
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4jpassword}
+      - NEO4J_PLUGINS=[]
+    volumes:
+      - neo4j-data:/data
+    expose:
+      - "7687"
+      - "7474"
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - cht-net
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  neo4j-sync:
+    image: {{{ repo }}}/cht-neo4j-sync:{{ tag }}
+    restart: always
+    depends_on:
+      - haproxy
+      - neo4j
+    environment:
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - NEO4J_URL=bolt://neo4j:7687
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-neo4jpassword}
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - cht-net
+
 networks:
   cht-net:
     name: ${CHT_NETWORK:-cht-net}
 
 volumes:
   cht-ssl:
+  neo4j-data:
