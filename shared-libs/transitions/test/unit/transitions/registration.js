@@ -10,7 +10,7 @@ const validation = require('@medic/validation');
 const { Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const phoneNumberParser = require('@medic/phone-number');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 let schedules;
 let transitionUtils;
@@ -155,7 +155,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: reportId,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -232,7 +232,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: reportId,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -314,7 +314,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: reportId,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -375,7 +375,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: reportId,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -434,7 +434,7 @@ describe('registration', () => {
       const patientId = '05649';
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           patient_id: patientId,
           reported_date: 53,
@@ -463,7 +463,7 @@ describe('registration', () => {
     it('uses a given id if configured to', async () => {
       const patientId = '05648';
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'R',
         reported_date: 53,
         from: '+555123',
@@ -508,7 +508,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'def',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+555123',
@@ -561,7 +561,7 @@ describe('registration', () => {
     it('errors if the configuration does not point to an id', async () => {
       const patientId = '05648';
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'R',
         reported_date: 53,
         from: '+555123',
@@ -611,7 +611,7 @@ describe('registration', () => {
     it('errors if the given id is not unique', async () => {
       const patientId = '05648';
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'R',
         reported_date: 53,
         from: '+555123',
@@ -668,7 +668,7 @@ describe('registration', () => {
       const dob = '2017-03-31T01:15:09.000Z';
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -712,7 +712,7 @@ describe('registration', () => {
       const dob = '2017-03-31T01:15:09.000Z';
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -762,7 +762,7 @@ describe('registration', () => {
       const dob = '2017-03-31T01:15:09.000Z';
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: senderPhoneNumber,
@@ -826,7 +826,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -905,7 +905,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1005,7 +1005,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1088,7 +1088,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1172,7 +1172,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1266,7 +1266,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1362,7 +1362,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1444,7 +1444,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1541,7 +1541,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1639,7 +1639,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1736,7 +1736,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1796,7 +1796,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1851,7 +1851,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1906,7 +1906,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'reportID',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+111222',
@@ -1992,7 +1992,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'def',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'S',
           reported_date: 53,
           from: '+555123',
@@ -2018,7 +2018,7 @@ describe('registration', () => {
       const change = {
         doc: {
           _id: 'def',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'S',
           reported_date: 53,
           from: '+555123',
@@ -2047,7 +2047,7 @@ describe('registration', () => {
     it('event creates the named schedule', () => {
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+555123',
@@ -2097,7 +2097,7 @@ describe('registration', () => {
     it('should create the named schedule for a place', () => {
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+555123',
@@ -2149,7 +2149,7 @@ describe('registration', () => {
     it('should create the named schedule with place and patient registrations', () => {
       const change = {
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'R',
           reported_date: 53,
           from: '+555123',
@@ -2204,7 +2204,7 @@ describe('registration', () => {
 
   describe('filter', () => {
     it('returns false for reports with no registration configured', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       const configGet = config.get.returns([{ form: 'XYZ' }]);
       const actual = transition.filter({ doc });
       configGet.callCount.should.equal(1);
@@ -2213,7 +2213,7 @@ describe('registration', () => {
     });
 
     it('returns false for reports that are not valid submissions', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       sinon.stub(utils, 'isValidSubmission').returns(false);
       config.get.returns([{ form: 'R' }]);
       const actual = transition.filter({ doc, info: {} });
@@ -2225,7 +2225,7 @@ describe('registration', () => {
     });
 
     it('returns true for reports that are valid submissions', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       sinon.stub(utils, 'isValidSubmission').returns(true);
       config.get.returns([{ form: 'R' }]);
       const actual = transition.filter({ doc, info: {} });

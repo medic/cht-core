@@ -16,6 +16,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { WebappEnketoFormContext } from '@mm-services/form.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -1065,7 +1066,7 @@ describe('Enketo service', () => {
         fields: { name: 'Silly' },
         content: '<doc><name>Silly</name></doc>',
         content_type: 'xml',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
       });
 

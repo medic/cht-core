@@ -2,6 +2,7 @@ const chai = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
+const { DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -36,7 +37,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '1234567890',
       form: 'the_form',
     };
@@ -59,7 +60,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 333 444',
       form: 'other_form',
       fields: {},
@@ -83,7 +84,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 333 444',
       form: 'the_form',
       fields: {
@@ -109,7 +110,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: 'unknown',
       form: 'the_form',
       locale: 'test',
@@ -128,7 +129,7 @@ describe('self_report', () => {
         chai.expect(updated).to.have.all.keys('_id', '_rev', 'type', 'from', 'form', 'errors', 'tasks', 'locale');
         chai.expect(updated).to.include({
           _id: doc._id,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: 'unknown',
           form: 'the_form',
         });
@@ -159,7 +160,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: 'unknown',
       form: 'the_form',
     };
@@ -175,7 +176,7 @@ describe('self_report', () => {
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
         chai.expect(updated).to.include({
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: 'unknown',
           form: 'the_form',
         });
@@ -196,7 +197,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 333 444',
       form: 'form3',
       fields: { patient_id: 'already has patient' },
@@ -222,7 +223,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 111 222',
       form: 'the_form',
       fields: {
@@ -244,7 +245,7 @@ describe('self_report', () => {
         delete updated._rev;
         chai.expect(updated).to.deep.equal({
           _id: doc._id,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: '555 111 222',
           form: 'the_form',
           fields: {
@@ -265,7 +266,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 333 444',
       form: 'form3',
       reported_date: new Date().getTime()
@@ -284,7 +285,7 @@ describe('self_report', () => {
         delete updated._rev;
         chai.expect(updated).to.deep.equal({
           _id: doc._id,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: '555 333 444',
           form: 'form3',
           fields: {
@@ -315,7 +316,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 111 222',
       form: 'form',
       fields: {
@@ -337,7 +338,7 @@ describe('self_report', () => {
       .then(updated => {
         chai.expect(updated).to.deep.include({
           _id: doc._id,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: '555 111 222',
           form: 'form',
           fields: {
@@ -381,7 +382,7 @@ describe('self_report', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555 333 444',
       form: 'form3',
       reported_date: new Date().getTime()
@@ -398,7 +399,7 @@ describe('self_report', () => {
       .then(() => utils.getDoc(doc._id))
       .then(updated => {
         chai.expect(updated).to.include({
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: '555 333 444',
           form: 'form3',
         });

@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -72,7 +73,7 @@ export class GetSummariesService {
       return;
     }
 
-    if (doc.type === 'data_record' && doc.form) { // report
+    if (doc.type === DOC_TYPES.DATA_RECORD && doc.form) { // report
       return {
         _id: doc._id,
         _rev: doc._rev,

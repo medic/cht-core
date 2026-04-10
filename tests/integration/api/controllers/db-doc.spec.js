@@ -4,7 +4,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';
 const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges"}';
@@ -152,7 +152,7 @@ const setReportPatient = (report, patientUuid, fields, temporaryPatients) => {
 };
 
 const reportForPatient = (patientUuid, username, fields = [], needs_signoff = false, temporaryPatients = false) => {
-  const report = { _id: uuid(), type: 'data_record', form: 'some-form', content_type: 'xml', fields: {} };
+  const report = { _id: uuid(), type: DOC_TYPES.DATA_RECORD, form: 'some-form', content_type: 'xml', fields: {} };
 
   setReportContact(report, username);
   setReportPatient(report, patientUuid, fields, temporaryPatients);
@@ -523,7 +523,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'report_about_existing_clinic',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: { place_id: 'existing_clinic' },
           contact: { _id: 'nevermind' },
@@ -536,14 +536,14 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'report_about_existing_person1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: { patient_id: 'existing_person_id' },
           contact: { _id: 'nevermind' },
         },
         {
           _id: 'report_about_existing_person2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: { patient_uuid: 'existing_person' },
           contact: { _id: 'nevermind' },
@@ -567,7 +567,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'report_about_existing_person2_1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: { patient_id: 'existing_person_id2' },
           contact: { _id: 'nevermind' },
@@ -1162,7 +1162,7 @@ describe('db-doc handler', () => {
       const allowedTask = {
         _id: 'task1',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
         emission: {},
@@ -1179,7 +1179,7 @@ describe('db-doc handler', () => {
       const allowedTarget = {
         _id: 'target1',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
@@ -1187,7 +1187,7 @@ describe('db-doc handler', () => {
       const deniedTarget = {
         _id: 'target2',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
       };
@@ -1210,7 +1210,7 @@ describe('db-doc handler', () => {
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, supervisorRequestOptions)),
           utils
-            .requestOnTestDb(_.defaults({ path: '/org.couchdb.user:offline' }, supervisorRequestOptions))
+            .requestOnTestDb(_.defaults({ path: `/${PREFIXES.COUCH_USER}offline` }, supervisorRequestOptions))
             .catch(err => err),
           utils
             .requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, supervisorRequestOptions))
@@ -1247,7 +1247,7 @@ describe('db-doc handler', () => {
       };
       const doc = {
         _id: uuid(),
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'FORM',
         fields: {},
         errors: [],
@@ -1278,14 +1278,14 @@ describe('db-doc handler', () => {
       const docs = [
         {
           _id: 'insensitive_report_1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:offline'},
           patient_id: 'fixture:offline'
         },
         {
           _id: 'insensitive_report_2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:offline'},
           patient_id: 'fixture:offline',
@@ -1293,7 +1293,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'insensitive_report_3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           patient_id: 'fixture:offline',
@@ -1301,28 +1301,28 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'insensitive_report_4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           fields: { private: false, place_id: 'shortcode:offline', },
         },
         {
           _id: 'insensitive_report_5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           fields: { private: false, patient_id: 'shortcode:user:offline', },
         },
         {
           _id: 'insensitive_report_6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:offline'},
           fields: { private: true, patient_id: 'shortcode:user:offline', },
         },
         {
           _id: 'sensitive_report_1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           patient_id: 'fixture:user:offline',
@@ -1330,7 +1330,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'sensitive_report_2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           patient_id: 'shortcode:user:offline',
@@ -1338,28 +1338,28 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'sensitive_report_3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           fields: { private: true, place_id: 'shortcode:offline', },
         },
         {
           _id: 'sensitive_report_4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           fields: { private: true, place_id: 'fixture:offline', },
         },
         {
           _id: 'sensitive_report_5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           fields: { private: true, patient_uuid: 'fixture:user:offline', },
         },
         {
           _id: 'sensitive_report_6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'a',
           contact: { _id: 'fixture:online'},
           fields: { private: true, patient_id: 'shortcode:user:offline', },
@@ -1558,7 +1558,7 @@ describe('db-doc handler', () => {
       const allowedTask = {
         _id: 'task1',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
         emission: {},
@@ -1575,14 +1575,14 @@ describe('db-doc handler', () => {
       const allowedTarget = {
         _id: 'target1',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
       const deniedTarget = {
         _id: 'target2',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
       };
@@ -1897,7 +1897,7 @@ describe('db-doc handler', () => {
       const allowedTask = {
         _id: 'task1',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
         emission: {},
@@ -1914,14 +1914,14 @@ describe('db-doc handler', () => {
       const allowedTarget = {
         _id: 'target1',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
       const deniedTarget = {
         _id: 'target2',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
       };
@@ -2400,7 +2400,7 @@ describe('db-doc handler', () => {
     const doc = {
       _id: 'denied_report',
       contact: { _id: 'fixture:online' },
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'a',
     };
 

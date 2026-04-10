@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const NBR_DOCS = 300;
 
@@ -49,7 +49,7 @@ const contacts = [
 ];
 
 const report = {
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: 'phone1',
   fields: {
     patient_id: 'patient'
@@ -116,7 +116,7 @@ describe('Sentinel queue drain', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: 'phone1',
       fields: { patient_id: 'patient' },
       reported_date: new Date().getTime(),

@@ -1,6 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const lineageFactory = require('../src');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('Lineage', function() {
   let lineage;
@@ -133,7 +134,7 @@ describe('Lineage', function() {
       // Given
       const report = {
         _id: 'a',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: {
           _id: 'contact',
           parent: {
@@ -225,7 +226,7 @@ describe('Lineage', function() {
 
     it('handles reports without contact id', function() {
       const docs = [
-        { _id: 'r1', type: 'data_record' },
+        { _id: 'r1', type: DOC_TYPES.DATA_RECORD },
       ];
 
       return lineage.hydrateDocs(docs).then(result => {

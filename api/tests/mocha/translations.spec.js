@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const properties = require('properties');
 const fs = require('fs');
 const rewire = require('rewire');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, PREFIXES } = require('@medic/constants');
 
 const db = require('../../src/db');
 const settings = require('../../src/services/settings');
@@ -86,8 +86,8 @@ describe('translations', () => {
       chai.expect(properties.parse.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.callCount).to.equal(1);
       chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
-        startkey: 'messages-',
-        endkey: 'messages-\ufff0',
+        startkey: PREFIXES.TRANSLATIONS,
+        endkey: PREFIXES.TRANSLATIONS + '\ufff0',
         include_docs: true,
       }]);
     });
@@ -536,7 +536,7 @@ describe('translations', () => {
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
-          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+          { startkey: PREFIXES.TRANSLATIONS, endkey: PREFIXES.TRANSLATIONS + '\ufff0', include_docs: true }
         ]);
       });
     });
@@ -557,7 +557,7 @@ describe('translations', () => {
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
-          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+          { startkey: PREFIXES.TRANSLATIONS, endkey: PREFIXES.TRANSLATIONS + '\ufff0', include_docs: true }
         ]);
       });
     });
@@ -581,7 +581,7 @@ describe('translations', () => {
 
           chai.expect(db.medic.allDocs.callCount).to.equal(1);
           chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
-            { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+            { startkey: PREFIXES.TRANSLATIONS, endkey: PREFIXES.TRANSLATIONS + '\ufff0', include_docs: true }
           ]);
         });
       });

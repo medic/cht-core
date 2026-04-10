@@ -6,6 +6,7 @@ import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { ReadDocsProvider } from '@mm-providers/read-docs.provider';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -109,7 +110,7 @@ export class UnreadRecordsService implements OnDestroy {
         const statusMedicSubscription = this.changesService.subscribe({
           key: 'read-status-medic',
           debounce: 500, // Reacting once all consecutive changes are done (example: after replication of docs)
-          filter: (change) => change.doc && change.doc.type === 'data_record',
+          filter: (change) => change.doc && change.doc.type === DOC_TYPES.DATA_RECORD,
           callback: (change) => this.changeHandler(change, this.callback)
         });
         this.subscriptions.add(statusMedicSubscription);

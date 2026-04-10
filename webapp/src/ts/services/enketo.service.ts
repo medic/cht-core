@@ -15,6 +15,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -527,7 +528,7 @@ export class EnketoService {
   private create(formInternalId, contact) {
     return {
       form: formInternalId,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       content_type: 'xml',
       reported_date: Date.now(),
       contact: this.extractLineageService.extract(contact),
