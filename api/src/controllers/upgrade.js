@@ -33,7 +33,7 @@ const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
  *               type: string
  *               description: >
  *                 The version to upgrade to. Should correspond to a release, pre-release, or branch
- *                 that has been pushed to the builds server.
+ *                 that has been pushed to the builds server (`https://staging.dev.medicmobile.org/builds`).
  */
 
 const upgrade = (req, res, stageOnly) => {
@@ -181,11 +181,16 @@ module.exports = {
    *   post:
    *     summary: Upgrade to a version
    *     operationId: v2UpgradePost
-   *     description: >
+   *     description: |
    *       Performs a complete upgrade to the provided version. This is equivalent to calling
    *       `/api/v2/upgrade/stage` and then `/api/v2/upgrade/complete` once staging has finished.
    *       This is asynchronous. Progress can be followed via [GET /api/v2/upgrade](#/Upgrade/v2UpgradeGet).
+   *
    *       Calling this endpoint will eventually cause api and sentinel to restart.
+   *
+   *       It is expected that the caller ensures forwards or backwards compatibility is maintained between deployed
+   *       versions. This endpoint does not stop you from “upgrading” to an earlier version, or a branch that is
+   *       incompatible with your current state.
    *     tags: [Upgrade]
    *     x-permissions:
    *       hasAll: [can_upgrade]

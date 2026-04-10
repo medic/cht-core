@@ -527,7 +527,7 @@ module.exports = {
    *         name: facility_id
    *         schema:
    *           type: string
-   *         description: UUID of the user's facility. Required for online users.
+   *         description: Identifier of the user's facility. Required for online users.
    *       - in: query
    *         name: role
    *         schema:
@@ -538,7 +538,7 @@ module.exports = {
    *         name: contact_id
    *         schema:
    *           type: string
-   *         description: UUID of the user's associated contact. Optional for online users.
+   *         description: Identifier of the user's associated contact. Optional for online users.
    *     responses:
    *       '200':
    *         description: User replication info
@@ -666,12 +666,12 @@ module.exports = {
      *         name: facility_id
      *         schema:
      *           type: string
-     *         description: Filter by facility UUID. Added in `4.7.0`.
+     *         description: Filter by facility identifier. Added in `4.7.0`.
      *       - in: query
      *         name: contact_id
      *         schema:
      *           type: string
-     *         description: Filter by associated contact UUID. Added in `4.7.0`.
+     *         description: Filter by associated contact identifier. Added in `4.7.0`.
      *     responses:
      *       '200':
      *         description: A list of users
@@ -704,7 +704,8 @@ module.exports = {
      *     operationId: v2UsersPost
      *     description: |
      *       Create new users with a place and a contact. Accepts either a JSON array of user objects or a CSV file
-     *       where each row represents a user. A log entry is created for each bulk import in the `medic-logs` database.
+     *       where each row represents a user. Columns with an `:excluded` suffix will be ignored. A log entry is
+     *       created for each bulk import in the `medic-logs` database.
      *
      *       ### Example
      *
@@ -718,8 +719,8 @@ module.exports = {
      *
      *       A log entry is created with each bulk import that contains the import status for each user and the import
      *       progress status that gets updated throughout the import and finalized upon completion. These entries are
-     *       saved in the `medic-logs` database and you can access them by querying documents with a key that starts
-     *       with `bulk-user-upload-`.
+     *       saved in the [`medic-logs`](/technical-overview/data#medic-logs) database and you can access them by
+     *       querying documents with a key that starts with `bulk-user-upload-`.
      *     tags: [User]
      *     x-since: 3.16.0
      *     x-permissions:
@@ -802,7 +803,20 @@ module.exports = {
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/UserInput'
+     *             allOf:
+     *               - $ref: '#/components/schemas/UserInput'
+     *               - type: object
+     *                 properties:
+     *                   place:
+     *                     description: >
+     *                       Place identifier(s). Required if roles contain an offline role. Can be a single place id
+     *                       or an array of place ids for multi-facility users. Setting multiple places requires the
+     *                       `can_have_multiple_places` permission.
+     *                     oneOf:
+     *                       - type: string
+     *                       - type: array
+     *                         items:
+     *                           type: string
      *     responses:
      *       '200':
      *         description: User creation result

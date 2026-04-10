@@ -139,7 +139,7 @@ module.exports = {
    *     summary: Get monitoring metrics
    *     operationId: v1MonitoringGet
    *     deprecated: true
-   *     description: >
+   *     description: |
    *       Use [GET /api/v2/monitoring](#/Monitoring/v2MonitoringGet) instead.
    *       Returns a range of metrics about the instance for automated monitoring, allowing tracking of trends over
    *       time and alerting about potential issues. No authentication is required.
@@ -225,9 +225,16 @@ module.exports = {
    *   get:
    *     summary: Get monitoring metrics
    *     operationId: v2MonitoringGet
-   *     description: >
+   *     description: |
    *       Returns a range of metrics about the instance for automated monitoring, allowing tracking of trends over
    *       time and alerting about potential issues. No authentication is required.
+   *
+   *       Errors:
+   *
+   *       - A metric of `""` (for string values) or `-1` (for numeric values) indicates an error occurred while
+   *         querying the metric - check the API logs for details.
+   *       - If no response or an error response is received the instance is unreachable. Thus, this API can be used
+   *         as an uptime monitoring endpoint.
    *     tags: [Monitoring]
    *     x-since: 3.12.0
    *     parameters:

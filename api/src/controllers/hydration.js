@@ -89,6 +89,7 @@ module.exports = {
    *               type: array
    *               items:
    *                 type: string
+   *             example: ["id1", "id2", "id3"]
    *     responses:
    *       '200':
    *         description: Hydrated documents

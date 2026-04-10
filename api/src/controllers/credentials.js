@@ -21,11 +21,17 @@ module.exports = {
    *   put:
    *     summary: Set a credential
    *     operationId: v1CredentialsKeyPut
-   *     description: >
-   *       Securely store a credential for authentication with third-party systems such as SMS
-   *       aggregators and HMIS. The credential key is provided as a path parameter and the
-   *       password as plain text in the request body. Only database admins can access this
-   *       endpoint.
+   *     description: |
+   *       Securely store a credential for authentication with third-party systems such as SMS aggregators and HMIS.
+   *       The credential key is provided as a path parameter and the password as plain text in the request body.
+   *       Only database admins can access this endpoint.
+   *
+   *       Example:
+   *       To set a credential with key “mykey” and password “my pass” use the following command:
+   *
+   *       ```shell
+   *       curl -X PUT -H "Content-Type: text/plain" https://<user>:<pass>@<domain>/api/v1/credentials/mykey -d 'my pass'
+   *       ```
    *     tags: [Config]
    *     x-since: 4.0.0
    *     parameters:

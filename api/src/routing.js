@@ -129,6 +129,27 @@ app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, cal
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
+/**
+ * @openapi
+ * /api/v1/express-metrics:
+ *   get:
+ *     summary: Get metrics for Express API endpoints
+ *     operationId: v1ExpressMetricsGet
+ *     description: |
+ *       Used to retrieve a range of metrics for monitoring the API’s performance and internals.
+ *
+ *       The response is formatted for the [Prometheus Data Model](https://prometheus.io/docs/concepts/data_model/).
+ *       The metrics exposed are defined by the [prometheus-api-metrics package](https://www.npmjs.com/package/prometheus-api-metrics)
+ *       and include optional default metrics and garbage collection metrics.
+ *     tags: [Monitoring]
+ *     responses:
+ *       '200':
+ *         description: Prometheus metrics
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ */
 app.use(prometheusMiddleware({
   metricsPath: '/api/v1/express-metrics',
   metricsPrefix: 'cht_api',
