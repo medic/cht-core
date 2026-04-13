@@ -21,10 +21,6 @@ const queryFreetext = async (dataContext, request, type) => {
     return await iterateGenerator(generator);
   } catch (error) {
     logger.error('Error while querying freetext: ', error);
-    // NOTE: added this exception clause to return an empty list
-    // because the previous implementation was doing so
-    // if an exception was raised here then, wherever search lib
-    // is being called the exception needs ot be handled which can be done later on
     return [];
   }
 };
@@ -43,22 +39,31 @@ const getGeneratorByType = (datasource, request, type) => {
   return null;
 };
 
+const getPageByType = async (datasource, request, type, cursor, limit) => {
+  const filter = { freetext: request.params.key };
+  
+  if (type === 'reports') {
+    return datasource.v1.report.getUuidsPageByFreetext(filter, cursor, limit);
+  } 
+  
+  if (type === 'contacts') {
+    return request.params.type
+      ? datasource.v1.contact.getUuidsPageByTypeFreetext(filter, request.params.type, cursor, limit)
+      : datasource.v1.contact.getUuidsPageByFreetext(filter, cursor, limit);
+  }
+
+  return null;
+};
+
 const queryFreetextPaginated = async (dataContext, request, type, options) => {
   try {
     const datasource = chtDatasource.getDatasource(dataContext);
     const limit = options.limit;
-    const cursor = (options.skip !== undefined && options.skip !== null) ? options.skip.toString() : null;
-    let page;
+    const cursor = options.skip != null ? options.skip.toString() : null;
+    
+    const page = await getPageByType(datasource, request, type, cursor, limit);
 
-    if (type === 'reports') {
-      page = await datasource.v1.report.getUuidsPageByFreetext({ freetext: request.params.key }, cursor, limit);
-    } else if (type === 'contacts') {
-      page = request.params.type
-        ? await datasource.v1.contact.getUuidsPageByTypeFreetext({ freetext: request.params.key }, request.params.type, cursor, limit)
-        : await datasource.v1.contact.getUuidsPageByFreetext({ freetext: request.params.key }, cursor, limit);
-    }
-
-    if (!page) {
+    if (!page || !page.data) {
       return [];
     }
 
