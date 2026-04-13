@@ -23,7 +23,7 @@
     "build-ddocs": "mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/ && node scripts/build/cli setDdocsVersion && node scripts/build/cli setBuildInfo && node ./scripts/build/ddoc-compile.js primary && mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/",
     "build-dev": "npm run clean && ./scripts/build/build-prepare.sh && npm run --prefix shared-libs/cht-datasource build && npm run build-webapp-dev && ./scripts/build/copy-static-files.sh",
     "build-dev-watch": "npm run build-dev && (npm run --prefix shared-libs/cht-datasource build-watch & npm run --prefix webapp build-watch & node ./scripts/build/watch.js)",
-    "build-documentation": "./scripts/build/build-documentation.sh",
+    "build-documentation": "node scripts/build/cli npmCiModules && ./scripts/build/build-documentation.sh",
     "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
     "build-cht-form": "./scripts/build/build-prepare.sh && cd webapp && npm run build:cht-form",
     "copy-api-resources": "cp -r api/src/public/* api/build/static/",
