@@ -563,7 +563,7 @@ describe('update_notifications', () => {
         ],
       };
       transition._addErr('foo', config, doc);
-      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].code, 'Failed to complete notification request, event type "foo" misconfigured.');
       assert.equal(
         doc.errors[0].message,
         'Failed to complete notification request, event type "foo" misconfigured.'
@@ -581,7 +581,7 @@ describe('update_notifications', () => {
         ],
       };
       transition._addErr('foo', config, doc);
-      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].code, 'Failed to complete notification request, event type "foo" misconfigured.');
       assert.equal(
         doc.errors[0].message,
         'Failed to complete notification request, event type "foo" misconfigured.'
@@ -599,7 +599,7 @@ describe('update_notifications', () => {
         ],
       };
       transition._addErr('foo', config, doc);
-      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].code, 'Failed to complete notification request, event type "foo" misconfigured.');
       assert.equal(
         doc.errors[0].message,
         'Failed to complete notification request, event type "foo" misconfigured.'
@@ -624,7 +624,7 @@ describe('update_notifications', () => {
         ],
       };
       transition._addMsg('foo', config, doc);
-      assert.equal(doc.errors[0].code, 'invalid_report');
+      assert.equal(doc.errors[0].code, 'Failed to complete notification request, event type "foo" misconfigured.');
       assert.equal(
         doc.errors[0].message,
         'Failed to complete notification request, event type "foo" misconfigured.'
