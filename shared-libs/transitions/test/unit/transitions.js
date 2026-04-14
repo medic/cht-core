@@ -345,7 +345,11 @@ describe('transitions', () => {
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
 
-    const expectedError = ['Failed loading transition "default_responses"', 'err'];
+    const expectedError = [
+   'Failed loading transition "default_responses": check your configuration is valid. ' +
+   'See https://docs.communityhealthtoolkit.org/apps/reference/app-settings/transitions/',
+   'err'
+   ];
     assert.deepEqual(transitions.getLoadingErrors(), expectedError);
   });
 
