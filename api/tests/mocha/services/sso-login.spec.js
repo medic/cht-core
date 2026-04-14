@@ -131,7 +131,8 @@ describe('SSO login', () => {
         idServerConfig,
         {
           redirect_uri: REDIRECT_URL,
-          scope: 'openid email'
+          scope: 'openid email',
+          max_age: undefined
         }
       )).to.be.true;
     });
@@ -164,7 +165,8 @@ describe('SSO login', () => {
         idServerConfig,
         {
           redirect_uri: REDIRECT_URL,
-          scope: 'openid email'
+          scope: 'openid email',
+          max_age: undefined
         }
       )).to.be.true;
     });
@@ -238,7 +240,8 @@ describe('SSO login', () => {
         idServerConfig,
         {
           redirect_uri: REDIRECT_URL,
-          scope: 'openid email'
+          scope: 'openid email',
+          max_age: undefined
         }
       )).to.be.true;
     });
@@ -297,7 +300,7 @@ describe('SSO login', () => {
       expectedAuthCodeGrantParams = [
         idServerConfig,
         REDIRECT_URL,
-        { idTokenExpected: true }
+        { idTokenExpected: true, maxAge: undefined }
       ];
     });
 

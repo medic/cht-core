@@ -88,15 +88,12 @@ const oidcServerSConfig = async () => {
  * @returns {string} OIDC authorization url.
  */
 const getAuthorizationUrl = async (redirectUrl) => {
+  const { idServerConfig, oidcProvider } = await oidcServerSConfig();
   const params = {
     redirect_uri: redirectUrl,
-    scope: 'openid email'
+    scope: 'openid email',
+    max_age: oidcProvider.max_age
   };
-
-  const { idServerConfig, oidcProvider } = await oidcServerSConfig();
-  if (oidcProvider.max_age !== undefined && oidcProvider.max_age !== null) {
-    params.max_age = oidcProvider.max_age;
-  }
 
   return client.buildAuthorizationUrl(idServerConfig, params);
 };
@@ -120,10 +117,10 @@ const getLocale = async (localeClaim) => {
  */
 const getIdToken = async (currentUrl) => {
   const { idServerConfig, oidcProvider } = await oidcServerSConfig();
-  const checks = { idTokenExpected: true };
-  if (oidcProvider.max_age !== undefined && oidcProvider.max_age !== null) {
-    checks.maxAge = oidcProvider.max_age;
-  }
+  const checks = {
+    idTokenExpected: true,
+    maxAge: oidcProvider.max_age
+  };
   const authorizationCodeGrant = () => client.authorizationCodeGrant(
     idServerConfig,
     currentUrl,
