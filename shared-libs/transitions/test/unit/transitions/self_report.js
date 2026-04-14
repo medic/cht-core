@@ -5,6 +5,7 @@ const config = require('../../../src/config');
 const db = require('../../../src/db');
 const dataContext = require('../../../src/data-context');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
+const { DOC_TYPES } = require('@medic/constants');
 
 let transition;
 
@@ -39,17 +40,17 @@ describe('self_report transition', () => {
         { form: 'configured_form2' },
       ]);
 
-      const noFrom = { type: 'data_record', form: 'configured_form' };
+      const noFrom = { type: DOC_TYPES.DATA_RECORD, form: 'configured_form' };
       chai.expect(transition.filter({ doc: noFrom })).to.equal(false);
 
       const notDataRecord = { type: 'contact', from: 'someone', form: 'configured_form' };
       chai.expect(transition.filter({ doc: notDataRecord })).to.equal(false);
 
-      const notConfiguredForm = { type: 'data_record', from: 'someone', form: 'other_form' };
+      const notConfiguredForm = { type: DOC_TYPES.DATA_RECORD, from: 'someone', form: 'other_form' };
       chai.expect(transition.filter({ doc: notConfiguredForm })).to.equal(false);
 
       const alreadyHasPatientId = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         from: 'a',
         form: 'configured_form',
         fields: { patient_id: '12345'},
@@ -57,14 +58,14 @@ describe('self_report transition', () => {
       chai.expect(transition.filter({ doc: alreadyHasPatientId })).to.equal(false);
 
       const alreadyHasPatientUuid = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         from: 'a',
         form: 'configured_form',
         fields: { patient_uuid: '12345' },
       };
       chai.expect(transition.filter({ doc: alreadyHasPatientUuid })).to.equal(false);
 
-      const transitionAlreadyRan = { type: 'data_record', from: 'a', form: 'configured_form2' };
+      const transitionAlreadyRan = { type: DOC_TYPES.DATA_RECORD, from: 'a', form: 'configured_form2' };
       const info = { transitions: { self_report: { success: true } } };
       chai.expect(transition.filter({ doc: transitionAlreadyRan, info })).to.equal(false);
     });
@@ -75,11 +76,11 @@ describe('self_report transition', () => {
         { form: 'form2' },
       ]);
 
-      const form1 = { type: 'data_record', from: 'alpha', form: 'form1' };
+      const form1 = { type: DOC_TYPES.DATA_RECORD, from: 'alpha', form: 'form1' };
       const info = { transitions: {}};
       chai.expect(transition.filter({ doc: form1, info })).to.equal(true);
 
-      const form2 = { type: 'data_record', from: 'alpha', form: 'form2' };
+      const form2 = { type: DOC_TYPES.DATA_RECORD, from: 'alpha', form: 'form2' };
       info.transitions.some_transition = {};
       chai.expect(transition.filter({ doc: form2, info })).to.equal(true);
 
@@ -279,7 +280,7 @@ describe('self_report transition', () => {
     it('should preserve other fields', () => {
       config.get.returns([ { form: 'my_form' } ]);
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         from: '111222333',
         form: 'my_form',
         fields: {
@@ -308,7 +309,7 @@ describe('self_report transition', () => {
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact_uuid')]);
         chai.expect(doc).to.deep.equal({
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: '111222333',
           form: 'my_form',
           fields: {
@@ -323,7 +324,7 @@ describe('self_report transition', () => {
 
     it('should pick the first result when multiple found', () => {
       config.get.returns([ { form: 'a_form' } ]);
-      const doc = { type: 'data_record', from: '98765', form: 'a_form' };
+      const doc = { type: DOC_TYPES.DATA_RECORD, from: '98765', form: 'a_form' };
       const patient = {
         _id: 'contact_uuid',
         name: 'Stanford',
@@ -343,7 +344,7 @@ describe('self_report transition', () => {
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact1')]);
         chai.expect(doc).to.deep.equal({
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           from: '98765',
           form: 'a_form',
           fields: {

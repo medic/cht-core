@@ -3,7 +3,7 @@ const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
 const chaiExclude = require('chai-exclude');
-const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
@@ -469,7 +469,7 @@ describe('bulk-get handler', () => {
   });
 
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
-    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' };
     offlineRequestOptions.body = { docs: [{ _id: 'denied_report' }] };
 
     return utils
@@ -520,7 +520,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -532,14 +532,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person', needs_signoff: true },
         contact: {
@@ -605,7 +605,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -617,14 +617,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person', needs_signoff: true },
         contact: {
@@ -690,7 +690,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -702,14 +702,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'existing_person' },
         form: 'form',
         contact: {
@@ -719,7 +719,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'allowed_report_about_existing_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'existing_person', needs_signoff: true },
         form: 'form',
         contact: {
@@ -778,7 +778,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -791,14 +791,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person_id' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'report_about_existing_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_uuid: 'existing_person' },
         contact: { _id: 'nevermind' },
@@ -822,7 +822,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_person2_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person_id2' },
         contact: { _id: 'nevermind' },
@@ -914,14 +914,14 @@ describe('bulk-get handler', () => {
     const docs = [
       {
         _id: 'insensitive_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:offline'},
         patient_id: 'fixture:offline'
       },
       {
         _id: 'insensitive_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:offline'},
         patient_id: 'fixture:offline',
@@ -929,7 +929,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'insensitive_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         patient_id: 'fixture:offline',
@@ -937,14 +937,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'insensitive_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: false, patient_id: 'shortcode:user:offline', },
       },
       {
         _id: 'sensitive_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         patient_id: 'fixture:user:offline',
@@ -952,7 +952,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'sensitive_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         patient_id: 'shortcode:user:offline',
@@ -960,21 +960,21 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'sensitive_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: true, place_id: 'shortcode:offline', },
       },
       {
         _id: 'sensitive_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: true, patient_id: 'shortcode:user:offline', },
       },
       {
         _id: 'sensitive_report_5',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: true, patient_uuid: 'fixture:user:offline', },

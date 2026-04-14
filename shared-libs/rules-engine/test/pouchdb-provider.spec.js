@@ -3,7 +3,7 @@ const chaiExclude = require('chai-exclude');
 const moment = require('moment');
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const { chtDocs } = require('./mocks');
 const pouchdbProvider = require('../src/pouchdb-provider');
@@ -13,21 +13,21 @@ chai.use(chaiExclude);
 const mockUserSettingsDoc = { _id: PREFIXES.COUCH_USER + 'username' };
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   place_id: 'patient',
   reported_date: 2000,
 };
 const headlessReport = {
   _id: 'headlessReport',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   patient_id: 'headless',
   reported_date: 1000,
 };
 const reportConnectedByPatientAndPlaceUuid = {
   _id: 'reportByPatientAndPlaceUuid',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   fields: {
     place_uuid: 'place',
@@ -36,7 +36,7 @@ const reportConnectedByPatientAndPlaceUuid = {
 };
 const reportConnectedByPlaceUuid = {
   _id: 'reportByPlaceUuid',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   fields: {
     place_uuid: 'place',

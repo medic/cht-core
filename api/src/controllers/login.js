@@ -157,10 +157,7 @@ const getRedirectUrl = (userCtx, requested) => {
 const getEnabledLocales = () => {
   return translations
     .getEnabledLocales()
-    .then(docs => {
-      const enabledLocales = docs.map(doc => ({ key: doc.code, label: doc.name }));
-      return enabledLocales.length < 2 ? [] : enabledLocales; // hide selector if only one option
-    })
+    .then(docs => docs.map(doc => ({ key: doc.code, label: doc.name, rtl: doc.rtl || false })))
     .catch(err => {
       logger.error('Error loading translations: %o', err);
       return [];
@@ -192,12 +189,16 @@ const render = (page, req, extras = {}) => {
       privacyPolicy.exists(),
     ])
     .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
+      const selectorLocales = locales.length < 2 ? [] : locales;
+      const defaultLocale = getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale'));
+      const defaultDir = locales.find(l => l.key === defaultLocale)?.rtl ? 'rtl' : 'ltr';
       const options = Object.assign(
         {
           branding,
-          locales,
+          locales: selectorLocales,
           hasPrivacyPolicy,
-          defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
+          defaultLocale,
+          defaultDir,
           translations: getTranslationsString(page)
         },
         extras

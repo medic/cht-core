@@ -2,6 +2,7 @@ const chai = require('chai');
 const moment = require('moment');
 const chaiExclude = require('chai-exclude');
 const { MS_IN_DAY, engineSettings, defaultConfigSettingsDoc } = require('./mocks');
+const { DOC_TYPES } = require('@medic/constants');
 
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
@@ -36,7 +37,7 @@ const patientContact = {
 
 const pregnancyFollowupReport = {
   _id: 'report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'pregnancy',
   fields: {
     t_pregnancy_follow_up_date: new Date(TEST_START).toISOString(),
@@ -47,7 +48,7 @@ const pregnancyFollowupReport = {
 
 const pregnancyRegistrationReport = {
   _id: 'pregReg',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'pregnancy',
   fields: {
     lmp_date_8601: TEST_START,
@@ -58,7 +59,7 @@ const pregnancyRegistrationReport = {
 
 const reportByPatientIdOnly = {
   _id: 'report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'pregnancy',
   fields: {
     t_pregnancy_follow_up_date: new Date(TEST_START).toISOString(),
@@ -307,7 +308,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
       await db.put({
         _id: 'reminder',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'pregnancy_facility_visit_reminder',
         fields: [],
         patient_id: 'patient',
@@ -523,8 +524,8 @@ describe(`Rules Engine Integration Tests`, () => {
     });
 
     it('headless scenario (tasks tab)', async () => {
-      const headlessReport = { _id: 'report', type: 'data_record', form: 'form', patient_id: 'headless' };
-      const headlessReport2 = { _id: 'report2', type: 'data_record', form: 'form', patient_id: 'headless2' };
+      const headlessReport = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'form', patient_id: 'headless' };
+      const headlessReport2 = { _id: 'report2', type: DOC_TYPES.DATA_RECORD, form: 'form', patient_id: 'headless2' };
       const taskOwnedByHeadless = {
         _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: {
           _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(),

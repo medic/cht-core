@@ -7,7 +7,7 @@ const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
-const { DOC_IDS, PREFIXES } = require('@medic/constants');
+const { DOC_IDS, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -592,7 +592,7 @@ const isAllowedDepth = (authorizationContext, docByReplicationKey) => {
     return true;
   }
 
-  if (docByReplicationKey.type !== 'data_record') {
+  if (docByReplicationKey.type !== DOC_TYPES.DATA_RECORD) {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
   }

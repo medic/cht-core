@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -89,7 +89,7 @@ describe('update_scheduled_reports', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month: 2 },
       contact: {
@@ -116,7 +116,7 @@ describe('update_scheduled_reports', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018 },
       contact: {
@@ -128,7 +128,7 @@ describe('update_scheduled_reports', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month_num: 2 },
       contact: {
@@ -156,7 +156,7 @@ describe('update_scheduled_reports', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month: 2},
       contact: {
@@ -168,7 +168,7 @@ describe('update_scheduled_reports', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month_num: 3 },
       contact: {
@@ -180,7 +180,7 @@ describe('update_scheduled_reports', () => {
 
     const doc3 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, week: 22 },
       contact: {
@@ -192,7 +192,7 @@ describe('update_scheduled_reports', () => {
 
     const doc4 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, week_number: 43 },
       contact: {
@@ -222,7 +222,7 @@ describe('update_scheduled_reports', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month: 2 },
       contact: {
@@ -234,7 +234,7 @@ describe('update_scheduled_reports', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month: 2 },
       contact: {
@@ -246,7 +246,7 @@ describe('update_scheduled_reports', () => {
 
     const doc3 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month: 2 },
       contact: {
@@ -258,7 +258,7 @@ describe('update_scheduled_reports', () => {
 
     const doc4 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, week_number: 43 },
       contact: {
@@ -270,7 +270,7 @@ describe('update_scheduled_reports', () => {
 
     const doc5 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'form',
       fields: { year: 2018, month: 2 },
       contact: {

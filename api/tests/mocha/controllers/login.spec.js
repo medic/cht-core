@@ -301,6 +301,40 @@ describe('login controller', () => {
         chai.expect(ssoLogin.isSsoLoginEnabled.calledOnceWithExactly()).to.be.true;
       });
     });
+
+    it('sets defaultDir to rtl when the default locale is RTL', () => {
+      req.locale = 'ar';
+      sinon.stub(translations, 'getEnabledLocales').resolves([
+        { code: 'en', name: 'English', rtl: false },
+        { code: 'ar', name: 'عربي', rtl: true },
+      ]);
+      sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
+      const send = sinon.stub(res, 'send');
+      sinon.stub(res, 'setHeader');
+      sinon.stub(fs.promises, 'readFile').resolves('{{ defaultDir }}');
+      sinon.stub(config, 'getTranslations').returns({});
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('rtl');
+      });
+    });
+
+    it('sets defaultDir to ltr when the default locale is not RTL', () => {
+      req.locale = 'en';
+      sinon.stub(translations, 'getEnabledLocales').resolves([
+        { code: 'en', name: 'English', rtl: false },
+        { code: 'fr', name: 'French', rtl: false },
+      ]);
+      sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
+      const send = sinon.stub(res, 'send');
+      sinon.stub(res, 'setHeader');
+      sinon.stub(fs.promises, 'readFile').resolves('{{ defaultDir }}');
+      sinon.stub(config, 'getTranslations').returns({});
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('ltr');
+      });
+    });
   });
 
   describe('passwordReset', () => {

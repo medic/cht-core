@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const DEFAULT_EXPECTED = [
   DOC_IDS.SERVICE_WORKER_META,
@@ -297,14 +297,14 @@ describe('replication', () => {
       it('should be supplied if user has this perm and district_admins_access_unallocated_messages is enabled',
         async () => {
           await utils.updateSettings({ district_admins_access_unallocated_messages: true }, { ignoreReload: true });
-          await utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' });
+          await utils.saveDoc({ _id: 'unallocated_report', type: DOC_TYPES.DATA_RECORD });
           const response = await requestDocs('bob');
           assertDocIds(response, ...bobsIds, 'unallocated_report');
         });
 
       it('should not be supplied if user has perm but district_admins_access_unallocated_messages is disabled',
         async () => {
-          await utils.saveDoc({ _id: 'unallocated_report', type: 'data_record' });
+          await utils.saveDoc({ _id: 'unallocated_report', type: DOC_TYPES.DATA_RECORD });
           const response = await requestDocs('bob');
           assertDocIds(response, ...bobsIds);
         });
@@ -392,7 +392,7 @@ describe('replication', () => {
             fields: {
               place_id: 'fixture:chw-bossville',
             },
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
           },
           {
             // depth = 2, submitted by the user himself
@@ -402,7 +402,7 @@ describe('replication', () => {
             fields: {
               patient_id: 'chwville_patient',
             },
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
           },
           {
             // depth = 1, submitted by someone they can't see
@@ -412,7 +412,7 @@ describe('replication', () => {
             fields: {
               place_id: 'fixture:chwville',
             },
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
           },
           {
             // depth = 2, submitted by someone they can see
@@ -422,7 +422,7 @@ describe('replication', () => {
             fields: {
               patient_id: 'fixture:user:chw',
             },
-            type: 'data_record'
+            type: DOC_TYPES.DATA_RECORD
           },
         ];
 
@@ -471,7 +471,7 @@ describe('replication', () => {
             fields: {
               place_id: 'fixture:steveville',
             },
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
           },
           {
             // depth = 2, submitted by the user himself
@@ -481,7 +481,7 @@ describe('replication', () => {
             fields: {
               patient_id: 'steveville_patient',
             },
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
           },
           {
             // depth = 1, submitted by someone they can't see
@@ -491,7 +491,7 @@ describe('replication', () => {
             fields: {
               place_id: 'steveville_clinic',
             },
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
           },
           {
             // depth = 2, submitted by someone they can see
@@ -501,7 +501,7 @@ describe('replication', () => {
             fields: {
               patient_id: 'steveville_patient',
             },
-            type: 'data_record'
+            type: DOC_TYPES.DATA_RECORD
           },
         ];
 
@@ -539,7 +539,7 @@ describe('replication', () => {
           {
             // depth = 0, submitted by someone they can see (not sensitive)
             _id: 'valid_report_1',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'form',
             contact: { _id: 'some_contact' },
             fields: { place_id: 'fixture:chwville' }
@@ -559,7 +559,7 @@ describe('replication', () => {
           {
             // depth = 1, submitted by the user themselves
             _id: 'valid_report_2',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'form',
             contact: { _id: 'fixture:user:chw' },
             fields: { patient_id: 'some_contact' }
@@ -567,7 +567,7 @@ describe('replication', () => {
           {
             // depth = 1, submitted by someone the user can see
             _id: 'invalid_report_1',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'form',
             contact: { _id: 'some_contact' },
             fields: { patient_id: 'some_contact' }
@@ -624,7 +624,7 @@ describe('replication', () => {
         },
         {
           _id: 'depth_person1_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'dp1' },
           form: 'f',
@@ -637,7 +637,7 @@ describe('replication', () => {
         },
         {
           _id: 'depth_person2_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'dp2' },
           form: 'f',
@@ -650,7 +650,7 @@ describe('replication', () => {
         },
         {
           _id: 'out_of_hierarchy_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'dp_out' },
           form: 'f',
@@ -783,7 +783,7 @@ describe('replication', () => {
       it('should do nothing when not truthy or not present', async () => {
         const clinicReport = {
           _id: 'clinic_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'clinic_patient' },
           form: 'f',
@@ -796,7 +796,7 @@ describe('replication', () => {
         };
         const clinicReport2 = {
           _id: 'clinic_report_2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'clinic_patient', needs_signoff: false },
           form: 'f',
@@ -809,7 +809,7 @@ describe('replication', () => {
         };
         const healthCenterReport = {
           _id: 'health_center_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'health_center_patient', needs_signoff: '' },
           form: 'f',
@@ -820,7 +820,7 @@ describe('replication', () => {
         };
         const bobReport = {
           _id: 'bob_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'fixture:user:bob', needs_signoff: null },
           form: 'f',
@@ -842,7 +842,7 @@ describe('replication', () => {
       it('should replicate to all ancestors when present and truthy', async () => {
         const clinicReport = {
           _id: 'clinic_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'clinic_patient', needs_signoff: true },
           form: 'f',
@@ -855,7 +855,7 @@ describe('replication', () => {
         };
         const clinicReport2 = {
           _id: 'clinic_report_2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
@@ -868,7 +868,7 @@ describe('replication', () => {
         };
         const healthCenterReport = {
           _id: 'health_center_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'health_center_patient', needs_signoff: true },
           form: 'f',
@@ -879,7 +879,7 @@ describe('replication', () => {
         };
         const bobReport = {
           _id: 'bob_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'fixture:user:bob', needs_signoff: 'true' },
           form: 'f',
@@ -918,7 +918,7 @@ describe('replication', () => {
       it('should work with report replication depth', async () => {
         const clinicReport = {
           _id: 'clinic_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'clinic_patient', needs_signoff: true },
           form: 'f',
@@ -931,7 +931,7 @@ describe('replication', () => {
         };
         const clinicReport2 = {
           _id: 'clinic_report_2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'clinic_patient', needs_signoff: 'true' },
           form: 'f',
@@ -944,7 +944,7 @@ describe('replication', () => {
         };
         const healthCenterReport = {
           _id: 'health_center_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'health_center_patient', needs_signoff: true },
           form: 'f',
@@ -955,7 +955,7 @@ describe('replication', () => {
         };
         const bobReport = {
           _id: 'bob_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 1,
           fields: { patient_id: 'fixture:user:bob', needs_signoff: true },
           form: 'f',
@@ -997,7 +997,7 @@ describe('replication', () => {
         {
           // report about home place submitted by logged in user
           _id: 'chw-report-1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:chwville',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
@@ -1005,7 +1005,7 @@ describe('replication', () => {
         {
           // private report about place submitted by logged in user
           _id: 'chw-report-2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:chwville',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
@@ -1014,7 +1014,7 @@ describe('replication', () => {
         {
           // private report about place submitted by logged in user
           _id: 'chw-report-3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
           fields: { private: true, place_id: 'shortcode:chwville', },
@@ -1022,7 +1022,7 @@ describe('replication', () => {
         {
           // private report about self submitted by logged in user
           _id: 'chw-report-4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           patient_id: 'shortcode:user:chw',
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
@@ -1031,7 +1031,7 @@ describe('replication', () => {
         {
           // private report about self submitted by logged in user
           _id: 'chw-report-5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'fixture:user:chw' },
           form: 'form',
           fields: { private: true, patient_id: 'shortcode:user:chw', },
@@ -1039,7 +1039,7 @@ describe('replication', () => {
         {
           // report about place submitted by someone else
           _id: 'chw-report-6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:chwville',
           contact: { _id: 'someone_else' },
           form: 'form',
@@ -1047,7 +1047,7 @@ describe('replication', () => {
         {
           // report about place submitted by someone else
           _id: 'chw-report-7',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           fields: { place_id: 'shortcode:chwville' },
           form: 'form',
@@ -1055,7 +1055,7 @@ describe('replication', () => {
         {
           // private report about place submitted by someone else
           _id: 'chw-report-8',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:chwville',
           contact: { _id: 'someone_else' },
           form: 'form',
@@ -1064,7 +1064,7 @@ describe('replication', () => {
         {
           // private report about place submitted by someone else
           _id: 'chw-report-9',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           form: 'form',
           fields: { private: true, place_id: 'shortcode:chwville', },
@@ -1072,7 +1072,7 @@ describe('replication', () => {
         {
           // private report about self submitted by someone else
           _id: 'chw-report-10',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           form: 'form',
           fields: { private: true, patient_id: 'shortcode:user:chw', },
@@ -1080,7 +1080,7 @@ describe('replication', () => {
         {
           // private report about self submitted by someone else
           _id: 'chw-report-11',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           form: 'form',
           fields: { private: true, patient_uuid: 'fixture:user:chw', },
@@ -1106,7 +1106,7 @@ describe('replication', () => {
         {
           // report about home place submitted by logged in user
           _id: 'clare-report-1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:steveville',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
@@ -1114,7 +1114,7 @@ describe('replication', () => {
         {
           // private report about place submitted by logged in user
           _id: 'clare-report-2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:clareville',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
@@ -1123,7 +1123,7 @@ describe('replication', () => {
         {
           // private report about place submitted by logged in user
           _id: 'clare-report-3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
           fields: { private: true, place_id: 'shortcode:clareville', },
@@ -1131,7 +1131,7 @@ describe('replication', () => {
         {
           // private report about self submitted by logged in user
           _id: 'clare-report-4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           patient_id: 'shortcode:clare',
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
@@ -1140,7 +1140,7 @@ describe('replication', () => {
         {
           // private report about self submitted by logged in user
           _id: 'clare-report-5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'fixture:user:clare' },
           form: 'form',
           fields: { private: true, patient_id: 'shortcode:clare', },
@@ -1148,7 +1148,7 @@ describe('replication', () => {
         {
           // report about place submitted by someone else
           _id: 'clare-report-6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:steveville',
           contact: { _id: 'someone_else' },
           form: 'form',
@@ -1156,7 +1156,7 @@ describe('replication', () => {
         {
           // report about place submitted by someone else
           _id: 'clare-report-7',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           fields: { place_id: 'shortcode:clareville' },
           form: 'form',
@@ -1164,7 +1164,7 @@ describe('replication', () => {
         {
           // private report about place submitted by someone else
           _id: 'clare-report-8',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           place_id: 'fixture:steveville',
           contact: { _id: 'someone_else' },
           form: 'form',
@@ -1173,7 +1173,7 @@ describe('replication', () => {
         {
           // private report about place submitted by someone else
           _id: 'clare-report-9',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           form: 'form',
           fields: { private: true, place_id: 'shortcode:clareville', },
@@ -1181,7 +1181,7 @@ describe('replication', () => {
         {
           // private report about self submitted by someone else
           _id: 'clare-report-10',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           form: 'form',
           fields: { private: true, patient_id: 'shortcode:user:clare', },
@@ -1189,7 +1189,7 @@ describe('replication', () => {
         {
           // private report about self submitted by someone else
           _id: 'clare-report-11',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'someone_else' },
           form: 'form',
           fields: { private: true, patient_uuid: 'fixture:user:clare', },
@@ -1235,21 +1235,21 @@ describe('replication', () => {
     const reports = [
       {
         _id: 'not_purged_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         fields: { },
       },
       {
         _id: 'not_purged_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         fields: { },
       },
       {
         _id: 'purged_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         to_be_purged: true,
@@ -1257,7 +1257,7 @@ describe('replication', () => {
       },
       {
         _id: 'purged_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: { _id: 'fixture:user:bob' },
         form: 'form',
         to_be_purged: true,
