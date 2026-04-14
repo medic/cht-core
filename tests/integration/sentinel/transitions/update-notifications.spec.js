@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -57,7 +57,7 @@ describe('update_notifications', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       fields: {
         patient_uuid: 'person'
@@ -88,7 +88,7 @@ describe('update_notifications', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'not_off',
       fields: {
         patient_uuid: 'person'
@@ -139,7 +139,7 @@ describe('update_notifications', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       from: '12345',
       fields: {
@@ -151,7 +151,7 @@ describe('update_notifications', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       from: '12345',
       fields: {
@@ -223,7 +223,7 @@ describe('update_notifications', () => {
 
     const mute1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       fields: {
         patient_id: 'person'
@@ -234,7 +234,7 @@ describe('update_notifications', () => {
 
     const mute2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       fields: {
         patient_id: 'person'
@@ -245,7 +245,7 @@ describe('update_notifications', () => {
 
     const unmute1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'on',
       fields: {
         patient_id: 'person'
@@ -256,7 +256,7 @@ describe('update_notifications', () => {
 
     const unmute2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'on',
       fields: {
         patient_id: 'person'

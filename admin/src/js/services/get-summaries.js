@@ -1,3 +1,6 @@
+const constants = require('@medic/constants');
+const DOC_TYPES = constants.DOC_TYPES;
+
 angular.module('inboxServices').factory('GetSummaries',
   function(
     $q,
@@ -66,7 +69,7 @@ angular.module('inboxServices').factory('GetSummaries',
         return;
       }
 
-      if (doc.type === 'data_record' && doc.form) { // report
+      if (doc.type === DOC_TYPES.DATA_RECORD && doc.form) { // report
         return {
           _id: doc._id,
           _rev: doc._rev,

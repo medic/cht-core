@@ -1,6 +1,7 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
 const person = require('../contacts/person');
+const { DOC_TYPES } = require('@medic/constants');
 
 const message = () => {
   return new Factory()
@@ -83,7 +84,7 @@ const sms_message = {
 const pregnancy = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
-    .attr('type', 'data_record')
+    .attr('type', DOC_TYPES.DATA_RECORD)
     .attr('from', '+64275555556')
     .attr('form', 'P')
     .attr('tasks', [smsTask().build()])

@@ -9,6 +9,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Muting Transition', () => {
   let transition:MutingTransition;
@@ -133,10 +134,10 @@ describe('Muting Transition', () => {
       transition.init(settings);
     });
     it('should return false when there are no relevant docs', () => {
-      const editMutingReport = [ { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' }, ];
+      const editMutingReport = [ { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' }, ];
       expect(transition.filter(editMutingReport)).to.equal(false);
 
-      const editUnmuteReport = [ { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'unmute' }, ];
+      const editUnmuteReport = [ { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'unmute' }, ];
       expect(transition.filter(editUnmuteReport)).to.equal(false);
 
       const editContacts = [
@@ -147,10 +148,10 @@ describe('Muting Transition', () => {
       expect(transition.filter(editContacts)).to.equal(false);
 
       const docs = [
-        { _id: 'report1', type: 'data_record' },
-        { _id: 'report2', type: 'data_record', form: 'something' },
+        { _id: 'report1', type: DOC_TYPES.DATA_RECORD },
+        { _id: 'report2', type: DOC_TYPES.DATA_RECORD, form: 'something' },
         { _id: 'contact3', _rev: 'value', type: 'clinic' },
-        { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' },
+        { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' },
       ];
 
       expect(transition.filter(docs)).to.equal(false);
@@ -159,16 +160,16 @@ describe('Muting Transition', () => {
     it('should return true when one report is relevant', () => {
       const docs = [
         { _id: 'existent_contact', _rev: 'aaa', type: 'person' },
-        { _id: 'new_report', type: 'data_record', form: 'mute' }, // new mute report
-        { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' },
+        { _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'mute' }, // new mute report
+        { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' },
       ];
       expect(transition.filter(docs)).to.equal(true);
     });
 
     it('should return true when one contact is relevant', () => {
       const docs = [
-        { _id: 'new_report', type: 'data_record', form: 'someform' },
-        { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' },
+        { _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'someform' },
+        { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' },
         { _id: 'new_contact', type: 'person' },
       ];
       expect(transition.filter(docs)).to.equal(true);
@@ -176,8 +177,8 @@ describe('Muting Transition', () => {
 
     it('should return true when multiple contacts are relevant', () => {
       const docs = [
-        { _id: 'new_report', type: 'data_record', form: 'someform' },
-        { _id: 'existent_report', _rev: '1', type: 'data_record', form: 'mute' },
+        { _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'someform' },
+        { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' },
         { _id: 'new_contact', type: 'person' },
         { _id: 'new_contact', type: 'clinic' },
       ];
@@ -186,10 +187,10 @@ describe('Muting Transition', () => {
   });
 
   it('run should do nothing when not inited', async () => {
-    const docs = [{ _id: 'new_report', type: 'data_record', form: 'unmute' }];
+    const docs = [{ _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'unmute' }];
 
     const updatedDocs = await transition.run(docs);
-    expect(updatedDocs).to.deep.equal([{ _id: 'new_report', type: 'data_record', form: 'unmute' }]);
+    expect(updatedDocs).to.deep.equal([{ _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'unmute' }]);
 
     expect(lineageModelGenerator.docs.callCount).to.equal(0);
   });
@@ -209,10 +210,10 @@ describe('Muting Transition', () => {
 
     it('should do nothing when inited with invalid config', async () => {
       transition.init({ muting: { unmute_forms: ['unmute'] } });
-      const docs = [{ _id: 'new_report', type: 'data_record', form: 'unmute' }];
+      const docs = [{ _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'unmute' }];
 
       const updatedDocs = await transition.run(docs);
-      expect(updatedDocs).to.deep.equal([{ _id: 'new_report', type: 'data_record', form: 'unmute' }]);
+      expect(updatedDocs).to.deep.equal([{ _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'unmute' }]);
 
       expect(lineageModelGenerator.docs.callCount).to.equal(0);
     });
@@ -223,7 +224,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const docs = [{
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -233,7 +234,7 @@ describe('Muting Transition', () => {
 
         const hydratedReport = {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'shortcode',
@@ -275,7 +276,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -308,7 +309,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const docs = [{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -318,7 +319,7 @@ describe('Muting Transition', () => {
 
         const hydratedReport = {
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           fields: {
             patient_id: 'shortcode',
@@ -359,7 +360,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'a_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -389,7 +390,7 @@ describe('Muting Transition', () => {
       it('should do nothing when subject is not found', async () => {
         const docs = [{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -399,7 +400,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           fields: {
             patient_id: 'shortcode',
@@ -416,7 +417,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'a_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -429,7 +430,7 @@ describe('Muting Transition', () => {
       it('should do nothing if contact is already muted', async() => {
         const docs = [{
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -439,7 +440,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([{
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'shortcode',
@@ -467,7 +468,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -482,7 +483,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const docs = [{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -492,7 +493,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           fields: {
             patient_id: 'shortcode',
@@ -519,7 +520,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'a_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -535,7 +536,7 @@ describe('Muting Transition', () => {
 
         const docs = [{
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -545,7 +546,7 @@ describe('Muting Transition', () => {
 
         const hydratedDocs = [{
           _id: 'report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             place_id: 'place_id',
@@ -632,7 +633,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -719,7 +720,7 @@ describe('Muting Transition', () => {
 
         const docs = [{
           _id: 'record',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -729,7 +730,7 @@ describe('Muting Transition', () => {
 
         const hydratedReport = {
           _id: 'record',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           fields: {
             place_id: 'place_id',
@@ -833,7 +834,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'record',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: { place_id: 'place_id' },
@@ -916,7 +917,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const docs = [{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -926,7 +927,7 @@ describe('Muting Transition', () => {
 
         lineageModelGenerator.docs.resolves([{
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           fields: {
             patient_id: 'shortcode',
@@ -995,7 +996,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'a_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1378,7 +1379,7 @@ describe('Muting Transition', () => {
       beforeEach(() => {
         validMutingReport = {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1388,7 +1389,7 @@ describe('Muting Transition', () => {
 
         validHydratedReport = {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           fields: {
             patient_id: 'patient1',
@@ -1415,7 +1416,7 @@ describe('Muting Transition', () => {
 
         transitionedValidMutingReport = {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1450,7 +1451,7 @@ describe('Muting Transition', () => {
         const oldReport = {
           _id: 'old_report',
           _rev: '1-32v',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1479,7 +1480,7 @@ describe('Muting Transition', () => {
           {
             _id: 'old_report',
             _rev: '1-32v',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1495,7 +1496,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const nonMutingReport = {
           _id: 'new_non_mute',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'definitely-not-mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1522,7 +1523,7 @@ describe('Muting Transition', () => {
           transitionedValidMutingReport,
           {
             _id: 'new_non_mute',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'definitely-not-mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1538,7 +1539,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const invalidMutingReport = {
           _id: 'new_invalid_mute',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1547,7 +1548,7 @@ describe('Muting Transition', () => {
         };
         const invalidHydratedReport = {
           _id: 'new_invalid_mute',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1584,7 +1585,7 @@ describe('Muting Transition', () => {
           transitionedValidMutingReport,
           {
             _id: 'new_invalid_mute',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1601,7 +1602,7 @@ describe('Muting Transition', () => {
         clock.tick(now);
         const invalidMutingReport = {
           _id: 'new_invalid_mute',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1610,7 +1611,7 @@ describe('Muting Transition', () => {
         };
         const invalidHydratedReport = {
           _id: 'new_invalid_mute',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'mute',
           contact: { _id: 'contact_id' },
           fields: {
@@ -1647,7 +1648,7 @@ describe('Muting Transition', () => {
           transitionedValidMutingReport,
           {
             _id: 'new_invalid_mute',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1763,7 +1764,7 @@ describe('Muting Transition', () => {
         const docs = [
           {
             _id: 'a_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1772,7 +1773,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'b_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1783,7 +1784,7 @@ describe('Muting Transition', () => {
 
         const hydratedReport = {
           _id: 'a_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'unmute',
           fields: {
             patient_id: 'shortcode',
@@ -1826,7 +1827,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'a_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1836,7 +1837,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'b_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             contact: { _id: 'contact_id' },
             fields: {
@@ -1880,7 +1881,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
           },
@@ -1906,7 +1907,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
             place: {
@@ -1956,7 +1957,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
             client_side_transitions: { muting: true },
@@ -1988,7 +1989,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
           },
@@ -2025,7 +2026,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
             place: {
@@ -2087,7 +2088,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
             client_side_transitions: { muting: true },
@@ -2119,7 +2120,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
           },
@@ -2156,7 +2157,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
             place: {
@@ -2212,7 +2213,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'new_place' },
             client_side_transitions: { muting: true },
@@ -2232,7 +2233,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'old_place' },
           },
@@ -2252,7 +2253,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'old_place' },
             place: {
@@ -2300,7 +2301,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'old_place' },
             client_side_transitions: { muting: true },
@@ -2354,7 +2355,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { patient_uuid: 'new_person' },
           },
@@ -2374,7 +2375,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { place_id: 'old_place' },
             patient: {
@@ -2418,7 +2419,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'mute',
             fields: { patient_uuid: 'new_person' },
             client_side_transitions: { muting: true },
@@ -2438,7 +2439,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
           },
@@ -2462,7 +2463,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
             patient: {
@@ -2516,7 +2517,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
             client_side_transitions: { muting: true },
@@ -2575,7 +2576,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { place_id: 'old_place' },
           },
@@ -2599,7 +2600,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
             patient: {
@@ -2653,7 +2654,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { place_id: 'old_place' },
             client_side_transitions: { muting: true },
@@ -2718,7 +2719,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
           },
@@ -2741,7 +2742,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
             patient: {
@@ -2791,7 +2792,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person' },
             client_side_transitions: { muting: true },
@@ -2837,7 +2838,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { place_id: 'parent' },
           },
@@ -2860,7 +2861,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { place_id: 'parent' },
             place: { _id: 'parent', muted: 400, type: 'district' },
@@ -2897,7 +2898,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { place_id: 'parent' },
             client_side_transitions: { muting: true },
@@ -2942,7 +2943,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person2' },
           },
@@ -2973,7 +2974,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person2' },
             patient: {
@@ -3025,7 +3026,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             form: 'unmute',
             fields: { patient_uuid: 'new_person2' },
             client_side_transitions: { muting: true },

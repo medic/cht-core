@@ -15,6 +15,7 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');
+const { DOC_TYPES } = require('@medic/constants');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
@@ -26,14 +27,14 @@ const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   place_id: 'patient',
   reported_date: 2000,
 };
 const headlessReport = {
   _id: 'headlessReport',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   patient_id: 'headless',
   reported_date: 1000,

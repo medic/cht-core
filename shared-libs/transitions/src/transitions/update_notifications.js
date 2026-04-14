@@ -6,6 +6,7 @@ const transitionUtils = require('./utils');
 const mutingUtils = require('../lib/muting_utils');
 const logger = require('@medic/logger');
 const NAME = 'update_notifications';
+const { DOC_TYPES } = require('@medic/constants');
 
 const getEventType = function(config, doc) {
   if (!config.on_form && !config.off_form) {
@@ -68,7 +69,7 @@ module.exports = {
     return Boolean(
       doc &&
       doc.form &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc)
     );

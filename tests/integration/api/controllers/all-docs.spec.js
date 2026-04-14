@@ -2,7 +2,7 @@ const chai = require('chai');
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 const expect = chai.expect;
@@ -152,9 +152,11 @@ describe('all_docs handler', () => {
     const lineage = { _id: 'PARENT_PLACE' };
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: lineage }, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: lineage }, type: 'data_record', form: 'a' },
+      { _id: 'allowed_report', 
+        contact: { _id: 'fixture:offline', parent: lineage }, type: DOC_TYPES.DATA_RECORD, form: 'a' },
       { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: lineage }, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online', parent: lineage }, type: 'data_record', form: 'a' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online', 
+        parent: lineage }, type: DOC_TYPES.DATA_RECORD, form: 'a' },
       { _id: 'allowed_task', user: PREFIXES.COUCH_USER + 'offline', type: 'task', owner: 'fixture:user:offline' },
       { _id: 'denied_task', user: PREFIXES.COUCH_USER + 'online', type: 'task', owner: 'fixture:user:offline' },
       { _id: 'allowed_target', user: PREFIXES.COUCH_USER + 'offline', type: 'target', owner: 'fixture:user:offline' },
@@ -194,9 +196,9 @@ describe('all_docs handler', () => {
   it('filters offline users when requested with keys param', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
       { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
     ];
 
     const keys = [
@@ -306,9 +308,9 @@ describe('all_docs handler', () => {
   it('returns correct info for restricted deleted documents', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
       { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
     ];
 
     const keys = docs.map(doc => doc._id);
@@ -334,14 +336,14 @@ describe('all_docs handler', () => {
     const docs = [
       {
         _id: 'insensitive_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:offline' },
         patient_id: 'fixture:offline'
       },
       {
         _id: 'insensitive_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:offline' },
         patient_id: 'fixture:offline',
@@ -349,7 +351,7 @@ describe('all_docs handler', () => {
       },
       {
         _id: 'insensitive_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         patient_id: 'fixture:offline',
@@ -357,7 +359,7 @@ describe('all_docs handler', () => {
       },
       {
         _id: 'sensitive_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         patient_id: 'fixture:offline',
@@ -365,7 +367,7 @@ describe('all_docs handler', () => {
       },
       {
         _id: 'sensitive_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         patient_id: 'fixture:user:offline',
@@ -373,28 +375,28 @@ describe('all_docs handler', () => {
       },
       {
         _id: 'sensitive_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         fields: { private: true, place_id: 'offline_hc_shortcode' },
       },
       {
         _id: 'sensitive_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         fields: { private: true, place_id: 'fixture:offline' },
       },
       {
         _id: 'sensitive_report_5',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         fields: { private: true, patient_id: 'offline_user_shortcode' },
       },
       {
         _id: 'sensitive_report_6',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online' },
         fields: { private: true, patient_uuid: 'fixture:user:offline' },
@@ -415,9 +417,9 @@ describe('all_docs handler', () => {
   it('filters offline users results when db name is not medic', () => {
     const docs = [
       { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: 'data_record', form: 'a' },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
       { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' },
+      { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
     ];
 
     return utils
@@ -429,7 +431,7 @@ describe('all_docs handler', () => {
   });
 
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
-    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' };
 
     return utils
       .saveDoc(doc)
@@ -494,7 +496,7 @@ describe('all_docs handler', () => {
         {
           // depth = 1
           _id: 'report_about_place',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: {
             place_id: 'fixture:offline',
@@ -504,7 +506,7 @@ describe('all_docs handler', () => {
         {
           // depth = 2, own report
           _id: 'allowed_report_about_the_person_1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: {
             patient_id: 'the_person',
@@ -514,7 +516,7 @@ describe('all_docs handler', () => {
         {
           // depth = 2, has needs_signoff
           _id: 'allowed_report_about_the_person_2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: {
             patient_id: 'the_person',
@@ -525,7 +527,7 @@ describe('all_docs handler', () => {
         {
           // depth = 2, no needs_signoff
           _id: 'denied_report_about_the_person',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: {
             patient_id: 'the_person',
@@ -535,7 +537,7 @@ describe('all_docs handler', () => {
         {
           // depth = 3, has needs_signoff
           _id: 'allowed_report_about_the_patient',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: {
             patient_id: 'the_patient',
@@ -546,7 +548,7 @@ describe('all_docs handler', () => {
         {
           // depth = 3, no needs_signoff
           _id: 'denied_report_about_the_patient',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'form',
           fields: {
             patient_id: 'the_patient',

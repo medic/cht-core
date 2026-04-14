@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 chai.use(require('chai-exclude'));
 
 const contacts = [
@@ -146,7 +146,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'patient_chw6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           fields: {
@@ -156,7 +156,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           fields: {
@@ -166,7 +166,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone6', // chw6 > clinic
           fields: {
@@ -228,7 +228,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'clinic_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           fields: {
@@ -238,7 +238,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'health_center_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           fields: {
@@ -290,21 +290,21 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone6', // chw6 > clinic
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw3 > district
           reported_date: new Date().getTime(),
@@ -373,7 +373,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'patient_chw6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           fields: {
@@ -383,7 +383,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           fields: {
@@ -393,7 +393,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone6', // chw6 > clinic
           fields: {
@@ -466,7 +466,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'clinic_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw4 > district
           fields: {
@@ -476,7 +476,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'health_center_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw3 > district
           fields: {
@@ -486,7 +486,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'district_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw3 > district
           fields: {
@@ -558,21 +558,21 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw6',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone6', // chw6 > clinic
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone4', // chw4 > health_center
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw3 > district
           reported_date: new Date().getTime(),
@@ -656,7 +656,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'patient_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7',
           fields: {
@@ -666,7 +666,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -676,7 +676,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone6', // chw6 > clinic
           fields: {
@@ -767,7 +767,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'report_clinic',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7',
           fields: {
@@ -777,7 +777,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'report_health_center',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -787,7 +787,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'report_district',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone6', // chw6 > clinic
           fields: {
@@ -870,21 +870,21 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone5', // chw5 > clinic
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone2', // chw2 > health_center
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw3 > district
           reported_date: new Date().getTime(),
@@ -950,7 +950,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'patient_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7',
           fields: {
@@ -960,7 +960,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -970,7 +970,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'patient_chw4',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -1035,7 +1035,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'report_clinic',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -1045,7 +1045,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'health_center_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -1055,7 +1055,7 @@ describe('SMS workflows', () => {
         },
         {
           _id: 'district_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone7', // chw7
           fields: {
@@ -1118,21 +1118,21 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone5', // chw5 > clinic
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone2', // chw2 > health_center
           reported_date: new Date().getTime(),
         },
         {
           _id: 'contact_chw3',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone3', // chw3 > district
           reported_date: new Date().getTime(),
@@ -1181,7 +1181,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone1',
           reported_date: new Date().getTime(),
@@ -1216,7 +1216,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone1',
           reported_date: new Date().getTime(),
@@ -1252,7 +1252,7 @@ describe('SMS workflows', () => {
       const reports = [
         {
           _id: 'contact_chw5',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'FORM',
           from: 'phone1',
           reported_date: new Date().getTime(),
