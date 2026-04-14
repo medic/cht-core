@@ -1,4 +1,3 @@
-const chai = require('chai');
 const sinon = require('sinon');
 const moment = require('moment');
 const auth = require('../../../src/auth');
@@ -28,10 +27,10 @@ describe('Replication Failure Log Controller', () => {
 
     await replicationFailureLogController.get(req, res);
 
-    chai.expect(res.json.callCount).to.equal(0);
-    chai.expect(replicationFailureLogService.getByMonth.callCount).to.equal(0);
-    chai.expect(serverUtils.error.callCount).to.equal(1);
-    chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res, true]);
+    expect(res.json.callCount).to.equal(0);
+    expect(replicationFailureLogService.getByMonth.callCount).to.equal(0);
+    expect(serverUtils.error.callCount).to.equal(1);
+    expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res, true]);
   });
 
   it('should return error when user is not an admin', async () => {
@@ -39,10 +38,10 @@ describe('Replication Failure Log Controller', () => {
 
     await replicationFailureLogController.get(req, res);
 
-    chai.expect(res.json.callCount).to.equal(0);
-    chai.expect(replicationFailureLogService.getByMonth.callCount).to.equal(0);
-    chai.expect(serverUtils.error.callCount).to.equal(1);
-    chai.expect(serverUtils.error.args[0][0]).to.deep.equal({ code: 401, message: 'User is not an admin' });
+    expect(res.json.callCount).to.equal(0);
+    expect(replicationFailureLogService.getByMonth.callCount).to.equal(0);
+    expect(serverUtils.error.callCount).to.equal(1);
+    expect(serverUtils.error.args[0][0]).to.deep.equal({ code: 401, message: 'User is not an admin' });
   });
 
   it('should use current month when no month param provided', async () => {
@@ -52,10 +51,10 @@ describe('Replication Failure Log Controller', () => {
 
     await replicationFailureLogController.get(req, res);
 
-    chai.expect(replicationFailureLogService.getByMonth.callCount).to.equal(1);
-    chai.expect(replicationFailureLogService.getByMonth.args[0][0]).to.equal(currentMonth);
-    chai.expect(res.json.callCount).to.equal(1);
-    chai.expect(res.json.args[0][0]).to.deep.equal({ month: currentMonth, logs: [] });
+    expect(replicationFailureLogService.getByMonth.callCount).to.equal(1);
+    expect(replicationFailureLogService.getByMonth.args[0][0]).to.equal(currentMonth);
+    expect(res.json.callCount).to.equal(1);
+    expect(res.json.args[0][0]).to.deep.equal({ month: currentMonth, logs: [] });
   });
 
   it('should use provided month param', async () => {
@@ -66,10 +65,10 @@ describe('Replication Failure Log Controller', () => {
 
     await replicationFailureLogController.get(req, res);
 
-    chai.expect(replicationFailureLogService.getByMonth.callCount).to.equal(1);
-    chai.expect(replicationFailureLogService.getByMonth.args[0][0]).to.equal('2025-11');
-    chai.expect(res.json.callCount).to.equal(1);
-    chai.expect(res.json.args[0][0]).to.deep.equal({ month: '2025-11', logs });
+    expect(replicationFailureLogService.getByMonth.callCount).to.equal(1);
+    expect(replicationFailureLogService.getByMonth.args[0][0]).to.equal('2025-11');
+    expect(res.json.callCount).to.equal(1);
+    expect(res.json.args[0][0]).to.deep.equal({ month: '2025-11', logs });
   });
 
   it('should return error when service throws', async () => {
@@ -78,8 +77,8 @@ describe('Replication Failure Log Controller', () => {
 
     await replicationFailureLogController.get(req, res);
 
-    chai.expect(res.json.callCount).to.equal(0);
-    chai.expect(serverUtils.error.callCount).to.equal(1);
-    chai.expect(serverUtils.error.args[0][0]).to.deep.equal({ status: 500 });
+    expect(res.json.callCount).to.equal(0);
+    expect(serverUtils.error.callCount).to.equal(1);
+    expect(serverUtils.error.args[0][0]).to.deep.equal({ status: 500 });
   });
 });

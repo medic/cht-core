@@ -1360,13 +1360,8 @@ describe('replication', () => {
     };
 
     const requestDocsExpectingError = async (username) => {
-      try {
-        await requestDocs(username);
-        expect.fail('Expected request to fail');
-      } catch (err) {
-        expect(err.status).to.be.at.least(400);
-        await utils.delayPromise(100); // wait for doc to be writen
-      }
+      await expect(requestDocs(username)).to.be.rejectedWith();
+      await utils.delayPromise(100); // wait for doc to be written
     };
 
     before(async () => {
