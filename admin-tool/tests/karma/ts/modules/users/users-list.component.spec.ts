@@ -2,9 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { TranslateModule } from '@ngx-translate/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { UsersListComponent } from '@admin-tool-modules/users/ts/components/users-list/users-list.component';
 import { AuthService } from '@admin-tool-services/auth.service';
 import { UsersService } from '@admin-tool-services/users.service';
+import { SettingsService } from '@admin-tool-services/settings.service';
+import { ChangesService } from '@admin-tool-services/changes.service';
 
 const mockUser = (overrides = {}) => ({
   id: '1',
@@ -14,7 +18,7 @@ const mockUser = (overrides = {}) => ({
   facility_id: 'f1',
   contact_id: 'c1',
   inactive: false,
-  ...overrides
+  ...overrides,
 });
 
 describe('UsersListComponent', () => {
@@ -25,14 +29,24 @@ describe('UsersListComponent', () => {
 
   beforeEach(async () => {
     authService = { has: sinon.stub() };
-    usersService = { getUsers: sinon.stub() };
+    const unsubscribeStub = sinon.stub();
+    usersService = {
+      getUsers: sinon.stub(),
+      usersUpdated$: {
+        subscribe: sinon.stub().callsFake((_cb: any) => ({ unsubscribe: unsubscribeStub })),
+      },
+    };
 
     await TestBed.configureTestingModule({
       imports: [UsersListComponent, TranslateModule.forRoot()],
       providers: [
         { provide: AuthService, useValue: authService },
         { provide: UsersService, useValue: usersService },
-      ]
+        { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
+        { provide: ChangesService, useValue: { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) } },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UsersListComponent);
@@ -251,7 +265,9 @@ describe('UsersListComponent', () => {
       authService.has.resolves(true);
 
       let resolveUsers: any;
-      usersService.getUsers.returns(new Promise(resolve => resolveUsers = resolve));
+      usersService.getUsers.returns(
+        new Promise((resolve) => (resolveUsers = resolve)),
+      );
 
       fixture.detectChanges();
       await fixture.whenStable();

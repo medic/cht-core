@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { DOC_IDS } from '@medic/constants';
-
 import { DbService } from '@admin-tool-services/db.service';
 import { ChangesService } from '@admin-tool-services/changes.service';
 
@@ -34,6 +33,8 @@ export interface CHTSettings {
   languages?: { locale: string; enabled: boolean }[];
   locale?: string;
   locale_outgoing?: string;
+  token_login?: { enabled: boolean };
+  oidc_provider?: string;
 }
 /**
  * Service responsible for reading and writing CHT instance settings
@@ -87,7 +88,10 @@ export class SettingsService {
    * @param {boolean} replace - if true, replaces all settings instead of merging. Defaults to false.
    * @returns {Promise<void>}
    */
-  async updateSettings(updates: Record<string, any>, replace = false): Promise<void> {
+  async updateSettings(
+    updates: Record<string, any>,
+    replace = false,
+  ): Promise<void> {
     return firstValueFrom(
       this.http.put<void>('/api/v1/settings', updates, {
         params: { replace: String(replace) },

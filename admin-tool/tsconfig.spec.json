@@ -5,7 +5,8 @@
       "mocha",
       "sinon",
       "node",
-      "sinon-chai"
+      "sinon-chai",
+      "jquery"
     ]
   },
   "files": [
@@ -15,5 +16,6 @@
   "include": [
     "tests/karma/**/*.spec.ts",
     "tests/karma/**/*.d.ts",
+    "src/**/*.d.ts"
   ]
 }

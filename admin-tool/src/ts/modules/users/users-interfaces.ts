@@ -11,3 +11,19 @@ export interface User {
   inactive?: boolean;
   roles?: string[];
 }
+
+/**
+ * Represents the validation error state for the Create User form.
+ */
+export interface CreateUserErrors {
+  submit?: string;
+  username?: string;
+  email?: string;
+  phone?: string;
+  roles?: string;
+  place?: string;
+  contact?: string;
+  password?: string;
+  passwordConfirm?: string;
+  replicationLimit?: string;
+}

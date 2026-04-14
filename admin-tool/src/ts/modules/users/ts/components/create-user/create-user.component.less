@@ -1,0 +1,98 @@
+@import 'variables';
+
+.modal {
+  &.in {
+    opacity: 1;
+  }
+
+  .modal-header {
+    border-bottom: 0.0625rem solid @gray-light;
+
+    .modal-title {
+      font-size: @font-large;
+      font-weight: bold;
+    }
+
+    .close {
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+  }
+
+  .modal-body {
+    padding: 1.25rem;
+    max-height: 28rem;
+    overflow-y: auto;
+
+    .form-group {
+      margin-bottom: 0.9375rem;
+
+      label {
+        font-weight: bold;
+        margin-bottom: 0.3125rem;
+        display: block;
+      }
+
+      &.required label::after {
+        content: ' *';
+        color: @red;
+      }
+
+      &.has-error {
+        .form-control {
+          border-color: @red;
+        }
+
+        .help-block {
+          color: @red;
+        }
+      }
+
+      .help-block {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+      }
+
+      .list-unstyled {
+        margin: 0;
+
+        .checkbox {
+          margin: 0.3125rem 0;
+
+          label {
+            font-weight: normal;
+            cursor: pointer;
+
+            input[type='checkbox'] {
+              margin-right: 0.375rem;
+            }
+          }
+        }
+      }
+
+      .input-group {
+        .btn-default {
+          border-color: @gray-light;
+
+          &:hover {
+            background-color: @gray-ultra-lighter;
+          }
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    border-top: 0.0625rem solid @gray-light;
+    text-align: right;
+
+    .btn {
+      margin-left: 0.3125rem;
+    }
+  }
+}
+
+.modal-backdrop {
+  opacity: 0.5;
+}
