@@ -153,8 +153,8 @@ describe('InteractionTrackingService', () => {
       expect(events).to.have.length(3);
     });
 
-    it('should stop recording when MAX_EVENTS_PER_DAY is reached', async () => {
-      const existingEvents = new Array(1999).fill({ action: 'x', timestamp: 1 });
+    it('should stop recording new events after flush reveals daily limit is reached', async () => {
+      const existingEvents = new Array(2000).fill({ action: 'x', timestamp: 1 });
       metaDb.get.resolves({
         _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
@@ -163,22 +163,13 @@ describe('InteractionTrackingService', () => {
         metadata: { user: 'greg', deviceId: 'device-uuid-123', date: '2026-03-27', versions: ['4.5.0'] },
       });
 
-      // First flush: doc has 1999 events, adding 3 more should only keep 1
+      // First session flushes and discovers the doc already has 2000 events
       service.startSession('tasks');
       service.record('event_a');
-      service.record('event_b');
-      service.record('event_c');
       await service.flush();
 
-      expect(metaDb.put.calledOnce).to.be.true;
-      const doc = metaDb.put.args[0][0];
-      const newSession = doc.sessions[doc.sessions.length - 1];
-      expect(newSession.events).to.have.length(1);
-      expect(newSession.events[0].action).to.equal('event_a');
-
-      // Second flush: totalEventsToday is now at the limit, so recording should be silently dropped
+      // totalEventsToday is now updated — new events should be silently dropped
       metaDb.put.resetHistory();
-      metaDb.get.resolves(doc);
 
       service.startSession('tasks');
       service.record('should_not_record');
@@ -284,23 +275,6 @@ describe('InteractionTrackingService', () => {
 
       const doc = metaDb.put.args[0][0];
       expect(doc.metadata.versions).to.deep.equal(['4.5.0']);
-    });
-
-    it('should not save when MAX_EVENTS_PER_DAY is already reached in existing doc', async () => {
-      const existingEvents = new Array(2000).fill({ action: 'x', timestamp: 1 });
-      metaDb.get.resolves({
-        _id: 'interaction-2026-03-27-greg-device-uuid-123',
-        _rev: '1-abc',
-        type: 'interaction-log',
-        sessions: [{ session: 'tasks', startedAt: 1, events: existingEvents }],
-        metadata: { user: 'greg', deviceId: 'device-uuid-123', date: '2026-03-27', versions: ['4.5.0'] },
-      });
-
-      service.startSession('tasks');
-      service.record('task_list:open');
-      await service.flush();
-
-      expect(metaDb.put.called).to.be.false;
     });
 
     it('should clear session state after flush', async () => {

@@ -15,26 +15,24 @@ const chtConfUtils = require('@utils/cht-conf');
 
 const INTERACTION_DOC_PREFIX = 'interaction-';
 
-const getInteractionDocsFromMetaDb = async ({ username, password }) => {
-  const options = { auth: { username, password }, userName: username };
+const getInteractionDocsFromMetaDb = async ({ username }) => {
   const qs = {
     include_docs: true,
     startkey: INTERACTION_DOC_PREFIX,
     endkey: `${INTERACTION_DOC_PREFIX}\ufff0`,
   };
   const metaDocs = await utils.requestOnTestMetaDb({
-    ...options,
+    userName: username,
     path: '/_all_docs',
     qs,
   });
   return metaDocs.rows.map(({ doc }) => doc);
 };
 
-const clearInteractionDocsFromMetaDb = async ({ username, password }) => {
-  const docs = await getInteractionDocsFromMetaDb({ username, password });
+const clearInteractionDocsFromMetaDb = async ({ username }) => {
+  const docs = await getInteractionDocsFromMetaDb({ username });
   docs.forEach(doc => doc._deleted = true);
-  const options = { auth: { username, password }, userName: username };
-  await utils.requestOnTestMetaDb({ ...options, path: '/_bulk_docs', method: 'POST', body: { docs } });
+  await utils.requestOnTestMetaDb({ userName: username, path: '/_bulk_docs', method: 'POST', body: { docs } });
 };
 
 const getInteractionDocFromBrowser = async (expectedCount = 1) => {
@@ -118,7 +116,6 @@ describe('Interaction Tracking', () => {
     });
 
     after(async () => {
-      await triggerVisibilityChange();
       await commonPage.reloadSession();
       await clearInteractionDocsFromMetaDb(chw);
     });
@@ -150,7 +147,6 @@ describe('Interaction Tracking', () => {
     });
 
     after(async () => {
-      await triggerVisibilityChange();
       await commonPage.reloadSession();
       await clearInteractionDocsFromMetaDb(chw);
     });
@@ -167,14 +163,14 @@ describe('Interaction Tracking', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       await genericForm.submitForm();
 
+      // we can also navigate to another page to trigger the flush, but at this point task group is open
+      // this means that navigating away will open a popup, and dealing with it has the potential of making
+      // this test flaky. so opting for the visibility change trigger here.
       await triggerVisibilityChange();
-      await commonPage.goToMessages();
 
       const interactionDoc = await getInteractionDocFromBrowser();
-      console.warn(interactionDoc);
 
       const lastSession = interactionDoc.sessions[interactionDoc.sessions.length - 1];
-      console.warn(lastSession.events);
       expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
         { action: 'task_list:loaded', detail: '6' },
@@ -211,7 +207,6 @@ describe('Interaction Tracking', () => {
     });
 
     after(async () => {
-      await triggerVisibilityChange();
       await commonPage.reloadSession();
       await clearInteractionDocsFromMetaDb(chw);
     });
@@ -253,8 +248,6 @@ describe('Interaction Tracking', () => {
         expect(event.timestamp).to.be.a('number');
       });
 
-      console.warn(allEvents);
-
       expect(allEvents).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
         { action: 'task_list:loaded', detail: '4' },
@@ -272,13 +265,11 @@ describe('Interaction Tracking', () => {
     it('should flush interaction logs in order when navigating away from tasks', async () => {
       await tasksPage.openTaskByIndex(0);
 
-      // Navigate away from tasks — destroys the tasks component which triggers flush
       await commonPage.goToReports();
 
       const interactionDoc = await getInteractionDocFromBrowser();
 
       const lastSession = interactionDoc.sessions[interactionDoc.sessions.length - 1];
-      console.warn(lastSession.events);
       expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
         { action: 'task_list:loaded', detail: '3' },
@@ -289,12 +280,11 @@ describe('Interaction Tracking', () => {
     });
 
     it('should accumulate multiple sessions in order in the same daily document', async () => {
-      // Session 1: navigate to tasks, open a task, then leave
       await tasksPage.openTaskByIndex(0);
       await commonPage.goToReports();
 
-      // Session 2: return to tasks, scroll, open a different task, then leave
       await commonPage.goToTasks();
+      await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
 
       await tasksPage.scrollTaskList();
       await tasksPage.openTaskByIndex(1);
@@ -321,13 +311,30 @@ describe('Interaction Tracking', () => {
       ]);
     });
 
-    it('should flush interaction logs to the server meta db when the browser tab is hidden', async () => {
-      await tasksPage.openTaskByIndex(0);
+    it('should flush interaction logs in order when browser tab is hidden', async () => {
+      await tasksPage.scrollTaskList();
+      await tasksPage.openTaskByIndex(2);
 
-      // Simulate the browser tab becoming hidden (e.g., user switches tab or minimizes)
       await triggerVisibilityChange();
 
-      // Sync to replicate the local meta db to the server
+      const interactionDoc = await getInteractionDocFromBrowser();
+
+      const lastSession = interactionDoc.sessions[interactionDoc.sessions.length - 1];
+      expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
+        { action: 'task_list:open' },
+        { action: 'task_list:loaded', detail: '3' },
+        { action: 'task_list:scroll' },
+        { action: 'task:open', ref: 'person_create', detail: '2' },
+        { action: 'task:form_open', ref: 'home_visit' },
+      ]);
+    });
+
+    it('should flush interaction logs to the server meta db when syncing', async () => {
+      await tasksPage.openTaskByIndex(1);
+
+      await triggerVisibilityChange();
+      await commonPage.refresh();
+
       await commonPage.sync();
 
       const interactionDocs = await getInteractionDocsFromMetaDb(chw);
@@ -342,7 +349,11 @@ describe('Interaction Tracking', () => {
       expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
         { action: 'task_list:open' },
         { action: 'task_list:loaded', detail: '3' },
-        { action: 'task:open', ref: 'person_create', detail: '0' },
+        { action: 'task_list:scroll' },
+        { action: 'task:open', ref: 'person_create', detail: '2' },
+        { action: 'task:form_open', ref: 'home_visit' },
+        // ^ generated by the test before, the session continued after visibility was restored
+        { action: 'task:open', ref: 'person_create', detail: '1' },
         { action: 'task:form_open', ref: 'home_visit' },
       ]);
     });

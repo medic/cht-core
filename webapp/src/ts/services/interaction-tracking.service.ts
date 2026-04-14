@@ -94,7 +94,7 @@ export class InteractionTrackingService {
   }
 
   private _record(action: string, ref?: string, detail?: string) {
-    if (!this.currentSession || this.totalEventsToday >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
+    if (!this.currentSession || this.hasReachedDailyLimit()) {
       return;
     }
 
@@ -103,7 +103,17 @@ export class InteractionTrackingService {
     }
 
     this.events.push(this.buildEvent(action, ref, detail));
+
+    if (this.hasReachedDailyLimit()) {
+      this.flush();
+      return;
+    }
+
     this.resetSessionTimer();
+  }
+
+  private hasReachedDailyLimit(): boolean {
+    return (this.totalEventsToday + this.events.length) >= InteractionTrackingService.MAX_EVENTS_PER_DAY;
   }
 
   private isDuplicate(action: string, ref?: string, detail?: string): boolean {
@@ -156,43 +166,27 @@ export class InteractionTrackingService {
     try {
       const metaDb = this.dbService.get({ meta: true });
       const doc = await this.getOrCreateDailyDoc(metaDb);
-      const updated = await this.upsertSession(doc, { session, startedAt, events });
-      if (updated) {
-        await metaDb.put(doc);
-      }
+      await this.upsertSession(doc, { session, startedAt, events });
+      await metaDb.put(doc);
     } catch (error) {
       console.error('Error saving interaction log', error);
     }
   }
 
-  private async upsertSession(doc: InteractionLogDoc, { session, startedAt, events }: InteractionSession):
-  Promise<boolean> {
+  private async upsertSession(doc: InteractionLogDoc, { session, startedAt, events }: InteractionSession) {
     const existingSession = doc.sessions.find(s => s.startedAt === startedAt);
-    const otherEventCount = doc.sessions.reduce((sum, s) => {
-      return sum + (s.startedAt === startedAt ? 0 : s.events.length);
-    }, 0);
-
-    const remaining = InteractionTrackingService.MAX_EVENTS_PER_DAY - otherEventCount;
-    if (remaining <= 0) {
-      this.totalEventsToday = otherEventCount;
-      return false;
-    }
-
-    const trimmedEvents = events.slice(0, remaining);
     if (existingSession) {
-      existingSession.events = trimmedEvents;
+      existingSession.events = events;
     } else {
-      doc.sessions.push({ session, startedAt, events: trimmedEvents });
+      doc.sessions.push({ session, startedAt, events });
     }
 
-    this.totalEventsToday = otherEventCount + trimmedEvents.length;
+    this.totalEventsToday = doc.sessions.reduce((sum, s) => sum + s.events.length, 0);
 
     const version = await this.getAppVersion();
     if (!doc.metadata.versions.includes(version)) {
       doc.metadata.versions.push(version);
     }
-
-    return true;
   }
 
   private async getOrCreateDailyDoc(metaDb: any): Promise<InteractionLogDoc> {

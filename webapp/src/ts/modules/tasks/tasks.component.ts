@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce, throttle as _throttle } from 'lodash-es';
@@ -42,7 +42,7 @@ import { TasksSidebarFilterComponent } from './tasks-sidebar-filter.component';
     TasksSidebarFilterComponent,
   ],
 })
-export class TasksComponent implements OnInit, OnDestroy {
+export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(TasksSidebarFilterComponent) tasksSidebarFilter?: TasksSidebarFilterComponent;
   @ViewChild('taskListContainer', { read: ElementRef }) taskListContainer?: ElementRef;
 
@@ -147,6 +147,9 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     this.interactionTrackingService.startSession('tasks');
     this.interactionTrackingService.record('task_list:open');
+  }
+
+  ngAfterViewInit() {
     this.initScrollTracking();
   }
 
@@ -167,16 +170,13 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.interactionTrackingService.record('task_list:scroll');
     }, 2000);
 
-    // Defer to next tick so the DOM element is available
-    setTimeout(() => {
-      const el = document.getElementById('tasks-list');
-      el?.addEventListener('scroll', this.scrollHandler, { passive: true });
-    });
+    const el = this.taskListContainer?.nativeElement;
+    el?.addEventListener('scroll', this.scrollHandler, { passive: true });
   }
 
   private removeScrollTracking() {
     if (this.scrollHandler) {
-      const el = document.getElementById('tasks-list');
+      const el = this.taskListContainer?.nativeElement;
       el?.removeEventListener('scroll', this.scrollHandler);
     }
   }
