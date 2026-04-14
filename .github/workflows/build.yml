@@ -241,6 +241,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
+      - run: node scripts/build/cli npmCiModules
       - name: Build Documentation
         run: npm run build-documentation
       - name: Cache generated docs
