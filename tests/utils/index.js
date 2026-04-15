@@ -922,8 +922,6 @@ const listenForApi = async () => {
         // if api request failed at least once, make sure that it's stable
         await delayPromise(1000);
         await request({ path: '/api/info' });
-        await delayPromise(1000);
-        await request({ path: '/api/info' });
       }
       return;
     } catch (err) {
@@ -1430,12 +1428,15 @@ const getLogs = (container) => {
 };
 
 const disableCompaction = async () => {
-  await request({
-    path: '/_node/_local/_config/smoosh/db_channels',
-    method: 'PUT',
-    body: '"upgrade_dbs"',
-    json: false,
-  });
+  const nodes = await request({ path: '/_membership' });
+  for (const node of nodes.cluster_nodes) {
+    await request({
+      path: `/_node/${node}/_config/smoosh.ratio_dbs/min_changes`,
+      method: 'PUT',
+      body: '"100000000000"',
+      json: false,
+    });
+  }
 };
 
 const saveLogs = async () => {

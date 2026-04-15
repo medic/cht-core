@@ -185,9 +185,8 @@ describe('server', () => {
       await utils.waitForApiCrash();
       await utils.startHaproxy();
 
-      await utils.delayPromise(1000);
       await utils.listenForApi();
-      await utils.listenForApi();
+      await utils.delayPromise(5000);
 
       const forms = await utils.db.allDocs({
         start_key: 'form:',
@@ -210,8 +209,9 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startHaproxy();
       await utils.startApi();
+      await utils.delayPromise(5000);
 
-      await utils.request('/');
+      await utils.request({ path: '/api/info' });
 
       await utils.stopHaproxy();
       await utils.stopApi();
