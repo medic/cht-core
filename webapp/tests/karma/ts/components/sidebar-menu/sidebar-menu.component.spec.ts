@@ -54,7 +54,6 @@ describe('SidebarMenuComponent', () => {
         ],
       })
       .compileComponents();
-
     fixture = TestBed.createComponent(SidebarMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

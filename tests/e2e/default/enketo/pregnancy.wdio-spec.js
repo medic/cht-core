@@ -13,7 +13,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
@@ -27,7 +27,7 @@ describe('Pregnancy registration', () => {
     ...Array.from(places.values()).map(doc => doc._id),
     pregnantWoman._id,
     'fixture:user:user1',
-    'org.couchdb.user:user1',
+    PREFIXES.COUCH_USER + 'user1',
     [/^form:/],
   ];
 

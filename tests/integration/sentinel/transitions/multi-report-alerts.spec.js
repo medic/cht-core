@@ -2,6 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 const contact = {
   _id: 'person',
@@ -32,7 +33,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FROM',
       reported_date: new Date().getTime(),
       contact: { _id: 'person' }
@@ -65,7 +66,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'NOT_FORM',
       reported_date: new Date().getTime(),
       contact: { _id: 'person' }
@@ -98,7 +99,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '0123456789',
       reported_date: new Date().getTime(),
@@ -151,7 +152,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+251 11 551 1211',
       reported_date: new Date().getTime() - 100,
@@ -160,7 +161,7 @@ describe('multi_report_alerts', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+256 41 9867538',
       reported_date: new Date().getTime() + 100,
@@ -217,7 +218,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       sent_by: '+256 41 9867538',
       home_phone: '+256 41 9867539',
@@ -227,7 +228,7 @@ describe('multi_report_alerts', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       sent_by: '+256 41 9867530',
       home_phone: '+256 41 9867531',
@@ -285,7 +286,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: 'phone',
       reported_date: new Date().getTime() - 25 * 60 * 60 * 1000,
@@ -294,7 +295,7 @@ describe('multi_report_alerts', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: 'phone',
       reported_date: new Date().getTime() + 100,
@@ -366,7 +367,7 @@ describe('multi_report_alerts', () => {
 
     const doc_unknown = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+256 41 9767538',
       reported_date: new Date().getTime() - 8000
@@ -374,7 +375,7 @@ describe('multi_report_alerts', () => {
 
     const doc_unknown2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+256 41 9767539',
       reported_date: new Date().getTime() - 7000
@@ -382,7 +383,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+251 11 551 1222',
       reported_date: new Date().getTime() - 6000
@@ -390,7 +391,7 @@ describe('multi_report_alerts', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+251 11 551 2133',
       reported_date: new Date().getTime() - 5000
@@ -482,7 +483,7 @@ describe('multi_report_alerts', () => {
 
     const doc_unknown = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+256 41 9767538',
       reported_date: new Date().getTime() - 8000
@@ -490,7 +491,7 @@ describe('multi_report_alerts', () => {
 
     const doc_unknown2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+256 41 9767539',
       reported_date: new Date().getTime() - 7000
@@ -498,7 +499,7 @@ describe('multi_report_alerts', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+251 11 551 1222',
       reported_date: new Date().getTime() - 6000
@@ -506,7 +507,7 @@ describe('multi_report_alerts', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+251 11 551 2133',
       reported_date: new Date().getTime() - 5000
@@ -514,7 +515,7 @@ describe('multi_report_alerts', () => {
 
     const doc3 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM2',
       from: '+251 11 551 2133',
       reported_date: new Date().getTime() - 4000

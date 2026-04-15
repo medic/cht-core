@@ -5,7 +5,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const phoneNumber = require('@medic/phone-number');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const { expect } = chai;
 
@@ -121,7 +121,7 @@ describe('Recipient Resolution Integration', () => {
 
     const report = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: SENDER_PHONE,
       reported_date: moment().valueOf(),

@@ -2,6 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('update_sent_by', () => {
   after(() => utils.revertDb([], true));
@@ -14,7 +15,7 @@ describe('update_sent_by', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '123456',
       reported_date: new Date().getTime()
     };
@@ -36,13 +37,13 @@ describe('update_sent_by', () => {
 
     const report1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime()
     };
 
     const report2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '123456',
       sent_by: 'Adam',
       reported_date: new Date().getTime()
@@ -50,14 +51,14 @@ describe('update_sent_by', () => {
 
     const report3 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '999888',
       reported_date: new Date().getTime()
     };
 
     const report4 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '789456',
       reported_date: new Date().getTime()
     };
@@ -90,7 +91,7 @@ describe('update_sent_by', () => {
 
     const report = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '123456789',
       reported_date: new Date().getTime()
     };

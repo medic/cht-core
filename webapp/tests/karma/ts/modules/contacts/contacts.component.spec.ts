@@ -33,6 +33,7 @@ import { FastActionButtonComponent } from '@mm-components/fast-action-button/fas
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { PerformanceService } from '@mm-services/performance.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -533,7 +534,7 @@ describe('Contacts component', () => {
     it('filtering returns false for non-`contact` type documents #4080', () => {
       const changesFilter = changesService.subscribe.args[0][0].filter;
       expect(!!changesFilter({ doc: {} })).to.equal(false);
-      expect(!!changesFilter({ doc: { type: 'data_record' } })).to.equal(false);
+      expect(!!changesFilter({ doc: { type: DOC_TYPES.DATA_RECORD } })).to.equal(false);
       expect(!!changesFilter({ doc: { type: '' } })).to.equal(false);
     });
 
@@ -756,31 +757,31 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
       const relevantReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'something' },
       };
       const deletedReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'something' },
         _deleted: true,
       };
       const irrelevantReports = [
         {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'home_visit',
           fields: { visited_contact_uuid: 'else' },
         },
-        { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' } },
-        { type: 'data_record', form: 'home_visit' },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit', fields: { uuid: 'bla' } },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit' },
         {
           type: 'something',
           form: 'home_visit',
           fields: { visited_contact_uuid: 'something' },
         },
         {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'home_visit',
           fields: { visited_contact_uuid: 'irrelevant' },
           _deleted: true
@@ -804,7 +805,7 @@ describe('Contacts component', () => {
       component.ngOnInit();
       flush();
       const deletedReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'deleted' },
         _deleted: true,
@@ -822,18 +823,18 @@ describe('Contacts component', () => {
       flush();
 
       const relevantReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 'something' },
       };
       const irrelevantReports = [
         {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'home_visit',
           fields: { visited_contact_uuid: 'else' },
         },
-        { type: 'data_record', form: 'home_visit', fields: { uuid: 'bla' } },
-        { type: 'data_record', form: 'home_visit' },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit', fields: { uuid: 'bla' } },
+        { type: DOC_TYPES.DATA_RECORD, form: 'home_visit' },
         {
           type: 'something',
           form: 'home_visit',
@@ -854,22 +855,22 @@ describe('Contacts component', () => {
 
     describe('fully refreshing LHS list', () => {
       const relevantVisitReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 4 },
       };
       const irrelevantReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'somethibg',
         fields: {},
       };
       const irrelevantVisitReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 122 },
       };
       const deletedVisitReport = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'home_visit',
         fields: { visited_contact_uuid: 122 },
         _deleted: true,

@@ -7,7 +7,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
@@ -40,7 +40,7 @@ describe('Message Tab - Sender Data', () => {
   });
 
   const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     language: 'en',
     known: true,
     type: 'user-settings',

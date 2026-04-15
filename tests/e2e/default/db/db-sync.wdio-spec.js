@@ -9,7 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const uuid = require('uuid').v4;
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 /* global window */
 
@@ -29,7 +29,7 @@ describe('db-sync', () => {
   const contact = { _id: restrictedContactId, parent: { _id: restrictedFacilityId } };
 
   const restrictedUser = userSettings.build({
-    _id: `org.couchdb.user:${restrictedUserName}`,
+    _id: `${PREFIXES.COUCH_USER}${restrictedUserName}`,
     type: 'user',
     name: restrictedUserName,
     password: restrictedPass,
@@ -39,7 +39,7 @@ describe('db-sync', () => {
 
   const initialDocs = [
     userSettings.build({
-      _id: `org.couchdb.user:${restrictedUserName}`,
+      _id: `${PREFIXES.COUCH_USER}${restrictedUserName}`,
       roles: ['chw'],
       facility_id: restrictedFacilityId,
       contact_id: restrictedContactId,
@@ -94,7 +94,7 @@ describe('db-sync', () => {
   before(async () => {
     await utils.saveDocs([...initialDocs, ...initialReports]);
     await utils.request({
-      path: `/_users/org.couchdb.user:${restrictedUserName}`,
+      path: `/_users/${PREFIXES.COUCH_USER}${restrictedUserName}`,
       method: 'PUT',
       body: restrictedUser
     });

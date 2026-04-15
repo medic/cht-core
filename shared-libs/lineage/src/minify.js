@@ -1,5 +1,6 @@
 const utils = require('./utils');
 const RECURSION_LIMIT = 50;
+const { DOC_TYPES } = require('@medic/constants');
 
 // Minifies things you would attach to another doc:
 //   doc.parent = minify(doc.parent)
@@ -44,7 +45,7 @@ const minify = (doc) => {
     }
     doc.contact = miniContact;
   }
-  if (doc.type === 'data_record') {
+  if (doc.type === DOC_TYPES.DATA_RECORD) {
     delete doc.patient;
     delete doc.place;
   }

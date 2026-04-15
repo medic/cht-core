@@ -9,13 +9,12 @@ const {
   InvalidArgumentError,
   ResourceNotFoundError
 } = require('@medic/cht-datasource');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { setAuth, removeAuth } = require('./auth');
 const { expect } = require('chai');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('cht-datasource Report', () => {
   const contact0Id = uuid();
@@ -308,7 +307,7 @@ describe('cht-datasource Report', () => {
       it('creates a report doc for valid input', async () => {
         const input = {
           form: 'pregnancy_danger_sign_follow_up',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 11221122,
           contact: contact0Id,
           fields: {
@@ -337,7 +336,7 @@ describe('cht-datasource Report', () => {
 
         expect(reportDoc).excluding([ '_rev', '_id', 'reported_date' ]).to.deep.equal({
           ...input,
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: place2._id }
         });
         expect(reportDoc.reported_date).to.be.a('number');

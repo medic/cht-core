@@ -10,7 +10,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const userSettingsFactory = require('@factories/cht/users/user-settings');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Reports tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
@@ -49,7 +49,7 @@ describe('Reports tab breadcrumbs', () => {
   });
 
   const userWithManyPlaces = userSettingsFactory.build({
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     roles: [ 'chw' ],
     facility_id: [ healthCenter1._id, healthCenter2._id ],
     contact_id: contactWithManyPlaces._id,

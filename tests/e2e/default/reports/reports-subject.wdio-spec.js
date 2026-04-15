@@ -7,7 +7,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const appSettings = require('./config/test-app_settings');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Reports Subject', () => {
   const places = placeFactory.generateHierarchy();
@@ -92,7 +92,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'REF_REF_V1',
       form: 'RR',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { patient_id: person.patient_id }
     };
@@ -105,7 +105,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'REF_REF_V2',
       form: 'RR',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { patient_id: person._id }
     };
@@ -118,7 +118,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'REF_REF_I',
       form: 'RR',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { patient_id: '111111' }
     };
@@ -131,7 +131,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'NAM_NAM_V',
       form: 'NN',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { patient_name: person.name }
     };
@@ -144,7 +144,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'NAM_NAM_I',
       form: 'NN',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { patient_name: '' }
     };
@@ -157,7 +157,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'PREF_PREF_V',
       form: 'P',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { place_id: clinic._id }
     };
@@ -178,7 +178,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'PREF_PREF_V',
       form: 'P',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { place_id: clinic.place_id }
     };
@@ -199,7 +199,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'PREF_PREF_I',
       form: 'P',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { place_id: '12' }
     };
@@ -212,7 +212,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'PID_US',
       form: 'P',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '555',
       fields: { place_id: clinic._id }
     };
@@ -235,7 +235,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'PID_USNP',
       form: 'P',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '',
       fields: { place_id: clinic._id }
     };
@@ -258,7 +258,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'REF_REF_V3',
       form: 'RR',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { patient_id: person.patient_id }
     };
@@ -315,7 +315,7 @@ describe('Reports Subject', () => {
     const report = {
       _id: 'SURVEY_REPORT',
       form: 'S',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: user.phone,
       fields: { survey_subject: 'something' }
     };

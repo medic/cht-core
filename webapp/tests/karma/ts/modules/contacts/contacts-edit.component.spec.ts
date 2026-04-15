@@ -22,7 +22,7 @@ import { DuplicatesFoundError, FormService } from '@mm-services/form.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-
+import events from 'enketo-core/src/js/event';
 
 describe('ContactsEdit component', () => {
   let contactTypesService;
@@ -898,6 +898,7 @@ describe('ContactsEdit component', () => {
       component.enketoContact = {
         formInstance: {
           validate: sinon.stub().resolves(false),
+          view: { html: { dispatchEvent: sinon.stub() } },
         },
       };
 
@@ -909,6 +910,7 @@ describe('ContactsEdit component', () => {
       expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(0);
       expect(telemetryService.record.notCalled).to.be.true;
+      expect(component.enketoContact.formInstance.view.html.dispatchEvent).to.not.have.been.called;
     });
 
     it('should catch save errors', async () => {
@@ -918,6 +920,7 @@ describe('ContactsEdit component', () => {
       component.enketoContact = {
         formInstance: {
           validate: sinon.stub().resolves(true),
+          view: { html: { dispatchEvent: sinon.stub() } },
         },
         type: 'some_contact',
       };
@@ -933,6 +936,9 @@ describe('ContactsEdit component', () => {
       expect(telemetryService.record.notCalled).to.be.true;
       // Any duplicates should be cleared when the error is not DuplicatesFoundError
       expect(component.duplicates).to.be.empty;
+      expect(
+        component.enketoContact.formInstance.view.html.dispatchEvent
+      ).to.have.been.calledOnceWithExactly(events.BeforeSave());
     });
 
     it('when saving new contact', async () => {
@@ -948,6 +954,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        view: { html: { dispatchEvent: sinon.stub() } },
       };
       formService.render.resolves(form);
 
@@ -984,6 +991,9 @@ describe('ContactsEdit component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
       expect(telemetryService.record.notCalled).to.be.true;
+      expect(
+        component.enketoContact.formInstance.view.html.dispatchEvent
+      ).to.have.been.calledOnceWithExactly(events.BeforeSave());
     });
 
     it('when editing existent contact of hardcoded type', async () => {
@@ -1002,6 +1012,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'person_edit_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        view: { html: { dispatchEvent: sinon.stub() } },
       };
       formService.render.resolves(form);
 
@@ -1037,6 +1048,9 @@ describe('ContactsEdit component', () => {
         recordApdex: true,
       });
       expect(telemetryService.record.notCalled).to.be.true;
+      expect(
+        component.enketoContact.formInstance.view.html.dispatchEvent
+      ).to.have.been.calledOnceWithExactly(events.BeforeSave());
     });
 
     it('when editing existent contact of configurable type', async () => {
@@ -1055,6 +1069,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'patient_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        view: { html: { dispatchEvent: sinon.stub() } },
       };
       formService.render.resolves(form);
 
@@ -1090,6 +1105,9 @@ describe('ContactsEdit component', () => {
         recordApdex: true,
       });
       expect(telemetryService.record.notCalled).to.be.true;
+      expect(
+        component.enketoContact.formInstance.view.html.dispatchEvent
+      ).to.have.been.calledOnceWithExactly(events.BeforeSave());
     });
 
     it('should catch duplicate siblings', async () => {
@@ -1105,6 +1123,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        view: { html: { dispatchEvent: sinon.stub() } },
       };
       formService.render.resolves(form);
 
@@ -1150,6 +1169,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        view: { html: { dispatchEvent: sinon.stub() } },
       };
       formService.render.resolves(form);
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
@@ -1209,6 +1229,7 @@ describe('ContactsEdit component', () => {
       dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
       const form = {
         validate: sinon.stub().resolves(true),
+        view: { html: { dispatchEvent: sinon.stub() } },
       };
       formService.render.resolves(form);
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');

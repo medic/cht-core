@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const db = require('../../../src/db');
 const config = require('../../../src/config');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('update_scheduled_reports', () => {
   let transition;
@@ -65,7 +65,7 @@ describe('update_scheduled_reports', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             month: 'x',
             year: 'x',
@@ -82,7 +82,7 @@ describe('update_scheduled_reports', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             month: 'x',
             year: 'x',
@@ -100,7 +100,7 @@ describe('update_scheduled_reports', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             month_num: 'x',
             year: 'x',
@@ -117,7 +117,7 @@ describe('update_scheduled_reports', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             week: 'x',
             year: 'x',
@@ -134,7 +134,7 @@ describe('update_scheduled_reports', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             week_number: 'x',
             year: 'x',
@@ -153,7 +153,7 @@ describe('update_scheduled_reports', () => {
         doc: {
           form: 'x',
           fields: { week: 1, year: 2 },
-          type: 'data_record'
+          type: DOC_TYPES.DATA_RECORD
         },
         info: 'info'
       }), false);
@@ -166,7 +166,7 @@ describe('update_scheduled_reports', () => {
   describe('getDuplicates', () => {
     it('should not query when clinic not found', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: {
           week: 9,
@@ -183,7 +183,7 @@ describe('update_scheduled_reports', () => {
 
     it('should not query when parent type is not a leaf place type', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { parent: { _id: 'hc1', type: CONTACT_TYPES.HEALTH_CENTER } },
         fields: {
@@ -202,7 +202,7 @@ describe('update_scheduled_reports', () => {
     it('should resolve when config.get returns null for contact_types', () => {
       config.get.returns(null);
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
@@ -220,7 +220,7 @@ describe('update_scheduled_reports', () => {
 
     it('use week view when doc has week_number property', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
@@ -245,7 +245,7 @@ describe('update_scheduled_reports', () => {
 
     it('use month view when doc has month_num property', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
@@ -270,7 +270,7 @@ describe('update_scheduled_reports', () => {
 
     it('use week view when doc has week property', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
@@ -295,7 +295,7 @@ describe('update_scheduled_reports', () => {
 
     it('use month view when doc has month property', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { parent: { _id: 'clinic', type: 'clinic' } },
         fields: {
