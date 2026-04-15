@@ -31,21 +31,28 @@ const getJWT_KEYS = () => generateKeyPairSync(
   }
 );
 
-const generateIdToken =  (issuer) => {
+const generateIdToken =  (issuer, authTime) => {
   const payload = {
     issuer,
     algorithm: 'RS256',
     expiresIn: 3600,
   };
   const { privateKey }  = getJWT_KEYS();
+  const claims = {
+    preferred_username: 'testuser',
+    sub: '12345',
+    name: 'John Doe',
+    aud: 'cht',
+    email: EMAIL,
+  };
+  
+  // Include auth_time if provided
+  if (authTime !== undefined) {
+    claims.auth_time = authTime;
+  }
+  
   return jwt.sign(
-    {
-      preferred_username: 'testuser',
-      sub: '12345',
-      name: 'John Doe',
-      aud: 'cht',
-      email: EMAIL,
-    },
+    claims,
     { key: privateKey.replace(/\\n/gm, '\n'), passphrase: SECRET },
     payload
   );
@@ -119,12 +126,19 @@ mockApp.post('/connect/token', (req, res) => {
       });
   }
 
+  // Extract auth_time from code if present (format: "code:authTime")
+  let authTime;
+  if (code.includes(':')) {
+    const [, authTimeStr] = code.split(':');
+    authTime = parseInt(authTimeStr, 10);
+  }
+
   res.json({
     access_token: 'SlAV32hkKG',
     token_type: 'Bearer',
     refresh_token: '8xLOxBtZp8',
     expires_in: 3600,
-    id_token: generateIdToken(oidcBaseUrl)
+    id_token: generateIdToken(oidcBaseUrl, authTime)
   });
 });
 

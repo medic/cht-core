@@ -452,5 +452,78 @@ describe('login', () => {
       chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
       chai.expect(response.body).to.equal('Found. Redirecting to /');
     });
+
+    describe('max_age parameter', () => {
+      const setupOidcSettingsWithMaxAge = (maxAge) => {
+        const settings = {
+          oidc_provider: {
+            discovery_url: mockIdProvider.getDiscoveryUrl(),
+            client_id: 'cht',
+            allow_insecure_requests: true,
+            max_age: maxAge
+          },
+          app_url: utils.getOrigin()
+        };
+
+        return utils.updateSettings(settings, { ignoreReload: true });
+      };
+
+      it('should include max_age in authorization URL when configured', async () => {
+        await setupOidcSettingsWithMaxAge(60);
+        await setClientSecret();
+        const response = await oidcAuthorize();
+
+        chai.expect(response).to.include({ status: 302 });
+        const redirectLocation = decodeURIComponent(response.body);
+        chai.expect(redirectLocation).to.include('max_age=60');
+      });
+
+      it('should log in successfully with recent auth_time', async () => {
+        await setupOidcSettingsWithMaxAge(60);
+        await setClientSecret();
+        await utils.createUsers([{
+          ...user,
+          password: undefined,
+          oidc_username: mockIdProvider.EMAIL,
+        }]);
+
+        // Use current time as auth_time (recent authentication)
+        const currentTime = Math.floor(Date.now() / 1000);
+        const code = `valid:${currentTime}`;
+        const response = await oidcLogin(code);
+
+        chai.expect(response).to.include({ status: 302 });
+        chai.expect(response.headers.getSetCookie()).to.be.an('array');
+        chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.body).to.equal('Found. Redirecting to /');
+      });
+
+      it('should reject login with old auth_time', async () => {
+        await setupOidcSettingsWithMaxAge(60);
+        await setClientSecret();
+        await utils.createUsers([{
+          ...user,
+          password: undefined,
+          oidc_username: mockIdProvider.EMAIL,
+        }]);
+
+        // Use auth_time from 2 minutes ago (older than max_age of 60 seconds)
+        const oldAuthTime = Math.floor(Date.now() / 1000) - 120;
+        const code = `valid:${oldAuthTime}`;
+        const response = await oidcLogin(code);
+
+        expectRedirectToLoginWithError('loginerror', response);
+      });
+
+      it('should work with max_age: 0 (force re-authentication)', async () => {
+        await setupOidcSettingsWithMaxAge(0);
+        await setClientSecret();
+        const response = await oidcAuthorize();
+
+        chai.expect(response).to.include({ status: 302 });
+        const redirectLocation = decodeURIComponent(response.body);
+        chai.expect(redirectLocation).to.include('max_age=0');
+      });
+    });
   });
 });
