@@ -50,6 +50,7 @@ describe('Send message', () => {
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
     await commonPage.hideSnackbar();
+    await browser.throttle('offline');
   });
 
   beforeEach(async () => {
