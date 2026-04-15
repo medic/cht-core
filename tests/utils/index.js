@@ -898,6 +898,19 @@ const getUserSettings = ({ contactId, name }) => {
     }));
 };
 
+const waitForApiCrash = async () => {
+  let retryCount = 180;
+  do {
+    try {
+      await request({ path: '/api/info' });
+      await delayPromise(500);
+    } catch {
+      return;
+    }
+  } while (retryCount-- > 0);
+  throw new Error('API expected to crash, but still running after 1.5 minutes');
+};
+
 const listenForApi = async () => {
   const totalTries = 180; // 3 minutes
   let retryCount = totalTries;
@@ -907,6 +920,8 @@ const listenForApi = async () => {
       await request({ path: '/api/info' });
       if (retryCount < totalTries) {
         // if api request failed at least once, make sure that it's stable
+        await delayPromise(1000);
+        await request({ path: '/api/info' });
         await delayPromise(1000);
         await request({ path: '/api/info' });
       }
@@ -1364,6 +1379,8 @@ const prepK3DServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
 
+  await disableCompaction();
+
   await loginUser();
   await setupUserDoc();
 };
@@ -1382,6 +1399,8 @@ const prepServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await disableCompaction();
 
   await loginUser();
   await setupUserDoc();
@@ -1407,6 +1426,15 @@ const getLogs = (container) => {
       resolve();
       logWriteStream.end();
     });
+  });
+};
+
+const disableCompaction = async () => {
+  await request({
+    path: '/_node/_local/_config/smoosh/db_channels',
+    method: 'PUT',
+    body: '"upgrade_dbs"',
+    json: false,
   });
 };
 
@@ -1804,4 +1832,5 @@ module.exports = {
   deletePurgeDbs,
   saveLogs,
   waitForActiveTasks,
+  waitForApiCrash,
 };

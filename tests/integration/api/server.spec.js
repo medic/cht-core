@@ -181,10 +181,12 @@ describe('server', () => {
 
   describe('API changes feed', () => {
     it('should respond to changes even after services are restarted', async () => {
-      await utils.stopHaproxy(); // this will also crash API
+      await utils.stopHaproxy();
+      await utils.waitForApiCrash();
       await utils.startHaproxy();
 
-      await utils.delayPromise(2000);
+      await utils.delayPromise(1000);
+      await utils.listenForApi();
       await utils.listenForApi();
 
       const forms = await utils.db.allDocs({
