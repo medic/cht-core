@@ -90,7 +90,6 @@ describe('monitoring', () => {
   });
   afterEach(() => utils.revertDb([], true));
 
-
   describe('v1', () => {
     it('should return empty values for empty db', async () => {
       const medicInfo = await getInfo('medic');
