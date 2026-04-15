@@ -87,6 +87,14 @@ const getOpenTaskElement = async () => {
   return getTaskById(emissionId);
 };
 
+const waitForTaskToDisappear = async (taskElement) => {
+  const selector = taskElement.selector;
+  await browser.waitUntil(
+    async () => !(await $(selector).isExisting()),
+    { timeout: 10000, timeoutMsg: `Task element ${selector} was not removed from the DOM.` }
+  );
+};
+
 const waitForTasksGroupLoaded = async () => {
   await $(TASKS_GROUP_SELECTOR).waitForDisplayed();
   await browser.waitUntil(async () => {
@@ -175,6 +183,7 @@ module.exports = {
   getTaskInfo,
   getTasksListInfos,
   getOpenTaskElement,
+  waitForTaskToDisappear,
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,

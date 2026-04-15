@@ -167,7 +167,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       const taskElement = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElement);
 
       // tasks group is displayed
       await tasksPage.waitForTasksGroupLoaded();
@@ -198,7 +198,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       const taskElement = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElement);
       // tasks group is displayed again
       await tasksPage.waitForTasksGroupLoaded();
       const secondGroupTasks = await tasksPage.getTasksInGroup();
@@ -227,7 +227,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
       const taskElement = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElement);
 
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasksAndTitles = await getGroupTasksNamesAndTitles();
@@ -245,7 +245,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       const taskElement = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElement);
 
       await tasksPage.waitForTasksGroupLoaded();
 
@@ -267,7 +267,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       const taskElementHomeVisit = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElementHomeVisit.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElementHomeVisit);
 
       await tasksPage.waitForTasksGroupLoaded();
       const tasksInGroup = await tasksPage.getTasksInGroup();
@@ -279,7 +279,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
       const taskElementPlaceHomeVisit = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElementPlaceHomeVisit.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElementPlaceHomeVisit);
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
@@ -293,7 +293,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       const taskElement = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElement);
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
@@ -331,7 +331,7 @@ describe('Tasks group landing page', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       const taskElement = await tasksPage.getOpenTaskElement();
       await genericForm.submitForm();
-      await taskElement.waitForDisplayed({ reverse: true });
+      await tasksPage.waitForTaskToDisappear(taskElement);
 
       const emptySelection = await tasksPage.noSelectedTask();
       await (emptySelection).waitForDisplayed();
