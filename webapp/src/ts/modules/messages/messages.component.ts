@@ -18,7 +18,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
-import { NgClass } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
@@ -28,6 +28,8 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
   imports: [
     ToolBarComponent,
     MessagesMoreMenuComponent,
+    NgIf,
+    NgFor,
     NgClass,
     RouterLink,
     FastActionButtonComponent,
