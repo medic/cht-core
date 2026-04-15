@@ -184,7 +184,7 @@ describe('server', () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
 
-      await utils.delayPromise(1000);
+      await utils.delayPromise(2000);
       await utils.listenForApi();
 
       const forms = await utils.db.allDocs({
@@ -216,7 +216,7 @@ describe('server', () => {
       await utils.startApi(false);
       await utils.startHaproxy();
 
-      await utils.delayPromise(1000);
+      await utils.delayPromise(2000);
       await utils.listenForApi();
     });
 
@@ -364,6 +364,9 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        if (haproxyRequests.length !== 12) {
+          console.log('haproxyRequests', haproxyRequests);
+        }
         expect(haproxyRequests.length).to.equal(12);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[5]).to.include('/medic-test/_design/medic/_view/contacts_by_depth');
