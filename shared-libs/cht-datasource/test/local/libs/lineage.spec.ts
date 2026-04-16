@@ -11,6 +11,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { SettingsService } from '../../../src/local/libs/data-context';
 import * as Input from '../../../src/input';
 import * as Report from '../../../src/report';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('local lineage lib', () => {
   let debug: SinonStub;
@@ -340,7 +341,7 @@ describe('local lineage lib', () => {
 
   describe('fetchHydratedDoc', () => {
     it('returns the result from shared-libs/lineage', async () => {
-      const doc = { _id: '123', _rev: 'rev-1', type: 'data_record', form: 'test_form' };
+      const doc = { _id: '123', _rev: 'rev-1', type: DOC_TYPES.DATA_RECORD, form: 'test_form' };
       medicGet.resolves(doc);
 
       const result = await Lineage.fetchHydratedDoc(medicDb)(doc._id);
@@ -370,7 +371,7 @@ describe('local lineage lib', () => {
     const minified = {
       _id: 'doc-1',
       _rev: 'rev-1',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       parent: { _id: 'parent-1' }
     };
     const doc = {
@@ -391,7 +392,7 @@ describe('local lineage lib', () => {
     const doc = {
       ...minified,
       _rev: 'rev-1',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       parent: { _id: 'parent-1', _rev: 'rev-2', name: 'Parent' }
     };
     it('returns minified lineage', () => {
@@ -442,7 +443,8 @@ describe('local lineage lib', () => {
 
   describe('getContactIdForUpdate', () => {
     it('returns the string when contact is a string', () => {
-      const updated = { _id: 'report-1', _rev: 'rev-1', type: 'data_record', form: 'test', contact: 'contact-123' };
+      const updated = { _id: 'report-1', _rev: 'rev-1', 
+        type: DOC_TYPES.DATA_RECORD, form: 'test', contact: 'contact-123' };
 
       const result = Lineage.getContactIdForUpdate(updated);
 
@@ -453,7 +455,7 @@ describe('local lineage lib', () => {
       const updated = {
         _id: 'report-1',
         _rev: 'rev-1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'test',
         contact: { _id: 'contact-456', parent: { _id: 'parent-1' } }
       };
@@ -464,7 +466,7 @@ describe('local lineage lib', () => {
     });
 
     it('returns undefined when contact is undefined', () => {
-      const updated = { _id: 'report-1', _rev: 'rev-1', type: 'data_record', form: 'test' };
+      const updated = { _id: 'report-1', _rev: 'rev-1', type: DOC_TYPES.DATA_RECORD, form: 'test' };
 
       const result = Lineage.getContactIdForUpdate(updated);
 
@@ -504,7 +506,7 @@ describe('local lineage lib', () => {
   });
 
   describe('getUpdatedContact', () => {
-    const doc = { _id: 'report-1', _rev: 'rev-1', type: 'data_record', form: 'test' } as const;
+    const doc = { _id: 'report-1', _rev: 'rev-1', type: DOC_TYPES.DATA_RECORD, form: 'test' } as const;
 
     let isContact: SinonStub;
     let minifyLineageInner: SinonStub;

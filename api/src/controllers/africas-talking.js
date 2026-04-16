@@ -46,7 +46,61 @@ const validateKey = req => {
   });
 };
 
+/**
+ * @openapi
+ * tags:
+ *   - name: SMS
+ *     description: Operations for SMS messaging integrations
+ */
 module.exports = {
+  /**
+   * @openapi
+   * /api/v1/sms/africastalking/incoming-messages:
+   *   post:
+   *     summary: Receive incoming SMS from Africa's Talking
+   *     operationId: v1SmsAfricasTalkingIncomingMessagesPost
+   *     description: >
+   *       Webhook endpoint for receiving incoming SMS messages from the Africa's Talking gateway.
+   *       Requires a valid incoming key passed as a query parameter. See the
+   *       [documentation](/building/messaging/gateways/africas-talking/) for more details.
+   *     tags: [SMS]
+   *     parameters:
+   *       - in: query
+   *         name: key
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The configured incoming key for authentication.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/x-www-form-urlencoded:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               id:
+   *                 type: string
+   *                 description: The Africa's Talking message id.
+   *               from:
+   *                 type: string
+   *                 description: The sender's phone number.
+   *               text:
+   *                 type: string
+   *                 description: The message content.
+   *             required: [id, from, text]
+   *     responses:
+   *       '200':
+   *         description: Message processing results
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               additionalProperties: true
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
   incomingMessages: (req, res) => {
     return validateKey(req)
       .then(() => {
@@ -63,6 +117,54 @@ module.exports = {
       .then(results => res.json(results))
       .catch(err => serverUtils.error(err, req, res));
   },
+  /**
+   * @openapi
+   * /api/v1/sms/africastalking/delivery-reports:
+   *   post:
+   *     summary: Receive delivery reports from Africa's Talking
+   *     operationId: v1SmsAfricasTalkingDeliveryReportsPost
+   *     description: >
+   *       Webhook endpoint for receiving SMS delivery status reports from the Africa's Talking gateway.
+   *       Requires a valid incoming key passed as a query parameter. See the
+   *       [documentation](/building/messaging/gateways/africas-talking/) for more details.
+   *     tags: [SMS]
+   *     parameters:
+   *       - in: query
+   *         name: key
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The configured incoming key for authentication.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/x-www-form-urlencoded:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               id:
+   *                 type: string
+   *                 description: The gateway message reference.
+   *               status:
+   *                 enum: [Sent, Submitted, Buffered, Rejected, Success, Failed]
+   *                 description: The delivery status from Africa's Talking.
+   *               failureReason:
+   *                 type: string
+   *                 description: The reason for failure, if applicable.
+   *             required: [id, status]
+   *     responses:
+   *       '200':
+   *         description: Delivery report processing results
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               additionalProperties: true
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
   deliveryReports: (req, res) => {
     return validateKey(req)
       .then(() => {

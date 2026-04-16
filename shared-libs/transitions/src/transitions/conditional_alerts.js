@@ -5,6 +5,7 @@ const utils = require('../lib/utils');
 const async = require('async');
 const transitionUtils = require('./utils');
 const NAME = 'conditional_alerts';
+const { DOC_TYPES } = require('@medic/constants');
 
 const runCondition = (condition, context) => {
   try {
@@ -51,7 +52,7 @@ module.exports = {
     return Boolean(
       doc &&
       doc.form &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc)
     );

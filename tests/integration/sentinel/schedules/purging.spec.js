@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const password = 'SuperS3creT';
 const docs = [
@@ -22,7 +22,7 @@ const docs = [
   },
   {
     _id: 'report1',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       place_id: 'clinic1'
@@ -31,7 +31,7 @@ const docs = [
   },
   {
     _id: 'report2',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       place_id: 'clinic1'
@@ -40,7 +40,7 @@ const docs = [
   },
   {
     _id: 'report3',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: 'patient1'
@@ -49,7 +49,7 @@ const docs = [
   },
   {
     _id: 'report4',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: '',
@@ -59,7 +59,7 @@ const docs = [
   },
   {
     _id: 'report5',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: 'patient1'
@@ -68,7 +68,7 @@ const docs = [
   },
   {
     _id: 'report6',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: '',
@@ -78,21 +78,21 @@ const docs = [
   },
   {
     _id: 'report7', // unassigned
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {},
     to_be_purged: true,
   },
   {
     _id: 'report8', // unassigned
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {},
     to_be_purged: false,
   },
   {
     _id: 'report9',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: 'patient1',
@@ -103,7 +103,7 @@ const docs = [
   },
   {
     _id: 'report10',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: 'patient1',
@@ -115,7 +115,7 @@ const docs = [
   },
   {
     _id: 'report11', // orphaned needs signoff
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'yes',
     fields: {
       patient_id: 'orphaned',
@@ -126,28 +126,28 @@ const docs = [
   },
   {
     _id: 'message1',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     sms_message: true,
     contact: { _id: 'clinic1' },
     to_be_purged: true,
   },
   {
     _id: 'message2',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     sms_message: true,
     contact: { _id: 'clinic1' },
     to_be_purged: false,
   },
   {
     _id: 'message3',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     kujua_message: true,
     tasks: [{ messages: [{ contact: { _id: 'contact1' } }] }],
     to_be_purged: true,
   },
   {
     _id: 'message4',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     kujua_message: true,
     tasks: [{ messages: [{ contact: { _id: 'contact1' } }] }],
     to_be_purged: false,

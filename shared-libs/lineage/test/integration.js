@@ -2,6 +2,7 @@ const { assert, expect } = require('chai');
 const lineageFactory = require('../src');
 const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
+const { DOC_TYPES } = require('@medic/constants');
 
 let db;
 
@@ -53,7 +54,7 @@ const circular_area = {
 };
 const circular_report = {
   _id: 'circular_report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   contact: {
     _id: circular_chw._id,
     parent: { _id: circular_area._id }
@@ -75,7 +76,7 @@ const place_with_circular_ids = {
 };
 const report_with_circular_ids = {
   _id: 'report_with_circular_ids',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   contact: { _id: 'circular_place' },
   parent: { _id: 'circular_person' },
   patient_id: 'circular_person',
@@ -219,7 +220,7 @@ const report_place = {
 };
 const report = {
   _id: 'report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -236,7 +237,7 @@ const report = {
 };
 const report_with_place = {
   _id: 'report_with_place',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -254,7 +255,7 @@ const report_with_place = {
 
 const report_with_place_uuid = {
   _id: 'report_with_place_uuid',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -272,7 +273,7 @@ const report_with_place_uuid = {
 
 const report_with_place_and_patient = {
   _id: 'report_with_place_and_patient',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -290,7 +291,7 @@ const report_with_place_and_patient = {
 };
 const report2 = {
   _id: 'report2',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -308,7 +309,7 @@ const report2 = {
 };
 const report3 = {
   _id: 'report3',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -325,7 +326,7 @@ const report3 = {
 };
 const report4 = {
   _id: 'report4',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -342,7 +343,7 @@ const report4 = {
 };
 const report5 = {
   _id: 'report5',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -359,7 +360,7 @@ const report5 = {
 };
 const stub_contacts = {
   _id: 'stub_contacts',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   contact: {
     _id: 'something',
     parent: {
@@ -379,7 +380,7 @@ const stub_parents = {
 };
 const sms_doc = {
   _id: 'sms_doc',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: '123',
   form: 'D',
   fields: {},
@@ -430,7 +431,7 @@ const personWithLinks = {
 };
 const reportWithLinks = {
   _id: 'reportWithLinks',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -1483,7 +1484,7 @@ describe('Lineage', function() {
       const docs = [
         {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: place_contact._id },
           fields: { patient_uuid: 'new_patient' },
         },
@@ -1516,7 +1517,7 @@ describe('Lineage', function() {
         expect(actual).excludingEvery(['_rev', 'reported_date']).to.deep.equal([
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             contact: {
               _id: place_contact._id,
               phone: place_contact.phone,

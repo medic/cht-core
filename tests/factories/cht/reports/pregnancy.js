@@ -4,6 +4,7 @@ const moment = require('moment');
 const uuid = require('uuid');
 const _ = require('lodash');
 const geolocation = require('./geolocation');
+const { DOC_TYPES } = require('@medic/constants');
 
 const defaultSubmitter = {
   _id: '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
@@ -279,7 +280,7 @@ const hiddenFields = [
 module.exports = new Factory()
   .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy')
-  .attr('type', 'data_record')
+  .attr('type', DOC_TYPES.DATA_RECORD)
   .attr('content_type', 'xml')
   .attr('reported_date', () => new Date())
   .attr('contact', ['contact'], (contact) => _.merge({}, defaultSubmitter, contact))

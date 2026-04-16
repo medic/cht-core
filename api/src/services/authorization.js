@@ -7,7 +7,7 @@ const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
-const { DOC_IDS, PREFIXES } = require('@medic/constants');
+const { DOC_IDS, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -19,14 +19,13 @@ const DEFAULT_DDOCS = [
 ];
 
 /**
- * @typedef {{
- * name:string,
- * roles:string[]
- * contact_id:string,
- * facility_id: string[],
- * contact:Object,
- * facility:Object[]
- * }} userCtx
+ * @typedef {Object} userCtx
+ * @property {string} name
+ * @property {Array.<string>} roles
+ * @property {string} contact_id
+ * @property {Array.<string>} facility_id
+ * @property {Object} contact
+ * @property {Array.<Object>} facility
  */
 
 /**
@@ -36,19 +35,18 @@ const DEFAULT_DDOCS = [
  * @property {string[]} subjectIds,
  * @property {number} contactDepth.
  * @property {number} reportDepth.
- * @property {{[docId:string]:number}} subjectsDepth,
+ * @property {Object.<string, number>} subjectsDepth,
  * @property {boolean} replicatePrimaryContacts,
  */
 
 /**
- * @typedef {{
- *   key: string|string[],
- *   type?: string,
- *   submitter?: string,
- *   subject?: string,
- *   private?: string,
- *   needed_signoff?: string,
- * }} DocByReplicationKey
+ * @typedef {Object} DocByReplicationKey
+ * @property {string|Array.<string>} key
+ * @property {string} [type]
+ * @property {string} [submitter]
+ * @property {string} [subject]
+ * @property {string} [private]
+ * @property {string} [needed_signoff]
  */
 
 // fake view map, to store whether doc is a medic.user-settings doc
@@ -210,7 +208,7 @@ const allowedDoc = (docId, authorizationContext, { docsByReplicationKey, contact
 /**
  * Returns whether an authenticated user has access to a document
  * @param {String} docId document id
- * @param {Array<{ key: [string, string?], value: { _id:string, shortcode:string} }>} docContactsByDepth
+ * @param {Array.<{ key: Array.<string>, value: {_id: string, shortcode: string} }>} docContactsByDepth
  * @param {AuthorizationContext} authorizationContext
  * @param {Boolean} authorizationContext.replicatePrimaryContacts - whether to allow replication of primary contacts
  *
@@ -384,7 +382,8 @@ const getAuthorizationContext = async (userCtx) => {
  * Retrieves unknown primary contacts from the database.
  * Iterates over all primary contacts and includes them in the subjects lists and assigns correct depth.
  * @param {AuthorizationContext} authCtx
- * @param {{[docId:string]: { primaryContact:string, subjects:string[] }}} contacts - map of contacts and their subject
+ * @param {Object.<string, {primaryContact: string, subjects: Array.<string>}>} contacts - map of contacts and their
+ * subject
  * ids and primary contact
  * @returns {Promise<void>}
  */
@@ -462,7 +461,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
 
 /**
  * Returns a list of places for which the passed contacts are assigned as primary contacts.
- * @param {{ _id:string }[]} docs
+ * @param {Array.<{_id: string}>} docs
  * @returns {Promise<Object[]>}
  */
 const getPrimaryPlaces = async (docs) => {
@@ -508,7 +507,7 @@ const populateAllowedSubjectIds = (authorizationCtx, contacts) => {
  * relevant allowed subject ids.
  *
  * @param {userCtx} userCtx
- * @param {{ doc:{}, viewResults:{} }[]} scopeDocsCtx
+ * @param {Array.<{doc: Object, viewResults: Object}>} scopeDocsCtx
  * @returns { Promise<AuthorizationContext> }
  */
 const getScopedAuthorizationContext = async (userCtx, scopeDocsCtx = []) => {
@@ -592,7 +591,7 @@ const isAllowedDepth = (authorizationContext, docByReplicationKey) => {
     return true;
   }
 
-  if (docByReplicationKey.type !== 'data_record') {
+  if (docByReplicationKey.type !== DOC_TYPES.DATA_RECORD) {
     // allow everything that's not a data_record through (f.e. targets)
     return true;
   }
@@ -618,7 +617,7 @@ const sortedIncludes = (sortedArray, element) => _.sortedIndexOf(sortedArray, St
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param authorizationContext
- * @returns {Promise<{ id: string, fields: DocByReplicationKey }[]>}
+ * @returns {Promise.<Array.<{id: string, fields: DocByReplicationKey}>>}
  */
 const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
   const allKeys = [...authorizationContext.subjectIds];
@@ -655,7 +654,7 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param {AuthorizationContext} authorizationContext
- * @returns {Promise<{ id: string, fields: DocByReplicationKey }[]>}
+ * @returns {Promise.<Array.<{id: string, fields: DocByReplicationKey}>>}
  */
 const getDocsByReplicationKey = async (authorizationContext) => {
   return getDocsByReplicationKeyNouveau(authorizationContext).then(hits => {
@@ -686,7 +685,7 @@ const getDocsByReplicationKey = async (authorizationContext) => {
 /**
  * Returns a list of document ids that the user is allowed to see and edit
  * @param {AuthorizationContext} authCtx
- * @param {{ id: string, fields: DocByReplicationKey }[]} docsByReplicationKey
+ * @param {Array.<{id: string, fields: DocByReplicationKey}>} docsByReplicationKey
  * @param {boolean} includeTasks - whether task documents should be included
  * @returns {string[]}
  */
@@ -710,7 +709,7 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
  * Evaluates medic/contacts_by_depth and medic/docs_by_replication_key view map functions over the document and
  * returns results, and whether the document is a user-settings document or not
  * @param {Object} doc - CouchDb document
- * @returns {{contactsByDepth: [], docsByReplicationKey: [], couchDbUser: boolean}}
+ * @returns {{contactsByDepth: Array, docsByReplicationKey: Array, couchDbUser: boolean}}
  */
 const getViewResults = (doc) => {
   const docsByReplicationKey = viewMapUtils.getNouveauViewMapFn('medic', 'docs_by_replication_key')(doc) || {};

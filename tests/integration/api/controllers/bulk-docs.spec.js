@@ -5,7 +5,7 @@ const _ = require('lodash');
 const utils = require('@utils');
 const sUtils = require('@utils/sentinel');
 const constants = require('@constants');
-const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -461,84 +461,84 @@ describe('bulk-docs handler', () => {
     const newDocs = [
       {
         _id: 'allowed_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         patient_id: 'shortcode:allowed_contact_1',
       },
       {
         _id: 'allowed_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { patient_id: 'shortcode:allowed_contact_1' },
       },
       {
         _id: 'allowed_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { patient_uuid: 'allowed_contact_1' },
       },
       {
         _id: 'allowed_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { private: true, patient_uuid: 'allowed_contact_1' },
       },
       {
         _id: 'allowed_report_5',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { private: true, patient_uuid: 'fixture:user:offline' },
       },
       {
         _id: 'allowed_report_6',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { private: true, patient_id: 'shortcode:user:offline' },
       },
       {
         _id: 'allowed_report_7',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { private: true, place_id: 'shortcode:offline' },
       },
       {
         _id: 'allowed_report_7',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' }, // known submitter
         fields: { }, // no subject
       },
       {
         _id: 'denied_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { place_id: 'unknown place' }, // unknown subject
       },
       {
         _id: 'denied_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:offline' },
         fields: { patient_id: 'shortcode:denied_contact_1' }, // unknown subject
       },
       {
         _id: 'denied_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:online' }, // unknown submitter for "sensitive" report
         fields: { private: true, patient_id: 'shortcode:user:offline' },
       },
       {
         _id: 'denied_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: { _id: 'fixture:user:online' }, // unknown submitter
         fields: { }, // no subject
@@ -567,7 +567,7 @@ describe('bulk-docs handler', () => {
     const docs = [
       {
         _id: 'allowed_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 1,
         place_id: 'a',
         form: 'some-form',
@@ -575,7 +575,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'denied_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 1,
         place_id: 'c',
         form: 'some-form',
@@ -583,14 +583,14 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 1,
         form: 'some-form',
         contact: { _id: 'allowed_4' },
       },
       {
         _id: 'denied_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 1,
         form: 'some-form',
         contact: { _id: 'denied_4' },
@@ -772,7 +772,7 @@ describe('bulk-docs handler', () => {
     const doc = {
       _id: 'denied_report',
       contact: { _id: 'fixture:online' },
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'a',
     };
     offlineRequestOptions.body = { docs: [doc] };
@@ -878,7 +878,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -890,14 +890,14 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person', needs_signoff: true },
         contact: {
@@ -940,21 +940,21 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_report_about_new_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'allowed_new_clinic' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'denied_report_about_new_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'denied_new_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_new_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'denied_new_person', needs_signoff: true },
         contact: {
@@ -1026,7 +1026,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -1038,14 +1038,14 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person', needs_signoff: true },
         contact: {
@@ -1088,21 +1088,21 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_report_about_new_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'allowed_new_clinic' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'denied_report_about_new_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'denied_new_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_new_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'denied_new_person', needs_signoff: true },
         contact: {
@@ -1173,7 +1173,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -1185,14 +1185,14 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'existing_person' },
         form: 'form',
         contact: {
@@ -1202,7 +1202,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_report_about_existing_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'existing_person', needs_signoff: true },
         form: 'form',
         contact: {
@@ -1235,21 +1235,21 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_report_about_new_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'new_clinic' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'denied_report_about_new_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'new_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_new_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'new_person', needs_signoff: true },
         contact: {
@@ -1259,7 +1259,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_report_about_new_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'new_person' },
         contact: {
@@ -1319,7 +1319,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -1332,14 +1332,14 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_existing_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person_id' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'report_about_existing_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_uuid: 'existing_person' },
         contact: { _id: 'nevermind' },
@@ -1363,7 +1363,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_existing_person2_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person_id2' },
         contact: { _id: 'nevermind' },
@@ -1384,7 +1384,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_new_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'new_clinic' },
         contact: { _id: 'nevermind' },
@@ -1397,14 +1397,14 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_new_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'new_person_id' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'report_about_new_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_uuid: 'new_person' },
         contact: { _id: 'nevermind' },
@@ -1428,7 +1428,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'report_about_new_person2_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'new_person_id2' },
         contact: { _id: 'nevermind' },

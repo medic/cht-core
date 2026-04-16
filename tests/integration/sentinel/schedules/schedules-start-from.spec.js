@@ -3,7 +3,7 @@ const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const moment = require('moment');
 const chai = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -203,7 +203,7 @@ describe('schedules alternative start_from', () => {
 
     const patient = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+97798261',
       fields: {
@@ -221,7 +221,7 @@ describe('schedules alternative start_from', () => {
 
     const clinic = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+11111111',
       fields: {

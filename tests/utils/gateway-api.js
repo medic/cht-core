@@ -1,5 +1,6 @@
 const testUtils = require('@utils');
 const uuid = require('uuid').v4;
+const { DOC_TYPES } = require('@medic/constants');
 
 const CHW_CONTACT_NUMBER = '+32049832049';
 
@@ -66,7 +67,7 @@ const createWoMessage = (id, content) => {
     reported_date: 1520416423761,
     tasks: [ task ],
     kujua_message: true,
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     sent_by: 'some name',
   };
 

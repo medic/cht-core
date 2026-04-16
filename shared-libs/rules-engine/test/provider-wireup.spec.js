@@ -15,6 +15,7 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');
+const { DOC_TYPES } = require('@medic/constants');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
@@ -26,14 +27,14 @@ const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   place_id: 'patient',
   reported_date: 2000,
 };
 const headlessReport = {
   _id: 'headlessReport',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   patient_id: 'headless',
   reported_date: 1000,
@@ -403,7 +404,7 @@ describe('provider-wireup integration tests', () => {
       expect(actual).to.be.empty;
       expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
       expect(db.query.callCount).to.eq(3);
-      expect(db.query.args[2][0]).to.eq('medic-client/tasks_by_contact');
+      expect(db.query.args[2][0]).to.eq('medic-offline-tasks/tasks_by_contact');
       expect(db.query.args[2][1]).to.not.have.property('keys');
     });
 

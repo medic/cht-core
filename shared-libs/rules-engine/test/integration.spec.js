@@ -2,6 +2,7 @@ const chai = require('chai');
 const moment = require('moment');
 const chaiExclude = require('chai-exclude');
 const { MS_IN_DAY, engineSettings, defaultConfigSettingsDoc } = require('./mocks');
+const { DOC_TYPES } = require('@medic/constants');
 
 const memdownMedic = require('@medic/memdown');
 const sinon = require('sinon');
@@ -36,7 +37,7 @@ const patientContact = {
 
 const pregnancyFollowupReport = {
   _id: 'report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'pregnancy',
   fields: {
     t_pregnancy_follow_up_date: new Date(TEST_START).toISOString(),
@@ -47,7 +48,7 @@ const pregnancyFollowupReport = {
 
 const pregnancyRegistrationReport = {
   _id: 'pregReg',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'pregnancy',
   fields: {
     lmp_date_8601: TEST_START,
@@ -58,7 +59,7 @@ const pregnancyRegistrationReport = {
 
 const reportByPatientIdOnly = {
   _id: 'report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'pregnancy',
   fields: {
     t_pregnancy_follow_up_date: new Date(TEST_START).toISOString(),
@@ -70,12 +71,12 @@ const reportByPatientIdOnly = {
 const expectedQueriesForAllFreshData = [
   'medic-client/contacts_by_type',
   'medic-client/reports_by_subject',
-  'medic-client/tasks_by_contact'
+  'medic-offline-tasks/tasks_by_contact'
 ];
 const expectedQueriesForFreshData = [
   'medic-client/reports_by_subject',
-  'medic-client/tasks_by_contact',
-  'medic-client/tasks_by_contact',
+  'medic-offline-tasks/tasks_by_contact',
+  'medic-offline-tasks/tasks_by_contact',
 ];
 
 const fetchTargets = async (interval) => {
@@ -307,7 +308,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
       await db.put({
         _id: 'reminder',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'pregnancy_facility_visit_reminder',
         fields: [],
         patient_id: 'patient',
@@ -457,7 +458,7 @@ describe(`Rules Engine Integration Tests`, () => {
       const tasksAfterPurge = await rulesEngine.fetchTasksFor();
       expect(tasksAfterPurge).to.have.property('length', 0);
 
-      const allTasks = await db.query('medic-client/tasks_by_contact');
+      const allTasks = await db.query('medic-offline-tasks/tasks_by_contact');
       expect(allTasks.total_rows).to.eq(0);
     });
 
@@ -486,7 +487,7 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(secondTasks).to.deep.eq(firstTasks);
       expect(db.query.args.map(args => args[0])).to.deep.eq([
         ...expectedQueriesForAllFreshData,
-        'medic-client/tasks_by_contact',
+        'medic-offline-tasks/tasks_by_contact',
         'medic-client/contacts_by_reference',
         ...expectedQueriesForFreshData
       ]);
@@ -523,8 +524,8 @@ describe(`Rules Engine Integration Tests`, () => {
     });
 
     it('headless scenario (tasks tab)', async () => {
-      const headlessReport = { _id: 'report', type: 'data_record', form: 'form', patient_id: 'headless' };
-      const headlessReport2 = { _id: 'report2', type: 'data_record', form: 'form', patient_id: 'headless2' };
+      const headlessReport = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'form', patient_id: 'headless' };
+      const headlessReport2 = { _id: 'report2', type: DOC_TYPES.DATA_RECORD, form: 'form', patient_id: 'headless2' };
       const taskOwnedByHeadless = {
         _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: {
           _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(),
@@ -544,7 +545,7 @@ describe(`Rules Engine Integration Tests`, () => {
       expect(rulesEmitter.getEmissionsFor.args).excludingEvery(['_rev', 'state', 'stateHistory'])
         .to.deep.eq([[[], [headlessReport, headlessReport2], [taskEmittedByHeadless2]]]);
       expect(db.query.args.map(args => args[0]))
-        .to.deep.eq([...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']);
+        .to.deep.eq([...expectedQueriesForAllFreshData, 'medic-offline-tasks/tasks_by_contact']);
       expect(firstResult).excludingEvery('_rev').to.deep.eq([taskOwnedByHeadless]);
       expect(db.bulkDocs.callCount).to.eq(2); // taskEmittedByHeadless2 gets cancelled
 
@@ -772,7 +773,7 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
   const tasks = await rulesEngine.fetchTasksFor(selectBy);
   expect(tasks).to.have.property('length', 1);
   expect(db.query.args.map(args => args[0])).to.deep.eq(
-    selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'medic-client/tasks_by_contact']
+    selectBy ? expectedQueriesForFreshData : [...expectedQueriesForAllFreshData, 'medic-offline-tasks/tasks_by_contact']
   );
   expect(db.bulkDocs.callCount).to.eq(2);
   expect(tasks[0]).to.deep.include({

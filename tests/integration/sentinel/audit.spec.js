@@ -4,7 +4,7 @@ const moment = require('moment/moment');
 const testForm = require('./transitions/test-stubs');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -100,7 +100,7 @@ describe('auditing', () => {
     const patientPhone = '+9779841123123';
     const patientNameAndPhone = { // has just the `patient_name`and phone so should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {

@@ -23,6 +23,7 @@ const CONTACT_TYPES = {
 const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
+  DATA_RECORD: 'data_record',
 };
 
 // HTTP Headers
