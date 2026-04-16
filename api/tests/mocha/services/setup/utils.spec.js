@@ -169,7 +169,7 @@ describe('Setup utils', () => {
     });
 
     it('should start db compact and view cleanup for every database if altered', async () => {
-      await utils.cleanup(['medic', 'medic-sentinel', 'medic-logs', 'medic-users-meta', '_users']);
+      await utils.cleanup(DATABASES.map(d => d.name));
 
       expect(db.medic.compact.callCount).to.equal(1);
       expect(db.sentinel.compact.callCount).to.equal(1);
@@ -190,7 +190,7 @@ describe('Setup utils', () => {
       const error = { some: 'error' };
       db.sentinel.compact.rejects(error);
 
-      await utils.cleanup(['medic', 'medic-sentinel', 'medic-logs', 'medic-users-meta', '_users']);
+      await utils.cleanup(DATABASES.map(d => d.name));
 
       await Promise.resolve();
       await Promise.resolve();
@@ -219,7 +219,7 @@ describe('Setup utils', () => {
       const error = { some: 'error' };
       db.nouveauCleanup.rejects(error);
 
-      await utils.cleanup(['medic', 'medic-sentinel', 'medic-logs', 'medic-users-meta', '_users']);
+      await utils.cleanup(DATABASES.map(d => d.name));
 
       await Promise.resolve();
       await Promise.resolve();
