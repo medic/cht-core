@@ -1,0 +1,104 @@
+<div>
+  <div>
+    @if (loadingPageStatus) {
+      <div class="loader"></div>
+    } @else {
+      <div class="tab-content container-fluid">
+        <div class="btn-bottom-spacing">
+          <button type="button" class="btn btn-primary" (click)="addLanguage()">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            <span>{{ 'Add new language' | translate }}</span>
+          </button>
+        </div>
+        <p class="help-block">{{ 'display.language.accordion.title' | translate }}</p>
+        <div id="language-accordion" class="panel-group" role="tablist">
+          @for (languageModel of languages; track languageModel.doc._id) {
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" [id]="'locale-' + languageModel.doc.code">
+                <h4 class="panel-title">
+                  <a class="collapsed"
+                    data-toggle="collapse"
+                    [attr.data-target]="'#locale-' + languageModel.doc.code + '-body'"
+                    data-parent="#language-accordion">
+                    {{ languageModel.doc.name }}
+                  </a>
+                </h4>
+              </div>
+              <div [id]="'locale-' + languageModel.doc.code + '-body'"
+                class="panel-collapse collapse"
+                role="tabpanel">
+                <div class="panel-body action-list">
+                  @if (languageModel.missing > 0) {
+                    <div class="alert alert-warning" role="alert">
+                      {{ 'Missing translations' | translate: { missing: languageModel.missing } }}
+                    </div>
+                  }
+                  <div>
+                    <button type="button" class="btn btn-link" (click)="editLanguage(languageModel.doc)">
+                      <i class="fa fa-pencil" aria-hidden="true"></i>
+                      <span>{{ 'edit' | translate }}</span>
+                    </button>
+                  </div>
+                  @if (languageModel.enabled) {
+                    <div>
+                      <button type="button" class="btn btn-link" (click)="disableLanguage(languageModel.doc)">
+                        <i class="fa fa-ban" aria-hidden="true"></i>
+                        <span>{{ 'Disable' | translate }}</span>
+                      </button>
+                    </div>
+                  } @else {
+                    <div>
+                      <button type="button" class="btn btn-link" (click)="enableLanguage(languageModel.doc)">
+                        <i class="fa fa-circle-o" aria-hidden="true"></i>
+                        <span>{{ 'Enable' | translate }}</span>
+                      </button>
+                    </div>
+                  }
+                  <div>
+                    <button type="button" class="btn btn-link" (click)="downloadLanguage(languageModel.doc)">
+                      <i class="fa fa-arrow-down" aria-hidden="true" ></i>
+                      <span>{{ 'Download' | translate }}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-link" (click)="uploadLanguage(languageModel.doc)">
+                      <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                      <span>{{ 'Upload' | translate }}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-link btn-danger" (click)="deleteLanguage(languageModel.doc)">
+                      <i class="fa fa-trash-o" aria-hidden="true"></i>
+                      <span>{{ 'Delete' | translate }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  <display-languages-edit
+    [visible]="showEditModal"
+    [doc]="selectedDoc"
+    (closed)="showEditModal = false"
+    (saved)="ngOnInit()"
+  >
+  </display-languages-edit>
+  <display-languages-delete
+    [visible]="showDeleteModal"
+    [doc]="selectedDoc"
+    (closed)="showDeleteModal = false"
+    (confirmed)="ngOnInit()"
+  >
+  </display-languages-delete>
+  <display-languages-upload
+    [visible]="showUploadModal"
+    [doc]="selectedDoc"
+    (closed)="showUploadModal = false"
+    (saved)="ngOnInit()"
+  >
+  </display-languages-upload>
+</div>

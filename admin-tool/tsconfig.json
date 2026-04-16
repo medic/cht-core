@@ -15,6 +15,11 @@
       "es2016",
       "dom"
     ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../node_modules/@types",
+      "./src/types"
+    ],
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@admin-tool-components/*": ["src/ts/components/*"],
