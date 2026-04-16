@@ -1427,6 +1427,8 @@ const getLogs = (container) => {
   });
 };
 
+// compaction will delete bodies from old revs
+// some tests specifically test loading older revs for offline users, which intermittenly fail when compaction runs.
 const disableCompaction = async () => {
   const nodes = await request({ path: '/_membership' });
   for (const node of nodes.cluster_nodes) {

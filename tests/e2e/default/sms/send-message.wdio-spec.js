@@ -50,6 +50,7 @@ describe('Send message', () => {
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
     await commonPage.hideSnackbar();
+    // avoid churn from server causing element rerenders, the message component is poorly written.
     await browser.throttle('offline');
   });
 

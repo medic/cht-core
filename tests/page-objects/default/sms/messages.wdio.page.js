@@ -82,7 +82,6 @@ const sendMessage = async (message, recipient, entryText) => {
   await modalPage.submit();
   await modalPage.checkModalHasClosed();
   await sentinelUtils.waitForSentinel();
-
 };
 
 const sendMessageDesktop = async (message, recipient, entryText) => {
