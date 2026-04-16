@@ -9,6 +9,9 @@ const DOC_IDS = {
   PRIVACY_POLICIES: 'privacy-policies',
   PARTNERS: 'partners',
   BRANDING: 'branding',
+  MIGRATION_LOG: 'migration-log',
+  EXTENSION_LIBS: 'extension-libs',
+  ZSCORE_CHARTS: 'zscore-charts',
 };
 
 // Contact Types
@@ -20,11 +23,21 @@ const CONTACT_TYPES = {
 const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
+  DATA_RECORD: 'data_record',
 };
 
 // HTTP Headers
 const HTTP_HEADERS = {
   REQUEST_ID: 'X-Request-Id',
+  MEDIC_SERVICE: 'X-Medic-Service',
+  MEDIC_USER: 'X-Medic-User',
+  OPENROSA_VERSION: 'X-OpenRosa-Version',
+  MEDIC_REPLICATION_ID: 'medic-replication-id',
+  LOGOUT_AUTHORIZATION: 'logout-authorization',
+};
+
+const STANDARD_HTTP_HEADERS = {
+  CONTENT_TYPE_OPTIONS: 'X-Content-Type-Options',
 };
 
 // Sentinel Metadata
@@ -43,6 +56,12 @@ const USER_ROLES = {
   COUCHDB_ADMIN: '_admin',
 };
 
+// Prefixes
+const PREFIXES = {
+  COUCH_USER: 'org.couchdb.user:',
+  TRANSLATIONS: 'messages-',
+};
+
 module.exports = {
   DOC_IDS,
   DOC_TYPES,
@@ -50,4 +69,6 @@ module.exports = {
   SENTINEL_METADATA,
   USER_ROLES,
   CONTACT_TYPES,
+  STANDARD_HTTP_HEADERS,
+  PREFIXES,
 };

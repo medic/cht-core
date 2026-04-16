@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -61,7 +61,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -95,7 +95,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'O',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -129,7 +129,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -167,7 +167,7 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
@@ -215,7 +215,7 @@ describe('conditional_alerts', () => {
     const form1 = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime() - 1200,
       from: '+444999',
       contact: {
@@ -228,7 +228,7 @@ describe('conditional_alerts', () => {
     const form0 = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {

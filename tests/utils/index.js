@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
-const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA, PREFIXES } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -61,7 +61,7 @@ const SERVICES = {
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
-const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
+const COUCH_USER_ID_PREFIX = PREFIXES.COUCH_USER;
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const COMPOSE_OVERRIDE_FILE = path.resolve(__dirname, '../cht-core-test.override.yml');
 const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
@@ -440,7 +440,7 @@ const PROTECTED_DOCS = [
   constants.USER_CONTACT_ID,
   `${COUCH_USER_ID_PREFIX}${constants.USERNAME}`,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
-  'migration-log',
+  DOC_IDS.MIGRATION_LOG,
   'resources',
   DOC_IDS.BRANDING,
   DOC_IDS.PARTNERS,

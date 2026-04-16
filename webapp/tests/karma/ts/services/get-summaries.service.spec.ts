@@ -4,6 +4,12 @@ import { expect } from 'chai';
 
 import { GetSummariesService } from '@mm-services/get-summaries.service';
 import { DbService } from '@mm-services/db.service';
+<<<<<<< HEAD
+=======
+import { SessionService } from '@mm-services/session.service';
+import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DOC_TYPES } from '@medic/constants';
+>>>>>>> master
 
 describe('GetSummaries service', () => {
   let service:GetSummariesService;
@@ -37,11 +43,124 @@ describe('GetSummaries service', () => {
     });
   });
 
+<<<<<<< HEAD
   it('queries allDocs and summarises reports', () => {
     allDocs.resolves({
       rows: [
         {
           doc: {
+=======
+  describe('online users', () => {
+
+    beforeEach(() => isOnlineOnly.returns(true));
+
+    it('queries the view and returns', () => {
+      query.resolves({
+        rows: [
+          {
+            id: 'a',
+            value: { reported_date: 1 }
+          },
+          {
+            id: 'b',
+            value: { reported_date: 2 }
+          },
+        ] });
+      return service.get([ 'a', 'b' ]).then(actual => {
+        expect(query.callCount).to.equal(1);
+        expect(query.args[0][0]).to.equal('medic/doc_summaries_by_id');
+        expect(query.args[0][1]).to.deep.equal({ keys: [ 'a', 'b' ] });
+        expect(allDocs.callCount).to.equal(0);
+        expect(actual).to.deep.equal([
+          {
+            _id: 'a',
+            reported_date: 1
+          },
+          {
+            _id: 'b',
+            reported_date: 2
+          },
+        ]);
+      });
+    });
+
+  });
+
+  describe('restricted users', () => {
+
+    beforeEach(() => isOnlineOnly.returns(false));
+
+    it('queries allDocs and summarises reports', () => {
+      allDocs.resolves({
+        rows: [
+          {
+            doc: {
+              _id: 'a',
+              _rev: '1',
+              type: DOC_TYPES.DATA_RECORD,
+              form: 'delivery',
+              from: '+123',
+              contact: {
+                _id: 'c',
+                phone: '+456',
+                parent: {
+                  _id: 'd',
+                  parent: {
+                    _id: 'e'
+                  }
+                }
+              },
+              verified: true,
+              reported_date: 100,
+              fields: {
+                patient_name: 'jeff',
+                patient_id: 'f'
+              }
+            }
+          },
+          {
+            doc: {
+              _id: 'b',
+              _rev: '2',
+              type: DOC_TYPES.DATA_RECORD,
+              form: 'registration',
+              sent_by: '+321',
+              errors: [ { code: 'sys.missing_fields', fields: [ 'patient_id' ] } ],
+              reported_date: 200
+            }
+          },
+          {
+            doc: {
+              _id: 'c',
+              _rev: '1',
+              type: DOC_TYPES.DATA_RECORD,
+              form: 'delivery',
+              from: '+123',
+              contact: {
+                _id: 'c',
+                phone: '+456',
+                parent: {
+                  _id: 'd',
+                  parent: {
+                    _id: 'e'
+                  }
+                }
+              },
+              verified: true,
+              reported_date: 100,
+              fields: {
+                place_id: 'd',
+              }
+            }
+          },
+        ] });
+      return service.get([ 'a', 'b' ]).then(actual => {
+        expect(query.callCount).to.equal(0);
+        expect(allDocs.callCount).to.equal(1);
+        expect(allDocs.args[0][0]).to.deep.equal({ keys: [ 'a', 'b' ], include_docs: true });
+        expect(actual).to.deep.equal([
+          {
+>>>>>>> master
             _id: 'a',
             _rev: '1',
             type: 'data_record',

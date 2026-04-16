@@ -12,7 +12,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 const compileConfig = async (tasksFileName, targetFileName) => {
   await chtConfUtils.initializeConfigDir();
@@ -45,7 +45,7 @@ const chw = userFactory.build({
 });
 
 const targetTag = moment().format('YYYY-MM');
-const targetDocId = `target~${targetTag}~${chwContact._id}~org.couchdb.user:${chw.username}`;
+const targetDocId = `target~${targetTag}~${chwContact._id}~${PREFIXES.COUCH_USER}${chw.username}`;
 
 describe('Target accuracy', () => {
   before(async () => {

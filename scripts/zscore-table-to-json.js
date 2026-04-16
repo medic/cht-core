@@ -6,6 +6,7 @@
  */
 
 const fs = require('fs');
+const { DOC_IDS } = require('@medic/constants');
 
 const pivot = function(data, keyFn) {
   const result = [];
@@ -114,7 +115,7 @@ getWFAChart(function(err, wfaChart) {
         throw err;
       }
       const doc = {
-        _id: 'zscore-charts',
+        _id: DOC_IDS.ZSCORE_CHARTS,
         charts: [ wfaChart, hfaChart, wfhChart ]
       };
       fs.writeFile('doc.json', JSON.stringify(doc, null, 2), function(err) {

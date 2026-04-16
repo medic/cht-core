@@ -4,6 +4,7 @@ const userFactory = require('@factories/cht/users/users');
 const { expect } = require('chai');
 const { setAuth, removeAuth } = require('./auth');
 const { getRemoteDataContext, Target, Qualifier } = require('@medic/cht-datasource');
+const { PREFIXES } = require('@medic/constants');
 
 const place = utils.deepFreeze(placeFactory.place().build({ type: 'district_hospital' }));
 const offlineUser = utils.deepFreeze(userFactory.build({
@@ -19,7 +20,7 @@ const offlineUser = utils.deepFreeze(userFactory.build({
 const createTarget = ({
   owner,
   reporting_period,
-  user = 'org.couchdb.user:chw',
+  user = PREFIXES.COUCH_USER + 'chw',
   updated_date = 1758690000000
 }) => {
   return {
@@ -82,7 +83,7 @@ const targets = utils.deepFreeze([
   createTarget({
     owner: 'c3f6b91e-b095-48ef-a524-705e29fd9f6d',
     reporting_period: '2025-09',
-    user: 'org.couchdb.user:supervisor'
+    user: PREFIXES.COUCH_USER + 'supervisor'
   })
 ]);
 

@@ -9,7 +9,7 @@ const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Tasks tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
@@ -55,7 +55,7 @@ describe('Tasks tab breadcrumbs', () => {
   const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
 
   const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     language: 'en',
     known: true,
     type: 'user-settings',

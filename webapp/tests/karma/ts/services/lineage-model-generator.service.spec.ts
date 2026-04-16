@@ -4,6 +4,7 @@ import { expect } from 'chai';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DbService } from '@mm-services/db.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('LineageModelGenerator service', () => {
   let service;
@@ -306,7 +307,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('binds lineage and contact', () => {
-      const report = { _id: 'a', _rev: '1', type: 'data_record', form: 'a', contact: { _id: 'b' } };
+      const report = { _id: 'a', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'a', contact: { _id: 'b' } };
       const contact = { _id: 'b', _rev: '1' };
       const parent = { _id: 'c', _rev: '1' };
       const grandparent = { _id: 'd', _rev: '1' };
@@ -325,7 +326,7 @@ describe('LineageModelGenerator service', () => {
     });
 
     it('hydrates lineage contacts - #3812', () => {
-      const report = { _id: 'a', _rev: '1', type: 'data_record', form: 'a', contact: { _id: 'x' } };
+      const report = { _id: 'a', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'a', contact: { _id: 'x' } };
       const contact = { _id: 'b', _rev: '1', contact: { _id: 'y' } };
       const parent = { _id: 'c', _rev: '1', contact: { _id: 'e' } };
       const grandparent = { _id: 'd', _rev: '1', contact: { _id: 'f' } };
@@ -361,7 +362,7 @@ describe('LineageModelGenerator service', () => {
       const docs = [
         {
           _id: 'report1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'contact2', parent: { _id: 'parent2' } },
           fields: { patient_id: 'patient_id1' },
         },
@@ -399,7 +400,7 @@ describe('LineageModelGenerator service', () => {
         expect(result).to.deep.equal([
           {
             _id: 'report1',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             contact: {
               _id: 'contact2',
               name: 'contact 2',
@@ -444,7 +445,7 @@ describe('LineageModelGenerator service', () => {
       const docs = [
         {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'old_contact' },
           fields: { patient_uuid: 'new_patient' },
         },
@@ -476,7 +477,7 @@ describe('LineageModelGenerator service', () => {
         expect(result).to.deep.equal([
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             contact: { _id: 'old_contact', name: 'old contact' },
             fields: { patient_uuid: 'new_patient' },
             patient: {

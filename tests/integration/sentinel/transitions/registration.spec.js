@@ -5,7 +5,7 @@ const moment = require('moment');
 const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
 const testForm = require('./test-stubs');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -107,7 +107,7 @@ describe('registration', () => {
     const patientPhone = '+9779841123123';
     const patientNameAndPhone = { // has just the `patient_name`and phone so should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -168,7 +168,7 @@ describe('registration', () => {
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: patient_id,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -247,7 +247,7 @@ describe('registration', () => {
     const patientName = 'unique patient';
     const patientReport = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: patientPhone,
       fields: {
@@ -261,7 +261,7 @@ describe('registration', () => {
     };
     const duplicatePatientReport = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: patientPhone,
       fields: {
@@ -321,7 +321,7 @@ describe('registration', () => {
     const patientPhone = '+97796666';
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -372,7 +372,7 @@ describe('registration', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       reported_date: moment().valueOf(),
       contact: {
@@ -411,7 +411,7 @@ describe('registration', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'NOT_FORM',
       reported_date: moment().valueOf(),
       contact: {
@@ -470,7 +470,7 @@ describe('registration', () => {
 
     const noSubjects = { // doesn't patient_id or place_id fields
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+444999',
       form: 'FORM',
       fields: {
@@ -485,7 +485,7 @@ describe('registration', () => {
 
     const noPatient = { // has a patient_id that has no corresponding contact
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -501,7 +501,7 @@ describe('registration', () => {
 
     const noPlace = { // has a place_id that has no corresponding contact
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -591,7 +591,7 @@ describe('registration', () => {
 
     const placeInsteadOfPatient = { // has a patient_id field containing shortcode corresponding to a place
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -606,7 +606,7 @@ describe('registration', () => {
 
     const patientInsteadOfPlace = { // has a place_id field containing shortcode corresponding to a person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -621,7 +621,7 @@ describe('registration', () => {
 
     const switchedSubjects = { // has a place instead of patient and vice versa
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -637,7 +637,7 @@ describe('registration', () => {
 
     const bothSubjectsPlaces = { // both subjects are places
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -653,7 +653,7 @@ describe('registration', () => {
 
     const bothSubjectsPersons = { // both subjects are persons
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -745,7 +745,7 @@ describe('registration', () => {
 
     const justPatientName = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -760,7 +760,7 @@ describe('registration', () => {
 
     const patientNameAndShortcode = { // has patient_name and patient_id field, error bc. patient is not found.
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -776,7 +776,7 @@ describe('registration', () => {
 
     const customPatientNameAndCustomShortcode = { // has custom fields populated, should create patient with the fields
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-B',
       from: '+444999',
       fields: {
@@ -792,7 +792,7 @@ describe('registration', () => {
 
     const patientNameAndCustomShortcode = { // has patient_name and custom shortcode, should create patient
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-B',
       from: '+444999',
       fields: {
@@ -971,7 +971,7 @@ describe('registration', () => {
 
     const chwNoParent = {
       _id: 'chwNoParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -983,7 +983,7 @@ describe('registration', () => {
 
     const chwNonExistingParent = {
       _id: 'chwNonExistingParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -996,7 +996,7 @@ describe('registration', () => {
 
     const invalidParent1 = {
       _id: 'invalidParent1',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -1009,7 +1009,7 @@ describe('registration', () => {
 
     const invalidParent2 = {
       _id: 'invalidParent2',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -1022,7 +1022,7 @@ describe('registration', () => {
 
     const invalidParent3 = {
       _id: 'invalidParent3',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-NURSE',
       from: '+00000000',
       fields: {
@@ -1172,7 +1172,7 @@ describe('registration', () => {
 
     const createPerson = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-PERSON',
       from: '+00000000',
       fields: {
@@ -1185,7 +1185,7 @@ describe('registration', () => {
 
     const createChw = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -1198,7 +1198,7 @@ describe('registration', () => {
 
     const createNurse = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-NURSE',
       from: '+444999',
       fields: {
@@ -1304,7 +1304,7 @@ describe('registration', () => {
 
     const withWeeksSinceLMP = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1320,7 +1320,7 @@ describe('registration', () => {
 
     const withLMP = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1336,7 +1336,7 @@ describe('registration', () => {
 
     const withLMPDate = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1403,7 +1403,7 @@ describe('registration', () => {
 
     const withMonthsSinceBirth = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1419,7 +1419,7 @@ describe('registration', () => {
 
     const withWeeksSinceBirth = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1435,7 +1435,7 @@ describe('registration', () => {
 
     const withAgeInYears = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1490,7 +1490,7 @@ describe('registration', () => {
 
     const createPlace = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-PLACE',
       from: '+00000000',
       fields: {
@@ -1604,7 +1604,7 @@ describe('registration', () => {
 
     const clinicNoParentUnderClinic = {
       _id: 'clinicNoParentUnderClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC_NO_PARENT',
       from: '+444999',
       fields: {
@@ -1619,7 +1619,7 @@ describe('registration', () => {
 
     const clinicNoParentUnderDistrict = {
       _id: 'clinicNoParentUnderDistrict',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC_NO_PARENT',
       from: '+00000000',
       fields: {
@@ -1631,7 +1631,7 @@ describe('registration', () => {
 
     const clinicUnderClinic = {
       _id: 'clinicUnderClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1644,7 +1644,7 @@ describe('registration', () => {
 
     const clinicUnderDistrict = {
       _id: 'clinicUnderDistrict',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1657,7 +1657,7 @@ describe('registration', () => {
 
     const clinicNoParent = {
       _id: 'clinicNoParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1669,7 +1669,7 @@ describe('registration', () => {
 
     const clinicNoExistingParent = {
       _id: 'clinicNonExistingParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1682,7 +1682,7 @@ describe('registration', () => {
 
     const healthCenterUnderClinic = {
       _id: 'healthCenterUnderClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-HEALTH_CENTER',
       from: '+11111111',
       fields: {
@@ -1914,7 +1914,7 @@ describe('registration', () => {
 
     const clinicNoParent = {
       _id: 'clinicNoParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC_NO_PARENT',
       from: '+11111111',
       fields: {
@@ -1926,7 +1926,7 @@ describe('registration', () => {
 
     const nursingHome = {
       _id: 'justANursingHome',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-NURSING_HOME',
       from: '+00000000',
       fields: {
@@ -1939,7 +1939,7 @@ describe('registration', () => {
 
     const healthCenter = {
       _id: 'newHealthCenter',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-HEALTH_CENTER',
       from: '+00000000',
       fields: {
@@ -2097,7 +2097,7 @@ describe('registration', () => {
 
     const createClinic = {
       _id: 'createClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -2108,7 +2108,7 @@ describe('registration', () => {
 
     const createPerson = {
       _id: 'createPerson',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-PERSON',
       from: '+444999',
       fields: {
@@ -2253,7 +2253,7 @@ describe('registration', () => {
 
     const withPatient1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -2272,7 +2272,7 @@ describe('registration', () => {
 
     const withClinic1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+11111111',
       fields: {
@@ -2290,7 +2290,7 @@ describe('registration', () => {
 
     const withClinicAndPatient1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+11111111',
       fields: {
@@ -2488,7 +2488,7 @@ describe('registration', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       random_field: 20,

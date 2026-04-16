@@ -3,7 +3,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const { expect } = require('chai');
 
 const assertChangeIds = (changes, ...expectedIds) => {
@@ -145,7 +145,7 @@ const parentPlace = {
   name: 'Big Parent Hostpital'
 };
 
-const bobUserId = 'org.couchdb.user:bob';
+const bobUserId = PREFIXES.COUCH_USER + 'bob';
 
 const createSomeContacts = (nbr, parent) => {
   const docs = [];

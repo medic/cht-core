@@ -6,7 +6,7 @@ import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
-
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 import * as chai from 'chai';
 import chaiExclude from 'chai-exclude';
 import chaiAsPromised from 'chai-as-promised';
@@ -18,7 +18,7 @@ chai.config.truncateThreshold = 0;
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
-  BrowserDynamicTestingModule,
+  [BrowserDynamicTestingModule, MatIconTestingModule],
   platformBrowserDynamicTesting(),
   {
     errorOnUnknownElements: true,

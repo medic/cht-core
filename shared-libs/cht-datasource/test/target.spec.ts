@@ -9,6 +9,7 @@ import * as Remote from '../src/remote';
 import { and } from '../src/qualifier';
 import * as Core from '../src/libs/core';
 import { fakeGenerator } from './utils';
+const { PREFIXES } = require('@medic/constants');
 
 describe('target', () => {
   const dataContext = { } as DataContext;
@@ -63,7 +64,7 @@ describe('target', () => {
           Qualifier.byUsername('someuser')
         );
         const expectedIdQualifier = Qualifier.byId(
-          `target~${composite.reportingPeriod}~${composite.contactId}~org.couchdb.user:${composite.username}`
+          `target~${composite.reportingPeriod}~${composite.contactId}~${PREFIXES.COUCH_USER}${composite.username}`
         );
 
         getTarget.resolves(target);

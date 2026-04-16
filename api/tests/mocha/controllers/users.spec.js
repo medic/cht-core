@@ -10,7 +10,7 @@ const db = require('../../../src/db');
 const dataContext = require('../../../src/services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 const replicationLimitLog = require('../../../src/services/replication-limit-log');
-const { USER_ROLES: { COUCHDB_ADMIN, ADMIN } } = require('@medic/constants');
+const { USER_ROLES: { COUCHDB_ADMIN, ADMIN }, PREFIXES } = require('@medic/constants');
 
 let req;
 let userCtx;
@@ -45,7 +45,7 @@ describe('Users Controller', () => {
 
     it('returns a user', async () => {
       const expectedUser = {
-        id: 'org.couchdb.user:chw',
+        id: PREFIXES.COUCH_USER + 'chw',
         roles: ['chw', 'district-admin'],
         contact: {
           _id: 'chw-contact',
@@ -73,7 +73,7 @@ describe('Users Controller', () => {
       const userCtx = { name: 'chw' };
       auth.getUserCtx.resolves({ name: 'chw' });
       const expectedUser = {
-        id: 'org.couchdb.user:chw',
+        id: PREFIXES.COUCH_USER + 'chw',
         roles: ['chw', 'district-admin'],
         contact: {
           _id: 'chw-contact',
@@ -103,7 +103,7 @@ describe('Users Controller', () => {
       const userCtx = { name: 'chw' };
       auth.getUserCtx.resolves(userCtx);
       const expectedUser = {
-        id: 'org.couchdb.user:chw',
+        id: PREFIXES.COUCH_USER + 'chw',
         roles: ['chw', 'district-admin'],
         contact: {
           _id: 'chw-contact',
@@ -195,16 +195,16 @@ describe('Users Controller', () => {
 
     beforeEach(() => {
       userList = [
-        { id: 'org.couchdb.user:admin', roles: [COUCHDB_ADMIN] },
+        { id: PREFIXES.COUCH_USER + 'admin', roles: [COUCHDB_ADMIN] },
         {
-          id: 'org.couchdb.user:chw',
+          id: PREFIXES.COUCH_USER + 'chw',
           roles: ['chw', 'district-admin'],
           contact: {
             _id: 'chw-contact',
             parent: { _id: 'chw-facility' },
           }
         },
-        { id: 'org.couchdb.user:unknown' },
+        { id: PREFIXES.COUCH_USER + 'unknown' },
       ];
       req = { };
       res = { json: sinon.stub() };
@@ -224,13 +224,13 @@ describe('Users Controller', () => {
 
         await controller.list(req, res);
         const result = res.json.args[0][0];
-        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
         chai.expect(result[0].type).to.equal('_admin');
         chai.expect(result[0].roles).to.be.undefined;
-        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[1].type).to.deep.equal('chw');
         chai.expect(result[1].roles).to.be.undefined;
-        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
         chai.expect(result[2].type).to.deep.equal('unknown');
         chai.expect(result[2].roles).to.be.undefined;
       });
@@ -249,13 +249,13 @@ describe('Users Controller', () => {
 
         await controller.v2.list(req, res);
         const result = res.json.args[0][0];
-        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
         chai.expect(result[0].type).to.be.undefined;
         chai.expect(result[0].roles).to.deep.equal([COUCHDB_ADMIN]);
-        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[1].type).to.be.undefined;
         chai.expect(result[1].roles).to.deep.equal([ 'chw', 'district-admin' ]);
-        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
         chai.expect(result[2].type).to.be.undefined;
         chai.expect(result[2].roles).to.be.undefined;
       });
@@ -275,7 +275,7 @@ describe('Users Controller', () => {
           .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
-        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[0].type).to.be.undefined;
         chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
         chai.expect(result[0].contact._id).to.equal('chw-contact');
@@ -294,7 +294,7 @@ describe('Users Controller', () => {
         });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
-        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[0].type).to.be.undefined;
         chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
         chai.expect(result[0].contact._id).to.equal('chw-contact');
@@ -309,9 +309,9 @@ describe('Users Controller', () => {
         chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(3);
-        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
-        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
-        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
+        chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
+        chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
       });
     });
 

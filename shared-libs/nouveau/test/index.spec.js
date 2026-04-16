@@ -1,6 +1,7 @@
 const expect = require('chai').expect;
 
 const lib = require('../src/index');
+const { PREFIXES } = require('@medic/constants');
 
 describe('nouveau utils', () => {
   it('should return limits', () => {
@@ -20,8 +21,8 @@ describe('nouveau utils', () => {
     });
 
     it('should escape a user name', () => {
-      expect(lib.escapeKeys('org.couchdb.user:fixture.user.test'))
-        .to.equal('org.couchdb.user\\:fixture.user.test');
+      const userId = PREFIXES.COUCH_USER + 'fixture.user.test';
+      expect(lib.escapeKeys(userId)).to.equal('org.couchdb.user\\:fixture.user.test');
     });
 
     it('should escape a task uuid', () => {

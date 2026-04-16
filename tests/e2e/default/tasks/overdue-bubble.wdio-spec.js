@@ -9,7 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Task overdue bubble counter', () => {
   const places = placeFactory.generateHierarchy();
@@ -142,7 +142,7 @@ describe('Task overdue bubble counter', () => {
     const bubbleCount = await getTasksBubbleCount();
 
     const homeVisitReport = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'home_visit',
       content_type: 'xml',
       fields: {
