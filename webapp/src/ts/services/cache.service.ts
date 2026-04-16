@@ -2,23 +2,32 @@ import {Injectable} from '@angular/core';
 
 import {ChangesService} from '@mm-services/changes.service';
 
+type CacheCallback<T = unknown> = (err: unknown, result?: T) => void;
+
+interface CacheRegisterOptions<T = unknown, C = unknown> {
+  get: (done: CacheCallback<T>) => void;
+  invalidate?: (change: C) => boolean;
+}
+
+interface CacheEntry<T = unknown, C = unknown> {
+  docs: T | null;
+  pending: boolean;
+  invalidate?: (change: C) => boolean;
+  callbacks: CacheCallback<T>[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CacheService {
-  private caches: {
-    docs: any;
-    pending: boolean;
-    invalidate: any;
-    callbacks: any[];
-  }[] = [];
+  private caches: CacheEntry[] = [];
 
   constructor(private changesService:ChangesService) {
     this.changesService.subscribe({
       key: 'cache',
       callback: (change) => {
         this.caches.forEach((cache) => {
-          if (cache.invalidate(change)) {
+          if (cache.invalidate && cache.invalidate(change)) {
             cache.docs = null;
             cache.pending = false;
           }
@@ -39,17 +48,17 @@ export class CacheService {
    *     If no invalidate function is provided the cache will never
    *     invalidate.
    */
-  register(options) {
-    const cache = {
+  register<T = unknown, C = unknown>(options: CacheRegisterOptions<T, C>) {
+    const cache: CacheEntry<T, C> = {
       docs: null,
       pending: false,
       invalidate: options.invalidate,
-      callbacks: [] as any[]
+      callbacks: []
     };
 
-    this.caches.push(cache);
+    this.caches.push(cache as CacheEntry);
 
-    return (callback) => {
+    return (callback: CacheCallback<T>) => {
       if (cache.docs) {
         return callback(null, cache.docs);
       }
@@ -61,10 +70,10 @@ export class CacheService {
       options.get((err, result) => {
         cache.pending = false;
         if (!err) {
-          cache.docs = result;
+          cache.docs = result ?? null;
         }
-        cache.callbacks.forEach((callback) => {
-          callback(err, result);
+        cache.callbacks.forEach((cb) => {
+          cb(err, result);
         });
         cache.callbacks = [];
       });

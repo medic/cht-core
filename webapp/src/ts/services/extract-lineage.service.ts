@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
 
+interface ContactLineage {
+  _id?: string;
+  parent?: ContactLineage;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -8,17 +13,18 @@ export class ExtractLineageService {
   constructor() {
   }
 
-  extract(contact) {
+  extract(contact: ContactLineage | null | undefined): ContactLineage | null | undefined {
     if (!contact) {
       return contact;
     }
 
-    const result: any = { _id: contact._id };
+    const result: ContactLineage = { _id: contact._id };
     let minified = result;
 
     while (contact.parent) {
-      minified.parent = { _id: contact.parent._id };
-      minified = minified.parent;
+      const next: ContactLineage = { _id: contact.parent._id };
+      minified.parent = next;
+      minified = next;
       contact = contact.parent;
     }
 
