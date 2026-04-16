@@ -108,9 +108,7 @@ angular.module('services').factory('MessageQueue',
               return docSummaries.summarise(row.doc);
             })
             // filter out deleted/missing docs
-            .filter(function(summary) {
-              return summary;
-            });
+            .filter(Boolean);
 
           messages.forEach(function(message) {
             message.recipient = findSummary(summaries, message);

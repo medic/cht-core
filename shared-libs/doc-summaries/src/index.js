@@ -64,7 +64,7 @@ const summariseReport = (doc) => {
     phone: doc.contact?.phone,
     form: doc.form,
     read: doc.read,
-    valid: !doc.errors || !doc.errors.length,
+    valid: !doc.errors?.length,
     verified: doc.verified,
     reported_date: doc.reported_date,
     contact: doc.contact?._id,
