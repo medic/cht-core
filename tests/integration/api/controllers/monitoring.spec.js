@@ -86,7 +86,12 @@ const assertIndeterminateFields = (result) => {
 describe('monitoring', () => {
   beforeEach(async () => {
     await sentinelUtils.waitForSentinel();
-    await utils.waitForActiveTasks();
+    await utils.waitForIndexes();
+
+    await getInfo('medic');
+    await getInfo('medic-test-sentinel');
+    await getInfo('medic-test-users-meta');
+    await getInfo('_users');
   });
   afterEach(() => utils.revertDb([], true));
 

@@ -1733,11 +1733,6 @@ const escapeBranchName = (branch) => branch?.replace(/[^A-Za-z0-9.-]/g, '-');
 const toggleSentinelTransitions = () => sendSignal('sentinel', 'USR1');
 const runSentinelTasks = () => sendSignal('sentinel', 'USR2');
 
-const waitForActiveTasks = async () => {
-  await waitForIndexes();
-  await delayPromise(1000);
-  await waitForIndexes();
-};
 const waitForIndexes = async () => {
   let indexes = [];
   do {
@@ -1832,6 +1827,6 @@ module.exports = {
   runCommand,
   deletePurgeDbs,
   saveLogs,
-  waitForActiveTasks,
+  waitForIndexes,
   waitForApiCrash,
 };
