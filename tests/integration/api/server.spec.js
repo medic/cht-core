@@ -395,6 +395,9 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
+        if (haproxyRequests.length !== 7) {
+          console.log(JSON.stringify(haproxyRequests, null, 2));
+        }
         expect(haproxyRequests.length).to.equal(7);
         expect(haproxyRequests[0]).to.include('_session');
         expect(haproxyRequests[1]).to.include('_session');
