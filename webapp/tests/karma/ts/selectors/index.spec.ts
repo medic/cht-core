@@ -650,6 +650,39 @@ describe('Selectors', () => {
         expect(resultByTitle).to.deep.equal([tasksState.tasksList[2]]);
       });
 
+      it('should support search with Nepali and Arabic characters', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'रामकुमारी' },   
+              lineage: ['गाउँपालिका'],           
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'ANC Visit',
+              contact: { name: 'فاطمة' },        
+              lineage: ['مستشفى المدينة'],       
+              lineageIds: ['contact2']
+            },
+          ],
+        };
+
+        const nepaliState = { filters: { search: 'रामकुमारी' } } as any;
+        const nepaliResult = Selectors.getFilteredTasksList.projector(tasksState, nepaliState);
+        expect(nepaliResult).to.deep.equal([tasksState.tasksList[0]]);
+
+        const arabicState = { filters: { search: 'فاطمة' } } as any;
+        const arabicResult = Selectors.getFilteredTasksList.projector(tasksState, arabicState);
+        expect(arabicResult).to.deep.equal([tasksState.tasksList[1]]);
+
+        const crossScriptState = { filters: { search: 'فاطمة' } } as any;
+        const crossScriptResult = Selectors.getFilteredTasksList.projector(tasksState, crossScriptState);
+        expect(crossScriptResult).to.deep.equal([tasksState.tasksList[1]]);
+      });
+
       it('should normalize diacritics in search', () => {
         const tasksState = {
           tasksList: [

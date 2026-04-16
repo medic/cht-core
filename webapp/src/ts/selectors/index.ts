@@ -16,17 +16,18 @@ const normalizeText = (value?: string): string => {
   return value
     .toString()
     .toLowerCase()
+    // NFD decomposition splits accented characters into base + combining diacritical marks,
+    // and the regex then strips those combining marks (Unicode range U+0300–U+036F),
+    // so that e.g. 'Élodie' becomes 'elodie' and can be matched without accents.
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 };
 
-const taskMatchesSearch = (task: TaskWithLineage, search: string): boolean => {
-  if (!search?.trim()) {
+const taskMatchesSearch = (task: TaskWithLineage, normalizedSearch: string): boolean => {
+  if (!normalizedSearch) {
     return true;
   }
-
-  const normalizedSearch = normalizeText(search);
 
   const candidates = [
     task?.contact?.name,
@@ -44,13 +45,17 @@ const taskMatchesSearch = (task: TaskWithLineage, search: string): boolean => {
   }
 
   const fuse = new Fuse(candidates, {
+    // threshold: 0 = exact match only, 1 = match anything.
     threshold: 0.2,       
+    // distance: limits how far from the start of the string a match can be found.
     distance: 50,
+    // Require at least 3 characters to trigger fuzzy matching,
     minMatchCharLength: 3, 
+    // ignoreLocation: true means the match can appear anywhere in the string,
     ignoreLocation: true,
   });
 
-  return fuse.search(search).length > 0;
+  return fuse.search(normalizedSearch).length > 0;
 };
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
@@ -72,7 +77,10 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
   }
 
   if (filters.search) {
-    filtered = filtered.filter(task => taskMatchesSearch(task, filters.search!));
+    const normalizedSearch = normalizeText(filters.search);
+    if (normalizedSearch) {
+      filtered = filtered.filter(task => taskMatchesSearch(task, normalizedSearch));
+    }
   }
 
   return filtered;
