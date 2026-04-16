@@ -21,8 +21,9 @@ const buildInfo = (version, namespace = 'medic', application = 'medic') => ({ ve
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
   sinon.stub(db, 'bulkDocs');
-  sinon.stub(db, 'compact');
-  sinon.stub(db, 'viewCleanup');
+  sinon.stub(db, 'compact').resolves();
+  sinon.stub(db, 'viewCleanup').resolves();
+  sinon.stub(db, 'info').resolves({ sizes: { active: 100, file: 110 }});
 };
 
 
@@ -167,8 +168,8 @@ describe('Setup utils', () => {
       mockDb(db.users);
     });
 
-    it('should start db compact and view cleanup for every database', () => {
-      utils.cleanup();
+    it('should start db compact and view cleanup for every database if altered', async () => {
+      await utils.cleanup(['medic', 'medic-sentinel', 'medic-logs', 'medic-users-meta', '_users']);
 
       expect(db.medic.compact.callCount).to.equal(1);
       expect(db.sentinel.compact.callCount).to.equal(1);
@@ -189,7 +190,7 @@ describe('Setup utils', () => {
       const error = { some: 'error' };
       db.sentinel.compact.rejects(error);
 
-      utils.cleanup();
+      await utils.cleanup(['medic', 'medic-sentinel', 'medic-logs', 'medic-users-meta', '_users']);
 
       await Promise.resolve();
       await Promise.resolve();
@@ -218,8 +219,9 @@ describe('Setup utils', () => {
       const error = { some: 'error' };
       db.nouveauCleanup.rejects(error);
 
-      utils.cleanup();
+      await utils.cleanup(['medic', 'medic-sentinel', 'medic-logs', 'medic-users-meta', '_users']);
 
+      await Promise.resolve();
       await Promise.resolve();
 
       expect(db.nouveauCleanup.callCount).to.equal(1);
@@ -227,6 +229,32 @@ describe('Setup utils', () => {
       expect(logger.error.callCount).to.be.at.least(1);
       expect(logger.error.args[0][0]).to.include('Error while running cleanup');
       expect(logger.error.args[0][1]).to.deep.equal(error);
+    });
+
+    it('should skip db compact and view cleanup if no ddoc changes and low fragmentation', async () => {
+      await utils.cleanup([]); // no altered databases
+
+      expect(db.medic.info.callCount).to.equal(1);
+      expect(db.sentinel.info.callCount).to.equal(1);
+
+      expect(db.medic.compact.callCount).to.equal(0);
+      expect(db.sentinel.compact.callCount).to.equal(0);
+      expect(db.medicLogs.compact.callCount).to.equal(0);
+      expect(db.medicUsersMeta.compact.callCount).to.equal(0);
+      expect(db.users.compact.callCount).to.equal(0);
+
+      expect(db.medic.viewCleanup.callCount).to.equal(0);
+      expect(db.nouveauCleanup.callCount).to.equal(1);
+    });
+
+    it('should run db compact and view cleanup if fragmentation is high', async () => {
+      db.medic.info.resolves({ sizes: { active: 100, file: 150 }}); // > 1.2 ratio
+      await utils.cleanup([]);
+
+      expect(db.medic.compact.callCount).to.equal(1);
+      expect(db.sentinel.compact.callCount).to.equal(0);
+      expect(db.medic.viewCleanup.callCount).to.equal(1);
+      expect(db.sentinel.viewCleanup.callCount).to.equal(0);
     });
   });
 

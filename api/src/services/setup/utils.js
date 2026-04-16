@@ -50,19 +50,41 @@ const deleteStagedDdocs = async () => {
 };
 
 /**
- * Runs compaction and view cleanup for every database.
+ * Runs compaction and view cleanup conditionally.
+ * If ddocs changed or if fragmentation is high.
  */
-const cleanup = () => {
+const cleanup = async (alteredDatabases = []) => {
   for (const database of DATABASES) {
-    logger.info(`Running DB compact and view cleanup for ${database.name}`);
-    Promise
-      .all([
-        database.db.compact(),
-        database.db.viewCleanup(),
-      ])
-      .catch(err => {
-        logger.error('Error while running cleanup: %o', err);
-      });
+    let requiresCompaction = alteredDatabases.includes(database.name);
+
+    if (!requiresCompaction) {
+      try {
+        const info = await database.db.info();
+        if (info && info.sizes && info.sizes.active > 0 && info.sizes.file > 0) {
+          const fragmentation = info.sizes.file / info.sizes.active;
+          if (fragmentation > 1.2) {
+            requiresCompaction = true;
+          }
+        }
+      } catch (err) {
+        logger.error(`Error fetching info for ${database.name}: %o`, err);
+        requiresCompaction = true;
+      }
+    }
+
+    if (requiresCompaction) {
+      logger.info(`Running DB compact and view cleanup for ${database.name}`);
+      Promise
+        .all([
+          database.db.compact(),
+          database.db.viewCleanup(),
+        ])
+        .catch(err => {
+          logger.error('Error while running cleanup: %o', err);
+        });
+    } else {
+      logger.info(`Skipping DB compact and view cleanup for ${database.name} (no ddoc changes and low fragmentation)`);
+    }
   }
   db.nouveauCleanup().catch(err => {
     logger.error('Error while running cleanup: %o', err);
@@ -294,6 +316,7 @@ const saveStagedDdocs = async (ddocDefinitions) => {
  */
 const unstageStagedDdocs = async () => {
   const deployTime = new Date().getTime();
+  const alteredDatabases = [];
   for (const database of DATABASES) {
     const ddocs = await ddocsService.getDdocs(database);
     const ddocsToSave = [];
@@ -318,8 +341,15 @@ const unstageStagedDdocs = async () => {
       ddocsToSave.push(ddoc);
     }
 
-    await db.saveDocs(database.db, ddocsToSave);
+    if (ddocsToSave.length > 0) {
+      await db.saveDocs(database.db, ddocsToSave);
+      alteredDatabases.push(database.name);
+    } else {
+      // maintain previous bulkdoc behavior for arrays of length 0 if it was called unconditionally
+      await db.saveDocs(database.db, []);
+    }
   }
+  return alteredDatabases;
 };
 
 const getUpgradeServicePayload = (stagingDoc) => {
