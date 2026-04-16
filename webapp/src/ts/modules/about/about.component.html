@@ -27,21 +27,31 @@
           <div>
             <label translate>debug.supported_browser</label>
             <div>
-              <span class="fa fa-check-square browser-support-icon-green"></span>
-              <ng-template #unsupportedBrowser>
+              @if (browserSupport?.isUsingSupportedEnvironment) {
+                <span class="fa fa-check-square browser-support-icon-green"></span>
+              } @else {
                 <span class="fa fa-times browser-support-icon-red"></span>
                 <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
                   {{'debug.supported_browser.see_requirements' | translate}}
                 </a>
                 <p class="browser-support-message">
                   <span>{{'login.unsupported_browser' | translate}}</span>
-                  <ng-container [ngSwitch]="browserSupport.outdatedComponent">
-                    <span *ngSwitchCase="'chtAndroid'">{{'login.unsupported_browser.outdated_cht_android' | translate}}</span>
-                    <span *ngSwitchCase="'webviewApk'">{{'login.unsupported_browser.outdated_webview_apk' | translate}}</span>
-                    <span *ngSwitchCase="'browser'">{{'login.unsupported_browser.outdated_browser' | translate}}</span>
-                  </ng-container>
+                  @switch (browserSupport.outdatedComponent) {
+                    @case ('chtAndroid') {
+                      <span>{{'login.unsupported_browser.outdated_cht_android' | translate}}</span>
+                    }
+                    @case ('webviewApk') {
+                      <span>{{'login.unsupported_browser.outdated_webview_apk' | translate}}</span>
+                    }
+                    @case ('browser') {
+                      <span>{{'login.unsupported_browser.outdated_browser' | translate}}</span>
+                    }
+                    @default {
+                      <span>{{'login.unsupported_browser.outdated_browser' | translate}}</span>
+                    }
+                  }
                 </p>
-              </ng-template>
+              }
             </div>
           </div>
 
