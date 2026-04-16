@@ -49,28 +49,28 @@ const deleteStagedDdocs = async () => {
   }
 };
 
+const isHighlyFragmented = async (database) => {
+  try {
+    const info = await database.db.info();
+    if (info?.sizes?.active > 0 && info?.sizes?.file > 0) {
+      const fragmentation = info.sizes.file / info.sizes.active;
+      return fragmentation > 1.2;
+    }
+    return false;
+  } catch (err) {
+    logger.error(`Error fetching info for ${database.name}: %o`, err);
+    // fallback to compacting on error
+    return true;
+  }
+};
+
 /**
  * Runs compaction and view cleanup conditionally.
  * If ddocs changed or if fragmentation is high.
  */
 const cleanup = async (alteredDatabases = []) => {
   for (const database of DATABASES) {
-    let requiresCompaction = alteredDatabases.includes(database.name);
-
-    if (!requiresCompaction) {
-      try {
-        const info = await database.db.info();
-        if (info && info.sizes && info.sizes.active > 0 && info.sizes.file > 0) {
-          const fragmentation = info.sizes.file / info.sizes.active;
-          if (fragmentation > 1.2) {
-            requiresCompaction = true;
-          }
-        }
-      } catch (err) {
-        logger.error(`Error fetching info for ${database.name}: %o`, err);
-        requiresCompaction = true;
-      }
-    }
+    const requiresCompaction = alteredDatabases.includes(database.name) || await isHighlyFragmented(database);
 
     if (requiresCompaction) {
       logger.info(`Running DB compact and view cleanup for ${database.name}`);
