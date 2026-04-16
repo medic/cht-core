@@ -149,9 +149,8 @@ const loadTransitions = (synchronous = false) => {
     try {
       self._loadTransition(transition, synchronous);
     } catch (e) {
-      const errorMessage = `Failed loading transition "${transition}": check your configuration is valid. ` +
-     `See https://docs.communityhealthtoolkit.org/apps/reference/app-settings/transitions/`;
-      loadErrors = [errorMessage, e && e.message || 'unknown'];
+    const errorMessage = `Failed loading transition "${transition}". This is likely due to an error in the transition configuration. Please check your configuration.`; 
+      loadErrors = [errorMessage, (e && e.message) || 'unknown'];
       logger.error(errorMessage);
       logger.error('%o', e);
     }
