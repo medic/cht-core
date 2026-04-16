@@ -88,11 +88,9 @@ describe('monitoring', () => {
     await sentinelUtils.waitForSentinel();
     await utils.waitForIndexes();
 
-    await getInfo('medic');
-    await getInfo('medic-test-sentinel');
-    await getInfo('medic-test-users-meta');
-    await getInfo('_users');
+    await getExpectedNouveauIndexes('medic-test');
   });
+
   afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
