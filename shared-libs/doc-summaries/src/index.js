@@ -1,6 +1,6 @@
 const contactTypesUtils = require('@medic/contact-types-utils');
 
-const SUBJECT_FIELDS = ['patient_id', 'patient_uuid', 'patient_name', 'place_id'];
+const SUBJECT_FIELDS = new Set(['patient_id', 'patient_uuid', 'patient_name', 'place_id']);
 
 const getLineage = (contact) => {
   const parts = [];
@@ -15,19 +15,22 @@ const getLineage = (contact) => {
 
 const isMissingSubjectError = (error) => {
   return error.code === 'sys.missing_fields' &&
-    error.fields?.some(field => SUBJECT_FIELDS.includes(field));
+    error.fields?.some(field => SUBJECT_FIELDS.has(field));
 };
 
-// NOSONAR_BEGIN - preserving these functions as-is, not changing for sonar
+const getReference = (doc) => {
+  return doc.patient_id ||
+    doc.fields?.patient_id ||
+    doc.fields?.patient_uuid ||
+    doc.place_id ||
+    doc.fields?.place_id;
+};
+
 const getSubject = (doc) => {
   const subject = {};
-  const reference =
-    doc.patient_id ||
-    (doc.fields && doc.fields.patient_id) ||
-    (doc.fields && doc.fields.patient_uuid) ||
-    doc.place_id ||
-    (doc.fields && doc.fields.place_id);
-  const patientName = doc.fields && doc.fields.patient_name;
+  const reference = getReference(doc);
+  const patientName = doc.fields?.patient_name;
+
   if (patientName) {
     subject.name = patientName;
   }
@@ -38,15 +41,12 @@ const getSubject = (doc) => {
   } else if (patientName) {
     subject.value = patientName;
     subject.type = 'name';
-  } else if (doc.errors) {
-    if (doc.errors.some(error => isMissingSubjectError(error))) {
-      subject.type = 'unknown';
-    }
+  } else if (doc.errors?.some(error => isMissingSubjectError(error))) {
+    subject.type = 'unknown';
   }
 
   return subject;
 };
-// NOSONAR_END
 
 const isContact = (doc) => {
   const type = doc?.type;
@@ -56,46 +56,52 @@ const isContact = (doc) => {
   return type === 'contact' || contactTypesUtils.isHardcodedType(type);
 };
 
-// NOSONAR_BEGIN - preserving this function as-is, not changing for sonar
+const summariseReport = (doc) => {
+  return {
+    _id: doc._id,
+    _rev: doc._rev,
+    from: doc.from || doc.sent_by,
+    phone: doc.contact?.phone,
+    form: doc.form,
+    read: doc.read,
+    valid: !doc.errors || !doc.errors.length,
+    verified: doc.verified,
+    reported_date: doc.reported_date,
+    contact: doc.contact?._id,
+    lineage: getLineage(doc.contact?.parent),
+    subject: getSubject(doc),
+    case_id: doc.case_id || doc.fields?.case_id
+  };
+};
+
+const summariseContact = (doc) => {
+  return {
+    _id: doc._id,
+    _rev: doc._rev,
+    name: doc.name || doc.phone,
+    phone: doc.phone,
+    type: doc.type,
+    contact_type: doc.contact_type,
+    contact: doc.contact?._id,
+    lineage: getLineage(doc.parent),
+    date_of_death: doc.date_of_death,
+    muted: doc.muted
+  };
+};
+
 const summarise = (doc) => {
   if (!doc) {
     return;
   }
 
   if (doc.type === 'data_record' && doc.form) {
-    return {
-      _id: doc._id,
-      _rev: doc._rev,
-      from: doc.from || doc.sent_by,
-      phone: doc.contact && doc.contact.phone,
-      form: doc.form,
-      read: doc.read,
-      valid: !doc.errors || !doc.errors.length,
-      verified: doc.verified,
-      reported_date: doc.reported_date,
-      contact: doc.contact && doc.contact._id,
-      lineage: getLineage(doc.contact && doc.contact.parent),
-      subject: getSubject(doc),
-      case_id: doc.case_id || (doc.fields && doc.fields.case_id)
-    };
+    return summariseReport(doc);
   }
 
   if (isContact(doc)) {
-    return {
-      _id: doc._id,
-      _rev: doc._rev,
-      name: doc.name || doc.phone,
-      phone: doc.phone,
-      type: doc.type,
-      contact_type: doc.contact_type,
-      contact: doc.contact && doc.contact._id,
-      lineage: getLineage(doc.parent),
-      date_of_death: doc.date_of_death,
-      muted: doc.muted
-    };
+    return summariseContact(doc);
   }
 };
-// NOSONAR_END
 
 module.exports = {
   summarise,
