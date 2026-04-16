@@ -89,6 +89,7 @@ describe('monitoring', () => {
     await utils.waitForIndexes();
 
     await getExpectedNouveauIndexes('medic-test');
+
   });
 
   afterEach(() => utils.revertDb([], true));
