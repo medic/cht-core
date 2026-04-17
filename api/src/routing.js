@@ -798,7 +798,7 @@ app.put(
 );
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
-app.get('/api/v1/replication/get-failure-logs', replicationFailureLogController.get);
+app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

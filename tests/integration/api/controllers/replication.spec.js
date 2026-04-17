@@ -1336,7 +1336,7 @@ describe('replication', () => {
     const getFailureLogId = (username) => `replication-fail-${moment().format('YYYY-MM')}-${username}`;
 
     const getFailureLogs = (month) => {
-      const options = { path: '/api/v1/replication/get-failure-logs' };
+      const options = { path: '/api/v1/replication-failure-logs' };
       if (month) {
         options.path += `?month=${month}`;
       }
