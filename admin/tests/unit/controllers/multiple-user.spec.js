@@ -1,4 +1,4 @@
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES: LOCAL_DOC_TYPES } = require('@medic/constants');
 
 describe('MultipleUserCtrl controller', () => {
   'use strict';
@@ -83,7 +83,7 @@ describe('MultipleUserCtrl controller', () => {
               },
               role: 'chw',
               geolocalized: 'false',
-              type: DOC_TYPES.CONTACT,
+              type: LOCAL_DOC_TYPES.CONTACT,
               contact_type: 'c62_chw',
               name: 'test user'
             },
