@@ -2,7 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
-const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('Person API', () => {
@@ -271,7 +271,7 @@ describe('Person API', () => {
 
       expect(personDoc).excluding([ '_rev', '_id' ]).to.deep.equal({
         ...personInput,
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'person',
         parent: { _id: place0._id, parent: place0.parent }
       });
@@ -288,7 +288,7 @@ describe('Person API', () => {
 
       expect(personDoc).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal({
         ...personInput,
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'person',
         parent: { _id: place2._id }
       });

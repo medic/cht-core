@@ -10,6 +10,7 @@ import { AttachmentService } from '@mm-services/attachment.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('ContactSave service', () => {
 
@@ -185,7 +186,7 @@ describe('ContactSave service', () => {
     enketoTranslationService.contactRecordToJs.returns({
       doc: {
         _id: 'main1',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'some-contact-type',
         contact: { _id: 'contact', name: 'Richard' },
         value: undefined,
@@ -221,7 +222,7 @@ describe('ContactSave service', () => {
         expect(savedDocs.length).to.equal(1);
         expect(savedDocs[0]).to.deep.equal({
           _id: 'main1',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           name: 'Richard',
           contact_type: 'some-contact-type',
           contact: { _id: 'contact', parent: { _id: 'def' } },

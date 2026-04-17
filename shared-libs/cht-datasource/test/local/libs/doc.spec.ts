@@ -2,6 +2,8 @@ import * as Doc from '../../../src/libs/doc';
 import sinon, { SinonStub } from 'sinon';
 import logger from '@medic/logger';
 import * as LocalDoc from '../../../src/local/libs/doc';
+import { DOC_TYPES } from '@medic/constants';
+
 import {
   createDoc,
   fetchAndFilter,
@@ -666,7 +668,7 @@ describe('local doc lib', () => {
 
   describe('createDoc', () => {
     const doc = {
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       contact_type: 'person',
       name: 'Medic User',
       parent: {

@@ -8,6 +8,7 @@ const dataContext = require('../../src/libs/data-context');
 const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
 const { Person, Qualifier } = require('@medic/cht-datasource');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('people controller', () => {
   let minifyLineage;
@@ -39,7 +40,7 @@ describe('people controller', () => {
 
     it('returns error on wrong doc contact_type', () => {
       config.get.returns([{ id: 'person', person: true }]);
-      const actual = controller._validatePerson({ type: 'contact', contact_type: 'shoe' });
+      const actual = controller._validatePerson({ type: DOC_TYPES.CONTACT, contact_type: 'shoe' });
       chai.expect(actual).to.equal('Wrong type, this is not a person.');
     });
 

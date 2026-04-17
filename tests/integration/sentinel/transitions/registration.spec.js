@@ -11,7 +11,7 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'the_district_hospital',
     reported_date: new Date().getTime()
@@ -19,7 +19,7 @@ const contacts = [
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'the_health_center',
     parent: { _id: 'district_hospital' },
@@ -28,7 +28,7 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
@@ -44,7 +44,7 @@ const contacts = [
   {
     _id: 'person',
     name: 'Person',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'person',
     patient_id: 'patient',
     parent: { _id: 'clinic', 
@@ -55,7 +55,7 @@ const contacts = [
   {
     _id: 'supervisor',
     name: 'Supervisor',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'person',
     patient_id: 'the_supervisor',
     parent: { _id: 'district_hospital' },
@@ -65,7 +65,7 @@ const contacts = [
   {
     _id: 'middle_man',
     name: 'Middle man',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'person',
     patient_id: 'the_middle_man',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
@@ -1292,7 +1292,7 @@ describe('registration', () => {
 
         chai.expect(patients.rows[1].doc).to.deep.include({
           name: 'Lunaris',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'chw',
           parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
           created_by: 'supervisor',
@@ -1302,7 +1302,7 @@ describe('registration', () => {
 
         chai.expect(patients.rows[2].doc).to.deep.include({
           name: 'Apollo',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'nurse',
           parent: { _id: 'district_hospital' },
           created_by: 'person',
@@ -2040,7 +2040,7 @@ describe('registration', () => {
         });
         chai.expect(places.rows[1].doc).to.deep.include({
           name: 'Ford',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'nursing_home',
           place_id: updatedDocs[1].place_id,
           source_id: updatedDocs[1]._id,
@@ -2203,7 +2203,7 @@ describe('registration', () => {
 
         chai.expect(contacts.rows[1].doc).to.deep.include({
           name: 'Mentos',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'person',
           patient_id: updatedDocs[1].patient_id,
           source_id: updatedDocs[1]._id,

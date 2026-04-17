@@ -181,7 +181,7 @@ describe('GetSummaries service', () => {
         { doc: {
           _id: 'b',
           _rev: '2',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'patient',
           phone: '+123',
           parent: {
@@ -215,7 +215,7 @@ describe('GetSummaries service', () => {
             _rev: '2',
             name: '+123',
             phone: '+123',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: 'patient',
             contact: undefined,
             lineage: [ 'f', 'g' ],

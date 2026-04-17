@@ -1,4 +1,4 @@
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('ContactTypes service', () => {
 
@@ -107,7 +107,7 @@ describe('ContactTypes service', () => {
     });
 
     it('returns true for contact type', () => {
-      chai.expect(service.includes({ type: 'contact' })).to.equal(true);
+      chai.expect(service.includes({ type: DOC_TYPES.CONTACT })).to.equal(true);
     });
 
     it('returns false for random type', () => {
@@ -202,7 +202,7 @@ describe('ContactTypes service', () => {
     it('should return the type id of the provided contact', () => {
       chai.expect(service.getTypeId({ type: 'person' })).to.equal('person');
       chai.expect(service.getTypeId({ type: CONTACT_TYPES.CLINIC })).to.equal(CONTACT_TYPES.CLINIC);
-      chai.expect(service.getTypeId({ type: 'contact', contact_type: 'something' })).to.equal('something');
+      chai.expect(service.getTypeId({ type: DOC_TYPES.CONTACT, contact_type: 'something' })).to.equal('something');
     });
 
     it('should not crash when provided invalid inputs', () => {

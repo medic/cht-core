@@ -240,7 +240,7 @@ describe('TasksComponent', () => {
     contactTypesService.includes
       .withArgs(sinon.match({ type: 'person' })).returns(true)
       .withArgs(sinon.match({ type: CONTACT_TYPES.CLINIC })).returns(true)
-      .withArgs(sinon.match({ type: 'contact' })).returns(true);
+      .withArgs(sinon.match({ type: DOC_TYPES.CONTACT })).returns(true);
 
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);

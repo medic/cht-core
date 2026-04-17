@@ -30,7 +30,7 @@ const EXPECTED_TASK_ID_PREFIX = TASK_ID_PREFIX(FACILITY_REMINDER_TASK_ID);
 const patientContact = {
   _id: 'patient',
   name: 'chw',
-  type: 'contact',
+  type: DOC_TYPES.CONTACT,
   contact_type: 'person',
   patient_id: 'patient_id',
 };

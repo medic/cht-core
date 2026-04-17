@@ -1,18 +1,19 @@
 const utils = require('@utils');
 const chai = require('chai');
 const moment = require('moment');
+const { DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'PARENT',
     name: 'PARENT',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier1',
     contact: { _id: 'contact1', parent: { _id: 'PARENT' } },
   },
   {
     _id: 'contact1',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier5',
     name: 'contact1',
     phone: 'phone1',
@@ -21,14 +22,14 @@ const contacts = [
   {
     _id: 'leaf1', // will have reminder
     name: 'leaf1',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier2',
     parent: { _id: 'PARENT' },
     contact: { _id: 'contact2', parent: { _id: 'leaf1', parent: { _id: 'PARENT' } } },
   },
   {
     _id: 'contact2',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier5',
     name: 'contact2',
     phone: 'phone2',
@@ -37,21 +38,21 @@ const contacts = [
   {
     _id: 'leaf2', // no reminder because no contact
     name: 'leaf2',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier2',
     parent: { _id: 'PARENT' },
   },
   {
     _id: 'notleaf1', // no reminder because not a leaf
     name: 'notleaf1',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier3',
     parent: { _id: 'PARENT' },
     contact: { _id: 'contact4', parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } } },
   },
   {
     _id: 'contact4',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier5',
     name: 'contact4',
     phone: 'phone4',
@@ -60,14 +61,14 @@ const contacts = [
   {
     _id: 'notleaf2', // no reminder because not a leaf
     name: 'notleaf2',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier3',
     parent: { _id: 'PARENT' },
     contact: { _id: 'contact5', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } },
   },
   {
     _id: 'contact5',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier5',
     name: 'contact5',
     phone: 'phone5',
@@ -76,7 +77,7 @@ const contacts = [
   {
     _id: 'leaf3', // has reminder
     name: 'leaf3',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'tier4',
     parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } },
     contact: { _id: 'contact6', parent: { _id: 'leaf3', parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } } } },
@@ -84,7 +85,7 @@ const contacts = [
   {
     _id: 'contact6',
     contact_type: 'tier5',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     name: 'contact6',
     phone: 'phone6',
     parent: { _id: 'leaf3', parent: { _id: 'notleaf1', parent: { _id: 'PARENT' } } },
@@ -93,7 +94,7 @@ const contacts = [
     _id: 'leaf4', // no reminder because muted
     name: 'leaf4',
     contact_type: 'tier4',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     muted: 'sometime last week',
     parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } },
     contact: { _id: 'contact7', parent: { _id: 'leaf4', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } } },
@@ -101,7 +102,7 @@ const contacts = [
   {
     _id: 'contact7',
     contact_type: 'tier5',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     name: 'contact7',
     phone: 'phone7',
     parent: { _id: 'leaf4', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } },
@@ -110,7 +111,7 @@ const contacts = [
     _id: 'person1',
     name: 'person1',
     contact_type: 'tier5',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     parent: { _id: 'leaf4', parent: { _id: 'notleaf2', parent: { _id: 'PARENT' } } }
   },
 ];

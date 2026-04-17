@@ -5,6 +5,7 @@ import * as _ from 'lodash-es';
 
 import { HydrateMessagesService } from '@mm-services/hydrate-messages.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Hydrate Messages Service', () => {
   let service:HydrateMessagesService;
@@ -62,7 +63,7 @@ describe('Hydrate Messages Service', () => {
       outgoing: true,
       from: contact._id,
       date: given[0].value.date,
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       message: doc.tasks[0].messages[0].message
     }];
     lineageModelGeneratorService.reportSubjects.resolves([{

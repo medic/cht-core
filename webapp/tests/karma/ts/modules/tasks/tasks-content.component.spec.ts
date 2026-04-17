@@ -20,6 +20,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('TasksContentComponent', () => {
   let tasks;
@@ -454,7 +455,7 @@ describe('TasksContentComponent', () => {
       await compileComponent([]);
       sinon.resetHistory();
 
-      const action = { type: 'contact', content: { parent_id: 'district_hospital_uuid', type: 'c_type' } };
+      const action = { type: DOC_TYPES.CONTACT, content: { parent_id: 'district_hospital_uuid', type: 'c_type' } };
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
@@ -467,7 +468,7 @@ describe('TasksContentComponent', () => {
       await compileComponent([]);
       sinon.resetHistory();
 
-      const action = { type: 'contact', content: { type: 'c_type' } };
+      const action = { type: DOC_TYPES.CONTACT, content: { type: 'c_type' } };
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
@@ -481,7 +482,7 @@ describe('TasksContentComponent', () => {
       sinon.resetHistory();
 
       const action = { 
-        type: 'contact', 
+        type: DOC_TYPES.CONTACT, 
         content: { 
           parent_id: 'district_hospital_uuid',
           contact: { 
@@ -501,7 +502,7 @@ describe('TasksContentComponent', () => {
       await compileComponent([]);
       sinon.resetHistory();
 
-      const action = { type: 'contact', content: { edit_id: '123' } };
+      const action = { type: DOC_TYPES.CONTACT, content: { edit_id: '123' } };
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);
@@ -514,7 +515,7 @@ describe('TasksContentComponent', () => {
       await compileComponent([]);
       sinon.resetHistory();
 
-      const action = { type: 'contact', content: { contact: { _id: 'my_contact' } } };
+      const action = { type: DOC_TYPES.CONTACT, content: { contact: { _id: 'my_contact' } } };
       await component.performAction(action);
 
       expect(xmlFormsService.get.callCount).to.equal(0);

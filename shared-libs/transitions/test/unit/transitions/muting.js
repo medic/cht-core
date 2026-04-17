@@ -114,7 +114,7 @@ describe('Muting transition', () => {
         info: { initial_replication_date: 2}
       })).to.equal(false); // not a contact, doesn't even call isMutedInLineage
       chai.expect(transition.filter({
-        doc: { muted: false, type: 'contact', contact_type: 'other thing'},
+        doc: { muted: false, type: DOC_TYPES.CONTACT, contact_type: 'other thing'},
         info: { initial_replication_date: 2 }
       })).to.equal(false); // not a valid contact type,  doesn't even call isMutedInLineage
       chai.expect(mutingUtils.isMutedInLineage.callCount).to.equal(2);

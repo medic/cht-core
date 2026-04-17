@@ -15,7 +15,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -64,7 +64,7 @@ describe('XmlForms service', () => {
     getContactType = sinon.stub();
     fileReaderService = sinon.stub();
     feedbackService = { submit: sinon.stub() };
-    getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
+    getTypeId = sinon.stub().callsFake(contact => contact.type === DOC_TYPES.CONTACT ? contact.contact_type : contact.type);
     contextUtils = {};
     contextUtils.get = () => Promise.resolve(contextUtils);
     error = sinon.stub(console, 'error');

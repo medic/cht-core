@@ -20,6 +20,7 @@ import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 @Component({
   templateUrl: './tasks-content.component.html',
@@ -300,7 +301,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         .then(() => this.preloadTaskGroupContact(action));
     }
 
-    if (action.type === 'contact') {
+    if (action.type === DOC_TYPES.CONTACT) {
       if (action.content?.parent_id && action.content?.type) {
         this.router.navigate(['/contacts', action.content.parent_id, 'add', action.content.type || '']);
       } else if (action.content?.type) {

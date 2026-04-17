@@ -12,7 +12,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('ContactViewModelGenerator service', () => {
   let service: ContactViewModelGeneratorService;
@@ -113,7 +113,7 @@ describe('ContactViewModelGenerator service', () => {
     get.withArgs(childContactPerson._id).resolves(childContactPerson);
     contactTypesService = {
       getAll: sinon.stub().resolves(types),
-      getTypeId: sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type),
+      getTypeId: sinon.stub().callsFake(contact => contact.type === DOC_TYPES.CONTACT ? contact.contact_type : contact.type),
       getTypeById: sinon.stub().callsFake((types, id) => types.find(type => type.id === id)),
     };
 

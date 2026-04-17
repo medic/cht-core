@@ -40,7 +40,7 @@ angular.module('services').factory('ImportContacts',
           if (type === 'person') {
             person.type = type;
           } else {
-            person.type = 'contact';
+            person.type = DOC_TYPES.CONTACT;
             person.contact_type = type;
           }
           return DB()

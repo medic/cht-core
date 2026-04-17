@@ -1,6 +1,6 @@
 const utils = require('../src/index');
 const chai = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const districtHospitalType = {
   id: 'my_district_hospital',
@@ -108,11 +108,11 @@ describe('ContactType Utils', () => {
     });
 
     it('should return contact_type value', () => {
-      chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'person' })).to.equal('person');
-      chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'chw' })).to.equal('chw');
-      chai.expect(utils.getTypeId({ type: 'contact', contact_type: 'patient' })).to.equal('patient');
+      chai.expect(utils.getTypeId({ type: DOC_TYPES.CONTACT, contact_type: 'person' })).to.equal('person');
+      chai.expect(utils.getTypeId({ type: DOC_TYPES.CONTACT, contact_type: 'chw' })).to.equal('chw');
+      chai.expect(utils.getTypeId({ type: DOC_TYPES.CONTACT, contact_type: 'patient' })).to.equal('patient');
       chai.expect(utils.getTypeId({
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: CONTACT_TYPES.HEALTH_CENTER
       })).to.equal(CONTACT_TYPES.HEALTH_CENTER);
     });
@@ -162,8 +162,8 @@ describe('ContactType Utils', () => {
   describe('isSameContactType', () => {
     it('should return true for hardcoded contacts of the same type', () => {
       chai.expect(utils.isSameContactType([
-        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
-        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
+        { type: DOC_TYPES.CONTACT, contact_type: CONTACT_TYPES.HEALTH_CENTER },
+        { type: DOC_TYPES.CONTACT, contact_type: CONTACT_TYPES.HEALTH_CENTER },
       ])).to.equal(true);
     });
     it('should return true for configurable contacts of the same type', () => {
@@ -175,13 +175,13 @@ describe('ContactType Utils', () => {
     it('should return true for a mix of hardcoded and configurable types of the same hierarchy', () => {
       chai.expect(utils.isSameContactType([
         { type: CONTACT_TYPES.HEALTH_CENTER },
-        { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
+        { type: DOC_TYPES.CONTACT, contact_type: CONTACT_TYPES.HEALTH_CENTER },
       ])).to.equal(true);
     });
     it('should return false for hardcoded contacts of different type', () => {
       chai.expect(utils.isSameContactType([
         { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
-        { type: 'contact', contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+        { type: DOC_TYPES.CONTACT, contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL },
       ])).to.equal(false);
     });
     it('should return false for configurable contacts of different type', () => {
@@ -193,7 +193,7 @@ describe('ContactType Utils', () => {
     it('should return true for a mix of hardcoded and configurable types of the same hierarchy', () => {
       chai.expect(utils.isSameContactType([
         { type: CONTACT_TYPES.HEALTH_CENTER },
-        { type: 'contact', contact_type: 'my_health_center' },
+        { type: DOC_TYPES.CONTACT, contact_type: 'my_health_center' },
       ])).to.equal(false);
     });
   });
@@ -298,14 +298,16 @@ describe('ContactType Utils', () => {
     });
 
     it('should return falsy for non-existing contact type', () => {
-      chai.expect(utils.getContactType(settings, { type: 'contact' })).to.equal(undefined);
-      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'something' })).to.equal(undefined);
+      chai.expect(utils.getContactType(settings, { type: DOC_TYPES.CONTACT })).to.equal(undefined);
+      chai.expect(utils.getContactType(settings,
+        { type: DOC_TYPES.CONTACT, contact_type: 'something' })).to.equal(undefined);
     });
 
     it('should return contact type', () => {
       chai.expect(utils.getContactType(settings, { type: 'person' })).to.equal(personType);
-      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'person' })).to.equal(personType);
-      chai.expect(utils.getContactType(settings, { type: 'contact', contact_type: 'my_health_center' }))
+      chai.expect(utils.getContactType(settings,
+        { type: DOC_TYPES.CONTACT, contact_type: 'person' })).to.equal(personType);
+      chai.expect(utils.getContactType(settings, { type: DOC_TYPES.CONTACT, contact_type: 'my_health_center' }))
         .to.equal(healthCenterType);
       chai.expect(utils.getContactType(settings, { type: 'my_health_center' })).to.equal(healthCenterType);
     });
@@ -322,22 +324,23 @@ describe('ContactType Utils', () => {
 
     it('should return falsy for non existent contact types', () => {
       chai.expect(utils.isPerson(settings, { type: 'other' })).to.equal(false);
-      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: 'other' })).to.equal(false);
+      chai.expect(utils.isPerson(settings, { type: DOC_TYPES.CONTACT, contact_type: 'other' })).to.equal(false);
     });
 
     it('should return falsy for place types', () => {
       chai.expect(utils.isPerson(settings, { type: districtHospitalType.id })).to.equal(false);
       chai.expect(utils.isPerson(settings, { type: clinicType.id })).to.equal(false);
-      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: districtHospitalType.id })).to.equal(false);
-      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: clinicType.id })).to.equal(false);
+      chai.expect(utils.isPerson(settings,
+        { type: DOC_TYPES.CONTACT, contact_type: districtHospitalType.id })).to.equal(false);
+      chai.expect(utils.isPerson(settings, { type: DOC_TYPES.CONTACT, contact_type: clinicType.id })).to.equal(false);
     });
 
     it('should return true for person types', () => {
       chai.expect(utils.isPerson({}, { type: 'person' })).to.equal(true);
       chai.expect(utils.isPerson(settings, { type: 'person' })).to.equal(true);
       chai.expect(utils.isPerson(settings, { type: chwType.id })).to.equal(true);
-      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: 'person' })).to.equal(true);
-      chai.expect(utils.isPerson(settings, { type: 'contact', contact_type: chwType.id })).to.equal(true);
+      chai.expect(utils.isPerson(settings, { type: DOC_TYPES.CONTACT, contact_type: 'person' })).to.equal(true);
+      chai.expect(utils.isPerson(settings, { type: DOC_TYPES.CONTACT, contact_type: chwType.id })).to.equal(true);
     });
   });
 
@@ -352,22 +355,23 @@ describe('ContactType Utils', () => {
 
     it('should return falsy for non existent contact types', () => {
       chai.expect(utils.isPlace(settings, { type: 'other' })).to.equal(undefined);
-      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: 'other' })).to.equal(undefined);
+      chai.expect(utils.isPlace(settings, { type: DOC_TYPES.CONTACT, contact_type: 'other' })).to.equal(undefined);
     });
 
     it('should return falsy for person types', () => {
       chai.expect(utils.isPlace({}, { type: 'person' })).to.equal(undefined);
       chai.expect(utils.isPlace(settings, { type: personType.id })).to.equal(false);
       chai.expect(utils.isPlace(settings, { type: patientType.id })).to.equal(false);
-      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: personType.id })).to.equal(false);
-      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: patientType.id })).to.equal(false);
+      chai.expect(utils.isPlace(settings, { type: DOC_TYPES.CONTACT, contact_type: personType.id })).to.equal(false);
+      chai.expect(utils.isPlace(settings, { type: DOC_TYPES.CONTACT, contact_type: patientType.id })).to.equal(false);
     });
 
     it('should return true for place types', () => {
       chai.expect(utils.isPlace(settings, { type: districtHospitalType.id })).to.equal(true);
       chai.expect(utils.isPlace(settings, { type: clinicType.id })).to.equal(true);
-      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: clinicType.id })).to.equal(true);
-      chai.expect(utils.isPlace(settings, { type: 'contact', contact_type: healthCenterType.id })).to.equal(true);
+      chai.expect(utils.isPlace(settings, { type: DOC_TYPES.CONTACT, contact_type: clinicType.id })).to.equal(true);
+      chai.expect(utils.isPlace(settings,
+        { type: DOC_TYPES.CONTACT, contact_type: healthCenterType.id })).to.equal(true);
     });
   });
 
@@ -382,24 +386,24 @@ describe('ContactType Utils', () => {
 
     it('should return falsy for non existent contact types', () => {
       chai.expect(utils.isContact(settings, { type: 'other' })).to.equal(false);
-      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: 'other' })).to.equal(false);
+      chai.expect(utils.isContact(settings, { type: DOC_TYPES.CONTACT, contact_type: 'other' })).to.equal(false);
     });
 
     it('should return true for person types', () => {
       chai.expect(utils.isContact({}, { type: 'person' })).to.equal(true);
       chai.expect(utils.isContact(settings, { type: personType.id })).to.equal(true);
       chai.expect(utils.isContact(settings, { type: patientType.id })).to.equal(true);
-      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: personType.id })).to.equal(true);
-      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: patientType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: DOC_TYPES.CONTACT, contact_type: personType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: DOC_TYPES.CONTACT, contact_type: patientType.id })).to.equal(true);
     });
 
     it('should return true for place types', () => {
       chai.expect(utils.isContact(settings, { type: districtHospitalType.id })).to.equal(true);
       chai.expect(utils.isContact(settings, { type: clinicType.id })).to.equal(true);
       chai.expect(
-        utils.isContact(settings, { type: 'contact', contact_type: districtHospitalType.id })
+        utils.isContact(settings, { type: DOC_TYPES.CONTACT, contact_type: districtHospitalType.id })
       ).to.equal(true);
-      chai.expect(utils.isContact(settings, { type: 'contact', contact_type: clinicType.id })).to.equal(true);
+      chai.expect(utils.isContact(settings, { type: DOC_TYPES.CONTACT, contact_type: clinicType.id })).to.equal(true);
     });
   });
 

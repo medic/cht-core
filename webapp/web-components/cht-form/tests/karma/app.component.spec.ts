@@ -10,6 +10,7 @@ import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-ext
 import { EnketoService } from '@mm-services/enketo.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('AppComponent', () => {
   const FORM_ID = 'cht-form-id';
@@ -164,7 +165,7 @@ describe('AppComponent', () => {
     const actualContext = enketoService.renderForm.args[0][0];
     expect(actualContext).to.deep.include({
       selector: `#${formId}`,
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       formDoc: { _id: formId },
       instanceData: content,
       contactSummary: { id: 'contact-summary', context: contactSummary }
@@ -365,7 +366,7 @@ describe('AppComponent', () => {
     const actualContext = enketoService.renderForm.args[0][0];
     expect(actualContext).to.deep.include({
       selector: `#${formId}`,
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       formDoc: { _id: formId },
       instanceData: content,
       contactSummary: { id: 'contact-summary', context: contactSummary }
@@ -630,7 +631,7 @@ describe('AppComponent', () => {
     expect(contactSaveService.save.args[0]).to.deep.equal([
       currentForm,
       null,
-      { type: 'contact', contact_type: 'custom_contact' },
+      { type: DOC_TYPES.CONTACT, contact_type: 'custom_contact' },
       null
     ]);
     expect(actualSubmittedDocs).to.deep.equal(expectedDocs);

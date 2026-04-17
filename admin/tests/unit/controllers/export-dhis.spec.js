@@ -100,7 +100,7 @@ describe('dhis2 export controller', () => {
     id: `contact-${name}`,
     doc: Object.assign({
       _id: `contact-${name}`,
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       contact_type: 'person',
       name,
       dhis: {

@@ -1,3 +1,5 @@
+const { DOC_TYPES } = require('@medic/constants');
+
 module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
   const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
@@ -32,7 +34,7 @@ module.exports.map = (doc) => {
   };
 
   const getType = () => {
-    if (doc.type !== 'contact') {
+    if (doc.type !== DOC_TYPES.CONTACT) {
       return doc.type;
     }
 
@@ -42,7 +44,7 @@ module.exports.map = (doc) => {
   const getTypeIndex = type => {
     const types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
     const typeIndex = types.indexOf(type);
-    if (typeIndex === -1 && doc.type === 'contact') {
+    if (typeIndex === -1 && doc.type === DOC_TYPES.CONTACT) {
       return type;
     }
 

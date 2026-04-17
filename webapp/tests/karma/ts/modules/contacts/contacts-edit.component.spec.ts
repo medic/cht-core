@@ -23,8 +23,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import events from 'enketo-core/src/js/event';
-import { CONTACT_TYPES } from '@medic/constants';
-
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('ContactsEdit component', () => {
   let contactTypesService;
@@ -320,7 +319,7 @@ describe('ContactsEdit component', () => {
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#contact-form',
         formDoc: { _id: 'random_create', the: 'form' },
-        instanceData: { random: { type: 'contact', contact_type: 'random', parent: 'the_district' } },
+        instanceData: { random: { type: DOC_TYPES.CONTACT, contact_type: 'random', parent: 'the_district' } },
         titleKey: 'random',
       });
 
@@ -337,7 +336,7 @@ describe('ContactsEdit component', () => {
       expect(formService.render.args[1][0]).to.deep.include({
         selector: '#contact-form',
         formDoc: { _id: 'other_create' },
-        instanceData: { other: { type: 'contact', contact_type: 'other', parent: 'the_district' } },
+        instanceData: { other: { type: DOC_TYPES.CONTACT, contact_type: 'other', parent: 'the_district' } },
         titleKey: 'other_key',
       });
     }));
@@ -443,7 +442,7 @@ describe('ContactsEdit component', () => {
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
           formDoc: { _id: 'clinic_create_form_id', the: 'form' },
-          instanceData: { clinic: { type: 'contact', contact_type: CONTACT_TYPES.CLINIC, parent: 'the_district' } },
+          instanceData: { clinic: { type: DOC_TYPES.CONTACT, contact_type: CONTACT_TYPES.CLINIC, parent: 'the_district' } },
           titleKey: 'clinic_create_key',
         });
         expect(component.contentError).to.equal(false);
@@ -481,7 +480,7 @@ describe('ContactsEdit component', () => {
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
           formDoc: { _id: 'district_create_form_id', the: 'form' },
-          instanceData: { district_hospital: { type: 'contact', 
+          instanceData: { district_hospital: { type: DOC_TYPES.CONTACT, 
             contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL, parent: '' } },
           titleKey: 'district_create_key',
         });
@@ -610,7 +609,7 @@ describe('ContactsEdit component', () => {
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_clinic',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: 'a_clinic_type',
           },
         });
@@ -630,7 +629,7 @@ describe('ContactsEdit component', () => {
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
           formDoc: { _id: 'a_clinic_type_create_form', data: true },
-          instanceData: { a_clinic_type: { type: 'contact', contact_type: 'a_clinic_type', _id: 'the_clinic' } },
+          instanceData: { a_clinic_type: { type: DOC_TYPES.CONTACT, contact_type: 'a_clinic_type', _id: 'the_clinic' } },
           titleKey: 'edit_key',
         });
         expect(component.enketoContact).to.deep.equal({
@@ -1062,7 +1061,7 @@ describe('ContactsEdit component', () => {
       lineageModelGeneratorService.contact.resolves({
         doc: {
           _id: 'the_patient',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'patient',
         }
       });

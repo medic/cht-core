@@ -11,7 +11,7 @@ import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
 import * as LocalContact from '../../src/local/contact';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
@@ -491,7 +491,7 @@ describe('local place', () => {
         expect(isContact.notCalled).to.be.true;
         const expectedDoc = {
           ...input,
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: input.type,
           contact: undefined,
           parent: minifiedParent,

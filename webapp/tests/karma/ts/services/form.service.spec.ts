@@ -1554,7 +1554,7 @@ describe('Form service', () => {
       enketoTranslationService.contactRecordToJs.returns({
         doc: {
           _id: 'main1',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'some-contact-type',
           contact: { _id: 'contact', name: 'Richard' },
           value: undefined,
@@ -1595,7 +1595,7 @@ describe('Form service', () => {
           assert.equal(savedDocs.length, 1);
           assert.deepEqual(savedDocs[0], {
             _id: 'main1',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             name: 'Richard',
             contact_type: 'some-contact-type',
             contact: { _id: 'contact', parent: { _id: 'def' } },
@@ -1641,7 +1641,7 @@ describe('Form service', () => {
               _id: 'main1',
               contact: { _id: 'abc', parent: { _id: 'def' } },
               contact_type: type,
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               parent: undefined,
               reported_date: 1000
             }
@@ -1656,7 +1656,7 @@ describe('Form service', () => {
               _id: 'main1',
               contact: { _id: 'abc', parent: { _id: 'def' } },
               contact_type: type,
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               parent: undefined,
               reported_date: 1000,
               transitioned: true,
@@ -1754,7 +1754,7 @@ describe('Form service', () => {
         {
           _id: 'main1',
           name: 'Main',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: type,
           parent: { _id: 'parent1' },
           reported_date: 1000,

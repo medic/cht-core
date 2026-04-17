@@ -362,7 +362,7 @@ describe('RulesEngineService', () => {
         expected: ['person'],
       },
       {
-        doc: { _id: 'contact', type: 'contact', contact_type: 'person' },
+        doc: { _id: 'contact', type: DOC_TYPES.CONTACT, contact_type: 'person' },
         expected: ['contact'],
       },
       {
@@ -523,7 +523,7 @@ describe('RulesEngineService', () => {
 
       const docs = [
         { _id: 'report', type: DOC_TYPES.DATA_RECORD },
-        { _id: 'contact', type: 'contact' },
+        { _id: 'contact', type: DOC_TYPES.CONTACT },
         { _id: 'target', type: 'target' },
         { _id: 'whatever', type: 'whatever' },
       ];
@@ -543,7 +543,7 @@ describe('RulesEngineService', () => {
         docs: [
           { _id: 'report1', fields: { patient_id: 'patient' }, type: DOC_TYPES.DATA_RECORD },
           { _id: 'task~1', emission: { _id: '??' }, requester: 'patient_uuid', type: 'task' },
-          { _id: 'contact2', type: 'contact', name: 'C', patient_id: 'patient2' },
+          { _id: 'contact2', type: DOC_TYPES.CONTACT, name: 'C', patient_id: 'patient2' },
           { _id: 'task~2', emission: { _id: '??' }, requester: 'other_patient', type: 'task' },
           { _id: 'task~3', emission: { _id: '!!' }, requester: 'other_patient', type: 'task' },
           { _id: 'report2', fields: { patient_uuid: 'etc' }, type: DOC_TYPES.DATA_RECORD },

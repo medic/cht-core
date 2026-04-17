@@ -9,7 +9,7 @@ import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 const DEFAULT_FORM_ID = 'cht-form-id';
 
@@ -157,7 +157,7 @@ export class AppComponent {
     if (contactType) {
       const typeFields = this.HARDCODED_TYPES.includes(contactType)
         ? { type: contactType }
-        : { type: 'contact', contact_type: contactType };
+        : { type: DOC_TYPES.CONTACT, contact_type: contactType };
       const { preparedDocs } = await this.contactSaveService.save(currentForm, null, typeFields, null);
       return preparedDocs;
     }

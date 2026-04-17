@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { find as _find, map as _map } from 'lodash-es';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-
+import { DOC_TYPES } from '@medic/constants';
 @Injectable({
   providedIn: 'root'
 })
@@ -43,7 +43,7 @@ export class HydrateMessagesService {
     let from = doc._id;
 
     if (contact) {
-      type = 'contact';
+      type = DOC_TYPES.CONTACT;
       from = contact._id;
     } else if (phone) {
       type = 'phone';

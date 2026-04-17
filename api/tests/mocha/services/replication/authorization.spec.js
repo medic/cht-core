@@ -712,7 +712,7 @@ describe('Authorization service', () => {
           { id: 'r2', fields: { key: 'contact', type: DOC_TYPES.DATA_RECORD } },
           { id: 'r3', fields: { key: 'parent', type: 'task' } },
           { id: 'r4', fields: { key: 'contact', type: 'target' } },
-          { id: 'r5', fields: { key: 'parent', type: 'contact' } },
+          { id: 'r5', fields: { key: 'parent', type: DOC_TYPES.CONTACT } },
           { id: 'r6', fields: { key: 'subject', type: DOC_TYPES.DATA_RECORD, submitter: 'some_person' } },
         ]
       });
@@ -731,7 +731,7 @@ describe('Authorization service', () => {
             { id: 'r2', fields: { key: ['contact'], type: DOC_TYPES.DATA_RECORD } },
             { id: 'r3', fields: { key: ['parent'], type: 'task' } },
             { id: 'r4', fields: { key: ['contact'], type: 'target' } },
-            { id: 'r5', fields: { key: ['parent'], type: 'contact' } },
+            { id: 'r5', fields: { key: ['parent'], type: DOC_TYPES.CONTACT } },
             { id: 'r6', fields: { key: ['subject'], type: DOC_TYPES.DATA_RECORD, submitter: 'some_person' } },
           ]);
         });
@@ -749,7 +749,7 @@ describe('Authorization service', () => {
             { id: 'r2', fields: { key: 'contact', subject: 'contact', type: DOC_TYPES.DATA_RECORD } }, // depth 1
             { id: 'r3', fields: { key: 'parent', subject: 'parent', type: 'task' } }, // not a report, but depth 0
             { id: 'r4', fields: { key: 'contact', subject: 'contact', type: 'target' } },  // not a report, but depth 1
-            { id: 'r5', fields: { key: 'parent', subject: 'parent', type: 'contact' } },  // not a report, but depth 0
+            { id: 'r5', fields: { key: 'parent', subject: 'parent', type: DOC_TYPES.CONTACT } },  // not a report, but depth 0
             {
               id: 'r6',
               fields: { key: 'subject', subject: 'subject', type: DOC_TYPES.DATA_RECORD, submitter: 'some_person' }
@@ -782,7 +782,7 @@ describe('Authorization service', () => {
               id: 'r4',
               fields: { key: ['contact'], subject: 'contact', type: 'target' }
             },  // not a report, but depth 1
-            { id: 'r5', fields: { key: ['parent'], subject: 'parent', type: 'contact' } },  // not a report, but depth 0
+            { id: 'r5', fields: { key: ['parent'], subject: 'parent', type: DOC_TYPES.CONTACT } },  // not a report, but depth 0
             {
               id: 'r7',
               fields: { key: ['contact'], subject: 'contact', type: DOC_TYPES.DATA_RECORD, submitter: 'some_person' }
@@ -2729,7 +2729,7 @@ describe('Authorization service', () => {
               { key: ['p1'], value: { shortcode: '123456' }  },
               { key: ['facility_id'], value: { shortcode: '123456' }  },
             ],
-            docsByReplicationKey: { key: ['c1'], type: 'contact' },
+            docsByReplicationKey: { key: ['c1'], type: DOC_TYPES.CONTACT },
           }
         },
         {
@@ -2740,7 +2740,7 @@ describe('Authorization service', () => {
               { key: ['p3'], value: { shortcode: 'place1' } },
               { key: ['p4'], value: { shortcode: 'place1' } },
             ],
-            docsByReplicationKey: { key: ['c2'], type: 'contact' },
+            docsByReplicationKey: { key: ['c2'], type: DOC_TYPES.CONTACT },
           }
         },
         {
@@ -2751,7 +2751,7 @@ describe('Authorization service', () => {
               { key: ['p1'], value: { _id: 'p1' } },
               { key: ['facility_id'], value: { _id: 'facility_id' } },
             ],
-            docsByReplicationKey: { key: ['c3'], type: 'contact' }
+            docsByReplicationKey: { key: ['c3'], type: DOC_TYPES.CONTACT }
           },
         },
         {
@@ -2762,7 +2762,7 @@ describe('Authorization service', () => {
               { key: ['p3'], value: { _id: 'p3' } },
               { key: ['p4'], value: { _id: 'p4' } },
             ],
-            docsByReplicationKey: { key: ['c4'], type: 'contact' },
+            docsByReplicationKey: { key: ['c4'], type: DOC_TYPES.CONTACT },
           },
         },
         {
@@ -2773,7 +2773,7 @@ describe('Authorization service', () => {
               { key: ['p2'], value: { shortcode: 'place5' }},
               { key: ['facility_id'], value: { shortcode: 'place5' } },
             ],
-            docsByReplicationKey: { key: ['c5'], type: 'contact' },
+            docsByReplicationKey: { key: ['c5'], type: DOC_TYPES.CONTACT },
           },
         },
       ];
@@ -2815,11 +2815,11 @@ describe('Authorization service', () => {
         { key: ['facility_id'], value: { _id: c5._id, shortcode: 'place5' } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(c1).returns({ key: 'c1', type: 'contact' });
-      docsByReplicationKey.withArgs(c2).returns({ key: 'c2', type: 'contact' });
-      docsByReplicationKey.withArgs(c3).returns({ key: 'c3', type: 'contact' });
-      docsByReplicationKey.withArgs(c4).returns({ key: 'c4', type: 'contact' });
-      docsByReplicationKey.withArgs(c5).returns({ key: 'c5', type: 'contact' });
+      docsByReplicationKey.withArgs(c1).returns({ key: 'c1', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(c2).returns({ key: 'c2', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(c3).returns({ key: 'c3', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(c4).returns({ key: 'c4', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(c5).returns({ key: 'c5', type: DOC_TYPES.CONTACT });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -2981,21 +2981,21 @@ describe('Authorization service', () => {
         { key: ['p3'], value: { _id: 'patient4doc' } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1', type: 'contact' });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1', type: DOC_TYPES.CONTACT });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient1doc' }))
-        .returns({ key: 'patient1doc', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: 'c2', type: 'contact' });
+        .returns({ key: 'patient1doc', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: 'c2', type: DOC_TYPES.CONTACT });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient2doc' }))
-        .returns({ key: 'patient2doc', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c3' })).returns({ key: 'c3',  type: 'contact'  });
+        .returns({ key: 'patient2doc', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c3' })).returns({ key: 'c3',  type: DOC_TYPES.CONTACT  });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient4doc' }))
-        .returns({ key: 'patient4doc', type: 'contact' });
+        .returns({ key: 'patient4doc', type: DOC_TYPES.CONTACT });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient3doc' }))
-        .returns({ key: 'patient3doc', type: 'contact' });
+        .returns({ key: 'patient3doc', type: DOC_TYPES.CONTACT });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3134,20 +3134,20 @@ describe('Authorization service', () => {
       contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: { _id: 'p3' } }]);
 
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ fields: { key: 'c1',  type: 'contact'  }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ fields: { key: 'c1',  type: DOC_TYPES.CONTACT  }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
-        { fields: { key: 'patient1doc', type: 'contact' }},
+        { fields: { key: 'patient1doc', type: DOC_TYPES.CONTACT }},
       ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns([{ fields: { key: 'c2', type: 'contact' }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns([{ fields: { key: 'c2', type: DOC_TYPES.CONTACT }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-        { fields: { key: 'patient2doc', type: 'contact' }},
+        { fields: { key: 'patient2doc', type: DOC_TYPES.CONTACT }},
       ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns([{ fields: { key: 'p1', type: 'contact' }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns([{ fields: { key: 'p1', type: DOC_TYPES.CONTACT }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'facility_id' })).returns([
-        { fields: { key: 'facility_id', type: 'contact' }},
+        { fields: { key: 'facility_id', type: DOC_TYPES.CONTACT }},
       ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p2' })).returns([{ fields: { key: 'p2', type: 'contact' }}]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p3' })).returns([{ fields: { key: 'p3', type: 'contact' }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p2' })).returns([{ fields: { key: 'p2', type: DOC_TYPES.CONTACT }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p3' })).returns([{ fields: { key: 'p3', type: DOC_TYPES.CONTACT }}]);
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3203,7 +3203,7 @@ describe('Authorization service', () => {
               { key: ['p1'], value: { shortcode: 'contact1' } },
               { key: ['facility_id'], value: { shortcode: 'contact1' } },
             ],
-            docsByReplicationKey: { key: ['c1'],  type: 'contact'  }
+            docsByReplicationKey: { key: ['c1'],  type: DOC_TYPES.CONTACT  }
           },
         },
         { // denied
@@ -3214,7 +3214,7 @@ describe('Authorization service', () => {
               { key: ['p2'], value: { shortcode: 'contact2' } },
               { key: ['p3'], value: { shortcode: 'contact2' } },
             ],
-            docsByReplicationKey: { key: ['c2'],  type: 'contact'  }
+            docsByReplicationKey: { key: ['c2'],  type: DOC_TYPES.CONTACT  }
           },
         },
         { // allowed
@@ -3282,14 +3282,14 @@ describe('Authorization service', () => {
         { key: ['p3'], value: { shortcode: 'patient2' } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: ['c1'],  type: 'contact'  });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: ['c1'],  type: DOC_TYPES.CONTACT  });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient1doc' }))
-        .returns({ key: 'patient1doc', type: 'contact' });
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: ['c2'], type: 'contact' });
+        .returns({ key: 'patient1doc', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns({ key: ['c2'], type: DOC_TYPES.CONTACT });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient2doc' }))
-        .returns({ key: ['patient2doc'], type: 'contact' });
+        .returns({ key: ['patient2doc'], type: DOC_TYPES.CONTACT });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3422,10 +3422,10 @@ describe('Authorization service', () => {
           { key: ['facility_id', 2], value: { shortcode: 'patient1' } }
         ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1', type: 'contact' });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1', type: DOC_TYPES.CONTACT });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient1doc' }))
-        .returns({ key: 'patient1doc', type: 'contact' });
+        .returns({ key: 'patient1doc', type: DOC_TYPES.CONTACT });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3534,14 +3534,14 @@ describe('Authorization service', () => {
           { key: ['facility_id', 0], value: { _id: 'facility_id' } }
         ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1',  type: 'contact'  });
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns({ key: 'c1',  type: DOC_TYPES.CONTACT  });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'patient1doc' }))
-        .returns([ { fields: { key: 'patient1doc', type: 'contact' }}, ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns({ key: 'p1', type: 'contact' });
+        .returns([ { fields: { key: 'patient1doc', type: DOC_TYPES.CONTACT }}, ]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns({ key: 'p1', type: DOC_TYPES.CONTACT });
       docsByReplicationKey
         .withArgs(sinon.match({ _id: 'facility_id' }))
-        .returns({ key: 'facility_id', type: 'contact' });
+        .returns({ key: 'facility_id', type: DOC_TYPES.CONTACT });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3608,7 +3608,7 @@ describe('Authorization service', () => {
               { key: ['facility_id'], value: { _id: c1._id, shortcode: c1.patient_id } },
               { key: ['facility_id', 2], value: { _id: c1._id, shortcode: c1.patient_id } }
             ],
-            docsByReplicationKey: { key: ['c1'], type: 'contact' }
+            docsByReplicationKey: { key: ['c1'], type: DOC_TYPES.CONTACT }
           }
         },
         {
@@ -3622,7 +3622,7 @@ describe('Authorization service', () => {
               { key: ['p4'], value: { _id: c2._id, shortcode: c2.place_id } },
               { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
             ],
-            docsByReplicationKey: { key: ['c2'], type: 'contact' }
+            docsByReplicationKey: { key: ['c2'], type: DOC_TYPES.CONTACT }
           }
         },
       ];
@@ -3647,8 +3647,8 @@ describe('Authorization service', () => {
         { key: ['p4', 2], value: { _id: c2._id, shortcode: c2.place_id } },
       ]);
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(c1).returns({ key: 'c1', type: 'contact' });
-      docsByReplicationKey.withArgs(c2).returns({ key: 'c2', type: 'contact' });
+      docsByReplicationKey.withArgs(c1).returns({ key: 'c1', type: DOC_TYPES.CONTACT });
+      docsByReplicationKey.withArgs(c2).returns({ key: 'c2', type: DOC_TYPES.CONTACT });
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
@@ -3692,7 +3692,7 @@ describe('Authorization service', () => {
       const contact2 = {
         _id: 'place_id',
         parent_id: 'facility_id',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact: 'contact_id'
       };
 
@@ -3705,7 +3705,7 @@ describe('Authorization service', () => {
               { key: ['place_id', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
               { key: ['facility_id', 2], value: { _id: contact1._id, shortcode: contact1.patient_id } },
             ],
-            docsByReplicationKey: { key: 'contact', type: 'contact' },
+            docsByReplicationKey: { key: 'contact', type: DOC_TYPES.CONTACT },
           }
         }
       ];
@@ -3748,7 +3748,7 @@ describe('Authorization service', () => {
             doc: {
               _id: 'place_id',
               parent: { _id: 'facility_id' },
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact: 'contact_id'
             }
           },
@@ -3778,7 +3778,7 @@ describe('Authorization service', () => {
       const contact2 = {
         _id: 'place_id',
         parent_id: 'facility_id',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact: 'contact'
       };
 
@@ -3791,7 +3791,7 @@ describe('Authorization service', () => {
               { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
               { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
             ],
-            docsByReplicationKey: { key: ['contact'], type: 'contact' },
+            docsByReplicationKey: { key: ['contact'], type: DOC_TYPES.CONTACT },
           }
         }
       ];
@@ -3812,7 +3812,7 @@ describe('Authorization service', () => {
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
-      docsByReplicationKey.withArgs(contact2).returns({ key: 'place_id', type: 'contact' });
+      docsByReplicationKey.withArgs(contact2).returns({ key: 'place_id', type: DOC_TYPES.CONTACT });
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
@@ -3863,7 +3863,7 @@ describe('Authorization service', () => {
       const contact2 = {
         _id: 'place',
         parent_id: 'facility',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact: 'contact'
       };
 
@@ -3876,7 +3876,7 @@ describe('Authorization service', () => {
               { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
               { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
             ],
-            docsByReplicationKey: { key: 'contact', type: 'contact' },
+            docsByReplicationKey: { key: 'contact', type: DOC_TYPES.CONTACT },
           }
         }
       ];
@@ -3897,7 +3897,7 @@ describe('Authorization service', () => {
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
-      docsByReplicationKey.withArgs(contact2).returns({ key: 'place', type: 'contact' });
+      docsByReplicationKey.withArgs(contact2).returns({ key: 'place', type: DOC_TYPES.CONTACT });
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
@@ -3918,7 +3918,7 @@ describe('Authorization service', () => {
             doc: {
               _id: 'place',
               parent: { _id: 'facility' },
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact: 'contact'
             }
           },
@@ -3946,7 +3946,7 @@ describe('Authorization service', () => {
 
       const weirdDoc = {
         _id: 'place',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact: 'contact'
       };
 
@@ -3959,7 +3959,7 @@ describe('Authorization service', () => {
               { key: ['place', 1], value: { _id: contact1._id, shortcode: contact1.patient_id } },
               { key: ['contact', 0], value: { _id: contact1._id, shortcode: contact1.patient_id } },
             ],
-            docsByReplicationKey: { key: ['contact'], type: 'contact' },
+            docsByReplicationKey: { key: ['contact'], type: DOC_TYPES.CONTACT },
           }
         }
       ];
@@ -3977,7 +3977,7 @@ describe('Authorization service', () => {
 
       const docsByReplicationKey = sinon.stub();
       docsByReplicationKey.withArgs(contact1).returns(docObjs[0].viewResults.docsByReplicationKey);
-      docsByReplicationKey.withArgs(weirdDoc).returns({ key: ['place'], type: 'contact' });
+      docsByReplicationKey.withArgs(weirdDoc).returns({ key: ['place'], type: DOC_TYPES.CONTACT });
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
 
       config.get.returns([
@@ -4152,7 +4152,7 @@ describe('Authorization service', () => {
     });
 
     it('should return true when docType is not data_record', () => {
-      let docsByReplicationKey = [{ fields: { key: 'contact_id', type: 'contact'  }}];
+      let docsByReplicationKey = [{ fields: { key: 'contact_id', type: DOC_TYPES.CONTACT  }}];
       service.__get__('isAllowedDepth')({ reportDepth: 1 }, docsByReplicationKey).should.equal(true);
 
       docsByReplicationKey = [{ fields: { key: 'targetID', type: 'target'  }}];

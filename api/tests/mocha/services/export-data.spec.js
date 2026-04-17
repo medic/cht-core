@@ -294,7 +294,7 @@ describe('Export Data Service', () => {
         {
           _id: '33',
           name: 'memory',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           patient_id: '1231',
           contact_type: 'chw',
           parent: contact2

@@ -23,7 +23,7 @@ const person = {
 const personBis = Object.assign({}, person, {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402-bis',
   date_of_death: 10,
-  type: 'contact',
+  type: DOC_TYPES.CONTACT,
   contact_type: 'patient',
   name: '',
   phone: '0123456789',
@@ -257,7 +257,7 @@ describe('doc_summaries_by_id view', () => {
         _rev: '3-b99ee0615633d44f414362c8bf21454a',
         name: '0123456789',
         phone: '0123456789',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'patient',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         date_of_death: 10,

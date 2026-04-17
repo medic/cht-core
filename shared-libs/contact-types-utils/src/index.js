@@ -1,4 +1,4 @@
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const HARDCODED_PERSON_TYPE = 'person';
 const HARDCODED_TYPES = [
@@ -21,7 +21,7 @@ const getTypeId = (doc) => {
   if (!doc) {
     return;
   }
-  return doc.type === 'contact' ? doc.contact_type : doc.type;
+  return doc.type === DOC_TYPES.CONTACT ? doc.contact_type : doc.type;
 };
 
 const getTypeById = (config, typeId) => {

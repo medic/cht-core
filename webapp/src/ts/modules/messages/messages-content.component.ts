@@ -29,6 +29,7 @@ import { AuthDirective } from '@mm-directives/auth.directive';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AutoreplyPipe, StatePipe } from '@mm-pipes/date.pipe';
+import { DOC_TYPES } from '@medic/constants';
 
 /**
 *  In this context the URL parameter "id", can be:
@@ -178,7 +179,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
 
   // See URL parameter "id" note at top of file
   private getContactable(id, type) {
-    if (type === 'contact') {
+    if (type === DOC_TYPES.CONTACT) {
       return this.lineageModelGeneratorService
         .contact(id)
         .catch(err => {

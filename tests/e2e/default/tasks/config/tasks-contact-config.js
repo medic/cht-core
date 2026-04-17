@@ -14,7 +14,7 @@ module.exports = [
     }],
     actions: [
       {
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         modifyContent: (content, { contact }) => {
           content.type = 'person';
           content.parent_id = contact._id;
@@ -35,7 +35,7 @@ module.exports = [
       end: 1,
     }],
     actions: [{
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       modifyContent: (content, { contact }) => {
         content.edit_id = contact._id;
       },

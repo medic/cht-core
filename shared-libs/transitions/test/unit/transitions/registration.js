@@ -175,7 +175,7 @@ describe('registration', () => {
           },
         ],
       });
-      getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      getPlace.resolves({ _id: parentId, type: DOC_TYPES.CONTACT, contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
@@ -252,7 +252,7 @@ describe('registration', () => {
           },
         ],
       });
-      getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      getPlace.resolves({ _id: parentId, type: DOC_TYPES.CONTACT, contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
@@ -333,7 +333,7 @@ describe('registration', () => {
           },
         ],
       });
-      getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      getPlace.resolves({ _id: parentId, type: DOC_TYPES.CONTACT, contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
@@ -395,7 +395,7 @@ describe('registration', () => {
           },
         ],
       });
-      getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
+      getPlace.resolves({ _id: parentId, type: DOC_TYPES.CONTACT, contact_type: 'place' });
       const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
@@ -554,7 +554,7 @@ describe('registration', () => {
       dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].type.should.equal('contact');
+      saveDoc.args[0][0].type.should.equal(DOC_TYPES.CONTACT);
       saveDoc.args[0][0].contact_type.should.equal('patient');
     });
 
@@ -835,13 +835,14 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               contact_type: CONTACT_TYPES.CLINIC,
-              type: 'contact',
-              parent: { _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER, type: 'contact' }
+              type: DOC_TYPES.CONTACT,
+              parent: { _id: 'west_hc', name: 'west hc', 
+                contact_type: CONTACT_TYPES.HEALTH_CENTER, type: DOC_TYPES.CONTACT }
             }
           },
         }
@@ -886,7 +887,7 @@ describe('registration', () => {
           name: 'Bob',
           patient_id: patientId,
           source_id: change.doc._id,
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'patient',
           parent: { _id: 'petes', parent: { _id: 'west_hc' } },
           created_by: 'pete',
@@ -914,16 +915,16 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               place_id: 'petes_place',
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: 'area_type_1',
               parent: {
                 _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact', place_id: 'the_west_hc'
+                type: DOC_TYPES.CONTACT, place_id: 'the_west_hc'
               }
             },
           },
@@ -932,7 +933,7 @@ describe('registration', () => {
       const parent = {
         _id: 'georges',
         name: 'Georges Place',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         place_id: 'georges_place',
         contact_type: 'area_type_2',
         parent: { _id: 'west_hc' },
@@ -986,7 +987,7 @@ describe('registration', () => {
           name: 'Marcel',
           patient_id: patientId,
           source_id: change.doc._id,
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'buddy',
           parent: { _id: 'georges', parent: { _id: 'west_hc' } },
           created_by: 'pete',
@@ -1014,16 +1015,16 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               place_id: 'petes_place',
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: 'area_type_1',
               parent: {
                 _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact', place_id: 'the_west_hc'
+                type: DOC_TYPES.CONTACT, place_id: 'the_west_hc'
               }
             },
           },
@@ -1097,16 +1098,16 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               place_id: 'petes_place',
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: 'area_type_1',
               parent: {
                 _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact', place_id: 'the_west_hc'
+                type: DOC_TYPES.CONTACT, place_id: 'the_west_hc'
               }
             },
           },
@@ -1181,16 +1182,16 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               place_id: 'petes_place',
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: 'area_type_1',
               parent: {
                 _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact', place_id: 'the_west_hc'
+                type: DOC_TYPES.CONTACT, place_id: 'the_west_hc'
               }
             },
           },
@@ -1199,7 +1200,7 @@ describe('registration', () => {
       const parent = {
         _id: 'georges',
         name: 'Georges Place',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         place_id: 'georges_place',
         contact_type: 'area_type_1',
         parent: { _id: 'west_hc' },
@@ -1275,17 +1276,17 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               contact_type: CONTACT_TYPES.CLINIC,
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               parent: {
                 _id: 'west_hc',
                 name: 'west hc',
                 contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 place_id: 'south_hc_place',
               }
             }
@@ -1296,7 +1297,7 @@ describe('registration', () => {
       const parent = {
         _id: 'north_hc',
         name: 'north hc',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: CONTACT_TYPES.HEALTH_CENTER,
         place_id: 'north_hc_place',
       };
@@ -1372,13 +1373,13 @@ describe('registration', () => {
             _id: 'supervisor',
             name: 'Frank',
             contact_type: 'supervisor',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'west_hc',
               name: 'west hc',
               place_id: 'west_hc_place',
               contact_type: 'health_center_1',
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
             }
           },
         }
@@ -1426,7 +1427,7 @@ describe('registration', () => {
           name: 'new clinic',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'clinic_1',
           parent: { _id: 'west_hc' },
           created_by: 'supervisor',
@@ -1481,7 +1482,7 @@ describe('registration', () => {
                 _id: 'supervisor',
                 name: 'Frank',
                 contact_type: 'supervisor',
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 phone: '+111222',
                 parent: { _id: 'west_hc' }
               }
@@ -1493,7 +1494,7 @@ describe('registration', () => {
         name: 'west hc',
         place_id: 'west_hc_place',
         contact_type: 'health_center_1',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
       });
       const contactTypes = [
         { id: 'health_center_1' },
@@ -1524,7 +1525,7 @@ describe('registration', () => {
         name: 'new clinic',
         place_id: placeId,
         source_id: change.doc._id,
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'clinic_1',
         parent: { _id: 'west_hc' },
         created_by: 'supervisor',
@@ -1551,17 +1552,17 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               contact_type: CONTACT_TYPES.CLINIC,
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               parent: {
                 _id: 'west_hc',
                 name: 'west hc',
                 contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 place_id: 'south_hc_place',
               }
             }
@@ -1572,7 +1573,7 @@ describe('registration', () => {
       const parent = {
         _id: 'north_hc',
         name: 'north hc',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: CONTACT_TYPES.HEALTH_CENTER,
         place_id: 'north_hc_place',
       };
@@ -1621,7 +1622,7 @@ describe('registration', () => {
           name: 'newest place',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'clinic_1',
           parent: { _id: 'north_hc' },
           created_by: 'pete',
@@ -1649,17 +1650,17 @@ describe('registration', () => {
             _id: 'pete',
             name: 'Pete',
             contact_type: 'chw',
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             parent: {
               _id: 'petes',
               name: 'Petes Place',
               contact_type: CONTACT_TYPES.CLINIC,
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               parent: {
                 _id: 'west_hc',
                 name: 'west hc',
                 contact_type: CONTACT_TYPES.HEALTH_CENTER,
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 place_id: 'south_hc_place',
               }
             }
@@ -1670,7 +1671,7 @@ describe('registration', () => {
       const parent = {
         _id: 'north_hc',
         name: 'north hc',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: CONTACT_TYPES.HEALTH_CENTER,
         place_id: 'north_hc_place',
       };
@@ -1919,7 +1920,7 @@ describe('registration', () => {
             parent: {
               _id: 'a_health_center',
               name: 'HC1',
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: CONTACT_TYPES.HEALTH_CENTER,
               place_id: 'hc1'
             }
@@ -1931,7 +1932,7 @@ describe('registration', () => {
         _id: 'other_health_center',
         name: 'Other health center',
         place_id: 'hc2',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: CONTACT_TYPES.HEALTH_CENTER,
         parent: { _id: 'district1' },
       };

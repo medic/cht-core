@@ -24,6 +24,7 @@ import { SenderComponent } from '@mm-components/sender/sender.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { AuthService } from '@mm-services/auth.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
@@ -123,7 +124,7 @@ describe('MessagesContentComponent', () => {
   describe('Messages without contact', () => {
     it('should pull the contact phone number from the first message and show empty user name', async () => {
       const id = '12';
-      const type = 'contact';
+      const type = DOC_TYPES.CONTACT;
       const phone = '+12';
       const res = {
         doc: {
@@ -157,7 +158,7 @@ describe('MessagesContentComponent', () => {
 
     it('should not fail when no contact and no conversation', () => {
       const id = '12';
-      const type = 'contact';
+      const type = DOC_TYPES.CONTACT;
       activatedRouteParams.next(`${type}:${id}`);
       lineageModelGeneratorService.contact.rejects({ code: 404 });
       messageContactService.getConversation.resolves([]);
