@@ -4,11 +4,13 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { DisplayLanguagesComponent } from '@admin-tool-modules/display/display-languages/display-languages.component';
 import { LanguagesService } from '@admin-tool-services/languages.service';
+import { SettingsService } from '@admin-tool-services/settings.service';
 
 describe('DisplayLanguagesComponent', () => {
   let component: DisplayLanguagesComponent;
   let fixture: ComponentFixture<DisplayLanguagesComponent>;
   let languagesService;
+  let settingsService;
 
   const mockLanguages = [
     {
@@ -30,10 +32,17 @@ describe('DisplayLanguagesComponent', () => {
       disableLanguage: sinon.stub().resolves(),
       importLanguage: sinon.stub().resolves(),
     };
+    settingsService = {
+      getLanguageSettings: sinon.stub().resolves({ locale: 'en', localeOutgoing: 'en'}),
+      updateLanguageSettings: sinon.stub().resolves(),
+    };
 
     return TestBed.configureTestingModule({
       imports: [DisplayLanguagesComponent, TranslateModule.forRoot()],
-      providers: [{ provide: LanguagesService, useValue: languagesService }],
+      providers: [
+        { provide: LanguagesService, useValue: languagesService },
+        { provide: SettingsService, useValue: settingsService },
+      ],
     })
       .compileComponents()
       .then(() => {
@@ -89,6 +98,73 @@ describe('DisplayLanguagesComponent', () => {
       await component.ngOnInit();
       expect(consoleStub.calledOnce).to.be.true;
     });
+
+    it('should call getLanguageSettings on init', () => {
+      expect(settingsService.getLanguageSettings.calledOnce).to.be.true;
+    });
+
+    it('should set localeLanguage from settings', async () => {
+      await fixture.whenStable();
+      expect(component.localeLanguage).to.equal('en');
+    });
+
+    it('should set localeOutgoingLanguage from settings', async () => {
+      await fixture.whenStable();
+      expect(component.localeOutgoingLanguage).to.equal('en');
+    });
+
+    it('should handle error if getLanguageSettings fails', async () => {
+      const consoleStub = sinon.stub(console, 'error');
+      settingsService.getLanguageSettings.rejects(new Error('error'));
+      await component.ngOnInit();
+      expect(consoleStub.calledOnce).to.be.true;
+    });
+  });
+  describe('submitLanguageSettings', () => {
+    it('should set responseStatus to loading at start', () => {
+      component.submitLanguageSettings();
+      expect(component.responseStatus.state).to.equal('loading');
+    });
+
+    it('should call updateLanguageSettings with correct values', async () => {
+      component.localeLanguage = 'en';
+      component.localeOutgoingLanguage = 'en';
+      await component.submitLanguageSettings();
+      expect(settingsService.updateLanguageSettings.calledWith({
+        locale: 'en',
+        localeOutgoing: 'en',
+      })).to.be.true;
+    });
+
+    it('should set responseStatus to success on success', async () => {
+      await component.submitLanguageSettings();
+      expect(component.responseStatus.state).to.equal('success');
+      expect(component.responseStatus.msg).to.equal('Saved');
+    });
+
+    it('should clear responseStatus after 3 seconds', async () => {
+      const clock = sinon.useFakeTimers();
+      await component.submitLanguageSettings();
+      expect(component.responseStatus.state).to.equal('success');
+      clock.tick(3001);
+      expect(component.responseStatus).to.deep.equal({});
+      clock.restore();
+    });
+
+    it('should set responseStatus to error on failure', async () => {
+      settingsService.updateLanguageSettings.rejects(new Error('error'));
+      sinon.stub(console, 'error');
+      await component.submitLanguageSettings();
+      expect(component.responseStatus.state).to.equal('error');
+      expect(component.responseStatus.msg).to.equal('Error saving language settings');
+    });
+
+    it('should call console.error on failure', async () => {
+      settingsService.updateLanguageSettings.rejects(new Error('error'));
+      const consoleStub = sinon.stub(console, 'error');
+      await component.submitLanguageSettings();
+      expect(consoleStub.calledOnce).to.be.true;
+    });
   });
   describe('editLanguage', () => {
     it('should set selectedDoc with the doc', async () => {
@@ -103,7 +179,6 @@ describe('DisplayLanguagesComponent', () => {
       expect(component.showEditModal).to.be.true;
     });
   });
-
   describe('addLanguage', () => {
     it('should set selectedDoc to null', async () => {
       await component.addLanguage();
@@ -297,6 +372,68 @@ describe('DisplayLanguagesComponent', () => {
       fixture.detectChanges();
       const compiled = fixture.nativeElement as HTMLElement;
       expect(compiled.querySelector('.loader')).to.not.exist;
+    });
+
+    it('should render locale select', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('#locale')).to.exist;
+    });
+
+    it('should render locale-outgoing select', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('#locale-outgoing')).to.exist;
+    });
+
+    it('should show default language star icon when locale matches', async () => {
+      await fixture.whenStable();
+      component.localeLanguage = 'en';
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.fa-file-o')).to.exist;
+    });
+
+    it('should show outgoing language star icon when locale_outgoing matches', async () => {
+      await fixture.whenStable();
+      component.localeOutgoingLanguage = 'en';
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.fa-envelope-o')).to.exist;
+    });
+
+    it('should show submit button', async () => {
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('button[type="submit"]')).to.exist;
+    });
+    
+    it('should disable submit button when loading', async () => {
+      await fixture.whenStable();
+      component.responseStatus = { state: 'loading' };
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      const button = compiled.querySelector('button[type="submit"]') as HTMLButtonElement;
+      expect(button.disabled).to.be.true;
+    });
+
+    it('should show error message when responseStatus is error', async () => {
+      await fixture.whenStable();
+      component.responseStatus = { state: 'error', msg: 'Error saving language settings' };
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.error')).to.exist;
+    });
+
+    it('should show success message when responseStatus is success', async () => {
+      await fixture.whenStable();
+      component.responseStatus = { state: 'success', msg: 'Saved' };
+      fixture.detectChanges();
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.success')).to.exist;
     });
 
     it('should render a panel for each language', async () => {

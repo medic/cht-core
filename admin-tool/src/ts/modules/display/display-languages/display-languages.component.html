@@ -4,6 +4,42 @@
       <div class="loader"></div>
     } @else {
       <div class="tab-content container-fluid">
+        <form class="custom-form">
+          <div class="form-group">
+            <label for="locale">{{ 'Default Application Language' | translate }}</label>
+            <select id="locale" name="locale" class="form-control small" [(ngModel)]="localeLanguage">
+              @for (language of languages; track language.doc._id) {
+                <option [value]="language.doc.code" [disabled]="!language.enabled">
+                  {{ language.doc.name }}
+                </option>
+              }
+            </select>
+            <p class="help-block">{{ 'setup.language.subtitle' | translate }}</p>
+          </div>
+
+          <div class="form-group">
+            <label for="locale-outgoing">{{ 'Language For Outgoing Messages' | translate }}</label>
+            <select id="locale-outgoing" name="locale-outgoing" class="form-control small" [(ngModel)]="localeOutgoingLanguage">
+              @for (language of languages; track language.doc._id) {
+                <option [value]="language.doc.code" [disabled]="!language.enabled">
+                  {{ language.doc.name }}
+                </option>
+              } 
+            </select>
+            <p class="help-block">{{ 'setup.language.outgoing.subtitle' | translate }}</p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" (click)="submitLanguageSettings()" [disabled]="responseStatus.state === 'loading'">
+              {{ 'Submit' | translate }}
+            </button>
+            @if (responseStatus.state === 'loading') {
+              <div class="loader inline"></div>
+            } @else if (responseStatus.state) {
+              <span [class]="responseStatus.state!">{{ responseStatus.msg! | translate }}</span>
+            }
+          </div>
+        </form>
         <div class="btn-bottom-spacing">
           <button type="button" class="btn btn-primary" (click)="addLanguage()">
             <i class="fa fa-plus" aria-hidden="true"></i>
@@ -21,6 +57,20 @@
                     [attr.data-target]="'#locale-' + languageModel.doc.code + '-body'"
                     data-parent="#language-accordion">
                     {{ languageModel.doc.name }}
+                      @if (languageModel.doc.code === savedLocaleLanguage) {
+                        <span class="fa-stack default" [title]="'Default Application Language' | translate">
+                          <i class="fa fa-file-o fa-stack-2x"></i>
+                          <i class="fa fa-star fa-stack-1x"></i>
+                          <span class="sr-only">{{ 'Default Application Language' | translate }}</span>
+                        </span>
+                      }
+                      @if (languageModel.doc.code === savedLocaleOutgoingLanguage) {
+                        <span class="fa-stack default" [title]="'Language For Outgoing Messages' | translate">
+                          <i class="fa fa-envelope-o fa-stack-2x"></i>
+                          <i class="fa fa-star fa-stack-1x"></i>
+                          <span class="sr-only">{{ 'Language For Outgoing Messages' | translate }}</span>
+                        </span>
+                      }
                   </a>
                 </h4>
               </div>

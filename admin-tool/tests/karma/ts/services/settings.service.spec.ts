@@ -316,4 +316,60 @@ describe('SettingsService', () => {
       await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
+  describe('getLanguageSettings', () => {
+    it('should map locale to locale', async () => {
+      dbService.get().get.resolves({ settings: { locale: 'en', locale_outgoing: 'es' } });
+      const result = await service.getLanguageSettings();
+      expect(result.locale).to.equal('en');
+    });
+
+    it('should map locale_outgoing to localeOutgoing', async () => {
+      dbService.get().get.resolves({ settings: { locale: 'en', locale_outgoing: 'es' } });
+      const result = await service.getLanguageSettings();
+      expect(result.localeOutgoing).to.equal('es');
+    });
+
+    it('should return empty string for missing locale', async () => {
+      dbService.get().get.resolves({ settings: {} });
+      const result = await service.getLanguageSettings();
+      expect(result.locale).to.equal('');
+    });
+
+    it('should return empty string for missing locale_outgoing', async () => {
+      dbService.get().get.resolves({ settings: {} });
+      const result = await service.getLanguageSettings();
+      expect(result.localeOutgoing).to.equal('');
+    });
+
+    it('should propagate error when get fails', async () => {
+      dbService.get().get.rejects({ status: 500 });
+      const result = service.getLanguageSettings();
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
+    });
+  });
+  describe('updateLanguageSettings', () => {
+    it('should convert locale to locale', async () => {
+      http.put.returns(of(void 0));
+      await service.updateLanguageSettings({ locale: 'en', localeOutgoing: 'es' });
+      expect(http.put.args[0][1]).to.deep.include({ locale: 'en' });
+    });
+
+    it('should convert localeOutgoing to locale_outgoing', async () => {
+      http.put.returns(of(void 0));
+      await service.updateLanguageSettings({ locale: 'en', localeOutgoing: 'es' });
+      expect(http.put.args[0][1]).to.deep.include({ locale_outgoing: 'es' });
+    });
+
+    it('should send replace=false', async () => {
+      http.put.returns(of(void 0));
+      await service.updateLanguageSettings({ locale: 'en', localeOutgoing: 'es' });
+      expect(http.put.args[0][2].params).to.deep.include({ replace: 'false' });
+    });
+
+    it('should propagate error when request fails', async () => {
+      http.put.returns(throwError(() => ({ status: 500 })));
+      const result = service.updateLanguageSettings({ locale: 'en', localeOutgoing: 'es' });
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
+    });
+  });
 });
