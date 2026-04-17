@@ -82,7 +82,7 @@ describe('GetSummaries service', () => {
         { doc: {
           _id: 'a',
           _rev: '1',
-          type: DOC_TYPES.DATA_RECORD,
+          type: LOCAL_DOC_TYPES.DATA_RECORD,
           form: 'delivery',
           from: '+123',
           contact: {
@@ -105,7 +105,7 @@ describe('GetSummaries service', () => {
         { doc: {
           _id: 'b',
           _rev: '2',
-          type: DOC_TYPES.DATA_RECORD,
+          type: LOCAL_DOC_TYPES.DATA_RECORD,
           form: 'registration',
           sent_by: '+321',
           errors: [ { code: 'sys.missing_fields', fields: [ 'patient_id' ] } ],

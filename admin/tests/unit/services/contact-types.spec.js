@@ -107,7 +107,7 @@ describe('ContactTypes service', () => {
     });
 
     it('returns true for contact type', () => {
-      chai.expect(service.includes({ type: LOCAL_DOC_TYPES.CONTACT })).to.equal(true);
+      chai.expect(service.includes({ type: DOC_TYPES.CONTACT })).to.equal(true);
     });
 
     it('returns false for random type', () => {
@@ -203,6 +203,7 @@ describe('ContactTypes service', () => {
       chai.expect(service.getTypeId({ type: 'person' })).to.equal('person');
       chai.expect(service.getTypeId({ type: CONTACT_TYPES.CLINIC })).to.equal(CONTACT_TYPES.CLINIC);
       chai.expect(service.getTypeId({ type: DOC_TYPES.CONTACT, contact_type: 'something' })).to.equal('something');
+
     });
 
     it('should not crash when provided invalid inputs', () => {
