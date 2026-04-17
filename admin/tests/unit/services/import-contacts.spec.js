@@ -1,4 +1,4 @@
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES: LOCAL_DOC_TYPES } = require('@medic/constants');
 
 describe('ImportContacts service', function() {
 
@@ -16,7 +16,7 @@ describe('ImportContacts service', function() {
     const types = [ { id: 'person' }, { id: 'chp' } ];
     const ContactTypes = {
       getPersonTypes: sinon.stub().resolves(types),
-      getTypeId: sinon.stub().callsFake(doc => doc.type === DOC_TYPES.CONTACT ? doc.contact_type : doc.type),
+      getTypeId: sinon.stub().callsFake(doc => doc.type === LOCAL_DOC_TYPES.CONTACT ? doc.contact_type : doc.type),
     };
 
     module(function ($provide) {
@@ -183,7 +183,7 @@ describe('ImportContacts service', function() {
     put.onCall(2).returns(Promise.resolve({ _id: 5, _rev: 1 }));
     put.onCall(3).returns(Promise.resolve({ _id: 4, _rev: 1 }));
     put.onCall(4).resolves({});
-    const contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: DOC_TYPES.CONTACT, contact_type: 'chp' } };
+    const contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: LOCAL_DOC_TYPES.CONTACT, contact_type: 'chp' } };
     const contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
     const contact3 = { _id: 5, name: 'mary', phone: '+123', type: 'person', contact_type: 'omg' };
 
@@ -194,7 +194,7 @@ describe('ImportContacts service', function() {
         // save first place
         chai.expect(put.args[0][0]._id).to.equal(1);
         chai.expect(put.args[0][0].contact.name).to.equal('john');
-        chai.expect(put.args[0][0].contact.type).to.equal(DOC_TYPES.CONTACT);
+        chai.expect(put.args[0][0].contact.type).to.equal(LOCAL_DOC_TYPES.CONTACT);
         chai.expect(put.args[0][0].contact.contact_type).to.equal('chp');
         chai.expect(put.args[0][0].contact.phone).to.equal('+123');
 
@@ -205,7 +205,7 @@ describe('ImportContacts service', function() {
         chai.expect(put.args[2][0]).to.deep.equal(contact3);
 
         // save contact
-        chai.expect(put.args[3][0].type).to.equal(DOC_TYPES.CONTACT);
+        chai.expect(put.args[3][0].type).to.equal(LOCAL_DOC_TYPES.CONTACT);
         chai.expect(put.args[3][0].contact_type).to.equal('chp');
         chai.expect(put.args[3][0].name).to.equal('john');
         chai.expect(put.args[3][0].phone).to.equal('+123');

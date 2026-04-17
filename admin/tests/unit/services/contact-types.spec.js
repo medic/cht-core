@@ -107,7 +107,7 @@ describe('ContactTypes service', () => {
     });
 
     it('returns true for contact type', () => {
-      chai.expect(service.includes({ type: DOC_TYPES.CONTACT })).to.equal(true);
+      chai.expect(service.includes({ type: LOCAL_DOC_TYPES.CONTACT })).to.equal(true);
     });
 
     it('returns false for random type', () => {
