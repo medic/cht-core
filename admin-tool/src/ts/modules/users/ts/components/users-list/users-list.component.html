@@ -58,6 +58,7 @@
                     <button
                       class="btn btn-sm btn-danger"
                       (click)="deleteUser(user, $event)"
+                      [attr.aria-label]="'Delete user' | translate"
                     >
                       <i class="fa fa-trash-o"></i>
                     </button>
@@ -75,5 +76,19 @@
       (closed)="showCreateModal = false"
       (userCreated)="showCreateModal = false"
     ></create-user>
+
+    <edit-user
+      [visible]="showEditModal"
+      [user]="selectedUser"
+      (closed)="showEditModal = false"
+      (userUpdated)="showEditModal = false"
+    ></edit-user>
+
+    <delete-user
+      [visible]="showDeleteModal"
+      [user]="selectedUser"
+      (closed)="showDeleteModal = false"
+      (userDeleted)="showDeleteModal = false"
+    ></delete-user>
   }
 </div>

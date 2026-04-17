@@ -1,20 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '@admin-tool-services/auth.service';
 import { UsersService } from '@admin-tool-services/users.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
 import { CreateUserComponent } from '../create-user/create-user.component';
+import { EditUserComponent } from '../edit-user/edit-user.component';
+import { DeleteUserComponent } from '../delete-user/delete-user.component';
+
 /**
  * Displays and manages the list of system users.
- * Requires `can_configure` permission to access — unauthorized users see an error message.
- * Fetches users from the API on initialization and provides hooks for create, edit, and delete actions.
+ * Requires `can_configure` permission to access.
+ * Provides hooks for create, edit, and delete actions via modal components.
  */
 @Component({
   selector: 'users-list',
   standalone: true,
-  imports: [CommonModule, CreateUserComponent, TranslatePipe],
+  imports: [TranslatePipe, CreateUserComponent, EditUserComponent, DeleteUserComponent],
   templateUrl: './users-list.component.html',
   styleUrl: './users-list.component.less',
 })
@@ -23,7 +25,12 @@ export class UsersListComponent implements OnInit, OnDestroy {
   loading = false;
   error = false;
   users: Partial<User>[] = [];
+
   showCreateModal = false;
+  showEditModal = false;
+  showDeleteModal = false;
+
+  selectedUser: Partial<User> | null = null;
 
   private usersUpdatedSubscription!: Subscription;
 
@@ -41,9 +48,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
     });
 
     this.usersUpdatedSubscription = this.usersService.usersUpdated$.subscribe(
-      () => {
-        this.loadUsers();
-      },
+      () => this.loadUsers()
     );
   }
 
@@ -51,10 +56,6 @@ export class UsersListComponent implements OnInit, OnDestroy {
     this.usersUpdatedSubscription?.unsubscribe();
   }
 
-  /**
-   * Fetches the full list of users from the API.
-   * Sets `loading` during the request and `error` if the request fails.
-   */
   private async loadUsers() {
     this.loading = true;
     try {
@@ -67,50 +68,28 @@ export class UsersListComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Handles row click events — opens the edit modal for active users.
-   * Inactive users are ignored to prevent accidental edits on deleted accounts.
-   * @param user the user object from the row that was clicked
-   */
   onRowClick(user: Partial<User>) {
     if (!user.inactive) {
       this.editUser(user);
     }
   }
 
-  /**
-   * Opens the Add User modal.
-   */
   addUser() {
     this.showCreateModal = true;
   }
 
-  /**
-   * Opens the Import Users modal for bulk CSV upload.
-   * TODO: implement when the modal component is available.
-   */
   importUsers() {
     console.log('import users');
   }
 
-  /**
-   * Opens the Delete User confirmation modal.
-   * Stops event propagation to prevent triggering the row click handler.
-   * TODO: implement when the modal component is available.
-   * @param user the user to be deleted
-   * @param event the DOM click event
-   */
-  deleteUser(user: Partial<User>, event: Event) {
-    event.stopPropagation();
-    console.log('delete user', user);
+  editUser(user: Partial<User>) {
+    this.selectedUser = user;
+    this.showEditModal = true;
   }
 
-  /**
-   * Opens the Edit User modal for the given user.
-   * TODO: implement when the modal component is available.
-   * @param user the user to be edited
-   */
-  editUser(user: Partial<User>) {
-    console.log('edit user', user);
+  deleteUser(user: Partial<User>, event: Event) {
+    event.stopPropagation();
+    this.selectedUser = user;
+    this.showDeleteModal = true;
   }
 }

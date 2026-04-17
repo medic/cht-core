@@ -5,19 +5,25 @@ export interface User {
   id?: string;
   username?: string;
   fullname?: string;
+  email?: string;
   phone?: string;
-  facility_id?: string;
+  facility_id?: string | string[];
   contact_id?: string;
   inactive?: boolean;
   roles?: string[];
+  token_login?: {
+    active: boolean;
+    expiration_date: number;
+    login_date?: number;
+  };
 }
 
 /**
- * Represents the validation error state for the Create User form.
+ * Validation errors for the Create User form.
  */
 export interface CreateUserErrors {
-  submit?: string;
   username?: string;
+  fullname?: string;
   email?: string;
   phone?: string;
   roles?: string;
@@ -25,5 +31,6 @@ export interface CreateUserErrors {
   contact?: string;
   password?: string;
   passwordConfirm?: string;
+  submit?: string;
   replicationLimit?: string;
 }
