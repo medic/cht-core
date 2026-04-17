@@ -345,26 +345,28 @@ describe('transitions', () => {
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
 
-const expectedError = [
-  'Failed loading transition "default_responses". This is likely due to an error in the transition configuration. Please check your configuration.',
-  'err'
-];
-expect(transitions.getLoadingErrors()).to.deep.equal(expectedError);
-});
+    const expectedError = [
+      'Failed loading transition "default_responses". ' +
+      'This is likely due to an error in the transition configuration. ' +
+      'Please check your configuration.',
+      'err'
+    ];
+    expect(transitions.getLoadingErrors()).to.deep.equal(expectedError);
+  });
 
-it('getLoadingErrors - load failure truthy, load success falsy', () => {
-  config.get.returns({ default_responses: true });
+  it('getLoadingErrors - load failure truthy, load success falsy', () => {
+    config.get.returns({ default_responses: true });
 
-  sinon.stub(transitions, '_loadTransition');
-  transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
-  assert.throws(transitions.loadTransitions);
-  expect(!!transitions.getLoadingErrors()).to.be.true;
-  expect(Array.isArray(transitions.getLoadingErrors())).to.be.true;
+    sinon.stub(transitions, '_loadTransition');
+    transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
+    assert.throws(transitions.loadTransitions);
+    expect(!!transitions.getLoadingErrors()).to.be.true;
+    expect(Array.isArray(transitions.getLoadingErrors())).to.be.true;
 
-  transitions._loadTransition.withArgs('default_responses').resolves({});
-  transitions.loadTransitions();
-  expect(!!transitions.getLoadingErrors()).to.be.false;
-});
+    transitions._loadTransition.withArgs('default_responses').resolves({});
+    transitions.loadTransitions();
+    expect(!!transitions.getLoadingErrors()).to.be.false;
+  });
   it('getDeprecatedTransitions() should return list of current deprecated transitions', () => {
     const deprecatedTransitions = transitions.getDeprecatedTransitions();
 
@@ -372,7 +374,7 @@ it('getLoadingErrors - load failure truthy, load success falsy', () => {
     assert.equal(deprecatedTransitions.length, 2);
   });
 
-  describe('applyTransition',  () => {
+  describe('applyTransition', () => {
     it('should apply transition with change', async () => {
       const transition = {
         key: 'mytransition',
