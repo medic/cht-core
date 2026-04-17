@@ -3,9 +3,9 @@
     <span class="snackbar-message">{{message}}</span>
 
     @if (action) {
-    <span class="snackbar-action" (click)="action.onClick()" tabindex="0" (keydown.enter)="action.onClick()">
+    <button class="snackbar-action" (click)="action.onClick()">
       {{action.label}}
-    </span>
+    </button>
     }
 
   </span>
