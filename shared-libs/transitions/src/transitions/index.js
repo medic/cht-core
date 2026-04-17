@@ -153,7 +153,7 @@ const loadTransitions = (synchronous = false) => {
         `Failed loading transition "${transition}". ` +
         `This is likely due to an error in the transition configuration. ` +
         `Please check your configuration.`;
-      loadErrors = [errorMessage, (e && e.message) || 'unknown'];
+      loadErrors = [errorMessage, e?.message || 'unknown'];
       logger.error(errorMessage);
       logger.error('%o', e);
     }
