@@ -1,4 +1,5 @@
 const { DOC_TYPES } = require('@medic/constants');
+
 angular.module('services').factory('ImportContacts',
   function(
     $http,
