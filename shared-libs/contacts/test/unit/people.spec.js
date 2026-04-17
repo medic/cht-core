@@ -3,21 +3,18 @@ const chai = require('chai');
 const places = require('../../src/places');
 const cutils = require('../../src/libs/utils');
 const config = require('../../src/libs/config');
-const db = require('../../src/libs/db');
 const dataContext = require('../../src/libs/data-context');
-const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
-const { Person, Qualifier } = require('@medic/cht-datasource');
+const { Person, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
 
 describe('people controller', () => {
-  let minifyLineage;
+  let createPersonFn;
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
-    db.init({ medic: { post: sinon.stub() } });
     dataContext.init({ bind: sinon.stub() });
-    minifyLineage = sinon.stub();
-    lineage.init({ minifyLineage });
+    createPersonFn = sinon.stub();
+    dataContext.bind.withArgs(Person.v1.create).returns(createPersonFn);
   });
 
   afterEach(() => {
@@ -59,6 +56,13 @@ describe('people controller', () => {
       config.get.returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person', name: {} });
       chai.expect(actual).to.equal('Property "name" must be a string.');
+    });
+
+    it('returns error if reported_date is invalid', () => {
+      config.get.returns([{ id: 'person', person: true }]);
+      sinon.stub(cutils, 'isDateStrValid').returns(false);
+      const actual = controller._validatePerson({ type: 'person', name: 'Test', reported_date: 'x' });
+      chai.expect(actual).to.equal('Reported date is invalid: x');
     });
 
   });
@@ -117,22 +121,30 @@ describe('people controller', () => {
 
     it('does not override existing type', () => {
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
-      sinon.stub(controller, '_validatePerson').returns();
-      db.medic.post.resolves({ id: 'new-id' });
-      return controller.createPerson({ type: 'person', name: 'Test' }).then(() => {
-        chai.expect(db.medic.post.args[0][0].type).to.equal('person');
+      createPersonFn.resolves({ _id: 'new-id', _rev: '1', type: 'person', name: 'Test' });
+      return controller.createPerson({ type: 'person', name: 'Test', parent: 'parent-id' }).then(() => {
+        chai.expect(createPersonFn.args[0][0].type).to.equal('person');
       });
     });
 
-    it('returns error from db insert', () => {
-      sinon.stub(controller, '_validatePerson').returns();
-      sinon.stub(places, 'getOrCreatePlace').resolves();
-      db.medic.post.returns(Promise.reject('yucky'));
+    it('returns error from cht-datasource create', () => {
+      createPersonFn.rejects(new Error('yucky'));
       return controller
-        .createPerson({})
+        .createPerson({ type: 'person', name: 'Test', parent: 'parent-id' })
         .then(() => chai.expect.fail('should not succeed'))
         .catch(err => {
-          chai.expect(err).to.equal('yucky');
+          chai.expect(err.message).to.equal('yucky');
+        });
+    });
+
+    it('translates InvalidArgumentError to code 400', () => {
+      createPersonFn.rejects(new InvalidArgumentError('bad input'));
+      return controller
+        .createPerson({ type: 'person', name: 'Test', parent: 'parent-id' })
+        .then(() => chai.expect.fail('should not succeed'))
+        .catch(err => {
+          chai.expect(err.code).to.equal(400);
+          chai.expect(err.message).to.equal('bad input');
         });
     });
 
@@ -142,7 +154,6 @@ describe('people controller', () => {
         reported_date: 'x'
       };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
-      sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
       return controller
         .createPerson(person)
@@ -150,39 +161,36 @@ describe('people controller', () => {
         .catch(err => {
           chai.expect(err.code).to.equal(400);
           chai.expect(err.message).to.equal('Reported date is invalid: x');
-          chai.expect(config.get.args[0]).to.deep.equal([]);
         });
     });
 
     it('accepts valid reported_date in ms since epoch.', () => {
       const person = {
         name: 'Test',
-        reported_date: '123'
+        reported_date: '123',
+        parent: 'parent-id'
       };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
-      sinon.stub(places, 'getOrCreatePlace').resolves();
-      const post = db.medic.post.resolves();
+      createPersonFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller.createPerson(person).then(() => {
-        chai.expect(post.args[0][0].reported_date).to.equal(123);
-        chai.expect(config.get.args[0]).to.deep.equal([]);
+        chai.expect(createPersonFn.args[0][0].reported_date).to.equal(123);
       });
     });
 
     it('accepts valid reported_date in string format', () => {
       const person = {
         name: 'Test',
-        reported_date: '2011-10-10T14:48:00-0300'
+        reported_date: '2011-10-10T14:48:00-0300',
+        parent: 'parent-id'
       };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
-      sinon.stub(places, 'getOrCreatePlace').resolves();
-      const post = db.medic.post.resolves();
+      createPersonFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller.createPerson(person).then(() => {
-        chai.expect(post.args[0][0].reported_date).to.equal(new Date('2011-10-10T14:48:00-0300').valueOf());
-        chai.expect(config.get.args[0]).to.deep.equal([]);
+        chai.expect(createPersonFn.args[0][0].reported_date).to.equal(new Date('2011-10-10T14:48:00-0300').valueOf());
       });
     });
 
-    it('minifies the given parent', () => {
+    it('resolves place to parent UUID', () => {
       const person = {
         name: 'Test',
         reported_date: '2011-10-10T14:48:00-0300',
@@ -196,40 +204,36 @@ describe('people controller', () => {
           name: 'Test district',
         }
       };
-      const minified = {
-        _id: 'a',
-        parent: {
-          _id: 'b'
-        }
-      };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
-      lineage.minifyLineage.returns(minified);
-      db.medic.post.resolves();
+      createPersonFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller.createPerson(person).then(() => {
-        const doc = db.medic.post.args[0][0];
+        const doc = createPersonFn.args[0][0];
         chai.expect(!doc.place).to.equal(true);
-        chai.expect(doc.parent).to.deep.equal(minified);
+        chai.expect(doc.parent).to.equal('a');
         chai.expect(places.getOrCreatePlace.callCount).to.equal(1);
         chai.expect(places.getOrCreatePlace.args[0][0]).to.equal('a');
-        chai.expect(lineage.minifyLineage.callCount).to.equal(1);
-        chai.expect(lineage.minifyLineage.args[0][0]).to.deep.equal(place);
-        chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });
 
-    it('sets a default reported_date.', () => {
+    it('does not set reported_date when not provided (cht-datasource handles default).', () => {
       const person = {
-        name: 'Test'
+        name: 'Test',
+        parent: 'parent-id'
       };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
-      db.medic.post.resolves();
+      createPersonFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller.createPerson(person).then(() => {
-        const doc = db.medic.post.args[0][0];
-        // should be set to within 5 seconds of now
-        chai.expect(doc.reported_date <= (new Date().valueOf())).to.equal(true);
-        chai.expect(doc.reported_date > (new Date().valueOf() - 5000)).to.equal(true);
-        chai.expect(config.get.args[0]).to.deep.equal([]);
+        const doc = createPersonFn.args[0][0];
+        chai.expect(doc.reported_date).to.be.undefined;
+      });
+    });
+
+    it('returns response in { id, rev } format', () => {
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
+      createPersonFn.resolves({ _id: 'new-id', _rev: '1-abc' });
+      return controller.createPerson({ type: 'person', name: 'Test', parent: 'parent-id' }).then(result => {
+        chai.expect(result).to.deep.equal({ id: 'new-id', rev: '1-abc' });
       });
     });
 

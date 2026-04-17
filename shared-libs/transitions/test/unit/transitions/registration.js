@@ -7,7 +7,7 @@ const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const validation = require('@medic/validation');
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const phoneNumberParser = require('@medic/phone-number');
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
@@ -18,6 +18,8 @@ let acceptPatientReports;
 let transition;
 let settings;
 let getPlace;
+let createPersonFn;
+let createPlaceFn;
 
 describe('registration', () => {
   beforeEach(() => {
@@ -31,11 +33,12 @@ describe('registration', () => {
         .returns({})
     });
     getPlace = sinon.stub();
-    dataContext.init({
-      bind: sinon
-        .stub()
-        .returns(getPlace)
-    });
+    createPersonFn = sinon.stub();
+    createPlaceFn = sinon.stub();
+    dataContext.init({ bind: sinon.stub() });
+    dataContext.bind.withArgs(Place.v1.get).returns(getPlace);
+    dataContext.bind.withArgs(Person.v1.create).returns(createPersonFn);
+    dataContext.bind.withArgs(Place.v1.create).returns(createPlaceFn);
 
     schedules = require('../../../src/lib/schedules');
     transitionUtils = require('../../../src/transitions/utils');
@@ -176,7 +179,7 @@ describe('registration', () => {
         ],
       });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient' }],
@@ -194,17 +197,17 @@ describe('registration', () => {
       view.args[0][0].should.equal('medic-client/contacts_by_phone');
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].name.should.equal(patientName);
-      saveDoc.args[0][0].parent._id.should.equal(parentId);
-      saveDoc.args[0][0].reported_date.should.equal(53);
-      saveDoc.args[0][0].type.should.equal('person');
-      saveDoc.args[0][0].patient_id.should.equal(patientId);
-      saveDoc.args[0][0].date_of_birth.should.equal(dob);
-      saveDoc.args[0][0].source_id.should.equal(reportId);
-      saveDoc.args[0][0].created_by.should.equal(submitterId);
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].name.should.equal(patientName);
+      createPersonFn.args[0][0].parent.should.equal(parentId);
+      createPersonFn.args[0][0].reported_date.should.equal(53);
+      createPersonFn.args[0][0].type.should.equal('person');
+      createPersonFn.args[0][0].patient_id.should.equal(patientId);
+      createPersonFn.args[0][0].date_of_birth.should.equal(dob);
+      createPersonFn.args[0][0].source_id.should.equal(reportId);
+      createPersonFn.args[0][0].created_by.should.equal(submitterId);
     });
 
     it('should only create a new patient with phone if form has phone field and phone is valid', async () => {
@@ -253,7 +256,7 @@ describe('registration', () => {
         ],
       });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
 
       const eventConfig = {
         form: 'R',
@@ -273,18 +276,18 @@ describe('registration', () => {
       view.args[0][0].should.equal('medic-client/contacts_by_phone');
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].name.should.equal(patientName);
-      saveDoc.args[0][0].phone.should.equal(patientPhoneNumber);
-      saveDoc.args[0][0].parent._id.should.equal(parentId);
-      saveDoc.args[0][0].reported_date.should.equal(53);
-      saveDoc.args[0][0].type.should.equal('person');
-      saveDoc.args[0][0].patient_id.should.equal(patientId);
-      saveDoc.args[0][0].date_of_birth.should.equal(dob);
-      saveDoc.args[0][0].source_id.should.equal(reportId);
-      saveDoc.args[0][0].created_by.should.equal(submitterId);
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].name.should.equal(patientName);
+      createPersonFn.args[0][0].phone.should.equal(patientPhoneNumber);
+      createPersonFn.args[0][0].parent.should.equal(parentId);
+      createPersonFn.args[0][0].reported_date.should.equal(53);
+      createPersonFn.args[0][0].type.should.equal('person');
+      createPersonFn.args[0][0].patient_id.should.equal(patientId);
+      createPersonFn.args[0][0].date_of_birth.should.equal(dob);
+      createPersonFn.args[0][0].source_id.should.equal(reportId);
+      createPersonFn.args[0][0].created_by.should.equal(submitterId);
     });
 
     it('should not create patient if form has phone field and phone is invalid', async () => {
@@ -334,7 +337,6 @@ describe('registration', () => {
         ],
       });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
         form: 'R',
@@ -350,9 +352,9 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
-      saveDoc.callCount.should.equal(0);
+      createPersonFn.callCount.should.equal(0);
     });
 
     it('should not add patient phone if form does not have phone field', async () => {
@@ -396,7 +398,7 @@ describe('registration', () => {
         ],
       });
       getPlace.resolves({ _id: parentId, type: 'contact', contact_type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
 
       const eventConfig = {
         form: 'R',
@@ -416,18 +418,18 @@ describe('registration', () => {
       view.args[0][0].should.equal('medic-client/contacts_by_phone');
       view.args[0][1].key.should.equal(senderPhoneNumber);
       view.args[0][1].include_docs.should.equal(true);
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid(parentId)).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].name.should.equal(patientName);
-      (typeof saveDoc.args[0][0].phone).should.be.equal('undefined');
-      saveDoc.args[0][0].parent._id.should.equal(parentId);
-      saveDoc.args[0][0].reported_date.should.equal(53);
-      saveDoc.args[0][0].type.should.equal('person');
-      saveDoc.args[0][0].patient_id.should.equal(patientId);
-      saveDoc.args[0][0].date_of_birth.should.equal(dob);
-      saveDoc.args[0][0].source_id.should.equal(reportId);
-      saveDoc.args[0][0].created_by.should.equal(submitterId);
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].name.should.equal(patientName);
+      (typeof createPersonFn.args[0][0].phone).should.be.equal('undefined');
+      createPersonFn.args[0][0].parent.should.equal(parentId);
+      createPersonFn.args[0][0].reported_date.should.equal(53);
+      createPersonFn.args[0][0].type.should.equal('person');
+      createPersonFn.args[0][0].patient_id.should.equal(patientId);
+      createPersonFn.args[0][0].date_of_birth.should.equal(dob);
+      createPersonFn.args[0][0].source_id.should.equal(reportId);
+      createPersonFn.args[0][0].created_by.should.equal(submitterId);
     });
 
     it('does nothing when patient already added', () => {
@@ -442,12 +444,6 @@ describe('registration', () => {
           fields: { patient_name: 'jack' },
         },
       };
-      sinon
-        .stub(db.medic, 'query')
-        .resolves({
-          rows: [{ doc: { parent: { _id: 'papa' } } }],
-        });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient_id' }],
@@ -456,7 +452,7 @@ describe('registration', () => {
       config.getAll.returns(settings);
       sinon.stub(validation, 'validate').resolves(null);
       return transition.onMatch(change).then(() => {
-        saveDoc.callCount.should.equal(0);
+        createPersonFn.callCount.should.equal(0);
       });
     });
 
@@ -479,7 +475,7 @@ describe('registration', () => {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves(1);
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -497,9 +493,9 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
-      saveDoc.args[0][0].patient_id.should.equal(patientId);
+      createPersonFn.args[0][0].patient_id.should.equal(patientId);
       doc.patient_id.should.equal(patientId);
       (typeof doc.errors).should.equal('undefined');
     });
@@ -529,7 +525,7 @@ describe('registration', () => {
         ],
       });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{
@@ -551,11 +547,10 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].type.should.equal('contact');
-      saveDoc.args[0][0].contact_type.should.equal('patient');
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].type.should.equal('patient');
     });
 
     it('errors if the configuration does not point to an id', async () => {
@@ -577,7 +572,6 @@ describe('registration', () => {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -597,7 +591,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       (typeof doc.patient_id).should.equal('undefined');
       doc.errors.should.deep.equal([
@@ -627,7 +621,6 @@ describe('registration', () => {
           rows: [{ doc: { parent: { _id: 'papa' } } }],
         });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -649,7 +642,7 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
       (typeof doc.patient_id).should.be.equal('undefined');
       doc.errors.should.deep.equal([
@@ -684,7 +677,7 @@ describe('registration', () => {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient', params: 'name' }],
@@ -698,10 +691,10 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].name.should.equal(patientName);
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].name.should.equal(patientName);
     });
 
     it('event parameter overwrites the default property for the name of the patient using JSON config', async () => {
@@ -728,7 +721,7 @@ describe('registration', () => {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -748,10 +741,10 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].name.should.equal(patientName);
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].name.should.equal(patientName);
     });
 
     it('add_patient and add_patient_id triggers are idempotent', async () => {
@@ -778,7 +771,7 @@ describe('registration', () => {
           rows: [{ doc: { parent: { _id: submitterId } } }],
         });
       getPlace.resolves({ _id: 'papa', type: 'place' });
-      const saveDoc = sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -795,10 +788,10 @@ describe('registration', () => {
 
       await transition.onMatch(change);
 
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('papa')).should.be.true;
-      saveDoc.callCount.should.equal(1);
-      saveDoc.args[0][0].name.should.equal(patientName);
+      createPersonFn.callCount.should.equal(1);
+      createPersonFn.args[0][0].name.should.equal(patientName);
     });
 
     it('fails when patient_id_field is set to patient_id', () => {
@@ -848,7 +841,7 @@ describe('registration', () => {
       };
       const patientId = 'my_patient_id';
       sinon.stub(utils, 'getContactUuid').resolves();
-      sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_patient', params: { contact_type: 'patient' } }],
@@ -859,7 +852,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Patient {{patient_name}} with type {{patient.contact_type}} was added to ' +
+              content: 'Patient {{patient_name}} with type {{patient.type}} was added to ' +
                 '{{patient.parent.name}}({{patient.parent.contact_type}})'
             }
           ]
@@ -881,14 +874,13 @@ describe('registration', () => {
         transitionUtils.getUniqueId.callCount.should.equal(1);
         utils.getContactUuid.callCount.should.equal(1);
         utils.getContactUuid.args[0].should.deep.equal([patientId]);
-        db.medic.post.callCount.should.equal(1);
-        db.medic.post.args[0].should.deep.equal([{
+        createPersonFn.callCount.should.equal(1);
+        createPersonFn.args[0].should.deep.equal([{
           name: 'Bob',
           patient_id: patientId,
           source_id: change.doc._id,
-          type: 'contact',
-          contact_type: 'patient',
-          parent: { _id: 'petes', parent: { _id: 'west_hc' } },
+          type: 'patient',
+          parent: 'petes',
           created_by: 'pete',
           reported_date: change.doc.reported_date,
         }]);
@@ -940,7 +932,7 @@ describe('registration', () => {
       const patientId = 'my_patient_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves(parent);
-      sinon.stub(db.medic, 'post').resolves();
+      createPersonFn.resolves();
 
       const eventConfig = {
         form: 'R',
@@ -955,7 +947,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Friend {{buddy_name}} with type {{patient.contact_type}} was added to ' +
+              content: 'Friend {{buddy_name}} with type {{patient.type}} was added to ' +
                 '{{patient.parent.name}}({{patient.parent.contact_type}})'
             }
           ]
@@ -981,14 +973,13 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([patientId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal([change.doc.fields.parent]);
-        db.medic.post.callCount.should.equal(1);
-        db.medic.post.args[0].should.deep.equal([{
+        createPersonFn.callCount.should.equal(1);
+        createPersonFn.args[0].should.deep.equal([{
           name: 'Marcel',
           patient_id: patientId,
           source_id: change.doc._id,
-          type: 'contact',
-          contact_type: 'buddy',
-          parent: { _id: 'georges', parent: { _id: 'west_hc' } },
+          type: 'buddy',
+          parent: 'georges',
           created_by: 'pete',
           reported_date: change.doc.reported_date,
         }]);
@@ -1033,7 +1024,6 @@ describe('registration', () => {
       const patientId = 'my_patient_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact');
-      sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
         form: 'R',
@@ -1070,7 +1060,7 @@ describe('registration', () => {
         utils.getContactUuid.callCount.should.equal(1);
         utils.getContactUuid.args[0].should.deep.equal([patientId]);
         utils.getContact.callCount.should.equal(0);
-        db.medic.post.callCount.should.equal(0);
+        createPersonFn.callCount.should.equal(0);
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
           message: 'Cannot create patient without parent',
@@ -1116,7 +1106,6 @@ describe('registration', () => {
       const patientId = 'my_patient_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves();
-      sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
         form: 'R',
@@ -1154,7 +1143,7 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([patientId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal([change.doc.fields.parent_id]);
-        db.medic.post.callCount.should.equal(0);
+        createPersonFn.callCount.should.equal(0);
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
           message: 'Selected parent non-existent-contact does not exists.',
@@ -1207,7 +1196,6 @@ describe('registration', () => {
       const patientId = 'my_patient_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves(parent);
-      sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
         form: 'R',
@@ -1246,7 +1234,7 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([patientId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal([change.doc.fields.the_parent_field]);
-        db.medic.post.callCount.should.equal(0);
+        createPersonFn.callCount.should.equal(0);
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
           message: 'Cannot create patient under parent Georges Place(georges_place) of type area_type_1.',
@@ -1302,7 +1290,7 @@ describe('registration', () => {
       };
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves(parent);
-      sinon.stub(db.medic, 'post').resolves();
+      createPlaceFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{
@@ -1339,13 +1327,13 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal([change.doc.fields.parent_id]);
-        db.medic.post.callCount.should.equal(1);
-        db.medic.post.args[0].should.deep.equal([{
+        createPlaceFn.callCount.should.equal(1);
+        createPlaceFn.args[0].should.deep.equal([{
           name: 'new clinic',
           place_id: placeId,
           source_id: change.doc._id,
           type: 'clinic',
-          parent: { _id: 'north_hc' },
+          parent: 'north_hc',
           created_by: 'pete',
           reported_date: change.doc.reported_date,
         }]);
@@ -1385,7 +1373,7 @@ describe('registration', () => {
       const placeId = 'my_place_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact');
-      sinon.stub(db.medic, 'post').resolves();
+      createPlaceFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1' } }],
@@ -1396,7 +1384,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place_name}} with type {{place.contact_type}} was added to ' +
+              content: 'Place {{place_name}} with type {{place.type}} was added to ' +
                 '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
@@ -1420,14 +1408,13 @@ describe('registration', () => {
         utils.getContactUuid.callCount.should.equal(1);
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(0);
-        db.medic.post.callCount.should.equal(1);
-        db.medic.post.args[0].should.deep.equal([{
+        createPlaceFn.callCount.should.equal(1);
+        createPlaceFn.args[0].should.deep.equal([{
           name: 'new clinic',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'contact',
-          contact_type: 'clinic_1',
-          parent: { _id: 'west_hc' },
+          type: 'clinic_1',
+          parent: 'west_hc',
           created_by: 'supervisor',
           reported_date: change.doc.reported_date,
         }]);
@@ -1454,7 +1441,7 @@ describe('registration', () => {
       const placeId = 'my_place_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact');
-      sinon.stub(db.medic, 'post').resolves();
+      createPlaceFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic_1' } }],
@@ -1465,7 +1452,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place_name}} with type {{place.contact_type}} was added to ' +
+              content: 'Place {{place_name}} with type {{place.type}} was added to ' +
                 '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
@@ -1516,16 +1503,15 @@ describe('registration', () => {
       db.medic.query.callCount.should.equal(1);
       db.medic.query.args[0]
         .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
-      dataContext.bind.calledOnceWithExactly(Place.v1.get).should.be.true;
+      dataContext.bind.calledWith(Place.v1.get).should.be.true;
       getPlace.calledOnceWithExactly(Qualifier.byUuid('west_hc')).should.be.true;
-      db.medic.post.callCount.should.equal(1);
-      db.medic.post.args[0].should.deep.equal([{
+      createPlaceFn.callCount.should.equal(1);
+      createPlaceFn.args[0].should.deep.equal([{
         name: 'new clinic',
         place_id: placeId,
         source_id: change.doc._id,
-        type: 'contact',
-        contact_type: 'clinic_1',
-        parent: { _id: 'west_hc' },
+        type: 'clinic_1',
+        parent: 'west_hc',
         created_by: 'supervisor',
         reported_date: change.doc.reported_date,
       }]);
@@ -1577,7 +1563,7 @@ describe('registration', () => {
       };
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves(parent);
-      sinon.stub(db.medic, 'post').resolves();
+      createPlaceFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{
@@ -1591,7 +1577,7 @@ describe('registration', () => {
           message: [
             {
               locale: 'en',
-              content: 'Place {{place.name}} with type {{place.contact_type}} was added to ' +
+              content: 'Place {{place.name}} with type {{place.type}} was added to ' +
                 '{{place.parent.name}}({{place.parent.contact_type}})'
             }
           ]
@@ -1615,14 +1601,13 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal([change.doc.fields.parent_id]);
-        db.medic.post.callCount.should.equal(1);
-        db.medic.post.args[0].should.deep.equal([{
+        createPlaceFn.callCount.should.equal(1);
+        createPlaceFn.args[0].should.deep.equal([{
           name: 'newest place',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'contact',
-          contact_type: 'clinic_1',
-          parent: { _id: 'north_hc' },
+          type: 'clinic_1',
+          parent: 'north_hc',
           created_by: 'pete',
           reported_date: change.doc.reported_date,
         }]);
@@ -1675,7 +1660,7 @@ describe('registration', () => {
       };
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves(parent);
-      sinon.stub(db.medic, 'post').resolves();
+      createPlaceFn.resolves();
       const eventConfig = {
         form: 'R',
         events: [{
@@ -1713,13 +1698,13 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal([change.doc.fields.fiddle]);
-        db.medic.post.callCount.should.equal(1);
-        db.medic.post.args[0].should.deep.equal([{
+        createPlaceFn.callCount.should.equal(1);
+        createPlaceFn.args[0].should.deep.equal([{
           name: 'newest place',
           place_id: placeId,
           source_id: change.doc._id,
           type: 'clinic',
-          parent: { _id: 'north_hc' },
+          parent: 'north_hc',
           created_by: 'pete',
           reported_date: change.doc.reported_date,
         }]);
@@ -1746,7 +1731,6 @@ describe('registration', () => {
       const placeId = 'my_place_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact');
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic' } }],
@@ -1773,11 +1757,10 @@ describe('registration', () => {
       utils.getContactUuid.callCount.should.equal(1);
       utils.getContactUuid.args[0].should.deep.equal([placeId]);
       utils.getContact.callCount.should.equal(0);
-      db.medic.post.callCount.should.equal(0);
+      createPlaceFn.callCount.should.equal(0);
       db.medic.query.callCount.should.equal(1);
       db.medic.query.args[0]
         .should.deep.equal(['medic-client/contacts_by_phone', { key: '+111222', include_docs: true }]);
-      dataContext.bind.notCalled.should.be.true;
       getPlace.notCalled.should.be.true;
 
       change.doc.errors.length.should.equal(1);
@@ -1806,7 +1789,6 @@ describe('registration', () => {
       const placeId = 'my_place_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact');
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'some_id' } }],
@@ -1832,7 +1814,7 @@ describe('registration', () => {
         utils.getContactUuid.callCount.should.equal(1);
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(0);
-        db.medic.post.callCount.should.equal(0);
+        createPlaceFn.callCount.should.equal(0);
 
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
@@ -1861,7 +1843,6 @@ describe('registration', () => {
       const placeId = 'my_place_id';
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact');
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'some_id' } }],
@@ -1887,7 +1868,7 @@ describe('registration', () => {
         utils.getContactUuid.callCount.should.equal(1);
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(0);
-        db.medic.post.callCount.should.equal(0);
+        createPlaceFn.callCount.should.equal(0);
 
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
@@ -1934,7 +1915,6 @@ describe('registration', () => {
       };
       sinon.stub(utils, 'getContactUuid').resolves();
       sinon.stub(utils, 'getContact').resolves(parent);
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'area', parent_id: 'parent_id' } }],
@@ -1969,7 +1949,7 @@ describe('registration', () => {
         utils.getContactUuid.args[0].should.deep.equal([placeId]);
         utils.getContact.callCount.should.equal(1);
         utils.getContact.args[0].should.deep.equal(['hc2']);
-        db.medic.post.callCount.should.equal(0);
+        createPlaceFn.callCount.should.equal(0);
 
         change.doc.errors.length.should.equal(1);
         change.doc.errors[0].should.deep.equal({
@@ -2055,7 +2035,6 @@ describe('registration', () => {
           patient: { _id: 'patient', patient_id: '05649', type: 'person' }
         },
       };
-      sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
         events: [
@@ -2105,7 +2084,6 @@ describe('registration', () => {
           place: { _id: 'place_id', place_id: '79999', type: 'clinic' },
         },
       };
-      sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
         form: 'R',
@@ -2158,7 +2136,6 @@ describe('registration', () => {
           patient: { _id: 'patient_id', place_id: '26954' },
         },
       };
-      sinon.stub(db.medic, 'post').resolves();
 
       const eventConfig = {
         form: 'R',

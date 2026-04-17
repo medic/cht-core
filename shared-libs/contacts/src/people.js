@@ -1,11 +1,9 @@
 const _ = require('lodash');
 const dataContext = require('./libs/data-context');
-const db = require('./libs/db');
 const config = require('./libs/config');
 const utils = require('./libs/utils');
 const places = require('./places');
-const lineage = require('./libs/lineage');
-const { Person, Qualifier } = require('@medic/cht-datasource');
+const { Person, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 const getPerson = id => dataContext
@@ -51,31 +49,38 @@ const validatePerson = obj => {
  * database. Ideally CouchDB would validate a given object against a form in
  * validate_doc_update. https://github.com/medic/medic/issues/2203
  */
-const createPerson = data => {
+const createPerson = async (data) => {
   if (!data.type) {
     const defaultType = getDefaultPersonType();
     if (defaultType) {
       data.type = defaultType;
     }
-    // else validation will fail below
   }
-  const self = module.exports;
-  const error = self._validatePerson(data);
-  if (error) {
-    return Promise.reject({ code: 400, message: error });
+
+  if (data.reported_date) {
+    const date = utils.parseDate(data.reported_date);
+    if (!date.isValid()) {
+      return Promise.reject({ code: 400, message: 'Reported date is invalid: ' + data.reported_date });
+    }
+    data.reported_date = date.valueOf();
   }
-  const date = data.reported_date ? utils.parseDate(data.reported_date) : new Date();
-  data.reported_date = date.valueOf();
-  return Promise.resolve()
-    .then(() => {
-      if (data.place) {
-        return places.getOrCreatePlace(data.place).then(place => {
-          data.parent = lineage.minifyLineage(place);
-          delete data.place;
-        });
-      }
-    })
-    .then(() => db.medic.post(data));
+
+  if (data.place) {
+    const place = await places.getOrCreatePlace(data.place);
+    data.parent = place._id;
+    delete data.place;
+  }
+
+  try {
+    const createPersonFn = dataContext.bind(Person.v1.create);
+    const result = await createPersonFn(data);
+    return { id: result._id, rev: result._rev };
+  } catch (err) {
+    if (err instanceof InvalidArgumentError) {
+      return Promise.reject({ code: 400, message: err.message });
+    }
+    throw err;
+  }
 };
 
 /*

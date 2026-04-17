@@ -4,8 +4,7 @@ const transitionUtils = require('./utils');
 const logger = require('@medic/logger');
 const db = require('../db');
 const dataContext = require('../data-context');
-const { Place, Qualifier } = require('@medic/cht-datasource');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const { Person, Place, Qualifier } = require('@medic/cht-datasource');
 const messages = require('../lib/messages');
 const schedules = require('../lib/schedules');
 const acceptPatientReports = require('./accept_patient_reports');
@@ -483,16 +482,8 @@ const addPatient = (options) => {
     reported_date: doc.reported_date,
     patient_id: patientShortcode,
     source_id: doc._id,
+    type: options.params.contact_type || 'person',
   };
-
-  if (options.params.contact_type) {
-    patient.type = 'contact';
-    patient.contact_type = options.params.contact_type;
-  } else {
-    patient.type = 'person';
-  }
-
-
 
   return utils
     .getContactUuid(patientShortcode)
@@ -533,10 +524,11 @@ const addPatient = (options) => {
 
         // assign patient in doc with full parent doc - to be used in messages
         doc.patient = Object.assign({ parent }, patient);
-        patient.parent = lineage.minifyLineage(parent);
+        patient.parent = parent._id;
         patient.created_by = doc.contact && doc.contact._id;
 
-        return db.medic.post(patient);
+        const createPerson = dataContext.bind(Person.v1.create);
+        return createPerson(patient);
       });
     });
 };
@@ -552,14 +544,8 @@ const addPlace = (options) => {
     reported_date: doc.reported_date,
     place_id: placeShortcode,
     source_id: doc._id,
+    type: options.params.contact_type,
   };
-
-  if (contactTypesUtils.isHardcodedType(options.params.contact_type)) {
-    place.type = options.params.contact_type;
-  } else {
-    place.type = 'contact';
-    place.contact_type = options.params.contact_type;
-  }
 
   return utils
     .getContactUuid(placeShortcode)
@@ -586,10 +572,11 @@ const addPlace = (options) => {
 
         // assign place in doc with full parent doc - to be used in messages
         doc.place = Object.assign({ parent }, place);
-        place.parent = lineage.minifyLineage(parent);
+        place.parent = parent._id;
         place.created_by = doc.contact && doc.contact._id;
 
-        return db.medic.post(place);
+        const createPlace = dataContext.bind(Place.v1.create);
+        return createPlace(place);
       });
     });
 };

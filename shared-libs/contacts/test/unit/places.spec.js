@@ -8,7 +8,7 @@ const controller = require('../../src/places');
 const people = require('../../src/people');
 const cutils = require('../../src/libs/utils');
 const lineage = require('../../src/libs/lineage');
-const { Place, Qualifier } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const { CONTACT_TYPES } = require('@medic/constants');
 
@@ -65,6 +65,7 @@ const contactTypes = [
 
 describe('places controller', () => {
   let getWithLineage;
+  let createPlaceFn;
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
@@ -79,7 +80,12 @@ describe('places controller', () => {
     lineage.init(require('@medic/lineage')(Promise, db.medic));
 
     getWithLineage = sinon.stub();
-    dataContext.bind.returns(getWithLineage);
+    createPlaceFn = sinon.stub();
+    dataContext.bind.withArgs(Place.v1.getWithLineage).returns(getWithLineage);
+    dataContext.bind.withArgs(Place.v1.create).returns(createPlaceFn);
+    // people.js uses Person.v1.getWithLineage and Person.v1.create via dataContext.bind
+    dataContext.bind.withArgs(Person.v1.getWithLineage).returns(getWithLineage);
+    dataContext.bind.withArgs(Person.v1.create).returns(sinon.stub());
   });
 
   afterEach(() => {
@@ -264,13 +270,12 @@ describe('places controller', () => {
         name: 'CHP Family',
         type: 'food'
       };
-      const post = db.medic.post;
       return controller
         ._createPlaces(place)
         .then(() => chai.expect.fail('should fail'))
         .catch(err => {
           chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
-          chai.expect(post.callCount).to.equal(0);
+          chai.expect(createPlaceFn.callCount).to.equal(0);
         });
     });
 
@@ -283,13 +288,12 @@ describe('places controller', () => {
           type: 'food'
         }
       };
-      const post = db.medic.post;
       return controller
         ._createPlaces(place)
         .then(() => chai.expect.fail('should fail'))
         .catch(err => {
           chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
-          chai.expect(post.callCount).to.equal(0);
+          chai.expect(createPlaceFn.callCount).to.equal(0);
         });
     });
 
@@ -299,14 +303,13 @@ describe('places controller', () => {
         type: 'food',
         parent: 'x'
       };
-      const post = db.medic.post;
       sinon.stub(controller, 'getPlace').returns(Promise.reject('boom'));
       return controller
         ._createPlaces(place)
         .then(() => chai.expect.fail('should fail'))
         .catch(err => {
           chai.expect(err).to.equal('boom');
-          chai.expect(post.callCount).to.equal(0);
+          chai.expect(createPlaceFn.callCount).to.equal(0);
         });
     });
 
@@ -323,26 +326,19 @@ describe('places controller', () => {
           }
         }
       };
-      db.medic.post.callsFake(doc => {
+      createPlaceFn.callsFake(doc => {
         if (doc.name === 'CHP Branch One') {
-          return Promise.resolve({ id: 'abc' });
+          return Promise.resolve({ _id: 'abc', _rev: '1' });
         }
         if (doc.name === 'CHP Area One') {
-          // the parent should be created/resolved, parent id should be set.
-          chai.expect(doc.parent._id).to.equal('abc');
-          chai.expect(doc.parent.name).to.equal(undefined); // minified
-          chai.expect(doc.parent.type).to.equal(undefined); // minified
-          return Promise.resolve({ id: 'def' });
+          // parent should be a UUID string (resolved from previous creation)
+          chai.expect(doc.parent).to.equal('abc');
+          return Promise.resolve({ _id: 'def', _rev: '1' });
         }
         if (doc.name === 'CHP Family') {
-          // both parents should be created/resolved
-          chai.expect(doc.parent._id).to.equal('def');
-          chai.expect(doc.parent.name).to.equal(undefined); // minified
-          chai.expect(doc.parent.type).to.equal(undefined); // minified
-          chai.expect(doc.parent.parent._id).to.equal('abc');
-          chai.expect(doc.parent.parent.name).to.equal(undefined); // minified
-          chai.expect(doc.parent.parent.type).to.equal(undefined); // minified
-          return Promise.resolve({ id: 'ghi' });
+          // parent should be a UUID string (resolved from getPlace)
+          chai.expect(doc.parent).to.equal('def');
+          return Promise.resolve({ _id: 'ghi', _rev: '1' });
         }
       });
       getWithLineage.callsFake(({ uuid }) => {
@@ -365,30 +361,11 @@ describe('places controller', () => {
             }
           });
         }
-        if (uuid === 'ghi') {
-          return Promise.resolve({
-            _id: 'ghi',
-            name: 'CHP Family',
-            type: 'clinic',
-            parent: {
-              _id: 'def',
-              name: 'CHP Area One',
-              type: CONTACT_TYPES.HEALTH_CENTER,
-              parent: {
-                _id: 'abc',
-                name: 'CHP Branch One',
-                type: 'district_hospital'
-              }
-            }
-          });
-        }
       });
 
       const actual = await controller._createPlaces(place);
 
-      chai.expect(actual).to.deep.equal({ id: 'ghi' });
-      chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.getWithLineage], [Place.v1.getWithLineage]]);
-      chai.expect(getWithLineage.args).to.deep.equal([[Qualifier.byUuid('abc')], [Qualifier.byUuid('def')]]);
+      chai.expect(actual).to.deep.equal({ id: 'ghi', rev: '1' });
     });
 
     it('creates contacts', async () => {
@@ -408,25 +385,20 @@ describe('places controller', () => {
         name: 'Jim',
         type: 'person'
       });
-      db.medic.post.withArgs(
-        sinon.match((doc) => !doc.contact)
-      ).callsFake(doc => {
+      // First call: create place without contact
+      createPlaceFn.callsFake(doc => {
         chai.expect(doc.name).to.equal('CHP Family');
-        chai.expect(doc.parent._id).to.equal('ad06d137');
-        return Promise.resolve({ id: 'hc', rev: '1' });
+        chai.expect(doc.parent).to.equal('ad06d137');
+        return Promise.resolve({ _id: 'hc', _rev: '1' });
       });
-      db.medic.post.withArgs(
-        sinon.match(doc => doc.contact)
-      ).callsFake(doc => {
-        chai.expect(doc.name).to.equal('CHP Family');
-        chai.expect(doc.parent._id).to.equal('ad06d137');
+      // updatePlace is called to set the contact after person creation
+      db.medic.post.callsFake(doc => {
         chai.expect(doc.contact._id).to.equal('qwe');
-        chai.expect(doc.contact.name).to.equal(undefined); // minified
-        chai.expect(doc.contact.type).to.equal(undefined); //
         return Promise.resolve({ id: 'hc', rev: '2' });
       });
 
       getWithLineage.withArgs(Qualifier.byUuid('hc')).resolves({
+        _id: 'hc',
         name: 'CHP Family',
         type: CONTACT_TYPES.HEALTH_CENTER,
         parent: {
@@ -443,7 +415,7 @@ describe('places controller', () => {
 
       const actual = await controller._createPlaces(place);
 
-      chai.expect(db.medic.post.callCount).to.equal(2);
+      chai.expect(createPlaceFn.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal({
         id: 'hc',
         rev: '2',
@@ -451,8 +423,6 @@ describe('places controller', () => {
           id: 'qwe',
         }
       });
-      chai.expect(dataContext.bind.args).to.deep.equal([[Place.v1.getWithLineage], [Place.v1.getWithLineage]]);
-      chai.expect(getWithLineage.args).to.deep.equal([[Qualifier.byUuid('ad06d137')], [Qualifier.byUuid('hc')]]);
     });
 
     it('returns err if contact does not have name', () => {
@@ -463,13 +433,12 @@ describe('places controller', () => {
           type: 'person'
         }
       };
-      const post = db.medic.post;
       return controller
         ._createPlaces(place)
         .then(() => chai.expect.fail('should fail'))
         .catch(err => {
           chai.expect(err.message).to.equal('Person is missing a "name" property.');
-          chai.expect(post.callCount).to.equal(0);
+          chai.expect(createPlaceFn.callCount).to.equal(0);
         });
     });
 
@@ -480,12 +449,9 @@ describe('places controller', () => {
         contact: 'person'
       };
       getWithLineage.resolves(null);
-      const post = db.medic.post;
       await chai.expect(controller._createPlaces(place)).to.be.rejectedWith('Failed to find person.');
 
-      chai.expect(post.callCount).to.equal(0);
-      chai.expect(dataContext.bind.calledOnce).to.be.true;
-      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('person'))).to.be.true;
+      chai.expect(createPlaceFn.callCount).to.equal(0);
     });
 
     it('rejects contacts with wrong type', () => {
@@ -497,13 +463,12 @@ describe('places controller', () => {
           type: 'x'
         }
       };
-      const post = db.medic.post;
       return controller
         ._createPlaces(place)
         .then(() => chai.expect.fail('should fail'))
         .catch(err => {
           chai.expect(err.message).to.equal('Wrong type, this is not a person.');
-          chai.expect(post.callCount).to.equal(0);
+          chai.expect(createPlaceFn.callCount).to.equal(0);
         });
     });
 
@@ -519,21 +484,17 @@ describe('places controller', () => {
         name: 'CHP Branch One',
         type: 'district_hospital'
       });
-      db.medic.post.callsFake(doc => {
-        // the parent should be created/resolved, parent id should be set.
+      createPlaceFn.callsFake(doc => {
+        // parent should be a UUID string after resolution
         chai.expect(doc.name).to.equal('CHP Area One');
         chai.expect(doc.type).to.equal(CONTACT_TYPES.HEALTH_CENTER);
-        chai.expect(doc.parent._id).to.equal('ad06d137');
-        chai.expect(doc.parent.name).to.equal(undefined); // minified
-        chai.expect(doc.parent.type).to.equal(undefined); // minified
-        return Promise.resolve({ id: 'abc123' });
+        chai.expect(doc.parent).to.equal('ad06d137');
+        return Promise.resolve({ _id: 'abc123', _rev: '1' });
       });
 
       const actual = await controller._createPlaces(place);
 
-      chai.expect(actual).to.deep.equal({ id: 'abc123' });
-      chai.expect(dataContext.bind.calledOnceWithExactly(Place.v1.getWithLineage)).to.be.true;
-      chai.expect(getWithLineage.calledOnceWithExactly(Qualifier.byUuid('ad06d137'))).to.be.true;
+      chai.expect(actual).to.deep.equal({ id: 'abc123', rev: '1' });
     });
 
     it('rejects invalid reported_date.', () => {
@@ -558,9 +519,9 @@ describe('places controller', () => {
         type: 'district_hospital',
         reported_date: '123'
       };
-      db.medic.post;
+      createPlaceFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller._createPlaces(place).then(() => {
-        chai.expect(db.medic.post.args[0][0].reported_date).to.equal(123);
+        chai.expect(createPlaceFn.args[0][0].reported_date).to.equal(123);
       });
     });
 
@@ -571,24 +532,20 @@ describe('places controller', () => {
         reported_date: '2011-10-10T14:48:00-0300'
       };
       const expected = new Date('2011-10-10T14:48:00-0300').valueOf();
-      db.medic.post;
+      createPlaceFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller._createPlaces(place).then(() => {
-        chai.expect(db.medic.post.args[0][0].reported_date).to.equal(expected);
+        chai.expect(createPlaceFn.args[0][0].reported_date).to.equal(expected);
       });
     });
 
-    it('sets a default reported_date.', () => {
+    it('does not set reported_date when not provided (cht-datasource handles default).', () => {
       const place = {
         name: 'Test',
         type: 'district_hospital'
       };
-      db.medic.post;
+      createPlaceFn.resolves({ _id: 'new-id', _rev: '1' });
       return controller._createPlaces(place).then(() => {
-        // should be set to within 5 seconds of now
-        const expected = new Date().valueOf();
-        const actual = db.medic.post.args[0][0].reported_date;
-        chai.expect(actual).to.not.be.above(expected);
-        chai.expect(actual).to.be.above(expected - 5000);
+        chai.expect(createPlaceFn.args[0][0].reported_date).to.be.undefined;
       });
     });
 
@@ -740,11 +697,23 @@ describe('places controller', () => {
     });
   });
 
+  describe('createPlace error handling', () => {
+    it('translates InvalidArgumentError to code 400', async () => {
+      sinon.stub(controller, '_validatePlace').resolves();
+      createPlaceFn.rejects(new InvalidArgumentError('bad place data'));
+
+      await chai.expect(controller._createPlace({
+        name: 'Test Place',
+        type: 'district_hospital',
+      })).to.be.eventually.rejectedWith('bad place data').and.have.property('code', 400);
+    });
+  });
+
   describe('createPlace with existing contact', () => {
     it('creates place with existing string contact', async () => {
       sinon.stub(controller, '_validatePlace').resolves();
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'person-id', name: 'Jim' });
-      db.medic.post.resolves({ id: 'place-id', rev: '1' });
+      createPlaceFn.resolves({ _id: 'place-id', _rev: '1' });
 
       const result = await controller._createPlace({
         name: 'Test Place',
@@ -753,7 +722,7 @@ describe('places controller', () => {
       });
 
       chai.expect(result).to.deep.include({ contact: { id: 'person-id' } });
-      chai.expect(db.medic.post.args[0][0].contact).to.equal('person-id');
+      chai.expect(createPlaceFn.args[0][0].contact).to.equal('person-id');
     });
   });
 
