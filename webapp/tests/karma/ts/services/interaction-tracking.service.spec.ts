@@ -20,6 +20,9 @@ describe('InteractionTrackingService', () => {
   let clock;
   let consoleErrorSpy;
 
+  // Fixed local time: 2026-03-27 10:00:00.000 — moment formats to '2026-03-27' in any timezone.
+  const NOW = new Date(2026, 2, 27, 10, 0, 0, 0).getTime();
+
   const configureService = (hasPermission = true) => {
     metaDb = {
       get: sinon.stub(),
@@ -52,7 +55,7 @@ describe('InteractionTrackingService', () => {
   beforeEach(async () => {
     configureService(true);
     await service.init();
-    clock = sinon.useFakeTimers({ now: new Date(2026, 2, 27, 10, 0).getTime() });
+    clock = sinon.useFakeTimers(NOW);
   });
 
   afterEach(() => {
@@ -68,7 +71,7 @@ describe('InteractionTrackingService', () => {
       expect(metaDb.put.called).to.be.false;
     });
 
-    it('should record events with action and timestamp', async () => {
+    it('should record an event with the current session, startedAt, and timestamp', async () => {
       metaDb.get.rejects({ status: 404 });
 
       service.startSession('tasks');
@@ -77,11 +80,33 @@ describe('InteractionTrackingService', () => {
 
       expect(metaDb.put.calledOnce).to.be.true;
       const doc = metaDb.put.args[0][0];
-      expect(doc.sessions).to.have.length(1);
-      expect(doc.sessions[0].startedAt).to.be.a('number');
-      expect(doc.sessions[0].events).to.have.length(1);
-      expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
-      expect(doc.sessions[0].events[0].timestamp).to.be.a('number');
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [{ action: 'task_list:open', timestamp: NOW }],
+        },
+      ]);
+    });
+
+    it('should timestamp each event with the time it was recorded', async () => {
+      metaDb.get.rejects({ status: 404 });
+
+      service.startSession('tasks');
+      service.record('task_list:open');
+      await clock.tickAsync(1_000);
+      service.record('task_list:scroll');
+      await clock.tickAsync(2_500);
+      service.record('task:open', 'delivery_report', '4');
+      await service.flush();
+
+      const session = metaDb.put.args[0][0].sessions[0];
+      expect(session.startedAt).to.equal(NOW);
+      expect(session.events).to.deep.equal([
+        { action: 'task_list:open', timestamp: NOW },
+        { action: 'task_list:scroll', timestamp: NOW + 1_000 },
+        { action: 'task:open', timestamp: NOW + 3_500, ref: 'delivery_report', detail: '4' },
+      ]);
     });
 
     it('should record ref and detail when provided', async () => {
@@ -91,10 +116,9 @@ describe('InteractionTrackingService', () => {
       service.record('task:open', 'pregnancy_follow_up', '3');
       await service.flush();
 
-      const event = metaDb.put.args[0][0].sessions[0].events[0];
-      expect(event.action).to.equal('task:open');
-      expect(event.ref).to.equal('pregnancy_follow_up');
-      expect(event.detail).to.equal('3');
+      expect(metaDb.put.args[0][0].sessions[0].events).to.deep.equal([
+        { action: 'task:open', timestamp: NOW, ref: 'pregnancy_follow_up', detail: '3' },
+      ]);
     });
 
     it('should not include ref or detail when not provided', async () => {
@@ -105,6 +129,7 @@ describe('InteractionTrackingService', () => {
       await service.flush();
 
       const event = metaDb.put.args[0][0].sessions[0].events[0];
+      expect(event).to.deep.equal({ action: 'task_list:scroll', timestamp: NOW });
       expect(event).to.not.have.property('ref');
       expect(event).to.not.have.property('detail');
     });
@@ -114,13 +139,16 @@ describe('InteractionTrackingService', () => {
 
       service.startSession('tasks');
       service.record('task_group:show', undefined, '5');
+      await clock.tickAsync(50);
       service.record('task_group:show', undefined, '5');
+      await clock.tickAsync(50);
       service.record('task_group:show', undefined, '5');
       await service.flush();
 
       const events = metaDb.put.args[0][0].sessions[0].events;
-      expect(events).to.have.length(1);
-      expect(events[0].action).to.equal('task_group:show');
+      expect(events).to.deep.equal([
+        { action: 'task_group:show', timestamp: NOW, detail: '5' },
+      ]);
     });
 
     it('should not deduplicate events with different ref or detail', async () => {
@@ -128,16 +156,19 @@ describe('InteractionTrackingService', () => {
 
       service.startSession('tasks');
       service.record('task:open', 'task_a', '0');
+      await clock.tickAsync(100);
       service.record('task:open', 'task_b', '1');
-      service.record('task:open', 'task_b', '1');
+      await clock.tickAsync(100);
+      service.record('task:open', 'task_b', '1'); // dedup
+      await clock.tickAsync(100);
       service.record('task:open', 'task_a', '0');
       await service.flush();
 
-      const events = metaDb.put.args[0][0].sessions[0].events;
-      expect(events).to.have.length(3);
-      expect(events[0].ref).to.equal('task_a');
-      expect(events[1].ref).to.equal('task_b');
-      expect(events[2].ref).to.equal('task_a');
+      expect(metaDb.put.args[0][0].sessions[0].events).to.deep.equal([
+        { action: 'task:open', timestamp: NOW, ref: 'task_a', detail: '0' },
+        { action: 'task:open', timestamp: NOW + 100, ref: 'task_b', detail: '1' },
+        { action: 'task:open', timestamp: NOW + 300, ref: 'task_a', detail: '0' },
+      ]);
     });
 
     it('should not deduplicate non-consecutive identical events', async () => {
@@ -145,12 +176,17 @@ describe('InteractionTrackingService', () => {
 
       service.startSession('tasks');
       service.record('task_list:scroll');
+      await clock.tickAsync(100);
       service.record('task:open', 'task_a', '0');
+      await clock.tickAsync(100);
       service.record('task_list:scroll');
       await service.flush();
 
-      const events = metaDb.put.args[0][0].sessions[0].events;
-      expect(events).to.have.length(3);
+      expect(metaDb.put.args[0][0].sessions[0].events).to.deep.equal([
+        { action: 'task_list:scroll', timestamp: NOW },
+        { action: 'task:open', timestamp: NOW + 100, ref: 'task_a', detail: '0' },
+        { action: 'task_list:scroll', timestamp: NOW + 200 },
+      ]);
     });
 
     it('should stop recording new events after flush reveals daily limit is reached', async () => {
@@ -192,16 +228,30 @@ describe('InteractionTrackingService', () => {
 
       service.startSession('tasks');
       service.record('task_list:open');
+      await clock.tickAsync(200);
+      service.record('task_list:scroll');
       await service.flush();
 
       expect(metaDb.put.calledOnce).to.be.true;
       const doc = metaDb.put.args[0][0];
       expect(doc._id).to.equal('interaction-2026-03-27-greg-device-uuid-123');
       expect(doc.type).to.equal('interaction-log');
-      expect(doc.metadata.user).to.equal('greg');
-      expect(doc.metadata.deviceId).to.equal('device-uuid-123');
-      expect(doc.metadata.date).to.equal('2026-03-27');
-      expect(doc.metadata.versions).to.deep.equal(['4.5.0']);
+      expect(doc.metadata).to.deep.equal({
+        user: 'greg',
+        deviceId: 'device-uuid-123',
+        date: '2026-03-27',
+        versions: ['4.5.0'],
+      });
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [
+            { action: 'task_list:open', timestamp: NOW },
+            { action: 'task_list:scroll', timestamp: NOW + 200 },
+          ],
+        },
+      ]);
     });
 
     it('should append sessions to an existing daily doc', async () => {
@@ -209,7 +259,11 @@ describe('InteractionTrackingService', () => {
         _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
-        sessions: [{ session: 'tasks', startedAt: 500, events: [{ action: 'task_list:open', timestamp: 1000 }] }],
+        sessions: [{
+          session: 'tasks',
+          startedAt: NOW - 60_000,
+          events: [{ action: 'task_list:open', timestamp: NOW - 60_000 }],
+        }],
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
@@ -226,13 +280,22 @@ describe('InteractionTrackingService', () => {
       expect(metaDb.put.calledOnce).to.be.true;
       const doc = metaDb.put.args[0][0];
       expect(doc._rev).to.equal('1-abc');
-      expect(doc.sessions).to.have.length(2);
-      expect(doc.sessions[1].events[0].action).to.equal('task:open');
-      expect(doc.sessions[1].startedAt).to.be.a('number');
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW - 60_000,
+          events: [{ action: 'task_list:open', timestamp: NOW - 60_000 }],
+        },
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [{ action: 'task:open', timestamp: NOW, ref: 'delivery_report' }],
+        },
+      ]);
     });
 
     it('should add new version to versions array', async () => {
-      const existingDoc = {
+      metaDb.get.resolves({
         _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
@@ -243,19 +306,17 @@ describe('InteractionTrackingService', () => {
           date: '2026-03-27',
           versions: ['4.4.0'],
         },
-      };
-      metaDb.get.resolves(existingDoc);
+      });
 
       service.startSession('tasks');
       service.record('task_list:open');
       await service.flush();
 
-      const doc = metaDb.put.args[0][0];
-      expect(doc.metadata.versions).to.deep.equal(['4.4.0', '4.5.0']);
+      expect(metaDb.put.args[0][0].metadata.versions).to.deep.equal(['4.4.0', '4.5.0']);
     });
 
     it('should not duplicate existing version', async () => {
-      const existingDoc = {
+      metaDb.get.resolves({
         _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
         type: 'interaction-log',
@@ -266,15 +327,13 @@ describe('InteractionTrackingService', () => {
           date: '2026-03-27',
           versions: ['4.5.0'],
         },
-      };
-      metaDb.get.resolves(existingDoc);
+      });
 
       service.startSession('tasks');
       service.record('task_list:open');
       await service.flush();
 
-      const doc = metaDb.put.args[0][0];
-      expect(doc.metadata.versions).to.deep.equal(['4.5.0']);
+      expect(metaDb.put.args[0][0].metadata.versions).to.deep.equal(['4.5.0']);
     });
 
     it('should clear session state after flush', async () => {
@@ -314,24 +373,31 @@ describe('InteractionTrackingService', () => {
   });
 
   describe('startSession()', () => {
-    it('should flush previous session when starting a new one', async () => {
+    it('should persist a session keyed by its startedAt', async () => {
       metaDb.get.rejects({ status: 404 });
 
       service.startSession('tasks');
       service.record('task_list:open');
       await service.flush();
 
-      expect(metaDb.put.calledOnce).to.be.true;
       const doc = metaDb.put.args[0][0];
+      expect(doc.sessions).to.have.length(1);
       expect(doc.sessions[0].session).to.equal('tasks');
+      expect(doc.sessions[0].startedAt).to.equal(NOW);
     });
 
-    it('should start a fresh session after flushing', async () => {
+    it('should start a fresh session with a new startedAt after flushing', async () => {
       metaDb.get.rejects({ status: 404 });
 
       service.startSession('tasks');
       service.record('task_list:open');
       await service.flush();
+
+      // Advance time so the new session has a different startedAt
+      await clock.tickAsync(10_000);
+
+      // The second session needs to see the doc from the first save when flushing
+      metaDb.get.resolves(metaDb.put.args[0][0]);
 
       service.startSession('tasks');
       service.record('task:open', 'delivery');
@@ -339,7 +405,18 @@ describe('InteractionTrackingService', () => {
 
       expect(metaDb.put.calledTwice).to.be.true;
       const secondDoc = metaDb.put.args[1][0];
-      expect(secondDoc.sessions[0].events[0].action).to.equal('task:open');
+      expect(secondDoc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [{ action: 'task_list:open', timestamp: NOW }],
+        },
+        {
+          session: 'tasks',
+          startedAt: NOW + 10_000,
+          events: [{ action: 'task:open', timestamp: NOW + 10_000, ref: 'delivery' }],
+        },
+      ]);
     });
   });
 
@@ -349,6 +426,7 @@ describe('InteractionTrackingService', () => {
 
       service.startSession('tasks');
       service.record('task_list:open');
+      await clock.tickAsync(3_000);
       service.record('task_list:scroll');
 
       expect(metaDb.put.called).to.be.false;
@@ -356,10 +434,12 @@ describe('InteractionTrackingService', () => {
       await service.flush();
 
       expect(metaDb.put.calledOnce).to.be.true;
-      const events = metaDb.put.args[0][0].sessions[0].events;
-      expect(events).to.have.length(2);
-      expect(events[0].action).to.equal('task_list:open');
-      expect(events[1].action).to.equal('task_list:scroll');
+      const session = metaDb.put.args[0][0].sessions[0];
+      expect(session.startedAt).to.equal(NOW);
+      expect(session.events).to.deep.equal([
+        { action: 'task_list:open', timestamp: NOW },
+        { action: 'task_list:scroll', timestamp: NOW + 3_000 },
+      ]);
     });
   });
 
@@ -372,22 +452,35 @@ describe('InteractionTrackingService', () => {
       await service.save();
 
       expect(metaDb.put.calledOnce).to.be.true;
-      const doc = metaDb.put.args[0][0];
-      expect(doc.sessions).to.have.length(1);
-      expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
+      let doc = metaDb.put.args[0][0];
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [{ action: 'task_list:open', timestamp: NOW }],
+        },
+      ]);
 
       // Session is still active — recording more events should work
+      await clock.tickAsync(1_500);
       service.record('task_list:scroll');
       metaDb.get.resolves(doc);
       metaDb.put.resetHistory();
       await service.save();
 
       expect(metaDb.put.calledOnce).to.be.true;
-      const updatedDoc = metaDb.put.args[0][0];
-      // Should update the same session, not create a new one
-      expect(updatedDoc.sessions).to.have.length(1);
-      expect(updatedDoc.sessions[0].events).to.have.length(2);
-      expect(updatedDoc.sessions[0].events[1].action).to.equal('task_list:scroll');
+      doc = metaDb.put.args[0][0];
+      // Same session (same startedAt), events appended
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [
+            { action: 'task_list:open', timestamp: NOW },
+            { action: 'task_list:scroll', timestamp: NOW + 1_500 },
+          ],
+        },
+      ]);
     });
 
     it('should update existing session by startedAt instead of creating a new one', async () => {
@@ -398,22 +491,28 @@ describe('InteractionTrackingService', () => {
       await service.save();
 
       const savedDoc = metaDb.put.args[0][0];
-      const startedAt = savedDoc.sessions[0].startedAt;
+      expect(savedDoc.sessions[0].startedAt).to.equal(NOW);
 
       // Simulate doc already having the session from the first save
       metaDb.get.resolves(savedDoc);
       metaDb.put.resetHistory();
 
+      await clock.tickAsync(500);
       service.record('event_b');
       await service.flush();
 
       expect(metaDb.put.calledOnce).to.be.true;
       const finalDoc = metaDb.put.args[0][0];
-      expect(finalDoc.sessions).to.have.length(1);
-      expect(finalDoc.sessions[0].startedAt).to.equal(startedAt);
-      expect(finalDoc.sessions[0].events).to.have.length(2);
-      expect(finalDoc.sessions[0].events[0].action).to.equal('event_a');
-      expect(finalDoc.sessions[0].events[1].action).to.equal('event_b');
+      expect(finalDoc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [
+            { action: 'event_a', timestamp: NOW },
+            { action: 'event_b', timestamp: NOW + 500 },
+          ],
+        },
+      ]);
     });
 
     it('should be triggered by the periodic save interval', async () => {
@@ -428,8 +527,14 @@ describe('InteractionTrackingService', () => {
       await clock.tickAsync(5 * 60 * 1000);
 
       expect(metaDb.put.calledOnce).to.be.true;
-      const doc = metaDb.put.args[0][0];
-      expect(doc.sessions[0].events[0].action).to.equal('task_list:open');
+      let doc = metaDb.put.args[0][0];
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [{ action: 'task_list:open', timestamp: NOW }],
+        },
+      ]);
 
       // Session should still be active — record more events
       service.record('task_list:scroll');
@@ -440,9 +545,17 @@ describe('InteractionTrackingService', () => {
       await clock.tickAsync(5 * 60 * 1000);
 
       expect(metaDb.put.calledOnce).to.be.true;
-      const updatedDoc = metaDb.put.args[0][0];
-      expect(updatedDoc.sessions).to.have.length(1);
-      expect(updatedDoc.sessions[0].events).to.have.length(2);
+      doc = metaDb.put.args[0][0];
+      expect(doc.sessions).to.deep.equal([
+        {
+          session: 'tasks',
+          startedAt: NOW,
+          events: [
+            { action: 'task_list:open', timestamp: NOW },
+            { action: 'task_list:scroll', timestamp: NOW + 5 * 60 * 1000 },
+          ],
+        },
+      ]);
     });
 
     it('should stop the periodic save interval when session is flushed', async () => {
@@ -469,8 +582,7 @@ describe('InteractionTrackingService', () => {
       service.record('task_list:open');
       await service.flush();
 
-      const doc = metaDb.put.args[0][0];
-      expect(doc._id).to.equal('interaction-2026-03-27-greg-device-uuid-123');
+      expect(metaDb.put.args[0][0]._id).to.equal('interaction-2026-03-27-greg-device-uuid-123');
     });
 
     it('should use different IDs for different users', async () => {
@@ -481,8 +593,7 @@ describe('InteractionTrackingService', () => {
       service.record('task_list:open');
       await service.flush();
 
-      const doc = metaDb.put.args[0][0];
-      expect(doc._id).to.equal('interaction-2026-03-27-jane-device-uuid-123');
+      expect(metaDb.put.args[0][0]._id).to.equal('interaction-2026-03-27-jane-device-uuid-123');
     });
 
     it('should fallback to "unknown" when user is not available', async () => {
@@ -493,8 +604,7 @@ describe('InteractionTrackingService', () => {
       service.record('task_list:open');
       await service.flush();
 
-      const doc = metaDb.put.args[0][0];
-      expect(doc._id).to.contain('unknown');
+      expect(metaDb.put.args[0][0]._id).to.equal('interaction-2026-03-27-unknown-device-uuid-123');
     });
   });
 

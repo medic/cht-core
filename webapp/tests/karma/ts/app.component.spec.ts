@@ -88,6 +88,7 @@ describe('AppComponent', () => {
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
+  let interactionTrackingService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -191,6 +192,7 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { init: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -253,7 +255,7 @@ describe('AppComponent', () => {
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
-          { provide: InteractionTrackingService, useValue: { init: sinon.stub() } },
+          { provide: InteractionTrackingService, useValue: interactionTrackingService },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {
@@ -289,6 +291,8 @@ describe('AppComponent', () => {
     expect(countMessageService.init.callCount).to.equal(1);
     // init feedback service
     expect(feedbackService.init.callCount).to.equal(1);
+    // init interaction tracking service
+    expect(interactionTrackingService.init.callCount).to.equal(1);
     // check privacy policy
     expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
     // init rules engine
