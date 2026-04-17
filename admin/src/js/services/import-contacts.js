@@ -21,7 +21,7 @@ angular.module('services').factory('ImportContacts',
           if (type) {
             return provided;
           }
-          return $q.reject(new Error(`Unknown type "${provided}"" for person named "${contact.name}"`));
+          return $q.reject(new Error(`Unknown type "${provided}" for person named "${contact.name}"`));
         }
         if (types.find(type => type.id === 'person')) {
           // retained for backwards compatibility
