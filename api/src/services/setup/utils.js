@@ -49,28 +49,40 @@ const deleteStagedDdocs = async () => {
   }
 };
 
-const isHighlyFragmented = async (database) => {
-  try {
-    const info = await database.db.info();
-    if (info?.sizes?.active > 0 && info?.sizes?.file > 0) {
-      const fragmentation = info.sizes.file / info.sizes.active;
-      return fragmentation > 1.2;
+const compareViews = (local, remote) => {
+  for (const [viewName, localView] of Object.entries(local.views)) {
+    const remoteView = remote.views[viewName];
+    if (!remoteView || localView.map !== remoteView.map) {
+      return true;
     }
+  }
+
+  return false;
+};
+
+const areViewsDifferent = (local, remote) => {
+  if (!local.views && !remote.views) {
     return false;
-  } catch (err) {
-    logger.error(`Error fetching info for ${database.name}: %o`, err);
-    // fallback to compacting on error
+  }
+
+  if (!!local.views !== !!remote.views) {
     return true;
   }
+
+  if (Object.keys(local.views || {}).length !== Object.keys(remote.views || {}).length) {
+    return true;
+  }
+
+  return compareViews(local, remote);
 };
 
 /**
  * Runs compaction and view cleanup conditionally.
- * If ddocs changed or if fragmentation is high.
+ * If ddocs changed (specifically their views).
  */
 const cleanup = async (alteredDatabases = []) => {
   for (const database of DATABASES) {
-    const requiresCompaction = alteredDatabases.includes(database.name) || await isHighlyFragmented(database);
+    const requiresCompaction = alteredDatabases.includes(database.name);
 
     if (requiresCompaction) {
       logger.info(`Running DB compact and view cleanup for ${database.name}`);
@@ -83,7 +95,7 @@ const cleanup = async (alteredDatabases = []) => {
           logger.error('Error while running cleanup: %o', err);
         });
     } else {
-      logger.info(`Skipping DB compact and view cleanup for ${database.name} (no ddoc changes and low fragmentation)`);
+      logger.info(`Skipping DB compact and view cleanup for ${database.name} (no ddoc view changes)`);
     }
   }
   db.nouveauCleanup().catch(err => {
@@ -320,6 +332,7 @@ const unstageStagedDdocs = async () => {
   for (const database of DATABASES) {
     const ddocs = await ddocsService.getDdocs(database);
     const ddocsToSave = [];
+    let viewsChanged = false;
 
     for (const ddoc of ddocs) {
       if (!ddocsService.isStaged(ddoc._id)) {
@@ -328,9 +341,16 @@ const unstageStagedDdocs = async () => {
 
       const unstagedId = ddocsService.unstageId(ddoc._id);
       const ddocToReplace = ddocs.find(existentDdoc => unstagedId === existentDdoc._id);
+
       if (ddocToReplace) {
+        if (areViewsDifferent(ddoc, ddocToReplace)) {
+          viewsChanged = true;
+        }
         ddoc._rev = ddocToReplace._rev;
       } else {
+        if (ddoc.views && Object.keys(ddoc.views).length > 0) {
+          viewsChanged = true;
+        }
         delete ddoc._rev;
       }
 
@@ -343,7 +363,9 @@ const unstageStagedDdocs = async () => {
 
     if (ddocsToSave.length > 0) {
       await db.saveDocs(database.db, ddocsToSave);
-      alteredDatabases.push(database.name);
+      if (viewsChanged) {
+        alteredDatabases.push(database.name);
+      }
     } else {
       // maintain previous bulkdoc behavior for arrays of length 0 if it was called unconditionally
       await db.saveDocs(database.db, []);
@@ -473,4 +495,5 @@ module.exports = {
   getLocalDdocDefinitions,
   getDdocInfo,
   getNouveauInfo,
+  areViewsDifferent,
 };

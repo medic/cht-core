@@ -231,11 +231,8 @@ describe('Setup utils', () => {
       expect(logger.error.args[0][1]).to.deep.equal(error);
     });
 
-    it('should skip db compact and view cleanup if no ddoc changes and low fragmentation', async () => {
-      await utils.cleanup([]); // no altered databases
-
-      expect(db.medic.info.callCount).to.equal(1);
-      expect(db.sentinel.info.callCount).to.equal(1);
+    it('should skip db compact and view cleanup if no databases are altered', async () => {
+      await utils.cleanup([]);
 
       expect(db.medic.compact.callCount).to.equal(0);
       expect(db.sentinel.compact.callCount).to.equal(0);
@@ -244,17 +241,12 @@ describe('Setup utils', () => {
       expect(db.users.compact.callCount).to.equal(0);
 
       expect(db.medic.viewCleanup.callCount).to.equal(0);
-      expect(db.nouveauCleanup.callCount).to.equal(1);
-    });
-
-    it('should run db compact and view cleanup if fragmentation is high', async () => {
-      db.medic.info.resolves({ sizes: { active: 100, file: 150 }}); // > 1.2 ratio
-      await utils.cleanup([]);
-
-      expect(db.medic.compact.callCount).to.equal(1);
-      expect(db.sentinel.compact.callCount).to.equal(0);
-      expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(0);
+      expect(db.medicLogs.viewCleanup.callCount).to.equal(0);
+      expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(0);
+      expect(db.users.viewCleanup.callCount).to.equal(0);
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
     });
   });
 
@@ -854,23 +846,23 @@ describe('Setup utils', () => {
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
-          { doc: { _id: '_design/:staged:medic', _rev: '1', new: true, deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/:staged:medic', _rev: '1', new: true, deploy_info: deployInfoNew, views: { v: { map: '2' } } } },
           { doc: { _id: '_design/:staged:medic-client', _rev: '1', new: true, deploy_info: deployInfoNew } },
-          { doc: { _id: '_design/medic', _rev: '2', old: true, deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/medic', _rev: '2', old: true, deploy_info: deployInfoOld, views: { v: { map: '1' } } } },
           { doc: { _id: '_design/medic-client', _rev: '3', old: true, deploy_info: deployInfoOld } },
         ]
       }); // all ddocs have match
       sinon.stub(db.sentinel, 'allDocs').resolves({
         rows: [
-          { doc: { _id: '_design/:staged:sentinel1', _rev: '1', isnew: true, deploy_info: deployInfoNew } },
-          { doc: { _id: '_design/sentinel1', _rev: '2', isOld: true, deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/:staged:sentinel1', _rev: '1', isnew: true, deploy_info: deployInfoNew, views: { v: { map: '2' } } } },
+          { doc: { _id: '_design/sentinel1', _rev: '2', isOld: true, deploy_info: deployInfoOld, views: { v: { map: '1' } } } },
           { doc: { _id: '_design/extra', _rev: '3', deploy_info: deployInfoOld } },
         ]
       }); // one extra existent ddoc
       sinon.stub(db.medicLogs, 'allDocs').resolves({
         rows: [
           { doc: { _id: '_design/:staged:logs1', _rev: '1', field: 'a', deploy_info: deployInfoNew } },
-          { doc: { _id: '_design/:staged:logs2', _rev: '1', deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/:staged:logs2', _rev: '1', deploy_info: deployInfoNew, views: { v: { map: '1' } } } },
           { doc: { _id: '_design/logs1', _rev: '3', field: 'b', deploy_info: deployInfoOld } },
         ]
       }); // one extra staged ddoc
@@ -878,8 +870,8 @@ describe('Setup utils', () => {
       sinon.stub(db.users, 'allDocs').resolves({ rows: [] }); // no ddocs
 
       sinon.stub(db, 'saveDocs').resolves();
-
-      await utils.unstageStagedDdocs();
+      const alteredDbs = await utils.unstageStagedDdocs();
+      expect(alteredDbs).to.deep.equal(['medic', 'medic-sentinel', 'medic-logs']);
 
       const allDocsArgs = [{ startkey: '_design/', endkey: '_design/\ufff0', include_docs: true }];
 
@@ -896,18 +888,49 @@ describe('Setup utils', () => {
 
       expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
-        { _id: '_design/medic', _rev: '2', new: true, deploy_info: deployInfoExpected },
+        { _id: '_design/medic', _rev: '2', new: true, deploy_info: deployInfoExpected, views: { v: { map: '2' } } },
         { _id: '_design/medic-client', _rev: '3', new: true, deploy_info: deployInfoExpected },
       ]]);
       expect(db.saveDocs.args[1]).to.deep.equal([db.sentinel, [
-        { _id: '_design/sentinel1', _rev: '2', isnew: true, deploy_info: deployInfoExpected },
+        { _id: '_design/sentinel1', _rev: '2', isnew: true, deploy_info: deployInfoExpected, views: { v: { map: '2' } } },
       ]]);
       expect(db.saveDocs.args[2]).to.deep.equal([db.medicLogs, [
         { _id: '_design/logs1', _rev: '3', field: 'a', deploy_info: deployInfoExpected },
-        { _id: '_design/logs2', deploy_info: deployInfoExpected },
+        { _id: '_design/logs2', deploy_info: deployInfoExpected, views: { v: { map: '1' } } },
       ]]);
       expect(db.saveDocs.args[3]).to.deep.equal([db.medicUsersMeta, []]);
       expect(db.saveDocs.args[4]).to.deep.equal([db.users, []]);
+    });
+
+    it('should only return altered databases if views changed', async () => {
+      const ddocViews1 = { v: { map: '1' } };
+      const ddocViews2 = { v: { map: '2' } };
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:medic', views: ddocViews2 } },
+          { doc: { _id: '_design/medic', views: ddocViews1 } },
+        ]
+      }); // views changed
+      sinon.stub(db.sentinel, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:s1', views: ddocViews1, other: 'new' } },
+          { doc: { _id: '_design/s1', views: ddocViews1, other: 'old' } },
+        ]
+      }); // views identical, other field changed
+      sinon.stub(db.medicLogs, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: '_design/:staged:l1', views: ddocViews1 } },
+        ]
+      }); // new ddoc
+      sinon.stub(db.medicUsersMeta, 'allDocs').resolves({ rows: [] });
+      sinon.stub(db.users, 'allDocs').resolves({ rows: [] });
+
+      sinon.stub(db, 'saveDocs').resolves();
+
+      const alteredDbs = await utils.unstageStagedDdocs();
+
+      expect(alteredDbs).to.deep.equal(['medic', 'medic-logs']);
+      expect(db.saveDocs.callCount).to.equal(5);
     });
 
     it('should throw an error when getting ddocs fails', async () => {

@@ -155,46 +155,7 @@ const compareBuildVersions = async (buildInfo) => {
   return differences.filter(Boolean);
 };
 
-const compareViews = (local, remote) => {
-  for (const [viewName, localView] of Object.entries(local.views)) {
-    const remoteView = remote.views[viewName];
-    if (!remoteView || localView.map !== remoteView.map) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const areViewsDifferent = (local,  remote) => {
-  if (!local.views && !remote.views) {
-    return false;
-  }
-
-  if (!!local.views !== !!remote.views) {
-    return true;
-  }
-
-  if (Object.keys(local.views).length !== Object.keys(remote.views).length) {
-    return true;
-  }
-
-  return compareViews(local, remote);
-};
-
-const compareIndexes = (local, remote) => {
-  for (const [indexName, localIndex] of Object.entries(local.nouveau)) {
-    const remoteIndex = remote.nouveau[indexName];
-    if (!remoteIndex ||
-        localIndex.index !== remoteIndex.index ||
-        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
-        localIndex.default_analyzer !== remoteIndex.default_analyzer
-    ) {
-      return true;
-    }
-  }
-  return false;
-};
+const areViewsDifferent = (local, remote) => upgradeUtils.areViewsDifferent(local, remote);
 
 const areIndexesDifferent = (local, remote) => {
   if (!local.nouveau && !remote.nouveau) {
@@ -209,7 +170,17 @@ const areIndexesDifferent = (local, remote) => {
     return true;
   }
 
-  return compareIndexes(local, remote);
+  for (const [indexName, localIndex] of Object.entries(local.nouveau)) {
+    const remoteIndex = remote.nouveau[indexName];
+    if (!remoteIndex ||
+        localIndex.index !== remoteIndex.index ||
+        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
+        localIndex.default_analyzer !== remoteIndex.default_analyzer
+    ) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const isShallowEqual = (obj1, obj2) => {
