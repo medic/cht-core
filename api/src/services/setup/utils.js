@@ -76,6 +76,45 @@ const areViewsDifferent = (local, remote) => {
   return compareViews(local, remote);
 };
 
+const isShallowEqual = (obj1, obj2) => {
+  if (!obj1 && !obj2) {
+    return true;
+  }
+
+  if (!!obj1 !== !!obj2) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  return keys1.length === keys2.length &&
+         keys1.every(key => obj1[key] === obj2[key]);
+};
+
+const isNouveauIndexDifferent = (localIndex, remoteIndex) => {
+  return !remoteIndex ||
+    localIndex.index !== remoteIndex.index ||
+    !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
+    localIndex.default_analyzer !== remoteIndex.default_analyzer;
+};
+
+const areIndexesDifferent = (local, remote) => {
+  if (!!local.nouveau !== !!remote.nouveau) {
+    return true;
+  }
+
+  if (!local.nouveau) {
+    return false;
+  }
+
+  if (Object.keys(local.nouveau).length !== Object.keys(remote.nouveau).length) {
+    return true;
+  }
+
+  return Object.entries(local.nouveau).some(([name, index]) => isNouveauIndexDifferent(index, remote.nouveau[name]));
+};
+
 /**
  * Runs compaction and view cleanup conditionally.
  * If ddocs changed (specifically their views).
@@ -496,4 +535,5 @@ module.exports = {
   getDdocInfo,
   getNouveauInfo,
   areViewsDifferent,
+  areIndexesDifferent,
 };
