@@ -749,7 +749,8 @@ describe('Authorization service', () => {
             { id: 'r2', fields: { key: 'contact', subject: 'contact', type: DOC_TYPES.DATA_RECORD } }, // depth 1
             { id: 'r3', fields: { key: 'parent', subject: 'parent', type: 'task' } }, // not a report, but depth 0
             { id: 'r4', fields: { key: 'contact', subject: 'contact', type: 'target' } },  // not a report, but depth 1
-            { id: 'r5', fields: { key: 'parent', subject: 'parent', type: DOC_TYPES.CONTACT } },  // not a report, but depth 0
+            { id: 'r5', fields: { key: 'parent', 
+              subject: 'parent', type: DOC_TYPES.CONTACT } },  // not a report, but depth 0
             {
               id: 'r6',
               fields: { key: 'subject', subject: 'subject', type: DOC_TYPES.DATA_RECORD, submitter: 'some_person' }
@@ -776,13 +777,15 @@ describe('Authorization service', () => {
         })
         .then(result => {
           result.should.have.deep.members([
-            { id: 'r2', fields: { key: ['contact'], subject: 'contact', type: DOC_TYPES.DATA_RECORD } }, // depth 1
+            { id: 'r2', fields: { key: ['contact'], 
+              subject: 'contact', type: DOC_TYPES.DATA_RECORD } }, // depth 1
             { id: 'r3', fields: { key: ['parent'], subject: 'parent', type: 'task' } }, // not a report, but depth 0
             {
               id: 'r4',
               fields: { key: ['contact'], subject: 'contact', type: 'target' }
             },  // not a report, but depth 1
-            { id: 'r5', fields: { key: ['parent'], subject: 'parent', type: DOC_TYPES.CONTACT } },  // not a report, but depth 0
+            { id: 'r5', fields: { key: ['parent'], 
+              subject: 'parent', type: DOC_TYPES.CONTACT } },  // not a report, but depth 0
             {
               id: 'r7',
               fields: { key: ['contact'], subject: 'contact', type: DOC_TYPES.DATA_RECORD, submitter: 'some_person' }
@@ -3134,20 +3137,25 @@ describe('Authorization service', () => {
       contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: { _id: 'p3' } }]);
 
       const docsByReplicationKey = sinon.stub();
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ fields: { key: 'c1',  type: DOC_TYPES.CONTACT  }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c1' })).returns([{ fields: { key: 'c1',  
+        type: DOC_TYPES.CONTACT  }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc' })).returns([
         { fields: { key: 'patient1doc', type: DOC_TYPES.CONTACT }},
       ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns([{ fields: { key: 'c2', type: DOC_TYPES.CONTACT }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' })).returns([{ fields: { key: 'c2', 
+        type: DOC_TYPES.CONTACT }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
         { fields: { key: 'patient2doc', type: DOC_TYPES.CONTACT }},
       ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns([{ fields: { key: 'p1', type: DOC_TYPES.CONTACT }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns([{ fields: { key: 'p1', 
+        type: DOC_TYPES.CONTACT }}]);
       docsByReplicationKey.withArgs(sinon.match({ _id: 'facility_id' })).returns([
         { fields: { key: 'facility_id', type: DOC_TYPES.CONTACT }},
       ]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p2' })).returns([{ fields: { key: 'p2', type: DOC_TYPES.CONTACT }}]);
-      docsByReplicationKey.withArgs(sinon.match({ _id: 'p3' })).returns([{ fields: { key: 'p3', type: DOC_TYPES.CONTACT }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p2' })).returns([{ fields: { key: 'p2', 
+        type: DOC_TYPES.CONTACT }}]);
+      docsByReplicationKey.withArgs(sinon.match({ _id: 'p3' })).returns([{ fields: { key: 'p3', 
+        type: DOC_TYPES.CONTACT }}]);
 
       viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
       viewMapUtils.getNouveauViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);

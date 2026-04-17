@@ -1,3 +1,4 @@
+const { DOC_TYPES } = require('@medic/constants');
 
 module.exports = [
   {

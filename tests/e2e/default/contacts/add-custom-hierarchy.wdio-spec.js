@@ -92,7 +92,8 @@ describe('Creating custom places', () => {
   });
 
   it('the RHS button should show the action with custom label', async () => {
-    const ngoPlace = placeFactory.place().build({ name: 'NGO', type: DOC_TYPES.CONTACT, contact_type: customTopLevel.id });
+    const ngoPlace = placeFactory.place().build({ name: 'NGO', 
+      type: DOC_TYPES.CONTACT, contact_type: customTopLevel.id });
     await utils.saveDoc(ngoPlace);
     await commonPage.goToPeople(ngoPlace._id);
     const actionText = await commonPage.getFastActionFABTextById(customMidLevel.id);
@@ -100,7 +101,8 @@ describe('Creating custom places', () => {
   });
 
   it('the RHS button show the appropriate label when multiple places exist at the current level', async () => {
-    const lowLevel = placeFactory.place().build({ name: 'LowLevel', type: DOC_TYPES.CONTACT, contact_type: customLowLevel.id });
+    const lowLevel = placeFactory.place().build({ name: 'LowLevel', 
+      type: DOC_TYPES.CONTACT, contact_type: customLowLevel.id });
     await utils.saveDoc(lowLevel);
     await commonPage.goToPeople(lowLevel._id);
     const firstPlaceText = await commonPage.getFastActionFABTextById(firstChildPlaceToTopLevel.id);
@@ -111,7 +113,8 @@ describe('Creating custom places', () => {
   });
 
   it('should show the single add person button with the correct label', async () => {
-    const ngoPlace = placeFactory.place().build({ name: 'NGO', type: DOC_TYPES.CONTACT, contact_type: customTopLevel.id });
+    const ngoPlace = placeFactory.place().build({ name: 'NGO', 
+      type: DOC_TYPES.CONTACT, contact_type: customTopLevel.id });
     await utils.saveDoc(ngoPlace);
     await commonPage.goToPeople(ngoPlace._id);
     expect(await commonPage.getFastActionFABTextById(person1.id)).to.contain(translations[person1.create_key]);
@@ -119,7 +122,8 @@ describe('Creating custom places', () => {
 
   it('should show the multi person actions with the correct label', async () => {
     const multiPerson = placeFactory.place()
-      .build({ name: 'multiPerson', type: DOC_TYPES.CONTACT, contact_type: customParentWithMultiplePersons.id });
+      .build({ name: 'multiPerson', 
+        type: DOC_TYPES.CONTACT, contact_type: customParentWithMultiplePersons.id });
     await utils.saveDoc(multiPerson);
     await commonPage.goToPeople(multiPerson._id);
     expect(await commonPage.getFastActionFABTextById(person2.id)).to.contain(translations[person2.create_key]);
@@ -129,11 +133,14 @@ describe('Creating custom places', () => {
 
   it('should show custom places in their own list', async () => {
     const topLevel = placeFactory.place()
-      .build({ name: 'topLevel', type: DOC_TYPES.CONTACT, contact_type: customTopLevel.id });
+      .build({ name: 'topLevel', 
+        type: DOC_TYPES.CONTACT, contact_type: customTopLevel.id });
     const midLevel = placeFactory.place()
-      .build({ name: 'midLevel', type: DOC_TYPES.CONTACT, contact_type: customMidLevel.id, parent: { _id: topLevel._id } });
+      .build({ name: 'midLevel', 
+        type: DOC_TYPES.CONTACT, contact_type: customMidLevel.id, parent: { _id: topLevel._id } });
     const lowLevel = placeFactory.place()
-      .build({ name: 'lowlvl', type: DOC_TYPES.CONTACT, contact_type: customLowLevel.id, parent: { _id: topLevel._id } });
+      .build({ name: 'lowlvl', 
+        type: DOC_TYPES.CONTACT, contact_type: customLowLevel.id, parent: { _id: topLevel._id } });
     await utils.saveDocs([topLevel, midLevel, lowLevel]);
     await commonPage.goToPeople(topLevel._id);
     const displayedListOfContacts = await contactsPage.allContactsList();

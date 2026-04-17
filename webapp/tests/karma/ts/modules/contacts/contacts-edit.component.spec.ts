@@ -442,7 +442,8 @@ describe('ContactsEdit component', () => {
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
           formDoc: { _id: 'clinic_create_form_id', the: 'form' },
-          instanceData: { clinic: { type: DOC_TYPES.CONTACT, contact_type: CONTACT_TYPES.CLINIC, parent: 'the_district' } },
+          instanceData: { clinic: { type: DOC_TYPES.CONTACT, 
+            contact_type: CONTACT_TYPES.CLINIC, parent: 'the_district' } },
           titleKey: 'clinic_create_key',
         });
         expect(component.contentError).to.equal(false);
@@ -629,7 +630,8 @@ describe('ContactsEdit component', () => {
         expect(formService.render.args[0][0]).to.deep.include({
           selector: '#contact-form',
           formDoc: { _id: 'a_clinic_type_create_form', data: true },
-          instanceData: { a_clinic_type: { type: DOC_TYPES.CONTACT, contact_type: 'a_clinic_type', _id: 'the_clinic' } },
+          instanceData: { a_clinic_type: { type: DOC_TYPES.CONTACT, 
+            contact_type: 'a_clinic_type', _id: 'the_clinic' } },
           titleKey: 'edit_key',
         });
         expect(component.enketoContact).to.deep.equal({

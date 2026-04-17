@@ -1,4 +1,5 @@
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 angular.module('inboxServices').service('ContactTypes', function(
   Settings

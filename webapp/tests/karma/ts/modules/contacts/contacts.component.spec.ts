@@ -91,7 +91,8 @@ describe('Contacts component', () => {
       ]),
       getAll: sinon.stub().resolves([]),
       includes: sinon.stub(),
-      getTypeId: sinon.stub().callsFake(contact => contact?.type === DOC_TYPES.CONTACT ? contact.contact_type : contact?.type),
+      getTypeId: sinon.stub().callsFake(
+        contact => contact?.type === DOC_TYPES.CONTACT ? contact.contact_type : contact?.type),
       getTypeById: sinon.stub().callsFake((types, id) => types?.find(type => type.id === id)),
     };
     scrollLoaderProvider = {
