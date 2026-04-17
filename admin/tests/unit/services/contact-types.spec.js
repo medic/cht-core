@@ -1,3 +1,5 @@
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
+
 describe('ContactTypes service', () => {
 
   let service;
