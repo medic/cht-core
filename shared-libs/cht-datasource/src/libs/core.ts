@@ -52,7 +52,9 @@ const isDataArray = (value: unknown): value is DataArray => {
   return Array.isArray(value) && value.every(v => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
 };
 
-/** @internal */
+/**
+ * A data object.
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DataObject extends Readonly<Record<string, DataValue>> { }
 
@@ -175,7 +177,9 @@ export function assertHasRequiredField <T extends Record<string, unknown>, N ext
   }
 }
 
-/** @internal */
+/**
+ * An identifiable entity.
+ */
 export interface Identifiable extends DataObject {
   readonly _id: string
 }
@@ -222,7 +226,9 @@ export const getPagedGenerator = async function* <S, T>(
   return null;
 };
 
-/** @internal */
+/**
+ * Parent lineage data for an entity.
+ */
 export interface NormalizedParent extends DataObject, Identifiable {
   readonly parent?: NormalizedParent;
 }

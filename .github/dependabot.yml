@@ -31,6 +31,11 @@ updates:
       - dependency-name: "node-fetch" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "url-join" # ESM Modules https://github.com/medic/cht-core/issues/9770
       - dependency-name: "uuid" # ES2022 issue https://github.com/medic/cht-core/issues/10114
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
 
   - package-ecosystem: "npm"
     directory: "/admin"
@@ -43,6 +48,12 @@ updates:
       angular:
         patterns:
         - "angular*"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+
   - package-ecosystem: "npm"
     directory: "/webapp"
     schedule:
@@ -69,3 +80,8 @@ updates:
       - dependency-name: "@angular*" #https://github.com/medic/cht-core/issues/10029
       - dependency-name: "@ngrx*" #https://github.com/medic/cht-core/issues/10029
       - dependency-name: "ngx*" #https://github.com/medic/cht-core/issues/10029
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3

@@ -65,6 +65,7 @@ describe('XmlForms service', () => {
     feedbackService = { submit: sinon.stub() };
     getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
     contextUtils = {};
+    contextUtils.get = () => Promise.resolve(contextUtils);
     error = sinon.stub(console, 'error');
     warn = sinon.stub(console, 'warn');
 
@@ -582,6 +583,44 @@ describe('XmlForms service', () => {
       userContactSummary.resolves({ context: { isAlive: false } });
       const result2 = await service.list({ doc: { sex: 'female', type: 'person' } });
       expect(result2).to.deep.equal([given[1].doc]);
+    });
+
+    it('filter with extensionLib in context expression', () => {
+      const given = [
+        {
+          id: 'form-0',
+          doc: {
+            _id: 'form-0',
+            internalId: 'visit',
+            context: {
+              expression: 'extensionLib("check.js", contact)'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form-1',
+          doc: {
+            _id: 'form-1',
+            internalId: 'stock-report',
+            context: {
+              expression: '!extensionLib("check.js", contact)'
+            },
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      contextUtils.extensionLib = (libId, contact) => {
+        return contact.eligible === true;
+      };
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves({ name: 'Frank' });
+      const service = getService();
+      getContactType.resolves({ person: false });
+      return service.list({ doc: { eligible: true } }).then(actual => {
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+      });
     });
 
     it('broken custom functions log clean errors and count as filtered', () => {

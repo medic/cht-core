@@ -138,15 +138,18 @@ describe('Parse provider', () => {
       expect(result4).to.equal(false);
     });
 
-    it('should work with a form context', () => {
+    it('should work with a form context', async () => {
       const expression = `
-        contact.type === 'person' && 
-        summary.alive && !summary.muted && summary.show_delivery_form && 
-        user.parent.type === 'health_center' && 
-        (!contact.sex || contact.sex === 'female') && 
+        contact.type === 'person' &&
+        summary.alive && !summary.muted && summary.show_delivery_form &&
+        user.parent.type === 'health_center' &&
+        (!contact.sex || contact.sex === 'female') &&
         (!contact.date_of_birth || (ageInYears(contact) >= 12 && ageInYears(contact) <= 49))
       `;
-      const context = new XmlFormsContextUtilsService();
+      const service = new XmlFormsContextUtilsService({
+        get: sinon.stub().resolves({ v1: { getExtensionLib: sinon.stub() } })
+      } as any);
+      const context = await service.get();
       const user = {
         parent: { type: 'health_center' },
       };

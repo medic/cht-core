@@ -792,7 +792,6 @@ const getLoggedInUser = async () => {
     return userCtx.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);
-    return;
   }
 };
 
@@ -902,6 +901,19 @@ const getUserSettings = ({ contactId, name }) => {
       const contactIdMatches = !contactId || doc.contact_id === contactId;
       return nameMatches && contactIdMatches;
     }));
+};
+
+const waitForApiCrash = async () => {
+  let retryCount = 180;
+  do {
+    try {
+      await request({ path: '/api/info' });
+      await delayPromise(500);
+    } catch {
+      return;
+    }
+  } while (retryCount-- > 0);
+  throw new Error('API expected to crash, but still running after 1.5 minutes');
 };
 
 const listenForApi = async () => {
@@ -1370,6 +1382,8 @@ const prepK3DServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
 
+  await disableCompaction();
+
   await loginUser();
   await setupUserDoc();
 };
@@ -1388,6 +1402,8 @@ const prepServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await disableCompaction();
 
   await loginUser();
   await setupUserDoc();
@@ -1414,6 +1430,20 @@ const getLogs = (container) => {
       logWriteStream.end();
     });
   });
+};
+
+// compaction will delete bodies from old revs
+// some tests specifically test loading older revs for offline users, which intermittenly fail when compaction runs.
+const disableCompaction = async () => {
+  const nodes = await request({ path: '/_membership' });
+  for (const node of nodes.cluster_nodes) {
+    await request({
+      path: `/_node/${node}/_config/smoosh.ratio_dbs/min_changes`,
+      method: 'PUT',
+      body: '"100000000000"',
+      json: false,
+    });
+  }
 };
 
 const saveLogs = async () => {
@@ -1805,4 +1835,5 @@ module.exports = {
   deletePurgeDbs,
   saveLogs,
   waitForIndexes,
+  waitForApiCrash,
 };
