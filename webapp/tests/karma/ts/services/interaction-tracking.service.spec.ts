@@ -190,7 +190,7 @@ describe('InteractionTrackingService', () => {
     });
 
     it('should stop recording new events after flush reveals daily limit is reached', async () => {
-      const existingEvents = new Array(2000).fill({ action: 'x', timestamp: 1 });
+      const existingEvents = new Array(500).fill({ action: 'x', timestamp: 1 });
       metaDb.get.resolves({
         _id: 'interaction-2026-03-27-greg-device-uuid-123',
         _rev: '1-abc',
@@ -199,7 +199,7 @@ describe('InteractionTrackingService', () => {
         metadata: { user: 'greg', deviceId: 'device-uuid-123', date: '2026-03-27', versions: ['4.5.0'] },
       });
 
-      // First session flushes and discovers the doc already has 2000 events
+      // First session flushes and discovers the doc already has 500 events
       service.startSession('tasks');
       service.record('event_a');
       await service.flush();

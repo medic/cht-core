@@ -38,7 +38,7 @@ interface InteractionLogDoc {
 })
 export class InteractionTrackingService {
   private static readonly PERMISSION = 'can_track_task_interactions';
-  private static readonly MAX_EVENTS_PER_DAY = 2000;
+  private static readonly MAX_EVENTS_PER_DAY = 500;
   private static readonly SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes of inactivity ends session
   private static readonly SAVE_INTERVAL_MS = 5 * 60 * 1000; // persist current session every 5 minutes
 
