@@ -1,4 +1,4 @@
-const { DOC_TYPES } = require('@medic/constants');
+const constants = require('@medic/constants');
 
 angular.module('services').factory('ImportContacts',
   function(
@@ -42,7 +42,7 @@ angular.module('services').factory('ImportContacts',
           if (type === 'person') {
             person.type = type;
           } else {
-            person.type = DOC_TYPES.CONTACT;
+            person.type = constants.DOC_TYPES.CONTACT;
             person.contact_type = type;
           }
           return DB()
