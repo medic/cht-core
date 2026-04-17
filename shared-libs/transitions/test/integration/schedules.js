@@ -518,7 +518,7 @@ describe('functional schedules', () => {
     });
 
     const patient = { muted: true, parent: { contact: { phone: '+5551596' } }, 
-    type: DOC_TYPES.CONTACT, contact_type: 'chp' };
+      type: DOC_TYPES.CONTACT, contact_type: 'chp' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',

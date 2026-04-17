@@ -65,7 +65,11 @@ describe('XmlForms service', () => {
     fileReaderService = sinon.stub();
     feedbackService = { submit: sinon.stub() };
     getTypeId = sinon.stub().callsFake(
-      contact => contact.type === DOC_TYPES.CONTACT ? contact.contact_type : contact.type);
+      contact => 
+        contact.type === DOC_TYPES.CONTACT 
+          ? contact.contact_type 
+          : contact.type
+    );
     contextUtils = {};
     contextUtils.get = () => Promise.resolve(contextUtils);
     error = sinon.stub(console, 'error');
