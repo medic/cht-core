@@ -91,6 +91,7 @@ describe('monitoring', () => {
     // the v2 test, which calls the exactly same code, never failed!
     // assuming that calling this endpoint actually does some calculating, call it before the test
     await getExpectedNouveauIndexes('medic-test');
+    await utils.request({ path: '/api/v1/monitoring' });
   });
 
   afterEach(() => utils.revertDb([], true));

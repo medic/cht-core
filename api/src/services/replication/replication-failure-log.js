@@ -24,6 +24,7 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
 
   return db.medicLogs.put(log);
 };
+
 const getDocId = (userName) => `${LOG_TYPE}-${moment().format('YYYY-MM')}-${userName}`;
 
 const getLog = async (userName) => {
@@ -46,17 +47,55 @@ const getLog = async (userName) => {
   }
 };
 
-const getByMonth = async (month) => {
-  const prefix = `${LOG_TYPE}-${month}`;
+const getSummariesByMonth = async (month) => {
+  const prefix = `${LOG_TYPE}-${month}-`;
   const result = await db.medicLogs.allDocs({
-    startkey: `${prefix}-`,
-    endkey: `${prefix}-\ufff0`,
-    include_docs: true,
+    startkey: prefix,
+    endkey: `${prefix}\ufff0`,
   });
+  return result.rows.map(row => ({
+    _id: row.id,
+    user: row.id.substring(prefix.length),
+    // to avoid a heavy endpoint, don't read doc bodies and extrapolate failure count via rev number
+    total_failures: Number.parseInt(row.value.rev.split('-')[0], 10),
+  }));
+};
+
+const getForUserAndMonth = async (month, userName) => {
+  const docId = `${LOG_TYPE}-${month}-${userName}`;
+  try {
+    return await db.medicLogs.get(docId);
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+  }
+};
+
+const getAllForUser = async (userName) => {
+  const typePrefix = `${LOG_TYPE}-`;
+  const index = await db.medicLogs.allDocs({
+    startkey: typePrefix,
+    endkey: `${typePrefix}\ufff0`,
+  });
+
+  // _id format: `replication-fail-YYYY-MM-<userName>`; `YYYY-MM-` is always 8 chars after the type prefix
+  const MONTH_SEGMENT_LENGTH = 8;
+  const matchingIds = index.rows
+    .filter(row => row.id.substring(typePrefix.length + MONTH_SEGMENT_LENGTH) === userName)
+    .map(row => row.id);
+
+  if (!matchingIds.length) {
+    return [];
+  }
+
+  const result = await db.medicLogs.allDocs({ keys: matchingIds, include_docs: true });
   return result.rows.map(row => row.doc);
 };
 
 module.exports = {
   capture: captureFailure,
-  getByMonth,
+  getSummariesByMonth,
+  getForUserAndMonth,
+  getAllForUser,
 };
