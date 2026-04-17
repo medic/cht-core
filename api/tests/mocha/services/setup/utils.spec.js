@@ -903,7 +903,7 @@ describe('Setup utils', () => {
 
       sinon.stub(db, 'saveDocs').resolves();
       const alteredDbs = await utils.unstageStagedDdocs();
-      expect(alteredDbs).to.deep.equal(['medic', 'medic-sentinel', 'medic-logs']);
+      expect(alteredDbs).to.deep.equal([DATABASES[0].name, DATABASES[1].name, DATABASES[2].name]);
 
       const allDocsArgs = [{ startkey: '_design/', endkey: '_design/\ufff0', include_docs: true }];
 
@@ -967,7 +967,7 @@ describe('Setup utils', () => {
 
       const alteredDbs = await utils.unstageStagedDdocs();
 
-      expect(alteredDbs).to.deep.equal(['medic', 'medic-logs']);
+      expect(alteredDbs).to.deep.equal([DATABASES[0].name, DATABASES[2].name]);
       expect(db.saveDocs.callCount).to.equal(5);
     });
 
