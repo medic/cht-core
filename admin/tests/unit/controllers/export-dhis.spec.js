@@ -1,5 +1,3 @@
-const { DOC_TYPES } = require('@medic/constants');
-
 describe('dhis2 export controller', () => {
   const { expect } = chai;
 
