@@ -158,6 +158,7 @@ describe('Replication Failure Log Service', () => {
         rows: [
           { id: bob._id },
           { id: 'replication-fail-2026-04-sir-bob' },
+          { id: 'replication-fail-2026-04-bob2' },
         ],
       });
       db.medicLogs.allDocs.onSecondCall().resolves({

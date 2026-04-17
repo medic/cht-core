@@ -56,6 +56,9 @@ const users = [
   },
 ];
 
+// This test depends on stopping Nouveau service in order to fail the replication requests, so we capture how the user
+// subject count is stored. In k3d, Nouveau doesn't have its own deployment, it's paired with CouchDb to insure that
+// shared storage is always on the same pod.
 describe('replication failure logging @docker', () => {
   const getFailureLogId = (username) => `replication-fail-${moment().format('YYYY-MM')}-${username}`;
 
