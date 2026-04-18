@@ -16,7 +16,7 @@ describe('ImportContacts service', function() {
     const types = [ { id: 'person' }, { id: 'chp' } ];
     const ContactTypes = {
       getPersonTypes: sinon.stub().resolves(types),
-      getTypeId: sinon.stub().callsFake(doc => doc.type === IMPORT_DOC_TYPES.CONTACT ? doc.contact_type : doc.type),
+      getTypeId: sinon.stub().callsFake(doc => doc.type === 'contact' ? doc.contact_type : doc.type),
     };
 
     module(function ($provide) {

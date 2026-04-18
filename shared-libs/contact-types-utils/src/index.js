@@ -21,7 +21,7 @@ const getTypeId = (doc) => {
   if (!doc) {
     return;
   }
-  return doc.type === DOC_TYPES.CONTACT ? doc.contact_type : doc.type;
+  return doc.type === 'contact' ? doc.contact_type : doc.type;
 };
 
 const getTypeById = (config, typeId) => {
