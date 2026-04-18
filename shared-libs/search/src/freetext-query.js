@@ -39,13 +39,14 @@ const getGeneratorByType = (datasource, request, type) => {
   return null;
 };
 
-const getPageByType = async (datasource, request, type, cursor, limit) => {
+const getPageByType = async (datasource, request, type, pageOptions) => {
   const filter = { freetext: request.params.key };
-  
+  const { cursor, limit } = pageOptions;
+
   if (type === 'reports') {
     return datasource.v1.report.getUuidsPageByFreetext(filter, cursor, limit);
-  } 
-  
+  }
+
   if (type === 'contacts') {
     return request.params.type
       ? datasource.v1.contact.getUuidsPageByTypeFreetext(filter, request.params.type, cursor, limit)
@@ -60,14 +61,15 @@ const queryFreetextPaginated = async (dataContext, request, type, options) => {
     const datasource = chtDatasource.getDatasource(dataContext);
     const limit = options.limit;
     const cursor = options.skip != null ? options.skip.toString() : null;
-    
-    const page = await getPageByType(datasource, request, type, cursor, limit);
+    const pageOptions = { cursor, limit };
 
-    if (!page || !page.data) {
-      return [];
+    const page = await getPageByType(datasource, request, type, pageOptions);
+
+    if (page && page.data) {
+      return page.data.map(id => ({ id }));
     }
 
-    return page.data.map(id => ({ id }));
+    return [];
   } catch (error) {
     logger.error('Error while paginating freetext: ', error);
     return [];
