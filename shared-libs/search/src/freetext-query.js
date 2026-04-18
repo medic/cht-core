@@ -60,16 +60,12 @@ const queryFreetextPaginated = async (dataContext, request, type, options) => {
   try {
     const datasource = chtDatasource.getDatasource(dataContext);
     const limit = options.limit;
-    const cursor = options.skip != null ? options.skip.toString() : null;
+    const cursor = options.skip?.toString() ?? null;
     const pageOptions = { cursor, limit };
 
     const page = await getPageByType(datasource, request, type, pageOptions);
 
-    if (page && page.data) {
-      return page.data.map(id => ({ id }));
-    }
-
-    return [];
+    return page?.data?.map(id => ({ id })) ?? [];
   } catch (error) {
     logger.error('Error while paginating freetext: ', error);
     return [];
