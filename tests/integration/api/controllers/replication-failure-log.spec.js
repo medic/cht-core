@@ -70,14 +70,12 @@ describe('replication failure logging @docker', () => {
     return utils.request(options);
   };
 
-  const getFailureLog = async (username, month) => {
-    const params = new URLSearchParams({ user: username });
+  const getUserFailureLog = async (username, month) => {
+    const options = { path: `/api/v1/replication-failure-logs/${username}` };
     if (month) {
-      params.set('month', month);
+      options.path += `?month=${month}`;
     }
-    const response = await utils.request({
-      path: `/api/v1/replication-failure-logs?${params.toString()}`,
-    });
+    const response = await utils.request(options);
     if (month) {
       return response.log;
     }
@@ -85,13 +83,6 @@ describe('replication failure logging @docker', () => {
     // falling back to the first log (tests without seeded months only ever hit the current one).
     const currentMonthId = getFailureLogId(username);
     return response.logs.find(log => log._id === currentMonthId) || response.logs[0] || null;
-  };
-
-  const getAllLogsForUser = async (username) => {
-    const response = await utils.request({
-      path: `/api/v1/replication-failure-logs?user=${username}`,
-    });
-    return response.logs;
   };
 
   const clearLogs = async () => {
@@ -137,14 +128,14 @@ describe('replication failure logging @docker', () => {
     const bobSummary = response.logs.find(log => log.user === 'bob');
     expect(bobSummary).to.be.undefined;
 
-    const bobLog = await getFailureLog('bob');
+    const bobLog = await getUserFailureLog('bob');
     expect(bobLog).to.be.null;
   });
 
   it('should create a failure log when the request fails', async () => {
     await requestDocsExpectingError('bob');
 
-    const log = await getFailureLog('bob');
+    const log = await getUserFailureLog('bob');
     expect(log.type).to.equal('replication-fail');
     expect(log.user).to.equal('bob');
     expect(log.failures.length).to.eq(1);
@@ -162,7 +153,7 @@ describe('replication failure logging @docker', () => {
     await requestDocsExpectingError('bob');
     await requestDocsExpectingError('bob');
 
-    const log = await getFailureLog('bob');
+    const log = await getUserFailureLog('bob');
     expect(log.failures).to.be.an('array').that.has.lengthOf(3);
     expect(log.total_failures).to.equal(3);
     log.failures.forEach(failure => {
@@ -191,7 +182,7 @@ describe('replication failure logging @docker', () => {
 
     await requestDocsExpectingError('bob');
 
-    const log = await getFailureLog('bob');
+    const log = await getUserFailureLog('bob');
     expect(log.failures).to.have.lengthOf(50);
     expect(log.total_failures).to.equal(51);
     expect(log.failures[0].request_id).to.equal('seed-1');
@@ -221,7 +212,7 @@ describe('replication failure logging @docker', () => {
 
     // New log is created for the current month
     const currentMonth = moment().format('YYYY-MM');
-    const currentLog = await getFailureLog('bob', currentMonth);
+    const currentLog = await getUserFailureLog('bob', currentMonth);
     expect(currentLog).to.not.be.null;
     expect(currentLog._id).to.equal(`replication-fail-${currentMonth}-bob`);
     expect(currentLog.failures).to.have.lengthOf(1);
@@ -229,7 +220,7 @@ describe('replication failure logging @docker', () => {
 
     // Previous months' logs are untouched
     for (const month of previousMonths) {
-      const oldLog = await getFailureLog('bob', month);
+      const oldLog = await getUserFailureLog('bob', month);
       expect(oldLog).to.not.be.null;
       expect(oldLog.failures).to.have.lengthOf(0);
       expect(oldLog.total_failures).to.equal(0);
@@ -258,7 +249,7 @@ describe('replication failure logging @docker', () => {
 
     await requestDocsExpectingError('bob');
 
-    const logs = await getAllLogsForUser('bob');
+    const { logs } = await utils.request({ path: '/api/v1/replication-failure-logs/bob' });
     const months = logs.map(log => log._id).sort();
     expect(months).to.include(`replication-fail-${moment().format('YYYY-MM')}-bob`);
     for (const month of previousMonths) {
@@ -292,9 +283,27 @@ describe('replication failure logging @docker', () => {
     expect(bobSummary._id).to.not.equal(clareSummary._id);
 
     // Full details still available via the per-user endpoint
-    const bobLog = await getFailureLog('bob');
+    const bobLog = await getUserFailureLog('bob');
     expect(bobLog.failures).to.have.lengthOf(1);
-    const clareLog = await getFailureLog('clare');
+    const clareLog = await getUserFailureLog('clare');
     expect(clareLog.failures).to.have.lengthOf(1);
+  });
+
+  it('should return an empty list for a non-existing user with no month', async () => {
+    const response = await utils.request({
+      path: '/api/v1/replication-failure-logs/nobody-here',
+    });
+    expect(response.user).to.equal('nobody-here');
+    expect(response.logs).to.deep.equal([]);
+  });
+
+  it('should return a null log for a non-existing user in a specific month', async () => {
+    const month = moment().format('YYYY-MM');
+    const response = await utils.request({
+      path: `/api/v1/replication-failure-logs/nobody-here?month=${month}`,
+    });
+    expect(response.month).to.equal(month);
+    expect(response.user).to.equal('nobody-here');
+    expect(response.log).to.be.null;
   });
 });

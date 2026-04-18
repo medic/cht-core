@@ -69,6 +69,7 @@ const getForUserAndMonth = async (month, userName) => {
     if (err.status !== 404) {
       throw err;
     }
+    return null;
   }
 };
 

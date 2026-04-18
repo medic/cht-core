@@ -77,12 +77,12 @@ describe('Replication Failure Log Service', () => {
       expect(result).to.deep.equal(doc);
     });
 
-    it('should return undefined when the log does not exist', async () => {
+    it('should return null when the log does not exist', async () => {
       db.medicLogs.get.rejects({ status: 404 });
 
       const result = await replicationFailureLog.getForUserAndMonth('2026-04', 'bob');
 
-      expect(result).to.be.undefined;
+      expect(result).to.be.null;
     });
 
     it('should propagate non-404 errors', async () => {
