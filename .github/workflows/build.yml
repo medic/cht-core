@@ -289,7 +289,9 @@ jobs:
           - cmd: ci-webdriver-default
             suite: lowLevel
           - cmd: ci-webdriver-default
-            suite: workflows
+            suite: workflows_1
+          - cmd: ci-webdriver-default
+            suite: workflows_2
         exclude: # temporary until all suites run on Chrome 107
           - cmd: ci-integration-all
             chrome-version: 107
