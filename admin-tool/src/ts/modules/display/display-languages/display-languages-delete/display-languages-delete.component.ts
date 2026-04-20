@@ -23,6 +23,12 @@ export class DisplayLanguagesDeleteComponent implements OnChanges {
   /** Language document to delete */
   @Input() doc: LanguageDoc | null = null;
 
+  /** Code of the language currently set as the default application locale in settings */
+  @Input() localeLanguage: string | null = null;
+
+  /** Code of the language currently set as the outgoing messages locale in settings */
+  @Input() localeOutgoingLanguage: string | null = null;
+
   /** Emitted when the modal is dismissed without saving */
   @Output() closed = new EventEmitter<void>();
   
@@ -49,12 +55,20 @@ export class DisplayLanguagesDeleteComponent implements OnChanges {
   }
 
   /**
-   * Deletes the language document via LanguagesService.
+   * Validates that the language is not currently in use as the default application
+   * locale or the outgoing messages locale before proceeding with deletion.
+   * Shows an error message in the footer if the language is in use.
+   * Deletes the language document via LanguagesService if validation passes.
    * Shows an error message in the footer if the delete fails.
    *
    * @returns {Promise<void>}
    */
   async confirmDelete(): Promise<void> {
+    if (this.doc?.code === this.localeLanguage || this.doc?.code === this.localeOutgoingLanguage) {
+      this.responseStatus = { state: 'error', msg: 'Language in use as default and/or outgoing locale' };
+      return;
+    }
+
     this.loadingModalState = true;
     this.responseStatus = {};
 

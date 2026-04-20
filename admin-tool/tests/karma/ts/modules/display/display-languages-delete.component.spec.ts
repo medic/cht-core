@@ -146,6 +146,49 @@ describe('DisplayLanguagesDeleteComponent', () => {
       await component.confirmDelete();
     });
   });
+  describe('confirmDelete - language in use', () => {
+    it('should set error if doc code matches localeLanguage', async () => {
+      component.doc = mockDoc as any;
+      component.localeLanguage = 'en';
+      component.localeOutgoingLanguage = 'es';
+      await component.confirmDelete();
+      expect(component.responseStatus.state).to.equal('error');
+      expect(component.responseStatus.msg).to.equal('Language in use as default and/or outgoing locale');
+    });
+
+    it('should set error if doc code matches localeOutgoingLanguage', async () => {
+      component.doc = mockDoc as any;
+      component.localeLanguage = 'es';
+      component.localeOutgoingLanguage = 'en';
+      await component.confirmDelete();
+      expect(component.responseStatus.state).to.equal('error');
+      expect(component.responseStatus.msg).to.equal('Language in use as default and/or outgoing locale');
+    });
+
+    it('should not call deleteLanguage if doc code matches localeLanguage', async () => {
+      component.doc = mockDoc as any;
+      component.localeLanguage = 'en';
+      component.localeOutgoingLanguage = 'es';
+      await component.confirmDelete();
+      expect(languagesService.deleteLanguage.called).to.be.false;
+    });
+
+    it('should not call deleteLanguage if doc code matches localeOutgoingLanguage', async () => {
+      component.doc = mockDoc as any;
+      component.localeLanguage = 'es';
+      component.localeOutgoingLanguage = 'en';
+      await component.confirmDelete();
+      expect(languagesService.deleteLanguage.called).to.be.false;
+    });
+
+    it('should proceed with delete if doc code does not match either locale', async () => {
+      component.doc = mockDoc as any;
+      component.localeLanguage = 'es';
+      component.localeOutgoingLanguage = 'fr';
+      await component.confirmDelete();
+      expect(languagesService.deleteLanguage.calledWith(mockDoc)).to.be.true;
+    });
+  });
   describe('cancel', () => {
     it('should emit closed', () => {
       let closedEmitted = false;

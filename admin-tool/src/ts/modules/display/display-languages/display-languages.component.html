@@ -140,6 +140,8 @@
   <display-languages-delete
     [visible]="showDeleteModal"
     [doc]="selectedDoc"
+    [localeLanguage]="savedLocaleLanguage"
+    [localeOutgoingLanguage]="savedLocaleOutgoingLanguage"
     (closed)="showDeleteModal = false"
     (confirmed)="ngOnInit()"
   >
