@@ -1,12 +1,13 @@
 const db = require('../db');
 const logger = require('@medic/logger');
+const { PREFIXES } = require('@medic/constants');
 
 const BATCH_SIZE = 100;
 
 const getUserSettingsDocs = async (skip) => {
   const result = await db.medic.allDocs({
-    startkey: 'org.couchdb.user:',
-    endkey: 'org.couchdb.user:\uffff',
+    startkey: PREFIXES.COUCH_USER,
+    endkey: PREFIXES.COUCH_USER + '\uffff',
     limit: BATCH_SIZE,
     skip,
     include_docs: true

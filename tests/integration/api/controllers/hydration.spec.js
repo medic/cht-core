@@ -2,7 +2,7 @@ const chai = require('chai');
 const utils = require('@utils');
 const _ = require('lodash');
 const chaiExclude = require('chai-exclude');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
@@ -197,7 +197,7 @@ const contacts = [
 const reports = [
   {
     _id: 'report1',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: { _id: 'chw2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
     fields: {
       patient_id: 'patient3'

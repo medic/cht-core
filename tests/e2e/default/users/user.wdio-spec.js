@@ -3,6 +3,7 @@ const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
+const { PREFIXES } = require('@medic/constants');
 
 const OFFLINE_USER_ROLE = 'chw';
 
@@ -136,7 +137,7 @@ describe('User Test Cases ->', () => {
       });
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([chtUsername]);
-      const userId = `org.couchdb.user:${chtUsername}`;
+      const userId = `${PREFIXES.COUCH_USER}${chtUsername}`;
       const userDoc = await utils.usersDb.get(userId);
       expect(userDoc.oidc_username).to.equal(oidcUsername);
       expect(userDoc.salt).to.exist;

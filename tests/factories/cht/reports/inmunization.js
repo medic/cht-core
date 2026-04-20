@@ -1,10 +1,11 @@
 const { v4: uuidv4 } = require('uuid');
+const { DOC_TYPES } = require('@medic/constants');
 
 const immunizationVisitFactory = {
   build: ({ contact, patient }) => ({
     _id: uuidv4(),
     form: 'immunization_visit',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     content_type: 'xml',
     reported_date: Date.now(),
     contact: contact,

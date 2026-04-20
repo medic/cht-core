@@ -7,6 +7,7 @@ const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
 const dataContext = require('../../src/data-context');
 const { Contact } = require('@medic/cht-datasource');
+const { DOC_TYPES } = require('@medic/constants');
 
 chai.use(chaiExclude);
 
@@ -48,7 +49,7 @@ describe('functional transitions', () => {
       id: 'abc',
       seq: '44',
       doc: {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'V',
         contact: {
           phone: '12345'
@@ -104,7 +105,7 @@ describe('functional transitions', () => {
       id: 'abc',
       seq: '44',
       doc: {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'V',
         contact: {
           phone: '12345'
@@ -122,7 +123,7 @@ describe('functional transitions', () => {
         id: 'abc',
         seq: '45',
         doc: {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'V',
           fields: { last_menstrual_period: 15 },
           contact: {
@@ -171,7 +172,7 @@ describe('functional transitions', () => {
       id: 'abc',
       seq: '44',
       doc: {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'V',
         from: '123456798',
         fields: {},
@@ -224,7 +225,7 @@ describe('functional transitions', () => {
     });
 
     it('should throw infodoc errors', done => {
-      const doc = { _id: 'my_id', _rev: '1-abc', type: 'data_record', form: 'v' };
+      const doc = { _id: 'my_id', _rev: '1-abc', type: DOC_TYPES.DATA_RECORD, form: 'v' };
       sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
 
       sinon.stub(infodoc, 'get').rejects({some: 'err'});
@@ -301,7 +302,7 @@ describe('functional transitions', () => {
           _rev: '1-abc',
           form: 'V',
           from: '123456',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: {
             phone: '12345'
           },
@@ -357,7 +358,7 @@ describe('functional transitions', () => {
         _rev: '1-abc',
         form: 'V',
         from: '123456',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: {
           phone: '12345'
         },
@@ -438,13 +439,13 @@ describe('functional transitions', () => {
           // from the SMS api
           form: 'V',
           from: 'phone1',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: new Date('2018-01-01').valueOf()
         },
         {
           id: 'has default response',
           from: 'phone2',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           sms_message: {
             message: 'I just sent an SMS',
             from: 'phone2',
@@ -454,7 +455,7 @@ describe('functional transitions', () => {
         {
           id: 'random form that no transition runs on',
           form: 'F',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           content_type: 'xml',
           reported_date: new Date().valueOf()
         },
@@ -462,7 +463,7 @@ describe('functional transitions', () => {
           _id: 'some_id',
           id: 'random form with contact',
           form: 'C',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'contact3', parent: { _id: 'clinic' } },
           from: 'phone3',
           reported_date: new Date().valueOf()
@@ -470,7 +471,7 @@ describe('functional transitions', () => {
         {
           id: 'will have errors',
           form: 'P',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'contact3', parent: { _id: 'clinic' } },
           from: 'phone3',
           fields: { random_field: 225 },

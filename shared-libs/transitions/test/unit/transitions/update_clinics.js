@@ -5,7 +5,7 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
 const utils = require('../../../src/lib/utils');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 const phone = '+34567890123';
 
 let transition;
@@ -33,7 +33,7 @@ describe('update clinic', () => {
 
   it('filter includes docs with no clinic', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: phone,
     };
     assert(transition.filter({ doc, info: {} }));
@@ -42,7 +42,7 @@ describe('update clinic', () => {
   it('filter out docs which already have a clinic', () => {
     const doc = {
       from: phone,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: {
         parent: { name: 'some clinic' },
       },
@@ -53,7 +53,7 @@ describe('update clinic', () => {
   it('should not update clinic by phone', () => {
     const doc = {
       from: phone,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
 
     const contact = {
@@ -101,7 +101,7 @@ describe('update clinic', () => {
 
   it('should not update clinic with wrong phone', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: 'WRONG',
       content_type: 'xml'
     };
@@ -114,7 +114,7 @@ describe('update clinic', () => {
 
   it('handles clinic ref id not found - medic/medic#2636', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
       content_type: 'xml'
@@ -128,7 +128,7 @@ describe('update clinic', () => {
 
   it('should update clinic by refid and fix number', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
     };
@@ -180,7 +180,7 @@ describe('update clinic', () => {
     const doc = {
       from: '+12345',
       refid: '1000',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
     const clinic = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
@@ -243,7 +243,7 @@ describe('update clinic', () => {
     const change = {
       doc: {
         refid: 123,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       },
     };
     const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
@@ -257,7 +257,7 @@ describe('update clinic', () => {
     const change = {
       doc: {
         from: 123,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       },
     };
     const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
@@ -269,7 +269,7 @@ describe('update clinic', () => {
   it('handles lineage rejection properly', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'someID' }] });
@@ -283,7 +283,7 @@ describe('update clinic', () => {
   it('should add sys.facility_not_found when no form', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
@@ -298,7 +298,7 @@ describe('update clinic', () => {
   it('should add sys.facility_not_found when form not found', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -317,7 +317,7 @@ describe('update clinic', () => {
   it('should add sys.facility_not_found when form not public and translates message', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -357,7 +357,7 @@ describe('update clinic', () => {
   it('should send a message when form is not public', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -392,7 +392,7 @@ describe('update clinic', () => {
   it('should handle a non-public form with no config', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -416,7 +416,7 @@ describe('update clinic', () => {
   it('should not send a message when form is not found', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm'
     };
 
@@ -435,7 +435,7 @@ describe('update clinic', () => {
   it('should not add sys.facility_not_found when xml', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm',
       content_type: 'xml'
     };
@@ -452,7 +452,7 @@ describe('update clinic', () => {
   it('should not add sys.facility_not_found when form is public', () => {
     const doc = {
       from: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'someForm',
     };
 
@@ -468,7 +468,7 @@ describe('update clinic', () => {
 
   it('should return undefined when refid result is not a known contact type', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
       content_type: 'xml',
@@ -493,7 +493,7 @@ describe('update clinic', () => {
 
   it('should update clinic by refid when result is a person type', async () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
     };
@@ -531,7 +531,7 @@ describe('update clinic', () => {
 
   it('should handle contacts of hardcoded type with a contact_type property', () => {
     const doc = {
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+12345',
       refid: '1000',
     };

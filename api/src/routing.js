@@ -129,6 +129,27 @@ app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, cal
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
+/**
+ * @openapi
+ * /api/v1/express-metrics:
+ *   get:
+ *     summary: Get metrics for Express API endpoints
+ *     operationId: v1ExpressMetricsGet
+ *     description: |
+ *       Used to retrieve a range of metrics for monitoring the API’s performance and internals.
+ *
+ *       The response is formatted for the [Prometheus Data Model](https://prometheus.io/docs/concepts/data_model/).
+ *       The metrics exposed are defined by the [prometheus-api-metrics package](https://www.npmjs.com/package/prometheus-api-metrics)
+ *       and include optional default metrics and garbage collection metrics.
+ *     tags: [Monitoring]
+ *     responses:
+ *       '200':
+ *         description: Prometheus metrics
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ */
 app.use(prometheusMiddleware({
   metricsPath: '/api/v1/express-metrics',
   metricsPrefix: 'cht_api',
@@ -394,11 +415,55 @@ app.all('/setup/finish', function(req, res) {
   res.status(200).send('Setup services are not currently available');
 });
 
+/**
+ * @openapi
+ * /api/info:
+ *   get:
+ *     summary: Get the version of the CHT server
+ *     operationId: apiInfoGet
+ *     description: Returns the version of the CHT server.
+ *     tags: [Monitoring]
+ *     responses:
+ *       '200':
+ *         description: The API info data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   type: string
+ *               required: [version]
+ */
 app.get('/api/info', function(req, res) {
   const p = require('../package.json');
   res.json({ version: p.version });
 });
 
+/**
+ * @openapi
+ * /api/deploy-info:
+ *   get:
+ *     summary: Get deploy information
+ *     operationId: apiDeployInfoGet
+ *     description: Returns build and deploy information for the running CHT instance.
+ *     tags: [Monitoring]
+ *     responses:
+ *       '200':
+ *         description: The deploy info data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 version:
+ *                   type: string
+ *                   description: The version of the deployed CHT instance
+ *               required: [version]
+ *               additionalProperties: true
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ */
 app.get('/api/deploy-info', async (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
@@ -461,6 +526,66 @@ app.postJson('/api/v3/users/:username', users.v3.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
+/**
+ * @openapi
+ * /api/v1/places:
+ *   post:
+ *     summary: Create a place
+ *     operationId: v1PlacesPost
+ *     deprecated: true
+ *     description: >
+ *       Use [POST /api/v1/place](#/Place/v1PlacePost) instead.
+ *       Create a new place and optionally a contact. The parent can be referenced by UUID or
+ *       created inline. A contact can also be created inline or referenced by UUID.
+ *     tags: [Place]
+ *     x-permissions:
+ *       hasAll: [can_edit, can_create_places]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the place.
+ *               type:
+ *                 type: string
+ *                 description: "The place type (e.g. `clinic`, `health_center`, `district_hospital`)."
+ *               parent:
+ *                 description: Parent place UUID or inline object. Required unless creating a top-level place.
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *                     additionalProperties: true
+ *               contact:
+ *                 description: Contact person UUID or inline object.
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *                     additionalProperties: true
+ *             required: [name, type]
+ *             additionalProperties: true
+ *     responses:
+ *       '200':
+ *         description: Place created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 rev:
+ *                   type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ */
 app.postJson('/api/v1/places', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_places'])
@@ -473,6 +598,53 @@ app.postJson('/api/v1/places', function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
+/**
+ * @openapi
+ * /api/v1/places/{id}:
+ *   post:
+ *     summary: Update a place
+ *     operationId: v1PlacesIdPost
+ *     deprecated: true
+ *     description: >
+ *       Use [PUT /api/v1/place/{id}](#/Place/v1PlaceIdPut) instead.
+ *       Update a place and optionally its contact.
+ *     tags: [Place]
+ *     x-permissions:
+ *       hasAll: [can_edit, can_update_places]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The id of the place to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             additionalProperties: true
+ *             description: Place properties to update.
+ *     responses:
+ *       '200':
+ *         description: Place updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 rev:
+ *                   type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ */
 app.postJson('/api/v1/places/:id', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_update_places'])
@@ -492,6 +664,64 @@ app.get('/api/v1/place/:uuid', place.v1.get);
 app.postJson('/api/v1/place', place.v1.create);
 app.putJson('/api/v1/place/:uuid', place.v1.update);
 
+/**
+ * @openapi
+ * /api/v1/people:
+ *   post:
+ *     summary: Create a person
+ *     operationId: v1PeoplePost
+ *     deprecated: true
+ *     description: >
+ *       Use [POST /api/v1/person](#/Person/v1PersonPost) instead.
+ *       Create a new person contact. A place can be created inline or referenced by UUID.
+ *     tags: [Person]
+ *     x-permissions:
+ *       hasAll: [can_edit, can_create_people]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The person's name.
+ *               type:
+ *                 type: string
+ *                 default: person
+ *                 description: >
+ *                   ID of the contact_type for the new person. Defaults to `person` for backwards compatibility.
+ *               place:
+ *                 description: Place UUID or inline object.
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *                     additionalProperties: true
+ *               reported_date:
+ *                 type: number
+ *                 description: Timestamp of when the record was reported or created. Defaults to now.
+ *             required: [name]
+ *             additionalProperties: true
+ *     responses:
+ *       '200':
+ *         description: Person created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 rev:
+ *                   type: string
+ *       '400':
+ *         $ref: '#/components/responses/BadRequest'
+ *       '401':
+ *         $ref: '#/components/responses/Unauthorized'
+ *       '403':
+ *         $ref: '#/components/responses/Forbidden'
+ */
 app.postJson('/api/v1/people', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_people'])

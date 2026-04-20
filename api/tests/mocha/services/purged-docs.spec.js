@@ -1,6 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const { PREFIXES } = require('@medic/constants');
 
 const db = require('../../../src/db');
 const dbWatcher = require('../../../src/services/db-watcher');
@@ -73,7 +74,7 @@ describe('Purged Docs service', () => {
       chai.expect(purgedDocsCache.clear.callCount).to.equal(0);
 
       await onChangeCallback({
-        id: 'org.couchdb.user:rnduser',
+        id: PREFIXES.COUCH_USER + 'rnduser',
         changes: [{ rev: '2-something' }],
         deleted: true,
         seq: 3,
@@ -81,7 +82,8 @@ describe('Purged Docs service', () => {
       chai.expect(purgedDocsCache.clear.callCount).to.equal(1);
       chai.expect(purgedDocsCache.clear.args[0]).to.deep.equal(['rnduser']);
 
-      await onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      await onChangeCallback({ id: PREFIXES.COUCH_USER + 'some-other-user', 
+        changes: [{ rev: '1-something' }], seq: 4 });
       chai.expect(purgedDocsCache.clear.callCount).to.equal(2);
       chai.expect(purgedDocsCache.clear.args[1]).to.deep.equal(['some-other-user']);
 
@@ -104,7 +106,7 @@ describe('Purged Docs service', () => {
       chai.expect(purgedDocsCache.clear.callCount).to.equal(0);
 
       await onChangeCallback({
-        id: 'org.couchdb.user:rnduser',
+        id: PREFIXES.COUCH_USER + 'rnduser',
         changes: [{ rev: '2-something' }],
         deleted: true,
         seq: 3,
@@ -112,7 +114,8 @@ describe('Purged Docs service', () => {
       chai.expect(purgedDocsCache.clear.callCount).to.equal(1);
       chai.expect(purgedDocsCache.clear.args[0]).to.deep.equal(['rnduser']);
 
-      await onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      await onChangeCallback({ id: PREFIXES.COUCH_USER + 'some-other-user', 
+        changes: [{ rev: '1-something' }], seq: 4 });
       chai.expect(purgedDocsCache.clear.callCount).to.equal(2);
       chai.expect(purgedDocsCache.clear.args[1]).to.deep.equal(['some-other-user']);
 

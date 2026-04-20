@@ -12,6 +12,7 @@ import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { Page } from '../src/libs/core';
 import { fakeGenerator } from './utils';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -649,7 +650,7 @@ describe('CHT Script API - getDatasource', () => {
       it('update', async () => {
         const reportInput = {
           form: 'apoorva',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'c1' },
           _id: '123',
           _rev: '1-abc',

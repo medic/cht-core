@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('generate_shortcode_on_contacts', () => {
   after(() => utils.revertDb([], true));
@@ -48,7 +48,7 @@ describe('generate_shortcode_on_contacts', () => {
 
     const report = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: { some: 'thing' },
       reported_date: new Date().getTime(),
     };

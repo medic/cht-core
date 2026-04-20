@@ -9,6 +9,7 @@ const db = require('../../src/db');
 const request = require('@medic/couch-request');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('due tasks', () => {
   let schedule;
@@ -510,7 +511,7 @@ describe('due tasks', () => {
 
     const minified = {
       _id: 'report_id',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         place_id: '999999',
       },
@@ -531,7 +532,7 @@ describe('due tasks', () => {
     };
     const hydrated = {
       _id: 'report_id',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         place_id: '999999',
       },
@@ -581,7 +582,7 @@ describe('due tasks', () => {
       assert.deepEqualExcludingEvery(db.medic.put.args[0], [
         {
           _id: 'report_id',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             place_id: '999999',
           },
@@ -619,7 +620,7 @@ describe('due tasks', () => {
 
     const minified = {
       _id: 'report_id',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_uuid: 'uuid',
         patient_id: '',
@@ -641,7 +642,7 @@ describe('due tasks', () => {
     };
     const hydrated = {
       _id: 'report_id',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_uuid: 'uuid',
         patient_id: '',
@@ -691,7 +692,7 @@ describe('due tasks', () => {
       assert.deepEqualExcludingEvery(db.medic.put.args[0], [
         {
           _id: 'report_id',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             patient_uuid: 'uuid',
             patient_id: '',
@@ -732,7 +733,7 @@ describe('due tasks', () => {
 
     const minified = {
       _id: 'report_id',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_id: '12345',
         place_id: '999999',
@@ -754,7 +755,7 @@ describe('due tasks', () => {
     };
     const hydrated = {
       _id: 'report_id',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_id: '12345',
         place_id: '999999',
@@ -809,7 +810,7 @@ describe('due tasks', () => {
       assert.deepEqualExcludingEvery(db.medic.put.args[0], [
         {
           _id: 'report_id',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: {
             patient_id: '12345',
             place_id: '999999',

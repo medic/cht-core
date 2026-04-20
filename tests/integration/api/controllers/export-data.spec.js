@@ -1,5 +1,6 @@
 const utils = require('@utils');
 const uuid = require('uuid').v4;
+const { DOC_TYPES } = require('@medic/constants');
 
 const getRows = (result) => {
   const rows = result.split('\n');
@@ -22,7 +23,7 @@ describe('Export Data V2.0', () => {
     const docs = [{
       _id: 'export-data-2-test-doc-1',
       form: 'a',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'abc123',
       reported_date: Date.UTC(2018, 1, 1),
       fields: {
@@ -35,7 +36,7 @@ describe('Export Data V2.0', () => {
     }, {
       _id: 'export-data-2-test-doc-2',
       form: 'a',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'abc124',
       reported_date: Date.UTC(2018, 1, 2),
       fields: {
@@ -48,7 +49,7 @@ describe('Export Data V2.0', () => {
     }, {
       _id: 'export-data-2-test-doc-3',
       form: 'b',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'abc125',
       reported_date: Date.UTC(2018, 1, 3),
       fields: {
@@ -57,7 +58,7 @@ describe('Export Data V2.0', () => {
     }, {
       _id: 'export-data-2-verified',
       form: 'c',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'abc125',
       verified: true,
       reported_date: Date.UTC(2020, 1, 3),
@@ -67,7 +68,7 @@ describe('Export Data V2.0', () => {
     }, {
       _id: 'export-data-2-not-verified',
       form: 'c',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'abc125',
       verified: false,
       reported_date: Date.UTC(2020, 1, 3),
@@ -77,7 +78,7 @@ describe('Export Data V2.0', () => {
     }, {
       _id: 'export-data-2-invalid',
       form: 'c',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       patient_id: 'abc125',
       errors: [{ code: 'error' }],
       reported_date: Date.UTC(2020, 1, 3),
@@ -294,7 +295,7 @@ describe('Export Data V2.0', () => {
     ];
 
     const otherDocs = [
-      { _id: uuid(), type: 'data_record', form: 'a-form', fields: {} },
+      { _id: uuid(), type: DOC_TYPES.DATA_RECORD, form: 'a-form', fields: {} },
       { _id: uuid(), type: 'task' },
       { _id: uuid(), type: 'target' },
     ];
@@ -684,7 +685,7 @@ describe('Export Data V2.0', () => {
     before(() => utils.saveDoc({
       _id: 'export-data-2-test-doc-4',
       form: 'weird-data-types',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         wd_array: [0, 1, 2],
         wd_emptyString: '',

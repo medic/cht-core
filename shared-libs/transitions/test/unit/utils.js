@@ -4,6 +4,7 @@ const assert = require('chai').assert;
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const registrationUtils = require('@medic/registration-utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('utils', () => {
   beforeEach(() => {
@@ -241,7 +242,7 @@ describe('utils', () => {
     });
 
     it('returns false for reports for unknown json form', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').resolves({ F: { public_form: true } });
       sinon.spy(utils, 'getForm');
       assert(!utils.isValidSubmission(doc));
@@ -251,7 +252,7 @@ describe('utils', () => {
     });
 
     it('returns false for reports from unknown clinic', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ R: { public_form: false }});
       sinon.spy(utils, 'hasKnownSender');
       assert(!utils.isValidSubmission(doc));
@@ -262,7 +263,7 @@ describe('utils', () => {
     });
 
     it('returns true for reports for public forms from unknown clinic', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ R: { public_form: true } });
       sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));
@@ -272,7 +273,7 @@ describe('utils', () => {
     });
 
     it('returns true for xforms reports', () => {
-      const doc = { form: 'R', content_type: 'xml', type: 'data_record' };
+      const doc = { form: 'R', content_type: 'xml', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ OTHER: {} });
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
@@ -280,7 +281,7 @@ describe('utils', () => {
     });
 
     it('returns true for reports for non-public forms from known clinics', () => {
-      const doc = { form: 'R', type: 'data_record' };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD };
       config.get.withArgs('forms').returns({ R: { public_form: false } });
       sinon.stub(utils, 'hasKnownSender').returns(true);
       assert(utils.isValidSubmission(doc));
@@ -289,7 +290,7 @@ describe('utils', () => {
     });
 
     it('returns true for reports for non-public forms from known submitters', () => {
-      const doc = { form: 'R', type: 'data_record', contact: { phone: '12345' } };
+      const doc = { form: 'R', type: DOC_TYPES.DATA_RECORD, contact: { phone: '12345' } };
       config.get.withArgs('forms').returns({ R: { public_form: false } });
       sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));

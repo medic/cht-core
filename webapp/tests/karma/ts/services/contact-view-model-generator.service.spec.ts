@@ -186,14 +186,17 @@ describe('ContactViewModelGenerator service', () => {
       return runPlaceTest([childContactPerson, childPlace]).then(model => {
         assert.equal(model.children[0].contacts.length, 1);
         assert.deepEqual(model.children[0].contacts[0].doc, childContactPerson);
+        assert.equal(model.children[0].activeCount, 1);
         assert.equal(model.children[1].contacts.length, 1);
         assert.deepEqual(model.children[1].contacts[0].doc, childPlace);
+        assert.equal(model.children[1].activeCount, 1);
       });
     });
 
     it('if no child places, child persons get displayed', () => {
       return runPlaceTest([childContactPerson, childPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 2);
+        assert.equal(model.children[0].activeCount, 2);
       });
     });
 
@@ -300,6 +303,7 @@ describe('ContactViewModelGenerator service', () => {
         assert.deepEqual(model.children[0].contacts[1].doc, deceasedChildPerson);
         assert.equal(model.children[0].contacts[1].deceased, true);
         assert.equal(model.children[0].deceasedCount, 1);
+        assert.equal(model.children[0].activeCount, 1);
       });
     });
 

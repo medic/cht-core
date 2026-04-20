@@ -3,6 +3,7 @@ const path = require('path');
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const sinon = require('sinon');
+const { PREFIXES } = require('@medic/constants');
 
 const defaultSettings = require('../../../../../config/default/app_settings.json');
 const service = require('../../../../src/services/export/dhis');
@@ -471,10 +472,10 @@ const mockContact = (username, override) => Object.assign({
 }, override);
 
 const mockTargetDoc = (username, interval, override) => Object.assign({
-  _id: `target~${interval}~org.couchdb.user:${username}~${username}-guid`,
+  _id: `target~${interval}~${PREFIXES.COUCH_USER}${username}~${username}-guid`,
   type: 'target',
   owner: `${username}-guid`,
-  user: `org.couchdb.user:${username}`,
+  user: `${PREFIXES.COUCH_USER}${username}`,
   targets: [
     {
       id: 'births-this-month',
