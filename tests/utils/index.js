@@ -1101,6 +1101,21 @@ const waitForDocRev = (ids) => {
   });
 };
 
+const waitForAuditCount = (docId, expectedCount) => {
+  return auditDb.allDocs({
+    start_key: docId,
+    end_key: `${docId}\ufff0`,
+    include_docs: true
+  }).then(results => {
+    const totalHistory = results.rows.reduce((acc, row) => acc + (row.doc.history ? row.doc.history.length : 0), 0);
+    if (totalHistory >= expectedCount) {
+      return;
+    }
+    return delayPromise(() => waitForAuditCount(docId, expectedCount), 200);
+  });
+};
+
+
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
@@ -1797,7 +1812,9 @@ module.exports = {
   delayPromise,
   setTransitionSeqToNow,
   waitForDocRev,
+  waitForAuditCount,
   getDefaultSettings,
+
   addTranslations,
   enableLanguage,
   enableLanguages,
