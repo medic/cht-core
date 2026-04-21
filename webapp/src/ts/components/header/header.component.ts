@@ -7,6 +7,7 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { P2pConfigService } from '@mm-services/p2p-config.service';
 
 
 import { RouterLink } from '@angular/router';
@@ -52,6 +53,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   currentTab;
   bubbleCount = {};
   permittedTabs: HeaderTab[] = [];
+  p2pVisible = false;
 
   constructor(
     protected readonly store: Store,
@@ -60,6 +62,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly storageInfoService: StorageInfoService,
     private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
+    private readonly p2pConfigService: P2pConfigService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
   }
@@ -68,6 +71,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     super.ngOnInit();
     this.additionalSubscriptions();
     this.getHeaderTabs();
+    this.checkP2pVisibility();
   }
 
   ngOnDestroy() {
@@ -99,5 +103,18 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });
+  }
+
+  private async checkP2pVisibility() {
+    try {
+      const config = await this.p2pConfigService.getConfig();
+      if (!config.enabled) {
+        return;
+      }
+      const role = await this.p2pConfigService.getUserP2pRole();
+      this.p2pVisible = role !== null;
+    } catch (err) {
+      console.debug('HeaderComponent: P2P visibility check failed', err);
+    }
   }
 }

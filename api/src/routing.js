@@ -1071,6 +1071,10 @@ proxyForChanges.on('proxyRes', (proxyRes, req, res) => {
 // allow offline users to access the app
 app.all(`${appPrefix}*param`, authorization.setAuthorized);
 
+// P2P WiFi Hotspot Sync routes — must be authorized before the offline user firewall
+const p2pRouting = require('./p2p/routing');
+p2pRouting(app);
+
 // block offline users requests from accessing CouchDB directly, via Proxy
 // requests which are authorized (fe: by BulkDocsHandler or DbDocHandler) can pass through
 // unauthenticated requests will be redirected to login or given a meaningful error

@@ -18,6 +18,7 @@
 @import 'privacy-policies';
 @import 'sidebar-filter';
 @import 'about';
+@import 'p2p';
 @import 'error-log';
 @import 'tooltip';
 @import 'old-nav';
@@ -57,6 +58,7 @@ body {
     &.trainings,
     &.testing,
     &.user,
+    &.p2p,
     &.privacy-policy {
       .tool-bar {
         background-color: @top-header-color;
@@ -94,6 +96,7 @@ body {
     &.about,
     &.testing,
     &.error,
+    &.p2p,
     &.privacy-policy {
       .page {
         padding-left: calc(@tab-navbar-size + 15px);
@@ -1535,6 +1538,7 @@ mm-sidebar-menu .mat-sidenav-container {
     &.about,
     &.testing,
     &.error,
+    &.p2p,
     &.privacy-policy {
       .page {
         padding-left: 15px;

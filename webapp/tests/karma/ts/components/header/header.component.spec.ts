@@ -15,6 +15,7 @@ import { HeaderTabsService } from '@mm-services/header-tabs.service';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { Selectors } from '@mm-selectors/index';
+import { P2pConfigService } from '@mm-services/p2p-config.service';
 
 describe('Header Component', () => {
   let component: HeaderComponent;
@@ -76,6 +77,16 @@ describe('Header Component', () => {
           { provide: HeaderTabsService, useValue: headerTabsService },
           { provide: ResourceIconsService, useValue: resourceIconsService },
           { provide: ChangesService, useValue: changesService },
+          {
+            provide: P2pConfigService,
+            useValue: {
+              getConfig: sinon.stub().resolves({ enabled: false }),
+              getUserP2pRole: sinon.stub().resolves(null),
+              isEnabled: sinon.stub().resolves(false),
+              shouldPauseReplicationDuringSync:
+                sinon.stub().resolves(false),
+            },
+          },
         ]
       })
       .compileComponents()

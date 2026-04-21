@@ -214,6 +214,10 @@ export class AndroidApiService {
     this.androidAppLauncherService.resolveAndroidAppResponse(response);
   }
 
+  p2pPermissionRequestResolved(granted) {
+    console.info('P2P permission request resolved: granted=' + granted);
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
@@ -222,5 +226,6 @@ export class AndroidApiService {
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
+    p2pPermissionRequestResolved: (...args) => this.runInZone('p2pPermissionRequestResolved', args),
   };
 }

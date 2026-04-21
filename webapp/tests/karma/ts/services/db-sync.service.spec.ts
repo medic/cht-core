@@ -16,6 +16,8 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { ReplicationService } from '@mm-services/replication.service';
+import { P2pConfigService } from '@mm-services/p2p-config.service';
+import { P2pTransitPurgeService } from '@mm-services/p2p-transit-purge.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -138,6 +140,27 @@ describe('DBSync service', () => {
         { provide: CheckDateService, useValue: checkDateService },
         { provide: MigrationsService, useValue: migrationService },
         { provide: ReplicationService, useValue: replicationService },
+        {
+          provide: P2pConfigService,
+          useValue: {
+            getConfig: sinon.stub().resolves({ enabled: false }),
+            getUserP2pRole: sinon.stub().resolves(null),
+            isEnabled: sinon.stub().resolves(false),
+            shouldPauseReplicationDuringSync:
+              sinon.stub().resolves(false),
+          },
+        },
+        {
+          provide: P2pTransitPurgeService,
+          useValue: {
+            markAllBatchesPushedAndPurge:
+              sinon.stub().resolves(),
+            hasStaleTransitDocs:
+              sinon.stub().resolves(false),
+            getPendingPurgeCount:
+              sinon.stub().resolves(0),
+          },
+        },
       ]
     });
 

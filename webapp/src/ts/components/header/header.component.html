@@ -93,6 +93,12 @@
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
+          <li *ngIf="p2pVisible">
+            <a routerLink="p2p" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-wifi"></i>
+              <span>{{'p2p.menu.title' | translate}}</span>
+            </a>
+          </li>
           <li role="presentation">
             <a routerLink="trainings" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-graduation-cap"></i>

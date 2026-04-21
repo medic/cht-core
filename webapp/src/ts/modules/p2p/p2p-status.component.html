@@ -1,0 +1,443 @@
+<mm-tool-bar title="p2p.title"></mm-tool-bar>
+<div class="inner">
+  <div class="col-sm-12 page p2p-status scrolling">
+
+    <div>
+
+    <!-- Loading config -->
+    <mat-card *ngIf="loading">
+      <mat-card-content>
+        <p translate>p2p.loading</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- P2P disabled in config -->
+    <mat-card *ngIf="!loading && !p2pEnabled">
+      <mat-card-header>
+        <mat-card-title translate>p2p.disabled.title</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p translate>p2p.disabled.description</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- P2P enabled but no matching role -->
+    <mat-card *ngIf="!loading && p2pEnabled && !p2pRole">
+      <mat-card-header>
+        <mat-card-title translate>p2p.no_role.title</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p translate>p2p.no_role.description</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Android bridge not available (browser/desktop) -->
+    <mat-card *ngIf="!loading && p2pEnabled && p2pRole && !hasBridgeAvailable">
+      <mat-card-header>
+        <mat-card-title translate>p2p.mobile_only.title</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p translate>p2p.mobile_only.description</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- G27: Stale transit docs warning -->
+    <mat-card *ngIf="!loading && p2pEnabled && hasStaleTransitDocs">
+      <mat-card-header>
+        <mat-card-title translate>p2p.stale_transit.title</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p translate>p2p.stale_transit.description</p>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Sync controls — HOST mode -->
+    <mat-card *ngIf="!loading && p2pEnabled && isHost && hasBridgeAvailable">
+      <mat-card-header>
+        <mat-card-title translate>p2p.controls.title</mat-card-title>
+        <mat-card-subtitle translate>p2p.role.host</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+
+        <div *ngIf="syncState === 'idle'">
+          <p translate>p2p.hint.host</p>
+          <button mat-button color="primary" (click)="startAsHost()" [disabled]="!canStart">
+            {{ 'p2p.action.start_host' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="syncState === 'starting'">
+          <p translate>p2p.state.starting</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'waiting'">
+          <div *ngIf="qrCodeDataUrl" style="text-align:center; margin: 16px 0;">
+            <p translate>p2p.qr.instruction</p>
+            <img [src]="qrCodeDataUrl" alt="P2P QR Code" style="max-width:260px; margin: 12px auto; display:block;" />
+            <div *ngIf="hotspotSsid" style="margin-top: 12px; text-align: left;">
+              <div style="margin-bottom: 8px;">
+                <span class="p2p-label" style="font-weight:500; font-size:13px;" translate>p2p.wifi.ssid</span>
+                <p style="margin:2px 0; font-family:monospace;">{{ hotspotSsid }}</p>
+              </div>
+              <div>
+                <span class="p2p-label" style="font-weight:500; font-size:13px;" translate>p2p.wifi.password</span>
+                <p style="margin:2px 0; font-family:monospace;">{{ hotspotPassword }}</p>
+              </div>
+            </div>
+          </div>
+          <p translate>p2p.state.waiting_for_peer</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'peer_connected'">
+          <p translate>p2p.state.peer_connected</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'syncing'">
+          <p translate>p2p.state.syncing</p>
+          <mat-progress-bar mode="determinate" [value]="syncProgress"></mat-progress-bar>
+          <div>
+            <span class="p2p-label" translate>p2p.progress.docs</span>
+            <p>{{ docsSynced }} / {{ totalDocs }}</p>
+          </div>
+          <div>
+            <span class="p2p-label" translate>p2p.progress.data</span>
+            <p>{{ formatBytes(bytesTransferred) }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="syncState === 'completed'">
+          <div style="text-align:center; margin:16px 0;">
+            <span style="font-size:48px; color:#4caf50;">&#10004;</span>
+            <p style="font-weight:600; margin:8px 0;" translate>p2p.state.completed</p>
+          </div>
+          <div class="p2p-preview-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;">
+            <div>
+              <span class="p2p-label" translate>p2p.progress.docs</span>
+              <p style="font-size:20px; font-weight:600; margin:4px 0;">{{ docsSynced }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" translate>p2p.progress.data</span>
+              <p style="font-size:20px; font-weight:600; margin:4px 0;">{{ formatBytes(bytesTransferred) }}</p>
+            </div>
+          </div>
+          <button mat-button color="primary" (click)="stopSync()">
+            {{ 'p2p.action.done' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="syncState === 'failed'">
+          <p translate>p2p.state.failed</p>
+          <div *ngIf="lastError">
+            <span class="p2p-label" translate>p2p.error.label</span>
+            <p>{{ lastError }}</p>
+          </div>
+          <button mat-button color="primary" (click)="startAsHost()">
+            {{ 'p2p.action.retry' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="syncState === 'stopped'">
+          <p translate>p2p.state.stopped</p>
+          <button mat-button color="primary" (click)="startAsHost()">
+            {{ 'p2p.action.start_host' | translate }}
+          </button>
+        </div>
+
+        <button *ngIf="isSyncing && syncState !== 'preview'" mat-button color="warn" (click)="stopSync()">
+          {{ 'p2p.action.stop' | translate }}
+        </button>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Sync controls — PEER mode -->
+    <mat-card *ngIf="!loading && p2pEnabled && isPeer && hasBridgeAvailable">
+      <mat-card-header>
+        <mat-card-title translate>p2p.controls.title</mat-card-title>
+        <mat-card-subtitle translate>p2p.role.peer</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+
+        <div *ngIf="syncState === 'idle'">
+          <p translate>p2p.hint.peer</p>
+          <button mat-button color="primary" (click)="startAsPeer()" [disabled]="!canStart">
+            {{ 'p2p.action.start_peer' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="syncState === 'scanning'">
+          <p translate>p2p.state.scanning</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'connecting'">
+          <div *ngIf="hotspotSsid" style="background:#fafafa; border-radius:8px; padding:10px 14px; margin-bottom:12px; opacity:0.7; font-size:12px;">
+            <div style="margin-bottom:4px;">
+              <span class="p2p-label" style="font-weight:500;" translate>p2p.wifi.ssid</span>
+              <span style="margin-left:6px; font-family:monospace;">{{ hotspotSsid }}</span>
+            </div>
+            <div>
+              <span class="p2p-label" style="font-weight:500;" translate>p2p.wifi.password</span>
+              <span style="margin-left:6px; font-family:monospace;">{{ hotspotPassword }}</span>
+            </div>
+          </div>
+          <p translate>p2p.state.connecting_wifi</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'waiting_wifi'">
+          <div *ngIf="hotspotSsid" style="background:#f5f5f5; border-radius:8px; padding:16px; margin-bottom:16px;">
+            <p style="font-weight:600; margin-bottom:12px;" translate>p2p.peer.connect_wifi</p>
+            <div style="margin-bottom:8px;">
+              <span class="p2p-label" style="font-weight:500; font-size:13px;" translate>p2p.wifi.ssid</span>
+              <p style="margin:2px 0; font-family:monospace; font-size:16px;">{{ hotspotSsid }}</p>
+            </div>
+            <div style="margin-bottom:12px;">
+              <span class="p2p-label" style="font-weight:500; font-size:13px;" translate>p2p.wifi.password</span>
+              <p style="margin:2px 0; font-family:monospace; font-size:16px;">{{ hotspotPassword }}</p>
+            </div>
+            <p style="font-size:13px; color:#666;" translate>p2p.peer.connect_hint</p>
+          </div>
+          <p translate>p2p.state.waiting_wifi</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'starting'">
+          <p translate>p2p.state.starting</p>
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+
+        <div *ngIf="syncState === 'preview'">
+          <p translate>p2p.state.preview</p>
+          <div class="p2p-preview-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:16px 0;">
+            <div>
+              <span class="p2p-label" translate>p2p.preview.contacts</span>
+              <p style="font-size:24px; font-weight:600; margin:4px 0;">{{ previewContacts }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" translate>p2p.preview.reports</span>
+              <p style="font-size:24px; font-weight:600; margin:4px 0;">{{ previewReports }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" translate>p2p.preview.total</span>
+              <p style="font-size:24px; font-weight:600; margin:4px 0;">{{ previewTotal }}</p>
+            </div>
+          </div>
+          <p *ngIf="previewTotal === 0" translate>p2p.preview.empty</p>
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <button *ngIf="previewTotal > 0" mat-button color="primary" (click)="proceedSync()">
+              {{ 'p2p.action.proceed' | translate }}
+            </button>
+            <button mat-button color="warn" (click)="stopSync()">
+              {{ 'p2p.action.cancel' | translate }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="syncState === 'syncing'">
+          <p translate>p2p.state.syncing</p>
+          <mat-progress-bar mode="determinate" [value]="syncProgress"></mat-progress-bar>
+          <div>
+            <span class="p2p-label" translate>p2p.progress.docs</span>
+            <p>{{ docsSynced }} / {{ totalDocs }}</p>
+          </div>
+          <div>
+            <span class="p2p-label" translate>p2p.progress.data</span>
+            <p>{{ formatBytes(bytesTransferred) }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="syncState === 'completed'">
+          <div style="text-align:center; margin:16px 0;">
+            <span style="font-size:48px; color:#4caf50;">&#10004;</span>
+            <p style="font-weight:600; margin:8px 0;" translate>p2p.state.completed</p>
+          </div>
+          <div class="p2p-preview-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;">
+            <div>
+              <span class="p2p-label" translate>p2p.progress.docs</span>
+              <p style="font-size:20px; font-weight:600; margin:4px 0;">{{ docsSynced }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" translate>p2p.progress.data</span>
+              <p style="font-size:20px; font-weight:600; margin:4px 0;">{{ formatBytes(bytesTransferred) }}</p>
+            </div>
+          </div>
+          <button mat-button color="primary" (click)="dismissCompletion()">
+            {{ 'p2p.action.done' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="syncState === 'failed'">
+          <div *ngIf="hotspotSsid" style="background:#f5f5f5; border-radius:8px; padding:16px; margin-bottom:16px;">
+            <div style="margin-bottom:8px;">
+              <span class="p2p-label" style="font-weight:500; font-size:13px;" translate>p2p.wifi.ssid</span>
+              <p style="margin:2px 0; font-family:monospace; font-size:16px;">{{ hotspotSsid }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" style="font-weight:500; font-size:13px;" translate>p2p.wifi.password</span>
+              <p style="margin:2px 0; font-family:monospace; font-size:16px;">{{ hotspotPassword }}</p>
+            </div>
+          </div>
+          <p translate>p2p.state.failed</p>
+          <div *ngIf="lastError">
+            <span class="p2p-label" translate>p2p.error.label</span>
+            <p>{{ lastError }}</p>
+          </div>
+          <button mat-button color="primary" (click)="retrySync()">
+            {{ 'p2p.action.retry' | translate }}
+          </button>
+          <button mat-button (click)="startAsPeer()">
+            {{ 'p2p.action.start_peer' | translate }}
+          </button>
+        </div>
+
+        <div *ngIf="syncState === 'stopped'">
+          <p translate>p2p.state.stopped</p>
+          <button mat-button color="primary" (click)="startAsPeer()">
+            {{ 'p2p.action.start_peer' | translate }}
+          </button>
+        </div>
+
+        <button *ngIf="isSyncing && syncState !== 'preview'" mat-button color="warn" (click)="stopSync()">
+          {{ 'p2p.action.stop' | translate }}
+        </button>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- QR code card removed — QR is now inline in the "waiting" state above -->
+
+    <!-- Connected peers (host mode) -->
+    <mat-card *ngIf="!loading && p2pEnabled && isHost && connectedPeers.length > 0">
+      <mat-card-header>
+        <mat-card-title translate>p2p.peers.title</mat-card-title>
+        <mat-card-subtitle>{{ connectedPeers.length }} {{ 'p2p.peers.connected' | translate }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-chip-set>
+          <mat-chip *ngFor="let peer of connectedPeers">{{ peer }}</mat-chip>
+        </mat-chip-set>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Transit docs status (host mode) -->
+    <mat-card *ngIf="!loading && p2pEnabled && isHost && transitDocCount > 0">
+      <mat-card-header>
+        <mat-card-title translate>p2p.transit.title</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div>
+          <span class="p2p-label" translate>p2p.transit.total_tracked</span>
+          <p>{{ transitDocCount }}</p>
+        </div>
+        <div *ngIf="pendingPurgeCount > 0">
+          <span class="p2p-label" translate>p2p.transit.pending_purge</span>
+          <p>{{ pendingPurgeCount }}</p>
+          <button mat-button color="primary" (click)="purgeTransitDocs()">
+            {{ 'p2p.transit.purge_now' | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Sync History accordion (peer/client side only) -->
+    <mat-accordion *ngIf="!loading && p2pEnabled && isPeer && hasBridgeAvailable">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ 'p2p.history.title' | translate }} ({{ totalSessions }})</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div *ngIf="historyLoading">
+          <p translate>p2p.history.loading</p>
+        </div>
+
+        <div *ngIf="!historyLoading && history.length === 0">
+          <p translate>p2p.history.empty.description</p>
+        </div>
+
+        <div *ngIf="!historyLoading && history.length > 0">
+          <!-- Aggregate stats -->
+          <div class="p2p-stats-grid">
+            <div>
+              <span class="p2p-label" translate>p2p.history.total_sessions</span>
+              <p>{{ totalSessions }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" translate>p2p.history.total_docs</span>
+              <p>{{ totalDocsSynced }}</p>
+            </div>
+            <div>
+              <span class="p2p-label" translate>p2p.history.total_bytes</span>
+              <p>{{ formatBytes(totalBytesTransferred) }}</p>
+            </div>
+            <div *ngIf="isHost && totalTransitDocs > 0">
+              <span class="p2p-label" translate>p2p.history.total_transit</span>
+              <p>{{ totalTransitDocs }}</p>
+            </div>
+          </div>
+
+          <!-- Session list -->
+          <mat-card *ngFor="let entry of history" class="p2p-session-card">
+            <mat-card-header>
+              <mat-icon [class]="getStatusClass(entry.status)">
+                {{ getStatusIcon(entry.status) }}
+              </mat-icon>
+              <mat-card-title>
+                <span *ngIf="entry.type === 'sync'" translate>p2p.history.type.sync</span>
+                <span *ngIf="entry.type === 'relay'" translate>p2p.history.type.relay</span>
+              </mat-card-title>
+              <mat-card-subtitle>
+                {{ entry.started_at | date:'medium' }}
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="p2p-session-details">
+                <div>
+                  <span class="p2p-label" translate>p2p.history.peer</span>
+                  <p>{{ entry.peer }}</p>
+                </div>
+                <div>
+                  <span class="p2p-label" translate>p2p.history.docs</span>
+                  <p>{{ entry.docs_count }}</p>
+                </div>
+                <div *ngIf="entry.transit_count > 0">
+                  <span class="p2p-label" translate>p2p.history.transit_docs</span>
+                  <p>{{ entry.transit_count }}</p>
+                </div>
+                <div>
+                  <span class="p2p-label" translate>p2p.history.data_transferred</span>
+                  <p>{{ formatBytes(entry.bytes) }}</p>
+                </div>
+                <div>
+                  <span class="p2p-label" translate>p2p.history.duration</span>
+                  <p>{{ formatDuration(entry.started_at, entry.completed_at) }}</p>
+                </div>
+                <div>
+                  <span class="p2p-label" translate>p2p.history.status</span>
+                  <mat-chip-set>
+                    <mat-chip [class]="getStatusClass(entry.status)">
+                      {{ 'p2p.status.' + entry.status | translate }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </div>
+                <div *ngIf="entry.error" class="p2p-error-detail">
+                  <span class="p2p-label" translate>p2p.history.error</span>
+                  <p>{{ entry.error }}</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+      </mat-expansion-panel>
+    </mat-accordion>
+
+    <!-- Bottom spacer so content doesn't hide behind bottom nav -->
+    <div style="height: 140px;"></div>
+
+    </div>
+  </div>
+</div>

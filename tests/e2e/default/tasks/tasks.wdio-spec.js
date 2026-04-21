@@ -97,6 +97,7 @@ describe('Tasks', () => {
     expect(await tasksPage.getTasks()).to.have.length(3);
   });
 
+
   it('should load all tasks at once', async () => {
     const CONFIG_PATH = 'tasks-multiple-config.js';
     const taskConfig = require(`./config/${CONFIG_PATH}`);
@@ -129,6 +130,7 @@ describe('Tasks', () => {
     await commonPage.loadNextInfiniteScrollPage('tasks');
     expect(await tasksPage.isTaskElementDisplayed('p', 'No more tasks')).to.be.true;
   });
+
 
   it('Should show error message for bad config', async () => {
     await commonPage.reloadSession();

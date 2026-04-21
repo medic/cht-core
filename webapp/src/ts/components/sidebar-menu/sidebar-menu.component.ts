@@ -16,6 +16,7 @@ import { LocationService } from '@mm-services/location.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
+import { P2pConfigService } from '@mm-services/p2p-config.service';
 
 import { filter } from 'rxjs/operators';
 import { Selectors } from '@mm-selectors/index';
@@ -46,6 +47,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
   moduleOptions: MenuOption[] = [];
   secondaryOptions: MenuOption[] = [];
   adminAppPath: string = '';
+  private p2pVisible = false;
 
   constructor(
     protected store: Store,
@@ -54,6 +56,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     protected modalService: ModalService,
     private router: Router,
     protected readonly storageInfoService: StorageInfoService,
+    private readonly p2pConfigService: P2pConfigService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
     this.globalActions = new GlobalActions(store);
@@ -64,6 +67,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     this.adminAppPath = this.locationService.adminPath;
     this.setModuleOptions();
     this.setSecondaryOptions();
+    this.checkP2pVisibility();
     this.additionalSubscriptions();
     this.subscribeToRouter();
   }
@@ -137,8 +141,28 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     ];
   }
 
+  private async checkP2pVisibility() {
+    try {
+      const config = await this.p2pConfigService.getConfig();
+      if (!config.enabled) {
+        return;
+      }
+      const role = await this.p2pConfigService.getUserP2pRole();
+      this.p2pVisible = role !== null;
+      this.setSecondaryOptions();
+    } catch (err) {
+      console.debug('SidebarMenu: P2P visibility check failed', err);
+    }
+  }
+
   private setSecondaryOptions(showPrivacyPolicy = false) {
     this.secondaryOptions = [
+      {
+        routerLink: 'p2p',
+        icon: 'fa-wifi',
+        translationKey: 'p2p.menu.title',
+        canDisplay: this.p2pVisible,
+      },
       {
         routerLink: 'trainings',
         icon: 'fa-graduation-cap',

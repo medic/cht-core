@@ -6,6 +6,7 @@ import { ContactsService } from '@mm-services/contacts.service';
 import { DbService } from '@mm-services/db.service';
 import { CacheService } from '@mm-services/cache.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 
 
 describe('Contacts Service', () => {
@@ -35,6 +36,16 @@ describe('Contacts Service', () => {
         { provide: DbService, useValue: dbService },
         { provide: CacheService, useValue: cacheService },
         { provide: ContactTypesService, useValue: contactTypesService },
+        {
+          provide: P2pTransitFilterService,
+          useValue: {
+            isTransitDoc: sinon.stub().returns(false),
+            loadTransitIndex: sinon.stub().resolves(),
+            filterTransitDocs:
+              sinon.stub().callsFake(docs => docs),
+            getTransitDocCount: sinon.stub().returns(0),
+          },
+        },
       ]
     });
 

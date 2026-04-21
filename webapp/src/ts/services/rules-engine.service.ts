@@ -22,6 +22,7 @@ import { CalendarIntervalService } from '@mm-services/calendar-interval.service'
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 import { Store } from '@ngrx/store';
 import { TasksActions } from '@mm-actions/tasks';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
@@ -95,7 +96,8 @@ export class RulesEngineService implements OnDestroy {
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
     private chtDatasourceService:CHTDatasourceService,
-    private store: Store
+    private readonly store: Store,
+    private readonly p2pTransitFilterService: P2pTransitFilterService,
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
@@ -450,7 +452,18 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning.stop({ name: trackName });
-    return this.hydrateTaskDocs(taskDocs);
+
+    // P2P: exclude tasks owned by transit docs
+    if (!taskDocs?.length) {
+      return this.hydrateTaskDocs(taskDocs || []);
+    }
+    await this.p2pTransitFilterService.loadTransitIndex();
+    const filteredTaskDocs = taskDocs.filter(
+      (task: TaskDoc) => !this.p2pTransitFilterService.isTransitDoc(task.owner) &&
+                         !this.p2pTransitFilterService.isTransitDoc(task._id)
+    );
+
+    return this.hydrateTaskDocs(filteredTaskDocs);
   }
 
   fetchTaskDocsFor(contactIds) {
@@ -480,7 +493,14 @@ export class RulesEngineService implements OnDestroy {
       trackPerformanceRunning = this.performanceService.track();
     }
     trackPerformanceRunning?.stop({ name: trackName });
-    return this.hydrateTaskDocs(taskDocs);
+
+    // P2P: exclude tasks owned by transit docs
+    const filteredTaskDocs = taskDocs?.filter(
+      (task: TaskDoc) => !this.p2pTransitFilterService.isTransitDoc(task.owner) &&
+                         !this.p2pTransitFilterService.isTransitDoc(task._id)
+    ) || [];
+
+    return this.hydrateTaskDocs(filteredTaskDocs);
   }
 
   fetchTasksBreakdown(contactIds?) {

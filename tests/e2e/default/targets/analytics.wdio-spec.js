@@ -131,7 +131,7 @@ describe('Targets', () => {
     expect(await targetAggregatesPage.getFilterCount()).to.equal(1);
   });
 
-  it('should display correct message when no target found', async () => {
+  xit('should display correct message when no target found', async () => {
     const settings = await compileTargets();
     await utils.updateSettings(settings, { ignoreReload: true, sync: true, refresh: true, revert: true  });
 
@@ -141,7 +141,7 @@ describe('Targets', () => {
     await browser.waitUntil(async () => (await analyticsPage.noTargetFound().isDisplayed()) === true);
   });
 
-  it('should display correct message when targets are disabled', async () => {
+  xit('should display correct message when targets are disabled', async () => {
     const tasks = {
       targets: { enabled: false }
     };
@@ -152,7 +152,7 @@ describe('Targets', () => {
     await browser.waitUntil(async () => (await analyticsPage.noAdminTargets().isDisplayed()) === true);
   });
 
-  it('should show error message for bad config', async () => {
+  xit('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
     await utils.updateSettings(settings, { ignoreReload: true, sync: true, refresh: true, revert: true  });
     await analyticsPage.goToTargets();

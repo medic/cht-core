@@ -13,6 +13,7 @@ import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privac
 import { routes as tasksRoutes } from '@mm-modules/tasks/tasks.routes';
 import { routes as trainingRoutes } from '@mm-modules/trainings/trainings.routes';
 import { routes as testingRoutes } from '@mm-modules/testing/testing.routes';
+import { routes as p2pRoutes } from '@mm-modules/p2p/p2p.routes';
 
 const routes: Routes = [
   ...homeRoutes,
@@ -26,6 +27,7 @@ const routes: Routes = [
   ...tasksRoutes,
   ...trainingRoutes,
   ...testingRoutes,
+  ...p2pRoutes,
   ...errorRoutes,
 ];
 

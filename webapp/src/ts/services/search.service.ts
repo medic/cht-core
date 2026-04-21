@@ -9,6 +9,7 @@ import { SessionService } from '@mm-services/session.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,7 @@ export class SearchService {
     private readonly searchFactoryService:SearchFactoryService,
     private readonly performanceService: PerformanceService,
     private readonly ngZone:NgZone,
+    private readonly p2pTransitFilterService: P2pTransitFilterService,
   ) { }
 
   private _currentQuery: any = {};
@@ -171,6 +173,13 @@ export class SearchService {
       additionalDocIds
         .filter(docId => searchResults.docIds.indexOf(docId) === -1)
         .forEach(docId => searchResults.docIds.push(docId));
+
+      // P2P: filter out transit docs from search results
+      if (searchResults?.docIds?.length) {
+        await this.p2pTransitFilterService.loadTransitIndex();
+        searchResults.docIds = searchResults.docIds.filter(id => !this.p2pTransitFilterService.isTransitDoc(id));
+      }
+
       const dataRecordsPromise = this.getDataRecordsService.get(
         searchResults.docIds,
         { hydrateContactNames, include_docs: options.include_docs }

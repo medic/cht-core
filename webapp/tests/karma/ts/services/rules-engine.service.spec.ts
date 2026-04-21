@@ -23,6 +23,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Target } from '@medic/cht-datasource';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -212,7 +213,17 @@ describe('RulesEngineService', () => {
         { provide: TranslateFromService, useValue: translateFromService },
         { provide: RulesEngineCoreFactoryService, useValue: rulesEngineCoreFactory },
         { provide: PipesService, useValue: pipesService },
-        { provide: CHTDatasourceService, useValue: chtDatasourceService }
+        { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        {
+          provide: P2pTransitFilterService,
+          useValue: {
+            isTransitDoc: sinon.stub().returns(false),
+            loadTransitIndex: sinon.stub().resolves(),
+            filterTransitDocs:
+              sinon.stub().callsFake(docs => docs),
+            getTransitDocCount: sinon.stub().returns(0),
+          },
+        },
       ]
     });
   });

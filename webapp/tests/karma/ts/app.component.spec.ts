@@ -53,6 +53,7 @@ import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { PREFIXES } from '@medic/constants';
+import { P2pConfigService } from '@mm-services/p2p-config.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -252,6 +253,16 @@ describe('AppComponent', () => {
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
+          {
+            provide: P2pConfigService,
+            useValue: {
+              getConfig: sinon.stub().resolves({ enabled: false }),
+              getUserP2pRole: sinon.stub().resolves(null),
+              isEnabled: sinon.stub().resolves(false),
+              shouldPauseReplicationDuringSync:
+                sinon.stub().resolves(false),
+            },
+          },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {

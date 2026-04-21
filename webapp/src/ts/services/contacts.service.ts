@@ -5,6 +5,7 @@ import { CacheService } from '@mm-services/cache.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { Contact } from '@medic/cht-datasource';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class ContactsService {
     private cacheService:CacheService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
+    private readonly p2pTransitFilterService:P2pTransitFilterService,
   ) {
     this.inited = this.init();
   }
@@ -58,7 +60,12 @@ export class ContactsService {
 
       return Promise
         .all(relevantCaches)
-        .then(results => _flattenDeep(results));
+        .then(results => _flattenDeep(results))
+        .then(async (contacts) => {
+          // P2P: filter out transit contacts from cache results
+          await this.p2pTransitFilterService.loadTransitIndex();
+          return this.p2pTransitFilterService.filterTransitDocs(contacts);
+        });
     });
   }
 

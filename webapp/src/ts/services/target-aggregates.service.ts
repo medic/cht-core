@@ -11,6 +11,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { RulesEngineService, TargetViewModel, TargetValue } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 
 const { byContactIds, byContactId, byReportingPeriod } = Qualifier;
 
@@ -31,6 +32,7 @@ export class TargetAggregatesService {
     private readonly settingsService:SettingsService,
     private readonly rulesEngineService: RulesEngineService,
     private readonly ngZone:NgZone,
+    private readonly p2pTransitFilterService: P2pTransitFilterService,
   ) {
     this.getTargets = chtDatasourceService.bindGenerator(Target.v1.getAll);
   }
@@ -289,8 +291,13 @@ export class TargetAggregatesService {
     const reportingMonth = this.rulesEngineService.getReportingMonth(settings, reportingPeriod);
     const configAggregates = targetsConfig.map((targetConfig) => this.getAggregate(targetConfig, reportingMonth));
     const contacts = await this.getSupervisedContacts(facilityId);
+
+    // P2P: exclude transit contacts from target aggregation
+    await this.p2pTransitFilterService.loadTransitIndex();
+    const filteredContacts = this.p2pTransitFilterService.filterTransitDocs(contacts);
+
     const intervalTag = this.rulesEngineService.getTargetIntervalTag(settings, reportingPeriod);
-    return this.aggregateTargets(intervalTag, contacts, configAggregates);
+    return this.aggregateTargets(intervalTag, filteredContacts, configAggregates);
   }
 
   getAggregateDetails(targetId?, aggregates?) {

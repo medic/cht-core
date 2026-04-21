@@ -15,6 +15,7 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
 import { Qualifier, Target } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 import { fakeGenerator } from '../../utils';
 
 const { byContactIds, byContactId, byReportingPeriod } = Qualifier;
@@ -73,7 +74,17 @@ describe('TargetAggregatesService', () => {
         {provide: UserSettingsService, useValue: userSettingsService},
         {provide: TranslateFromService, useValue: translateFromService},
         {provide: RulesEngineService, useValue: rulesEngineService},
-        {provide: CHTDatasourceService, useValue: chtDatasourceService }
+        {provide: CHTDatasourceService, useValue: chtDatasourceService },
+        {
+          provide: P2pTransitFilterService,
+          useValue: {
+            isTransitDoc: sinon.stub().returns(false),
+            loadTransitIndex: sinon.stub().resolves(),
+            filterTransitDocs:
+              sinon.stub().callsFake(docs => docs),
+            getTransitDocCount: sinon.stub().returns(0),
+          },
+        },
       ]
     });
     service = TestBed.inject(TargetAggregatesService);

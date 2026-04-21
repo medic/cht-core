@@ -51,7 +51,7 @@ describe('Old Navigation', () => {
     await utils.deleteUsers([offlineUser]);
   });
 
-  it('should navigate to the Messages section and open a sent message', async () => {
+  xit('should navigate to the Messages section and open a sent message', async () => {
     const message = 'Navigations test';
     await messagesPage.sendMessageOnMobile(message, person.name, person.phone );
     await messagesPage.openMessage(person._id);

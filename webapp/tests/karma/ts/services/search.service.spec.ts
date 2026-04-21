@@ -10,6 +10,7 @@ import { SearchFactoryService } from '@mm-services/search.service';
 import { DbService } from '@mm-services/db.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { P2pTransitFilterService } from '@mm-services/p2p-transit-filter.service';
 
 describe('Search service', () => {
   let service:SearchService;
@@ -38,6 +39,16 @@ describe('Search service', () => {
         { provide: SessionService, useValue: session },
         { provide: SearchFactoryService, useValue: { get: sinon.stub().resolves(searchStub) } },
         { provide: PerformanceService, useValue: performanceService },
+        {
+          provide: P2pTransitFilterService,
+          useValue: {
+            isTransitDoc: sinon.stub().returns(false),
+            loadTransitIndex: sinon.stub().resolves(),
+            filterTransitDocs:
+              sinon.stub().callsFake(docs => docs),
+            getTransitDocCount: sinon.stub().returns(0),
+          },
+        },
       ],
     });
     service = TestBed.inject(SearchService);
