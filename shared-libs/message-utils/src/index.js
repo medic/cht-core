@@ -97,6 +97,21 @@ const applyPhoneFilters = function(config, phone) {
   return phone;
 };
 
+const stripCountryCode = function(config, phone) {
+  if (!phone) {
+    return phone;
+  }
+  const countryCode = config?.default_country_code;
+  if (!countryCode) {
+    return phone;
+  }
+  const prefix = '+' + String(countryCode);
+  if (phone.startsWith(prefix)) {
+    return phone.slice(prefix.length);
+  }
+  return phone;
+};
+
 const normalizeRecipient= function(recipient) {
   const recipientArray = Array.isArray(recipient) ? recipient : [recipient];  
   const isValid = r => typeof r === 'string' || typeof r === 'number';
@@ -333,6 +348,12 @@ const render = function(config, template, view, locale) {
     datetime: function() {
       return function(text) {
         return formatDate(config, text, view, config.reported_date_format, locale);
+      };
+    },
+    local_phone: function() {
+      return function(text) {
+        const phone = render(config, text, view);
+        return stripCountryCode(config, phone.trim());
       };
     }
   }));

@@ -1678,4 +1678,73 @@ describe('messageUtils', () => {
       expect(utils._getRecipient(doc, 'district')).to.equal('+888');
     });
   });
+  describe('local_phone mustache helper', () => {
+    const translate = (key) => key;
+
+    it('strips country code from phone number in SMS template', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('strips country code from a context variable', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en', fields: { facility_phone: '+9779841234567' } };
+      const content = { message: [{ locale: 'en', 
+        content: 'Call {{#local_phone}}{{facility_phone}}{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('returns phone unchanged if country code does not match', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+12025551234{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call +12025551234');
+    });
+
+    it('returns phone unchanged if no default_country_code configured', () => {
+      const config = {};
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call +9779841234567');
+    });
+
+    it('handles null phone gracefully', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call ');
+    });
+
+    it('works when default_country_code is numeric (not string)', () => {
+      const config = { default_country_code: 977 };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('returns phone unchanged if already in local format', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}9841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('strips country code when phone variable has surrounding whitespace', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en', fields: { patient_phone: '+9779841234567' } };
+      const content = { message: [{ locale: 'en', 
+        content: 'Call {{#local_phone}} {{patient_phone}} {{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+  });
 });
