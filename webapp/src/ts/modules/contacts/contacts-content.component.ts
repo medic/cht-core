@@ -147,7 +147,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const hasSelectedNewContact = selectedContact === null || selectedContact._id !== nextSelectedContact._id;
+    const hasSelectedNewContact = selectedContact === null || selectedContact?._id !== nextSelectedContact?._id;
     if (!hasSelectedNewContact) {
       return;
     }
@@ -249,6 +249,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
+          if (!this.selectedContact?.doc) {
+            return;
+          }
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate(['/contacts', parentId]);
         }
@@ -287,10 +290,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private async updateFastActions() {
+    if (!this.selectedContact) {
+      return;
+    }
+
     this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
       xmlReportForms: this.relevantReportForms,
       childContactTypes: this.childContactTypes,
-      parentFacilityId: this.selectedContact.doc?._id,
+      parentFacilityId: this.selectedContact?.doc?._id,
       communicationContext: {
         sendTo: this.selectedContact?.type?.person && this.selectedContact?.doc,
         callbackOpenSendMessage: (sendTo) => this.openSendMessageModal(sendTo),
@@ -349,6 +356,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           return;
         }
 
+        if (!this.selectedContact) {
+          return;
+        }
+
         const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
         this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
         this.updateFastActions();
@@ -376,6 +387,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       (error, forms) => {
         if (error) {
           console.error('Error fetching relevant forms', error);
+          return;
+        }
+
+        if (!this.selectedContact?.doc) {
           return;
         }
 
