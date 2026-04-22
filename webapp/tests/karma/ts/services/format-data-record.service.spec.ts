@@ -242,6 +242,51 @@ describe('FormatDataRecord service', () => {
       ]);
     });
 
+    it('resolves an inline-binary field via user-file- + bare reference value', async () => {
+      // Inline-binary fields store the bare reference (`<formId>/<xpath>/<field>`)
+      // as the value, attached under `user-file-<reference>`, so the same
+      // `user-file-` + value rule resolves it.
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          photo: 'my-form/photo',
+        },
+        _attachments: {
+          'user-file-my-form/photo': { content_type: 'image/png' },
+        },
+      };
+
+      const result = await service.format(report);
+      expect(result.fields).to.deep.equal([
+        {
+          label: 'report.my-form.photo',
+          value: 'my-form/photo',
+          depth: 0,
+          imagePath: 'user-file-my-form/photo',
+          target: undefined,
+        },
+      ]);
+    });
+
+    it('returns no image path when neither the value nor the legacy fallback resolves', async () => {
+      // A value must resolve to an existing image attachment, via either
+      // `user-file-` + value or the legacy `user-file/<label-path>`.
+      const report = {
+        _id: 'my-report',
+        form: 'my-form',
+        content_type: 'xml',
+        fields: {
+          photo: 'my-form/photo',
+        },
+        _attachments: {},
+      };
+
+      const result = await service.format(report);
+      expect((result.fields as any[])[0].imagePath).to.equal(undefined);
+    });
+
     it('returns empty image path if attachment does not exist for image name', async () => {
       const report = {
         _id: 'my-report',

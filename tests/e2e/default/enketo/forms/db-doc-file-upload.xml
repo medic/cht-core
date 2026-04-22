@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"
+        xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:jr="http://openrosa.org/javarosa">
+  <h:head>
+    <h:title>db-doc-file-upload</h:title>
+
+    <model>
+      <instance>
+        <db-doc-file-upload id="db-doc-file-upload">
+          <name/>
+          <main_photo/>
+          <sub_doc db-doc="true">
+            <type>sub_record</type>
+            <sub_photo/>
+          </sub_doc>
+          <sub_doc_ref db-doc-ref="/db-doc-file-upload/sub_doc"/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </db-doc-file-upload>
+      </instance>
+
+      <bind nodeset="/db-doc-file-upload/name" type="string"/>
+      <bind nodeset="/db-doc-file-upload/main_photo" type="binary"/>
+      <bind nodeset="/db-doc-file-upload/sub_doc/sub_photo" type="binary"/>
+    </model>
+  </h:head>
+
+  <h:body>
+    <input ref="/db-doc-file-upload/name">
+      <label>Name</label>
+    </input>
+    <upload ref="/db-doc-file-upload/main_photo" mediatype="image/*">
+      <label>Main photo</label>
+    </upload>
+    <upload ref="/db-doc-file-upload/sub_doc/sub_photo" mediatype="image/*">
+      <label>Sub doc photo</label>
+    </upload>
+  </h:body>
+</h:html>

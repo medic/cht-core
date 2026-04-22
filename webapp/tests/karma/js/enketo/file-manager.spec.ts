@@ -28,6 +28,43 @@ describe('file-manager', () => {
     expect(fileManager.getMaxSizeReadable()).to.equal(enketoConstants.maxAttachmentSizeReadable);
   });
 
+  describe('getCurrentFiles', () => {
+    let form;
+
+    const addFileInput = (filename, postfix) => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      if (postfix !== undefined) {
+        input.dataset.filenamePostfix = postfix;
+      }
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(new File([ 'content' ], filename, { type: 'image/png' }));
+      input.files = dataTransfer.files;
+      form.appendChild(input);
+      return input;
+    };
+
+    beforeEach(() => {
+      form = document.createElement('form');
+      form.className = 'or';
+      document.body.appendChild(form);
+    });
+
+    afterEach(() => form.remove());
+
+    it('uniquifies the same file uploaded to two inputs via the timestamp postfix', () => {
+      addFileInput('photo.png', '-10_30_01');
+      addFileInput('photo.png', '-10_30_02');
+
+      const files = fileManager.getCurrentFiles();
+
+      expect(files.length).to.equal(2);
+      expect(files[0].name).to.equal('photo-10_30_01.png');
+      expect(files[1].name).to.equal('photo-10_30_02.png');
+      expect(files[0].name).to.not.equal(files[1].name);
+    });
+  });
+
   describe('getObjectUrl', () => {
     const fakeUrl = 'fake-url';
     let originalCHTCore;
