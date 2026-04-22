@@ -1765,6 +1765,86 @@ describe('Form service', () => {
       expect(performanceService.track.notCalled).to.be.true;
       expect(performanceTracking.stop.notCalled).to.be.true;
     });
+
+    it('should reject and abort save when an attachment exceeds max size', async () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      translateService.get.returnsArg(0);
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'main', name: 'Main' }
+      });
+      // applyTransitions returns the docs unchanged but with a bloated
+      // attachment so validateAttachments rejects.
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0]._attachments = {
+          'user-file-huge.png': { data: { size: 100 * 1024 * 1024 } },
+        };
+        return Promise.resolve(docs);
+      });
+
+      await expect(
+        service.saveContact({ docId, type }, { form, xmlVersion: undefined, duplicateCheck: undefined }, true)
+      ).to.be.rejectedWith(/enketo\.error\.max_attachment_size/);
+
+      assert.equal(dbBulkDocs.callCount, 0, 'bulkDocs should not be called when validation fails');
+      assert.equal(setLastChangedDoc.callCount, 0, 'setLastChangedDoc should not be called');
+      expect(globalActions.setSnackbarContent.calledWith('enketo.error.max_attachment_size')).to.be.true;
+    });
+
+    it('should reject when a sub-doc has oversize attachments', async () => {
+      // Per #10903, sub-contact attachments now route to the sibling/repeat doc.
+      // The validation must apply to every prepared doc, not just the main one.
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'family';
+
+      translateService.get.returnsArg(0);
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', contact: 'NEW' },
+        siblings: { contact: { _id: 'sib1', type: 'person', name: 'Amina', parent: 'PARENT' } },
+        repeats: {},
+      });
+      extractLineageService.extract.callsFake(c => c);
+      transitionsService.applyTransitions.callsFake((docs) => {
+        // Bloat the sibling's attachment, not the main's.
+        const sibling = docs.find(d => d._id === 'sib1');
+        sibling._attachments = {
+          'user-file-amina.png': { data: { size: 100 * 1024 * 1024 } },
+        };
+        return Promise.resolve(docs);
+      });
+
+      await expect(
+        service.saveContact({ docId, type }, { form, xmlVersion: undefined, duplicateCheck: undefined }, true)
+      ).to.be.rejectedWith(/enketo\.error\.max_attachment_size/);
+
+      assert.equal(dbBulkDocs.callCount, 0, 'bulkDocs should not be called when sub-doc attachment is oversize');
+    });
+
+    it('should pass validation and save when attachments are within size limit', async () => {
+      // Sanity: ensures the new validateAttachments call is a no-op for normal saves.
+      const form = { getDataStr: () => '<data></data>' };
+      const docId = null;
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'main', name: 'Main' }
+      });
+      transitionsService.applyTransitions.callsFake((docs) => {
+        docs[0]._attachments = {
+          'user-file-tiny.png': { data: { size: 1024 } },
+        };
+        return Promise.resolve(docs);
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact({ docId, type }, { form, xmlVersion: undefined, duplicateCheck: undefined }, true);
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      expect(globalActions.setSnackbarContent.notCalled).to.be.true;
+    });
   });
 
   describe('load contact summary', () => {
