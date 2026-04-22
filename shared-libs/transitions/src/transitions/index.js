@@ -110,7 +110,7 @@ const processDocs = docs => {
             saveDoc(change, (err, result) => {
               callback(null, err || result);
             });
-          });
+          }, { saveInfoDocFirst: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -232,7 +232,7 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, results }, callback) => {
+const finalize = ({ change, results, saveInfoDocFirst = false }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
   const changed = _.some(results, i => Boolean(i));
@@ -254,6 +254,31 @@ const finalize = ({ change, results }, callback) => {
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
+  if (saveInfoDocFirst) {
+    // For sync transitions, save transitions before saving the changed
+    // document, so that the change does not appear in the changes
+    // feed until the infoDoc has been saved with the correct transitions
+    //
+    // If saveDoc fails after saveTransitions succeeded, the infodoc will
+    // reflect transitions as run while the doc itself was not updated.
+    // there will be no retry
+    return infodoc
+      .saveTransitions(change)
+      .then(() => new Promise((resolve, reject) => {
+        saveDoc(change, (err, result) => err ? reject(err) : resolve(result));
+      }))
+      .then(result => {
+        logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+        callback(null, result);
+      })
+      .catch(err => {
+        logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
+        callback(err);
+      });
+  }
+
+  // For async transitions run by sentinel, save the document first,
+  // then update the infoDoc with the transitions map
   saveDoc(change, (err, result) => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
@@ -332,7 +357,7 @@ const applyTransition = ({ key, change, transition, force }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = (change, callback) => {
+const applyTransitions = (change, callback, { saveInfoDocFirst = false } = {}) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -350,7 +375,7 @@ const applyTransitions = (change, callback) => {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) => finalize({ change, results }, callback));
+  async.series(operations, (err, results) => finalize({ change, results, saveInfoDocFirst }, callback));
 };
 
 const availableTransitions = () => {
