@@ -23,7 +23,7 @@
             <p class="alert alert-danger" role="alert">{{ responseStatus.msg! | translate }}</p>
           }
           <button type="button" class="btn btn-link" (click)="cancel()" [disabled]="loadingModalState">
-            {{ 'cancel' | translate }}
+            {{ 'Cancel' | translate }}
           </button>
           <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="loadingModalState">
             {{ loadingModalState ? ('Deleting' | translate) : ('bulkdelete.confirm.action' | translate) }}

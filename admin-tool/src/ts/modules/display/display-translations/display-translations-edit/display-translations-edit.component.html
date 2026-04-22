@@ -1,0 +1,73 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" (click)="cancel()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ (key ? 'Edit translation' : 'translation.add') | translate }}</h4>
+        </div>
+
+        <div class="modal-body" #modalBody>
+          <div class="form-group required">
+            <label for="translation-key">{{ 'translation.key' | translate }}</label>
+            <input
+              id="translation-key"
+              type="text"
+              class="form-control"
+              [(ngModel)]="newKey"
+              [attr.disabled]="key ? true : null"
+            />
+            @if (keyError) {
+              <span class="help-block error">{{ keyError }}</span>
+            }
+          </div>
+
+          @for (doc of docs; track doc.code) {
+            <div class="form-group">
+              <label [for]="'translation-' + doc.code">{{ doc.name }}</label>
+              <textarea
+                #translationTextarea
+                [id]="'translation-' + doc.code"
+                class="form-control"
+                [(ngModel)]="translationValues[doc.code]"
+              ></textarea>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          @if (responseStatus.state === 'error') {
+            <p class="alert alert-danger" role="alert">{{ responseStatus.msg! | translate }}</p>
+          }
+          <div class="footer-actions">
+            @if (isCustom) {
+              <button type="button" class="btn btn-danger" (click)="deleteTranslation()" [disabled]="loadingModalState">
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                {{ 'Delete' | translate }}
+              </button>
+            }
+            <div class="footer-right">
+              <button type="button" class="btn btn-link" (click)="cancel()" [disabled]="loadingModalState">
+                {{ 'Cancel' | translate }}
+              </button>
+              <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="loadingModalState">
+                {{ loadingModalState ? ('Submitting' | translate) : ('Submit' | translate) }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

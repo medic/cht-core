@@ -36,7 +36,7 @@
             <p class="alert alert-danger" role="alert">{{ responseStatus.msg! | translate }}</p>
           }
           <button type="button" class="btn btn-link" (click)="cancel()" [attr.disabled]="loadingModalState ? true : null">
-            {{ 'cancel' | translate }}
+            {{ 'Cancel' | translate }}
           </button>
           <button type="button" class="btn btn-primary" (click)="submit()" [attr.disabled]="loadingModalState ? true : null">
             {{ loadingModalState ? ('Submitting' | translate) : ('Submit' | translate) }}

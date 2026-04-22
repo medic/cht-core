@@ -1,0 +1,77 @@
+@import (reference) "../../../../../css/variables.less";
+
+.modal {
+  &.in {
+    opacity: 1;
+  }
+  .modal-header {
+    border-bottom: 0.0625rem solid @gray-light;
+    .modal-title {
+      font-size: @font-large;
+      font-weight: bold;
+    }
+    .close {
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+  }
+  .modal-dialog {
+    max-width: 60rem;
+    width: 90%;
+    margin: 12rem auto;
+  }
+  .modal-content {
+    max-height: calc(100vh - 14rem);
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-body {
+    padding: 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+    .form-group {
+      margin-bottom: 0.9375rem;
+      label {
+        font-weight: bold;
+        margin-bottom: 0.3125rem;
+        display: block;
+      }
+      &.required label::after {
+        content: ' *';
+      }
+      .help-block.error {
+        color: @red;
+        font-weight: bold;
+      }
+    }
+  }
+  .modal-footer {
+    border-top: 0.0625rem solid @gray-light;
+    text-align: right;
+    .alert-danger {
+      text-align: left;
+    }
+    .btn {
+      margin-left: 0.3125rem;
+    }
+    .btn-link {
+      text-decoration: none;
+      text-transform: capitalize;
+    }
+  }
+}
+.footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.footer-right {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.modal-backdrop {
+  opacity: 0.5;
+}

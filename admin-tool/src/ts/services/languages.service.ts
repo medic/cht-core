@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DbService } from './db.service';
 import { SettingsService } from './settings.service';
-import { LanguageDoc, LanguageModel } from '@admin-tool-modules/display/display-interfaces';
+import { LanguageDoc, LanguageModel, TranslationKeyValues } from '@admin-tool-modules/display/display-interfaces';
 
 /**
  * Service responsible for reading and writing CHT language documents
@@ -19,26 +19,34 @@ export class LanguagesService {
   constructor(private db: DbService, private settingsService: SettingsService) { }
 
   /**
-   * Fetches all languages documents from CouchDB and combines them
-   * with the enabled state from settings.languages to build the UI model.
+   * Fetches all language documents from CouchDB as raw docs without any settings enrichment.
+   * Used by components that only need the translation content, not the enabled state or missing count.
    *
-   * @returns {Promise<LanguageModel[]>}
+   * @returns {Promise<LanguageDoc[]>}
    */
-  async getLanguages(): Promise<LanguageModel[]> {
+  async getLanguageDocs(): Promise<LanguageDoc[]> {
     const result = await this.db.get().allDocs({
       startkey: 'messages-',
       endkey: 'messages-\ufff0',
       include_docs: true
     });
+    return result.rows.map(row => row.doc as LanguageDoc);
+  }
+
+  /**
+   * Fetches all languages documents from CouchDB via getLanguageDocs and combines them
+   * with the enabled state from settings.languages to build the UI model.
+   *
+   * @returns {Promise<LanguageModel[]>}
+   */
+  async getLanguages(): Promise<LanguageModel[]> {
+    const docs = await this.getLanguageDocs();
     const settings = await this.settingsService.get();
-    
-    const docs = result.rows.map(row => row.doc as LanguageDoc);
     const totalTranslations = this.countTotalTranslations(docs);
 
-    const languages = result.rows.map(row => {
-      const doc = row.doc as LanguageDoc;
+    const languages = docs.map(doc => {
       const languageSetting = settings.languages?.find(language => language.locale === doc.code);
-      const enabled = settings.languages?.length 
+      const enabled = settings.languages?.length
         ? languageSetting ? languageSetting.enabled !== false : false
         : true;
       const missing = this.countMissingTranslations(doc, totalTranslations);
@@ -153,7 +161,7 @@ export class LanguagesService {
    *   - If the key exists in generic and the imported value differs -> add or update in custom
    *   - If the key does not exist in generic -> add or update in custom
    * Skips keys where the imported value is identical to the existing custom value.
-   * Does not call put if no changes were made.
+   * Does not call bulkDocs if no changes were made.
    *
    * @param {LanguageDoc} doc - the language document to update
    * @param {Record<string, string>} translations - parsed translations from the .properties file
@@ -202,5 +210,64 @@ export class LanguagesService {
       return;
     }
     await this.db.get().put(docCopy);
+  }
+  
+  /**
+   * Saves a single translation key across all language documents.
+   * Only writes to the custom field — generic is never modified.
+   * Works on a copy of each document to avoid mutating the originals on failed writes.
+   * Applies the following merge logic per doc:
+   *   - If the new value is empty -> remove the key from custom if it existed
+   *   - If the key exists in generic and the new value matches generic -> remove from custom (redundant)
+   *   - If the key exists in generic and the new value differs -> add or update in custom
+   *   - If the key does not exist in generic -> add or update in custom
+   * Skips docs where the value is identical to the existing custom value.
+   * Does not call put if no changes were made in a doc.
+   *
+   * @param {string} key - the translation key to save
+   * @param {TranslationKeyValues} values - map of language code to new translation value
+   * @param {LanguageDoc[]} docs - all language documents to apply the change to
+   * @returns {Promise<void>}
+   */
+  async saveTranslation(key: string, values: TranslationKeyValues, docs: LanguageDoc[]): Promise<void> {
+    const updatedDocs: LanguageDoc[] = [];
+
+    for (const doc of docs) {
+      const docCopy = { ...doc, custom: { ...doc.custom } };
+      const generic = docCopy.generic || {};
+      const custom = docCopy.custom || {};
+      const newValue = values[doc.code] ?? '';
+      let updated = false;
+
+      if (!newValue) {
+        if (custom[key]) {
+          delete docCopy.custom![key];
+          updated = true;
+        }
+      } else if (generic[key]) {
+        if (generic[key] === newValue) {
+          if (custom[key]) {
+            delete docCopy.custom![key];
+            updated = true;
+          }
+        } else if (custom[key] !== newValue) {
+          docCopy.custom![key] = newValue;
+          updated = true;
+        }
+      } else if (custom[key] !== newValue) {
+        if (!docCopy.custom) {
+          docCopy.custom = {};
+        }
+        docCopy.custom![key] = newValue;
+        updated = true;
+      }
+
+      if (updated) {
+        updatedDocs.push(docCopy);
+      }
+    }
+    if (updatedDocs.length) {
+      await this.db.get().bulkDocs(updatedDocs);
+    }
   }
 }

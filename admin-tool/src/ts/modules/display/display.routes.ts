@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { DisplayHeaderComponent } from './display-header/display-header.component';
 import { DisplayDateTimeComponent } from './display-date-time/display-date-time.component';
 import { DisplayLanguagesComponent } from './display-languages/display-languages.component';
+import { DisplayTranslationsComponent } from './display-translations/display-translations.component';
 
 /**
  * Routes for the Display module.
@@ -28,6 +29,10 @@ export const routes: Routes = [
       {
         path: 'languages',
         component: DisplayLanguagesComponent,
+      },
+      {
+        path: 'translations',
+        component: DisplayTranslationsComponent,
       },
     ],
   },

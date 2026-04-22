@@ -33,3 +33,33 @@ export interface LanguageValidation {
   code?: string;
   name?: string;
 }
+
+/**
+ * Represents a single row in the translations side-by-side table.
+ * Each row corresponds to one translation key.
+ * leftValue is the key itself when Translation Keys mode is active,
+ * or the translated value in the left column language.
+ * rightValue is the translated value in the right column language,
+ * or undefined if the key does not exist in that language.
+ */
+export interface DisplayTranslationRow {
+  key: string;
+  leftValue: string;
+  rightValue: string | undefined;
+}
+
+/**
+ * Maps each language code to the translation value for a specific key.
+ * Used as the form model in the add/edit translation modal.
+ * An empty string means the key has no translation in that language.
+ *
+ * Example for key 'Submit':
+ * {
+ *   en: 'Submit',
+ *   es: 'Enviar',
+ *   fr: ''
+ * }
+ */
+export interface TranslationKeyValues {
+  [code: string]: string;
+}
