@@ -1,0 +1,156 @@
+name: Deploy Demo Instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to deploy (e.g. 4.20.0)'
+        type: string
+        required: true
+
+env:
+  DEMO_URL: ${{ secrets.DEMO_CHT_URL }}
+  DEMO_USER: ${{ secrets.DEMO_CHT_USER }}
+  DEMO_PASS: ${{ secrets.DEMO_CHT_PASS }}
+  AWS_REGION: 'eu-west-2'
+  EKS_CLUSTER: 'arn:aws:eks:eu-west-2:720541322708:cluster/dev-cht-eks'
+  HELM_NAMESPACE: 'demo-cht'
+  HELM_RELEASE: 'demo-cht'
+  NODE_VERSION: '22.15'
+
+jobs:
+  deploy-demo:
+    name: Deploy ${{ github.event.inputs.tag }} to demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Validate tag format
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid tag format '$TAG'. Expected format: X.Y.Z (e.g. 4.20.0)"
+            exit 1
+          fi
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Checkout code at tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
+
+      - name: Stage upgrade via CHT API
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"build\":{\"namespace\":\"medic\",\"application\":\"medic\",\"version\":\"$TAG\"}}" \
+            -u "$DEMO_USER:$DEMO_PASS" \
+            "$DEMO_URL/api/v2/upgrade/stage")
+
+          if [[ "$RESPONSE" != "200" && "$RESPONSE" != "202" ]]; then
+            echo "::error::Failed to stage upgrade. HTTP status: $RESPONSE"
+            exit 1
+          fi
+          echo "Upgrade staging initiated (HTTP $RESPONSE)"
+
+      - name: Poll for staging completion
+        run: |
+          ELAPSED=0
+          TIMEOUT=900
+          INTERVAL=30
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STAGING_RESPONSE=$(curl -s \
+              -u "$DEMO_USER:$DEMO_PASS" \
+              "$DEMO_URL/api/v2/upgrade" 2>/dev/null || echo '{"error":"connection_failed"}')
+
+            STAGING_DOC=$(echo "$STAGING_RESPONSE" | jq -r '.staging_doc // empty' 2>/dev/null || echo "")
+            if [ -z "$STAGING_DOC" ]; then
+              echo "Staging completed"
+              break
+            fi
+
+            echo "Staging in progress... (${ELAPSED}s elapsed)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          if [ $ELAPSED -ge $TIMEOUT ]; then
+            echo "::error::Staging timed out after ${TIMEOUT}s"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-helm@v4.1.0
+
+      - name: Configure kubectl context
+        run: |
+          aws eks update-kubeconfig \
+            --name dev-cht-eks \
+            --region $AWS_REGION
+          kubectl config use-context "$EKS_CLUSTER"
+          helm list -n "$HELM_NAMESPACE"
+
+      - name: Download and update values.yaml
+        run: |
+          helm get values "$HELM_RELEASE" --namespace "$HELM_NAMESPACE" > values.yaml
+          sed -i "s/^cht_image_tag:.*/cht_image_tag: \"$TAG\"/" values.yaml
+          sed -i "s/^chtversion:.*/chtversion: \"$TAG\"/" values.yaml
+          grep -E 'cht_image_tag|chtversion' values.yaml
+        working-directory: scripts/build/helm
+
+      - name: Helm upgrade demo instance
+        run: |
+          helm upgrade "$HELM_RELEASE" . \
+            --namespace "$HELM_NAMESPACE" \
+            -f values.yaml \
+            --wait \
+            --timeout 10m
+        working-directory: scripts/build/helm
+
+      - name: Poll monitoring for version confirmation
+        run: |
+          ELAPSED=0
+          TIMEOUT=900
+          INTERVAL=30
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            MONITORING_RESPONSE=$(curl -s \
+              -u "$DEMO_USER:$DEMO_PASS" \
+              "$DEMO_URL/api/v2/monitoring" 2>/dev/null || echo '{"error":"connection_failed"}')
+
+            CURRENT_VERSION=$(echo "$MONITORING_RESPONSE" | jq -r '.version.app // empty' 2>/dev/null || echo "")
+
+            if [ "$CURRENT_VERSION" = "$TAG" ]; then
+              echo "Demo instance is now running version $TAG"
+              break
+            fi
+
+            echo "Current version: ${CURRENT_VERSION:-unknown}, waiting for $TAG... (${ELAPSED}s elapsed)"
+            sleep $INTERVAL
+            ELAPSED=$((ELAPSED + INTERVAL))
+          done
+
+          if [ $ELAPSED -ge $TIMEOUT ]; then
+            echo "::error::Version verification timed out after ${TIMEOUT}s. Current version: ${CURRENT_VERSION:-unknown}"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy demo configuration
+        uses: ./.github/actions/deploy-conf
+        with:
+          directory: config/demo
+          hostname: ${{ secrets.DEMO_CHT_HOSTNAME }}
+          username: ${{ secrets.DEMO_CHT_USER }}
+          password: ${{ secrets.DEMO_CHT_PASS }}
