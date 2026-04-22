@@ -4,12 +4,18 @@ import {ChangesService} from '@mm-services/changes.service';
 
 type CacheCallback<T = unknown> = (err: unknown, result?: T) => void;
 
-interface CacheRegisterOptions<T = unknown, C = unknown> {
+export interface CacheChange {
+  id?: string;
+  doc?: { _id?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+interface CacheRegisterOptions<T = unknown, C = CacheChange> {
   get: (done: CacheCallback<T>) => void;
   invalidate?: (change: C) => boolean;
 }
 
-interface CacheEntry<T = unknown, C = unknown> {
+interface CacheEntry<T = unknown, C = CacheChange> {
   docs: T | null;
   pending: boolean;
   invalidate?: (change: C) => boolean;
@@ -48,7 +54,7 @@ export class CacheService {
    *     If no invalidate function is provided the cache will never
    *     invalidate.
    */
-  register<T = unknown, C = unknown>(options: CacheRegisterOptions<T, C>) {
+  register<T = unknown, C = CacheChange>(options: CacheRegisterOptions<T, C>) {
     const cache: CacheEntry<T, C> = {
       docs: null,
       pending: false,
