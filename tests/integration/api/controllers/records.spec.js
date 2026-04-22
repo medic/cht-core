@@ -37,6 +37,21 @@ describe('Import Records', () => {
   }, { ignoreReload: true }));
 
   describe('JSON', () => {
+    const importRecord = (body) => {
+      const performRequest = () => utils.request({
+        method: 'POST',
+        path: '/api/v2/records',
+        body,
+      });
+
+      return performRequest().catch(err => {
+        if (err.status === 500 && err.body && err.body.details && err.body.details.includes('Form not found')) {
+          return utils.delayPromise(500).then(performRequest);
+        }
+        throw err;
+      });
+    };
+
     it('parses and stores the passed JSON', () => {
       return utils.saveDoc({
         name: 'Test contact',
@@ -44,20 +59,16 @@ describe('Import Records', () => {
         reported_date: 1557404580557,
         type: 'person'
       })
-        .then(() => utils.request({
-          method: 'POST',
-          path: '/api/v2/records',
-          body: {
-            _meta: {
-              form: 'TEST',
-              from: '+447765902000'
-            },
-            some_data: 'hello',
-            a_number: 42,
-            a_boolean: false,
-            another_boolean: 0,
-            an_optional_date: '2018-11-10'
-          }
+        .then(() => importRecord({
+          _meta: {
+            form: 'TEST',
+            from: '+447765902000'
+          },
+          some_data: 'hello',
+          a_number: 42,
+          a_boolean: false,
+          another_boolean: 0,
+          an_optional_date: '2018-11-10'
         }))
         .then(() => utils.db.query('medic-client/reports_by_form', {
           key: ['TEST'],
@@ -89,16 +100,12 @@ describe('Import Records', () => {
         reported_date: 1557404580557,
         type: 'person'
       })
-        .then(() => utils.request({
-          method: 'POST',
-          path: '/api/v2/records',
-          body: {
-            _meta: {
-              form: 'TEST'
-            },
-            some_data: 'hello',
-            a_number: 42
-          }
+        .then(() => importRecord({
+          _meta: {
+            form: 'TEST'
+          },
+          some_data: 'hello',
+          a_number: 42
         }))
         .then(() => utils.db.query('medic-client/reports_by_form', {
           key: ['TEST'],
@@ -126,17 +133,13 @@ describe('Import Records', () => {
         reported_date: 1557404580557,
         type: 'person'
       })
-        .then(() => utils.request({
-          method: 'POST',
-          path: '/api/v2/records',
-          body: {
-            _meta: {
-              form: 'TEST',
-              from: '+447765902000'
-            },
-            a_number: 42,
-            an_optional_date: '2018-11-10'
-          }
+        .then(() => importRecord({
+          _meta: {
+            form: 'TEST',
+            from: '+447765902000'
+          },
+          a_number: 42,
+          an_optional_date: '2018-11-10'
         }))
         .then(() => utils.db.query('medic-client/reports_by_form', {
           key: ['TEST'],
@@ -163,5 +166,6 @@ describe('Import Records', () => {
           return utils.db.remove(doc);
         });
     });
+
   });
 });
