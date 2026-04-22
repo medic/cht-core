@@ -55,7 +55,7 @@ export class ContactSaveService {
 
         // Process attachments for all documents
         const preparedDocs = [ doc ].concat(repeated, siblings); // NB: order matters: #4200
-        this.processAllAttachments(preparedDocs, xmlStr);
+        this.processAllAttachments(preparedDocs, submitted, xmlStr);
 
         return {
           docId: doc._id,
@@ -173,51 +173,152 @@ export class ContactSaveService {
     });
   }
 
-  private processAllAttachments(preparedDocs: Record<string, any>[], xmlStr: string) {
+  private processAllAttachments(
+    preparedDocs: Record<string, any>[],
+    submitted: { doc; siblings?; repeats? },
+    xmlStr: string,
+  ) {
     const mainDoc = preparedDocs[0];
-    const newAttachmentNames = new Set<string>();
-    const fileNameMap = new Map<string, string>(); // Map of original file name -> sanitized file name
+    const $record = xmlStr ? $($.parseXML(xmlStr)) : null;
+    const root = ($record?.children(':first')[0]) as Element | undefined;
+    const formId = root ? $(root).attr('id') : undefined;
+    const submittedRepeatsLen = submitted?.repeats?.child_data?.length ?? 0;
 
-    // Attach files from FileManager (uploaded via file widgets)
+    const newAttachmentNamesByDoc = new Map<Record<string, any>, Set<string>>();
+    const fileNameMapByDoc = new Map<Record<string, any>, Map<string, string>>();
+    const trackNew = (doc: Record<string, any>, name: string) => {
+      const set = newAttachmentNamesByDoc.get(doc) ?? new Set<string>();
+      set.add(name);
+      newAttachmentNamesByDoc.set(doc, set);
+    };
+    const trackFileName = (doc: Record<string, any>, original: string, sanitized: string) => {
+      const map = fileNameMapByDoc.get(doc) ?? new Map<string, string>();
+      map.set(original, sanitized);
+      fileNameMapByDoc.set(doc, map);
+    };
+
+    // Attach files from FileManager (uploaded via file widgets), routed per sub-doc
     FileManager
       .getCurrentFiles()
       .forEach(file => {
+        const ownerDoc = root
+          ? this.findContactOwnerForFilename(file.name, root, preparedDocs, mainDoc, submittedRepeatsLen)
+          : mainDoc;
+
         const sanitizedFileName = this.sanitizeFileName(file.name);
         const attachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${sanitizedFileName}`;
-        newAttachmentNames.add(attachmentName);
-        this.attachmentService.add(mainDoc, attachmentName, file, file.type, false);
 
-        // Track the mapping for field value sanitization
-        fileNameMap.set(file.name, sanitizedFileName);
+        this.attachmentService.add(ownerDoc, attachmentName, file, file.type, false);
+        trackNew(ownerDoc, attachmentName);
+        trackFileName(ownerDoc, file.name, sanitizedFileName);
       });
 
-    // Process binary fields from XML
-    if (xmlStr) {
-      const $record = $($.parseXML(xmlStr));
-      const formId = $record.find(':first').attr('id');
-
-      $record
+    // Process binary fields from XML, routed per sub-doc
+    if (root) {
+      $(root)
         .find('[type=binary]')
-        .each((_idx, element) => {
+        .each((_idx, element: Element) => {
           const content = $(element).text();
-          if (content) {
-            const xpath = Xpath.getElementXPath(element);
-            // Replace instance root element node name with form internal ID
-            const filename = this.USER_FILE_ATTACHMENT_PREFIX.slice(0, -1) +
-              (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
-            newAttachmentNames.add(filename);
-            this.attachmentService.add(mainDoc, filename, content, 'image/png', true);
+          if (!content) {
+            return;
           }
+          const ownerDoc = this.resolveContactOwnerDoc(
+            element, root, preparedDocs, mainDoc, submittedRepeatsLen
+          );
+
+          const xpath = Xpath.getElementXPath(element);
+          // Replace instance root element node name with form internal ID
+          const filename = this.USER_FILE_ATTACHMENT_PREFIX.slice(0, -1) +
+            (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
+
+          this.attachmentService.add(ownerDoc, filename, content, 'image/png', true);
+          trackNew(ownerDoc, filename);
         });
     }
 
-    // Sanitize field values in the document to match sanitized attachment names
-    this.sanitizeFieldValues(mainDoc, fileNameMap);
+    // Per-doc field-value sanitization + orphan cleanup
+    for (const doc of preparedDocs) {
+      const nameMap = fileNameMapByDoc.get(doc) ?? new Map<string, string>();
+      this.sanitizeFieldValues(doc, nameMap);
 
-    // Remove orphaned user attachments that are no longer referenced
-    const referencedAttachmentNames = this.findReferencedAttachments(mainDoc);
-    const validAttachmentNames = new Set([...newAttachmentNames, ...referencedAttachmentNames]);
-    this.removeOrphanedAttachments(mainDoc, validAttachmentNames);
+      const newNames = newAttachmentNamesByDoc.get(doc) ?? new Set<string>();
+      const referenced = this.findReferencedAttachments(doc);
+      const valid = new Set([ ...newNames, ...referenced ]);
+      this.removeOrphanedAttachments(doc, valid);
+    }
+  }
+
+  /**
+   * Locates the prepared sub-doc that owns a given XML element, by walking
+   * up the DOM from the element to its section root (a direct child of the
+   * form's root element).
+   *
+   *   - main section (first non-meta/inputs/repeat element child of root) -> preparedDocs[0]
+   *   - <contact> / <parent> peer of main section -> sibling doc with matching _id
+   *   - <repeat>'s i-th <child> -> preparedDocs[1 + i] (repeats precede siblings in concat)
+   *   - anything else (meta, inputs, unknown) -> mainDoc
+   */
+  private resolveContactOwnerDoc(
+    el: Element,
+    root: Element,
+    preparedDocs: Record<string, any>[],
+    mainDoc: Record<string, any>,
+    submittedRepeatsLen: number,
+  ): Record<string, any> {
+    let section: Element = el;
+    while (section.parentNode && section.parentNode !== root) {
+      section = section.parentNode as Element;
+    }
+    if (section.parentNode !== root) {
+      return mainDoc;
+    }
+
+    const ignored = [ 'meta', 'inputs', 'repeat' ];
+    const firstSection = (Array.from(root.children) as Element[])
+      .find(c => !ignored.includes(c.tagName) && c.childElementCount > 0);
+    if (section === firstSection) {
+      return mainDoc;
+    }
+
+    if (this.CONTACT_FIELD_NAMES.includes(section.tagName)) {
+      const siblingId = mainDoc[section.tagName]?._id;
+      return preparedDocs.find(d => d._id === siblingId) ?? mainDoc;
+    }
+
+    if (section.tagName === 'repeat') {
+      const repeatChildren = Array.from(section.children) as Element[];
+      const childIdx = repeatChildren.findIndex(c => c.contains(el));
+      if (childIdx >= 0 && childIdx < submittedRepeatsLen) {
+        return preparedDocs[1 + childIdx];
+      }
+    }
+
+    return mainDoc;
+  }
+
+  /**
+   * Locates the first [type=binary] element whose text content equals the
+   * given filename, then resolves the owning prepared doc. Falls back to
+   * mainDoc when no node matches (preserves behavior for forms with no
+   * matching upload field).
+   *
+   * Filename uniqueness within a form session is guaranteed by Enketo's
+   * timestamp suffix, so the first match is the only match.
+   */
+  private findContactOwnerForFilename(
+    filename: string,
+    root: Element,
+    preparedDocs: Record<string, any>[],
+    mainDoc: Record<string, any>,
+    submittedRepeatsLen: number,
+  ): Record<string, any> {
+    const match = $(root)
+      .find('[type=binary]')
+      .filter((_, el) => $(el).text() === filename)[0];
+    if (!match) {
+      return mainDoc;
+    }
+    return this.resolveContactOwnerDoc(match, root, preparedDocs, mainDoc, submittedRepeatsLen);
   }
 
   private findReferencedAttachments(doc: Record<string, any>): Set<string> {
