@@ -11,7 +11,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital',
   place_id: 'district_hospital_shortcode',
 };

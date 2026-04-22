@@ -10,7 +10,7 @@ const contacts = [
     _id: 'district_hospital',
     name: 'District hospital',
     type: 'contact',
-    contact_type: 'district_hospital',
+    contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'the_district_hospital',
     reported_date: new Date().getTime()
   },

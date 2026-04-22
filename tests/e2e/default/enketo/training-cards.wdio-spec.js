@@ -8,6 +8,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Training Cards', () => {
   const expectedConfirmModalHeader = 'Leave training?';
@@ -23,7 +24,7 @@ describe('Training Cards', () => {
   };
 
   before(async () => {
-    const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+    const parent = placeFactory.place().build({ _id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
     const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
     const formDoc = commonPage.createFormDoc(`${__dirname}/forms/training-cards-text-only`);
     formDoc._id = `form:${formDocId}`;

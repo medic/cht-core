@@ -9,7 +9,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('Muting Transition', () => {
   let transition:MutingTransition;
@@ -749,7 +749,7 @@ describe('Muting Transition', () => {
               parent: {
                 _id: 'grandparent',
                 contact: { _id: 'chw' },
-                type: 'district_hospital'
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL
               },
             },
           },

@@ -6,7 +6,7 @@ import { ContactsService } from '@mm-services/contacts.service';
 import { DbService } from '@mm-services/db.service';
 import { CacheService } from '@mm-services/cache.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts Service', () => {
   let service: ContactsService;
@@ -77,7 +77,7 @@ describe('Contacts Service', () => {
         parent: {
           _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
           _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'Otago',
           parent: {},
           contact: {
@@ -109,7 +109,7 @@ describe('Contacts Service', () => {
         parent: {
           _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
           _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'Otago',
           parent: {},
           contact: {
@@ -139,7 +139,7 @@ describe('Contacts Service', () => {
       parent: {
         _id: '920a7f6a-d01d-5cfe-7c9182fe6551510e',
         _rev: '2-5b71b72299224c2500389db753116155',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'Christchurch',
         sent_forms: {
           R: '2014-06-30T04:08:06.657Z'
@@ -235,7 +235,7 @@ describe('Contacts Service', () => {
     const districtHospitalA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551510e',
       _rev: '2-5b71b72299224c2500389db753116155',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Christchurch',
       sent_forms: {
         R: '2014-06-30T04:08:06.657Z'
@@ -245,7 +245,7 @@ describe('Contacts Service', () => {
     const districtHospitalB = {
       _id: '3020c2a8-2074-4df5-a5ef-0c8f77ff336',
       _rev: '4-5b71b72299224c2500389db451239867',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Saint Johns',
       sent_forms: {
         R: '2014-06-30T04:08:08.657Z'
@@ -256,7 +256,7 @@ describe('Contacts Service', () => {
     const doc = {
       _id: '123',
       _rev: '1',
-      contact_type: 'district_hospital',
+      contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       parent: undefined,
       type: ''
     };
@@ -293,7 +293,7 @@ describe('Contacts Service', () => {
           parent: {
             _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
             _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'Otago',
             parent: {},
             contact: {
@@ -325,7 +325,7 @@ describe('Contacts Service', () => {
           parent: {
             _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
             _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'Otago',
             parent: {},
             contact: {
