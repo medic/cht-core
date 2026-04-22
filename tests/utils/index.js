@@ -1101,7 +1101,7 @@ const waitForDocRev = (ids) => {
   });
 };
 
-const waitForAuditCount = (docId, expectedCount) => {
+const waitForAuditCount = (docId, expectedCount, retries = 15) => {
   return auditDb.allDocs({
     start_key: docId,
     end_key: `${docId}\ufff0`,
@@ -1111,9 +1111,13 @@ const waitForAuditCount = (docId, expectedCount) => {
     if (totalHistory >= expectedCount) {
       return;
     }
-    return delayPromise(() => waitForAuditCount(docId, expectedCount), 200);
+    if (retries <= 0) {
+      throw new Error(`Timed out waiting for audit count to reach ${expectedCount} for doc ${docId}`);
+    }
+    return delayPromise(() => waitForAuditCount(docId, expectedCount, retries - 1), 200);
   });
 };
+
 
 
 const getDefaultSettings = () => {
