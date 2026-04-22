@@ -371,6 +371,7 @@ describe('login', () => {
 
     afterEach(async () => {
       await utils.revertSettings(true);
+      mockIdProvider.setAuthTime(null);
     });
 
     after(() => mockIdProvider.stopOidcServer());
@@ -489,8 +490,8 @@ describe('login', () => {
 
         // Use current time as auth_time (recent authentication)
         const currentTime = Math.floor(Date.now() / 1000);
-        const code = `valid:${currentTime}`;
-        const response = await oidcLogin(code);
+        mockIdProvider.setAuthTime(currentTime);
+        const response = await oidcLogin();
 
         chai.expect(response).to.include({ status: 302 });
         chai.expect(response.headers.getSetCookie()).to.be.an('array');
@@ -509,8 +510,8 @@ describe('login', () => {
 
         // Use auth_time from 2 minutes ago (older than max_age of 60 seconds)
         const oldAuthTime = Math.floor(Date.now() / 1000) - 120;
-        const code = `valid:${oldAuthTime}`;
-        const response = await oidcLogin(code);
+        mockIdProvider.setAuthTime(oldAuthTime);
+        const response = await oidcLogin();
 
         expectRedirectToLoginWithError('loginerror', response);
       });
@@ -518,11 +519,26 @@ describe('login', () => {
       it('should work with max_age: 0 (force re-authentication)', async () => {
         await setupOidcSettingsWithMaxAge(0);
         await setClientSecret();
-        const response = await oidcAuthorize();
+        await utils.createUsers([{
+          ...user,
+          password: undefined,
+          oidc_username: mockIdProvider.EMAIL,
+        }]);
+
+        const redirectResponse = await oidcAuthorize();
+
+        chai.expect(redirectResponse).to.include({ status: 302 });
+        const redirectLocation = decodeURIComponent(redirectResponse.body);
+        chai.expect(redirectLocation).to.include('max_age=0');
+
+        const currentTime = Math.floor(Date.now() / 1000);
+        mockIdProvider.setAuthTime(currentTime);
+        const response = await oidcLogin();
 
         chai.expect(response).to.include({ status: 302 });
-        const redirectLocation = decodeURIComponent(response.body);
-        chai.expect(redirectLocation).to.include('max_age=0');
+        chai.expect(response.headers.getSetCookie()).to.be.an('array');
+        chai.expect(response.headers.getSetCookie().find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.body).to.equal('Found. Redirecting to /');
       });
     });
   });

@@ -31,7 +31,7 @@ const getJWT_KEYS = () => generateKeyPairSync(
   }
 );
 
-const generateIdToken =  (issuer, authTime) => {
+const generateIdToken =  (issuer) => {
   const payload = {
     issuer,
     algorithm: 'RS256',
@@ -47,7 +47,7 @@ const generateIdToken =  (issuer, authTime) => {
   };
   
   // Include auth_time if provided
-  if (authTime !== undefined) {
+  if (authTime !== null) {
     claims.auth_time = authTime;
   }
   
@@ -60,6 +60,7 @@ const generateIdToken =  (issuer, authTime) => {
 
 const mockApp = express();
 let server;
+let authTime = null;
 
 mockApp.use(bodyParser.json());
 mockApp.use(bodyParser.urlencoded({ extended: true }));
@@ -126,19 +127,12 @@ mockApp.post('/connect/token', (req, res) => {
       });
   }
 
-  // Extract auth_time from code if present (format: "code:authTime")
-  let authTime;
-  if (code.includes(':')) {
-    const [, authTimeStr] = code.split(':');
-    authTime = parseInt(authTimeStr, 10);
-  }
-
   res.json({
     access_token: 'SlAV32hkKG',
     token_type: 'Bearer',
     refresh_token: '8xLOxBtZp8',
     expires_in: 3600,
-    id_token: generateIdToken(oidcBaseUrl, authTime)
+    id_token: generateIdToken(oidcBaseUrl)
   });
 });
 
@@ -156,6 +150,11 @@ const stopOidcServer = () => {
 
   server.close();
   server = null;
+  authTime = null;
+};
+
+const setAuthTime = (time) => {
+  authTime = time;
 };
 
 module.exports = {
@@ -164,5 +163,6 @@ module.exports = {
   getDiscoveryUrl: () => `${getOidcBaseUrl()}.well-known/openid-configuration`,
   appTokenUrl,
   startOidcServer,
-  stopOidcServer
+  stopOidcServer,
+  setAuthTime
 };
