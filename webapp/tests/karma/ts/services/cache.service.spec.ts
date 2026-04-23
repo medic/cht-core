@@ -44,7 +44,7 @@ describe('Cache Service', () => {
   });
 
   it('returns results from get', (done) => {
-    const docs = [ { _id: 1 } ];
+    const docs = [ { _id: '1' } ];
     service.register({
       get: (callback) => {
         callback(null, docs);
@@ -56,7 +56,7 @@ describe('Cache Service', () => {
   });
 
   it('calls multiple callbacks', (done) => {
-    const docs = [ { _id: 1 } ];
+    const docs = [ { _id: '1' } ];
     let callback;
     let count = 0;
     const cache = service.register({
@@ -77,7 +77,7 @@ describe('Cache Service', () => {
   });
 
   it('caches the result', (done) => {
-    const docs = [ { _id: 1 } ];
+    const docs = [ { _id: '1' } ];
     let callback;
     let count = 0;
     const cache = service.register({
@@ -99,8 +99,8 @@ describe('Cache Service', () => {
   });
 
   it('invalidates the cache on doc update', (done) => {
-    const initial = [ { _id: 1, name: 'gareth' } ];
-    const updated = [ { _id: 1, name: 'alex' } ];
+    const initial = [ { _id: '1', name: 'gareth' } ];
+    const updated = [ { _id: '1', name: 'alex' } ];
     let count = 0;
     const cache = service.register({
       get: (callback) => {
@@ -121,7 +121,7 @@ describe('Cache Service', () => {
       expect(err).to.equal(null);
       expect(results).to.deep.equal(initial);
     });
-    changesCallback({ id: 1, changes: [ { rev: '5-xyz' } ] });
+    changesCallback({ id: '1', changes: [ { rev: '5-xyz' } ] });
     cache((err, results) => {
       expect(err).to.equal(null);
       expect(results).to.deep.equal(updated);
@@ -130,9 +130,9 @@ describe('Cache Service', () => {
   });
 
   it('invalidates the cache on new doc', (done) => {
-    const newDoc = { _id: 2, name: 'alex' };
-    const initial = [ { _id: 1, name: 'gareth' } ];
-    const updated = [ { _id: 1, name: 'gareth' }, newDoc ];
+    const newDoc = { _id: '2', name: 'alex' };
+    const initial = [ { _id: '1', name: 'gareth' } ];
+    const updated = [ { _id: '1', name: 'gareth' }, newDoc ];
     let count = 0;
     const cache = service.register({
       get: (callback) => {
@@ -164,8 +164,8 @@ describe('Cache Service', () => {
   });
 
   it('does not invalidate the cache when filter fails', (done) => {
-    const newDoc = { _id: 2, name: 'alex' };
-    const initial = [ { _id: 1, name: 'gareth' } ];
+    const newDoc = { _id: '2', name: 'alex' };
+    const initial = [ { _id: '1', name: 'gareth' } ];
     let count = 0;
     const cache = service.register({
       get: (callback) => {
