@@ -48,9 +48,9 @@ module.exports = {
     const evConf = _.find(config.messages, { event_type: event_type });
     const msg = messages.getMessage(evConf, locale);
     if (msg) {
-      messages.addError(doc, msg);
+      messages.addError(doc, { code: 'notification_error', message: msg });
     } else {
-      messages.addError(doc, `Failed to complete notification request, event type "${event_type}" misconfigured.`);
+      messages.addError(doc, { code: 'notification_error', message: `Failed to complete notification request, event type "${event_type}" misconfigured.` });
     }
   },
   _addMsg: function(event_type, config, doc, registrations, patient) {
