@@ -26,14 +26,14 @@ interface CacheEntry<T = unknown, C = CacheChange> {
   providedIn: 'root'
 })
 export class CacheService {
-  private caches: CacheEntry[] = [];
+  private readonly caches: CacheEntry[] = [];
 
   constructor(private changesService:ChangesService) {
     this.changesService.subscribe({
       key: 'cache',
       callback: (change) => {
         this.caches.forEach((cache) => {
-          if (cache.invalidate && cache.invalidate(change)) {
+          if (cache.invalidate?.(change)) {
             cache.docs = null;
             cache.pending = false;
           }
