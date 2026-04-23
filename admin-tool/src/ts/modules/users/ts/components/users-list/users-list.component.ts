@@ -7,16 +7,17 @@ import { User } from '@admin-tool-modules/users/users-interfaces';
 import { CreateUserComponent } from '../create-user/create-user.component';
 import { EditUserComponent } from '../edit-user/edit-user.component';
 import { DeleteUserComponent } from '../delete-user/delete-user.component';
+import { ImportUsersComponent } from '../import-users/import-users.component';
 
 /**
  * Displays and manages the list of system users.
  * Requires `can_configure` permission to access.
- * Provides hooks for create, edit, and delete actions via modal components.
+ * Provides hooks for create, edit, delete and bulk import actions via modal components.
  */
 @Component({
   selector: 'users-list',
   standalone: true,
-  imports: [TranslatePipe, CreateUserComponent, EditUserComponent, DeleteUserComponent],
+  imports: [TranslatePipe, CreateUserComponent, EditUserComponent, DeleteUserComponent, ImportUsersComponent],
   templateUrl: './users-list.component.html',
   styleUrl: './users-list.component.less',
 })
@@ -29,6 +30,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
   showCreateModal = false;
   showEditModal = false;
   showDeleteModal = false;
+  showImportModal = false;
 
   selectedUser: Partial<User> | null = null;
 
@@ -79,7 +81,7 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
 
   importUsers() {
-    console.log('import users');
+    this.showImportModal = true;
   }
 
   editUser(user: Partial<User>) {

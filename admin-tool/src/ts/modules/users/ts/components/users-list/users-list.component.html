@@ -90,5 +90,10 @@
       (closed)="showDeleteModal = false"
       (userDeleted)="showDeleteModal = false"
     ></delete-user>
+
+    <import-users
+      [visible]="showImportModal"
+      (closed)="showImportModal = false"
+    ></import-users>
   }
 </div>

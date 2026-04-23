@@ -1,0 +1,129 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <!-- Header -->
+        <div class="modal-header">
+          <button
+            type="button"
+            class="close"
+            (click)="cancel()"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ 'users.import.title' | translate }}</h4>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+
+          <!-- Error -->
+          @if (error) {
+            <p class="alert alert-danger" role="alert">
+              {{ error | translate }}
+            </p>
+          }
+
+          <!-- Screen 1: Upload -->
+          @if (screen === 'upload') {
+            <div class="text-center">
+              <p>{{ 'users.import.instructions' | translate }}</p>
+              <p><strong>{{ 'users.import.accepted_types' | translate }}</strong></p>
+              <div class="form-actions">
+                <label class="btn btn-primary" for="users-upload-input">
+                  {{ 'users.import.upload_button' | translate }}
+                </label>
+                <input
+                  id="users-upload-input"
+                  type="file"
+                  accept=".csv"
+                  class="hidden"
+                  (change)="onFileSelected($event)"
+                />
+              </div>
+            </div>
+          }
+
+          <!-- Screen 2: Confirm -->
+          @if (screen === 'confirm') {
+            <div class="text-center">
+              <h3>
+                {{ 'users.import.confirm_upload_text' | translate }}
+                <strong>{{ filename }}</strong>?
+              </h3>
+            </div>
+          }
+
+          <!-- Screen 3: Processing -->
+          @if (screen === 'processing') {
+            <div class="text-center">
+              <div class="loader"></div>
+              <h3>{{ 'users.import.processing.title' | translate }}...</h3>
+              <p><small>{{ 'users.import.processing.instructions' | translate }}</small></p>
+            </div>
+          }
+
+          <!-- Screen 4: Summary -->
+          @if (screen === 'summary' && summary) {
+            <div class="row text-center summary-box">
+              <div class="col-sm-4">
+                <p class="text-success summary-number">{{ summary.successful }}</p>
+                <strong>{{ 'users.import.summary.added_users' | translate }}</strong>
+              </div>
+              <div class="col-sm-4">
+                <p class="text-muted summary-number">{{ summary.ignored }}</p>
+                <strong>{{ 'users.import.summary.previously_added_users' | translate }}</strong>
+              </div>
+              <div class="col-sm-4">
+                <p class="text-danger summary-number">{{ summary.failed }}</p>
+                <strong>{{ 'users.import.summary.failed_users' | translate }}</strong>
+              </div>
+            </div>
+            <div class="text-center" style="margin-top: 1rem;">
+              <p>
+                {{ 'users.import.summary.click' | translate }}
+                <a [href]="summary.outputFileUrl" download="cht-imported-users.csv">
+                  {{ 'users.import.summary.here' | translate }}
+                </a>
+                {{ 'users.import.summary.download_status_file' | translate }}
+              </p>
+            </div>
+          }
+
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          @if (screen === 'upload') {
+            <button type="button" class="btn btn-default" (click)="cancel()">
+              {{ 'Cancel' | translate }}
+            </button>
+          }
+          @if (screen === 'confirm') {
+            <button type="button" class="btn btn-default" (click)="backToUpload()">
+              {{ 'users.import.cancel_upload' | translate }}
+            </button>
+            <button type="button" class="btn btn-primary" (click)="processUpload()">
+              {{ 'users.import.confirm_upload' | translate }}
+            </button>
+          }
+          @if (screen === 'summary') {
+            <button type="button" class="btn btn-primary" (click)="finish()">
+              {{ 'users.manage.back' | translate }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>
