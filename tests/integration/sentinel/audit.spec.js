@@ -119,13 +119,13 @@ describe('auditing', () => {
     await sentinelUtils.waitForSentinel();
 
     const updated = await utils.db.get(patientNameAndPhone._id);
-    const auditDoc = await utils.waitForAuditCount(patientNameAndPhone._id, 1);
+    const auditDoc = await utils.auditDb.get(patientNameAndPhone._id);
 
     checkAudit(auditDoc, updated);
 
     const newPatientId = updated.patient_id;
     const [patient] = await getContactsByReference([newPatientId]);
-    const patientAudit = await utils.waitForAuditCount(patient._id, 1);
+    const patientAudit = await utils.auditDb.get(patient._id);
 
     checkAudit(patientAudit, patient);
   });
@@ -160,9 +160,8 @@ describe('auditing', () => {
     const reminderDocs = await utils.db.allDocs(
       { startkey: 'reminder:', endkey: 'reminder:\ufff0', include_docs: true }
     );
-    const reminderAuditDocs = await utils.waitForAuditDocs(
-      { startkey: 'reminder:', endkey: 'reminder:\ufff0', include_docs: true },
-      reminderDocs.rows.length
+    const reminderAuditDocs = await utils.auditDb.allDocs(
+      { startkey: 'reminder:', endkey: 'reminder:\ufff0', include_docs: true }
     );
 
     expect(reminderDocs.rows.length).to.equal(1);

@@ -1101,30 +1101,6 @@ const waitForDocRev = (ids) => {
   });
 };
 
-const waitForAuditCount = async (docId, expectedCount) => {
-  const auditDoc = await auditDb.get(docId).catch(err => {
-    if (err.status === 404) {
-      return { history: [] };
-    }
-    throw err;
-  });
-  const actualCount = auditDoc.history.reduce((acc, h) => acc + (h.history ? h.history.length : 1), 0);
-  if (actualCount >= expectedCount) {
-    return auditDoc;
-  }
-  await delayPromise(100);
-  return waitForAuditCount(docId, expectedCount);
-};
-
-const waitForAuditDocs = async (options, expectedCount) => {
-  const results = await auditDb.allDocs(options);
-  if (results.rows.length >= expectedCount) {
-    return results;
-  }
-  await delayPromise(100);
-  return waitForAuditDocs(options, expectedCount);
-};
-
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
@@ -1831,8 +1807,6 @@ module.exports = {
   tearDownServices,
   waitForApiLogs,
   waitForSentinelLogs,
-  waitForAuditCount,
-  waitForAuditDocs,
   collectSentinelLogs,
   collectApiLogs,
   collectHaproxyLogs,
