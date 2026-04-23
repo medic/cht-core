@@ -9,7 +9,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital',
 };
 
@@ -96,7 +96,7 @@ const contacts = [
   },
   {
     _id: 'DISTRICT_2',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     name: 'District2',
     contact: { _id: 'supervisor2', parent: { _id: 'DISTRICT_2' } },
   },

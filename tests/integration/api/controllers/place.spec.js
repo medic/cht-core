@@ -308,7 +308,7 @@ describe('Place API', () => {
 
     it('creates place with minimum data', async () => {
       const input = {
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'place-1',
       };
 
@@ -317,7 +317,7 @@ describe('Place API', () => {
       expect(placeDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal({
         ...input,
         type: 'contact',
-        contact_type: 'district_hospital',
+        contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       });
       expect(placeDoc.reported_date).to.be.a('number');
     });
@@ -351,7 +351,7 @@ describe('Place API', () => {
 
     it(`throws error for non-existent contact`, async () => {
       const body = {
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'place-1',
         contact: 'invalid-id'
       };
@@ -385,7 +385,7 @@ describe('Place API', () => {
         const opts = {
           ...postOptions,
           body: {
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'place-1',
           },
           auth: { username: user.username, password: user.password },

@@ -102,7 +102,7 @@ describe('ContactType Utils', () => {
 
     it('should return hardcoded contact type', () => {
       chai.expect(utils.getTypeId({ type: 'person' })).to.equal('person');
-      chai.expect(utils.getTypeId({ type: 'district_hospital' })).to.equal('district_hospital');
+      chai.expect(utils.getTypeId({ type: CONTACT_TYPES.DISTRICT_HOSPITAL })).to.equal('district_hospital');
       chai.expect(utils.getTypeId({ type: CONTACT_TYPES.HEALTH_CENTER })).to.equal(CONTACT_TYPES.HEALTH_CENTER);
       chai.expect(utils.getTypeId({ type: 'whatever' })).to.equal('whatever');
     });
@@ -181,7 +181,7 @@ describe('ContactType Utils', () => {
     it('should return false for hardcoded contacts of different type', () => {
       chai.expect(utils.isSameContactType([
         { type: 'contact', contact_type: CONTACT_TYPES.HEALTH_CENTER },
-        { type: 'contact', contact_type: 'district_hospital' },
+        { type: 'contact', contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL },
       ])).to.equal(false);
     });
     it('should return false for configurable contacts of different type', () => {

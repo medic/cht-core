@@ -2,7 +2,7 @@ const { CONTACT_TYPES } = require('@medic/constants');
 
 const HARDCODED_PERSON_TYPE = 'person';
 const HARDCODED_TYPES = [
-  'district_hospital',
+  CONTACT_TYPES.DISTRICT_HOSPITAL,
   CONTACT_TYPES.HEALTH_CENTER,
   'clinic',
   'person'

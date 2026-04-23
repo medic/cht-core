@@ -149,8 +149,11 @@ const loadTransitions = (synchronous = false) => {
     try {
       self._loadTransition(transition, synchronous);
     } catch (e) {
-      const errorMessage = `Failed loading transition "${transition}"`;
-      loadErrors = [errorMessage, e && e.message || 'unknown'];
+      const errorMessage =
+        `Failed loading transition "${transition}". ` +
+        `This is likely due to an error in the transition configuration. ` +
+        `Please check your configuration.`;
+      loadErrors = [errorMessage, e?.message || 'unknown'];
       logger.error(errorMessage);
       logger.error('%o', e);
     }
@@ -200,8 +203,8 @@ const canRun = ({ key, change, transition }) => {
 
   const isRevSame = (doc, info) => {
     const transition = (info.transitions && info.transitions[key]) ||
-                       (doc.transitions && doc.transitions[key]) ||
-                       false;
+      (doc.transitions && doc.transitions[key]) ||
+      false;
 
     const revSame = transition && parseInt(doc._rev) === parseInt(transition.last_rev);
 
@@ -380,7 +383,7 @@ module.exports = {
   _loadTransition: loadTransition,
   _lineage: lineage,
   _transitions: () => transitions,
-  
+
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
   availableTransitions: availableTransitions,

@@ -48,7 +48,7 @@ describe('impact', () => {
           count: 6,
           by_type: [
             { type: 'clinic', count: 1 },
-            { type: 'district_hospital', count: 1 },
+            { type: CONTACT_TYPES.DISTRICT_HOSPITAL, count: 1 },
             { type: CONTACT_TYPES.HEALTH_CENTER, count: 1 },
             { type: 'person', count: 3 }
           ]
