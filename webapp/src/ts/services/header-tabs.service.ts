@@ -8,8 +8,8 @@ import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 })
 export class HeaderTabsService {
   constructor(
-    private authService: AuthService,
-    private uiExtensionsService: UiExtensionsService
+    private readonly authService: AuthService,
+    private readonly uiExtensionsService: UiExtensionsService
   ) { }
 
   private readonly tabs: HeaderTab[] = [
