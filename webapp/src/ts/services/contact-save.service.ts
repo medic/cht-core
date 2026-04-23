@@ -297,13 +297,16 @@ export class ContactSaveService {
   }
 
   /**
-   * Locates the first [type=binary] element whose text content equals the
+   * Locates the first upload-widget element whose text content equals the
    * given filename, then resolves the owning prepared doc. Falls back to
    * mainDoc when no node matches (preserves behavior for forms with no
    * matching upload field).
    *
-   * Filename uniqueness within a form session is guaranteed by Enketo's
-   * timestamp suffix, so the first match is the only match.
+   * The selector matches both `type="file"` (the runtime state Enketo
+   * writes via setVal after a value is set) and `type="binary"` (the
+   * historical / template attribute). Filename uniqueness within a form
+   * session is guaranteed by Enketo's timestamp suffix, so the first
+   * match is the only match.
    */
   private findContactOwnerForFilename(
     filename: string,
@@ -313,7 +316,7 @@ export class ContactSaveService {
     submittedRepeatsLen: number,
   ): Record<string, any> {
     const match = $(root)
-      .find('[type=binary]')
+      .find('[type=file], [type=binary]')
       .filter((_, el) => $(el).text() === filename)[0];
     if (!match) {
       return mainDoc;
