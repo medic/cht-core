@@ -6,17 +6,21 @@ chai.use(require('chai-shallow-deep-equal'));
 
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 import { AuthService } from '@mm-services/auth.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 
 describe('HeaderTabs service', () => {
   let service:HeaderTabsService;
   let authService;
+  let uiExtensionsService;
 
   beforeEach(() => {
     authService = { has: sinon.stub() };
+    uiExtensionsService = { getPropertiesByType: sinon.stub().resolves([]) };
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: authService }
+        { provide: AuthService, useValue: authService },
+        { provide: UiExtensionsService, useValue: uiExtensionsService }
       ]
     });
 
@@ -30,11 +34,11 @@ describe('HeaderTabs service', () => {
       const tabs = service.get();
       // @ts-ignore
       expect(tabs).to.shallowDeepEqual([
-        { name: 'messages', defaultIcon: 'fa-envelope', icon: undefined },
-        { name: 'tasks', defaultIcon: 'fa-flag', icon: undefined },
-        { name: 'reports', defaultIcon: 'fa-list-alt', icon: undefined },
-        { name: 'contacts', defaultIcon: 'fa-user', icon: undefined },
-        { name: 'analytics', defaultIcon: 'fa-bar-chart-o', icon: undefined },
+        { name: 'messages', defaultIcon: 'fa-envelope', icon: undefined, weight: 0 },
+        { name: 'tasks', defaultIcon: 'fa-flag', icon: undefined, weight: 10 },
+        { name: 'reports', defaultIcon: 'fa-list-alt', icon: undefined, weight: 20 },
+        { name: 'contacts', defaultIcon: 'fa-user', icon: undefined, weight: 30 },
+        { name: 'analytics', defaultIcon: 'fa-bar-chart-o', icon: undefined, weight: 40 },
       ]);
 
       expect(service.get({})).to.deep.equal(tabs);
@@ -53,11 +57,11 @@ describe('HeaderTabs service', () => {
       const tabs = service.get({ header_tabs: headerTabsSettings });
       // @ts-ignore
       expect(tabs).to.shallowDeepEqual([
-        { name: 'messages', icon: undefined, resourceIcon: undefined, defaultIcon: 'fa-envelope' },
-        { name: 'tasks', icon: 'fa-whatever', resourceIcon: undefined, defaultIcon: 'fa-flag' },
-        { name: 'reports', icon: undefined, resourceIcon: 'some-icon', defaultIcon: 'fa-list-alt' },
-        { name: 'contacts', icon: undefined, resourceIcon: 'one-icon', defaultIcon: 'fa-user' },
-        { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-bar-chart-o' },
+        { name: 'messages', icon: undefined, resourceIcon: undefined, defaultIcon: 'fa-envelope', weight: 0 },
+        { name: 'tasks', icon: 'fa-whatever', resourceIcon: undefined, defaultIcon: 'fa-flag', weight: 10 },
+        { name: 'reports', icon: undefined, resourceIcon: 'some-icon', defaultIcon: 'fa-list-alt', weight: 20 },
+        { name: 'contacts', icon: undefined, resourceIcon: 'one-icon', defaultIcon: 'fa-user', weight: 30 },
+        { name: 'analytics', icon: 'fa-icon', resourceIcon: 'other-icon', defaultIcon: 'fa-bar-chart-o', weight: 40 },
       ]);
     });
 
@@ -106,6 +110,7 @@ describe('HeaderTabs service', () => {
           typeName: 'message',
           icon: undefined,
           resourceIcon: undefined,
+          weight: 0,
         },
         {
           name: 'reports',
@@ -116,6 +121,7 @@ describe('HeaderTabs service', () => {
           typeName: 'report',
           icon: undefined,
           resourceIcon: undefined,
+          weight: 20,
         },
         {
           name: 'analytics',
@@ -125,6 +131,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          weight: 40,
         }
       ]);
     });
@@ -156,6 +163,7 @@ describe('HeaderTabs service', () => {
           typeName: 'task',
           icon: undefined,
           resourceIcon: undefined,
+          weight: 10,
         },
         {
           name: 'contacts',
@@ -165,6 +173,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          weight: 30,
         },
         {
           name: 'analytics',
@@ -174,6 +183,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          weight: 40,
         }
       ]);
     });
@@ -204,6 +214,7 @@ describe('HeaderTabs service', () => {
           typeName: 'message',
           icon: undefined,
           resourceIcon: 'pomegranate-icon',
+          weight: 0,
         },
         {
           name: 'tasks',
@@ -214,6 +225,7 @@ describe('HeaderTabs service', () => {
           typeName: 'task',
           icon: 'fa-apple',
           resourceIcon: undefined,
+          weight: 10,
         },
         {
           name: 'contacts',
@@ -223,6 +235,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
           resourceIcon: 'pear-icon',
+          weight: 30,
         },
         {
           name: 'analytics',
@@ -232,6 +245,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: 'fa-mango-icon',
           resourceIcon: 'mango-icon',
+          weight: 40,
         }
       ]);
     });
@@ -256,6 +270,7 @@ describe('HeaderTabs service', () => {
         typeName: 'message',
         icon: undefined,
         resourceIcon: undefined,
+        weight: 0,
       });
     });
 
@@ -277,6 +292,7 @@ describe('HeaderTabs service', () => {
         typeName: 'report',
         icon: undefined,
         resourceIcon: undefined,
+        weight: 20,
       });
     });
 
@@ -305,6 +321,7 @@ describe('HeaderTabs service', () => {
         permissions: ['can_view_contacts', 'can_view_contacts_tab'],
         icon: undefined,
         resourceIcon: undefined,
+        weight: 30,
       });
     });
 
@@ -332,7 +349,54 @@ describe('HeaderTabs service', () => {
         permissions: ['can_view_analytics', 'can_view_analytics_tab'],
         icon: 'fa-mango-icon',
         resourceIcon: 'mango-icon',
+        weight: 40,
       });
+    });
+  });
+ 
+  describe('Custom UI Extensions', () => {
+    it('should include UI extension tabs sorted by weight', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType.withArgs('app_main_tab').resolves([
+        { id: 'first', title: 'First Extension', weight: 5, icon: 'icon-1' },
+        { id: 'last', title: 'Last Extension', weight: 100, icon: 'icon-2' },
+        { id: 'middle', title: 'Middle Extension', weight: 25, icon: 'icon-3' },
+      ]);
+ 
+      const tabs = await service.getAuthorizedTabs();
+ 
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'messages',        // weight 0
+        'ui-extension-first', // weight 5
+        'tasks',           // weight 10
+        'reports',         // weight 20
+        'ui-extension-middle', // weight 25
+        'contacts',        // weight 30
+        'analytics',       // weight 40
+        'ui-extension-last'   // weight 100
+      ]);
+ 
+      const firstExt = tabs.find(t => t.name === 'ui-extension-first');
+      expect(firstExt).to.deep.include({
+        route: 'ui-extensions/first',
+        defaultIcon: 'fa-question-circle',
+        translation: 'First Extension',
+        resourceIcon: 'icon-1',
+        weight: 5
+      });
+    });
+ 
+    it('should default missing weights to 0', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType.withArgs('app_main_tab').resolves([
+        { id: 'no-weight', title: 'No Weight', icon: 'icon' },
+      ]);
+ 
+      const tabs = await service.getAuthorizedTabs();
+ 
+      // Both messages and no-weight have weight 0, so order depends on original array concat order
+      expect(tabs[0].name).to.equal('messages');
+      expect(tabs[1].name).to.equal('ui-extension-no-weight');
     });
   });
 });

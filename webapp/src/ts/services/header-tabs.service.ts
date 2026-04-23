@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 
 import { AuthService } from '@mm-services/auth.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HeaderTabsService {
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private uiExtensionsService: UiExtensionsService
   ) { }
 
   private readonly tabs: HeaderTab[] = [
@@ -20,6 +22,7 @@ export class HeaderTabsService {
       typeName: 'message',
       icon: undefined,
       resourceIcon: undefined,
+      weight: 0,
     },
     {
       name: 'tasks',
@@ -30,6 +33,7 @@ export class HeaderTabsService {
       typeName: 'task',
       icon: undefined,
       resourceIcon: undefined,
+      weight: 10,
     },
     {
       name: 'reports',
@@ -40,6 +44,7 @@ export class HeaderTabsService {
       typeName: 'report',
       icon: undefined,
       resourceIcon: undefined,
+      weight: 20,
     },
     {
       name: 'contacts',
@@ -49,6 +54,7 @@ export class HeaderTabsService {
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      weight: 30,
     },
     {
       name: 'analytics',
@@ -58,6 +64,7 @@ export class HeaderTabsService {
       permissions: ['can_view_analytics', 'can_view_analytics_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      weight: 40,
     }
   ];
 
@@ -70,11 +77,12 @@ export class HeaderTabsService {
    * @returns HeaderTab[]
    */
   get(settings?): HeaderTab[] {
+    const tabs = this.tabs.map(tab => ({ ...tab }));
     if (!settings?.header_tabs) {
-      return this.tabs;
+      return tabs;
     }
 
-    this.tabs.forEach(tab => {
+    tabs.forEach(tab => {
       if (!settings.header_tabs[tab.name]) {
         return;
       }
@@ -88,7 +96,7 @@ export class HeaderTabsService {
       }
     });
 
-    return this.tabs;
+    return tabs;
   }
 
   /**
@@ -100,10 +108,28 @@ export class HeaderTabsService {
    * @returns Promise<HeaderTab[]>
    */
   async getAuthorizedTabs(settings?): Promise<HeaderTab[]> {
-    const tabs = this.get(settings);
-    const tabAuthorization = await Promise.all(tabs.map(tab => this.authService.has(tab.permissions)));
+    const extensions = await this.uiExtensionsService.getPropertiesByType('app_main_tab');
+    const extensionTabs: HeaderTab[] = extensions.map(ext => ({
+      name: `ui-extension-${ext.id}`,
+      route: `ui-extensions/${ext.id}`,
+      defaultIcon: 'fa-question-circle',
+      translation: ext.title || '',
+      permissions: [], // Extensions are already filtered by role in getPropertiesByType
+      resourceIcon: ext.icon,
+      weight: ext.weight,
+    }));
 
-    return tabs.filter((tab, index) => tabAuthorization[index]);
+    const tabs = [...this.get(settings), ...extensionTabs];
+    const tabAuthorization = await Promise.all(tabs.map(tab => {
+      if (!tab.permissions?.length) {
+        return true;
+      }
+      return this.authService.has(tab.permissions);
+    }));
+
+    return tabs
+      .filter((tab, index) => tabAuthorization[index])
+      .sort((a, b) => (a.weight || 0) - (b.weight || 0));
   }
 
   /**
@@ -130,4 +156,5 @@ export interface HeaderTab {
   typeName?: string;
   icon?: string;
   resourceIcon?: string;
+  weight?: number;
 }
