@@ -34,7 +34,8 @@ describe('Import Records', () => {
         }
       }
     }
-  }, { ignoreReload: true }));
+  }, { ignoreReload: true })
+    .then(() => utils.waitForSettings(settings => settings.forms && settings.forms.TEST)));
 
   describe('JSON', () => {
     it('parses and stores the passed JSON', () => {
