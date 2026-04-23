@@ -7,7 +7,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
 const { DOC_IDS, PREFIXES } = require('@medic/constants');
 
-const LOCAL_ONLY_DOC_IDS = ['_design/medic-offline-freetext'];
+const LOCAL_ONLY_DOC_IDS = ['_design/medic-offline-freetext', '_design/medic-offline-tasks'];
 
 describe('initial-replication', () => {
   const LOCAL_LOG = '_local/initial-replication';
