@@ -250,7 +250,9 @@ module.exports = {
     if (msg) {
       messages.addError(doc, { code: 'muting_error', message: msg });
     } else {
-      messages.addError(doc, { code: 'muting_error', message: `Failed to complete muting request, event type "${eventType}" misconfigured.` });
+      const errorMessage =
+       `Failed to complete muting request, event type "${eventType}" misconfigured.`;
+      messages.addError(doc, { code: 'muting_error', message: errorMessage });
     }
   }
 };

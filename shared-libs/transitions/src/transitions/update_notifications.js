@@ -50,7 +50,9 @@ module.exports = {
     if (msg) {
       messages.addError(doc, { code: 'notification_error', message: msg });
     } else {
-      messages.addError(doc, { code: 'notification_error', message: `Failed to complete notification request, event type "${event_type}" misconfigured.` });
+      const errorMessage = 
+      `Failed to complete notification request, event type "${event_type}" misconfigured.`;
+      messages.addError(doc, { code: 'notification_error', message: errorMessage });
     }
   },
   _addMsg: function(event_type, config, doc, registrations, patient) {
