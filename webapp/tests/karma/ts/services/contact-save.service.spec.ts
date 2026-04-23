@@ -980,5 +980,58 @@ describe('ContactSave service', () => {
         'stale main-doc attachment should be removed'
       ).to.be.true;
     });
+
+    it('routes uploads using the production type="file" attribute (regression for #10903)', async () => {
+      // Enketo's setVal rewrites uploaded binary nodes to type="file" at
+      // runtime (enketo-core form-model.js setVal). The earlier matcher
+      // only looked at [type=binary] and missed every production upload,
+      // routing every file to the main doc.
+      const xml =
+        '<data id="contact:clinic:create">' +
+          '<meta><instanceID/></meta>' +
+          '<inputs><user><contact_id/></user></inputs>' +
+          '<clinic><name>Kigali HF</name></clinic>' +
+          '<init><place_type>clinic</place_type></init>' +
+          '<contact>' +
+            '<name>Amina</name>' +
+            '<profile_photo type="file">amina-14_39_7.png</profile_photo>' +
+          '</contact>' +
+          '<repeat>' +
+            '<child>' +
+              '<name>Child A</name>' +
+              '<profile_photo type="file">childA-14_39_8.png</profile_photo>' +
+            '</child>' +
+          '</repeat>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: {
+          _id: 'main1', type: 'clinic', name: 'Kigali HF',
+          contact: 'NEW',
+        },
+        siblings: { contact: { _id: 'sib1', type: 'person', name: 'Amina', parent: 'PARENT' } },
+        repeats: { child_data: [
+          { _id: 'kid1', type: 'person', name: 'Child A', parent: 'PARENT' },
+        ] },
+      });
+      stubSiblingAndRepeat();
+
+      const aminaFile = new File(['a'], 'amina-14_39_7.png',  { type: 'image/png' });
+      const childFile = new File(['c'], 'childA-14_39_8.png', { type: 'image/png' });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([ aminaFile, childFile ]);
+
+      await service.save(form, null, 'clinic');
+
+      const calls = attachmentService.add.getCalls();
+      const ownerOf = (name: string) => calls.find(c => c.args[1] === name)?.args[0]._id;
+
+      expect(ownerOf('user-file-amina-14_39_7.png'),  'sibling upload -> sibling doc').to.equal('sib1');
+      expect(ownerOf('user-file-childA-14_39_8.png'), 'repeat upload -> repeat doc').to.equal('kid1');
+      expect(
+        calls.some(c => c.args[0]._id === 'main1' && c.args[1].startsWith('user-file-')),
+        'main doc should not receive any sub-contact uploads'
+      ).to.be.false;
+    });
   });
 });
