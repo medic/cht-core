@@ -362,13 +362,10 @@ export class EnketoService {
     return form;
   }
 
-  private findFileNodeByFilename($record, filename: string) {
-    // After upload, Enketo's Nodeset.setVal rewrites file-widget nodes from
-    // type="binary" to type="file" (#10903 §6.5). Inline-binary blobs from
-    // draw/signature widgets keep type="binary" and are handled separately.
+  private findBinaryNodeByFilename($record, filename: string) {
     let match = null;
     $record
-      .find('[type=file]')
+      .find('[type=binary]')
       .each((_idx, element) => {
         if ($(element).text() === filename) {
           match = element;
@@ -516,14 +513,22 @@ export class EnketoService {
     };
 
     // Route FileManager files to the correct owner doc.
+<<<<<<< HEAD
     // For each file, find the [type=file] node whose text matches
+=======
+    // For each file, find the [type=binary] node whose text matches
+>>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
     // the filename, then resolve the owner from its position in the
     // XML tree.
     FileManager
       .getCurrentFiles()
       .forEach(file => {
         const ownerDoc = resolveOwnerDoc(
+<<<<<<< HEAD
           this.findFileNodeByFilename($record, file.name) ?? $record[0]
+=======
+          this.findBinaryNodeByFilename($record, file.name) ?? $record[0]
+>>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
         );
         this.attachmentService.add(ownerDoc, `user-file-${file.name}`, file, file.type, false);
       });
@@ -536,9 +541,14 @@ export class EnketoService {
     const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
+      const formId = ownerDoc === doc ? doc.form : ownerDoc.type;
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
+<<<<<<< HEAD
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
+=======
+        (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
+>>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
       this.attachmentService.add(ownerDoc, filename, file, type, alreadyEncoded);
     };
 
