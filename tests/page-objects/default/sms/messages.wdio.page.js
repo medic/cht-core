@@ -14,8 +14,15 @@ const MESSAGE_FOOTER = '#message-footer';
 // Remove once the flake is understood.
 const debugClick = async (getter, label, watchSelector) => {
   if (watchSelector) {
+    /* eslint-disable no-undef */
     await browser.execute((sel) => {
-      try { window.__dbgObs && window.__dbgObs.disconnect(); } catch (e) { /* noop */ }
+      try {
+        if (window.__dbgObs) {
+          window.__dbgObs.disconnect();
+        }
+      } catch {
+        // noop
+      }
       window.__dbgLog = [];
       const root = document.querySelector(sel);
       if (!root) {
@@ -48,6 +55,7 @@ const debugClick = async (getter, label, watchSelector) => {
       obs.observe(root, { childList: true, subtree: true, attributes: true, characterData: true });
       window.__dbgObs = obs;
     }, watchSelector);
+    /* eslint-enable no-undef */
   }
 
   const start = Date.now();
@@ -79,6 +87,7 @@ const debugClick = async (getter, label, watchSelector) => {
 
     if (watchSelector) {
       try {
+        /* eslint-disable no-undef */
         const log = await browser.execute(() => window.__dbgLog || []);
         console.log(`[debugClick:${label}] mutations during click attempt (${log.length} total, showing last 40):`);
         for (const e of log.slice(-40)) {
@@ -88,6 +97,7 @@ const debugClick = async (getter, label, watchSelector) => {
           const el = document.querySelector(sel);
           return el ? el.outerHTML.slice(0, 4000) : 'NOT FOUND';
         }, watchSelector);
+        /* eslint-enable no-undef */
         console.log(`[debugClick:${label}] watched container (${watchSelector}) outerHTML (truncated):\n${html}`);
       } catch (e) {
         console.log(`[debugClick:${label}] mutation log fetch failed: ${e.message}`);
