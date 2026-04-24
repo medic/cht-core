@@ -3095,9 +3095,9 @@ describe('Authorization service', () => {
             }
           },
           { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
-          { id: 'facility_id', doc: { _id: 'facility_id', type: 'district_hospital' } },
+          { id: 'facility_id', doc: { _id: 'facility_id', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
           { id: 'p2', doc: { _id: 'p2', type: 'clinic', parent: { _id: 'p3' } } },
-          { id: 'p3', doc: { _id: 'p3', type: 'district_hospital' } },
+          { id: 'p3', doc: { _id: 'p3', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         ]});
 
       const contactsByDepth = sinon.stub();
@@ -3497,7 +3497,7 @@ describe('Authorization service', () => {
               patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } }
             }},
           { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
-          { id: 'facility_id', doc: { _id: 'facility_id', type: 'district_hospital' } },
+          { id: 'facility_id', doc: { _id: 'facility_id', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         ]});
 
       const contactsByDepth = sinon.stub();

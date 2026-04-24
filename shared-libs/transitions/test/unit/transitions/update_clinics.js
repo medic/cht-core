@@ -78,7 +78,7 @@ describe('update clinic', () => {
         parent: {
           _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
           _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           parent: {},
           contact: {
@@ -155,7 +155,7 @@ describe('update clinic', () => {
         parent: {
           _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
           _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           parent: {},
           contact: {
@@ -202,7 +202,7 @@ describe('update clinic', () => {
         parent: {
           _id: '9ed7d9c6095cc0e37e4d3e94d3384c8f',
           _rev: '4-6e5f394413e840c1f41bf9f471a91e04',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           parent: {},
           contact: {
@@ -553,7 +553,7 @@ describe('update clinic', () => {
           phone: '+23456789012',
         },
         parent: {
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'District',
           contact: {
             name: 'DCN',

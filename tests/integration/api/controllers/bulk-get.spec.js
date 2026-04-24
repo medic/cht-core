@@ -10,7 +10,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital'
 };
 
@@ -101,7 +101,7 @@ describe('bulk-get handler', () => {
   it('does not filter online users', () => {
     const docs = [
       { _id: 'ICanBeAnything'},
-      { _id: 'NEW_PLACE', parent: {}, type: 'district_hospital', name: 'NEW PLACE' }
+      { _id: 'NEW_PLACE', parent: {}, type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'NEW PLACE' }
     ];
 
     return utils
