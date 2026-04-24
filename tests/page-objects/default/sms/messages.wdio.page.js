@@ -1,120 +1,13 @@
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
+const { debugClick } = require('@utils/debug-click');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
 const MESSAGE_CONTENT = '#message-content';
 const SEND_MESSAGE_MODAL = '#send-message';
 const MESSAGE_FOOTER = '#message-footer';
-
-// Debug helper for diagnosing flaky stale-element clicks.
-// Installs a MutationObserver on `watchSelector` before clicking, then on click
-// failure dumps recent mutations, the watched container's HTML, and a screenshot.
-// Remove once the flake is understood.
-const debugClick = async (getter, label, watchSelector) => {
-  if (watchSelector) {
-    /* eslint-disable no-undef */
-    await browser.execute((sel) => {
-      try {
-        if (window.__dbgObs) {
-          window.__dbgObs.disconnect();
-        }
-      } catch {
-        // noop
-      }
-      window.__dbgLog = [];
-      const root = document.querySelector(sel);
-      if (!root) {
-        window.__dbgLog.push({ note: 'watch root not found', sel });
-        return;
-      }
-      const desc = (n) => {
-        if (!n) {
-          return null;
-        }
-        const cls = n.className && n.className.toString ? n.className.toString().slice(0, 60) : '';
-        return `${n.nodeName}${n.id ? '#' + n.id : ''}${cls ? '.' + cls.replace(/\s+/g, '.') : ''}`;
-      };
-      const obs = new MutationObserver((muts) => {
-        const t = Date.now();
-        for (const m of muts) {
-          window.__dbgLog.push({
-            t,
-            type: m.type,
-            target: desc(m.target),
-            attr: m.attributeName || undefined,
-            added: Array.from(m.addedNodes).map(desc),
-            removed: Array.from(m.removedNodes).map(desc),
-          });
-        }
-        if (window.__dbgLog.length > 500) {
-          window.__dbgLog.splice(0, window.__dbgLog.length - 500);
-        }
-      });
-      obs.observe(root, { childList: true, subtree: true, attributes: true, characterData: true });
-      window.__dbgObs = obs;
-    }, watchSelector);
-    /* eslint-enable no-undef */
-  }
-
-  const start = Date.now();
-  let element;
-  try {
-    element = await getter();
-  } catch (err) {
-    console.log(`[debugClick:${label}] getter failed: ${err.message}`);
-    throw err;
-  }
-
-  let preInfo = '?';
-  try {
-    const tag = await element.getTagName();
-    const text = (await element.getText()).slice(0, 80);
-    const exists = await element.isExisting();
-    const displayed = exists ? await element.isDisplayed() : false;
-    preInfo = `<${tag}> exists=${exists} displayed=${displayed} text="${text}"`;
-  } catch (e) {
-    preInfo = `(pre-info failed: ${e.message})`;
-  }
-  console.log(`[debugClick:${label}] pre-click: ${preInfo}`);
-
-  try {
-    await element.click();
-    console.log(`[debugClick:${label}] click OK after ${Date.now() - start}ms`);
-  } catch (err) {
-    console.log(`[debugClick:${label}] CLICK FAILED after ${Date.now() - start}ms: ${err.message}`);
-
-    if (watchSelector) {
-      try {
-        /* eslint-disable no-undef */
-        const log = await browser.execute(() => window.__dbgLog || []);
-        console.log(`[debugClick:${label}] mutations during click attempt (${log.length} total, showing last 40):`);
-        for (const e of log.slice(-40)) {
-          console.log(`  ${JSON.stringify(e)}`);
-        }
-        const html = await browser.execute((sel) => {
-          const el = document.querySelector(sel);
-          return el ? el.outerHTML.slice(0, 4000) : 'NOT FOUND';
-        }, watchSelector);
-        /* eslint-enable no-undef */
-        console.log(`[debugClick:${label}] watched container (${watchSelector}) outerHTML (truncated):\n${html}`);
-      } catch (e) {
-        console.log(`[debugClick:${label}] mutation log fetch failed: ${e.message}`);
-      }
-    }
-
-    try {
-      const path = `/tmp/debugclick-${label.replace(/\W+/g, '_')}-${Date.now()}.png`;
-      await browser.saveScreenshot(path);
-      console.log(`[debugClick:${label}] screenshot saved to ${path}`);
-    } catch (e) {
-      console.log(`[debugClick:${label}] screenshot failed: ${e.message}`);
-    }
-
-    throw err;
-  }
-};
 
 const messageInList = identifier => $(`${MESSAGES_LIST} li[test-id="${identifier}"]`);
 const messagesListLeftPanel = () => $$(`${MESSAGES_LIST} li.content-row`);

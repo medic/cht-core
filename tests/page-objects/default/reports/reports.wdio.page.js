@@ -2,6 +2,7 @@ const commonElements = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const utils = require('@utils');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const { debugClick } = require('@utils/debug-click');
 
 const tabSelectors = {
   unreadCount: () => $('#reports-tab .mm-badge'),
@@ -368,8 +369,16 @@ const getOpenReportInfo = async () => {
   };
 };
 
-const openSelectedReport = async (listElement) => {
-  await listElement.click();
+const openSelectedReport = async (listElementOrGetter) => {
+  // The #reports-list ngFor re-renders rows on _rev change, which races with the
+  // click under CI load and produces intermittent "stale element" / "element wasn't
+  // found" failures. debugClick re-resolves via the getter on each retry, avoiding
+  // the dead reference. Existing callers pass a pre-resolved element (ignored in
+  // that case); new callers can pass a getter for a non-firstReport target.
+  const getter = typeof listElementOrGetter === 'function'
+    ? listElementOrGetter
+    : () => leftPanelSelectors.firstReport();
+  await debugClick(getter, 'reportsList:firstReport', REPORTS_LIST_ID);
 };
 
 const openReport = async (reportId) => {
