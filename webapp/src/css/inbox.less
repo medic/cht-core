@@ -57,7 +57,8 @@ body {
     &.trainings,
     &.testing,
     &.user,
-    &.privacy-policy {
+    &.privacy-policy,
+    &.ui-extensions {
       .tool-bar {
         background-color: @top-header-color;
 
@@ -94,10 +95,16 @@ body {
     &.about,
     &.testing,
     &.error,
-    &.privacy-policy {
+    &.privacy-policy,
+    &.ui-extensions {
       .page {
         padding-left: calc(@tab-navbar-size + 15px);
       }
+    }
+
+    &.ui-extensions .page {
+      padding: 15px;
+      padding-left: calc(@tab-navbar-size + 15px);
     }
   }
 }

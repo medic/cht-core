@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NgIf } from '@angular/common';
-
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
@@ -19,6 +18,7 @@ export class UiExtensionsTabComponent implements AfterViewInit {
   extensionTitle = '';
   loading = true;
   errorStack?: string;
+  accentColor?: string;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -36,8 +36,10 @@ export class UiExtensionsTabComponent implements AfterViewInit {
     const extensionId = this.route.snapshot.params['id'];
     const trackRender = this.performanceService.track();
     try {
-      const { properties: { title, config }, Element } = await this.uiExtensionsService.getExtension(extensionId);
+      const extension = await this.uiExtensionsService.getExtension(extensionId);
+      const { properties: { title, config, accent_color }, Element } = extension;
       this.extensionTitle = title ?? '';
+      this.accentColor = accent_color;
       if (!customElements.get(extensionId)) {
         customElements.define(extensionId, Element);
       }

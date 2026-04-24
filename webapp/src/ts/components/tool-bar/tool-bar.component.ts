@@ -15,6 +15,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class ToolBarComponent {
   private globalActions: GlobalActions;
   @Input() title: string = '';
+  @Input() accentColor?: string;
 
   constructor(
     private store: Store,
