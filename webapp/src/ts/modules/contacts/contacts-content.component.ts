@@ -147,7 +147,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const hasSelectedNewContact = selectedContact === null || selectedContact._id !== nextSelectedContact._id;
+    const hasSelectedNewContact = selectedContact === null || selectedContact?._id !== nextSelectedContact?._id;
     if (!hasSelectedNewContact) {
       return;
     }
@@ -249,6 +249,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         const matchedContact = this.contactChangeFilterService.matchContact(change, this.selectedContact);
         const contactDeleted = this.contactChangeFilterService.isDeleted(change);
         if (matchedContact && contactDeleted) {
+          if (!this.selectedContact?.doc) {
+            return;
+          }
           const parentId = this.selectedContact.doc.parent && this.selectedContact.doc.parent._id;
           return this.router.navigate(['/contacts', parentId]);
         }
@@ -287,10 +290,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private async updateFastActions() {
+    if (!this.selectedContact) {
+      return;
+    }
+
     this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
       xmlReportForms: this.relevantReportForms,
       childContactTypes: this.childContactTypes,
-      parentFacilityId: this.selectedContact.doc?._id,
+      parentFacilityId: this.selectedContact?.doc?._id,
       communicationContext: {
         sendTo: this.selectedContact?.type?.person && this.selectedContact?.doc,
         callbackOpenSendMessage: (sendTo) => this.openSendMessageModal(sendTo),
@@ -343,18 +350,24 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
       'SelectedContactChildrenForms',
       { contactForms: true },
-      (error, forms) => {
-        if (error) {
-          console.error('Error fetching allowed contact forms', error);
-          return;
-        }
-
-        const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
-        this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
-        this.updateFastActions();
-      }
+      (error, forms) => this.updateContactTypes(error, forms)
     );
     this.subscriptions.add(this.subscriptionAllContactForms);
+  }
+
+  private updateContactTypes(error, forms) {
+    if (error) {
+      console.error('Error fetching allowed contact forms', error);
+      return;
+    }
+
+    if (!this.selectedContact) {
+      return;
+    }
+
+    const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
+    this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
+    this.updateFastActions();
   }
 
   private subscribeToSelectedContactXmlForms() {
@@ -373,33 +386,39 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         contactSummary: this.selectedContact.summary.context,
         reportForms: true,
       },
-      (error, forms) => {
-        if (error) {
-          console.error('Error fetching relevant forms', error);
-          return;
-        }
-
-        if (!forms) {
-          return;
-        }
-
-        this.relevantReportForms = forms.map(xForm => {
-          const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
-          const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
-          return {
-            id: xForm._id,
-            code: xForm.internalId,
-            title: xForm.title,
-            titleKey: xForm.translation_key,
-            icon: xForm.icon,
-            showUnmuteModal: isMuted && !isUnmuteForm,
-          };
-        });
-
-        this.updateFastActions();
-      }
+      (error, forms) => this.updateReportForms(error, forms)
     );
     this.subscriptions.add(this.subscriptionSelectedContactForms);
+  }
+
+  private updateReportForms(error, forms) {
+    if (error) {
+      console.error('Error fetching relevant forms', error);
+      return;
+    }
+
+    if (!this.selectedContact?.doc) {
+      return;
+    }
+
+    if (!forms) {
+      return;
+    }
+
+    this.relevantReportForms = forms.map(xForm => {
+      const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
+      const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
+      return {
+        id: xForm._id,
+        code: xForm.internalId,
+        title: xForm.title,
+        titleKey: xForm.translation_key,
+        icon: xForm.icon,
+        showUnmuteModal: isMuted && !isUnmuteForm,
+      };
+    });
+
+    this.updateFastActions();
   }
 
   private filterAllowedChildType(forms, childTypes: Record<string, any>[]) {

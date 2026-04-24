@@ -19,6 +19,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Selectors } from '@mm-selectors/index';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('AnalyticsTargetsComponent', () => {
   let component: AnalyticsTargetsComponent;
@@ -50,7 +51,7 @@ describe('AnalyticsTargetsComponent', () => {
       getUserFacilities: sinon.stub().resolves([
         {
           _id: 'facility_1',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'some-facility-1',
         },
       ]),

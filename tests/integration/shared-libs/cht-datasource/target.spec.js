@@ -4,9 +4,9 @@ const userFactory = require('@factories/cht/users/users');
 const { expect } = require('chai');
 const { setAuth, removeAuth } = require('./auth');
 const { getRemoteDataContext, Target, Qualifier } = require('@medic/cht-datasource');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, CONTACT_TYPES } = require('@medic/constants');
 
-const place = utils.deepFreeze(placeFactory.place().build({ type: 'district_hospital' }));
+const place = utils.deepFreeze(placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL }));
 const offlineUser = utils.deepFreeze(userFactory.build({
   username: 'offline-has-perms',
   place: place._id,

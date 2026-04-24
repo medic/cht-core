@@ -15,7 +15,7 @@ const targetAggregatesConfig = require('./config/target-aggregates');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const constants = require('@constants');
 const { createTargetDoc, getLastMonth } = require('./utils/targets-helper-functions');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -65,8 +65,10 @@ describe('Target aggregates', () => {
 
     const TARGET_VALUES_BY_CONTACT = helperFunctions.generateTargetValuesByContact([...NAMES_DH1, ...NAMES_DH2]);
 
-    const districtHospital1 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 1' });
-    const districtHospital2 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 2' });
+    const districtHospital1 = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      name: 'District Hospital 1' });
+    const districtHospital2 = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      name: 'District Hospital 2' });
 
     const contactWithManyPlaces = personFactory.build({
       parent: { _id: districtHospital1._id, parent: { _id: districtHospital1._id } },

@@ -8,7 +8,7 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'district_shortcode',
     contact: { _id: 'chw3' },
     parent: {},

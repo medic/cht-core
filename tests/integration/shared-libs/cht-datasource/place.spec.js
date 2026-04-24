@@ -9,10 +9,9 @@ const {
   InvalidArgumentError,
   ResourceNotFoundError
 } = require('@medic/cht-datasource');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 const userFactory = require('@factories/cht/users/users');
 const { setAuth, removeAuth } = require('./auth');
-const { CONTACT_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('cht-datasource Place', () => {
@@ -270,7 +269,7 @@ describe('cht-datasource Place', () => {
 
       it('creates place with minimum data', async () => {
         const input = {
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'place-1',
         };
 
@@ -279,7 +278,7 @@ describe('cht-datasource Place', () => {
         expect(placeDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal({
           ...input,
           type: 'contact',
-          contact_type: 'district_hospital',
+          contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         });
         expect(placeDoc.reported_date).to.be.a('number');
       });
@@ -311,7 +310,7 @@ describe('cht-datasource Place', () => {
 
       it(`throws error for non-existent contact`, async () => {
         const body = {
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'place-1',
           contact: 'invalid-id'
         };

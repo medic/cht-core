@@ -197,7 +197,7 @@ describe('places controller', () => {
       examplePlace._id = 'xyz';
       examplePlace.parent = {
         name: 'St Paul Hospital',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       };
       return controller
         ._validatePlace(examplePlace)
@@ -209,7 +209,7 @@ describe('places controller', () => {
     });
 
     it('returns error when place is missing name', () => {
-      const place = { type: 'district_hospital' };
+      const place = { type: CONTACT_TYPES.DISTRICT_HOSPITAL };
       return controller
         ._validatePlace(place)
         .then(() => chai.expect.fail('should fail'))
@@ -219,7 +219,7 @@ describe('places controller', () => {
     });
 
     it('returns error when name is not a string', () => {
-      const place = { type: 'district_hospital', name: 123 };
+      const place = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 123 };
       return controller
         ._validatePlace(place)
         .then(() => chai.expect.fail('should fail'))
@@ -229,7 +229,7 @@ describe('places controller', () => {
     });
 
     it('returns error when contact is invalid type', () => {
-      const place = { type: 'district_hospital', name: 'Test', contact: 42 };
+      const place = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'Test', contact: 42 };
       return controller
         ._validatePlace(place)
         .then(() => chai.expect.fail('should fail'))
@@ -319,7 +319,7 @@ describe('places controller', () => {
           type: CONTACT_TYPES.HEALTH_CENTER,
           parent: {
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           }
         }
       };
@@ -350,7 +350,7 @@ describe('places controller', () => {
           return Promise.resolve({
             _id: 'abc',
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           });
         }
         if (uuid === 'def') {
@@ -361,7 +361,7 @@ describe('places controller', () => {
             parent: {
               _id: 'abc',
               name: 'CHP Branch One',
-              type: 'district_hospital'
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL
             }
           });
         }
@@ -377,7 +377,7 @@ describe('places controller', () => {
               parent: {
                 _id: 'abc',
                 name: 'CHP Branch One',
-                type: 'district_hospital'
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL
               }
             }
           });
@@ -432,13 +432,13 @@ describe('places controller', () => {
         parent: {
           _id: 'ad06d137',
           name: 'CHP Branch One',
-          type: 'district_hospital'
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL
         }
       });
       getWithLineage.withArgs(Qualifier.byUuid('ad06d137')).resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       });
 
       const actual = await controller._createPlaces(place);
@@ -458,7 +458,7 @@ describe('places controller', () => {
     it('returns err if contact does not have name', () => {
       const place = {
         name: 'HC',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: {
           type: 'person'
         }
@@ -476,7 +476,7 @@ describe('places controller', () => {
     it('returns err if contact does not exist', async () => {
       const place = {
         name: 'HC',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: 'person'
       };
       getWithLineage.resolves(null);
@@ -491,7 +491,7 @@ describe('places controller', () => {
     it('rejects contacts with wrong type', () => {
       const place = {
         name: 'HC',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: {
           name: 'John Doe',
           type: 'x'
@@ -517,7 +517,7 @@ describe('places controller', () => {
       getWithLineage.resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       });
       db.medic.post.callsFake(doc => {
         // the parent should be created/resolved, parent id should be set.
@@ -539,7 +539,7 @@ describe('places controller', () => {
     it('rejects invalid reported_date.', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: 'x'
       };
       sinon.stub(cutils, 'isDateStrValid').returns(false);
@@ -555,7 +555,7 @@ describe('places controller', () => {
     it('accepts valid reported_date in ms since epoch', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: '123'
       };
       db.medic.post;
@@ -567,7 +567,7 @@ describe('places controller', () => {
     it('accepts valid reported_date in string format', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: '2011-10-10T14:48:00-0300'
       };
       const expected = new Date('2011-10-10T14:48:00-0300').valueOf();
@@ -580,7 +580,7 @@ describe('places controller', () => {
     it('sets a default reported_date.', () => {
       const place = {
         name: 'Test',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       };
       db.medic.post;
       return controller._createPlaces(place).then(() => {
@@ -748,7 +748,7 @@ describe('places controller', () => {
 
       const result = await controller._createPlace({
         name: 'Test Place',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: 'person-id'
       });
 
@@ -767,7 +767,7 @@ describe('places controller', () => {
     it('creates and returns place when given new object', async () => {
       sinon.stub(controller, '_createPlaces').resolves({ id: 'new-place' });
       sinon.stub(controller, 'getPlace').resolves({ _id: 'new-place' });
-      const result = await controller.getOrCreatePlace({ name: 'Test', type: 'district_hospital' });
+      const result = await controller.getOrCreatePlace({ name: 'Test', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
       chai.expect(result._id).to.equal('new-place');
     });
 

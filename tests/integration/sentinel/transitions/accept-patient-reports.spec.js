@@ -9,7 +9,7 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {

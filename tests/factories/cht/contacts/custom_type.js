@@ -10,7 +10,7 @@ const custom_type_doctor = {
   edit_key: 'contact.type.doctor.edit',
   primary_contact_key: 'clinic.field.contact',
   parents: [
-    'district_hospital',
+    CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
     'clinic',
     'ngo',

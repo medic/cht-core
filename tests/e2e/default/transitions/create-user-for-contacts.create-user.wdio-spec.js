@@ -16,7 +16,7 @@ describe('Create user when adding contact', () => {
   const CONTACT_NAME = 'Bob_chw';
   const FORM_NAME = 'add_chw';
 
-  const district = utils.deepFreeze( placeFactory.place().build({ type: 'district_hospital' }) );
+  const district = utils.deepFreeze( placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL }) );
 
   const createSettings = (create_user_for_contacts) => utils.deepFreeze({
     transitions: { create_user_for_contacts },

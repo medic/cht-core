@@ -362,4 +362,48 @@ describe('Contacts content component', () => {
       expect(!!component.summaryErrorStack).to.be.false;
     });
   });
+
+  describe('Quick page switches / Null safety', () => {
+    it('should not crash if selectedContact is null when updating fast actions', async () => {
+      (component as any).selectedContact = null;
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      await (component as any).updateFastActions();
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+
+    it('should not crash if selectedContact.doc is missing when processing contact deletion', () => {
+      (component as any).selectedContact = { _id: 'some_id' }; // No .doc property
+      contactChangeFilterService.matchContact.returns(true);
+      contactChangeFilterService.isDeleted.returns(true);
+
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+      changesCallback({ doc: { _id: 'some_id' } });
+
+      expect(router.navigate.notCalled).to.be.true;
+    });
+
+    it('should not update contact types if selectedContact is missing', () => {
+      (component as any).selectedContact = null;
+      contactTypesService.getChildren.resetHistory();
+
+      // Trigger the internal update method
+      (component as any).updateContactTypes(null, []);
+
+      expect(contactTypesService.getChildren.notCalled).to.be.true;
+    });
+
+    it('should not update fast actions from forms subscription if selectedContact is missing', () => {
+      (component as any).selectedContact = null;
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      (component as any).updateReportForms(null, []);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+
+    it('should not update fast actions from forms subscription if selectedContact.doc is missing', () => {
+      (component as any).selectedContact = { _id: 'some_id' }; // No .doc
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      (component as any).updateReportForms(null, []);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+  });
 });

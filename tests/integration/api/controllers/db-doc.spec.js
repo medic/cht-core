@@ -11,7 +11,7 @@ const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital',
 };
 
@@ -212,7 +212,7 @@ describe('db-doc handler', () => {
         method: 'POST',
         body: {
           _id: 'db_doc_post',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'NEW PLACE',
         },
       };
@@ -229,7 +229,7 @@ describe('db-doc handler', () => {
         .then(result => {
           chai.expect(result).to.include({
             _id: 'db_doc_post',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'NEW PLACE',
           });
         });

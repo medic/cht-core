@@ -12,7 +12,7 @@ describe('ContactTypes service', () => {
   let Settings;
 
   const HARDCODED_TYPES = [
-    'district_hospital',
+    CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
     'clinic',
     'person'

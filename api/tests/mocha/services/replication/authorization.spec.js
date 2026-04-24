@@ -3095,9 +3095,9 @@ describe('Authorization service', () => {
             }
           },
           { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
-          { id: 'facility_id', doc: { _id: 'facility_id', type: 'district_hospital' } },
+          { id: 'facility_id', doc: { _id: 'facility_id', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
           { id: 'p2', doc: { _id: 'p2', type: 'clinic', parent: { _id: 'p3' } } },
-          { id: 'p3', doc: { _id: 'p3', type: 'district_hospital' } },
+          { id: 'p3', doc: { _id: 'p3', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         ]});
 
       const contactsByDepth = sinon.stub();
@@ -3497,7 +3497,7 @@ describe('Authorization service', () => {
               patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } }
             }},
           { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
-          { id: 'facility_id', doc: { _id: 'facility_id', type: 'district_hospital' } },
+          { id: 'facility_id', doc: { _id: 'facility_id', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         ]});
 
       const contactsByDepth = sinon.stub();
@@ -4105,6 +4105,39 @@ describe('Authorization service', () => {
           db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['contact1', 'person1', 'contact2', 'person2', 'patient_3'],
+            include_docs: true,
+          }]);
+        });
+      });
+
+      it('should request all matching contacts for one replication key', () => {
+        db.medic.query.resolves({ rows: [
+          { id: 'person1', key: ['shortcode', 'patient_1'] },
+          { id: 'person1_secondary', key: ['shortcode', 'patient_1'] },
+        ] });
+        sinon.stub(db.medic, 'allDocs');
+        db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
+          { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
+          { id: 'person1_secondary', key: 'person1_secondary', doc: { _id: 'person1_secondary' } },
+          { id: 'contact_1', key: 'contact_1', doc: { _id: 'contact_1' } },
+        ] });
+
+        return findContactsByReplicationKeys(['patient_1', 'contact_1']).then(result => {
+          result.should.deep.equal([
+            { _id: 'person1' },
+            { _id: 'person1_secondary' },
+            { _id: 'contact_1' },
+          ]);
+          db.medic.query.callCount.should.equal(1);
+          db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
+            keys: [
+              ['shortcode', 'patient_1'],
+              ['shortcode', 'contact_1'],
+            ]
+          }]);
+          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.args[0].should.deep.equal([{
+            keys: ['person1', 'person1_secondary', 'contact_1'],
             include_docs: true,
           }]);
         });

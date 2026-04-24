@@ -1,6 +1,7 @@
 const { buildViewMapFn } = require('./utils');
 const medicOfflineFreetext = require('../../../../src/js/bootstrapper/offline-ddocs/medic-offline-freetext');
 const { expect } = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const expectedValue = (
   {typeIndex, name, dead = false, muted = false } = {}
@@ -73,7 +74,7 @@ describe('contacts_by_freetext', () => {
   }));
 
   it('emits death status in value', () => {
-    const doc = { type: 'district_hospital', date_of_death: '2021-01-01' };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, date_of_death: '2021-01-01' };
 
     const emitted = mapFn(doc, true);
 
@@ -85,7 +86,7 @@ describe('contacts_by_freetext', () => {
   });
 
   it('emits muted status in value', () => {
-    const doc = { type: 'district_hospital', muted: true, hello: 'world' };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, muted: true, hello: 'world' };
 
     const emitted = mapFn(doc, true);
 
@@ -99,7 +100,7 @@ describe('contacts_by_freetext', () => {
   [
     'hello', 'HeLlO'
   ].forEach(name => it(`emits name in value [${name}]`, () => {
-    const doc = { type: 'district_hospital', name };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name };
 
     const emitted = mapFn(doc, true);
 
@@ -113,13 +114,13 @@ describe('contacts_by_freetext', () => {
   [
     null, undefined, { hello: 'world' }, {}, true
   ].forEach(hello => it(`emits nothing when value is not a string or number [${JSON.stringify(hello)}]`, () => {
-    const doc = { type: 'district_hospital', hello };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, hello };
     const emitted = mapFn(doc, true);
     expect(emitted).to.be.empty;
   }));
 
   it('emits only key:value when value is number', () => {
-    const doc = { type: 'district_hospital', hello: 1234 };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, hello: 1234 };
 
     const emitted = mapFn(doc, true);
 
@@ -130,7 +131,7 @@ describe('contacts_by_freetext', () => {
   [
     't', 'to'
   ].forEach(hello => it(`emits nothing but key:value when value is too short [${hello}]`, () => {
-    const doc = { type: 'district_hospital', hello };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, hello };
 
     const emitted = mapFn(doc, true);
 
@@ -139,7 +140,7 @@ describe('contacts_by_freetext', () => {
   }));
 
   it('emits nothing when value is empty', () => {
-    const doc = { type: 'district_hospital', hello: '' };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, hello: '' };
     const emitted = mapFn(doc, true);
     expect(emitted).to.be.empty;
   });
@@ -147,20 +148,20 @@ describe('contacts_by_freetext', () => {
   [
     '_id', '_rev', 'type', 'refid', 'geolocation', 'Refid'
   ].forEach(key => it(`emits nothing for a skipped field [${key}]`, () => {
-    const doc = { type: 'district_hospital', [key]: 'world' };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, [key]: 'world' };
     const emitted = mapFn(doc, true);
     expect(emitted).to.be.empty;
   }));
 
   it('emits nothing for fields that end with "_date"', () => {
-    const doc = { type: 'district_hospital', reported_date: 'world' };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, reported_date: 'world' };
     const emitted = mapFn(doc, true);
     expect(emitted).to.be.empty;
   });
 
   it('emits value only once', () => {
     const doc = {
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       hello: 'world world',
       hello1: 'world',
       hello3: 'world',
@@ -179,7 +180,7 @@ describe('contacts_by_freetext', () => {
 
   it('emits each word in a string', () => {
     const doc = {
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       hello: `the quick\nBrown\tfox`,
     };
     const emitted = mapFn(doc, true);
@@ -195,7 +196,7 @@ describe('contacts_by_freetext', () => {
   });
 
   it('emits non-ascii values', () => {
-    const doc = { type: 'district_hospital', name: 'बुद्ध Élève' };
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'बुद्ध Élève' };
 
     const emitted = mapFn(doc, true);
 

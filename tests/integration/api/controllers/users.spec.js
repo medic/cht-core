@@ -12,7 +12,7 @@ const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
 const password = 'passwordSUP3RS3CR37!';
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital'
 };
 
@@ -275,7 +275,7 @@ describe('Users API', () => {
       const parentPlace = {
         _id: 'PARENT_PLACE',
         name: 'Parent place',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         reported_date: new Date().getTime()
       };
       return utils
@@ -600,7 +600,7 @@ describe('Users API', () => {
 
     const parentPlace = {
       _id: 'PARENT_PLACE',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Big Parent Hostpital'
     };
 
@@ -1607,7 +1607,7 @@ describe('Users API', () => {
     let userProgramOfficer;
 
     before(async () => {
-      facility = placeFactory.place().build({ type: 'district_hospital', reported_date: null });
+      facility = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL, reported_date: null });
       person = utils.deepFreeze(
         personFactory.build({ role: 'chw', parent: { _id: facility._id }, reported_date: null })
       );

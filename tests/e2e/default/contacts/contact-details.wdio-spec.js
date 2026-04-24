@@ -11,13 +11,14 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact details page.', () => {
   describe('Permissions to show reports and tasks', () => {
     const DOCS_DISPLAY_LIMIT = 50;
     const ROLE = 'notchw';
 
-    const parent = placeFactory.place().build({_id: 'dist1', type: 'district_hospital'});
+    const parent = placeFactory.place().build({_id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL});
     const user = userFactory.build({username: 'offlineuser', roles: [ROLE]});
     const patient = personFactory.build({parent: {_id: user.place._id, parent: {_id: parent._id}}});
 
