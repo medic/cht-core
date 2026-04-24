@@ -63,3 +63,42 @@ export interface DisplayTranslationRow {
 export interface TranslationKeyValues {
   [code: string]: string;
 }
+
+/**
+ * Represents a CouchDB attachment for a privacy policy document.
+ * When loaded with { attachments: true }, contains the full base64 content in data.
+ * Only content_type and digest are always present when reading.
+ * When writing via put, only content_type and data are required — CouchDB generates digest automatically.
+ */
+export interface PrivacyPolicyAttachment {
+  content_type: string;
+  digest?: string;
+  data?: string | File;
+}
+
+/**
+ * Represents the privacy-policies document as stored in CouchDB.
+ * privacy_policies maps each language code to the name of its attachment.
+ * _attachments maps each attachment name to its metadata and optional content.
+ * If the document does not exist in CouchDB, an empty doc is returned instead of throwing.
+ */
+export interface PrivacyPoliciesDoc {
+  _id: string;
+  _rev?: string;
+  privacy_policies: Record<string, string>;
+  _attachments: Record<string, PrivacyPolicyAttachment>;
+}
+
+/**
+ * UI model for a single row in the privacy policies table.
+ * Each row corresponds to one available application language.
+ * attachment holds the policy currently saved in CouchDB, null if none exists.
+ * stagedFile holds the file selected by the user but not yet saved, null if none staged.
+ */
+export interface PrivacyPolicyRow {
+  code: string;
+  name: string;
+  attachment: PrivacyPolicyAttachment | null;
+  stagedFile: File | null;
+}
+

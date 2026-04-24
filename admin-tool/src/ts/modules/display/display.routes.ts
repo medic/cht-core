@@ -3,6 +3,7 @@ import { DisplayHeaderComponent } from './display-header/display-header.componen
 import { DisplayDateTimeComponent } from './display-date-time/display-date-time.component';
 import { DisplayLanguagesComponent } from './display-languages/display-languages.component';
 import { DisplayTranslationsComponent } from './display-translations/display-translations.component';
+import { DisplayPrivacyPoliciesComponent } from './display-privacy-policies/display-privacy-policies.component';
 
 /**
  * Routes for the Display module.
@@ -33,6 +34,10 @@ export const routes: Routes = [
       {
         path: 'translations',
         component: DisplayTranslationsComponent,
+      },
+      {
+        path: 'privacy-policies',
+        component: DisplayPrivacyPoliciesComponent,
       },
     ],
   },

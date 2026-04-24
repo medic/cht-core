@@ -36,6 +36,7 @@ describe('LanguagesService', () => {
         allDocs: sinon.stub().resolves({
           rows: mockDocs.map(doc => ({ doc })),
         }),
+        get: sinon.stub().resolves({ _id: 'privacy-policies', privacy_policies: {}, _attachments: {} }),
         put: sinon.stub().resolves(),
         remove: sinon.stub().resolves(),
         bulkDocs: sinon.stub().resolves([]),
@@ -527,6 +528,54 @@ describe('LanguagesService', () => {
       await service.saveTranslation('Submit', values, mockDocs as any);
       const savedDocs = dbService.get().bulkDocs.args[0][0];
       expect(savedDocs).to.have.length(1);
+    });
+  });
+  describe('getPrivacyPoliciesDoc', () => {
+    it('should fetch the privacy policies doc without attachments by default', async () => {
+      dbService.get().get.resolves({ _id: 'privacy-policies', privacy_policies: {}, _attachments: {} });
+      await service.getPrivacyPoliciesDoc();
+      expect(dbService.get().get.calledWith('privacy-policies', { attachments: false })).to.be.true;
+    });
+
+    it('should fetch the privacy policies doc with attachments when true', async () => {
+      dbService.get().get.resolves({ _id: 'privacy-policies', privacy_policies: {}, _attachments: {} });
+      await service.getPrivacyPoliciesDoc(true);
+      expect(dbService.get().get.calledWith('privacy-policies', { attachments: true })).to.be.true;
+    });
+
+    it('should return the doc when it exists', async () => {
+      const mockDoc = { _id: 'privacy-policies', privacy_policies: { en: 'en.html' }, _attachments: {} };
+      dbService.get().get.resolves(mockDoc);
+      const result = await service.getPrivacyPoliciesDoc();
+      expect(result).to.deep.equal(mockDoc);
+    });
+
+    it('should return empty doc when 404', async () => {
+      dbService.get().get.rejects({ status: 404 });
+      const result = await service.getPrivacyPoliciesDoc();
+      expect(result).to.deep.equal({ _id: 'privacy-policies', privacy_policies: {}, _attachments: {} });
+    });
+
+    it('should propagate error when status is not 404', async () => {
+      dbService.get().get.rejects({ status: 500 });
+      const result = service.getPrivacyPoliciesDoc();
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
+    });
+  });
+
+  describe('savePrivacyPolicies', () => {
+    it('should call put with the doc', async () => {
+      const mockDoc = { _id: 'privacy-policies', privacy_policies: {}, _attachments: {} };
+      dbService.get().put.resolves();
+      await service.savePrivacyPolicies(mockDoc);
+      expect(dbService.get().put.calledWith(mockDoc)).to.be.true;
+    });
+
+    it('should propagate error when put fails', async () => {
+      const mockDoc = { _id: 'privacy-policies', privacy_policies: {}, _attachments: {} };
+      dbService.get().put.rejects({ status: 500 });
+      const result = service.savePrivacyPolicies(mockDoc);
+      await result.catch(err => expect(err).to.deep.equal({ status: 500 }));
     });
   });
 });

@@ -1,0 +1,126 @@
+<div>
+  @if (loadingPageStatus) {
+    <div class="loader"></div>
+  } @else {
+    <div class="tab-content container-fluid">
+      <div class="row selection-heading">
+        <div class="col-xs-4">
+          <span>{{ 'Language' | translate }}</span>
+        </div>
+        <div class="col-xs-4">
+          <span>{{ 'display.privacy.policies.current' | translate }}</span>
+        </div>
+        <div class="col-xs-4 text-right">
+          <span>{{ 'display.privacy.policies.update' | translate }}</span>
+        </div>
+      </div>
+
+      @for (row of privacyPolicyRows; track row.code) {
+        <div class="row privacy-policy-row">
+          <div class="col-xs-4">
+            <span>{{ row.name }}</span>
+          </div>
+
+          <div class="col-xs-4">
+            @if (row.attachment?.data) {
+              <div class="details">
+                <span class="detail">
+                  <strong>{{ 'display.privacy.policies.digest' | translate }}</strong>
+                  {{ row.attachment!.digest }}
+                </span>
+                <span class="detail">
+                  <strong>{{ 'display.privacy.policies.content.type' | translate }}</strong>
+                  {{ row.attachment!.content_type }}
+                </span>
+                <span class="detail">
+                  <strong>{{ 'display.privacy.policies.size' | translate }}</strong>
+                  {{ getAttachmentSize(row.attachment!.data!) / 1024 | number: '1.2-2' }}KB
+                </span>
+                @if (row.attachment!.content_type !== 'text/html') {
+                  <span class="error">{{ 'display.privacy.policies.preview.wrong.type' | translate }}</span>
+                }
+                <div class="actions">
+                  <button class="btn btn-default" type="button" (click)="openAttachmentPreview(row.attachment!, row.name)">
+                    {{ 'display.privacy.policies.preview' | translate }}
+                  </button>
+                  <button class="btn btn-danger" type="button" (click)="deletePolicy(row.code)">
+                    {{ 'display.privacy.policies.delete' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="col-xs-4">
+            @if (!row.stagedFile) {
+              <div class="input-area text-right">
+                <label class="btn btn-default" [for]="'uploader-' + row.code">
+                  <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                  <span>{{ 'display.privacy.policies.select' | translate }}</span>
+                </label>
+                <input
+                  [id]="'uploader-' + row.code"
+                  type="file"
+                  accept="text/html"
+                  class="hidden-input"
+                  (change)="onFileSelected(row.code, $event)"
+                />
+              </div>
+            } @else {
+              <div class="details">
+                <span class="detail">
+                  <strong>{{ 'display.privacy.policies.name' | translate }}</strong>
+                  {{ row.stagedFile.name }}
+                </span>
+                <span class="detail">
+                  <strong>{{ 'display.privacy.policies.content.type' | translate }}</strong>
+                  {{ row.stagedFile.type }}
+                </span>
+                <span class="detail">
+                  <strong>{{ 'display.privacy.policies.size' | translate }}</strong>
+                  {{ row.stagedFile.size / 1024 | number: '1.2-2' }}KB
+                </span>
+                @if (row.stagedFile.type !== 'text/html') {
+                  <span class="error">{{ 'display.privacy.policies.preview.wrong.type' | translate }}</span>
+                }
+                <div class="actions">
+                  <button class="btn btn-default" type="button" (click)="openStagedFilePreview(row.stagedFile!, row.name)">
+                    {{ 'display.privacy.policies.preview' | translate }}
+                  </button>
+                  <button class="btn btn-danger" type="button" (click)="deleteUpdate(row.code)">
+                    {{ 'display.privacy.policies.delete' | translate }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <p class="help-block">{{ 'display.privacy.policies.upload' | translate }}</p>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submit()"
+          [attr.disabled]="responseStatus.state === 'loading' ? true : null"
+        >
+          {{ 'Submit' | translate }}
+        </button>
+        @if (responseStatus.state === 'loading') {
+          <div class="loader inline"></div>
+        } @else if (responseStatus.state) {
+          <span [class]="responseStatus.state!">{{ responseStatus.msg! | translate }}</span>
+        }
+      </div>
+    </div>
+  }
+  <display-privacy-policies-preview
+    [visible]="showPreviewModal"
+    [languageName]="previewLanguageName"
+    [attachment]="previewAttachment"
+    [stagedFile]="previewStagedFile"
+    (closed)="showPreviewModal = false"
+  >
+  </display-privacy-policies-preview>
+</div>

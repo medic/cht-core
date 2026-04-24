@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { DbService } from './db.service';
 import { SettingsService } from './settings.service';
-import { LanguageDoc, LanguageModel, TranslationKeyValues } from '@admin-tool-modules/display/display-interfaces';
+import { 
+  LanguageDoc, 
+  LanguageModel, 
+  PrivacyPoliciesDoc, 
+  TranslationKeyValues 
+} from '@admin-tool-modules/display/display-interfaces';
 
 /**
  * Service responsible for reading and writing CHT language documents
@@ -269,5 +274,41 @@ export class LanguagesService {
     if (updatedDocs.length) {
       await this.db.get().bulkDocs(updatedDocs);
     }
+  }
+
+  /**
+   * Fetches the privacy-policies document from CouchDB.
+   * When attachments is true, includes the full base64 content of each attachment in data.
+   * When attachments is false, returns only metadata without attachment content.
+   * If the document does not exist, returns an empty doc instead of throwing.
+   *
+   * @param {boolean} attachments - whether to include attachment content in the response. Defaults to false.
+   * @returns {Promise<PrivacyPoliciesDoc>}
+   */
+  async getPrivacyPoliciesDoc(attachments = false): Promise<PrivacyPoliciesDoc> {
+    const emptyDoc: PrivacyPoliciesDoc = {
+      _id: 'privacy-policies',
+      privacy_policies: {},
+      _attachments: {}
+    };
+    const doc = await this.db.get().get('privacy-policies', { attachments })
+      .catch(err => {
+        if (err.status === 404) {
+          return emptyDoc;
+        }
+        throw err;
+      });
+    return doc;
+  }
+
+  /**
+   * Saves the privacy-policies document to CouchDB.
+   * The document must include a valid _rev if it already exists, otherwise CouchDB will reject the put.
+   *
+   * @param {PrivacyPoliciesDoc} doc - the privacy policies document to save
+   * @returns {Promise<void>}
+   */
+  async savePrivacyPolicies(doc: PrivacyPoliciesDoc): Promise<void> {
+    await this.db.get().put(doc);
   }
 }
