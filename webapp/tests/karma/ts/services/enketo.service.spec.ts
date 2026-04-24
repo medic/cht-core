@@ -1249,6 +1249,7 @@ describe('Enketo service', () => {
       expect(AddAttachment.callCount).to.equal(1);
       expect(AddAttachment.args[0][0]._id).to.equal(actual[0]._id);
     });
+<<<<<<< HEAD
 
     it('should fall back to main doc when FileManager file has no matching XML node', async () => {
       form.validate.resolves(true);
@@ -1377,6 +1378,8 @@ describe('Enketo service', () => {
       );
       expect(subDocAttachments).to.be.empty;
     });
+=======
+>>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
   });
 
   describe('multimedia', () => {
