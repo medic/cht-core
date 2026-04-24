@@ -1163,6 +1163,92 @@ describe('Enketo service', () => {
       expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
       expect(AddAttachment.args[0][3]).to.equal('image/png');
     });
+
+    it('should route binary attachments to correct sub-docs', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-binary');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // actual[0] = main doc, actual[1] = doc1, actual[2] = doc2
+      expect(actual.length).to.equal(3);
+
+      // 3 binary fields = 3 AddAttachment calls
+      expect(AddAttachment.callCount).to.equal(3);
+
+      // main_photo should be attached to main doc (actual[0])
+      const mainPhotoCall = AddAttachment.args.find(args => args[2] === 'main_photo_data');
+      expect(mainPhotoCall).to.exist;
+      expect(mainPhotoCall[0]._id).to.equal(actual[0]._id);
+
+      // sub_photo_data_1 should be attached to doc1 (actual[1])
+      const subPhoto1Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_1');
+      expect(subPhoto1Call).to.exist;
+      expect(subPhoto1Call[0]._id).to.equal(actual[1]._id);
+
+      // sub_photo_data_2 should be attached to doc2 (actual[2])
+      const subPhoto2Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_2');
+      expect(subPhoto2Call).to.exist;
+      expect(subPhoto2Call[0]._id).to.equal(actual[2]._id);
+    });
+
+    it('should route FileManager files to correct sub-doc', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-file-field');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const mainFile = { name: 'main_upload.png', type: 'image/png' };
+      const subFile = { name: 'sub_upload.png', type: 'image/png' };
+      getCurrentFiles.returns([mainFile, subFile]);
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(actual.length).to.equal(2);
+
+      // FileManager file calls: main_upload.png and sub_upload.png
+      const mainFileCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-main_upload.png'
+      );
+      expect(mainFileCall).to.exist;
+      expect(mainFileCall[0]._id).to.equal(actual[0]._id);
+
+      const subFileCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-sub_upload.png'
+      );
+      expect(subFileCall).to.exist;
+      expect(subFileCall[0]._id).to.equal(actual[1]._id);
+    });
+
+    it('should fall back to main doc when file is not inside a db-doc', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('binary-field');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(actual.length).to.equal(1);
+      expect(AddAttachment.callCount).to.equal(1);
+      expect(AddAttachment.args[0][0]._id).to.equal(actual[0]._id);
+    });
   });
 
   describe('multimedia', () => {
