@@ -732,8 +732,7 @@ describe('ContactSave service', () => {
   describe('attachment routing to sub-contacts', () => {
     // Each test uses a parent-registration shaped XML with three potential
     // owners: main section <family>, sibling <contact db-doc="true">, and a
-    // repeated <child> under <repeat>. Tests vary which sections actually have
-    // [type=binary] nodes / FileManager files.
+    // repeated <child> under <repeat>.
 
     const stubSiblingAndRepeat = () => {
       // identity extract so prepared docs keep their _id and we can compare
@@ -981,11 +980,9 @@ describe('ContactSave service', () => {
       ).to.be.true;
     });
 
-    it('routes uploads using the production type="file" attribute (regression for #10903)', async () => {
+    it('routes uploads using the type="file" attribute', async () => {
       // Enketo's setVal rewrites uploaded binary nodes to type="file" at
-      // runtime (enketo-core form-model.js setVal). The earlier matcher
-      // only looked at [type=binary] and missed every production upload,
-      // routing every file to the main doc.
+      // runtime (enketo-core form-model.js setVal).
       const xml =
         '<data id="contact:clinic:create">' +
           '<meta><instanceID/></meta>' +

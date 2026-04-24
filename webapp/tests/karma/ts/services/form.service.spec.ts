@@ -1794,7 +1794,6 @@ describe('Form service', () => {
     });
 
     it('should reject when a sub-doc has oversize attachments', async () => {
-      // Per #10903, sub-contact attachments now route to the sibling/repeat doc.
       // The validation must apply to every prepared doc, not just the main one.
       const form = { getDataStr: () => '<data></data>' };
       const docId = null;
@@ -1824,7 +1823,6 @@ describe('Form service', () => {
     });
 
     it('should pass validation and save when attachments are within size limit', async () => {
-      // Sanity: ensures the new validateAttachments call is a no-op for normal saves.
       const form = { getDataStr: () => '<data></data>' };
       const docId = null;
       const type = 'some-contact-type';
