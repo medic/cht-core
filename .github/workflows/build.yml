@@ -364,6 +364,7 @@ jobs:
         sudo dpkg -i "/tmp/chrome107/google-chrome-stable_current_amd64.deb"
         npm install chromedriver@^107.0.3
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
+      if: ${{ matrix.cmd != 'wdio-performance' || env.INTERNAL_CONTRIBUTOR }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
     - name: Archive Results
