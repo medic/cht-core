@@ -344,8 +344,8 @@ describe('Authorization middleware', () => {
 
       middleware.captureReplicationFailures(testReq, testRes, next);
 
-      next.callCount.should.equal(1);
-      testRes.on.callCount.should.equal(0);
+      expect(next.callCount).to.equal(1);
+      expect(testRes.on.callCount).to.equal(0);
     });
 
     it('should attach close listener for offline users and call next', () => {
@@ -354,9 +354,9 @@ describe('Authorization middleware', () => {
 
       middleware.captureReplicationFailures(testReq, testRes, next);
 
-      next.callCount.should.equal(1);
-      testRes.on.callCount.should.equal(1);
-      testRes.on.args[0][0].should.equal('close');
+      expect(next.callCount).to.equal(1);
+      expect(testRes.on.callCount).to.equal(1);
+      expect(testRes.on.args[0][0]).to.equal('close');
     });
 
     it('should not capture when request succeeds', () => {
@@ -368,7 +368,7 @@ describe('Authorization middleware', () => {
       middleware.captureReplicationFailures(testReq, testRes, next);
       closeHandler();
 
-      replicationFailureLog.capture.callCount.should.equal(0);
+      expect(replicationFailureLog.capture.callCount).to.equal(0);
     });
 
     it('should capture with actual status code when response completes with error', () => {
@@ -382,7 +382,7 @@ describe('Authorization middleware', () => {
       middleware.captureReplicationFailures(testReq, testRes, next);
       closeHandler();
 
-      replicationFailureLog.capture.callCount.should.equal(1);
+      expect(replicationFailureLog.capture.callCount).to.equal(1);
       const args = replicationFailureLog.capture.args[0];
       expect(args[0]).to.equal(testReq.userCtx);
       expect(args[1]).to.equal('req-123');
@@ -401,7 +401,7 @@ describe('Authorization middleware', () => {
       middleware.captureReplicationFailures(testReq, testRes, next);
       closeHandler();
 
-      replicationFailureLog.capture.callCount.should.equal(1);
+      expect(replicationFailureLog.capture.callCount).to.equal(1);
       const args = replicationFailureLog.capture.args[0];
       expect(args[2]).to.equal(0);
     });
@@ -421,7 +421,7 @@ describe('Authorization middleware', () => {
       // Wait for the promise rejection to be handled
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      logger.error.callCount.should.equal(1);
+      expect(logger.error.callCount).to.equal(1);
       expect(logger.error.args[0][0]).to.equal('Failed to persist replication failure log: %o');
       expect(logger.error.args[0][1]).to.equal(captureError);
     });
