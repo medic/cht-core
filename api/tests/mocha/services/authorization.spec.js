@@ -4109,6 +4109,39 @@ describe('Authorization service', () => {
           }]);
         });
       });
+
+      it('should request all matching contacts for one replication key', () => {
+        db.medic.query.resolves({ rows: [
+          { id: 'person1', key: ['shortcode', 'patient_1'] },
+          { id: 'person1_secondary', key: ['shortcode', 'patient_1'] },
+        ] });
+        sinon.stub(db.medic, 'allDocs');
+        db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
+          { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
+          { id: 'person1_secondary', key: 'person1_secondary', doc: { _id: 'person1_secondary' } },
+          { id: 'contact_1', key: 'contact_1', doc: { _id: 'contact_1' } },
+        ] });
+
+        return findContactsByReplicationKeys(['patient_1', 'contact_1']).then(result => {
+          result.should.deep.equal([
+            { _id: 'person1' },
+            { _id: 'person1_secondary' },
+            { _id: 'contact_1' },
+          ]);
+          db.medic.query.callCount.should.equal(1);
+          db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
+            keys: [
+              ['shortcode', 'patient_1'],
+              ['shortcode', 'contact_1'],
+            ]
+          }]);
+          db.medic.allDocs.callCount.should.equal(1);
+          db.medic.allDocs.args[0].should.deep.equal([{
+            keys: ['person1', 'person1_secondary', 'contact_1'],
+            include_docs: true,
+          }]);
+        });
+      });
     });
   });
 
