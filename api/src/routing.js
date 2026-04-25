@@ -935,6 +935,12 @@ app.post(
   authorization.onlineUserPassThrough,
   replication.getDocIdsToDelete,
 );
+app.get(
+  '/api/v1/replication/get-form/:formId',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getForm,
+);
 
 const metaRoutePrefix = `/${environment.db}-user-*"name"-meta/`;
 

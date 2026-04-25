@@ -109,4 +109,67 @@ describe('Initial Replication controller', () => {
       expect(res.json.callCount).to.equal(0);
     });
   });
+
+  describe('getForm', () => {
+    it('should return form doc when found', async () => {
+      const formDoc = {
+        _id: 'form:anc_registration',
+        type: 'form',
+        internalId: 'anc_registration',
+        _attachments: {
+          'anc_registration.xml': { stub: true, content_type: 'application/xml', length: 12345 },
+        },
+      };
+      sinon.stub(replicationService, 'getForm').resolves(formDoc);
+      req = { ...req, params: { formId: 'anc_registration' } };
+
+      await controller.getForm(req, res);
+
+      expect(replicationService.getForm.args).to.deep.equal([['anc_registration']]);
+      expect(res.json.args).to.deep.equal([[formDoc]]);
+    });
+
+    it('should return 404 when form doc is not found', async () => {
+      const notFoundError = { status: 404 };
+      sinon.stub(replicationService, 'getForm').rejects(notFoundError);
+      sinon.stub(serverUtils, 'error');
+      req = { ...req, params: { formId: 'missing_form' } };
+
+      await controller.getForm(req, res);
+
+      expect(replicationService.getForm.callCount).to.equal(1);
+      expect(serverUtils.error.args).to.deep.equal([[
+        { code: 404, message: 'Form not found: missing_form' },
+        req,
+        res,
+      ]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+
+    it('should return 400 when formId param is missing', async () => {
+      sinon.stub(serverUtils, 'error');
+      req = { ...req, params: {} };
+
+      await controller.getForm(req, res);
+
+      expect(serverUtils.error.args).to.deep.equal([[
+        { code: 400, message: 'Missing form ID' },
+        req,
+        res,
+      ]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+
+    it('should return server error on unexpected db error', async () => {
+      sinon.stub(replicationService, 'getForm').rejects({ status: 500 });
+      sinon.stub(serverUtils, 'serverError');
+      req = { ...req, params: { formId: 'anc_registration' } };
+
+      await controller.getForm(req, res);
+
+      expect(replicationService.getForm.callCount).to.equal(1);
+      expect(serverUtils.serverError.args).to.deep.equal([[{ status: 500 }, req, res]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+  });
 });

@@ -278,4 +278,39 @@ describe('Initial Replication service', () => {
       await expect(replication.getDocIdsToDelete(userCtx, [1])).to.be.rejectedWith(Error, 'boom');
     });
   });
+
+  describe('getForm', () => {
+    it('should return form doc for valid form ID', async () => {
+      const formDoc = {
+        _id: 'form:anc_registration',
+        type: 'form',
+        internalId: 'anc_registration',
+        _attachments: {
+          'anc_registration.xml': { stub: true, content_type: 'application/xml', length: 12345 },
+          'video1.mp4': { stub: true, content_type: 'video/mp4', length: 104857600 },
+        },
+      };
+      sinon.stub(db.medic, 'get').resolves(formDoc);
+
+      const result = await replication.getForm('anc_registration');
+
+      expect(result).to.deep.equal(formDoc);
+      expect(db.medic.get.args).to.deep.equal([['form:anc_registration']]);
+    });
+
+    it('should throw 404 error when form doc does not exist', async () => {
+      const notFoundError = new Error('missing');
+      notFoundError.status = 404;
+      sinon.stub(db.medic, 'get').rejects(notFoundError);
+
+      await expect(replication.getForm('missing_form')).to.be.rejectedWith(notFoundError);
+      expect(db.medic.get.args).to.deep.equal([['form:missing_form']]);
+    });
+
+    it('should throw db errors', async () => {
+      sinon.stub(db.medic, 'get').rejects(new Error('connection refused'));
+
+      await expect(replication.getForm('some_form')).to.be.rejectedWith(Error, 'connection refused');
+    });
+  });
 });
