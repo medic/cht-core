@@ -48,7 +48,7 @@ let loadErrors = false;
 // applies all loaded transitions over a change
 const processChange = (change, callback) => {
   lineage
-    .fetchHydratedDoc(change.id, {}, undefined, change.doc)
+    .fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
       return infodoc.get(change).then(infoDoc => {

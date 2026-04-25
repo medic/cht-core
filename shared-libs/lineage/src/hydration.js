@@ -244,9 +244,8 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchLineageById = function(id, doc) {
-    const getDoc = doc ? Promise.resolve(doc) : DB.get(id);
-    return getDoc
+  const fetchLineageById = function(id) {
+    return DB.get(id)
       .then(function(doc) {
         const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
         const parentIds = extractParentIds(startParent);
@@ -306,7 +305,7 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDoc = function(id, options = {}, callback = undefined, doc = undefined) {
+  const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
     if (typeof options === 'function') {
       callback = options;
       options = {};
@@ -316,7 +315,7 @@ module.exports = function(Promise, DB) {
       throwWhenMissingLineage: false,
     });
 
-    return fetchLineageById(id, doc)
+    return fetchLineageById(id)
       .then(function(lineage) {
         if (lineage.length > 0) {
           return hydrateLineage(lineage);
@@ -328,7 +327,7 @@ module.exports = function(Promise, DB) {
           throw err;
         }
 
-        return doc || fetchDoc(id);
+        return fetchDoc(id);
       })
       .then(function(result) {
         if (callback) {
