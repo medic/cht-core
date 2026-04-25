@@ -17,10 +17,10 @@ const startupLog = require('./startup-log');
 const finalize = async () => {
   await upgradeLogService.setComplete();
   await upgradeLogService.setFinalizing();
-  const alteredDatabases = await upgradeUtils.unstageStagedDdocs();
+  await upgradeUtils.unstageStagedDdocs();
   await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setFinalized();
-  await upgradeUtils.cleanup(alteredDatabases);
+  await upgradeUtils.cleanup();
   await serverInfo.getDeployInfo(true);
 };
 

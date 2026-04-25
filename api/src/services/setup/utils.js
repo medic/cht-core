@@ -49,93 +49,16 @@ const deleteStagedDdocs = async () => {
   }
 };
 
-const compareViews = (local, remote) => {
-  for (const [viewName, localView] of Object.entries(local.views)) {
-    const remoteView = remote.views[viewName];
-    if (!remoteView || localView.map !== remoteView.map) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const areViewsDifferent = (local, remote) => {
-  if (!local.views && !remote.views) {
-    return false;
-  }
-
-  if (!!local.views !== !!remote.views) {
-    return true;
-  }
-
-  if (Object.keys(local.views || {}).length !== Object.keys(remote.views || {}).length) {
-    return true;
-  }
-
-  return compareViews(local, remote);
-};
-
-const isShallowEqual = (obj1, obj2) => {
-  if (!obj1 && !obj2) {
-    return true;
-  }
-
-  if (!!obj1 !== !!obj2) {
-    return false;
-  }
-
-  const keys1 = Object.keys(obj1);
-  const keys2 = Object.keys(obj2);
-
-  return keys1.length === keys2.length &&
-         keys1.every(key => obj1[key] === obj2[key]);
-};
-
-const isNouveauIndexDifferent = (localIndex, remoteIndex) => {
-  return !remoteIndex ||
-    localIndex.index !== remoteIndex.index ||
-    !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
-    localIndex.default_analyzer !== remoteIndex.default_analyzer;
-};
-
-const areIndexesDifferent = (local, remote) => {
-  if (!!local.nouveau !== !!remote.nouveau) {
-    return true;
-  }
-
-  if (!local.nouveau) {
-    return false;
-  }
-
-  if (Object.keys(local.nouveau).length !== Object.keys(remote.nouveau).length) {
-    return true;
-  }
-
-  return Object.entries(local.nouveau).some(([name, index]) => isNouveauIndexDifferent(index, remote.nouveau[name]));
-};
 
 /**
- * Runs compaction and view cleanup conditionally.
- * If ddocs changed (specifically their views).
+ * Runs view cleanup for every database.
  */
-const cleanup = async (alteredDatabases = []) => {
+const cleanup = async () => {
   for (const database of DATABASES) {
-    const requiresCompaction = alteredDatabases.includes(database.name);
-
-    if (requiresCompaction) {
-      logger.info(`Running DB compact and view cleanup for ${database.name}`);
-      Promise
-        .all([
-          database.db.compact(),
-          database.db.viewCleanup(),
-        ])
-        .catch(err => {
-          logger.error('Error while running cleanup: %o', err);
-        });
-    } else {
-      logger.info(`Skipping DB compact and view cleanup for ${database.name} (no ddoc view changes)`);
-    }
+    logger.info(`Running view cleanup for ${database.name}`);
+    database.db.viewCleanup().catch(err => {
+      logger.error('Error while running cleanup: %o', err);
+    });
   }
   db.nouveauCleanup().catch(err => {
     logger.error('Error while running cleanup: %o', err);
@@ -367,11 +290,9 @@ const saveStagedDdocs = async (ddocDefinitions) => {
  */
 const unstageStagedDdocs = async () => {
   const deployTime = new Date().getTime();
-  const alteredDatabases = [];
   for (const database of DATABASES) {
     const ddocs = await ddocsService.getDdocs(database);
     const ddocsToSave = [];
-    let viewsChanged = false;
 
     for (const ddoc of ddocs) {
       if (!ddocsService.isStaged(ddoc._id)) {
@@ -382,14 +303,8 @@ const unstageStagedDdocs = async () => {
       const ddocToReplace = ddocs.find(existentDdoc => unstagedId === existentDdoc._id);
 
       if (ddocToReplace) {
-        if (areViewsDifferent(ddoc, ddocToReplace)) {
-          viewsChanged = true;
-        }
         ddoc._rev = ddocToReplace._rev;
       } else {
-        if (ddoc.views && Object.keys(ddoc.views).length > 0) {
-          viewsChanged = true;
-        }
         delete ddoc._rev;
       }
 
@@ -400,17 +315,8 @@ const unstageStagedDdocs = async () => {
       ddocsToSave.push(ddoc);
     }
 
-    if (ddocsToSave.length > 0) {
-      await db.saveDocs(database.db, ddocsToSave);
-      if (viewsChanged) {
-        alteredDatabases.push(database.name);
-      }
-    } else {
-      // maintain previous bulkdoc behavior for arrays of length 0 if it was called unconditionally
-      await db.saveDocs(database.db, []);
-    }
+    await db.saveDocs(database.db, ddocsToSave);
   }
-  return alteredDatabases;
 };
 
 const getUpgradeServicePayload = (stagingDoc) => {
@@ -534,6 +440,4 @@ module.exports = {
   getLocalDdocDefinitions,
   getDdocInfo,
   getNouveauInfo,
-  areViewsDifferent,
-  areIndexesDifferent,
 };

@@ -155,9 +155,78 @@ const compareBuildVersions = async (buildInfo) => {
   return differences.filter(Boolean);
 };
 
-const areViewsDifferent = (local, remote) => upgradeUtils.areViewsDifferent(local, remote);
+const compareViews = (local, remote) => {
+  for (const [viewName, localView] of Object.entries(local.views)) {
+    const remoteView = remote.views[viewName];
+    if (!remoteView || localView.map !== remoteView.map) {
+      return true;
+    }
+  }
 
-const areIndexesDifferent = (local, remote) => upgradeUtils.areIndexesDifferent(local, remote);
+  return false;
+};
+
+const areViewsDifferent = (local,  remote) => {
+  if (!local.views && !remote.views) {
+    return false;
+  }
+
+  if (!!local.views !== !!remote.views) {
+    return true;
+  }
+
+  if (Object.keys(local.views).length !== Object.keys(remote.views).length) {
+    return true;
+  }
+
+  return compareViews(local, remote);
+};
+
+const compareIndexes = (local, remote) => {
+  for (const [indexName, localIndex] of Object.entries(local.nouveau)) {
+    const remoteIndex = remote.nouveau[indexName];
+    if (!remoteIndex ||
+        localIndex.index !== remoteIndex.index ||
+        !isShallowEqual(localIndex.field_analyzers, remoteIndex.field_analyzers) ||
+        localIndex.default_analyzer !== remoteIndex.default_analyzer
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const areIndexesDifferent = (local, remote) => {
+  if (!local.nouveau && !remote.nouveau) {
+    return false;
+  }
+
+  if (!!local.nouveau !== !!remote.nouveau) {
+    return true;
+  }
+
+  if (Object.keys(local.nouveau).length !== Object.keys(remote.nouveau).length) {
+    return true;
+  }
+
+  return compareIndexes(local, remote);
+};
+
+const isShallowEqual = (obj1, obj2) => {
+  if (!obj1 && !obj2) {
+    return true;
+  }
+
+  if (!!obj1 !== !!obj2) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  return keys1.length === keys2.length &&
+         keys1.every(key => obj1[key] === obj2[key]);
+};
 
 module.exports = {
   canUpgrade,

@@ -21,7 +21,6 @@ const buildInfo = (version, namespace = 'medic', application = 'medic') => ({ ve
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
   sinon.stub(db, 'bulkDocs');
-  sinon.stub(db, 'compact').resolves();
   sinon.stub(db, 'viewCleanup').resolves();
   sinon.stub(db, 'info').resolves({ sizes: { active: 100, file: 110 }});
 };
@@ -168,14 +167,8 @@ describe('Setup utils', () => {
       mockDb(db.users);
     });
 
-    it('should start db compact and view cleanup for every database if altered', async () => {
-      await utils.cleanup(DATABASES.map(d => d.name));
-
-      expect(db.medic.compact.callCount).to.equal(1);
-      expect(db.sentinel.compact.callCount).to.equal(1);
-      expect(db.medicLogs.compact.callCount).to.equal(1);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
-      expect(db.users.compact.callCount).to.equal(1);
+    it('should start view cleanup for every database', async () => {
+      await utils.cleanup();
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -186,29 +179,22 @@ describe('Setup utils', () => {
       expect(db.nouveauCleanup.callCount).to.equal(1);
     });
 
-    it('should catch compact errors and log them', async () => {
+    it('should catch view cleanup errors and log them', async () => {
       const error = { some: 'error' };
-      db.sentinel.compact.rejects(error);
+      db.sentinel.viewCleanup.rejects(error);
 
-      await utils.cleanup(DATABASES.map(d => d.name));
+      await utils.cleanup();
 
       await Promise.resolve();
       await Promise.resolve();
-
-      expect(db.medic.compact.callCount).to.equal(1);
-      // this should return an error, but the other compacts
-      // and viewCleanups whould be called.
-      expect(db.sentinel.compact.callCount).to.equal(1);
-      expect(db.medicLogs.compact.callCount).to.equal(1);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
-      expect(db.users.compact.callCount).to.equal(1);
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
-      expect(db.nouveauCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
       expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
       expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
 
       expect(logger.error.callCount).to.be.at.least(1);
       expect(logger.error.args[0][0]).to.include('Error while running cleanup');
@@ -219,7 +205,7 @@ describe('Setup utils', () => {
       const error = { some: 'error' };
       db.nouveauCleanup.rejects(error);
 
-      await utils.cleanup(DATABASES.map(d => d.name));
+      await utils.cleanup();
 
       await Promise.resolve();
       await Promise.resolve();
@@ -229,24 +215,6 @@ describe('Setup utils', () => {
       expect(logger.error.callCount).to.be.at.least(1);
       expect(logger.error.args[0][0]).to.include('Error while running cleanup');
       expect(logger.error.args[0][1]).to.deep.equal(error);
-    });
-
-    it('should skip db compact and view cleanup if no databases are altered', async () => {
-      await utils.cleanup([]);
-
-      expect(db.medic.compact.callCount).to.equal(0);
-      expect(db.sentinel.compact.callCount).to.equal(0);
-      expect(db.medicLogs.compact.callCount).to.equal(0);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(0);
-      expect(db.users.compact.callCount).to.equal(0);
-
-      expect(db.medic.viewCleanup.callCount).to.equal(0);
-      expect(db.sentinel.viewCleanup.callCount).to.equal(0);
-      expect(db.medicLogs.viewCleanup.callCount).to.equal(0);
-      expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(0);
-      expect(db.users.viewCleanup.callCount).to.equal(0);
-
-      expect(db.nouveauCleanup.callCount).to.equal(1);
     });
   });
 
@@ -902,8 +870,7 @@ describe('Setup utils', () => {
       sinon.stub(db.users, 'allDocs').resolves({ rows: [] }); // no ddocs
 
       sinon.stub(db, 'saveDocs').resolves();
-      const alteredDbs = await utils.unstageStagedDdocs();
-      expect(alteredDbs).to.deep.equal([DATABASES[0].name, DATABASES[1].name, DATABASES[2].name]);
+      await utils.unstageStagedDdocs();
 
       const allDocsArgs = [{ startkey: '_design/', endkey: '_design/\ufff0', include_docs: true }];
 
@@ -940,36 +907,6 @@ describe('Setup utils', () => {
       expect(db.saveDocs.args[4]).to.deep.equal([db.users, []]);
     });
 
-    it('should only return altered databases if views changed', async () => {
-      const ddocViews1 = { v: { map: '1' } };
-      const ddocViews2 = { v: { map: '2' } };
-      sinon.stub(db.medic, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: '_design/:staged:medic', views: ddocViews2 } },
-          { doc: { _id: '_design/medic', views: ddocViews1 } },
-        ]
-      }); // views changed
-      sinon.stub(db.sentinel, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: '_design/:staged:s1', views: ddocViews1, other: 'new' } },
-          { doc: { _id: '_design/s1', views: ddocViews1, other: 'old' } },
-        ]
-      }); // views identical, other field changed
-      sinon.stub(db.medicLogs, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: '_design/:staged:l1', views: ddocViews1 } },
-        ]
-      }); // new ddoc
-      sinon.stub(db.medicUsersMeta, 'allDocs').resolves({ rows: [] });
-      sinon.stub(db.users, 'allDocs').resolves({ rows: [] });
-
-      sinon.stub(db, 'saveDocs').resolves();
-
-      const alteredDbs = await utils.unstageStagedDdocs();
-
-      expect(alteredDbs).to.deep.equal([DATABASES[0].name, DATABASES[2].name]);
-      expect(db.saveDocs.callCount).to.equal(5);
-    });
 
     it('should throw an error when getting ddocs fails', async () => {
       clock.tick(2500);
