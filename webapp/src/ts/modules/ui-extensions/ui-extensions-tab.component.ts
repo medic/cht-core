@@ -34,14 +34,15 @@ export class UiExtensionsTabComponent implements AfterViewInit {
 
   private async initializeExtension() {
     const extensionId = this.route.snapshot.params['id'];
+    const elementName = `cht-${extensionId}`;
     const trackRender = this.performanceService.track();
     try {
       const { properties: { title, config }, Element } = await this.uiExtensionsService.getExtension(extensionId);
       this.extensionTitle = title ?? '';
-      if (!customElements.get(extensionId)) {
-        customElements.define(extensionId, Element);
+      if (!customElements.get(elementName)) {
+        customElements.define(elementName, Element);
       }
-      const element = document.createElement(extensionId);
+      const element = document.createElement(elementName);
 
       Object.assign(element, {
         cht: await this.chtDatasourceService.get(),

@@ -80,7 +80,7 @@ describe('UiExtensionsTabComponent', () => {
 
     fixture.detectChanges();
     flush();
-    const element = fixture.nativeElement.querySelector(EXTENSION_ID);
+    const element = fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`);
 
     expect(element.cht).to.deep.equal(MOCK_CHT_API);
     expect(element.inputs).to.deep.equal({
@@ -104,7 +104,7 @@ describe('UiExtensionsTabComponent', () => {
 
     fixture.detectChanges();
     flush();
-    const element = fixture.nativeElement.querySelector(EXTENSION_ID);
+    const element = fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`);
 
     expect(element).to.not.exist;
     expect(component.loading).to.be.false;
