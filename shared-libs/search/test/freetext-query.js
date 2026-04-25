@@ -95,4 +95,25 @@ describe('freetext-query', () => {
 
     chai.expect(result).to.deep.equal([]);
   });
+
+  it('should stop iterating once limit is reached', async () => {
+    const getUuidsByFreetext = sinon.stub().returns(createAsyncGenerator(['id1', 'id2', 'id3', 'id4', 'id5']));
+    sinon.stub(chtDatasource, 'getDatasource').returns({ v1: { report: { getUuidsByFreetext } } });
+
+    const request = { params: { key: 'term' } };
+    const result = await queryFreetext({}, request, 'reports', 3);
+
+    chai.expect(result).to.deep.equal([{ id: 'id1' }, { id: 'id2' }, { id: 'id3' }]);
+  });
+
+  it('should return all results when limit is not set', async () => {
+    const getUuidsByFreetext = sinon.stub().returns(createAsyncGenerator(['id1', 'id2', 'id3']));
+    sinon.stub(chtDatasource, 'getDatasource').returns({ v1: { report: { getUuidsByFreetext } } });
+
+    const request = { params: { key: 'term' } };
+    const result = await queryFreetext({}, request, 'reports');
+
+    chai.expect(result).to.deep.equal([{ id: 'id1' }, { id: 'id2' }, { id: 'id3' }]);
+  });
+
 });

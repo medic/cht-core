@@ -8,7 +8,7 @@ const _ = require('lodash/core');
 _.flatten = require('lodash/flatten');
 _.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
-const { queryFreetext } = require('./freetext-query');
+const freetextQuery = require('./freetext-query');
 
 module.exports = function(DB, dataContext) {
   // Get the subset of rows, in appropriate order, according to options.
@@ -111,7 +111,7 @@ module.exports = function(DB, dataContext) {
       .map(denormalizeUnionRequest)
       .map(reqs => Promise.all(reqs.map(request => {
         if (request.freetext) {
-          return queryFreetext(dataContext, request, type);
+          return freetextQuery.queryFreetext(dataContext, request, type, options.skip + options.limit);
         }
         return queryView(request);
       })));
