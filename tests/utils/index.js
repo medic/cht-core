@@ -1489,7 +1489,9 @@ const waitForLogs = async (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let isReady = false;
-  const startTime = Date.now() - 50; // Subtract a small buffer to account for any clock skew
+  // startTime is set after the watcher is ready (after receiving first log output) to ensure
+  // historical lines from --tail=20 are not mistakenly matched as new logs.
+  let startTime;
   tail = (isDocker() || tail) ? '--tail=20' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
@@ -1509,7 +1511,14 @@ const waitForLogs = async (container, tail, ...regex) => {
 
     if (!isReady) {
       isReady = true;
+      // Subtract a small buffer to account for any clock skew between host and container.
+      // startTime is set here, after the first log line is received, so that all historical
+      // lines from --tail=20 (which precede this moment) are excluded by the timestamp filter.
+      startTime = Date.now() - 50;
       receivedFirstLine();
+      // Historical lines from --tail=20 arrive in the first data batch: skip matching here
+      // so the caller's action (e.g. updateCustomSettings) happens before we start accepting matches.
+      return undefined;
     }
 
     const lines = data.split('\n');
@@ -1522,7 +1531,7 @@ const waitForLogs = async (container, tail, ...regex) => {
       const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?)/);
 
       if (!timestampMatch) {
-        return isReady;
+        return true;
       }
 
       // Docker/kubectl timestamps are in UTC. Add 'Z' suffix if not present to ensure proper UTC parsing
