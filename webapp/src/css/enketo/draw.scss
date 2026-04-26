@@ -79,7 +79,7 @@ $picker-border: 2px solid grey;
     .file-picker {
       position: absolute;
       top: -($fullscreen-margin-v);
-      left: 0; // TODO: RTL
+      inset-inline-start: 0;
       width: 100%;
     }
 
@@ -176,11 +176,11 @@ $picker-border: 2px solid grey;
       margin: $fullscreen-margin-v auto;
 
       input[type='file'] {
-        left: 90px; // TODO: RTL
+        inset-inline-start: 90px;
       }
 
       .file-picker {
-        left: 80px;
+        inset-inline-start: 80px;
         width: calc(100% - 18px);
       }
     }
@@ -190,7 +190,7 @@ $picker-border: 2px solid grey;
       position: absolute;
       z-index: 30;
       top: -($fullscreen-margin-v - 10px);
-      left: 0; // TODO: RTL
+      inset-inline-start: 0;
       width: 70px;
     }
 
