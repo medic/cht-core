@@ -110,6 +110,7 @@
     "@types/pouchdb": "^6.4.0",
     "@types/sinon": "^21.0.0",
     "@types/sinon-chai": "^3.2.12",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.40.0",
     "@typescript-eslint/utils": "^8.53.1",

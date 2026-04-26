@@ -1,5 +1,5 @@
 const chai = require('chai');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const utils = require('@utils');
 const apiUtils = require('./utils');
 

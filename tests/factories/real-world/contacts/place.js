@@ -1,11 +1,11 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const Faker = require('@faker-js/faker');
 const householdSurveyFactory = require('../reports/create-family-household-survey');
 
 const place = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
+    .sequence('_id', uuid)
     .attr('parent', '')
     .attr('type', '')
     .attr('is_name_generated', 'true')

@@ -1,5 +1,5 @@
 const testUtils = require('@utils');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { DOC_TYPES } = require('@medic/constants');
 
 const CHW_CONTACT_NUMBER = '+32049832049';

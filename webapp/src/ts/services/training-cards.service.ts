@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
-import { v4 as uuid } from 'uuid';
+import { v7 as uuidv7 } from 'uuid';
 import { first } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 
@@ -190,7 +190,7 @@ export class TrainingCardsService {
     if (!userName) {
       throw new Error('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
     }
-    return `${TRAINING_PREFIX}${userName}:${uuid()}`;
+    return `${TRAINING_PREFIX}${userName}:${uuidv7()}`;
   }
 
   private hasBeenDisplayed() {

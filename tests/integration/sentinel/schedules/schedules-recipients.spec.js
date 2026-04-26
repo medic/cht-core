@@ -4,7 +4,7 @@ const moment = require('moment');
 const chai = require('chai');
 const sinon = require('sinon');
 const phoneNumber = require('@medic/phone-number');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const { expect } = chai;

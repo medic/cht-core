@@ -369,7 +369,8 @@ describe('EnketoTranslation service', () => {
         </treatments>
       </instance>
       <bind nodeset="/treatments/group_test/chp/other_chp" required="true()" type="db:person"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/treatments/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuidv7())" nodeset="/treatments/meta/instanceID"
+        readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body class="pages">
