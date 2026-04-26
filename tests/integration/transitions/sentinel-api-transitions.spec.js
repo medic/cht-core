@@ -367,6 +367,7 @@ describe('transitions', () => {
         apiUtils.getApiSmsChanges(messages),
         utils.request(getPostOpts('/api/sms', { messages })),
       ]))
+      .then(([ changes, messages ]) => utils.delayPromise(1000).then(() => [ changes, messages ]))
       .then(([ changes, messages ]) => {
         docs = changes.map(change => change.doc);
         ids = changes.map(change => change.id);
