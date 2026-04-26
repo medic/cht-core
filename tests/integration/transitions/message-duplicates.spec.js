@@ -85,7 +85,9 @@ describe('message duplicates', () => {
     return utils
       .updateSettings(settings, { ignoreReload: true })
       .then(() => postMessages(firstMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => apiUtils.waitForSentinelProcessing(ids, doc => {
+        return doc.tasks && doc.tasks.length === 1 && doc.tasks[0].state === 'forwarded-to-gateway';
+      }))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
@@ -99,7 +101,9 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(secondMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => apiUtils.waitForSentinelProcessing(ids, doc => {
+        return doc.tasks && doc.tasks.length === 1 && doc.tasks[0].state === 'forwarded-to-gateway';
+      }))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
@@ -113,7 +117,10 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(thirdMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => apiUtils.waitForSentinelProcessing(ids, doc => {
+        return doc.tasks && doc.tasks.length === 1 && 
+               (doc.tasks[0].state === 'duplicate' || doc.tasks[0].state === 'forwarded-to-gateway');
+      }))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
@@ -155,7 +162,9 @@ describe('message duplicates', () => {
     return utils
       .updateSettings(settings, { ignoreReload: true })
       .then(() => postMessages(firstMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => apiUtils.waitForSentinelProcessing(ids, doc => {
+        return doc.tasks && doc.tasks.length === 1 && doc.tasks[0].state === 'forwarded-to-gateway';
+      }))
       .then(docs => {
         docs.forEach(doc => {
           if (doc.tasks.length > 1) {
@@ -173,7 +182,9 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(secondMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => apiUtils.waitForSentinelProcessing(ids, doc => {
+        return doc.tasks && doc.tasks.length === 1 && doc.tasks[0].state === 'duplicate';
+      }))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
