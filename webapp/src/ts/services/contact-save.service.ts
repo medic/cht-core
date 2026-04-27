@@ -11,13 +11,6 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import FileManager from '../../js/enketo/file-manager';
 
-type ContactRoutingContext = {
-  root: Element;
-  preparedDocs: Record<string, any>[];
-  mainDoc: Record<string, any>;
-  submittedRepeatsLen: number;
-};
-
 @Injectable({
   providedIn: 'root'
 })
@@ -230,7 +223,7 @@ export class ContactSaveService {
             return;
           }
           const ownerDoc = this.resolveContactOwnerDoc(
-            element, { root, preparedDocs, mainDoc, submittedRepeatsLen }
+            element, root, preparedDocs, mainDoc, submittedRepeatsLen
           );
 
           const xpath = Xpath.getElementXPath(element);
@@ -255,6 +248,44 @@ export class ContactSaveService {
     }
   }
 
+  private findSectionForElement(el: Element, root: Element): Element | null {
+    let section: Element = el;
+    while (section.parentNode && section.parentNode !== root) {
+      section = section.parentNode as Element;
+    }
+    return section.parentNode === root ? section : null;
+  }
+
+  private isMainSection(section: Element, root: Element): boolean {
+    const ignored = [ 'meta', 'inputs', 'repeat' ];
+    const firstSection = (Array.from(root.children) as Element[])
+      .find(c => !ignored.includes(c.tagName) && c.childElementCount > 0);
+    return section === firstSection;
+  }
+
+  private findSiblingDoc(
+    section: Element,
+    preparedDocs: Record<string, any>[],
+    mainDoc: Record<string, any>,
+  ): Record<string, any> {
+    const siblingId = mainDoc[section.tagName]?._id;
+    return preparedDocs.find((d: Record<string, any>) => d._id === siblingId) ?? mainDoc;
+  }
+
+  private findRepeatDoc(
+    section: Element,
+    el: Element,
+    preparedDocs: Record<string, any>[],
+    submittedRepeatsLen: number,
+  ): Record<string, any> | null {
+    const repeatChildren = Array.from(section.children) as Element[];
+    const childIdx = repeatChildren.findIndex(c => c.contains(el));
+    if (childIdx >= 0 && childIdx < submittedRepeatsLen) {
+      return preparedDocs[1 + childIdx];
+    }
+    return null;
+  }
+
   /**
    * Locates the prepared sub-doc that owns a given XML element, by walking
    * up the DOM from the element to its section root (a direct child of the
@@ -265,36 +296,23 @@ export class ContactSaveService {
    *   - <repeat>'s i-th <child> -> preparedDocs[1 + i] (repeats precede siblings in concat)
    *   - anything else (meta, inputs, unknown) -> mainDoc
    */
-  private resolveContactOwnerDoc(el: Element, ctx: ContactRoutingContext): Record<string, any> {
-    const { root, preparedDocs, mainDoc, submittedRepeatsLen } = ctx;
-    let section: Element = el;
-    while (section.parentNode && section.parentNode !== root) {
-      section = section.parentNode as Element;
-    }
-    if (section.parentNode !== root) {
+  private resolveContactOwnerDoc(
+    el: Element,
+    root: Element,
+    preparedDocs: Record<string, any>[],
+    mainDoc: Record<string, any>,
+    submittedRepeatsLen: number,
+  ): Record<string, any> {
+    const section = this.findSectionForElement(el, root);
+    if (!section || this.isMainSection(section, root)) {
       return mainDoc;
     }
-
-    const ignored = [ 'meta', 'inputs', 'repeat' ];
-    const firstSection = (Array.from(root.children) as Element[])
-      .find(c => !ignored.includes(c.tagName) && c.childElementCount > 0);
-    if (section === firstSection) {
-      return mainDoc;
-    }
-
     if (this.CONTACT_FIELD_NAMES.includes(section.tagName)) {
-      const siblingId = mainDoc[section.tagName]?._id;
-      return preparedDocs.find(d => d._id === siblingId) ?? mainDoc;
+      return this.findSiblingDoc(section, preparedDocs, mainDoc);
     }
-
     if (section.tagName === 'repeat') {
-      const repeatChildren = Array.from(section.children) as Element[];
-      const childIdx = repeatChildren.findIndex(c => c.contains(el));
-      if (childIdx >= 0 && childIdx < submittedRepeatsLen) {
-        return preparedDocs[1 + childIdx];
-      }
+      return this.findRepeatDoc(section, el, preparedDocs, submittedRepeatsLen) ?? mainDoc;
     }
-
     return mainDoc;
   }
 
@@ -323,7 +341,7 @@ export class ContactSaveService {
     if (!match) {
       return mainDoc;
     }
-    return this.resolveContactOwnerDoc(match, { root, preparedDocs, mainDoc, submittedRepeatsLen });
+    return this.resolveContactOwnerDoc(match, root, preparedDocs, mainDoc, submittedRepeatsLen);
   }
 
   private findReferencedAttachments(doc: Record<string, any>): Set<string> {
