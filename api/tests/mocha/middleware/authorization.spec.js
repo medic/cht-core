@@ -338,16 +338,6 @@ describe('Authorization middleware', () => {
       });
     });
 
-    it('should skip online users and call next', () => {
-      testReq.userCtx = { name: 'admin', roles: ['_admin'] };
-      auth.isOnlineOnly.returns(true);
-
-      middleware.captureReplicationFailures(testReq, testRes, next);
-
-      expect(next.callCount).to.equal(1);
-      expect(testRes.on.callCount).to.equal(0);
-    });
-
     it('should attach close listener for offline users and call next', () => {
       testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
       auth.isOnlineOnly.returns(false);

@@ -1,14 +1,12 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
-const moment = require('moment');
 const replicationFailureLog = require('../services/replication/replication-failure-log');
 const errors = require('../errors');
+const moment = require('moment');
 
-const assertAdmin = async (req) => {
-  const userCtx = await auth.getUserCtx(req);
-  if (!auth.isDbAdmin(userCtx)) {
-    throw new errors.AuthenticationError('User is not an admin');
-  }
+const parsePositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 };
 
 module.exports = {
@@ -16,164 +14,125 @@ module.exports = {
    * @openapi
    * /api/v1/replication-failure-logs:
    *   get:
-   *     summary: Get replication failure log summaries
+   *     summary: Get replication failure logs
    *     operationId: v1ReplicationFailureLogsGet
    *     description: >
-   *       Returns a lightweight summary (without the detailed `failures` array) of replication failure logs for
-   *       all users in the specified month. Defaults to the current month if no `month` is provided. Only allowed
-   *       for database admins.
+   *       Returns a paginated page of full replication failure log documents. Optionally filter by `user`
+   *       and/or `reporting_period`. Use the `cursor` returned in each response to retrieve the next page;
+   *       a `null` cursor indicates there are no more pages. Only allowed for database admins.
    *     tags: [User]
    *     parameters:
    *       - in: query
-   *         name: month
+   *         name: user
    *         schema:
    *           type: string
-   *         description: Month to query in YYYY-MM format. Defaults to the current month.
+   *         description: Filter logs to a specific username.
+   *       - in: query
+   *         name: reporting_period
+   *         schema:
+   *           type: string
+   *         description: >
+   *           Filter logs to a specific reporting period in YYYY-MM format. Defaults to the current month when
+   *           no `user` filter is provided. When a `user` is provided, defaults to "all periods" for that user.
+   *       - $ref: '#/components/parameters/cursor'
+   *       - $ref: '#/components/parameters/limitEntity'
    *     responses:
    *       '200':
-   *         description: Replication failure log summaries for the given month.
+   *         description: A page of full failure log documents.
    *         content:
    *           application/json:
    *             schema:
    *               type: object
    *               properties:
-   *                 month:
-   *                   type: string
-   *                   description: The month the logs were queried for, in YYYY-MM format.
-   *                 logs:
+   *                 cursor:
+   *                   $ref: '#/components/schemas/PageCursor'
+   *                 data:
    *                   type: array
-   *                   description: One summary per user that had at least one failure in the month.
+   *                   description: One full failure log document per matching (user, reporting period) pair.
    *                   items:
    *                     type: object
    *                     properties:
    *                       _id:
    *                         type: string
+   *                       _rev:
+   *                         type: string
    *                       user:
    *                         type: string
-   *                         description: The username.
+   *                       date:
+   *                         type: number
    *                       total_failures:
    *                         type: number
+   *                       failures:
+   *                         type: array
    *                         description: >
-   *                           Total number of failures recorded for the user in the month, derived from the doc
-   *                           revision count (the log doc is only written on failure captures).
+   *                           The most recent failures for the user (capped at 50). The total count is available
+   *                           in `total_failures`.
+   *                         items:
+   *                           type: object
+   *                           properties:
+   *                             date:
+   *                               type: number
+   *                             status_code:
+   *                               type: number
+   *                               description: Response status code. 0 if the client cancelled the request.
+   *                             duration:
+   *                               type: number
+   *                               description: Request duration in milliseconds.
+   *                             request_id:
+   *                               type: string
+   *                             roles:
+   *                               type: array
+   *                               items:
+   *                                 type: string
+   *                             subjects_count:
+   *                               oneOf:
+   *                                 - type: number
+   *                                 - type: string
+   *                                   enum: [unknown]
+   *                               description: >
+   *                                 Number of subjects the user had access to at the time of the failure. The
+   *                                 string `unknown` if the request failed before the authorization context
+   *                                 was computed.
+   *                             docs_count:
+   *                               oneOf:
+   *                                 - type: number
+   *                                 - type: string
+   *                                   enum: [unknown]
+   *                               description: >
+   *                                 Total number of docs the user has access to (before purge filtering). The
+   *                                 string `unknown` if the request failed before the doc list was filtered.
+   *                             unpurged_docs_count:
+   *                               oneOf:
+   *                                 - type: number
+   *                                 - type: string
+   *                                   enum: [unknown]
+   *                               description: >
+   *                                 Number of docs after purge filtering — i.e. what the client was about to
+   *                                 receive. The string `unknown` if the request failed before the purge step.
+   *                                 Reading these three counters together tells you how far the request
+   *                                 progressed before failing.
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    */
   get: async (req, res) => {
     try {
-      await assertAdmin(req);
-      const month = req.query.month || moment().format('YYYY-MM');
-      const logs = await replicationFailureLog.getSummariesByMonth(month);
-      res.json({ month, logs });
-    } catch (err) {
-      serverUtils.error(err, req, res, true);
-    }
-  },
-
-  /**
-   * @openapi
-   * /api/v1/replication-failure-logs/{user}:
-   *   get:
-   *     summary: Get replication failure logs for a specific user
-   *     operationId: v1ReplicationFailureLogsGetForUser
-   *     description: >
-   *       Returns the full failure log documents for the given user. When a `month` query param is provided,
-   *       returns just that month's document. Without `month`, returns all monthly documents for the user.
-   *       Only allowed for database admins.
-   *     tags: [User]
-   *     parameters:
-   *       - in: path
-   *         name: user
-   *         required: true
-   *         schema:
-   *           type: string
-   *         description: The username whose failure logs should be returned.
-   *       - in: query
-   *         name: month
-   *         schema:
-   *           type: string
-   *         description: Optional month in YYYY-MM format. When provided, scopes the result to that month only.
-   *     responses:
-   *       '200':
-   *         description: Full failure log documents for the user.
-   *         content:
-   *           application/json:
-   *             schema:
-   *               oneOf:
-   *                 - type: object
-   *                   description: Single-month response when `month` is provided.
-   *                   properties:
-   *                     month:
-   *                       type: string
-   *                     user:
-   *                       type: string
-   *                     log:
-   *                       nullable: true
-   *                       type: object
-   *                       description: The full failure log document, or null if no failures were recorded.
-   *                       properties:
-   *                         _id:
-   *                           type: string
-   *                         _rev:
-   *                           type: string
-   *                         type:
-   *                           type: string
-   *                           description: Always 'replication-fail'.
-   *                         user:
-   *                           type: string
-   *                         timestamp:
-   *                           type: number
-   *                         total_failures:
-   *                           type: number
-   *                         failures:
-   *                           type: array
-   *                           description: >
-   *                             The most recent failures for the user (capped at 50). The total count is available
-   *                             in `total_failures`.
-   *                           items:
-   *                             type: object
-   *                             properties:
-   *                               timestamp:
-   *                                 type: number
-   *                               status_code:
-   *                                 type: number
-   *                                 description: Response status code. 0 if the client cancelled the request.
-   *                               duration:
-   *                                 type: number
-   *                                 description: Request duration in milliseconds.
-   *                               request_id:
-   *                                 type: string
-   *                               roles:
-   *                                 type: array
-   *                                 items:
-   *                                   type: string
-   *                               subjects_count:
-   *                                 type: number
-   *                                 description: Number of subjects the user had access to at the time of the failure.
-   *                 - type: object
-   *                   description: All-months response when `month` is omitted.
-   *                   properties:
-   *                     user:
-   *                       type: string
-   *                     logs:
-   *                       type: array
-   *                       description: One full log document per month the user had failures in.
-   *                       items:
-   *                         type: object
-   *                         description: See the single-month log schema above.
-   *       '401':
-   *         $ref: '#/components/responses/Unauthorized'
-   */
-  getForUser: async (req, res) => {
-    try {
-      await assertAdmin(req);
-      const user = req.params.user;
-      if (req.query.month) {
-        const log = await replicationFailureLog.getForUserAndMonth(req.query.month, user);
-        return res.json({ month: req.query.month, user, log });
+      const userCtx = await auth.getUserCtx(req);
+      if (!auth.isDbAdmin(userCtx)) {
+        throw new errors.AuthenticationError('User is not an admin');
       }
-      const logs = await replicationFailureLog.getAllForUser(user);
-      res.json({ user, logs });
+
+      let reportingPeriod = req.query.reporting_period;
+      if (!reportingPeriod && !req.query.user) {
+        reportingPeriod = moment().format('YYYY-MM');
+      }
+
+      const result = await replicationFailureLog.get({
+        user: req.query.user,
+        reportingPeriod,
+        cursor: req.query.cursor,
+        limit: parsePositiveInt(req.query.limit, replicationFailureLog.DEFAULT_LIMIT),
+      });
+      res.json(result);
     } catch (err) {
       serverUtils.error(err, req, res, true);
     }

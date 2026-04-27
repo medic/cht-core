@@ -100,10 +100,6 @@ module.exports = {
   },
 
   captureReplicationFailures: (req, res, next) => {
-    if (auth.isOnlineOnly(req.userCtx)) {
-      return next();
-    }
-
     const start = Date.now();
     res.on('close', () => {
       if (!res.writableFinished || res.statusCode >= 400) {
