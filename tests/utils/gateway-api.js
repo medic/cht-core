@@ -1,5 +1,5 @@
 const testUtils = require('@utils');
-const uuid = require('uuid').v7;
+const uuid = require('uuid');
 const { DOC_TYPES } = require('@medic/constants');
 
 const CHW_CONTACT_NUMBER = '+32049832049';
@@ -60,7 +60,7 @@ const createWoMessage = (id, content) => {
   };
 
   const messageDoc = {
-    _id: uuid(),
+    _id: uuid.v7(),
     errors: [],
     form: null,
     from: '+123',

@@ -2,7 +2,7 @@
  * @module message-utils
  */
 const _ = require('lodash/core');
-const { v7: uuid } = require('uuid');
+const uuid = require('uuid');
 const gsm = require('gsm');
 const mustache = require('mustache');
 const objectPath = require('object-path');
@@ -389,7 +389,7 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
   const context = extendedTemplateContext(doc, extraContext || {});
 
   const result = {
-    uuid: uuid(),
+    uuid: uuid.v7(),
     to: getPhone(config, context, recipient)
   };
 

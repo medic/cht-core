@@ -6,7 +6,7 @@ const utils = require('../lib/utils');
 const logger = require('@medic/logger');
 const config = require('../config');
 const infodoc = require('@medic/infodoc');
-const { v7: uuid } = require('uuid');
+const uuid = require('uuid');
 
 infodoc.initLib(db.medic, db.sentinel);
 /*
@@ -81,7 +81,7 @@ const processDocs = docs => {
   }
 
   let changes;
-  docs.forEach(doc => doc._id = doc._id || uuid());
+  docs.forEach(doc => doc._id = doc._id || uuid.v7());
   const clonedDocs = JSON.parse(JSON.stringify(docs));
 
   return lineage
