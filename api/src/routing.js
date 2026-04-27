@@ -73,7 +73,7 @@ const appPrefix = `${routePrefix}_design/${environment.ddoc}/_rewrite/`;
 const adminAppPrefix = `${routePrefix}_design/medic-admin/_rewrite{/{*path}}`;
 const adminAppReg = new RegExp(`/${environment.db}/_design/medic-admin/_rewrite/`);
 const serverUtils = require('./server-utils');
-const { v7: uuid } = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
@@ -183,8 +183,8 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 }
 
 const shortUuid = () => {
-  const ID_LENGTH = 16;
-  return uuid().replace(/-/g, '').toLowerCase().slice(0, ID_LENGTH);
+  const ID_LENGTH = 12;
+  return uuidv4().replace(/-/g, '').toLowerCase().slice(0, ID_LENGTH);
 };
 
 app.use((req, res, next) => {

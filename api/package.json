@@ -17,6 +17,7 @@
     "run-watch": "TZ=UTC nodemon -e js,json,html,properties --inspect=0.0.0.0:9229 --ignore 'build/static' --ignore 'build/public' --watch ./ --watch '../shared-libs/**/src/**' server.js -- --allow-cors"
   },
   "dependencies": {
-    "@medic/constants": "file:../shared-libs/constants"
+    "@medic/constants": "file:../shared-libs/constants",
+    "uuid": "^10.0.0"
   }
 }

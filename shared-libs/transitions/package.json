@@ -26,6 +26,7 @@
     "@medic/settings": "file:../settings",
     "@medic/task-utils": "file:../task-utils",
     "@medic/user-management": "file:../user-management",
-    "@medic/validation": "file:../validation"
+    "@medic/validation": "file:../validation",
+    "uuid": "^10.0.0"
   }
 }
