@@ -11,6 +11,13 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import FileManager from '../../js/enketo/file-manager';
 
+type ContactRoutingContext = {
+  root: Element;
+  preparedDocs: Record<string, any>[];
+  mainDoc: Record<string, any>;
+  submittedRepeatsLen: number;
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -223,7 +230,7 @@ export class ContactSaveService {
             return;
           }
           const ownerDoc = this.resolveContactOwnerDoc(
-            element, root, preparedDocs, mainDoc, submittedRepeatsLen
+            element, { root, preparedDocs, mainDoc, submittedRepeatsLen }
           );
 
           const xpath = Xpath.getElementXPath(element);
@@ -258,13 +265,8 @@ export class ContactSaveService {
    *   - <repeat>'s i-th <child> -> preparedDocs[1 + i] (repeats precede siblings in concat)
    *   - anything else (meta, inputs, unknown) -> mainDoc
    */
-  private resolveContactOwnerDoc(
-    el: Element,
-    root: Element,
-    preparedDocs: Record<string, any>[],
-    mainDoc: Record<string, any>,
-    submittedRepeatsLen: number,
-  ): Record<string, any> {
+  private resolveContactOwnerDoc(el: Element, ctx: ContactRoutingContext): Record<string, any> {
+    const { root, preparedDocs, mainDoc, submittedRepeatsLen } = ctx;
     let section: Element = el;
     while (section.parentNode && section.parentNode !== root) {
       section = section.parentNode as Element;
@@ -321,7 +323,7 @@ export class ContactSaveService {
     if (!match) {
       return mainDoc;
     }
-    return this.resolveContactOwnerDoc(match, root, preparedDocs, mainDoc, submittedRepeatsLen);
+    return this.resolveContactOwnerDoc(match, { root, preparedDocs, mainDoc, submittedRepeatsLen });
   }
 
   private findReferencedAttachments(doc: Record<string, any>): Set<string> {
