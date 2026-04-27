@@ -3,9 +3,9 @@
     <span class="snackbar-message">{{message}}</span>
 
     @if (action) {
-    <button class="snackbar-action" (click)="action.onClick()">
-      {{action.label}}
-    </button>
+      <span class="snackbar-action" (click)="action.onClick()">
+        {{action.label}}
+      </span>
     }
 
   </span>

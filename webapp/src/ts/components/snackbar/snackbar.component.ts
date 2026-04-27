@@ -12,7 +12,6 @@ import { GlobalActions } from '@mm-actions/global';
   selector: 'snackbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './snackbar.component.html',
-  
 })
 export class SnackbarComponent implements OnInit, OnDestroy {
   private subscription: Subscription = new Subscription();

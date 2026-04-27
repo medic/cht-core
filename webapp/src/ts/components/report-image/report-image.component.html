@@ -1,3 +1,6 @@
+@if (loading) {
+  <div class="loader"></div>
+}
 @if (!loading) {
-  <img class="report-image" [src]="objectUrl" alt="Report" />
+  <img class="report-image" [src]="objectUrl" />
 }
