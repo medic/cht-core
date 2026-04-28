@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { v7 as uuidv7 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
@@ -374,13 +374,13 @@ export class EnketoService {
           id = $id.text();
         }
         if (!id) {
-          id = uuidv7();
+          id = uuid();
         }
       }
       e._couchId = id;
     };
 
-    mapOrAssignId($record[0], doc._id || uuidv7());
+    mapOrAssignId($record[0], doc._id || uuid());
 
     const getId = (xpath) => {
       const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
@@ -422,7 +422,7 @@ export class EnketoService {
 
       // assign a unique id for xpath context, since the element can be inside a repeat
       if (!element.id) {
-        element.id = uuidv7();
+        element.id = uuid();
       }
       const uniqueElementSelector = `${element.nodeName}[@id="${element.id}"]`;
 

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { v7 as uuidv7 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { CookieService } from 'ngx-cookie-service';
 
 import { DebugService } from '@mm-services/debug.service';
@@ -94,7 +94,7 @@ export class TestingComponent implements OnInit {
     let promise = Promise.resolve();
 
     for (let i = 0; i < parseInt(this.amountFeedbackDocs); i++) {
-      promise = promise.then(() => this.feedbackService.submit({ message: uuidv7() }));
+      promise = promise.then(() => this.feedbackService.submit({ message: uuid() }));
     }
 
     promise.then(() => this.generatingFeedback = false);

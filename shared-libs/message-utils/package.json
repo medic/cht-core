@@ -9,7 +9,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@medic/logger": "file:../logger",
-    "@medic/phone-number": "file:../phone-number",
-    "uuid": "^10.0.0"
+    "@medic/phone-number": "file:../phone-number"
   }
 }

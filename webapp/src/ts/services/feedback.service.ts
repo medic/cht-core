@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { v7 as uuidv7 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { DbService } from '@mm-services/db.service';
@@ -195,7 +195,7 @@ export class FeedbackService {
     const language = await this.languageService.get();
 
     const time = new Date().toISOString();
-    const id = uuidv7();
+    const id = uuid();
 
     return {
       _id: `feedback-${time}-${id}`,

@@ -1,5 +1,5 @@
 const chai = require('chai');
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const utils = require('@utils');
 const apiUtils = require('./utils');
 
@@ -64,22 +64,22 @@ describe('message duplicates', () => {
     };
 
     const firstMessages = [
-      Object.assign({ id: uuid.v7() }, message1),
-      Object.assign({ id: uuid.v7() }, message2),
-      Object.assign({ id: uuid.v7() }, message1),
-      Object.assign({ id: uuid.v7() }, message1),
+      Object.assign({ id: uuid() }, message1),
+      Object.assign({ id: uuid() }, message2),
+      Object.assign({ id: uuid() }, message1),
+      Object.assign({ id: uuid() }, message1),
     ];
 
     const secondMessages = [
-      Object.assign({ id: uuid.v7() }, message1),
-      Object.assign({ id: uuid.v7() }, message2),
-      Object.assign({ id: uuid.v7() }, message1),
+      Object.assign({ id: uuid() }, message1),
+      Object.assign({ id: uuid() }, message2),
+      Object.assign({ id: uuid() }, message1),
     ];
 
     const thirdMessages = [
-      Object.assign({ id: uuid.v7() }, message1),
-      Object.assign({ id: uuid.v7() }, message2),
-      Object.assign({ id: uuid.v7() }, message1),
+      Object.assign({ id: uuid() }, message1),
+      Object.assign({ id: uuid() }, message2),
+      Object.assign({ id: uuid() }, message1),
     ];
 
     return utils
@@ -142,14 +142,14 @@ describe('message duplicates', () => {
     };
 
     const firstMessages = [
-      Object.assign({ id: uuid.v7() }, message),
-      Object.assign({ id: uuid.v7() }, message),
-      Object.assign({ id: uuid.v7() }, message),
+      Object.assign({ id: uuid() }, message),
+      Object.assign({ id: uuid() }, message),
+      Object.assign({ id: uuid() }, message),
     ];
 
     const secondMessages = [
-      Object.assign({ id: uuid.v7() }, message),
-      Object.assign({ id: uuid.v7() }, message),
+      Object.assign({ id: uuid() }, message),
+      Object.assign({ id: uuid() }, message),
     ];
 
     return utils
