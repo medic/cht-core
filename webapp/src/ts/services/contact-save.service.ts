@@ -337,7 +337,8 @@ export class ContactSaveService {
   ): Record<string, any> {
     const match = $(root)
       .find('[type=file], [type=binary]')
-      .filter((_, el) => $(el).text() === filename)[0];
+      .toArray()
+      .find(el => $(el).text() === filename);
     if (!match) {
       return mainDoc;
     }
