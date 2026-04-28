@@ -8,8 +8,8 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=22.15.0",
-    "npm": ">=10.9.0"
+    "node": ">=20.19.0",
+    "npm": ">=10.2.0"
   },
   "type": "commonjs",
   "workspaces": [
