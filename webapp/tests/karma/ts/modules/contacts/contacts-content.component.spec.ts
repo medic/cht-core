@@ -30,6 +30,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -275,7 +276,7 @@ describe('Contacts content component', () => {
     beforeEach(() => {
       selectedContact.doc = {
         _id: 'districtsdistrict',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         contact: { _id: 'mario' },
         children: { persons: [ ] }
       };

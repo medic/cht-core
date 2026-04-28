@@ -12,6 +12,7 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('ContactViewModelGenerator service', () => {
   let service: ContactViewModelGeneratorService;
@@ -78,7 +79,8 @@ describe('ContactViewModelGenerator service', () => {
     dbQuery = sinon.stub();
     types = [
       { id: 'family' },
-      { id: 'person', sort_by_dob: true, icon: childPlaceIcon, person: true, parents: [ 'family', 'clinic' ] },
+      { id: 'person', sort_by_dob: true, 
+        icon: childPlaceIcon, person: true, parents: [ 'family', CONTACT_TYPES.CLINIC ] },
       { id: 'chp', person: true, parents: [ 'mushroom' ] },
       { id: 'red-herring' },
       { id: 'clinic', parents: [ 'mushroom' ] },
@@ -104,7 +106,7 @@ describe('ContactViewModelGenerator service', () => {
 
     doc = {
       _id: parentId,
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact: { _id: contactId }
     };
     forms = [];
@@ -278,7 +280,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('when selected doc is a clinic, child places are sorted in alphabetical order (like for other places)', () => {
-      doc.type = 'clinic';
+      doc.type = CONTACT_TYPES.CLINIC;
       getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([childPlace2, childPlace]).then(model => {
         assert.equal(model.children[1].contacts[0].doc._id, childPlace._id);
@@ -287,7 +289,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('when selected contact type specifies sort_by_dob, child persons are sorted by age', () => {
-      doc.type = 'clinic';
+      doc.type = CONTACT_TYPES.CLINIC;
       getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
       return runPlaceTest([childPerson2, childPerson]).then(model => {
         assert.equal(model.children[0].contacts.length, 3);
@@ -345,7 +347,7 @@ describe('ContactViewModelGenerator service', () => {
 
     describe('muted sorting', () => {
       it('when child type has sort_by_dob should sort muted persons on the bottom sorted by age', () => {
-        doc.type = 'clinic';
+        doc.type = CONTACT_TYPES.CLINIC;
         getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
 
         const childPerson1 = { _id: 'childPerson1', type: 'person', name: 'person 1', date_of_birth: '2000-01-01' };
@@ -367,7 +369,7 @@ describe('ContactViewModelGenerator service', () => {
       });
 
       it('when child type does not have sort_by_dob should sort muted persons on the bottom sorted by name', () => {
-        doc.type = 'clinic';
+        doc.type = CONTACT_TYPES.CLINIC;
         const childPerson1 = { _id: 'childPerson1', type: 'chp', name: 'person 1', date_of_birth: '2000-01-01' };
         const childPerson2 = { _id: 'childPerson2', type: 'chp', name: 'person 2', date_of_birth: '1999-01-01' };
         const mutedChildPerson1 =
@@ -388,10 +390,10 @@ describe('ContactViewModelGenerator service', () => {
       it('should sort muted places to the bottom, alphabetically', () => {
         doc.type = 'mushroom';
         getContact.withArgs(Qualifier.byUuid(childContactPerson._id)).resolves(childContactPerson);
-        const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
-        const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
-        const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
-        const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: 'clinic', name: 'muted 2', muted: 124 };
+        const childPlace1 = { _id: 'childPlace1', type: CONTACT_TYPES.CLINIC, name: 'place 1' };
+        const childPlace2 = { _id: 'childPlace2', type: CONTACT_TYPES.CLINIC, name: 'place 2' };
+        const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: CONTACT_TYPES.CLINIC, name: 'muted 1', muted: 123 };
+        const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: CONTACT_TYPES.CLINIC, name: 'muted 2', muted: 124 };
 
         return runPlaceTest([mutedChildPlace2, mutedChildPlace1, childPlace2, childPlace1]).then(model => {
           assert.equal(model.children[1].contacts.length, 4);
@@ -412,10 +414,10 @@ describe('ContactViewModelGenerator service', () => {
           { _id: 'mutedChildPerson1', type: 'chp', name: 'muted 1', date_of_birth: '2000-01-01', muted: 123 };
         const mutedChildPerson2 =
           { _id: 'mutedChildPerson2', type: 'chp', name: 'muted 2', date_of_birth: '1999-01-01', muted: 124 };
-        const childPlace1 = { _id: 'childPlace1', type: 'clinic', name: 'place 1' };
-        const childPlace2 = { _id: 'childPlace2', type: 'clinic', name: 'place 2' };
-        const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: 'clinic', name: 'muted 1', muted: 123 };
-        const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: 'clinic', name: 'muted 2', muted: 124 };
+        const childPlace1 = { _id: 'childPlace1', type: CONTACT_TYPES.CLINIC, name: 'place 1' };
+        const childPlace2 = { _id: 'childPlace2', type: CONTACT_TYPES.CLINIC, name: 'place 2' };
+        const mutedChildPlace1 = { _id: 'mutedChildPlace1', type: CONTACT_TYPES.CLINIC, name: 'muted 1', muted: 123 };
+        const mutedChildPlace2 = { _id: 'mutedChildPlace2', type: CONTACT_TYPES.CLINIC, name: 'muted 2', muted: 124 };
 
         const children = [
           childPerson2, childPerson1, mutedChildPerson2, mutedChildPerson1,

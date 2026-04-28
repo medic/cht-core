@@ -18,6 +18,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 const nextTick = () => new Promise(r => setTimeout(r));
 
@@ -154,7 +155,7 @@ describe('TasksGroupComponent', () => {
         { _id: 'd', owner: 'a' },
       ];
       const contactModel = {
-        doc: { _id: 'contact', type: 'clinic' },
+        doc: { _id: 'contact', type: CONTACT_TYPES.CLINIC },
         type: { id: 'clinic' },
       };
       await compileComponent(lastSubmittedTask, tasks);
@@ -176,7 +177,7 @@ describe('TasksGroupComponent', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
         {
-          doc: { _id: 'contact', type: 'clinic' },
+          doc: { _id: 'contact', type: CONTACT_TYPES.CLINIC },
           type: { id: 'clinic' },
         },
       ]);

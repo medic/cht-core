@@ -4,6 +4,9 @@ on:
   schedule:
     - cron:  '0 3 * * *' # Run every day at 3am
 
+permissions:
+  contents: read
+
 env:
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL }}
 
@@ -14,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      with:
+        persist-credentials: false
     - run: npm ci
     - name: Cleanup
       run: |

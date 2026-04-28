@@ -140,7 +140,7 @@ describe('Contact details page.', () => {
 
   describe('Contact summary error', () => {
     const places = placeFactory.generateHierarchy();
-    const clinic = places.get('clinic');
+    const clinic = places.get(CONTACT_TYPES.CLINIC);
 
     const patient = personFactory.build({
       name: 'Patient',
