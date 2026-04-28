@@ -100,7 +100,7 @@ describe('replication failure logging @docker', () => {
     await utils.createUsers(users, true);
   });
 
-  afterEach(async () => {
+  after(async () => {
     await utils.deleteUsers(users);
     await utils.revertDb();
   });
