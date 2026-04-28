@@ -257,9 +257,9 @@ export class ContactSaveService {
   }
 
   private isMainSection(section: Element, root: Element): boolean {
-    const ignored = [ 'meta', 'inputs', 'repeat' ];
+    const ignored = new Set([ 'meta', 'inputs', 'repeat' ]);
     const firstSection = (Array.from(root.children) as Element[])
-      .find(c => !ignored.includes(c.tagName) && c.childElementCount > 0);
+      .find(c => !ignored.has(c.tagName) && c.childElementCount > 0);
     return section === firstSection;
   }
 
