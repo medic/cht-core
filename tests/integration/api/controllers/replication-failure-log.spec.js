@@ -101,6 +101,11 @@ describe('replication failure logging @docker', () => {
   });
 
   afterEach(async () => {
+    await utils.deleteUsers(users);
+    await utils.revertDb();
+  });
+
+  afterEach(async () => {
     await clearLogs();
   });
 
