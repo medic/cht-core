@@ -11,6 +11,13 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import FileManager from '../../js/enketo/file-manager';
 
+interface ContactOwnerContext {
+  root: Element;
+  preparedDocs: Record<string, any>[];
+  mainDoc: Record<string, any>;
+  submittedRepeatsLen: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -182,7 +189,9 @@ export class ContactSaveService {
     const $record = xmlStr ? $($.parseXML(xmlStr)) : null;
     const root = ($record?.children(':first')[0]) as Element | undefined;
     const formId = root ? $(root).attr('id') : undefined;
-    const submittedRepeatsLen = submitted?.repeats?.child_data?.length ?? 0;
+    const ctx: ContactOwnerContext | null = root
+      ? { root, preparedDocs, mainDoc, submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0 }
+      : null;
 
     const newAttachmentNamesByDoc = new Map<Record<string, any>, Set<string>>();
     const fileNameMapByDoc = new Map<Record<string, any>, Map<string, string>>();
@@ -201,8 +210,8 @@ export class ContactSaveService {
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        const ownerDoc = root
-          ? this.findContactOwnerForFilename(file.name, root, preparedDocs, mainDoc, submittedRepeatsLen)
+        const ownerDoc = ctx
+          ? this.findContactOwnerForFilename(file.name, ctx)
           : mainDoc;
 
         const sanitizedFileName = this.sanitizeFileName(file.name);
@@ -214,17 +223,15 @@ export class ContactSaveService {
       });
 
     // Process binary fields from XML, routed per sub-doc
-    if (root) {
-      $(root)
+    if (ctx) {
+      $(ctx.root)
         .find('[type=binary]')
         .each((_idx, element: Element) => {
           const content = $(element).text();
           if (!content) {
             return;
           }
-          const ownerDoc = this.resolveContactOwnerDoc(
-            element, root, preparedDocs, mainDoc, submittedRepeatsLen
-          );
+          const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
 
           const xpath = Xpath.getElementXPath(element);
           // Replace instance root element node name with form internal ID
@@ -296,13 +303,8 @@ export class ContactSaveService {
    *   - <repeat>'s i-th <child> -> preparedDocs[1 + i] (repeats precede siblings in concat)
    *   - anything else (meta, inputs, unknown) -> mainDoc
    */
-  private resolveContactOwnerDoc(
-    el: Element,
-    root: Element,
-    preparedDocs: Record<string, any>[],
-    mainDoc: Record<string, any>,
-    submittedRepeatsLen: number,
-  ): Record<string, any> {
+  private resolveContactOwnerDoc(el: Element, ctx: ContactOwnerContext): Record<string, any> {
+    const { root, preparedDocs, mainDoc, submittedRepeatsLen } = ctx;
     const section = this.findSectionForElement(el, root);
     if (!section || this.isMainSection(section, root)) {
       return mainDoc;
@@ -328,21 +330,15 @@ export class ContactSaveService {
    * session is guaranteed by Enketo's timestamp suffix, so the first
    * match is the only match.
    */
-  private findContactOwnerForFilename(
-    filename: string,
-    root: Element,
-    preparedDocs: Record<string, any>[],
-    mainDoc: Record<string, any>,
-    submittedRepeatsLen: number,
-  ): Record<string, any> {
-    const match = $(root)
+  private findContactOwnerForFilename(filename: string, ctx: ContactOwnerContext): Record<string, any> {
+    const match = $(ctx.root)
       .find('[type=file], [type=binary]')
       .toArray()
       .find(el => $(el).text() === filename);
     if (!match) {
-      return mainDoc;
+      return ctx.mainDoc;
     }
-    return this.resolveContactOwnerDoc(match, root, preparedDocs, mainDoc, submittedRepeatsLen);
+    return this.resolveContactOwnerDoc(match, ctx);
   }
 
   private findReferencedAttachments(doc: Record<string, any>): Set<string> {
