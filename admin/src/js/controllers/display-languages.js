@@ -2,7 +2,7 @@ const _ = require('lodash/core');
 _.uniq = require('lodash/uniq');
 const constants = require('@medic/constants');
 const DOC_IDS = constants.DOC_IDS;
-const DOC_TYPES = constants.DOC_TYPES;
+const PREFIXES = constants.PREFIXES;
 
 angular.module('controllers').controller('DisplayLanguagesCtrl',
   function (
@@ -91,8 +91,9 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       $scope.loading = true;
       $q
         .all([
-          DB().query('medic-client/doc_by_type', {
-            key: [ DOC_TYPES.TRANSLATIONS ],
+          DB().allDocs({
+            start_key: PREFIXES.TRANSLATIONS,
+            end_key: PREFIXES.TRANSLATIONS + '￰',
             include_docs: true
           }),
           Settings()

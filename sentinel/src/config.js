@@ -2,7 +2,7 @@ const _ = require('lodash');
 const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
-const { DOC_IDS, DOC_TYPES, PREFIXES } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -20,11 +20,12 @@ let transitionsLib;
 
 const loadTranslations = () => {
   const options = {
-    key: [DOC_TYPES.TRANSLATIONS],
+    start_key: PREFIXES.TRANSLATIONS,
+    end_key: PREFIXES.TRANSLATIONS + '￰',
     include_docs: true,
   };
   return db.medic
-    .query('medic-client/doc_by_type', options)
+    .allDocs(options)
     .then(result => {
       result.rows.forEach(row => {
         const values = Object.assign(row.doc.generic, row.doc.custom || {});

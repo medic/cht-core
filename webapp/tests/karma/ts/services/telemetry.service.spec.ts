@@ -82,7 +82,6 @@ describe('TelemetryService', () => {
     medicDb = {
       info: sinon.stub(),
       get: sinon.stub(),
-      query: sinon.stub(),
       allDocs: sinon.stub()
     };
     const getStub = sinon.stub();
@@ -137,7 +136,7 @@ describe('TelemetryService', () => {
 
   describe('record()', () => {
     it('should record a piece of telemetry', async () => {
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
       const oldTelemetryDBNames = [
         '_pouch_medic-user-koko-telemetry-98y7c3a1-5a1a-4d3f-a076-d86ec38b1d87',
@@ -172,7 +171,7 @@ describe('TelemetryService', () => {
     });
 
     it('should use separate telemetry DBs for different users on the same day', async () => {
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
 
       // Simulate switching from user 'greg' to user 'jane' on the same day
@@ -197,7 +196,7 @@ describe('TelemetryService', () => {
     });
 
     it('should default the value to 1 if not passed', async () => {
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs.resolves({ rows: [] });
       telemetryDb.query.resolves({ rows: [] });
       windowMock.indexedDB.databases.resolves([
         'telemetry-2018-11-10-greg',
@@ -233,26 +232,30 @@ describe('TelemetryService', () => {
           _id: '_design/medic-client',
           build_info: { version: '3.0.0' }
         });
-      medicDb.query.resolves({
-        rows: [
-          {
-            id: 'form:anc_followup',
-            key: 'anc_followup',
-            doc: {
-              _id: 'form:anc_followup',
-              _rev: '1-abc',
-              internalId: 'anc_followup'
+      medicDb.allDocs
+        .withArgs({ start_key: 'form:', end_key: 'form:￰', include_docs: true })
+        .resolves({
+          rows: [
+            {
+              id: 'form:anc_followup',
+              key: 'anc_followup',
+              doc: {
+                _id: 'form:anc_followup',
+                _rev: '1-abc',
+                internalId: 'anc_followup'
+              }
             }
-          }
-        ]
-      });
-      medicDb.allDocs.resolves({
-        rows: [{
-          value: {
-            rev: 'somerandomrevision'
-          }
-        }]
-      });
+          ]
+        });
+      medicDb.allDocs
+        .withArgs({ key: 'settings' })
+        .resolves({
+          rows: [{
+            value: {
+              rev: 'somerandomrevision'
+            }
+          }]
+        });
     };
 
     it('should aggregate once a day and delete previous telemetry databases', async () => {
@@ -318,9 +321,14 @@ describe('TelemetryService', () => {
         deviceInfo: {}
       });
 
-      expect(medicDb.query.calledTwice).to.be.true;
-      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
-      expect(medicDb.query.args[0][1]).to.deep.equal({ key: [ 'form' ], include_docs: true });
+      const formsAllDocsCalls = medicDb.allDocs.getCalls()
+        .filter(call => call.args[0]?.start_key === 'form:');
+      expect(formsAllDocsCalls.length).to.equal(2);
+      expect(formsAllDocsCalls[0].args[0]).to.deep.equal({
+        start_key: 'form:',
+        end_key: 'form:￰',
+        include_docs: true,
+      });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
       expect(telemetryDb.close.notCalled).to.be.true;
 
@@ -456,14 +464,18 @@ describe('TelemetryService', () => {
           version: '3.0.0'
         }
       });
-      medicDb.allDocs.resolves({
-        rows: [{
-          value: {
-            rev: 'randomrev'
-          }
-        }]
-      });
-      medicDb.query.resolves({ rows: [] });
+      medicDb.allDocs
+        .withArgs({ start_key: 'form:', end_key: 'form:￰', include_docs: true })
+        .resolves({ rows: [] });
+      medicDb.allDocs
+        .withArgs({ key: 'settings' })
+        .resolves({
+          rows: [{
+            value: {
+              rev: 'randomrev'
+            }
+          }]
+        });
 
       await service.record('test', 1);
 

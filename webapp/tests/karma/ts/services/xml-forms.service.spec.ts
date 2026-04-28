@@ -78,7 +78,7 @@ describe('XmlForms service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: () => ({
-          query: dbQuery, get: dbGet, getAttachment: dbGetAttachment
+          allDocs: dbQuery, get: dbGet, getAttachment: dbGetAttachment
         } ) } },
         { provide: ChangesService, useValue: { subscribe: Changes } },
         { provide: AuthService, useValue: { has: hasAuth } },
@@ -1339,10 +1339,10 @@ describe('XmlForms service', () => {
         expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
         expect(actual).to.deep.equal(expected);
         expect(dbQuery.callCount).to.equal(1);
-        expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
-        const options = dbQuery.args[0][1];
+        const options = dbQuery.args[0][0];
         expect(options.include_docs).to.equal(true);
-        expect(options.key).to.deep.equal(['form']);
+        expect(options.start_key).to.equal('form:');
+        expect(options.end_key).to.equal('form:￰');
       });
     });
 

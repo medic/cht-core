@@ -56,10 +56,12 @@ const USER_ROLES = {
   COUCHDB_ADMIN: '_admin',
 };
 
-// Prefixes
+// Document ID prefixes used for _all_docs prefix range scans.
+// For end_key, append '￰' (U+FFF0) to the prefix to bound the range.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  FORM: 'form:',
 };
 
 module.exports = {

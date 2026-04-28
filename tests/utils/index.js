@@ -694,7 +694,10 @@ const getDefaultForms = async () => {
     const doc = await db.get(docName);
     PROTECTED_DOCS.push(...doc.forms);
   } catch {
-    const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
+    const result = await db.allDocs({
+      startkey: PREFIXES.FORM,
+      endkey: PREFIXES.FORM + '￰',
+    });
     const doc = {
       _id: docName,
       forms: result.rows.map(row => row.id),
@@ -882,7 +885,11 @@ const createUsers = async (users, meta = false, password_change_required = false
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .allDocs({
+    include_docs: true,
+    start_key: PREFIXES.COUCH_USER,
+    end_key: PREFIXES.COUCH_USER + '￰',
+  })
   .then(response => response.rows.map(row => row.doc));
 
 /**

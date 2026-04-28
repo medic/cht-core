@@ -1,7 +1,7 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
-import { DOC_IDS } from '@medic/constants';
+import { DOC_IDS, PREFIXES } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
@@ -70,7 +70,11 @@ export class TelemetryService {
     return Promise
       .all([
         this.dbService.get().get('_design/medic-client'),
-        this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
+        this.dbService.get().allDocs({
+          start_key: PREFIXES.FORM,
+          end_key: PREFIXES.FORM + '￰',
+          include_docs: true,
+        }),
         this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
       ])
       .then(([ ddoc, formResults, settingsResults ]) => {
@@ -92,7 +96,7 @@ export class TelemetryService {
           versions: {
             app: version,
             forms: forms,
-            settings: settingsResults?.rows?.[0].value?.rev,
+            settings: settingsResults?.rows?.[0]?.value?.rev,
           }
         };
       });

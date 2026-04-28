@@ -20,7 +20,7 @@ describe('Display Languages controller', function() {
     settings = sinon.stub();
     updateSettings = sinon.stub();
     db = {
-      query: sinon.stub()
+      allDocs: sinon.stub()
     };
     stubLanguages = sinon.stub();
     stubLanguages.returns(Promise.resolve([
@@ -52,7 +52,7 @@ describe('Display Languages controller', function() {
 
   it('should display error when language settings are invalid', async () => {
     settings.resolves({});
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.allDocs.resolves({
       rows: [
         {
           id: 'messages-en',
@@ -83,7 +83,7 @@ describe('Display Languages controller', function() {
 
   it('should not mutate the language object', async () => {
     settings.resolves({ languages: [{ locale: 'en', locale_outgoing: 'sw' }] });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.allDocs.resolves({
       rows: [
         {
           id: 'messages-en',
@@ -120,8 +120,9 @@ describe('Display Languages controller', function() {
     await createController();
     rootScope.$digest();
 
-    chai.expect(db.query.firstCall.args[1]).to.deep.equal({
-      key: [DOC_TYPES.TRANSLATIONS],
+    chai.expect(db.allDocs.firstCall.args[0]).to.deep.equal({
+      start_key: 'messages-',
+      end_key: 'messages-￰',
       include_docs: true,
     });
     chai.expect(scope.languagesModel.totalTranslations).to.equal(5);
@@ -160,7 +161,7 @@ describe('Display Languages controller', function() {
         { locale: 'sw', enabled: true },
       ],
     });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.allDocs.resolves({
       rows: [
         {
           id: 'messages-en',
@@ -205,7 +206,7 @@ describe('Display Languages controller', function() {
         { locale: 'sw', enabled: false },
       ],
     });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.allDocs.resolves({
       rows: [
         {
           id: 'messages-en',
@@ -267,7 +268,7 @@ describe('Display Languages controller', function() {
       locale: 'en',
       locale_outgoing: 'sw',
     });
-    db.query.withArgs('medic-client/doc_by_type').resolves({
+    db.allDocs.resolves({
       rows: [
         {
           id: 'messages-en',

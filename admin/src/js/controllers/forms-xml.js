@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const PREFIXES = constants.PREFIXES;
 
 angular.module('controllers').controller('FormsXmlCtrl',
   function (
@@ -20,10 +22,11 @@ angular.module('controllers').controller('FormsXmlCtrl',
     const getForms = () => {
       const options = {
         include_docs: true,
-        key: ['form']
+        start_key: PREFIXES.FORM,
+        end_key: PREFIXES.FORM + '￰',
       };
       return DB()
-        .query('medic-client/doc_by_type', options)
+        .allDocs(options)
         .then(res => res.rows.map(row => row.doc));
     };
 
@@ -111,7 +114,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
       const $xml = $($.parseXML(xml));
       const title = getXmlTitle($xml, xml);
       const formId = getXmlFormId($xml, meta);
-      const couchId = 'form:' + formId;
+      const couchId = PREFIXES.FORM + formId;
       return DB()
         .get(couchId, { include_attachments: true })
         .catch(err => {

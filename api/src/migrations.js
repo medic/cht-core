@@ -16,34 +16,13 @@ const hasRun = (log, migration) => {
   return log.migrations.indexOf(migration.name) !== -1;
 };
 
-const getLogWithView = () => {
-  const options = {
-    include_docs: true,
-    key: [MIGRATION_LOG_TYPE],
-  };
-  return db.medic.query('medic-client/doc_by_type', options).then(result => {
-    return result && result.rows && result.rows[0] && result.rows[0].doc;
-  });
-};
-
-const deleteOldLog = oldLog => {
-  if (oldLog) {
-    oldLog._deleted = true;
-    return db.medic.put(oldLog);
-  }
-};
-
 const createMigrationLog = () => {
-  return getLogWithView()
-    .then(oldLog => {
-      const newLog = {
-        _id: MIGRATION_LOG_ID,
-        type: MIGRATION_LOG_TYPE,
-        migrations: (oldLog && oldLog.migrations) || [],
-      };
-      return db.medic.put(newLog).then(() => deleteOldLog(oldLog));
-    })
-    .then(() => getLog());
+  const newLog = {
+    _id: MIGRATION_LOG_ID,
+    type: MIGRATION_LOG_TYPE,
+    migrations: [],
+  };
+  return db.medic.put(newLog).then(() => getLog());
 };
 
 const getLog = () => {
