@@ -1,4 +1,3 @@
-const { v7: uuid } = require('uuid');
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
 const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const XPR = {
@@ -206,7 +205,6 @@ module.exports = {
   },
   func: {
     'add-date': addDate,
-    'uuid': () => XPR.string(uuid()),
     'z-score': function () {
       const args = Array.from(arguments).map(function (arg) {
         return getValue(arg);
