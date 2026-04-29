@@ -227,11 +227,11 @@ const setUpMocks = () => {
       { key: [ 'delivered' ], value: 10 },
     ] });
   medicQuery
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['due'])}))
+    .withArgs('medic-admin/message_queue', sinon.match({ startkey: sinon.match.array.startsWith(['due'])}))
     .resolves({ rows: [{ key: undefined, value: 20 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['delivered'])}))
+    .withArgs('medic-admin/message_queue', sinon.match({ startkey: sinon.match.array.startsWith(['delivered'])}))
     .resolves({ rows: [{ key: undefined, value: 15 }] })
-    .withArgs('medic-admin/message_queue', sinon.match({ start_key: sinon.match.array.startsWith(['failed'])}))
+    .withArgs('medic-admin/message_queue', sinon.match({ startkey: sinon.match.array.startsWith(['failed'])}))
     .resolves({ rows: [{ key: undefined, value: 5 }] });
 
   medicQuery.withArgs('medic-conflicts/conflicts')
@@ -273,11 +273,11 @@ const setupV2Mocks = (statusCounters) => {
     cleared: statusCounters.cleared,
   });
   db.medic.query
-    .withArgs(view, sinon.match({ start_key: sinon.match.array.startsWith(['final']) }))
+    .withArgs(view, sinon.match({ startkey: sinon.match.array.startsWith(['final']) }))
     .resolves({ rows: finalRows })
-    .withArgs(view, sinon.match({ start_key: sinon.match.array.startsWith(['pending']) }))
+    .withArgs(view, sinon.match({ startkey: sinon.match.array.startsWith(['pending']) }))
     .resolves({ rows: pendingRows })
-    .withArgs(view, sinon.match({ start_key: sinon.match.array.startsWith(['muted']) }))
+    .withArgs(view, sinon.match({ startkey: sinon.match.array.startsWith(['muted']) }))
     .resolves({ rows: mutedRows });
 };
 
@@ -569,6 +569,26 @@ describe('Monitoring service', () => {
       chai.expect(actual.date.current).to.equal(0);
       chai.expect(actual.replication_limit.count).to.equal(1);
       chai.expect(actual.connected_users.count).to.equal(2);
+      const weeklyOptions = db.medic.query.args
+        .filter(([viewName, options]) => viewName === 'medic-admin/message_queue' && options && options.startkey)
+        .map(([, options]) => options);
+      chai.expect(weeklyOptions.length).to.equal(5);
+      weeklyOptions.forEach(options => {
+        chai.expect(options).to.have.property('startkey');
+        chai.expect(options).to.have.property('endkey');
+        chai.expect(options).to.not.have.property('start_key');
+        chai.expect(options).to.not.have.property('end_key');
+      });
+
+      const lastHundredOptions = db.medic.query.args
+        .filter(([viewName]) => viewName === 'medic-sms/messages_by_last_updated_state')
+        .map(([, options]) => options);
+      chai.expect(lastHundredOptions.length).to.equal(3);
+      lastHundredOptions.forEach(options => {
+        chai.expect(options).to.have.property('startkey');
+        chai.expect(options).to.have.property('endkey');
+        chai.expect(options).to.not.have.property('start_key');
+      });
       chai.expect(request.get.args).to.deep.equalInAnyOrder([
         [{ json: true, url: environment.serverUrl }],
         [{ json: true, url: `${environment.serverUrl}/${environment.db}/_design/medic/_info` }],

@@ -270,15 +270,15 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
   const endDate = moment().valueOf();
 
   const optionsList = MESSAGE_QUEUE_STATUS_KEYS.map(key => ({
-    start_key: [key, startDate],
-    end_key: [key, endDate],
+    startkey: [key, startDate],
+    endkey: [key, endDate],
     reduce: true,
   }));
 
   const query = (options) => db.medic
     .query('medic-admin/message_queue', options)
     .catch(err => {
-      logger.error(`Error fetching weekly outgoing message status counts ${options.start_key}: %o`, err);
+      logger.error(`Error fetching weekly outgoing message status counts ${options.startkey}: %o`, err);
       return { rows: [{ value: -1 }] };
     });
 
@@ -300,7 +300,7 @@ const getWeeklyOutgoingMessageStatusCounts = () => {
 const getLastHundredStatusCountsPerGroup = ({group, statuses}) => {
   const options = {
     descending: true,
-    start_key: [group, moment().valueOf()],
+    startkey: [group, moment().valueOf()],
     endkey: [group, 0],
     limit: 100,
   };
