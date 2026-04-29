@@ -16,14 +16,12 @@ const getApiSmsChanges = async (messages) => {
   });
 
   return new Promise((resolve, reject) => {
-    // Increase timeout for CI environments
-    const timeout = process.env.CI ? 30000 : 10000;
     const timeoutId = setTimeout(() => {
       listener.cancel();
       console.error('still expecting', expectedMessages);
       console.error('received changes for:', ids);
-      reject(new Error(`Did not receive all expected messages in ${timeout/1000}s`));
-    }, timeout);
+      reject(new Error('Did not receive all expected messages in 10s'));
+    }, 10000);
     
     listener.on('change', change => {
       if (change.doc.sms_message) {
