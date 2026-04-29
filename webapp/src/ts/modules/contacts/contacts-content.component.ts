@@ -32,8 +32,8 @@ import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { SummaryPipe } from '@mm-pipes/message.pipe';
 import { FormIconNamePipe } from '@mm-pipes/form-icon-name.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
-import { 
-  ContactSummaryContentComponent 
+import {
+  ContactSummaryContentComponent
 } from '@mm-components/contact-summary-content/contact-summary-content.component';
 
 @Component({
@@ -82,6 +82,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   childContactTypes;
   filteredTasks = [];
   filteredReports: any[] = [];
+  summaryCards: any[] = [];
   DISPLAY_LIMIT = 50;
 
   constructor(
@@ -173,10 +174,13 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     ]) => {
       void this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
-        // reset view when selected contact changes
         this.resetTaskAndReportsFilter();
       }
       this.selectedContact = selectedContact;
+      this.summaryCards = (selectedContact?.summary?.cards ?? []).map(card => ({ 
+        ...card,
+        collapsed: card.collapsed === true
+      }));
       this.loadingContent = loadingContent;
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
@@ -205,7 +209,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         if (!summary || !this.selectedContact?.doc) {
           return;
         }
-        if (summary.errorStack){
+        if (summary.errorStack) {
           this.summaryErrorStack = summary.errorStack;
           return;
         }
@@ -279,7 +283,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     }
     return filteredReports;
   }
-  
+
   filterTasks(weeks?, tasks?) {
     this.tasksTimeWindowWeeks = weeks;
     const taskEndDate = weeks ? moment().add(weeks, 'weeks').format('YYYY-MM-DD') : null;
