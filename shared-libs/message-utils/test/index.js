@@ -53,7 +53,7 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
@@ -84,7 +84,7 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: `not${clinicPhone}`,
             },
@@ -105,7 +105,7 @@ describe('messageUtils', () => {
         patient: {
           type: 'person',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -136,7 +136,7 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: `not${clinicPhone}`,
             },
@@ -157,7 +157,7 @@ describe('messageUtils', () => {
         place: {
           type: 'some_place',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -188,7 +188,7 @@ describe('messageUtils', () => {
         contact: {
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
@@ -220,7 +220,7 @@ describe('messageUtils', () => {
         contact: {
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
@@ -278,7 +278,7 @@ describe('messageUtils', () => {
           },
           phone: 'patientPhone',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -325,7 +325,7 @@ describe('messageUtils', () => {
           },
           phone: 'patientPhone',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -399,14 +399,14 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
               }
             }
           },
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
             }
@@ -416,7 +416,7 @@ describe('messageUtils', () => {
           patient: {
             parent: {
               type: 'contact',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
               }
@@ -424,7 +424,7 @@ describe('messageUtils', () => {
           },
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
             }
@@ -439,7 +439,7 @@ describe('messageUtils', () => {
       it('resolves health_center based on place if given', () => {
         const context = {
           place: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
@@ -457,7 +457,7 @@ describe('messageUtils', () => {
         const contextFlexible = {
           place: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             parent: {
               type: 'contact',
               contact_type: CONTACT_TYPES.HEALTH_CENTER,
@@ -555,7 +555,7 @@ describe('messageUtils', () => {
             },
             parent: {
               type: 'contact',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               contact: { phone: '111111' },
               linked_docs: {
                 clinic: { phone: 'two' },
@@ -758,7 +758,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -783,7 +783,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -796,7 +796,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+333'
@@ -831,7 +831,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: {
@@ -869,7 +869,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
@@ -900,7 +900,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -935,7 +935,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -970,7 +970,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
@@ -1001,7 +1001,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -1039,7 +1039,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person'                
               },
@@ -1385,7 +1385,7 @@ describe('messageUtils', () => {
         const extraContext = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: { name: 'Bede' }
             }
           }
@@ -1414,7 +1414,7 @@ describe('messageUtils', () => {
         const extraContext = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: { name: 'Bede' }
             }
           }

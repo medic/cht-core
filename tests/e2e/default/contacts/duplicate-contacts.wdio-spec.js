@@ -9,6 +9,7 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const moment = require('moment');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
+const { CONTACT_TYPES } = require('@medic/constants');
 const { extensionLibDoc } = require('@page-objects/default/enketo/custom-doc.wdio.page');
 
 describe('Duplicate contact detection', () => {
@@ -19,7 +20,7 @@ describe('Duplicate contact detection', () => {
   const districtHospital = places.get('district_hospital');
   districtHospital.reported_date = moment(CREATED_ON);
   districtHospital.external_id = '1234567890';
-  const household = places.get('clinic');
+  const household = places.get(CONTACT_TYPES.CLINIC);
   const patients = Array
     .from({ length: 4 })
     .map((_, i) => personFactory.build({

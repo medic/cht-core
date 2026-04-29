@@ -19,7 +19,7 @@ const DEFAULT_PERSON_TYPE = {
   parents: [
     CONTACT_TYPES.DISTRICT_HOSPITAL,
     'health_center',
-    'clinic',
+    CONTACT_TYPES.CLINIC,
   ]
 };
 

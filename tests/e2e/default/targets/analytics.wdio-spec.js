@@ -19,7 +19,7 @@ const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 describe('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
 
   const contact = personFactory.build({
     name: 'CHW',

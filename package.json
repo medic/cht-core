@@ -131,7 +131,7 @@
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-things": "^0.2.0",
     "chokidar": "^4.0.3",
-    "cht-conf": "^6.0.2",
+    "cht-conf": "^6.3.0",
     "cht-conf-test-harness": "^5.0.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",
