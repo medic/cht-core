@@ -27,12 +27,18 @@ const getTaskFromMessage = (tasks, uuid) => {
 };
 
 const getTaskForMessage = (uuid, doc) => {
+  if (!doc) {
+    return;
+  }
   return getTaskFromMessage(doc.tasks, uuid) ||
          getTaskFromMessage(doc.scheduled_tasks, uuid);
 };
 
 const getTaskAndDocForMessage = (messageId, docs) => {
   for (const doc of docs) {
+    if (!doc) {
+      continue;
+    }
     const task = getTaskForMessage(messageId, doc);
     if (task) {
       return { task: task, docId: doc._id };
@@ -292,7 +298,12 @@ module.exports = {
         return db.medic.allDocs({ keys: uniqueIds, include_docs: true });
       })
       .then(results => {
-        const docs = results.rows.map(r => r.doc);
+        const docs = results.rows
+          .map(r => r && r.doc)
+          .filter(Boolean);
+        if (docs.length !== results.rows.length) {
+          logger.warn(`Found ${results.rows.length - docs.length} message state update docs missing from allDocs response.`);
+        }
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
         const updated = docs.filter(doc => stateChangesByDocId[doc._id] && stateChangesByDocId[doc._id].length);
 
