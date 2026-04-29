@@ -55,40 +55,6 @@ const getApiSmsChanges = async (messages) => {
   });
 };
 
-/**
- * Wait for Sentinel to finish processing documents
- * Polls documents until they reach expected state
- */
-const waitForSentinelProcessing = async (docIds, expectedStateCheck, maxWaitMs = 10000) => {
-  const startTime = Date.now();
-  const pollInterval = 200; // Check every 200ms
-  
-  while (Date.now() - startTime < maxWaitMs) {
-    const docs = await utils.getDocs(docIds);
-    const allReady = docs.every(doc => {
-      try {
-        return expectedStateCheck(doc);
-      } catch {
-        return false;
-      }
-    });
-    
-    if (allReady) {
-      return docs;
-    }
-    
-    // Wait before next poll
-    await new Promise(resolve => setTimeout(resolve, pollInterval));
-  }
-  
-  // Timeout - return docs anyway for debugging
-  const docs = await utils.getDocs(docIds);
-  console.error('Timeout waiting for Sentinel processing. Current doc states:', 
-    docs.map(d => ({ id: d._id, tasks: d.tasks?.map(t => ({ state: t.state, history: t.state_history?.length })) })));
-  return docs;
-};
-
 module.exports = {
-  getApiSmsChanges,
-  waitForSentinelProcessing
+  getApiSmsChanges
 };
