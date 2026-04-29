@@ -5,19 +5,19 @@ const moment = require('moment');
 const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
 const testForm = require('./test-stubs');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
     type: 'contact',
-    contact_type: 'district_hospital',
+    contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'the_district_hospital',
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: 'contact',
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
@@ -29,14 +29,14 @@ const contacts = [
     _id: 'clinic',
     name: 'Clinic',
     type: 'contact',
-    contact_type: 'clinic',
+    contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
       parent: {
         _id: 'clinic',
-        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       }
     },
     reported_date: new Date().getTime()
@@ -47,7 +47,8 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', 
+      parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   },
@@ -67,7 +68,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_middle_man',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: '+11111111',
     reported_date: new Date().getTime()
   }
@@ -107,7 +108,7 @@ describe('registration', () => {
     const patientPhone = '+9779841123123';
     const patientNameAndPhone = { // has just the `patient_name`and phone so should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -117,7 +118,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
     const docs = [
@@ -153,7 +155,8 @@ describe('registration', () => {
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
           phone: patientPhone,
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+          parent: { _id: 'clinic', 
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
           type: 'person',
           created_by: 'person',
@@ -168,7 +171,7 @@ describe('registration', () => {
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: patient_id,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -178,7 +181,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -247,7 +251,7 @@ describe('registration', () => {
     const patientName = 'unique patient';
     const patientReport = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: patientPhone,
       fields: {
@@ -256,12 +260,13 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: CONTACT_TYPES.HEALTH_CENTER, parent: {_id: 'district_hospital'}}}
+        parent: {_id: 'clinic', 
+          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
       }
     };
     const duplicatePatientReport = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: patientPhone,
       fields: {
@@ -270,7 +275,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: {_id: 'clinic', parent: {_id: CONTACT_TYPES.HEALTH_CENTER, parent: {_id: 'district_hospital'}}}
+        parent: {_id: 'clinic', 
+          parent: {_id: 'health_center', parent: {_id: 'district_hospital'}}}
       }
     };
     const docIds = [patientReport._id, duplicatePatientReport._id];
@@ -309,7 +315,8 @@ describe('registration', () => {
     chai.expect(patients.rows).to.have.lengthOf(1);
     chai.expect(patients.rows[0].doc).to.deep.include({
       patient_id: newPatientId,
-      parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+      parent: { _id: 'clinic', 
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       name: patientName,
       type: 'person',
       created_by: 'person',
@@ -321,7 +328,7 @@ describe('registration', () => {
     const patientPhone = '+97796666';
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -331,7 +338,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -372,12 +380,13 @@ describe('registration', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -411,12 +420,13 @@ describe('registration', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'NOT_FORM',
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -470,7 +480,7 @@ describe('registration', () => {
 
     const noSubjects = { // doesn't patient_id or place_id fields
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: '+444999',
       form: 'FORM',
       fields: {
@@ -479,13 +489,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const noPatient = { // has a patient_id that has no corresponding contact
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -495,13 +506,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const noPlace = { // has a place_id that has no corresponding contact
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -511,7 +523,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -591,7 +604,7 @@ describe('registration', () => {
 
     const placeInsteadOfPatient = { // has a patient_id field containing shortcode corresponding to a place
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -600,13 +613,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const patientInsteadOfPlace = { // has a place_id field containing shortcode corresponding to a person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -615,13 +629,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const switchedSubjects = { // has a place instead of patient and vice versa
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -631,13 +646,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const bothSubjectsPlaces = { // both subjects are places
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -647,13 +663,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const bothSubjectsPersons = { // both subjects are persons
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -663,7 +680,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -745,7 +763,7 @@ describe('registration', () => {
 
     const justPatientName = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -754,13 +772,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const patientNameAndShortcode = { // has patient_name and patient_id field, error bc. patient is not found.
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+444999',
       fields: {
@@ -770,13 +789,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const customPatientNameAndCustomShortcode = { // has custom fields populated, should create patient with the fields
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-B',
       from: '+444999',
       fields: {
@@ -786,13 +806,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const patientNameAndCustomShortcode = { // has patient_name and custom shortcode, should create patient
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-B',
       from: '+444999',
       fields: {
@@ -802,7 +823,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -863,7 +885,8 @@ describe('registration', () => {
 
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+          parent: { _id: 'clinic', 
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
           type: 'person',
           created_by: 'person',
@@ -872,7 +895,8 @@ describe('registration', () => {
 
         chai.expect(patients.rows[1].doc).to.deep.include({
           patient_id: 'venus',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+          parent: { _id: 'clinic', 
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Venus',
           type: 'person',
           created_by: 'person',
@@ -971,7 +995,7 @@ describe('registration', () => {
 
     const chwNoParent = {
       _id: 'chwNoParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -983,7 +1007,7 @@ describe('registration', () => {
 
     const chwNonExistingParent = {
       _id: 'chwNonExistingParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -996,7 +1020,7 @@ describe('registration', () => {
 
     const invalidParent1 = {
       _id: 'invalidParent1',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -1009,7 +1033,7 @@ describe('registration', () => {
 
     const invalidParent2 = {
       _id: 'invalidParent2',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -1022,7 +1046,7 @@ describe('registration', () => {
 
     const invalidParent3 = {
       _id: 'invalidParent3',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-NURSE',
       from: '+00000000',
       fields: {
@@ -1172,7 +1196,7 @@ describe('registration', () => {
 
     const createPerson = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-PERSON',
       from: '+00000000',
       fields: {
@@ -1185,7 +1209,7 @@ describe('registration', () => {
 
     const createChw = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CHW',
       from: '+00000000',
       fields: {
@@ -1198,7 +1222,7 @@ describe('registration', () => {
 
     const createNurse = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-NURSE',
       from: '+444999',
       fields: {
@@ -1208,7 +1232,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1258,7 +1283,8 @@ describe('registration', () => {
         chai.expect(patients.rows[0].doc).to.deep.include({
           name: 'Solaris',
           type: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+          parent: { _id: 'clinic', 
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           created_by: 'supervisor',
           source_id: createPerson._id,
           patient_id: updatedDocs[0].patient_id,
@@ -1268,7 +1294,7 @@ describe('registration', () => {
           name: 'Lunaris',
           type: 'contact',
           contact_type: 'chw',
-          parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
           created_by: 'supervisor',
           source_id: createChw._id,
           patient_id: updatedDocs[1].patient_id,
@@ -1304,7 +1330,7 @@ describe('registration', () => {
 
     const withWeeksSinceLMP = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1314,13 +1340,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const withLMP = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1330,13 +1357,14 @@ describe('registration', () => {
       reported_date: moment().subtract(2, 'weeks').valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const withLMPDate = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1346,7 +1374,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1403,7 +1432,7 @@ describe('registration', () => {
 
     const withMonthsSinceBirth = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1413,13 +1442,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const withWeeksSinceBirth = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1429,13 +1459,14 @@ describe('registration', () => {
       reported_date: moment().subtract(2, 'weeks').valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const withAgeInYears = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -1445,7 +1476,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -1490,7 +1522,7 @@ describe('registration', () => {
 
     const createPlace = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-PLACE',
       from: '+00000000',
       fields: {
@@ -1524,7 +1556,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: { contact_type: 'clinic' },
+          params: { contact_type: CONTACT_TYPES.CLINIC },
           bool_expr: ''
         }],
         messages: [{
@@ -1541,7 +1573,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: { contact_type: 'clinic', parent_id: 'parent' },
+          params: { contact_type: CONTACT_TYPES.CLINIC, parent_id: 'parent' },
           bool_expr: ''
         }],
         messages: [{
@@ -1604,7 +1636,7 @@ describe('registration', () => {
 
     const clinicNoParentUnderClinic = {
       _id: 'clinicNoParentUnderClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC_NO_PARENT',
       from: '+444999',
       fields: {
@@ -1613,13 +1645,14 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
     const clinicNoParentUnderDistrict = {
       _id: 'clinicNoParentUnderDistrict',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC_NO_PARENT',
       from: '+00000000',
       fields: {
@@ -1631,7 +1664,7 @@ describe('registration', () => {
 
     const clinicUnderClinic = {
       _id: 'clinicUnderClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1639,12 +1672,12 @@ describe('registration', () => {
         parent: 'the_clinic'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'middle_man', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const clinicUnderDistrict = {
       _id: 'clinicUnderDistrict',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1652,24 +1685,24 @@ describe('registration', () => {
         parent: 'the_district_hospital'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'middle_man', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const clinicNoParent = {
       _id: 'clinicNoParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
         place_name: 'Lunaris',
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'middle_man', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const clinicNoExistingParent = {
       _id: 'clinicNonExistingParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -1677,12 +1710,12 @@ describe('registration', () => {
         parent: 'some_parent_that_doesnt_exist'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'middle_man', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const healthCenterUnderClinic = {
       _id: 'healthCenterUnderClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-HEALTH_CENTER',
       from: '+11111111',
       fields: {
@@ -1690,7 +1723,7 @@ describe('registration', () => {
         parent_id: 'the_clinic'
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'middle_man', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const reports = [
@@ -1814,7 +1847,7 @@ describe('registration', () => {
         events: [{
           name: 'on_create',
           trigger: 'add_place',
-          params: { contact_type: 'clinic', place_name_field: 'the_place_name' },
+          params: { contact_type: CONTACT_TYPES.CLINIC, place_name_field: 'the_place_name' },
           bool_expr: ''
         }],
         messages: [{
@@ -1914,19 +1947,19 @@ describe('registration', () => {
 
     const clinicNoParent = {
       _id: 'clinicNoParent',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC_NO_PARENT',
       from: '+11111111',
       fields: {
         the_place_name: 'Toyota',
       },
       reported_date: moment().valueOf(),
-      contact: { _id: 'middle_man', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      contact: { _id: 'middle_man', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     };
 
     const nursingHome = {
       _id: 'justANursingHome',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-NURSING_HOME',
       from: '+00000000',
       fields: {
@@ -1939,7 +1972,7 @@ describe('registration', () => {
 
     const healthCenter = {
       _id: 'newHealthCenter',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-HEALTH_CENTER',
       from: '+00000000',
       fields: {
@@ -1999,11 +2032,11 @@ describe('registration', () => {
 
         chai.expect(places.rows[0].doc).to.deep.include({
           name: 'Toyota',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           place_id: updatedDocs[0].place_id,
           source_id: updatedDocs[0]._id,
           created_by: updatedDocs[0].contact._id,
-          parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         });
         chai.expect(places.rows[1].doc).to.deep.include({
           name: 'Ford',
@@ -2012,7 +2045,7 @@ describe('registration', () => {
           place_id: updatedDocs[1].place_id,
           source_id: updatedDocs[1]._id,
           created_by: updatedDocs[1].contact._id,
-          parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         });
         chai.expect(places.rows[2].doc).to.deep.include({
           name: 'Mazda',
@@ -2044,7 +2077,7 @@ describe('registration', () => {
           events: [{
             name: 'on_create',
             trigger: 'add_place',
-            params: { contact_type: 'clinic', place_name_field: 'the_place_name' },
+            params: { contact_type: CONTACT_TYPES.CLINIC, place_name_field: 'the_place_name' },
             bool_expr: ''
           }],
           messages: [{
@@ -2097,7 +2130,7 @@ describe('registration', () => {
 
     const createClinic = {
       _id: 'createClinic',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-CLINIC',
       from: '+11111111',
       fields: {
@@ -2108,7 +2141,7 @@ describe('registration', () => {
 
     const createPerson = {
       _id: 'createPerson',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-PERSON',
       from: '+444999',
       fields: {
@@ -2160,11 +2193,11 @@ describe('registration', () => {
 
         chai.expect(contacts.rows[0].doc).to.deep.include({
           name: 'Orbit',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           place_id: updatedDocs[0].place_id,
           source_id: updatedDocs[0]._id,
           created_by: updatedDocs[0].contact._id,
-          parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         });
         chai.expect(contacts.rows[0].doc.contact).to.equal(undefined);
 
@@ -2175,7 +2208,8 @@ describe('registration', () => {
           patient_id: updatedDocs[1].patient_id,
           source_id: updatedDocs[1]._id,
           created_by: updatedDocs[1].contact._id,
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+          parent: { _id: 'clinic', 
+            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
         });
       });
   });
@@ -2253,7 +2287,7 @@ describe('registration', () => {
 
     const withPatient1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       fields: {
@@ -2264,7 +2298,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -2272,7 +2307,7 @@ describe('registration', () => {
 
     const withClinic1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+11111111',
       fields: {
@@ -2282,7 +2317,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'middle_man',
-        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       },
     };
 
@@ -2290,7 +2325,7 @@ describe('registration', () => {
 
     const withClinicAndPatient1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+11111111',
       fields: {
@@ -2301,7 +2336,7 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'middle_man',
-        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       },
     };
 
@@ -2488,7 +2523,7 @@ describe('registration', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM',
       from: '+444999',
       random_field: 20,
@@ -2499,7 +2534,8 @@ describe('registration', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 

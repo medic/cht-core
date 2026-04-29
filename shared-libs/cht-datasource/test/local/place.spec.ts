@@ -11,6 +11,7 @@ import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
 import * as LocalContact from '../../src/local/contact';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('local place', () => {
   let localContext: LocalDataContext;
@@ -88,7 +89,7 @@ describe('local place', () => {
 
       it('returns a place by UUID', async () => {
         // Doc needs _id and _rev for isDoc check to pass
-        const doc = { type: 'clinic', _id: 'uuid', _rev: '1' };
+        const doc = { type: CONTACT_TYPES.CLINIC, _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPlace.returns(true);
@@ -341,7 +342,7 @@ describe('local place', () => {
       const parent = {
         ...minifiedParent,
         _rev: '1',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'parent'
       } as const;
       const minifiedContact = {
@@ -535,7 +536,7 @@ describe('local place', () => {
       it('creates a place without parent for top-level type', async () => {
         const input = {
           name: 'place-1',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         };
         getDocsByIdsInner.resolves([null, null]);
 
@@ -596,7 +597,7 @@ describe('local place', () => {
           type: 'health_center',
           parent: parent._id,
         };
-        const invalidParent = { ...parent, type: 'clinic' };
+        const invalidParent = { ...parent, type: CONTACT_TYPES.CLINIC };
         getDocsByIdsInner.resolves([invalidParent, null]);
         isPlace.returns(true);
 
@@ -621,7 +622,7 @@ describe('local place', () => {
       it('throws error when parent provided for top level place type', async () => {
         const input = {
           name: 'place-1',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           parent: parent._id,
         };
         getDocsByIdsInner.resolves([parent, null]);
@@ -708,7 +709,7 @@ describe('local place', () => {
       const parent = {
         ...parentMinified,
         name: 'Parent 1',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       } as const;
 
       const contactMinified = {

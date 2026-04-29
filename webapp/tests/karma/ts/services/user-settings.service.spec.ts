@@ -8,6 +8,7 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { LanguageService } from '@mm-services/language.service';
+import { PREFIXES } from '@medic/constants';
 
 describe('UserSettings service', () => {
   let service:UserSettingsService;
@@ -60,7 +61,7 @@ describe('UserSettings service', () => {
       expect(actual.id).to.equal('j');
       expect(userCtx.callCount).to.equal(2);
       expect(get.callCount).to.equal(1);
-      expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+      expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
       expect(getLanguage.callCount).to.equal(0);
     });
   });
@@ -74,7 +75,7 @@ describe('UserSettings service', () => {
       expect(actual.language).to.equal('en');
       expect(userCtx.callCount).to.equal(2);
       expect(get.callCount).to.equal(1);
-      expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+      expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
       expect(getLanguage.callCount).to.equal(1);
     });
   });
@@ -89,7 +90,7 @@ describe('UserSettings service', () => {
     expect(result).to.be.true;
     expect(get.callCount).to.equal(1);
     expect(hasMultipleFacilities.callCount).to.equal(1);
-    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
   });
 
   it('hasMultipleFacilities returns false when user has one facility', async () => {
@@ -102,7 +103,7 @@ describe('UserSettings service', () => {
     expect(result).to.be.false;
     expect(get.callCount).to.equal(1);
     expect(hasMultipleFacilities.callCount).to.equal(1);
-    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
   });
 
   it('hasMultipleFacilities returns false when user facility_id is undefined', async () => {
@@ -115,7 +116,7 @@ describe('UserSettings service', () => {
     expect(result).to.be.false;
     expect(get.callCount).to.equal(1);
     expect(hasMultipleFacilities.callCount).to.equal(1);
-    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
   });
 
   it('getUserFacility returns user facility from GetDataRecordService', async () => {
@@ -127,7 +128,7 @@ describe('UserSettings service', () => {
 
     expect(result).to.deep.equal([{ _id: 'facility_1' }, { _id: 'facility_2' }]);
     expect(get.callCount).to.equal(1);
-    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
     expect(getDataRecords.callCount).to.equal(1);
     expect(getDataRecords.args[0][0]).to.deep.equal(['facility_1', 'facility_2']);
   });
@@ -141,7 +142,7 @@ describe('UserSettings service', () => {
 
     expect(result).to.deep.equal([{ _id: 'facility_1' }]);
     expect(get.callCount).to.equal(1);
-    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
     expect(getDataRecords.callCount).to.equal(1);
     expect(getDataRecords.args[0][0]).to.deep.equal(['facility_1']);
   });
@@ -155,7 +156,7 @@ describe('UserSettings service', () => {
 
     expect(result).to.deep.equal([]);
     expect(get.callCount).to.equal(1);
-    expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+    expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
     expect(getDataRecords.callCount).to.equal(1);
     expect(getDataRecords.args[0][0]).to.deep.equal(['facility_1', 'facility_2']);
   });
@@ -184,7 +185,7 @@ describe('UserSettings service', () => {
       .then((first:any) => {
         expect(first.id).to.equal('j');
         expect(get.callCount).to.equal(1);
-        changesCallback({ id: 'org.couchdb.user:jack', changes: [{ rev: '5-xyz' }] });
+        changesCallback({ id: PREFIXES.COUCH_USER + 'jack', changes: [{ rev: '5-xyz' }] });
         return service.get();
       })
       .then((second:any) => {
@@ -219,8 +220,8 @@ describe('UserSettings service', () => {
       expect(actual.id).to.equal('j');
       expect(userCtx.callCount).to.equal(2);
       expect(get.callCount).to.equal(2);
-      expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
-      expect(get.args[1][0]).to.equal('org.couchdb.user:jack');
+      expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
+      expect(get.args[1][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
     });
   });
 
@@ -237,8 +238,8 @@ describe('UserSettings service', () => {
       .catch(err => {
         expect(userCtx.callCount).to.equal(2);
         expect(get.callCount).to.equal(2);
-        expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
-        expect(get.args[1][0]).to.equal('org.couchdb.user:jack');
+        expect(get.args[0][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
+        expect(get.args[1][0]).to.equal(PREFIXES.COUCH_USER + 'jack');
         expect(err.message).to.equal('nope');
       });
   });

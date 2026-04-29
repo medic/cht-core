@@ -12,7 +12,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:online',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Online place',
     },
     contact: {
@@ -53,7 +53,7 @@ describe('Places API', () => {
     it('should create place', () => {
       onlineRequestOptions.body = {
         name: 'CHP Branch One',
-        type: 'district_hospital'
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL
       };
       return utils.request(onlineRequestOptions)
         .then(result => {
@@ -63,7 +63,7 @@ describe('Places API', () => {
         .then((place) => {
           chai.expect(place).to.deep.include({
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           });
         });
     });
@@ -74,7 +74,7 @@ describe('Places API', () => {
         type: CONTACT_TYPES.HEALTH_CENTER,
         parent: {
           name: 'CHP Branch One',
-          type: 'district_hospital'
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL
         }
       };
       return utils.request(onlineRequestOptions)
@@ -93,7 +93,7 @@ describe('Places API', () => {
         .then((parent) => {
           chai.expect(parent).to.deep.include({
             name: 'CHP Branch One',
-            type: 'district_hospital'
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL
           });
         });
     });
@@ -101,7 +101,7 @@ describe('Places API', () => {
     it('#8985 should create place if parent has invalid contact', () => {
       const parentDoc = {
         _id: 'parent',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'A Place',
         contact: {
           _id: ''
@@ -169,7 +169,7 @@ describe('Places API', () => {
     it('should create place with contact uuid', () => {
       onlineRequestOptions.body = {
         name: 'DS',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: 'fixture:user:online'
       };
       return utils.request(onlineRequestOptions)
@@ -186,7 +186,7 @@ describe('Places API', () => {
           });
           chai.expect(place).to.deep.include({
             name: 'DS',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             contact: 'fixture:user:online'
           });
         });

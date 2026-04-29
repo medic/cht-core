@@ -34,7 +34,7 @@ const getLinkedDoc = (doc, tag) => {
 };
 
 const getClinic = function(doc) {
-  return doc && getParent(doc, 'clinic');
+  return doc && getParent(doc, CONTACT_TYPES.CLINIC);
 };
 
 const getHealthCenter = function(doc) {
@@ -42,7 +42,7 @@ const getHealthCenter = function(doc) {
 };
 
 const getDistrict = function(doc) {
-  return doc && getParent(doc, 'district_hospital');
+  return doc && getParent(doc, CONTACT_TYPES.DISTRICT_HOSPITAL);
 };
 
 const getClinicPhone = function(doc) {
@@ -94,6 +94,21 @@ const applyPhoneFilters = function(config, phone) {
       phone = phone.replace(new RegExp(filter.match), filter.replace);
     }
   });
+  return phone;
+};
+
+const stripCountryCode = function(config, phone) {
+  if (!phone) {
+    return phone;
+  }
+  const countryCode = config?.default_country_code;
+  if (!countryCode) {
+    return phone;
+  }
+  const prefix = '+' + String(countryCode);
+  if (phone.startsWith(prefix)) {
+    return phone.slice(prefix.length);
+  }
   return phone;
 };
 
@@ -175,8 +190,8 @@ const resolveRecipient = function(context, recipient) {
       resolve: () => resolveAncestor(context, 3),
     },
     {
-      name: 'clinic',
-      match: r => r === 'clinic',
+      name: CONTACT_TYPES.CLINIC,
+      match: r => r === CONTACT_TYPES.CLINIC,
       resolve: () => getClinicPhone(context.patient) ||
         getClinicPhone(context.place) ||
         getClinicPhone(context) ||
@@ -333,6 +348,12 @@ const render = function(config, template, view, locale) {
     datetime: function() {
       return function(text) {
         return formatDate(config, text, view, config.reported_date_format, locale);
+      };
+    },
+    local_phone: function() {
+      return function(text) {
+        const phone = render(config, text, view);
+        return stripCountryCode(config, phone.trim());
       };
     }
   }));

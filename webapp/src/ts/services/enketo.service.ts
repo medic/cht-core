@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
+import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import { AttachmentService } from '@mm-services/attachment.service';
@@ -15,6 +16,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -527,7 +529,7 @@ export class EnketoService {
   private create(formInternalId, contact) {
     return {
       form: formInternalId,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       content_type: 'xml',
       reported_date: Date.now(),
       contact: this.extractLineageService.extract(contact),
@@ -567,8 +569,7 @@ export class EnketoService {
     if (!valid) {
       throw new Error('Form is invalid');
     }
-
-    $('form.or').trigger('beforesave');
+    form.view.html.dispatchEvent(events.BeforeSave());
   }
 
   async completeNewReport(formInternalId, form, formDoc, contact) {

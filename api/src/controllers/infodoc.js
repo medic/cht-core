@@ -39,7 +39,7 @@ module.exports = {
             // effectively guaranteeing the writes that you passed in.
             //
             // NB: if someone is force-writing a document and not passing a specific _id there is
-            // literally no way to know what the resulting _id was, becuase CouchDB returns [] when
+            // literally no way to know what the resulting _id was, because CouchDB returns [] when
             // you pass set new_edits to false. It's not clear this should ever happen.
             successfulWrites = writeAttempts;
           } else {

@@ -12,6 +12,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +43,7 @@ export class SendMessageService {
       reported_date: Date.now(),
       tasks: [] as any[],
       kujua_message: true,
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       sent_by: (user && user.name) || 'unknown',
       _id: uuidv4()
     };

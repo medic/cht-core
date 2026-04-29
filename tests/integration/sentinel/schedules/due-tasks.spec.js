@@ -2,7 +2,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const reportedDate = moment().valueOf();
 const oneMonthAgo = moment().subtract(1, 'month').toISOString();
@@ -15,16 +15,16 @@ const contacts = [
     _id: 'district_hospital',
     name: 'District',
     type: 'contact',
-    contact_type: 'district_hospital',
+    contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: reportedDate,
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: 'contact',
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
-    contact: { _id: 'supervisor1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    contact: { _id: 'supervisor1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,
   },
   {
@@ -32,7 +32,7 @@ const contacts = [
     name: 'Sup1',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: '555666',
     reported_date: reportedDate,
   },
@@ -40,12 +40,12 @@ const contacts = [
     _id: 'clinic1',
     name: 'clinic1',
     type: 'contact',
-    contact_type: 'clinic',
+    contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: reportedDate,
   },
@@ -53,12 +53,12 @@ const contacts = [
     _id: 'clinic2',
     name: 'clinic2',
     type: 'contact',
-    contact_type: 'clinic',
+    contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic2',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw2',
-      parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: reportedDate,
   },
@@ -67,7 +67,7 @@ const contacts = [
     name: 'Chw1',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '111222',
     reported_date: reportedDate,
   },
@@ -76,7 +76,7 @@ const contacts = [
     name: 'Chw2',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '222333',
     reported_date: reportedDate,
   },
@@ -86,7 +86,7 @@ const contacts = [
     name: 'Patient1',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,
   },
   {
@@ -95,28 +95,70 @@ const contacts = [
     name: 'Patient2',
     type: 'contact',
     contact_type: 'person',
-    parent: { _id: 'clinic2', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,
   },
 ];
 
+const reportWithDuplicateDueDate = {
+  _id: 'report_duplicate_due',
+  type: 'data_record',
+  contact: {
+    _id: 'chw1',
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+  },
+  fields: { patient_id: 'patient1', value: 5 },
+  reported_date: oneMonthAgo,
+  scheduled_tasks: [
+    {
+      // Task A: already sent, same due date as Task B
+      due: twoDaysAgo,
+      message_key: 'messages.one',
+      recipient: 'clinic',
+      state_history: [
+        { state: 'scheduled', timestamp: oneMonthAgo },
+        { state: 'pending', timestamp: threeDaysAgo },
+        { state: 'sent', timestamp: threeDaysAgo },
+      ],
+      state: 'sent',
+      messages: [
+        {
+          to: '111222',
+          uuid: 'uuid-already-sent',
+          message: 'ONE. Reported by Chw1. Patient Patient1 (patient1). Value 5',
+        },
+      ],
+    },
+    {
+      // Task B: stuck in scheduled, same due date as Task A, missing translation
+      due: twoDaysAgo,
+      message_key: 'non.exisiting.key',
+      recipient: 'clinic',
+      state_history: [
+        { state: 'scheduled', timestamp: oneMonthAgo },
+      ],
+      state: 'scheduled',
+    },
+  ],
+};
+
 const reports = [
   {
     _id: 'report1', // no tasks
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: 'patient1', value: 1 },
     reported_date: oneMonthAgo
   },
   {
     _id: 'report2',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: 'patient1', value: 2 },
     reported_date: oneMonthAgo,
@@ -146,10 +188,10 @@ const reports = [
   },
   {
     _id: 'report3',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: 'patient1', value: 2 },
     reported_date: oneMonthAgo,
@@ -186,10 +228,10 @@ const reports = [
   },
   {
     _id: 'report4',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: 'patient2', value: 2 },
     reported_date: oneMonthAgo,
@@ -230,10 +272,10 @@ const reports = [
   },
   {
     _id: 'report5',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: 'patient1', value: 3 },
     reported_date: moment(threeDaysAgo).valueOf(),
@@ -265,10 +307,10 @@ const reports = [
   },
   {
     _id: 'report6',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { place_id: 'the_clinic', value: 33 },
     reported_date: moment(threeDaysAgo).valueOf(),
@@ -300,10 +342,10 @@ const reports = [
   },
   {
     _id: 'report7',
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     fields: { patient_id: '', value: 2, patient_uuid: 'patient_2' },
     reported_date: oneMonthAgo,
@@ -498,5 +540,32 @@ describe('Due Tasks', () => {
       to: '555666' // health_center
     });
     chai.expect(report7.scheduled_tasks[3].messages).to.equal(undefined);
+  });
+
+  it('should not reset already-sent tasks when another task with the same due date is stuck in scheduled', async () => {
+    // Reproduction of https://github.com/medic/cht-core/issues/10802
+    // When a document has two scheduled_tasks with the same due date and one is stuck in
+    // 'scheduled' state (e.g. missing translation), dueTasks should NOT reset the other
+    // task that has already been sent back to 'pending'.
+    await sentinelUtils.waitForSentinel();
+    await utils.toggleSentinelTransitions();
+    await utils.saveDoc(reportWithDuplicateDueDate);
+    await utils.toggleSentinelTransitions();
+    await utils.runSentinelTasks();
+    await sentinelUtils.waitForSentinel([reportWithDuplicateDueDate._id]);
+
+    // Wait briefly for dueTasks scheduler to process
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    const report = await utils.getDoc(reportWithDuplicateDueDate._id);
+
+    // Task A (already sent) should NOT have been changed to pending
+    chai.expect(report.scheduled_tasks[0].state).to.equal('sent',
+      'Already-sent task should not be reset to pending when another task with the same due date is scheduled');
+
+    // Task B (stuck with missing translation) should remain scheduled
+    chai.expect(report.scheduled_tasks[1].state).to.equal('scheduled',
+      'Task with missing translation should remain in scheduled state');
+    chai.expect(report.scheduled_tasks[1].messages).to.equal(undefined);
   });
 });

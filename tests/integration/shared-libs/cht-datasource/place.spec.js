@@ -9,10 +9,9 @@ const {
   InvalidArgumentError,
   ResourceNotFoundError
 } = require('@medic/cht-datasource');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 const userFactory = require('@factories/cht/users/users');
 const { setAuth, removeAuth } = require('./auth');
-const { CONTACT_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
 describe('cht-datasource Place', () => {
@@ -243,7 +242,7 @@ describe('cht-datasource Place', () => {
 
       it('creates place for valid input', async () => {
         const input = {
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           name: 'place-1',
           parent: place1._id,
           contact: contact0._id,
@@ -264,13 +263,13 @@ describe('cht-datasource Place', () => {
             parent: { _id: place1.parent._id }
           },
           type: 'contact',
-          contact_type: 'clinic',
+          contact_type: CONTACT_TYPES.CLINIC,
         });
       });
 
       it('creates place with minimum data', async () => {
         const input = {
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'place-1',
         };
 
@@ -279,7 +278,7 @@ describe('cht-datasource Place', () => {
         expect(placeDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal({
           ...input,
           type: 'contact',
-          contact_type: 'district_hospital',
+          contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         });
         expect(placeDoc.reported_date).to.be.a('number');
       });
@@ -298,7 +297,7 @@ describe('cht-datasource Place', () => {
 
       it(`throws error for non-existent parent`, async () => {
         const body = {
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           name: 'place-1',
           parent: 'invalid-id'
         };
@@ -311,7 +310,7 @@ describe('cht-datasource Place', () => {
 
       it(`throws error for non-existent contact`, async () => {
         const body = {
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'place-1',
           contact: 'invalid-id'
         };
@@ -349,7 +348,7 @@ describe('cht-datasource Place', () => {
               _id: place2._id
             }
           },
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: { _id: contact0._id },
           reported_date: 1770397800,
           phone: '1234567890'

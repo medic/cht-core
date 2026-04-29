@@ -2,6 +2,7 @@ const { assert, expect } = require('chai');
 const lineageFactory = require('../src');
 const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 let db;
 
@@ -48,12 +49,12 @@ const circular_chw = {
 };
 const circular_area = {
   _id: circular_areaId,
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: circular_chw._id }
 };
 const circular_report = {
   _id: 'circular_report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   contact: {
     _id: circular_chw._id,
     parent: { _id: circular_area._id }
@@ -68,14 +69,14 @@ const person_with_circular_ids = {
 };
 const place_with_circular_ids = {
   _id: 'circular_place',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: 'circular_place' },
   parent: { _id: 'circular_person' },
   reported_date: '5',
 };
 const report_with_circular_ids = {
   _id: 'report_with_circular_ids',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   contact: { _id: 'circular_place' },
   parent: { _id: 'circular_person' },
   patient_id: 'circular_person',
@@ -96,7 +97,7 @@ const emptyObjectParent = {
     _id: dummyDoc._id,
     parent: {}
   },
-  type: 'clinic'
+  type: CONTACT_TYPES.CLINIC
 };
 const no_contact = {
   _id: 'no_contact',
@@ -107,7 +108,7 @@ const no_lineageContact = {
 };
 const one_parent = {
   _id: 'one_parent',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   parent: { _id: dummyDoc._id }
 };
 const place_parentContact = {
@@ -143,7 +144,7 @@ const place_parent = {
 const place = {
   _id: 'place',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -207,7 +208,7 @@ const report_patient = {
 const report_place = {
   _id: 'report_place',
   place_id: '54321',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   name: 'place_name',
   parent: {
     _id: report_parent._id,
@@ -219,7 +220,7 @@ const report_place = {
 };
 const report = {
   _id: 'report',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -236,7 +237,7 @@ const report = {
 };
 const report_with_place = {
   _id: 'report_with_place',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -254,7 +255,7 @@ const report_with_place = {
 
 const report_with_place_uuid = {
   _id: 'report_with_place_uuid',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -272,7 +273,7 @@ const report_with_place_uuid = {
 
 const report_with_place_and_patient = {
   _id: 'report_with_place_and_patient',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -290,7 +291,7 @@ const report_with_place_and_patient = {
 };
 const report2 = {
   _id: 'report2',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -308,7 +309,7 @@ const report2 = {
 };
 const report3 = {
   _id: 'report3',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -325,7 +326,7 @@ const report3 = {
 };
 const report4 = {
   _id: 'report4',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -342,7 +343,7 @@ const report4 = {
 };
 const report5 = {
   _id: 'report5',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -359,7 +360,7 @@ const report5 = {
 };
 const stub_contacts = {
   _id: 'stub_contacts',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   contact: {
     _id: 'something',
     parent: {
@@ -370,7 +371,7 @@ const stub_contacts = {
 };
 const stub_parents = {
   _id: 'stub_parents',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: 'something' },
   parent: {
     _id: 'something_else',
@@ -379,7 +380,7 @@ const stub_parents = {
 };
 const sms_doc = {
   _id: 'sms_doc',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: '123',
   form: 'D',
   fields: {},
@@ -394,7 +395,7 @@ const sms_doc = {
 const placeWithLinks = {
   _id: 'placeWithLinks',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -430,7 +431,7 @@ const personWithLinks = {
 };
 const reportWithLinks = {
   _id: 'reportWithLinks',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'A',
   contact: {
     _id: report_contact._id,
@@ -453,7 +454,7 @@ const reportWithLinks = {
 const contactWithStringLinks = {
   _id: 'contactWithStringLinks',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -466,7 +467,7 @@ const contactWithStringLinks = {
 const contactWithArrayLinks = {
   _id: 'contactWithArrayLinks',
   name: 'place_name',
-  type: 'clinic',
+  type: CONTACT_TYPES.CLINIC,
   contact: { _id: place_contact._id },
   parent: {
     _id: place_parent._id,
@@ -1212,7 +1213,7 @@ describe('Lineage', function() {
         .then(([ actual ]) => {
           assert.checkDeepProperties(actual, {
             _id: place_with_circular_ids._id,
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
 
             contact: {
               _id: place_with_circular_ids._id,
@@ -1483,7 +1484,7 @@ describe('Lineage', function() {
       const docs = [
         {
           _id: 'new_report',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: place_contact._id },
           fields: { patient_uuid: 'new_patient' },
         },
@@ -1516,7 +1517,7 @@ describe('Lineage', function() {
         expect(actual).excludingEvery(['_rev', 'reported_date']).to.deep.equal([
           {
             _id: 'new_report',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             contact: {
               _id: place_contact._id,
               phone: place_contact.phone,

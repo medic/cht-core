@@ -2,17 +2,17 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
@@ -21,11 +21,11 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    type: CONTACT_TYPES.CLINIC,
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
-      parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -33,7 +33,7 @@ const contacts = [
     _id: 'person',
     name: 'Person',
     type: 'person',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   }
@@ -61,12 +61,12 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -95,12 +95,12 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'O',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -129,14 +129,14 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
         _id: 'person',
         parent: {
           _id: 'clinic',
-          parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
         }
       },
       somefield: 99
@@ -167,12 +167,12 @@ describe('conditional_alerts', () => {
     const doc = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
       somefield: 120
     };
@@ -215,12 +215,12 @@ describe('conditional_alerts', () => {
     const form1 = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime() - 1200,
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
       temp: 38
     };
@@ -228,12 +228,12 @@ describe('conditional_alerts', () => {
     const form0 = {
       _id: uuid(),
       form: 'FORM',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: new Date().getTime(),
       from: '+444999',
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
       temp: 39
     };

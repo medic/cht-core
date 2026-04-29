@@ -2,17 +2,17 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
@@ -21,11 +21,12 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    type: CONTACT_TYPES.CLINIC,
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
-      parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic', 
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -34,7 +35,8 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: '99999',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', 
+      parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   }
@@ -57,7 +59,7 @@ describe('update_notifications', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       fields: {
         patient_uuid: 'person'
@@ -88,7 +90,7 @@ describe('update_notifications', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'not_off',
       fields: {
         patient_uuid: 'person'
@@ -139,7 +141,7 @@ describe('update_notifications', () => {
 
     const doc1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       from: '12345',
       fields: {
@@ -151,7 +153,7 @@ describe('update_notifications', () => {
 
     const doc2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       from: '12345',
       fields: {
@@ -223,7 +225,7 @@ describe('update_notifications', () => {
 
     const mute1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       fields: {
         patient_id: 'person'
@@ -234,7 +236,7 @@ describe('update_notifications', () => {
 
     const mute2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'off',
       fields: {
         patient_id: 'person'
@@ -245,7 +247,7 @@ describe('update_notifications', () => {
 
     const unmute1 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'on',
       fields: {
         patient_id: 'person'
@@ -256,7 +258,7 @@ describe('update_notifications', () => {
 
     const unmute2 = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'on',
       fields: {
         patient_id: 'person'

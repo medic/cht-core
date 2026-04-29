@@ -1,3 +1,5 @@
+const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
+
 describe('Auth service', function() {
 
   'use strict';
@@ -58,7 +60,7 @@ describe('Auth service', function() {
     });
 
     it('true when user is db admin', async () => {
-      userCtx.returns({ roles: ['_admin'] });
+      userCtx.returns({ roles: [COUCHDB_ADMIN] });
       Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.has(['can_backup_facilities']);
       chai.expect(result).to.be.true;
@@ -176,7 +178,7 @@ describe('Auth service', function() {
     });
 
     it('false when admin and !permission', async () => {
-      userCtx.returns({ roles: ['_admin'] });
+      userCtx.returns({ roles: [COUCHDB_ADMIN] });
       Settings.resolves({ permissions: {} });
       const result = await service.has(['!can_backup_facilities']);
       chai.expect(result).to.be.false;
@@ -246,21 +248,21 @@ describe('Auth service', function() {
     });
 
     it('true when admin and no disallowed permissions', async () => {
-      userCtx.returns({ roles: ['_admin'] });
+      userCtx.returns({ roles: [COUCHDB_ADMIN] });
       Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.any([['can_backup_facilities'], ['can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('true when admin and some disallowed permissions', async () => {
-      userCtx.returns({ roles: ['_admin'] });
+      userCtx.returns({ roles: [COUCHDB_ADMIN] });
       Settings.resolves({ permissions: { can_edit: [ 'chw' ] } });
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['somepermission']]);
       chai.expect(result).to.be.true;
     });
 
     it('false when admin and all disallowed permissions', async () => {
-      userCtx.returns({ roles: ['_admin'] });
+      userCtx.returns({ roles: [COUCHDB_ADMIN] });
       Settings.resolves({ permissions: {} });
       const result = await service.any([['!can_backup_facilities'], ['!can_export_messages'], ['!somepermission']]);
       chai.expect(result).to.be.false;
