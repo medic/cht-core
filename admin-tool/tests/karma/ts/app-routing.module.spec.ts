@@ -20,7 +20,7 @@ import {
   AuthorizationHeaderComponent 
 } from '@admin-tool-modules/authorization/authorization-header/authorization-header.component';
 import { SmsComponent } from '@admin-tool-modules/sms/sms.component';
-import { FormsComponent } from '@admin-tool-modules/forms/forms.component';
+import { AppFormsComponent } from '@admin-tool-modules/forms/app-forms/app-forms.component';
 import { TargetsComponent } from '@admin-tool-modules/targets/targets.component';
 import { ImagesComponent } from '@admin-tool-modules/images/images.component';
 import { MessageQueueComponent } from '@admin-tool-modules/message-queue/message-queue.component';
@@ -69,7 +69,7 @@ describe('AppRoutingModule', () => {
     it('forms routes should point to /forms with FormsComponent', () => {
       expect(formsRoutes).to.have.length(1);
       expect(formsRoutes[0].path).to.equal('forms');
-      expect(formsRoutes[0].component).to.equal(FormsComponent);
+      expect(formsRoutes[0].component).to.equal(AppFormsComponent);
     });
 
     it('targets routes should point to /targets with TargetsComponent', () => {

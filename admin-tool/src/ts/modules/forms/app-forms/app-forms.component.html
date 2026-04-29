@@ -1,0 +1,72 @@
+<div>
+  @if (loadingPageStatus) {
+    <div class="loader"></div>
+  } @else {
+    <div class="tab-content container-fluid">
+      <div class="section">
+        <legend>{{'Upload Forms' | translate}}</legend>
+        <div class="form-group">
+          <label>{{'upload.xform.xml' | translate}}</label>
+          <input
+            #xmlFile
+            type="file"
+            accept="application/xml"
+          />
+          <span class="help-block">{{'upload.xform.xml.help' | translate}}</span>
+        </div>
+        <div class="form-group">
+          <label>{{'upload.xform.context' | translate}}</label>
+          <input
+            #metaFile
+            type="file"
+            accept="application/json"
+          />
+          <span class="help-block">{{'upload.xform.meta.help' | translate}}</span>
+        </div>
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="upload()"
+            [disabled]="responseStatus.state === 'loading'">
+            <i class="fa fa-arrow-up" aria-hidden="true"></i>
+            <span>{{'upload' | translate}}</span>
+          </button>
+          @if (responseStatus.state === 'loading') {
+            <div class="loader inline"></div>
+          } @else if (responseStatus.state) {
+            <span [class]="responseStatus.state!">{{ responseStatus.msg! | translate }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="section">
+        <legend>{{'Installed Forms' | translate}}</legend>
+        <div class="row selection-heading">
+          <div class="col-sm-1">{{'icon' | translate}}</div>
+          <div class="col-sm-5">{{'unique.id' | translate}}</div>
+          <div class="col-sm-6">{{'title' | translate}}</div>
+        </div>
+        @for (form of forms; track form._id) {
+          <div class="row">
+            <div class="col-sm-1">
+              @if (getFormIcon(form.icon!).isSvg) {
+                <span [innerHTML]="getFormIcon(form.icon!).content"></span>
+              } @else if (getFormIcon(form.icon!).content) {
+                <img [src]="getFormIcon(form.icon!).content" />
+              }
+            </div>
+            <div class="col-sm-5">{{ form._id }}</div>
+            <div class="col-sm-6">
+              @if (form.translation_key) {
+                {{ form.translation_key | translate }}
+              } @else {
+                {{ form.title }}
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
