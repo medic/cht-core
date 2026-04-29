@@ -56,11 +56,11 @@ const deleteStagedDdocs = async () => {
 const cleanup = async () => {
   for (const database of DATABASES) {
     logger.info(`Running view cleanup for ${database.name}`);
-    database.db.viewCleanup().catch(err => {
+    await database.db.viewCleanup().catch(err => {
       logger.error('Error while running cleanup: %o', err);
     });
   }
-  db.nouveauCleanup().catch(err => {
+  await db.nouveauCleanup().catch(err => {
     logger.error('Error while running cleanup: %o', err);
   });
 };

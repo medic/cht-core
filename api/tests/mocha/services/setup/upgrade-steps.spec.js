@@ -38,7 +38,6 @@ describe('Upgrade steps', () => {
       expect(upgradeUtils.unstageStagedDdocs.callCount).to.equal(1);
       expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
       expect(upgradeLogService.setFinalized.callCount).to.equal(1);
-      expect(upgradeUtils.cleanup.callCount).to.equal(1);
       expect(upgradeUtils.cleanup.calledOnceWithExactly()).to.be.true;
       expect(serverInfo.getDeployInfo.calledOnceWithExactly(true)).to.be.true;
     });
