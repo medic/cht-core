@@ -80,15 +80,29 @@ describe('Rate limiter middleware', () => {
     expect(rateLimitService.consume.args[0][0]).to.equal(req);
   });
 
-  it('consumes on 429', async () => {
+  it('does not consume on 429 (#10705)', async () => {
+    // 429 is the rate limiter's own response. Consuming on it would
+    // double-punish callers that happen to share a key (e.g. a proxy IP)
+    // with a genuinely-failing client and would lock out their valid
+    // credentials, so the finish handler must ignore it.
     rateLimitService.isLimited.resolves(false);
     res.statusCode = 429;
     await middleware(req, res, next);
     expect(next.callCount).to.equal(1);
     expect(rateLimitService.consume.callCount).to.equal(0);
     finish();
-    expect(rateLimitService.consume.callCount).to.equal(1);
-    expect(rateLimitService.consume.args[0][0]).to.equal(req);
+    expect(rateLimitService.consume.callCount).to.equal(0);
+  });
+
+  it('does not consume on non-401 status codes', async () => {
+    rateLimitService.isLimited.resolves(false);
+    for (const statusCode of [200, 400, 403, 404, 500]) {
+      res = { on: sinon.stub(), statusCode };
+      await middleware(req, res, next);
+      const listener = res.on.args[0][1];
+      listener();
+    }
+    expect(rateLimitService.consume.callCount).to.equal(0);
   });
 
 });

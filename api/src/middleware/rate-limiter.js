@@ -4,8 +4,12 @@ const serverUtils = require('../server-utils');
 
 const registerReqFinishHandler = (req, res) => {
   res.on('finish', () => {
-    if (res.statusCode === 401 || res.statusCode === 429) {
-      // log in failed - punish user
+    // Only authentication failures (401) increment the failed-login counter.
+    // 429 is the rate-limiter's own response, so consuming on it would
+    // re-punish callers who happen to share a key (e.g. a proxy IP) with a
+    // genuinely failing client and lock out their otherwise-valid
+    // credentials. See #10705.
+    if (res.statusCode === 401) {
       rateLimitService.consume(req);
     }
   });
