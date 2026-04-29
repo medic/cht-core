@@ -14,7 +14,7 @@ describe('contacts_by_freetext', () => {
   [
     ['district_hospital', 0],
     ['health_center', 1],
-    ['clinic', 2],
+    [CONTACT_TYPES.CLINIC, 2],
     ['person', 3],
   ].forEach(([type, typeIndex]) => it(`emits numerical index [${typeIndex}] for default type`, () => {
     const doc = { type, hello: 'world' };
@@ -31,7 +31,7 @@ describe('contacts_by_freetext', () => {
   [
     ['contact', 0, 'district_hospital'],
     ['contact', 1, 'health_center'],
-    ['contact', 2, 'clinic'],
+    ['contact', 2, CONTACT_TYPES.CLINIC],
     ['contact', 3, 'person']
   ].forEach(([type, typeIndex, contactType]) => it(
     `emits numerical index [${typeIndex}] for default type when used as custom type`,

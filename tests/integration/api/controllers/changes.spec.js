@@ -80,7 +80,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chwville',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Chwville',
       parent: 'fixture:chw-bossville',
       place_id: 'shortcode:chwville',

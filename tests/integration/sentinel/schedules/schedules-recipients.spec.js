@@ -25,7 +25,7 @@ const contacts = [
   },
   {
     _id: 'clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     name: 'Bob',
     contact: {
       phone: CLINIC_PHONE

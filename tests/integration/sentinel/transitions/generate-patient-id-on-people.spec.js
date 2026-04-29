@@ -42,7 +42,7 @@ describe('generate_patient_id_on_people', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       reported_date: new Date().getTime()
     };
 

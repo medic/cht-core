@@ -16,7 +16,7 @@ describe('Report API', () => {
   const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'),
+    ...placeMap.get(CONTACT_TYPES.CLINIC),
     contact: { _id: contact0Id },
     parent: {
       _id: place1._id,

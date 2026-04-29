@@ -100,7 +100,7 @@ describe('Users API', () => {
       },
       {
         _id: newPlaceId,
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       },
       {
         _id: newContactId,

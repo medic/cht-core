@@ -34,7 +34,7 @@ const getLinkedDoc = (doc, tag) => {
 };
 
 const getClinic = function(doc) {
-  return doc && getParent(doc, 'clinic');
+  return doc && getParent(doc, CONTACT_TYPES.CLINIC);
 };
 
 const getHealthCenter = function(doc) {
@@ -190,8 +190,8 @@ const resolveRecipient = function(context, recipient) {
       resolve: () => resolveAncestor(context, 3),
     },
     {
-      name: 'clinic',
-      match: r => r === 'clinic',
+      name: CONTACT_TYPES.CLINIC,
+      match: r => r === CONTACT_TYPES.CLINIC,
       resolve: () => getClinicPhone(context.patient) ||
         getClinicPhone(context.place) ||
         getClinicPhone(context) ||
