@@ -9,8 +9,8 @@ interface UiExtensionProperties {
   readonly type: string;
   readonly roles?: string[];
   readonly icon?: string;
+  readonly resource_icon?: string;
   readonly title?: string;
-  readonly weight?: number;
   readonly config?: Record<string, unknown>;
 }
 
@@ -43,7 +43,7 @@ export class UiExtensionsService {
   private async loadExtensionProperties() {
     try {
       const request = this.http.get<UiExtensionProperties[]>('/ui-extension', { responseType: 'json' });
-      const extensions = (await lastValueFrom(request)) as UiExtensionProperties[];
+      const extensions = await lastValueFrom(request);
       this.extensionProperties = extensions.filter(extension => {
         if (!extension.roles?.length) {
           return true;

@@ -155,12 +155,12 @@ describe('Header Component', () => {
     expect(component.showPrivacyPolicy).to.be.true;
   });
 
-  it('should load header tabs from settings service', async () => {
+  it('should load header tabs from header tabs service', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(settingsService.get.callCount).to.equal(1);
     expect(headerTabsService.getAuthorizedTabs.callCount).to.equal(1);
+    expect(headerTabsService.getAuthorizedTabs.args[0]).to.deep.equal([]);
   });
 
   it('should set permitted tabs after loading', async () => {
