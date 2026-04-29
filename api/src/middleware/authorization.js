@@ -1,5 +1,6 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
+const { HTTP_HEADERS } = require('@medic/constants');
 
 const FIREWALL_ERROR = {
   code: 403,
@@ -23,7 +24,7 @@ module.exports = {
       .getUserCtx(req)
       .then(userCtx => {
         req.userCtx = userCtx;
-        req.replicationId = req.headers['medic-replication-id'];
+        req.replicationId = req.headers[HTTP_HEADERS.MEDIC_REPLICATION_ID];
       })
       .catch(err => {
         req.authErr = err;

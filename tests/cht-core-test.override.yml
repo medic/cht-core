@@ -1,7 +1,9 @@
 services:
   api:
     environment:
+      - "NODE_ENV=development"
       - "LOG_LEVEL=debug"
   sentinel:
     environment:
+      - "NODE_ENV=development"
       - "LOG_LEVEL=debug"

@@ -15,6 +15,7 @@ const targetAggregatesConfig = require('./config/target-aggregates');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
 const constants = require('@constants');
 const { createTargetDoc, getLastMonth } = require('./utils/targets-helper-functions');
+const { PREFIXES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('Target aggregates', () => {
   describe('DB admin', () => {
@@ -64,8 +65,10 @@ describe('Target aggregates', () => {
 
     const TARGET_VALUES_BY_CONTACT = helperFunctions.generateTargetValuesByContact([...NAMES_DH1, ...NAMES_DH2]);
 
-    const districtHospital1 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 1' });
-    const districtHospital2 = placeFactory.place().build({ type: 'district_hospital', name: 'District Hospital 2' });
+    const districtHospital1 = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      name: 'District Hospital 1' });
+    const districtHospital2 = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+      name: 'District Hospital 2' });
 
     const contactWithManyPlaces = personFactory.build({
       parent: { _id: districtHospital1._id, parent: { _id: districtHospital1._id } },
@@ -74,7 +77,7 @@ describe('Target aggregates', () => {
     const onlineUser = userFactory.build({ place: districtHospital1._id, roles: ['program_officer'] });
 
     const userWithManyPlaces = userSettingsFactory.build({
-      _id: 'org.couchdb.user:offline_many_facilities',
+      _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
       name: 'offline_many_facilities',
       roles: [ 'chw' ],
       facility_id: [ districtHospital1._id, districtHospital2._id ],
@@ -103,7 +106,7 @@ describe('Target aggregates', () => {
       districtHospital2._id,
       ...contactDocs.map(doc => doc._id),
       'fixture:user:supervisor',
-      'org.couchdb.user:supervisor',
+      PREFIXES.COUCH_USER + 'supervisor',
       '^target~',
       [/^form:/],
     ];

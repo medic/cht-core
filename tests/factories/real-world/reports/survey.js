@@ -3,6 +3,7 @@ const uuid = require('uuid');
 const assesmentFactory = require('./assessment');
 const pregnancyFactory = require('./pregnancy');
 const assesmentFollowUpFactory = require('./assessment-follow-up');
+const { DOC_TYPES } = require('@medic/constants');
 
 const survey = () => {
   return new Factory()
@@ -10,7 +11,7 @@ const survey = () => {
     .option('patient', '')
     .option('contact', '')
     .attr('form', '')
-    .attr('type', 'data_record')
+    .attr('type', DOC_TYPES.DATA_RECORD)
     .attr('content_type', 'xml')
     .attr('reported_date', () => Date.now())
     .attr('contact', '')

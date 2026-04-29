@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const NBR_DOCS = 300;
 
@@ -9,11 +9,11 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
@@ -22,18 +22,19 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    type: CONTACT_TYPES.CLINIC,
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
   {
     _id: 'chw',
     type: 'person',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', 
+      parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     reported_date: new Date().getTime()
@@ -43,13 +44,14 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', 
+      parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: new Date().getTime()
   }
 ];
 
 const report = {
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: 'phone1',
   fields: {
     patient_id: 'patient'
@@ -116,7 +118,7 @@ describe('Sentinel queue drain', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       from: 'phone1',
       fields: { patient_id: 'patient' },
       reported_date: new Date().getTime(),

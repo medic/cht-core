@@ -13,6 +13,8 @@ import * as LocalContact from './contact';
 import * as Input from '../input';
 import { Doc, isDoc } from '../libs/doc';
 import logger from '@medic/logger';
+import { DOC_TYPES } from '@medic/constants';
+
 import {
   assertFieldsUnchanged,
   getReportedDateTimestamp,
@@ -73,7 +75,7 @@ export namespace v1 {
     if (!isDoc(doc)) {
       return false;
     }
-    return doc.type === 'data_record' && hasStringFieldWithValue(doc, 'form');
+    return doc.type === DOC_TYPES.DATA_RECORD && hasStringFieldWithValue(doc, 'form');
   };
 
   /** @internal */
@@ -152,7 +154,7 @@ export namespace v1 {
         ...input,
         contact,
         reported_date: getReportedDateTimestamp(input.reported_date),
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       });
       return createMedicDoc(reportDoc) as Promise<Report.v1.Report>;
     };

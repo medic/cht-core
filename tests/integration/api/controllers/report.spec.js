@@ -6,7 +6,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const { expect } = require('chai');
 const { USER_ROLES } = require('@medic/constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Report API', () => {
   const contact0Id = uuid();
@@ -16,7 +16,7 @@ describe('Report API', () => {
   const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'),
+    ...placeMap.get(CONTACT_TYPES.CLINIC),
     contact: { _id: contact0Id },
     parent: {
       _id: place1._id,
@@ -426,7 +426,7 @@ describe('Report API', () => {
     it('creates a report doc for valid input', async () => {
       const input = {
         form: 'pregnancy_danger_sign_follow_up',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 11221122,
         contact: contact0Id,
         fields: {
@@ -455,7 +455,7 @@ describe('Report API', () => {
 
       expect(reportDoc).excluding([ '_rev', '_id', 'reported_date' ]).to.deep.equal({
         ...input,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: { _id: place2._id }
       });
       expect(reportDoc.reported_date).to.be.a('number');

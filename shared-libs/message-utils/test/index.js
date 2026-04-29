@@ -53,7 +53,7 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
@@ -63,7 +63,7 @@ describe('messageUtils', () => {
                 phone: parentPhone
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
                 }
@@ -84,7 +84,7 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: `not${clinicPhone}`,
             },
@@ -94,7 +94,7 @@ describe('messageUtils', () => {
                 phone: `not${parentPhone}`,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: `not${grandparentPhone}`,
                 },
@@ -105,7 +105,7 @@ describe('messageUtils', () => {
         patient: {
           type: 'person',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -115,7 +115,7 @@ describe('messageUtils', () => {
                 phone: parentPhone,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone,
                 },
@@ -136,7 +136,7 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: `not${clinicPhone}`,
             },
@@ -146,7 +146,7 @@ describe('messageUtils', () => {
                 phone: `not${parentPhone}`,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: `not${grandparentPhone}`,
                 },
@@ -157,7 +157,7 @@ describe('messageUtils', () => {
         place: {
           type: 'some_place',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -167,7 +167,7 @@ describe('messageUtils', () => {
                 phone: parentPhone,
               },
               parent: {
-                type: 'district_hospital',
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone,
                 },
@@ -188,7 +188,7 @@ describe('messageUtils', () => {
         contact: {
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
@@ -200,7 +200,7 @@ describe('messageUtils', () => {
               },
               parent: {
                 type: 'contact',
-                contact_type: 'district_hospital',
+                contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
                 }
@@ -220,7 +220,7 @@ describe('messageUtils', () => {
         contact: {
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
@@ -232,7 +232,7 @@ describe('messageUtils', () => {
               },
               parent: {
                 type: 'contact',
-                contact_type: 'district_hospital',
+                contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
                 }
@@ -278,7 +278,7 @@ describe('messageUtils', () => {
           },
           phone: 'patientPhone',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -325,7 +325,7 @@ describe('messageUtils', () => {
           },
           phone: 'patientPhone',
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone,
             },
@@ -399,14 +399,14 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
               }
             }
           },
           parent: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
             }
@@ -416,7 +416,7 @@ describe('messageUtils', () => {
           patient: {
             parent: {
               type: 'contact',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
               }
@@ -424,7 +424,7 @@ describe('messageUtils', () => {
           },
           parent: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
             }
@@ -439,7 +439,7 @@ describe('messageUtils', () => {
       it('resolves health_center based on place if given', () => {
         const context = {
           place: {
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
@@ -457,7 +457,7 @@ describe('messageUtils', () => {
         const contextFlexible = {
           place: {
             type: 'contact',
-            contact_type: 'clinic',
+            contact_type: CONTACT_TYPES.CLINIC,
             parent: {
               type: 'contact',
               contact_type: CONTACT_TYPES.HEALTH_CENTER,
@@ -555,7 +555,7 @@ describe('messageUtils', () => {
             },
             parent: {
               type: 'contact',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               contact: { phone: '111111' },
               linked_docs: {
                 clinic: { phone: 'two' },
@@ -758,7 +758,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -783,7 +783,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -796,7 +796,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+333'
@@ -831,7 +831,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: {
@@ -856,7 +856,7 @@ describe('messageUtils', () => {
           contact: {
             type: 'person',
             parent: {
-              type: 'district_hospital',
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -869,11 +869,11 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
-                  type: 'district_hospital',
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
                     type: 'person',
                     phone: '+333'
@@ -900,7 +900,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -908,7 +908,7 @@ describe('messageUtils', () => {
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
-                  type: 'district_hospital',
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
                     type: 'person',
                     phone: '+333'
@@ -935,7 +935,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -943,7 +943,7 @@ describe('messageUtils', () => {
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER, //parent
                 parent: {
-                  type: 'district_hospital', //grandparent
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL, //grandparent
                   contact: {
                     type: 'person',
                     phone: '+333'
@@ -970,11 +970,11 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
-                  type: 'district_hospital',
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
                     type: 'person',
                     phone: '+333'
@@ -1001,7 +1001,7 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person',
                 phone: '+222'
@@ -1009,7 +1009,7 @@ describe('messageUtils', () => {
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
-                  type: 'district_hospital',
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
                     type: 'person'
                   }
@@ -1039,14 +1039,14 @@ describe('messageUtils', () => {
         const context = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: {
                 type: 'person'                
               },
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
-                  type: 'district_hospital',
+                  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
                     type: 'person'
                   }
@@ -1385,7 +1385,7 @@ describe('messageUtils', () => {
         const extraContext = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: { name: 'Bede' }
             }
           }
@@ -1406,7 +1406,7 @@ describe('messageUtils', () => {
           parent: {
             type: CONTACT_TYPES.HEALTH_CENTER,
             parent: {
-              type: 'district_hospital',
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL,
               parent: ''
             }
           }
@@ -1414,7 +1414,7 @@ describe('messageUtils', () => {
         const extraContext = {
           patient: {
             parent: {
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               contact: { name: 'Bede' }
             }
           }
@@ -1670,12 +1670,81 @@ describe('messageUtils', () => {
         from: '+111',
         place: {
           parent: {
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             contact: { phone: '+888' }
           }
         }
       };
       expect(utils._getRecipient(doc, 'district')).to.equal('+888');
+    });
+  });
+  describe('local_phone mustache helper', () => {
+    const translate = (key) => key;
+
+    it('strips country code from phone number in SMS template', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('strips country code from a context variable', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en', fields: { facility_phone: '+9779841234567' } };
+      const content = { message: [{ locale: 'en', 
+        content: 'Call {{#local_phone}}{{facility_phone}}{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('returns phone unchanged if country code does not match', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+12025551234{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call +12025551234');
+    });
+
+    it('returns phone unchanged if no default_country_code configured', () => {
+      const config = {};
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call +9779841234567');
+    });
+
+    it('handles null phone gracefully', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call ');
+    });
+
+    it('works when default_country_code is numeric (not string)', () => {
+      const config = { default_country_code: 977 };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}+9779841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('returns phone unchanged if already in local format', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en' };
+      const content = { message: [{ locale: 'en', content: 'Call {{#local_phone}}9841234567{{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
+    });
+
+    it('strips country code when phone variable has surrounding whitespace', () => {
+      const config = { default_country_code: '977' };
+      const doc = { locale: 'en', fields: { patient_phone: '+9779841234567' } };
+      const content = { message: [{ locale: 'en', 
+        content: 'Call {{#local_phone}} {{patient_phone}} {{/local_phone}}' }] };
+      const result = utils.template(config, translate, doc, content);
+      expect(result).to.equal('Call 9841234567');
     });
   });
 });

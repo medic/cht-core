@@ -4,7 +4,7 @@ const moment = require('moment/moment');
 const testForm = require('./transitions/test-stubs');
 const constants = require('@constants');
 const uuid = require('uuid').v4;
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [
   {
@@ -16,7 +16,7 @@ const contacts = [
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: 'contact',
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
@@ -28,14 +28,14 @@ const contacts = [
     _id: 'clinic',
     name: 'Clinic',
     type: 'contact',
-    contact_type: 'clinic',
+    contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
       parent: {
         _id: 'clinic',
-        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       }
     },
     reported_date: new Date().getTime()
@@ -46,7 +46,8 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', 
+      parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   },
@@ -100,7 +101,7 @@ describe('auditing', () => {
     const patientPhone = '+9779841123123';
     const patientNameAndPhone = { // has just the `patient_name`and phone so should create this person
       _id: uuid(),
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       form: 'FORM-A',
       from: '+9779841212345',
       fields: {
@@ -110,7 +111,8 @@ describe('auditing', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', 
+          parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
