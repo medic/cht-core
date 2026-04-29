@@ -55,7 +55,7 @@ const contactTypes = [
     create_key: 'contact.type.person.new',
     edit_key: 'contact.type.person.edit',
     primary_contact_key: 'clinic.field.contact',
-    parents: ['district_hospital', CONTACT_TYPES.HEALTH_CENTER, 'clinic'],
+    parents: ['district_hospital', CONTACT_TYPES.HEALTH_CENTER, CONTACT_TYPES.CLINIC],
     icon: 'medic-person',
     create_form: 'form:contact:person:create',
     edit_form: 'form:contact:person:edit',
@@ -71,7 +71,7 @@ describe('places controller', () => {
     db.init({ medic: { post: sinon.stub(), allDocs: sinon.stub() } });
     dataContext.init({ bind: sinon.stub() });
     examplePlace = {
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'St. Paul',
       parent: 'x'
     };
@@ -131,7 +131,7 @@ describe('places controller', () => {
     it('returns error when doc type is not "contact"', () => {
       examplePlace._id = 'xyz';
       examplePlace.type = 'shoe';
-      examplePlace.contact_type = 'clinic';
+      examplePlace.contact_type = CONTACT_TYPES.CLINIC;
       return controller
         ._validatePlace(examplePlace)
         .then(() => chai.expect.fail('should fail'))
@@ -277,7 +277,7 @@ describe('places controller', () => {
     it('rejects parent objects with wrong type.', () => {
       const place = {
         name: 'CHP Family',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: {
           name: 'CHP Area',
           type: 'food'
@@ -313,7 +313,7 @@ describe('places controller', () => {
     it('supports objects with name and right type.', async () => {
       const place = {
         name: 'CHP Family',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: {
           name: 'CHP Area One',
           type: CONTACT_TYPES.HEALTH_CENTER,
@@ -369,7 +369,7 @@ describe('places controller', () => {
           return Promise.resolve({
             _id: 'ghi',
             name: 'CHP Family',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               _id: 'def',
               name: 'CHP Area One',
