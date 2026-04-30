@@ -25,6 +25,7 @@ import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.co
 import { AuthService } from '@mm-services/auth.service';
 import { ServicesActions } from '@mm-actions/services';
 import { PerformanceService } from '@mm-services/performance.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Reports effects', () => {
   let effects:ReportsEffects;
@@ -812,7 +813,7 @@ describe('Reports effects', () => {
         doc: {
           _id: 'report',
           _rev: 2,
-          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
+          contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: CONTACT_TYPES.CLINIC } },
         },
       };
       authService.has.resolves(true);

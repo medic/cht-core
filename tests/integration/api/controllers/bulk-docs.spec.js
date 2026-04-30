@@ -155,25 +155,25 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'allowed_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 1',
       },
       {
         _id: 'allowed_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 2',
       },
       {
         _id: 'denied_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 1',
       },
       {
         _id: 'denied_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 2',
       },
@@ -182,53 +182,53 @@ describe('bulk-docs handler', () => {
     const docs = [
       {
         _id: 'new_allowed_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'New Allowed Contact',
       },
       {
         _id: 'new_denied_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'New Denied Contact',
       },
       // disallowed update on disallowed doc
       {
         _id: 'denied_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 1 updated',
       },
       // allowed update on disallowed doc
       {
         _id: 'denied_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Denied Contact 2 updated',
       },
       // disallowed update on allowed doc
       {
         _id: 'allowed_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Allowed Contact 1 updated',
       },
       // allowed update on allowed doc
       {
         _id: 'allowed_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 2 updated',
       },
       // no _id field disallowed doc
       {
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'New Denied Contact With no ID',
       },
       // no _id field allowed doc
       {
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'New Allowed Contact With no ID',
       },
@@ -335,19 +335,19 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'ac1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 1',
       },
       {
         _id: 'ac2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Allowed Contact 2',
       },
       {
         _id: 'dc1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: parentPlace._id },
         name: 'Denied Contact 1',
       },
@@ -356,13 +356,13 @@ describe('bulk-docs handler', () => {
     const docs = [
       {
         _id: 'nac1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'New Allowed Contact',
       },
       {
         _id: 'ndc1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: parentPlace._id },
         name: 'New Denied Contact',
       },
@@ -444,14 +444,14 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'allowed_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 1',
         patient_id: 'shortcode:allowed_contact_1',
       },
       {
         _id: 'denied_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 1',
         patient_id: 'shortcode:denied_contact_1',
@@ -597,25 +597,25 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_3',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'a',
         parent: { _id: 'fixture:offline' },
       },
       {
         _id: 'allowed_4',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'b',
         parent: { _id: 'fixture:offline' },
       },
       {
         _id: 'denied_3',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'c',
         parent: { _id: 'fixture:online' },
       },
       {
         _id: 'denied_4',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         place_id: 'd',
         parent: { _id: 'fixture:online' },
       },
@@ -652,25 +652,25 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'allowed_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 1',
       },
       {
         _id: 'allowed_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 2',
       },
       {
         _id: 'denied_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 1',
       },
       {
         _id: 'denied_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 2',
       },
@@ -679,53 +679,53 @@ describe('bulk-docs handler', () => {
     const docs = [
       {
         _id: 'new_allowed_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'New Allowed Contact',
       },
       {
         _id: 'new_denied_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'New Denied Contact',
       },
       // disallowed update on disallowed doc
       {
         _id: 'denied_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Denied Contact 1 updated',
       },
       // allowed update on disallowed doc
       {
         _id: 'denied_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Denied Contact 2 updated',
       },
       // disallowed update on allowed doc
       {
         _id: 'allowed_contact_1',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'Allowed Contact 1 updated',
       },
       // allowed update on allowed doc
       {
         _id: 'allowed_contact_2',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'Allowed Contact 2 updated',
       },
       // no _id field disallowed doc
       {
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'New Denied Contact With no ID',
       },
       // no _id field allowed doc
       {
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'New Allowed Contact With no ID',
       },
@@ -816,28 +816,28 @@ describe('bulk-docs handler', () => {
       {
         _id: 'allowed1',
         _rev: '1-test',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'allowed-1',
       },
       {
         _id: 'denied1',
         _rev: '1-test',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'denied-1',
       },
       {
         _id: 'allowed2',
         _rev: '1-test',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'allowed-1',
       },
       {
         _id: 'denied2',
         _rev: '1-test',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'denied-1',
       },
@@ -873,7 +873,7 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -930,7 +930,7 @@ describe('bulk-docs handler', () => {
     const newDocs = [
       {
         _id: 'allowed_new_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -1021,7 +1021,7 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -1078,7 +1078,7 @@ describe('bulk-docs handler', () => {
     const newDocs = [
       {
         _id: 'allowed_new_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -1168,7 +1168,7 @@ describe('bulk-docs handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -1225,7 +1225,7 @@ describe('bulk-docs handler', () => {
     const newDocs = [
       {
         _id: 'new_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
@@ -1313,7 +1313,7 @@ describe('bulk-docs handler', () => {
     const existingDocs = [
       {
         _id: 'existing_clinic', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'existing_person' }
       },
@@ -1351,7 +1351,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'existing_clinic2', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'existing_person2' }
       },
@@ -1378,7 +1378,7 @@ describe('bulk-docs handler', () => {
     const newDocs = [
       {
         _id: 'new_clinic', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'new_person' }
       },
@@ -1416,7 +1416,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_clinic2', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'new_person2' }
       },
