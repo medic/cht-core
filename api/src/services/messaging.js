@@ -299,7 +299,7 @@ module.exports = {
       })
       .then(results => {
         const docs = results.rows
-          .map(r => r && r.doc)
+          .map(r => r?.doc)
           .filter(Boolean);
         if (docs.length !== results.rows.length) {
           logger.warn(`Found ${results.rows.length - docs.length} message state update docs missing from allDocs response.`);
