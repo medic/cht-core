@@ -325,22 +325,20 @@ describe('generate-xform service', () => {
       expect(spawnStub.called).to.equal(false);
     });
 
-    it('should not reject XForms whose comments mention DOCTYPE or ENTITY', async () => {
+    it('should reject XForms whose comments mention DOCTYPE or ENTITY', async () => {
       const spawnStub = sinon.stub(childProcess, 'spawn').returns(spawned);
-      const benign =
+      const commentedDeclarations =
         '<?xml version="1.0"?>\n' +
         '<!-- describe how to write a <!DOCTYPE html> declaration -->\n' +
         '<!-- and how <!ENTITY foo "bar"> works -->\n' +
         '<root/>';
-      const generate = service.generate(benign);
-      spawned.stdout.on.args[0][1]('<form/>');
-      spawned.on.args[0][1](0);
-      spawned.stdout.on.args[1][1]('<model/>');
-      spawned.on.args[2][1](0);
-      await generate;
-      // xsltproc was invoked normally because the DOCTYPE/ENTITY mentions
-      // were inside XML comments and therefore not real declarations.
-      expect(spawnStub.callCount).to.equal(2);
+      try {
+        await service.generate(commentedDeclarations);
+        assert.fail('expected error to be thrown');
+      } catch (err) {
+        expect(err.message).to.match(/must not declare a DOCTYPE or external entities/);
+      }
+      expect(spawnStub.called).to.equal(false);
     });
 
   });

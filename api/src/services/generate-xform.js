@@ -24,10 +24,6 @@ const XSLTPROC_CMD = 'xsltproc';
 // DOCTYPE/ENTITY rejection performed in `assertNoExternalEntities`.
 const XSLTPROC_FLAGS = ['--nonet'];
 
-// Stripping XML comments before scanning prevents false positives from
-// legitimate (if unusual) comments that mention `<!DOCTYPE` or `<!ENTITY` in
-// their text. Comments cannot themselves declare a DTD.
-const XML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
 const DOCTYPE_REGEX = /<!DOCTYPE\b/i;
 const ENTITY_DECL_REGEX = /<!ENTITY\b/i;
 
@@ -36,8 +32,8 @@ const ENTITY_DECL_REGEX = /<!ENTITY\b/i;
 // forms to exfiltrate files from the api container via xsltproc (XXE / CWE-611,
 // see #10209).
 const assertNoExternalEntities = formXml => {
-  const stripped = String(formXml).replace(XML_COMMENT_REGEX, '');
-  if (DOCTYPE_REGEX.test(stripped) || ENTITY_DECL_REGEX.test(stripped)) {
+  const xml = String(formXml);
+  if (DOCTYPE_REGEX.test(xml) || ENTITY_DECL_REGEX.test(xml)) {
     throw new Error(
       'Form XML must not declare a DOCTYPE or external entities. ' +
       'See https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing'
