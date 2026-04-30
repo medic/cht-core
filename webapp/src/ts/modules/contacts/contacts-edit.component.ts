@@ -405,7 +405,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
         const $preview = $picker.find('.file-preview');
         $preview.empty();
-        $preview.append('<img src="data:' + base64 + '">');
+        $preview.append('<img src="data:' + base64 + '" alt="">');
       })
     );
   }

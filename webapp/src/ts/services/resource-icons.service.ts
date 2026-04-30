@@ -61,7 +61,7 @@ export class ResourceIconsService {
           content = atob(icon.data);
         } else {
           // OTHER: base64 encode the img src
-          content = `<img src="data:${icon.content_type};base64,${icon.data}" />`;
+          content = `<img src="data:${icon.content_type};base64,${icon.data}" alt="" />`;
         }
         this.cache[i].htmlContent[name] = content;
       }
