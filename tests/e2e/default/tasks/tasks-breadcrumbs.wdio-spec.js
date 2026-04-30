@@ -13,7 +13,7 @@ const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Tasks tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({

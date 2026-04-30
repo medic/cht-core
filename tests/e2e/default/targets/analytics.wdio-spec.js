@@ -19,7 +19,7 @@ const { TARGET_MET_COLOR, TARGET_UNMET_COLOR } = analyticsPage;
 describe('Targets', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
 
   const contact = personFactory.build({
     name: 'CHW',
@@ -150,6 +150,20 @@ describe('Targets', () => {
     await commonPage.waitForLoaders();
 
     await browser.waitUntil(async () => (await analyticsPage.noAdminTargets().isDisplayed()) === true);
+  });
+
+  it('should display goal as count when limit_count_to_goal is set and count exceeds goal', async () => {
+    const settings = await compileTargets('targets-limit-count-config.js');
+    await utils.updateSettings(settings, { ignoreReload: true, sync: true, refresh: true, revert: true });
+
+    await analyticsPage.goToTargets();
+    await commonPage.waitForLoaders();
+
+    // The test setup includes person contacts, so the rules engine will calculate a pass count.
+    // goal=1 is set low enough that it will be exceeded, so limit_count_to_goal should cap the display at 1.
+    const targets = await analyticsPage.getTargets();
+    const activePregnancies = targets.find(t => t.title === 'Active pregnancies');
+    expect(activePregnancies.count).to.equal('1');
   });
 
   it('should show error message for bad config', async () => {
