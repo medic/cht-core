@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { find as _find, groupBy as _groupBy, partial as _partial, } from 'lodash-es';
+import { groupBy as _groupBy, partial as _partial, } from 'lodash-es';
 
 import registrationUtils from '@medic/registration-utils';
 
@@ -262,8 +262,8 @@ export class ContactViewModelGeneratorService {
       });
   }
 
-  private getHeading(report, forms) {
-    const form = _find(forms, { code: report.form });
+  private getHeading(report, formsMap: Map<string, any>) {
+    const form = formsMap.get(report.form);
     if (form && form.subjectKey) {
       return this.translateService.instant(form.subjectKey, report);
     }
@@ -277,11 +277,13 @@ export class ContactViewModelGeneratorService {
   }
 
   private async addHeading(reports, forms) {
+    const formsMap = new Map(forms.map(form => [form.code, form]));
+    const reportsById = new Map(reports.map(report => [report._id, report]));
     const summaries = await this.getDataRecordsService.getDocsSummaries(reports);
     summaries?.forEach(summary => {
-      const report = reports.find(report => report._id === summary._id);
+      const report = reportsById.get(summary._id);
       if (report) {
-        report.heading = this.getHeading(summary, forms);
+        report.heading = this.getHeading(summary, formsMap);
       }
     });
     return reports;
@@ -290,6 +292,12 @@ export class ContactViewModelGeneratorService {
   private getReports(contactDocs) {
     const subjectIds: string[] = [];
     contactDocs.forEach(doc => subjectIds.push(...registrationUtils.getSubjectIds(doc)));
+
+    const contactsByPatientId = new Map(
+      contactDocs
+        .filter(doc => doc?.patient_id)
+        .map(doc => [doc.patient_id, doc])
+    );
 
     return this.searchService
       .search('reports', { subjectIds }, { include_docs: true, limit: this.LIMIT_SELECT_ALL_REPORTS })
@@ -301,7 +309,7 @@ export class ContactViewModelGeneratorService {
             return;
           }
           const patientId = report.fields.patient_id || report.patient_id;
-          const patient = contactDocs.find(contact => contact?.patient_id === patientId);
+          const patient = contactsByPatientId.get(patientId);
           if (patient) {
             report.fields.patient_name = patient.name;
           }
