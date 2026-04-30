@@ -277,8 +277,8 @@ export class ContactViewModelGeneratorService {
   }
 
   private async addHeading(reports, forms) {
-    const formsMap = new Map(forms.map(form => [form.code, form]));
-    const reportsById = new Map(reports.map(report => [report._id, report]));
+    const formsMap: Map<string, any> = new Map(forms.map(form => [form.code, form]));
+    const reportsById: Map<string, any> = new Map(reports.map(report => [report._id, report]));
     const summaries = await this.getDataRecordsService.getDocsSummaries(reports);
     summaries?.forEach(summary => {
       const report = reportsById.get(summary._id);
@@ -293,7 +293,7 @@ export class ContactViewModelGeneratorService {
     const subjectIds: string[] = [];
     contactDocs.forEach(doc => subjectIds.push(...registrationUtils.getSubjectIds(doc)));
 
-    const contactsByPatientId = new Map(
+    const contactsByPatientId: Map<string, any> = new Map(
       contactDocs
         .filter(doc => doc?.patient_id)
         .map(doc => [doc.patient_id, doc])
