@@ -7,6 +7,7 @@ const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
+const logger = require('@medic/logger');
 const { DOC_IDS, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
@@ -53,7 +54,7 @@ const DEFAULT_DDOCS = [
 const couchDbUser = doc => doc.type === 'user-settings';
 
 const getUserSettingsId = username => `${PREFIXES.COUCH_USER}${username}`;
-const getDefaultDocs = (userCtx) => [ ...DEFAULT_DDOCS, getUserSettingsId(userCtx?.name)];
+const getDefaultDocs = (userCtx) => [...DEFAULT_DDOCS, getUserSettingsId(userCtx?.name)];
 
 /**
  * Returns maximum allowed contact and report replication depth and most permissive
@@ -70,8 +71,15 @@ const getDepth = (userCtx) => {
   };
 
   const getReportDepth = (value) => {
-    value = Number.parseInt(value, 10);
-    return Number.isNaN(value) ? NO_VAL : value;
+    const rawValue = value;
+    const parsedValue = Number.parseInt(value, 10);
+
+    if (Number.isNaN(parsedValue)) {
+      logger.warn(`Invalid report_depth value "${rawValue}", using default`);
+      return NO_VAL;
+    }
+
+    return parsedValue;
   };
 
   if (!userCtx.roles || !userCtx.roles.length) {
@@ -80,6 +88,7 @@ const getDepth = (userCtx) => {
 
   const settings = config.get('replication_depth');
   if (!settings) {
+    logger.warn('replication_depth configuration is missing, using default depth');
     return depth;
   }
 
@@ -87,10 +96,12 @@ const getDepth = (userCtx) => {
     // find the role with the highest depth
     const setting = settings.find(setting => setting.role === role);
     if (!setting) {
+      logger.debug(`Role "${role}" not found in replication_depth configuration`);
       return;
     }
     const settingDepth = Number.parseInt(setting.depth, 10);
-    if (Number.isNaN(setting.depth)) {
+    if (Number.isNaN(settingDepth)) {
+      logger.warn(`Invalid depth value for role "${role}": "${setting.depth}", skipping this role`);
       return;
     }
 
@@ -115,7 +126,7 @@ const usesReportDepth = (authorizationContext) => authorizationContext.reportDep
 
 const hasAccessToUnassignedDocs = (userCtx) => {
   return config.get('district_admins_access_unallocated_messages') &&
-         auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
+    auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 };
 
 const lowestSubjectDepth = (subjects, subjectsDepth, depth) => {
@@ -164,7 +175,7 @@ const updateContext = (allowed, authorizationContext, { contactsByDepth }) => {
   }
 
   // first element of `contactsByDepth` contains both `subjectId` and `docID`
-  const [{ key: [ docId ], value: { shortcode: subjectId, primary_contact: primaryContact } }] = contactsByDepth;
+  const [{ key: [docId], value: { shortcode: subjectId, primary_contact: primaryContact } }] = contactsByDepth;
 
   if (allowed) {
     const newSubjects = [subjectId, docId];
@@ -258,8 +269,8 @@ const allowedReport = (authorizationContext, docsByReplicationKey) => {
   return replicationKeys.some(subjectId => {
     const allowedSubject = subjectId && authorizationContext.subjectIds.includes(subjectId);
     return allowedSubject &&
-           !isSensitive(authorizationContext.userCtx, subjectId, submitterId, priv, allowedSubmitter) &&
-           allowedDepth;
+      !isSensitive(authorizationContext.userCtx, subjectId, submitterId, priv, allowedSubmitter) &&
+      allowedDepth;
   });
 };
 
@@ -305,7 +316,7 @@ const getContactsByDepthKeys = (userCtx, depth) => {
       keys.push(...Array.from({ length: depth + 1 }).map((_, i) => [facilityId, i]));
     } else {
       // no configured depth limit
-      keys.push([ facilityId ]);
+      keys.push([facilityId]);
     }
   }
 
@@ -323,7 +334,7 @@ const getContextObject = (userCtx) => {
   return {
     userCtx,
     contactsByDepthKeys: getContactsByDepthKeys(userCtx, contactDepth),
-    subjectIds: [ ALL_KEY, getUserSettingsId(userCtx.name) ],
+    subjectIds: [ALL_KEY, getUserSettingsId(userCtx.name)],
     contactDepth,
     reportDepth,
     subjectsDepth,
@@ -395,7 +406,7 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
   const unknownPrimaryContacts = _.uniq(primaryContactIds.filter(id => !contacts[id]));
 
   if (unknownPrimaryContacts.length) {
-    const result = await db.medic.query('medic/contacts_by_depth', { keys: unknownPrimaryContacts.map(id => [id] ) });
+    const result = await db.medic.query('medic/contacts_by_depth', { keys: unknownPrimaryContacts.map(id => [id]) });
     result.rows.forEach(row => {
       const subjects = getContactSubjects(row);
       authCtx.subjectIds.push(...subjects);
@@ -406,7 +417,7 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
   if (usesReportDepth(authCtx)) {
     primaryContactIds.forEach(primaryContactId => {
       const parents = Object.entries(contacts)
-        .filter(([, { primaryContact } ]) => primaryContact === primaryContactId)
+        .filter(([, { primaryContact }]) => primaryContact === primaryContactId)
         .map(([id]) => id);
       const depth = lowestSubjectDepth(parents, authCtx.subjectsDepth);
       contacts[primaryContactId].subjects.forEach(subject => authCtx.subjectsDepth[subject] = depth);
