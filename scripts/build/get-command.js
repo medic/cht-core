@@ -1,5 +1,6 @@
 const buildUnknownCommandError = (scriptName, commandName, commands) => {
-  const availableCommands = Object.keys(commands).sort();
+  const availableCommands = Object.keys(commands)
+    .sort((a, b) => a.localeCompare(b));
   const commandLabel = commandName ? `"${commandName}"` : 'No command provided';
   const usage = availableCommands.length > 0
     ? `Available commands: ${availableCommands.join(', ')}`
