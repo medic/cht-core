@@ -1,6 +1,7 @@
 const util = require('util');
 const couchCompile = util.promisify(require('couchdb-compile'));
 const { writeFile, readdir } = require('node:fs/promises');
+const { getCommand } = require('./get-command');
 
 const getSubDirs = async (base) => {
   const dirs = await readdir(base);
@@ -8,30 +9,21 @@ const getSubDirs = async (base) => {
 };
 
 const compileStaging = async () => {
-  await compile([ 'build/staging' ], 'build/staging.json');
+  await compile(['build/staging'], 'build/staging.json');
 };
 
 const compilePrimary = async () => {
   const dirs = await getSubDirs('build/ddocs/medic-db');
   await compile(dirs, 'build/ddocs/medic.json');
-  await compile([ 'build/ddocs/sentinel-db/sentinel' ], 'build/ddocs/sentinel.json');
-  await compile([ 'build/ddocs/users-meta-db/users-meta' ], 'build/ddocs/users-meta.json');
-  await compile([ 'build/ddocs/logs-db/logs' ], 'build/ddocs/logs.json');
-  await compile([ 'build/ddocs/users-db/users' ], 'build/ddocs/users.json');
+  await compile(['build/ddocs/sentinel-db/sentinel'], 'build/ddocs/sentinel.json');
+  await compile(['build/ddocs/users-meta-db/users-meta'], 'build/ddocs/users-meta.json');
+  await compile(['build/ddocs/logs-db/logs'], 'build/ddocs/logs.json');
+  await compile(['build/ddocs/users-db/users'], 'build/ddocs/users.json');
 };
 
 const commands = {
   'primary': compilePrimary,
   'staging': compileStaging,
-};
-
-const getCommand = () => {
-  const cmdKey = process.argv.length > 2 && process.argv[2];
-  const cmd = cmdKey && commands[cmdKey];
-  if (!cmd) {
-    throw new Error(`Unknown command: "${cmdKey}"`);
-  }
-  return cmd;
 };
 
 const compile = async (inputDirs, outputFile) => {
@@ -41,5 +33,10 @@ const compile = async (inputDirs, outputFile) => {
 };
 
 (async () => {
-  await getCommand()();
+  try {
+    await getCommand({ commands, scriptName: 'scripts/build/ddoc-compile.js' })();
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
 })();
