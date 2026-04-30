@@ -5,8 +5,7 @@
     @if (action) {
       <span class="snackbar-action"
             (click)="action.onClick()"
-            (keydown.enter)="action.onClick()"
-            tabindex="0">{{action.label}}</span>
+            (keydown.enter)="action.onClick()">{{action.label}}</span>
     }
 
   </span>
