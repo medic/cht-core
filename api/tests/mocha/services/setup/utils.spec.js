@@ -21,8 +21,7 @@ const buildInfo = (version, namespace = 'medic', application = 'medic') => ({ ve
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
   sinon.stub(db, 'bulkDocs');
-  sinon.stub(db, 'compact');
-  sinon.stub(db, 'viewCleanup');
+  sinon.stub(db, 'viewCleanup').resolves();
 };
 
 
@@ -158,7 +157,7 @@ describe('Setup utils', () => {
 
   describe('cleanup', () => {
     beforeEach(() => {
-      sinon.stub(db, 'nouveauCleanup').returns(new Promise(() => {}));
+      sinon.stub(db, 'nouveauCleanup').resolves();
       sinon.stub(logger, 'error');
       mockDb(db.medic);
       mockDb(db.sentinel);
@@ -167,14 +166,8 @@ describe('Setup utils', () => {
       mockDb(db.users);
     });
 
-    it('should start db compact and view cleanup for every database', () => {
-      utils.cleanup();
-
-      expect(db.medic.compact.callCount).to.equal(1);
-      expect(db.sentinel.compact.callCount).to.equal(1);
-      expect(db.medicLogs.compact.callCount).to.equal(1);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
-      expect(db.users.compact.callCount).to.equal(1);
+    it('should start view cleanup for every database', async () => {
+      await utils.cleanup();
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -185,22 +178,14 @@ describe('Setup utils', () => {
       expect(db.nouveauCleanup.callCount).to.equal(1);
     });
 
-    it('should catch compact errors and log them', async () => {
+    it('should catch view cleanup errors and log them', async () => {
       const error = { some: 'error' };
-      db.sentinel.compact.rejects(error);
+      db.sentinel.viewCleanup.rejects(error);
 
-      utils.cleanup();
+      await utils.cleanup();
 
       await Promise.resolve();
       await Promise.resolve();
-
-      expect(db.medic.compact.callCount).to.equal(1);
-      // this should return an error, but the other compacts
-      // and viewCleanups whould be called.
-      expect(db.sentinel.compact.callCount).to.equal(1);
-      expect(db.medicLogs.compact.callCount).to.equal(1);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
-      expect(db.users.compact.callCount).to.equal(1);
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.nouveauCleanup.callCount).to.equal(1);
@@ -826,16 +811,16 @@ describe('Setup utils', () => {
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
-          { doc: { _id: '_design/:staged:medic', _rev: '1', new: true, deploy_info: deployInfoNew } },
-          { doc: { _id: '_design/:staged:medic-client', _rev: '1', new: true, deploy_info: deployInfoNew } },
-          { doc: { _id: '_design/medic', _rev: '2', old: true, deploy_info: deployInfoOld } },
-          { doc: { _id: '_design/medic-client', _rev: '3', old: true, deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/:staged:medic', _rev: '1', deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/:staged:medic-client', _rev: '1', deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/medic', _rev: '2', deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/medic-client', _rev: '3', deploy_info: deployInfoOld } },
         ]
       }); // all ddocs have match
       sinon.stub(db.sentinel, 'allDocs').resolves({
         rows: [
-          { doc: { _id: '_design/:staged:sentinel1', _rev: '1', isnew: true, deploy_info: deployInfoNew } },
-          { doc: { _id: '_design/sentinel1', _rev: '2', isOld: true, deploy_info: deployInfoOld } },
+          { doc: { _id: '_design/:staged:sentinel1', _rev: '1', deploy_info: deployInfoNew } },
+          { doc: { _id: '_design/sentinel1', _rev: '2', deploy_info: deployInfoOld } },
           { doc: { _id: '_design/extra', _rev: '3', deploy_info: deployInfoOld } },
         ]
       }); // one extra existent ddoc
@@ -868,11 +853,11 @@ describe('Setup utils', () => {
 
       expect(db.saveDocs.callCount).to.equal(5);
       expect(db.saveDocs.args[0]).to.deep.equal([db.medic, [
-        { _id: '_design/medic', _rev: '2', new: true, deploy_info: deployInfoExpected },
-        { _id: '_design/medic-client', _rev: '3', new: true, deploy_info: deployInfoExpected },
+        { _id: '_design/medic', _rev: '2', deploy_info: deployInfoExpected },
+        { _id: '_design/medic-client', _rev: '3', deploy_info: deployInfoExpected },
       ]]);
       expect(db.saveDocs.args[1]).to.deep.equal([db.sentinel, [
-        { _id: '_design/sentinel1', _rev: '2', isnew: true, deploy_info: deployInfoExpected },
+        { _id: '_design/sentinel1', _rev: '2', deploy_info: deployInfoExpected },
       ]]);
       expect(db.saveDocs.args[2]).to.deep.equal([db.medicLogs, [
         { _id: '_design/logs1', _rev: '3', field: 'a', deploy_info: deployInfoExpected },

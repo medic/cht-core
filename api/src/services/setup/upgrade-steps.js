@@ -20,7 +20,7 @@ const finalize = async () => {
   await upgradeUtils.unstageStagedDdocs();
   await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setFinalized();
-  await upgradeUtils.cleanup();
+  upgradeUtils.cleanup();
   await serverInfo.getDeployInfo(true);
 };
 
@@ -36,7 +36,7 @@ const abort = async () => {
   viewIndexer.stopIndexing();
   await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setAborted();
-  await upgradeUtils.cleanup();
+  upgradeUtils.cleanup();
 };
 
 /**

@@ -25,7 +25,7 @@ describe('Upgrade steps', () => {
     it('should overwrite ddocs and cleanup', async () => {
       sinon.stub(upgradeLogService, 'setComplete');
       sinon.stub(upgradeLogService, 'setFinalizing');
-      sinon.stub(upgradeUtils, 'unstageStagedDdocs');
+      sinon.stub(upgradeUtils, 'unstageStagedDdocs').resolves();
       sinon.stub(upgradeUtils, 'deleteStagedDdocs');
       sinon.stub(upgradeLogService, 'setFinalized');
       sinon.stub(upgradeUtils, 'cleanup');
@@ -38,7 +38,7 @@ describe('Upgrade steps', () => {
       expect(upgradeUtils.unstageStagedDdocs.callCount).to.equal(1);
       expect(upgradeUtils.deleteStagedDdocs.callCount).to.equal(1);
       expect(upgradeLogService.setFinalized.callCount).to.equal(1);
-      expect(upgradeUtils.cleanup.callCount).to.equal(1);
+      expect(upgradeUtils.cleanup.calledOnceWithExactly()).to.be.true;
       expect(serverInfo.getDeployInfo.calledOnceWithExactly(true)).to.be.true;
     });
 
