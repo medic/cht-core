@@ -11,7 +11,7 @@ const ERROR_TEXT = '403 - {"error":"forbidden","reason":"Insufficient privileges
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital',
 };
 
@@ -77,14 +77,14 @@ const clinics = [
   {
     _id: 'fixture:offline:clinic',
     name: 'offline clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
     reported_date: 1
   },
   {
     _id: 'fixture:online:clinic',
     name: 'online clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: 'fixture:online', parent: { _id: 'PARENT_PLACE' } },
     reported_date: 1
   },
@@ -189,10 +189,11 @@ describe('db-doc handler', () => {
 
   describe('does not restrict online users', () => {
     it('GET', () => {
-      Object.assign(onlineRequestOptions, {
+      onlineRequestOptions = {
+        ...onlineRequestOptions,
         method: 'GET',
         path: '/fixture:user:offline',
-      });
+      };
 
       return utils.requestOnTestDb(onlineRequestOptions).then(result => {
         chai.expect(result).to.deep.include({
@@ -205,15 +206,16 @@ describe('db-doc handler', () => {
     });
 
     it('POST', () => {
-      Object.assign(onlineRequestOptions, {
+      onlineRequestOptions = {
+        ...onlineRequestOptions,
         path: '/',
         method: 'POST',
         body: {
           _id: 'db_doc_post',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'NEW PLACE',
         },
-      });
+      };
 
       return utils
         .requestOnTestDb(onlineRequestOptions)
@@ -227,7 +229,7 @@ describe('db-doc handler', () => {
         .then(result => {
           chai.expect(result).to.include({
             _id: 'db_doc_post',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'NEW PLACE',
           });
         });
@@ -235,18 +237,19 @@ describe('db-doc handler', () => {
 
     it('PUT', () => {
       return utils
-        .saveDoc({ _id: 'db_doc_put', type: 'clinic', name: 'my clinic' })
+        .saveDoc({ _id: 'db_doc_put', type: CONTACT_TYPES.CLINIC, name: 'my clinic' })
         .then(result => {
-          Object.assign(onlineRequestOptions, {
+          onlineRequestOptions = {
+            ...onlineRequestOptions,
             method: 'PUT',
             path: '/db_doc_put',
             body: {
               _id: 'db_doc_put',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'my updated clinic',
               _rev: result.rev,
             },
-          });
+          };
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
@@ -257,7 +260,7 @@ describe('db-doc handler', () => {
         .then(result => {
           chai.expect(result).to.include({
             _id: 'db_doc_put',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'my updated clinic',
           });
         });
@@ -265,12 +268,13 @@ describe('db-doc handler', () => {
 
     it('DELETE', () => {
       return utils
-        .saveDoc({ _id: 'db_doc_delete', type: 'clinic', name: 'my clinic' })
+        .saveDoc({ _id: 'db_doc_delete', type: CONTACT_TYPES.CLINIC, name: 'my clinic' })
         .then(result => {
-          Object.assign(onlineRequestOptions, {
+          onlineRequestOptions = {
+            ...onlineRequestOptions,
             method: 'DELETE',
             path: `/db_doc_delete?rev=${result.rev}`,
-          });
+          };
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
@@ -310,13 +314,14 @@ describe('db-doc handler', () => {
       return utils
         .saveDoc({ _id: 'with_attachments' })
         .then(result => {
-          Object.assign(onlineRequestOptions, {
+          onlineRequestOptions = {
+            ...onlineRequestOptions,
             path: `/with_attachments/new_attachment?rev=${result.rev}`,
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
             body: 'my new attachment content',
             json: false,
-          });
+          };
 
           return utils.requestOnTestDb(onlineRequestOptions);
         })
@@ -332,14 +337,14 @@ describe('db-doc handler', () => {
       offlineRequestOptions.method = 'GET';
 
       return Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:patient' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:patient' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '/fixture:online:clinic:patient' }, offlineRequestOptions))
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:user:offline' }),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:offline:clinic' }),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:offline:patient' }),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:offline:clinic:patient' }),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:user:online' }).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:online:clinic' }).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:online:patient' }).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/fixture:online:clinic:patient' })
           .catch(err => err),
       ]).then(results => {
         chai.expect(results[0]).to.deep.include({
@@ -424,7 +429,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDocs(docs)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -458,7 +463,7 @@ describe('db-doc handler', () => {
         .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true })
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -497,7 +502,7 @@ describe('db-doc handler', () => {
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(
           reportScenarios.map(scenario => utils
-            .requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions))
+            .requestOnTestDb({ ...offlineRequestOptions, path: `/${scenario.doc._id}` })
             .catch(err => err))
         ))
         .then(results => {
@@ -517,7 +522,7 @@ describe('db-doc handler', () => {
       const docs = [
         {
           _id: 'existing_clinic', // depth 1
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
           contact: { _id: 'existing_person' }
         },
@@ -555,7 +560,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'existing_clinic2', // depth 1
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
           contact: { _id: 'existing_person2' }
         },
@@ -774,7 +779,7 @@ describe('db-doc handler', () => {
           .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
           .then(() => sentinelUtils.waitForSentinel(patientsToDeleteIds))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
-            _.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${patient._id}?rev=${patient._rev}` }
           ).catch(err => err))))
           .then(results => {
             // can read deleted patients
@@ -787,7 +792,7 @@ describe('db-doc handler', () => {
             });
           })
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
           ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients
@@ -802,7 +807,7 @@ describe('db-doc handler', () => {
           .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
           .then(() => sentinelUtils.waitForSentinel(submittersToDeleteIds))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
           ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients and submitted by deleted contacts
@@ -818,7 +823,7 @@ describe('db-doc handler', () => {
           .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
           .then(() => sentinelUtils.waitForSentinel(docs.map(doc => doc._id)))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }
           ).catch(err => err))))
           .then(results => {
             // can read deleted reports about deleted patients submitted by deleted contacts
@@ -898,7 +903,7 @@ describe('db-doc handler', () => {
           .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true })
           .then(() => utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
-            _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${patient._id}` }
           ).catch(err => err))))
           .then(results => {
             // cannot read patients
@@ -907,7 +912,7 @@ describe('db-doc handler', () => {
             });
           })
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
           ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients
@@ -923,7 +928,7 @@ describe('db-doc handler', () => {
           .then(results => results.forEach((result, idx) => patientsToDelete[idx]._rev = result.rev))
           .then(() => sentinelUtils.waitForSentinel(patientsToDeleteIds))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
-            _.defaults({ path: `/${patient._id}?rev=${patient._rev}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${patient._id}?rev=${patient._rev}` }
           ).catch(err => err))))
           .then(results => {
             // cannot read deleted patients
@@ -932,7 +937,7 @@ describe('db-doc handler', () => {
             });
           })
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
           ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients
@@ -947,7 +952,7 @@ describe('db-doc handler', () => {
           .then(() => utils.deleteDocs(submittersToDeleteIds)) // delete submitters
           .then(() => sentinelUtils.waitForSentinel(submittersToDeleteIds))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}` }
           ).catch(err => err))))
           .then(results => {
             // can read reports about deleted patients and submitted by deleted contacts
@@ -963,7 +968,7 @@ describe('db-doc handler', () => {
           .then(results => results.forEach((result, idx) => docs[idx]._rev = result.rev))
           .then(() => sentinelUtils.waitForSentinel(docs.map(doc => doc._id)))
           .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-            _.defaults({ path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }, offlineRequestOptions)
+            { ...offlineRequestOptions, path: `/${scenario.doc._id}?rev=${scenario.doc._rev}` }
           ).catch(err => err))))
           .then(results => {
             // can read deleted reports about deleted patients submitted by deleted contacts
@@ -985,19 +990,19 @@ describe('db-doc handler', () => {
       const docs = [
         {
           _id: 'a1_revs',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'Allowed Contact 1',
         },
         {
           _id: 'd1_revs',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'Denied Contact 1',
         },
         {
           _id: 'd2_revs',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'Denied Contact 2',
         },
@@ -1039,8 +1044,8 @@ describe('db-doc handler', () => {
               const path = `/${result._id}?rev=${result._rev}&open_revs=${JSON.stringify(open_revs)}`;
               const pathAll = `/${result._id}?rev=${result._rev}&open_revs=all`;
               return [
-                utils.requestOnTestDb(_.defaults({ path: path }, offlineRequestOptions)),
-                utils.requestOnTestDb(_.defaults({ path: pathAll }, offlineRequestOptions)),
+                utils.requestOnTestDb({ ...offlineRequestOptions, path: path }),
+                utils.requestOnTestDb({ ...offlineRequestOptions, path: pathAll }),
               ];
             })
           )
@@ -1074,13 +1079,13 @@ describe('db-doc handler', () => {
         .saveDocs([
           {
             _id: 'allowed_attach',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:offline' },
             name: 'allowed attach',
           },
           {
             _id: 'denied_attach',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:online' },
             name: 'denied attach',
           },
@@ -1102,30 +1107,30 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(Object.assign(
-              { path: `/allowed_attach?rev=${revs.allowed_attach[0]}&attachments=true&revs=true` },
-              offlineRequestOptions
-            )),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/allowed_attach?rev=${revs.allowed_attach[1]}&attachments=true&revs=false` },
-              offlineRequestOptions
-            )),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/allowed_attach?attachments=false&revs=true&revs_info=true` },
-              offlineRequestOptions
-            )),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/denied_attach?rev=${revs.denied_attach[0]}&attachments=true&revs=true` },
-              offlineRequestOptions
-            )).catch(err => err),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/denied_attach?rev=${revs.denied_attach[1]}&attachments=true&revs=false` },
-              offlineRequestOptions
-            )).catch(err => err),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/denied_attach?attachments=true&revs=true&revs_info=true` },
-              offlineRequestOptions
-            )).catch(err => err),
+            utils.requestOnTestDb({
+              path: `/allowed_attach?rev=${revs.allowed_attach[0]}&attachments=true&revs=true`,
+              ...offlineRequestOptions,
+            }),
+            utils.requestOnTestDb({
+              path: `/allowed_attach?rev=${revs.allowed_attach[1]}&attachments=true&revs=false`,
+              ...offlineRequestOptions,
+            }),
+            utils.requestOnTestDb({
+              path: `/allowed_attach?attachments=false&revs=true&revs_info=true`,
+              ...offlineRequestOptions,
+            }),
+            utils.requestOnTestDb({
+              path: `/denied_attach?rev=${revs.denied_attach[0]}&attachments=true&revs=true`,
+              ...offlineRequestOptions,
+            }).catch(err => err),
+            utils.requestOnTestDb({
+              path: `/denied_attach?rev=${revs.denied_attach[1]}&attachments=true&revs=false`,
+              ...offlineRequestOptions,
+            }).catch(err => err),
+            utils.requestOnTestDb({
+              path: `/denied_attach?attachments=true&revs=true&revs_info=true`,
+              ...offlineRequestOptions,
+            }).catch(err => err),
           ]);
         })
         .then(results => {
@@ -1196,10 +1201,10 @@ describe('db-doc handler', () => {
         .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2 }]}, { ignoreReload: true })
         .then(() => utils.saveDocs([ allowedTask, deniedTask, allowedTarget, deniedTarget ]))
         .then(() => Promise.all([
-          utils.requestOnTestDb(_.defaults({ path: '/task1' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ path: '/task2' }, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/target1' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ path: '/target2' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/task1' }),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/task2' }).catch(err => err),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/target1' }),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/target2' }).catch(err => err),
         ]))
         .then(results => {
           chai.expect(results[0]).to.deep.include(allowedTask);
@@ -1208,17 +1213,17 @@ describe('db-doc handler', () => {
           chai.expect(results[3]).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
         })
         .then(() => Promise.all([
-          utils.requestOnTestDb(_.defaults({ path: '/fixture:user:offline' }, supervisorRequestOptions)),
+          utils.requestOnTestDb({ ...supervisorRequestOptions, path: '/fixture:user:offline' }),
           utils
-            .requestOnTestDb(_.defaults({ path: `/${PREFIXES.COUCH_USER}offline` }, supervisorRequestOptions))
+            .requestOnTestDb({ ...supervisorRequestOptions, path: `/${PREFIXES.COUCH_USER}offline` })
             .catch(err => err),
           utils
-            .requestOnTestDb(_.defaults({ path: '/fixture:offline:clinic:patient' }, supervisorRequestOptions))
+            .requestOnTestDb({ ...supervisorRequestOptions, path: '/fixture:offline:clinic:patient' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/task1' }, supervisorRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/task2' }, supervisorRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/target1' }, supervisorRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ path: '/target2' }, supervisorRequestOptions)),
+          utils.requestOnTestDb({ ...supervisorRequestOptions, path: '/task1' }).catch(err => err),
+          utils.requestOnTestDb({ ...supervisorRequestOptions, path: '/task2' }).catch(err => err),
+          utils.requestOnTestDb({ ...supervisorRequestOptions, path: '/target1' }),
+          utils.requestOnTestDb({ ...supervisorRequestOptions, path: '/target2' }),
         ]))
         .then(results => {
           // supervisor can see the user's contact
@@ -1261,13 +1266,13 @@ describe('db-doc handler', () => {
 
       return utils
         .saveDoc(doc)
-        .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
+        .then(() => utils.requestOnTestDb({ ...offlineRequestOptions, path: `/${doc._id}` }).catch(err => err))
         .then(result => {
           // user can't see the unallocated report without permissions
           chai.expect(result).to.deep.nested.include({ status: 403, 'body.error': 'forbidden'});
         })
         .then(() => utils.updateSettings(settings, { ignoreReload: true }))
-        .then(() => utils.requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions)).catch(err => err))
+        .then(() => utils.requestOnTestDb({ ...offlineRequestOptions, path: `/${doc._id}` }).catch(err => err))
         .then(result => {
           // user can see the unallocated report with permissions
           chai.expect(result).to.deep.include(doc);
@@ -1369,7 +1374,7 @@ describe('db-doc handler', () => {
       return utils
         .saveDocs(docs)
         .then(() => Promise.all(docs.map(doc => utils
-          .requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions))
+          .requestOnTestDb({ ...offlineRequestOptions, path: `/${doc._id}` })
           .catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1391,21 +1396,21 @@ describe('db-doc handler', () => {
 
       const allowedDoc = {
         _id: 'allowed_doc_post',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline' },
         name: 'allowed',
       };
       const deniedDoc = {
         _id: 'denied_doc_post',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:online' },
         name: 'denied',
       };
 
       return Promise.all([
-        utils.requestOnTestDb(_.defaults({ body: allowedDoc, path: '/' }, offlineRequestOptions)),
-        utils.requestOnTestDb(_.defaults({ body: deniedDoc, path: '/' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '/' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, body: allowedDoc, path: '/' }),
+        utils.requestOnTestDb({ ...offlineRequestOptions, body: deniedDoc, path: '/' }).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/' }).catch(err => err),
       ])
         .then(([allowed, denied, forbidden]) => {
           chai.expect(allowed).to.include({ id: 'allowed_doc_post', ok: true, });
@@ -1505,7 +1510,7 @@ describe('db-doc handler', () => {
       ];
       return Promise
         .all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: '/', body: scenario.doc }
         ).catch(err => err)))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1539,7 +1544,7 @@ describe('db-doc handler', () => {
       return utils
         .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true })
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: '/', body: scenario.doc }
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1589,10 +1594,10 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ body: allowedTask, path: '/' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ body: deniedTask, path: '/' }, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ body: allowedTarget, path: '/' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ body: deniedTarget, path: '/' }, offlineRequestOptions)).catch(err => err),
+          utils.requestOnTestDb({ ...offlineRequestOptions, body: allowedTask, path: '/' }),
+          utils.requestOnTestDb({ ...offlineRequestOptions, body: deniedTask, path: '/' }).catch(err => err),
+          utils.requestOnTestDb({ ...offlineRequestOptions, body: allowedTarget, path: '/' }),
+          utils.requestOnTestDb({ ...offlineRequestOptions, body: deniedTarget, path: '/' }).catch(err => err),
         ])
         .then(results => {
           chai.expect(results[0]).to.deep.include({ ok: true, id: 'task1' });
@@ -1608,25 +1613,25 @@ describe('db-doc handler', () => {
       const docs = [
         {
           _id: 'a_put_1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'a1',
         },
         {
           _id: 'a_put_2',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'a2',
         },
         {
           _id: 'd_put_1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'd1',
         },
         {
           _id: 'd_put_2',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'd2',
         },
@@ -1638,24 +1643,24 @@ describe('db-doc handler', () => {
           const updates = [
             {
               _id: 'n_put_1',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: { _id: 'fixture:offline' },
               name: 'n1',
             }, // new allowed
             {
               _id: 'n_put_2',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: { _id: 'fixture:online' },
               name: 'n2',
             }, // new denied
-            _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
-            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored ok, new denied
-            _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
-            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new ok
+            { ...docs[0], name: 'a1 updated' }, // stored allowed, new allowed
+            { ...docs[1], name: 'a2 updated', parent: { _id: 'fixture:online' } }, // stored ok, new denied
+            { ...docs[2], name: 'd1 updated' }, // stored denied, new denied
+            { ...docs[3], name: 'd2 updated', parent: { _id: 'fixture:offline' } }, // stored denied, new ok
           ];
 
           const promises = updates.map(doc => utils
-            .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+            .requestOnTestDb({ path: `/${doc._id}`, body: doc, ...offlineRequestOptions })
             .catch(err => err));
           return Promise.all(promises);
         })
@@ -1687,25 +1692,25 @@ describe('db-doc handler', () => {
       const docs = [
         {
           _id: 'a_put_del_1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'a1',
         },
         {
           _id: 'a_put_del_2',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'a2',
         },
         {
           _id: 'd_put_del_1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'd1',
         },
         {
           _id: 'd_put_del_2',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'd2',
         },
@@ -1723,14 +1728,14 @@ describe('db-doc handler', () => {
           results.forEach((result, idx) => (docs[idx]._rev = result.rev));
 
           const updates = [
-            _.defaults({ name: 'a1 updated' }, docs[0]), // prev allowed, deleted, new allowed
-            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // prev ok, deleted/new no
-            _.defaults({ name: 'd1 updated' }, docs[2]), // prev denied, deleted, new denied
-            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // prev no, deleted/new ok
+            { ...docs[0], name: 'a1 updated' }, // prev allowed, deleted, new allowed
+            { ...docs[1], name: 'a2 updated', parent: { _id: 'fixture:online' } }, // prev ok, deleted/new no
+            { ...docs[2], name: 'd1 updated' }, // prev denied, deleted, new denied
+            { ...docs[3], name: 'd2 updated', parent: { _id: 'fixture:offline' } }, // prev no, deleted/new ok
           ];
 
           return Promise.all(updates.map(doc => utils
-            .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+            .requestOnTestDb({ path: `/${doc._id}`, body: doc, ...offlineRequestOptions })
             .catch(err => err)));
         })
         .then(results => {
@@ -1805,7 +1810,7 @@ describe('db-doc handler', () => {
       ];
       return Promise
         .all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: `/${scenario.doc._id}`, body: scenario.doc }
         ).catch(err => err)))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1839,7 +1844,7 @@ describe('db-doc handler', () => {
       return utils
         .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, { ignoreReload: true })
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: `/${scenario.doc._id}`, body: scenario.doc }
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1878,7 +1883,7 @@ describe('db-doc handler', () => {
           results.forEach((result, i) => reportScenarios[i].doc._rev = result.rev);
         })
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
+          { ...offlineRequestOptions, path: `/${scenario.doc._id}`, body: scenario.doc }
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
@@ -1931,9 +1936,9 @@ describe('db-doc handler', () => {
       return utils
         .saveDocsRevs(docs)
         .then(() => {
-          const updates = docs.map(doc => Object.assign({ updated: true }, doc));
+          const updates = docs.map(doc => ({ updated: true, ...doc }));
           const promises = updates.map(doc => utils
-            .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+            .requestOnTestDb({ path: `/${doc._id}`, body: doc, ...offlineRequestOptions })
             .catch(err => err));
           return Promise.all(promises);
         })
@@ -1952,20 +1957,20 @@ describe('db-doc handler', () => {
         .saveDocs([
           {
             _id: 'allowed_del',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:offline' },
             name: 'allowed',
           },
           {
             _id: 'denied_del',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:online' },
             name: 'denied',
           },
         ])
         .then(results => Promise.all([
-          utils.requestOnTestDb(Object.assign({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
-          utils.requestOnTestDb(Object.assign({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions))
+          utils.requestOnTestDb({ path: `/allowed_del?rev=${results[0].rev}`, ...offlineRequestOptions }),
+          utils.requestOnTestDb({ path: `/denied_del?rev=${results[1].rev}`, ...offlineRequestOptions })
             .catch(err => err),
         ]))
         .then(results => {
@@ -1983,7 +1988,7 @@ describe('db-doc handler', () => {
           });
           chai.expect(results[1]).to.deep.include({
             _id: 'denied_del',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:online' },
             name: 'denied',
           });
@@ -1992,22 +1997,22 @@ describe('db-doc handler', () => {
 
     it('GET attachment', () => {
       const revs = {
-        allowed_attach: [],
-        denied_attach: [],
+        allowed_attach_2: [],
+        denied_attach_2: [],
       };
       offlineRequestOptions.json = false;
 
       return utils
         .saveDocs([
           {
-            _id: 'allowed_attach',
-            type: 'clinic',
+            _id: 'allowed_attach_2',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:offline' },
             name: 'allowed attach',
           },
           {
-            _id: 'denied_attach',
-            type: 'clinic',
+            _id: 'denied_attach_2',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:online' },
             name: 'denied attach',
           },
@@ -2028,13 +2033,13 @@ describe('db-doc handler', () => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
             utils
-              .requestOnTestDb(Object.assign({ path: '/allowed_attach/att_name', json: false }, offlineRequestOptions)),
+              .requestOnTestDb({ path: '/allowed_attach_2/att_name', json: false, ...offlineRequestOptions }),
             utils
-              .requestOnTestDb(Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions))
+              .requestOnTestDb({ path: '/denied_attach_2/att_name', ...offlineRequestOptions })
               .catch(err => err),
             utils
               .requestOnTestDb(
-                Object.assign({ path: `/denied_attach/att_name?rev=${results[1].rev}` }, offlineRequestOptions)
+                { path: `/denied_attach_2/att_name?rev=${results[1].rev}`, ...offlineRequestOptions }
               )
               .catch(err => err),
           ]);
@@ -2049,21 +2054,21 @@ describe('db-doc handler', () => {
           );
 
           return Promise.all([
-            utils.getDoc('allowed_attach'),
-            utils.getDoc('denied_attach'),
+            utils.getDoc('allowed_attach_2'),
+            utils.getDoc('denied_attach_2'),
           ]);
         })
         .then(results => {
           return utils.saveDocs([
-            Object.assign(results[0], { parent: { _id: 'fixture:online' } }),
-            Object.assign(results[1], { parent: { _id: 'fixture:offline' } }),
+            { ...results[0], parent: { _id: 'fixture:online' } },
+            { ...results[1], parent: { _id: 'fixture:offline' } },
           ]);
         })
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
 
           const getRequestForIdRev = (id, rev) => utils
-            .requestOnTestDb(Object.assign({ path: `/${id}/att_name?rev=${rev}` }, offlineRequestOptions))
+            .requestOnTestDb({ path: `/${id}/att_name?rev=${rev}`, ...offlineRequestOptions })
             .catch(err => err);
 
           const promises = [];
@@ -2071,46 +2076,46 @@ describe('db-doc handler', () => {
           return Promise.all(promises);
         })
         .then(results => {
-          // allowed_attach is allowed, but missing attachment
+          // allowed_attach_2 is allowed, but missing attachment
           chai.expect(results[0].body).to.deep.equal({
             error: 'not_found',
             reason: 'Document is missing attachment',
           });
-          // allowed_attach is allowed and has attachment
+          // allowed_attach_2 is allowed and has attachment
           chai.expect(results[1]).to.equal('my attachment content');
-          // allowed_attach is not allowed and has attachment
+          // allowed_attach_2 is not allowed and has attachment
           chai.expect(results[2].body.error).to.equal('forbidden');
 
-          // denied_attach is not allowed, but missing attachment
+          // denied_attach_2 is not allowed, but missing attachment
           chai.expect(results[3].body.error).to.equal('forbidden');
-          // denied_attach is not allowed and has attachment
+          // denied_attach_2 is not allowed and has attachment
           chai.expect(results[4].body.error).to.equal('forbidden');
-          // denied_attach is allowed and has attachment
+          // denied_attach_2 is allowed and has attachment
           chai.expect(results[5]).to.equal('my attachment content');
 
           //attachments for deleted docs
           return Promise.all([
-            utils.deleteDoc('allowed_attach'),
-            utils.deleteDoc('denied_attach'),
+            utils.deleteDoc('allowed_attach_2'),
+            utils.deleteDoc('denied_attach_2'),
           ]);
         })
         .then(results => {
           return Promise.all([
             utils
-              .requestOnTestDb(Object.assign({ path: '/allowed_attach/att_name' }, offlineRequestOptions))
+              .requestOnTestDb({ path: '/allowed_attach_2/att_name', ...offlineRequestOptions })
               .catch(err => err),
             utils
               .requestOnTestDb(
-                Object.assign({ path: `/allowed_attach/att_name?rev=${results[0].rev}` }, offlineRequestOptions)
+                { path: `/allowed_attach_2/att_name?rev=${results[0].rev}`, ...offlineRequestOptions }
               )
               .catch(err => err),
             utils
-              .requestOnTestDb(Object.assign({ path: '/denied_attach/att_name' }, offlineRequestOptions))
+              .requestOnTestDb({ path: '/denied_attach_2/att_name', ...offlineRequestOptions })
               .catch(err => err),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/denied_attach/att_name?rev=${results[1].rev}`, json: false },
-              offlineRequestOptions
-            )),
+            utils.requestOnTestDb({
+              path: `/denied_attach_2/att_name?rev=${results[1].rev}`, json: false,
+              ...offlineRequestOptions,
+            }),
           ]);
         })
         .then(results => {
@@ -2131,13 +2136,13 @@ describe('db-doc handler', () => {
         .saveDocs([
           {
             _id: 'allowed_attach_1',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:offline' },
             name: 'allowed attach',
           },
           {
             _id: 'denied_attach_1',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:online' },
             name: 'denied attach',
           },
@@ -2157,20 +2162,20 @@ describe('db-doc handler', () => {
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
-            utils.requestOnTestDb(Object.assign(
-              { path: '/allowed_attach_1/att_name/1/2/3/etc', json: false },
-              offlineRequestOptions
-            )),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false },
-              offlineRequestOptions
-            )),
-            utils.requestOnTestDb(Object.assign(
-              { path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions
-            )).catch(err => err),
-            utils.requestOnTestDb(Object.assign(
-              { path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`}, offlineRequestOptions
-            )).catch(err => err),
+            utils.requestOnTestDb({
+              path: '/allowed_attach_1/att_name/1/2/3/etc', json: false,
+              ...offlineRequestOptions,
+            }),
+            utils.requestOnTestDb({
+              path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false,
+              ...offlineRequestOptions,
+            }),
+            utils.requestOnTestDb({
+              path: '/denied_attach_1/att_name/1/2/3/etc', ...offlineRequestOptions,
+            }).catch(err => err),
+            utils.requestOnTestDb({
+              path: `/denied_attach_1/att_name/1/2/3/etc?rev=${results[1].rev}`, ...offlineRequestOptions,
+            }).catch(err => err),
           ]);
         })
         .then(results => {
@@ -2187,8 +2192,8 @@ describe('db-doc handler', () => {
         })
         .then(results => {
           return utils.saveDocs([
-            Object.assign(results[0], { parent: { _id: 'fixture:online' } }),
-            Object.assign(results[1], { parent: { _id: 'fixture:offline' } }),
+            { ...results[0], parent: { _id: 'fixture:online' } },
+            { ...results[1], parent: { _id: 'fixture:offline' } },
           ]);
         })
         .then(results => {
@@ -2196,9 +2201,9 @@ describe('db-doc handler', () => {
 
           const promises = [];
           const attachmentRequest = (rev, id) => utils
-            .requestOnTestDb(Object.assign(
-              { path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false }, offlineRequestOptions
-            ))
+            .requestOnTestDb({
+              path: `/${id}/att_name/1/2/3/etc?rev=${rev}`, json: false, ...offlineRequestOptions,
+            })
             .catch(err => err);
           Object.keys(revs).forEach(id => promises.push(...revs[id].map(rev => attachmentRequest(rev, id))));
           return Promise.all(promises);
@@ -2223,33 +2228,34 @@ describe('db-doc handler', () => {
     });
 
     it('PUT attachment', () => {
-      Object.assign(offlineRequestOptions, {
+      offlineRequestOptions = {
+        ...offlineRequestOptions,
         method: 'PUT',
         headers: { 'Content-Type': 'text/plain' },
         body: 'my new attachment content',
         json: false,
-      });
+      };
 
       return utils
         .saveDocs([
           {
             _id: 'a_with_attachments',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:offline' },
             name: 'allowed attach',
           },
           {
             _id: 'd_with_attachments',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:online' },
             name: 'denied attach',
           },
         ])
         .then(results => Promise.all(
           results.map(result => utils
-            .requestOnTestDb(Object.assign(
-              { path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions
-            ))
+            .requestOnTestDb({
+              path: `/${result.id}/new_attachment?rev=${result.rev}`, ...offlineRequestOptions,
+            })
             .catch(err => err))
         ))
         .then(results => {
@@ -2282,8 +2288,8 @@ describe('db-doc handler', () => {
       offlineRequestOptions.method = 'GET';
 
       return Promise.all([
-        utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:offline' }, offlineRequestOptions)),
-        utils.requestOnMedicDb(_.defaults({ path: '/fixture:user:online' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnMedicDb({ ...offlineRequestOptions, path: '/fixture:user:offline' }),
+        utils.requestOnMedicDb({ ...offlineRequestOptions, path: '/fixture:user:online' }).catch(err => err),
       ]).then(results => {
         chai.expect(results[0]).to.deep.include({
           _id: 'fixture:user:offline',
@@ -2301,25 +2307,25 @@ describe('db-doc handler', () => {
       const docs = [
         {
           _id: 'a_put_1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'a1',
         },
         {
           _id: 'a_put_2',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline' },
           name: 'a2',
         },
         {
           _id: 'd_put_1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'd1',
         },
         {
           _id: 'd_put_2',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:online' },
           name: 'd2',
         },
@@ -2329,17 +2335,18 @@ describe('db-doc handler', () => {
         .saveDocsRevs(docs)
         .then(() => {
           const updates = [
-            { _id: 'n_put_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
-            { _id: 'n_put_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied
-            _.defaults({ name: 'a1 updated' }, docs[0]), // stored allowed, new allowed
-            _.defaults({ name: 'a2 updated', parent: { _id: 'fixture:online' } }, docs[1]), // stored ok, new denied
-            _.defaults({ name: 'd1 updated' }, docs[2]), // stored denied, new denied
-            _.defaults({ name: 'd2 updated', parent: { _id: 'fixture:offline' } }, docs[3]), // stored denied, new ok
+            { _id: 'n_put_1', 
+              type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'n1' }, // new allowed
+            { _id: 'n_put_2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'n2' }, // new denied
+            { ...docs[0], name: 'a1 updated' }, // stored allowed, new allowed
+            { ...docs[1], name: 'a2 updated', parent: { _id: 'fixture:online' } }, // stored ok, new denied
+            { ...docs[2], name: 'd1 updated' }, // stored denied, new denied
+            { ...docs[3], name: 'd2 updated', parent: { _id: 'fixture:offline' } }, // stored denied, new ok
           ];
 
           return Promise.all(
             updates.map(doc => utils
-              .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
+              .requestOnTestDb({ path: `/${doc._id}`, body: doc, ...offlineRequestOptions })
               .catch(err => err))
           );
         })
@@ -2377,13 +2384,14 @@ describe('db-doc handler', () => {
       return utils
         .saveDoc({ _id: 'with_attachments' })
         .then(result => {
-          Object.assign(onlineRequestOptions, {
+          onlineRequestOptions = {
+            ...onlineRequestOptions,
             path: `/with_attachments/new_attachment?rev=${result.rev}`,
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain' },
             body: 'my new attachment content',
             json: false,
-          });
+          };
 
           return utils.requestOnMedicDb(onlineRequestOptions);
         })
@@ -2407,29 +2415,29 @@ describe('db-doc handler', () => {
     return utils
       .saveDoc(doc)
       .then(() => Promise.all([
-        utils.requestOnTestDb(_.defaults({ path: '/denied_report' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '///denied_report//' }, offlineRequestOptions)).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/denied_report' }).catch(err => err),
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '///denied_report//' }).catch(err => err),
         utils
-          .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/dsada` }, offlineRequestOptions))
+          .request({ ...offlineRequestOptions, path: `//${constants.DB_NAME}//denied_report/dsada` })
           .catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions))
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '/denied_report/something' })
           .catch(err => err),
-        utils.requestOnTestDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions))
-          .catch(err => err),
-        utils
-          .request(_.defaults({ path: `//${constants.DB_NAME}//denied_report/something` }, offlineRequestOptions))
-          .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '/denied_report' }, offlineRequestOptions)).catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '///denied_report//' }, offlineRequestOptions)).catch(err => err),
-        utils
-          .request(_.defaults({ path: `//medic//denied_report/dsada` }, offlineRequestOptions))
-          .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '/denied_report/something' }, offlineRequestOptions))
-          .catch(err => err),
-        utils.requestOnMedicDb(_.defaults({ path: '///denied_report//something' }, offlineRequestOptions))
+        utils.requestOnTestDb({ ...offlineRequestOptions, path: '///denied_report//something' })
           .catch(err => err),
         utils
-          .request(_.defaults({ path: `//medic//denied_report/something` }, offlineRequestOptions))
+          .request({ ...offlineRequestOptions, path: `//${constants.DB_NAME}//denied_report/something` })
+          .catch(err => err),
+        utils.requestOnMedicDb({ ...offlineRequestOptions, path: '/denied_report' }).catch(err => err),
+        utils.requestOnMedicDb({ ...offlineRequestOptions, path: '///denied_report//' }).catch(err => err),
+        utils
+          .request({ ...offlineRequestOptions, path: `//medic//denied_report/dsada` })
+          .catch(err => err),
+        utils.requestOnMedicDb({ ...offlineRequestOptions, path: '/denied_report/something' })
+          .catch(err => err),
+        utils.requestOnMedicDb({ ...offlineRequestOptions, path: '///denied_report//something' })
+          .catch(err => err),
+        utils
+          .request({ ...offlineRequestOptions, path: `//medic//denied_report/something` })
           .catch(err => err),
       ]))
       .then(results => {
@@ -2440,11 +2448,12 @@ describe('db-doc handler', () => {
   it('does not allow creation of feedback docs', async () => {
     const doc = { _id: 'fb1', type: 'feedback', content: 'content' };
 
-    Object.assign(offlineRequestOptions, {
+    offlineRequestOptions = {
+      ...offlineRequestOptions,
       path: '/',
       method: 'POST',
       body: doc,
-    });
+    };
 
     await expect(utils.requestOnTestDb({ ...offlineRequestOptions, path: `/`, body: doc, method: 'POST' }))
       .to.eventually.be.rejectedWith('403 - {"error":"forbidden","reason":"Insufficient privileges"}');
@@ -2459,11 +2468,12 @@ describe('db-doc handler', () => {
         doc._rev = result.rev;
         doc.content = 'new content';
 
-        Object.assign(offlineRequestOptions, {
+        offlineRequestOptions = {
+          ...offlineRequestOptions,
           method: 'PUT',
           path: '/fb1',
           body: doc,
-        });
+        };
         return utils.requestOnTestDb(offlineRequestOptions).catch(err => err);
       })
       .then(result => {
@@ -2480,10 +2490,10 @@ describe('db-doc handler', () => {
     it('allows GETting _design/medic-client blocks all other ddoc GET requests', () => {
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, offlineRequestOptions)),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, offlineRequestOptions)).catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, offlineRequestOptions)).catch(err => err)
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/_design/medic-client' }),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/_design/medic' }).catch(err => err),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/_design/something' }).catch(err => err),
+          utils.requestOnTestDb({ ...offlineRequestOptions, path: '/_design/medic-admin' }).catch(err => err)
         ])
         .then(results => {
           chai.expect(results[0]._id).to.equal('_design/medic-client');
@@ -2502,13 +2512,13 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/medic-client' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/medic' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/something' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/medic-admin' })
             .catch(err => err),
         ])
         .then(results => {
@@ -2526,21 +2536,21 @@ describe('db-doc handler', () => {
 
       return Promise
         .all([
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/medic-client' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/medic' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/something' })
             .catch(err => err),
-          utils.requestOnTestDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+          utils.requestOnTestDb({ ...offlineRequestOptions, ...request, path: '/_design/medic-admin' })
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-client' }, request, offlineRequestOptions))
+          utils.requestOnMedicDb({ ...offlineRequestOptions, ...request, path: '/_design/medic-client' })
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic' }, request, offlineRequestOptions))
+          utils.requestOnMedicDb({ ...offlineRequestOptions, ...request, path: '/_design/medic' })
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/something' }, request, offlineRequestOptions))
+          utils.requestOnMedicDb({ ...offlineRequestOptions, ...request, path: '/_design/something' })
             .catch(err => err),
-          utils.requestOnMedicDb(_.defaults({ path: '/_design/medic-admin' }, request, offlineRequestOptions))
+          utils.requestOnMedicDb({ ...offlineRequestOptions, ...request, path: '/_design/medic-admin' })
             .catch(err => err),
         ])
         .then(results => {

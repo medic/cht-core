@@ -99,7 +99,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chwville',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Chwville',
       parent: 'fixture:chw-bossville',
       place_id: 'shortcode:chwville',
@@ -167,7 +167,7 @@ const users = [
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hostpital'
 };
 
@@ -314,7 +314,7 @@ describe('replication', () => {
       const docs = [
         {
           _id: 'depth_clinic',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:chwville' },
         },
         {
@@ -324,7 +324,7 @@ describe('replication', () => {
         },
         {
           _id: 'depth_clinic_multi',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:clareville' },
         },
         {
@@ -449,7 +449,7 @@ describe('replication', () => {
           {
             // depth 1
             _id: 'steveville_clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'fixture:steveville', parent: { _id: parentPlace._id } },
           },
           {
@@ -600,7 +600,7 @@ describe('replication', () => {
         },
         {
           _id: 'depth_clinic',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } },
           contact: { _id: 'depth_person2' }
         },
@@ -673,7 +673,7 @@ describe('replication', () => {
           },
           {
             _id: 'depth_clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'depth_hc', parent: { _id: 'PARENT_PLACE' } },
             contact: { _id: 'depth_person' }
           },

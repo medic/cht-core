@@ -608,6 +608,15 @@ describe('Contacts effects', () => {
         expect(setSnackbarContent.callCount).to.equal(0);
         expect(unsetSelected.callCount).to.equal(1);
       });
+
+      it('should handle missing contact doc', async () => {
+        contactViewModelGeneratorService.getContact.resolves({ _id: 'person', doc: undefined });
+
+        actions$ = of(ContactActionList.selectContact({ id: 'person' }));
+        await effects.selectContact.toPromise();
+
+        expect(targetAggregateService.getTargetDocs.callCount).to.equal(0);
+      });
     });
 
     describe('loading contact summary', () => {

@@ -9,11 +9,11 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'the_health_center',
@@ -23,12 +23,12 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
-    contact: {
-      _id: 'person',
-      parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
+    contact: { 
+      _id: 'person', 
+      parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -37,7 +37,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+phone',
     reported_date: new Date().getTime()
   },
@@ -46,7 +46,7 @@ const contacts = [
     name: 'Person',
     type: 'person',
     patient_id: 'patient2',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+phone2',
     reported_date: new Date().getTime()
   }
@@ -73,8 +73,8 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       from: '+phone',
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic',  parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -102,8 +102,8 @@ describe('accept_patient_reports', () => {
       reported_date: new Date().getTime(),
       from: '+phone',
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -181,8 +181,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -196,8 +196,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -211,8 +211,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -226,8 +226,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       },
     };
 
@@ -336,8 +336,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -352,8 +352,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person2',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person2', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -419,8 +419,8 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime(),
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // not a registration
@@ -460,8 +460,8 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime() + 3000,
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration
@@ -496,8 +496,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -535,8 +535,8 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime(),
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // not a registration
@@ -576,8 +576,8 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime() + 3000,
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration
@@ -612,8 +612,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -660,8 +660,8 @@ describe('accept_patient_reports', () => {
         },
         reported_date: new Date().getTime() + 3000,
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       { // valid registration for place and patient
@@ -710,8 +710,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -726,8 +726,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -808,8 +808,8 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', state: 'muted', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
@@ -833,8 +833,8 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', group: 'b', state: 'muted', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
@@ -851,8 +851,8 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
@@ -871,8 +871,8 @@ describe('accept_patient_reports', () => {
           { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
@@ -889,8 +889,8 @@ describe('accept_patient_reports', () => {
           { id: 5, type: 'type3', state: 'sent', due: new Date().getTime() - 10 * oneDay },
         ],
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       },
       {
@@ -909,8 +909,8 @@ describe('accept_patient_reports', () => {
           { id: 3, type: 'type3', group: 'b', state: 'sent', due: new Date().getTime() + 1 * oneDay },
         ],
         contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+          _id: 'person', 
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
         }
       }
     ];
@@ -937,8 +937,8 @@ describe('accept_patient_reports', () => {
       },
       reported_date: new Date().getTime(),
       contact: {
-        _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        _id: 'person', 
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 

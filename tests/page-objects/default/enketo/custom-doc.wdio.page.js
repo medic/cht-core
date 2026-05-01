@@ -1,8 +1,7 @@
 const uuid = require('uuid').v4;
 const { DOC_IDS } = require('@medic/constants');
 
-// TEST - extension-lib-form.wdio.spec.js
-const EXTENSION_LIB = `
+const AVERAGE_EXTENSION_LIB = `
 const getValue = function(obj) {
   let val;
   if (obj.t === 'arr') {
@@ -25,13 +24,40 @@ module.exports = function(first, second) {
   };
 }
 `;
+const STARTS_WITH_EXTENSION_LIB = `
+const asString = (r) => {
+  if (r.t === 'arr') {
+    return r.v.length ? r.v[0].textContent || '' : '';
+  } else if (r.v) {
+    return r.v.toString();
+  }
+  return (r || '').toLowerCase();
+};
+
+module.exports = (prefix, value) => {
+  const prefixString = asString(prefix);
+  const valueString = asString(value);
+  const startsWith = valueString.startsWith(prefixString);
+  if (value.v) {
+    return {
+      t: 'bool',
+      v: startsWith
+    };
+  }
+  return startsWith;
+};
+`;
 
 const extensionLibDoc = {
   _id: DOC_IDS.EXTENSION_LIBS,
   _attachments: {
     'average.js': {
       content_type: 'application/x-javascript',
-      data: Buffer.from(EXTENSION_LIB).toString('base64')
+      data: Buffer.from(AVERAGE_EXTENSION_LIB).toString('base64')
+    },
+    'starts-with.js': {
+      content_type: 'application/x-javascript',
+      data: Buffer.from(STARTS_WITH_EXTENSION_LIB).toString('base64')
     }
   }
 };
