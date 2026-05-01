@@ -171,7 +171,9 @@ describe('Setup utils', () => {
       utils.cleanup();
       clock.runAll();
       // Allow the async background loop to proceed
-      for (let i = 0; i < 10; i++) { await Promise.resolve(); }
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+      }
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -189,7 +191,9 @@ describe('Setup utils', () => {
       utils.cleanup();
       clock.runAll();
       // Allow the async background loop to proceed
-      for (let i = 0; i < 10; i++) { await Promise.resolve(); }
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+      }
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -211,7 +215,9 @@ describe('Setup utils', () => {
       utils.cleanup();
       clock.runAll();
       // Allow the async background loop to proceed
-      for (let i = 0; i < 10; i++) { await Promise.resolve(); }
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+      }
 
       expect(db.nouveauCleanup.callCount).to.equal(1);
 
