@@ -167,7 +167,10 @@ describe('Setup utils', () => {
     });
 
     it('should start view cleanup for every database', async () => {
-      await utils.cleanup();
+      utils.cleanup();
+      clock.runAll();
+      // Allow the async background loop to proceed
+      for (let i = 0; i < 10; i++) { await Promise.resolve(); }
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -182,10 +185,10 @@ describe('Setup utils', () => {
       const error = { some: 'error' };
       db.sentinel.viewCleanup.rejects(error);
 
-      await utils.cleanup();
-
-      await Promise.resolve();
-      await Promise.resolve();
+      utils.cleanup();
+      clock.runAll();
+      // Allow the async background loop to proceed
+      for (let i = 0; i < 10; i++) { await Promise.resolve(); }
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.nouveauCleanup.callCount).to.equal(1);
@@ -204,8 +207,9 @@ describe('Setup utils', () => {
       db.nouveauCleanup.rejects(error);
 
       utils.cleanup();
-
-      await Promise.resolve();
+      clock.runAll();
+      // Allow the async background loop to proceed
+      for (let i = 0; i < 10; i++) { await Promise.resolve(); }
 
       expect(db.nouveauCleanup.callCount).to.equal(1);
 
