@@ -45,11 +45,21 @@ class Timerwidget extends Widget {
     const $wrapper = $el.closest('.or-appearance-countdown-timer');
     const canvas = $('<canvas width="%s" height="%s">'.replace(/%s/g, DIM));
     $wrapper.append(canvas);
+    this._canvas = canvas[0];
     const duration = parseInt($wrapper.attr('data-cht-duration')) || deprecated.getDefaultValue($el) || DEFAULT_TIME;
 
     // Marks the hidden OK radio button as checked
     const setTimerCompleted = () => $el.prop('checked', true).trigger('change');
-    TimerAnimation.animate(canvas[0], duration, setTimerCompleted);
+    this._stopAnimation = TimerAnimation.animate(this._canvas, duration, setTimerCompleted);
+  }
+
+  destroy() {
+    if (this._stopAnimation) {
+      this._stopAnimation();
+    }
+    if (this._canvas) {
+      this._canvas.remove();
+    }
   }
 }
 
