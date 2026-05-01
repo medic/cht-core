@@ -1113,6 +1113,25 @@ const waitForDocRev = (ids) => {
   });
 };
 
+const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
+  const results = await auditDb.allDocs({
+    start_key: docId,
+    end_key: `${docId}\ufff0`,
+    include_docs: true
+  });
+  const totalHistory = results.rows.reduce((acc, row) => acc + (row.doc.history ? row.doc.history.length : 0), 0);
+  if (totalHistory >= expectedCount) {
+    return;
+  }
+  if (retries <= 0) {
+    throw new Error(`Timed out waiting for audit count to reach ${expectedCount} for doc ${docId}`);
+  }
+  await delayPromise(200);
+  return waitForAuditCount(docId, expectedCount, retries - 1);
+};
+
+
+
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
@@ -1810,7 +1829,9 @@ module.exports = {
   setTransitionSeqToNow,
   waitForDocRev,
   waitForSettings,
+  waitForAuditCount,
   getDefaultSettings,
+
   addTranslations,
   enableLanguage,
   enableLanguages,

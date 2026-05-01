@@ -448,7 +448,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
       for (const replicationKey of replicationKeys) {
         const keys = result.rows.filter(row => row.key[1] === replicationKey).map(row => row.id);
         if (keys.length) {
-          docIds.add(...keys);
+          keys.forEach(key => docIds.add(key));
         } else {
           docIds.add(replicationKey);
         }

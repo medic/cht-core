@@ -242,7 +242,7 @@ describe('cht-datasource Place', () => {
 
       it('creates place for valid input', async () => {
         const input = {
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           name: 'place-1',
           parent: place1._id,
           contact: contact0._id,
@@ -263,7 +263,7 @@ describe('cht-datasource Place', () => {
             parent: { _id: place1.parent._id }
           },
           type: 'contact',
-          contact_type: 'clinic',
+          contact_type: CONTACT_TYPES.CLINIC,
         });
       });
 
@@ -297,7 +297,7 @@ describe('cht-datasource Place', () => {
 
       it(`throws error for non-existent parent`, async () => {
         const body = {
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           name: 'place-1',
           parent: 'invalid-id'
         };
@@ -348,7 +348,7 @@ describe('cht-datasource Place', () => {
               _id: place2._id
             }
           },
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: { _id: contact0._id },
           reported_date: 1770397800,
           phone: '1234567890'
