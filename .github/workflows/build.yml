@@ -23,7 +23,6 @@ env:
   BUILD_NUMBER: ${{ github.run_id }}
   NODE_VERSION: '22.15'
   AFRICAS_TALKING_SANDBOX_API_KEY: ${{ secrets.AFRICAS_TALKING_SANDBOX_API_KEY }}
-  SHELLCHECKJS_BIN: /usr/bin/shellcheck
 
 jobs:
 
@@ -77,6 +76,8 @@ jobs:
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
+    - name: Use system shellcheck binary
+      run: cp /usr/bin/shellcheck node_modules/shellcheck/bin/shellcheck
     - name: Compile
       run: npm run ci-compile
     - name: Setup QEMU
