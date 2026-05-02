@@ -1625,7 +1625,7 @@ describe('Users API', () => {
 
       await utils.saveDocs([ facility, person ]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
-
+      await utils.updateSettings({ roles: { program_officer: { name: 'Program Officer' } } }, { ignoreReload: true });
       await utils.updatePermissions(['program_officer'], ['can_view_users'], [], { ignoreReload: true });
     });
 

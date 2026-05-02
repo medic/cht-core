@@ -124,7 +124,7 @@ describe('cht-datasource Report', () => {
 
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, patient ];
   const allReports = [ report0, report1, report2, report3, report4, report5, report6, report7, report8 ];
-  const dataContext = getRemoteDataContext(utils.getOrigin());
+  const dataContext = getRemoteDataContext({ getAll: () => ({}) }, utils.getOrigin());
 
   const excludedProperties = ['_rev', 'reported_date'];
 
