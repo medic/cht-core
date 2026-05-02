@@ -20,6 +20,7 @@ export class ModalLayoutComponent {
   @Input() cancelKey?: string;
   @Input() hideFooter?: boolean;
   @Input() hideCancelButton?: boolean;
+  @Input() hideCloseButton?: boolean;
   @Input() hasEnketoForm?: boolean;
   @Output() onCancel: EventEmitter<any> = new EventEmitter();
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();

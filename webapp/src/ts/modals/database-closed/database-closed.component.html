@@ -2,7 +2,8 @@
   id="database_closed"
   [titleKey]="'database_closed.title'"
   [submitKey]="'Reload'"
-  (onCancel)="close()"
+  [hideCancelButton]="true"
+  [hideCloseButton]="true"
   (onSubmit)="submit()"
 >
   <p>{{'database_closed.description' | translate}}</p>
