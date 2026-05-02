@@ -23,6 +23,7 @@ env:
   BUILD_NUMBER: ${{ github.run_id }}
   NODE_VERSION: '22.15'
   AFRICAS_TALKING_SANDBOX_API_KEY: ${{ secrets.AFRICAS_TALKING_SANDBOX_API_KEY }}
+  SHELLCHECKJS_BIN: /usr/bin/shellcheck
 
 jobs:
 
@@ -38,7 +39,7 @@ jobs:
     - name: Install bats
       run: |
         sudo apt-get update
-        sudo apt-get install -y bats
+        sudo apt-get install -y bats shellcheck
 
     - name: Login to Docker Hub
       uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3
