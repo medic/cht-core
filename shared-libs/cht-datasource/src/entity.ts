@@ -4,9 +4,7 @@ import * as Remote from './remote';
 import * as Local from './local';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
-import { Nullable } from './libs/core';
 import { assertUuidQualifier } from './libs/parameter-validators';
-import { Doc } from './libs/doc';
 
 /** */
 export namespace v1 {
