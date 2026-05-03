@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LocationService } from '@mm-services/location.service';
 
 @Injectable({
@@ -22,10 +22,10 @@ export class UserLoginService {
 
     const url = '/' + this.location.dbName + '/login';
 
-    const headers: any = {
+    const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
-    };
+    });
 
     const data = JSON.stringify({
       user: username,
