@@ -27,12 +27,12 @@ class Dbobjectwidget extends Widget {
 
   // When the field becomes relevant with a pre-populated value, load the contact data.
   enable() {
-    const currentValue = this._$textInput && this._$textInput.val();
+    const currentValue = this._$textInput?.val();
     if (!currentValue) {
       return;
     }
     const selected = this._$selectInput.select2('data');
-    const alreadyLoaded = selected && selected[0] && selected[0].doc;
+    const alreadyLoaded = selected?.[0]?.doc;
     if (!alreadyLoaded) {
       const Select2Search = window.CHTCore.Select2Search;
       Select2Search.init(this._$selectInput, this._contactTypes, {
