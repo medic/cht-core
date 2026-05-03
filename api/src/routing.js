@@ -41,6 +41,7 @@ const users = require('./controllers/users');
 const contact = require('./controllers/contact');
 const person = require('./controllers/person');
 const place = require('./controllers/place');
+const entity = require('./controllers/entity');
 const report = require('./controllers/report');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
@@ -738,6 +739,8 @@ app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 app.postJson('/api/v1/person', person.v1.create);
 app.putJson('/api/v1/person/:uuid', person.v1.update);
+
+app.get('/api/v1/entity/:id', entity.get);
 
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
 app.get('/api/v1/contact/:uuid', contact.v1.get);

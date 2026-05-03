@@ -32,6 +32,7 @@ import { assertDataContext, DataContext } from './libs/data-context';
 import * as Contact from './contact';
 import * as Person from './person';
 import * as Place from './place';
+import * as Entity from './entity';
 import * as Qualifier from './qualifier';
 import { and, byContactId, byContactIds, byReportingPeriod } from './qualifier';
 import * as Report from './report';
@@ -47,6 +48,7 @@ export { InvalidArgumentError, ResourceNotFoundError } from './libs/error';
 export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
+export * as Entity from './entity';
 export * as Qualifier from './qualifier';
 export * as Input from './input';
 export * as Report from './report';
@@ -87,6 +89,15 @@ export const getDatasource = (ctx: DataContext) => {
         userRoles: string[],
         chtPermissionsSettings?: Record<string, string[]>
       ) => ctx.bind(hasAnyPermission)(permissionsGroupList, userRoles, chtPermissionsSettings),
+      entity: {
+        /**
+         * Returns a generic database document by its UUID.
+         * @param uuid the UUID of the document to retrieve
+         * @returns the document or `null` if no document is found for the UUID
+         * @throws InvalidArgumentError if no UUID is provided
+         */
+        getByUuid: (uuid: string) => ctx.bind(Entity.v1.get)(Qualifier.byUuid(uuid)),
+      },
       contact: {
         /**
          * Returns a contact by their UUID.
