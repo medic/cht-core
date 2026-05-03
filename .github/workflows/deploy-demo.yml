@@ -20,14 +20,16 @@ env:
 
 jobs:
   deploy-demo:
-    name: Deploy ${{ github.event.inputs.tag }} to demo
+    name: Deploy to demo
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      INPUT_TAG: ${{ github.event.inputs.tag }}
 
     steps:
       - name: Validate tag format
         run: |
-          TAG="${{ github.event.inputs.tag }}"
+          TAG="$INPUT_TAG"
           if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Invalid tag format '$TAG'. Expected format: X.Y.Z (e.g. 4.20.0)"
             exit 1
@@ -37,7 +39,7 @@ jobs:
       - name: Checkout code at tag
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag }}
+          ref: ${{ env.TAG }}
 
       - name: Stage upgrade via CHT API
         run: |
