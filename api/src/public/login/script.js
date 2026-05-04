@@ -167,27 +167,21 @@ const checkSession = function() {
   }
 };
 
-const isUsingSupportedBrowser = () => {
-  if (!globalThis.bowser || !globalThis.bowser.getParser) {
-    return false;
+const getBowserParser = () => {
+  if (!globalThis.bowser?.getParser) {
+    return null;
   }
-
-  const parser = globalThis.bowser.getParser(globalThis.navigator.userAgent);
-  return parser.satisfies({
-    chrome: '>=107', // Chrome 107 was released on 25 Oct 2022; for desktop and Android.
-    firefox: '>=98', // Firefox 98 was released on March 8, 2022; for desktop and Android.
-  });
+  return globalThis.bowser.getParser(globalThis.navigator.userAgent);
 };
+
+const isUsingSupportedBrowser = () => getBowserParser()?.satisfies({
+  chrome: '>=107', // Chrome 107 was released on 25 Oct 2022; for desktop and Android.
+  firefox: '>=98', // Firefox 98 was released on March 8, 2022; for desktop and Android.
+}) ?? false;
 
 const isSafariBrowser = () => /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
-const isUsingTooOldChrome = () => {
-  if (!globalThis.bowser || !globalThis.bowser.getParser) {
-    return false;
-  }
-  const parser = globalThis.bowser.getParser(globalThis.navigator.userAgent);
-  return parser.satisfies({ chrome: '<90' });
-};
+const isUsingTooOldChrome = () => getBowserParser()?.satisfies({ chrome: '<90' }) ?? false;
 
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
