@@ -11,9 +11,11 @@ import {
   putResource,
   RemoteDataContext
 } from '../../../src/remote/libs/data-context';
+import { SettingsService } from '../../../src/libs/data-context';
 import { DataContext, InvalidArgumentError, ResourceNotFoundError } from '../../../src';
 
 describe('remote context lib', () => {
+  const settingsService = { getAll: () => ({}) } as SettingsService;
   const context = { url: 'hello.world' } as RemoteDataContext;
   let fetchResponse: { ok: boolean, status: number, statusText: string, json: SinonStub, text: SinonStub };
   let fetchStub: SinonStub;
@@ -47,7 +49,7 @@ describe('remote context lib', () => {
 
   describe('assertRemoteDataContext', () => {
     it('asserts a remote data context', () => {
-      const context = getRemoteDataContext('hello.world');
+      const context = getRemoteDataContext(settingsService, 'hello.world');
 
       expect(() => assertRemoteDataContext(context)).to.not.throw();
     });
@@ -70,10 +72,22 @@ describe('remote context lib', () => {
       undefined
     ].forEach(url => {
       it(`returns a remote data context for URL: ${JSON.stringify(url)}`, () => {
-        const context = getRemoteDataContext(url);
+        const context = getRemoteDataContext(settingsService, url);
 
         expect(isRemoteDataContext(context)).to.be.true;
-        expect(context).to.deep.include({ url: url ?? '' });
+        expect(context).to.deep.include({ url: url ?? '', settings: settingsService });
+      });
+    });
+
+    ([
+      null,
+      {},
+      { getAll: 'not a function' },
+      'hello'
+    ] as unknown as SettingsService[]).forEach((invalidSettingsService) => {
+      it(`throws an error if the settings service is invalid: ${JSON.stringify(invalidSettingsService)}`, () => {
+        expect(() => getRemoteDataContext(invalidSettingsService))
+          .to.throw(`Invalid settings service [${JSON.stringify(invalidSettingsService)}].`);
       });
     });
 
@@ -84,7 +98,7 @@ describe('remote context lib', () => {
       [],
     ].forEach(url => {
       it(`throws an error for an invalid URL: ${JSON.stringify(url)}`, () => {
-        expect(() => getRemoteDataContext(url as string))
+        expect(() => getRemoteDataContext(settingsService, url as string))
           .to.throw(`Invalid URL [${JSON.stringify(url)}].`);
       });
     });

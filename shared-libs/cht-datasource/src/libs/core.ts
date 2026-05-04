@@ -1,4 +1,4 @@
-import { DataContext } from './data-context';
+import { DataContext, SettingsService } from './data-context';
 
 /**
  * A value that could be `null`.
@@ -194,6 +194,12 @@ export const findById = <T extends Identifiable>(values: T[], id: string): Nulla
 
 /** @internal */
 export abstract class AbstractDataContext implements DataContext {
+  /** @internal */
+  constructor(
+    readonly settings: SettingsService,
+  ) {
+  }
+
   readonly bind = <T>(fn: (ctx: DataContext) => T): T => fn(this);
 }
 
