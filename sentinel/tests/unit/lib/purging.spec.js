@@ -2481,8 +2481,8 @@ describe('ServerSidePurge', () => {
 
     it('should be possible to use hasPermissions from cht script api in purge function', () => {
       const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
-      const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
-        if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
+      const purgeFunction = (userCtx, contact, reports, messages, chtScript) => {
+        if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles)) {
           return [ 'purge 1', 'purge 2' ];
         }
       };
@@ -2498,18 +2498,18 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
         chai.expect(mockDatasource.v1.hasPermissions.args[0]).to.deep.equal(
-          [ 'can_export_messages', [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
+          [ 'can_export_messages', [ 1, 2, 3 ] ]
         );
         chai.expect(mockDatasource.v1.hasPermissions.args[1]).to.deep.equal(
-          [ 'can_export_messages', [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
+          [ 'can_export_messages', [ 4, 5, 6 ] ]
         );
       });
     });
 
     it('should be possible to use hasAnyPermission from cht script api in purge function', () => {
       const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
-      const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
-        if (chtScript.v1.hasAnyPermission(['can_export_messages', 'can_edit'], userCtx.roles, settings)) {
+      const purgeFunction = (userCtx, contact, reports, messages, chtScript) => {
+        if (chtScript.v1.hasAnyPermission(['can_export_messages', 'can_edit'], userCtx.roles)) {
           return [ 'purge 1', 'purge 2' ];
         }
       };
@@ -2525,10 +2525,10 @@ describe('ServerSidePurge', () => {
 
       return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
         chai.expect(mockDatasource.v1.hasAnyPermission.args[0]).to.deep.equal(
-          [ ['can_export_messages', 'can_edit'], [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
+          [ ['can_export_messages', 'can_edit'], [ 1, 2, 3 ] ]
         );
         chai.expect(mockDatasource.v1.hasAnyPermission.args[1]).to.deep.equal(
-          [ ['can_export_messages', 'can_edit'], [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
+          [ ['can_export_messages', 'can_edit'], [ 4, 5, 6 ] ]
         );
       });
     });

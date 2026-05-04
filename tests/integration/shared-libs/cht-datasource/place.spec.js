@@ -80,7 +80,7 @@ describe('cht-datasource Place', () => {
     },
     roles: ['chw']
   }));
-  const dataContext = getRemoteDataContext(utils.getOrigin());
+  const dataContext = getRemoteDataContext({ getAll: () => ({}) }, utils.getOrigin());
   const expectedPlaces = [place0, clinic1, clinic3];
 
   const excludedProperties = [ '_rev', 'reported_date', 'patient_id', 'place_id' ];
