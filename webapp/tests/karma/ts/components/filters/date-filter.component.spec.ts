@@ -9,6 +9,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import * as moment from 'moment';
 
+import { MockStore } from '@ngrx/store/testing';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -24,6 +25,7 @@ describe('Date Filter Component', () => {
   beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getFilters, value: {} },
+      { selector: Selectors.getDirection, value: 'ltr' },
     ];
     datePipe = { transform: sinon.stub() };
     dateRangePicker = (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
@@ -127,6 +129,17 @@ describe('Date Filter Component', () => {
     component.isStartDate = false;
     const result2 = component.countSelected();
     expect(result2).to.equal(0);
+  });
+
+  it('should unsubscribe from direction selector on destroy', () => {
+    const store = TestBed.inject(MockStore);
+    expect(component.direction).to.equal('ltr');
+
+    component.ngOnDestroy();
+    store.overrideSelector(Selectors.getDirection, 'rtl');
+    store.refreshState();
+
+    expect(component.direction).to.equal('ltr');
   });
 
   it('should do nothing if component is disabled', () => {
