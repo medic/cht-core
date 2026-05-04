@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { DropdownService } from '@mm-services/dropdown.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -24,6 +25,7 @@ export class AndroidApiService {
     private sessionService:SessionService,
     private zone:NgZone,
     private navigationService:NavigationService,
+    private dropdownService:DropdownService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -72,9 +74,7 @@ export class AndroidApiService {
     // todo: this probably won't work because dropdowns are now angular directives!
 
     // If there is a dropdown menu open, close it
-    const $dropdown = $container.find('.filter.dropdown.open:visible');
-    if ($dropdown.length) {
-      $dropdown.removeClass('open');
+    if (this.dropdownService.closeAll()) {
       return true;
     }
 
@@ -121,10 +121,8 @@ export class AndroidApiService {
       return true;
     }
 
-    // If the hotdog hamburger options menu is open, close it
-    const $optionsMenu = $('.dropdown.options.open');
-    if ($optionsMenu.length) {
-      $optionsMenu.removeClass('open');
+    // If any angular dropdown menu is open, close it
+    if (this.dropdownService.closeAll()) {
       return true;
     }
 

@@ -20,11 +20,13 @@ import { AGGREGATE_TARGETS_ID, TARGETS_ID } from '@mm-services/analytics-modules
 import { NgIf, NgFor } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { DropdownTrackingDirective } from '@mm-directives/dropdown-tracking.directive';
 
 @Component({
   selector: 'mm-analytics-filters',
   templateUrl: './analytics-filter.component.html',
-  imports: [NgIf, NgFor, RouterLink, MatIcon, TranslatePipe]
+  imports: [NgIf, NgFor, RouterLink, MatIcon, TranslatePipe, BsDropdownModule, DropdownTrackingDirective]
 })
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnInit, OnDestroy {
   @Input() analyticsModules: any[] = [];

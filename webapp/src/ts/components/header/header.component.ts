@@ -14,6 +14,7 @@ import { AuthDirective } from '@mm-directives/auth.directive';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
+import { DropdownTrackingDirective } from '@mm-directives/dropdown-tracking.directive';
 
 import { TranslatePipe } from '@ngx-translate/core';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
@@ -35,6 +36,7 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
     NgClass,
     NgFor,
     MobileDetectionComponent,
+    DropdownTrackingDirective,
     TranslatePipe,
     HeaderLogoPipe,
     ResourceIconPipe,

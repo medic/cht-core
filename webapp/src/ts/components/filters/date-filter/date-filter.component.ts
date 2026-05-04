@@ -13,11 +13,12 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TranslatePipe } from '@ngx-translate/core';
+import { DropdownTrackingDirective } from '@mm-directives/dropdown-tracking.directive';
 
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html',
-  imports: [BsDropdownModule, NgIf, TranslatePipe]
+  imports: [BsDropdownModule, NgIf, TranslatePipe, DropdownTrackingDirective]
 })
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions: GlobalActions;
