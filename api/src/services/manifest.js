@@ -2,19 +2,33 @@ const { promisify } = require('util');
 const fs = require('fs');
 const path = require('path');
 
-const _ = require('lodash');
-
 const resources = require('../resources');
 const brandingService = require('./branding');
 
 const webappPath = resources.webappPath;
 const MANIFEST_OUTPUT_PATH = path.join(webappPath, 'manifest.json');
-const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'manifest.json');
 
 const writeJson = async (branding) => {
-  const file = await promisify(fs.readFile)(TEMPLATE_PATH, { encoding: 'utf-8' });
-  const template = _.template(file);
-  const json = template({ branding });
+  const manifest = {
+    start_url: './',
+    name: branding.name,
+    display: 'standalone',
+    background_color: '#323232',
+    theme_color: '#323232',
+    icons: [
+      {
+        src: `/img/${branding.icon}`,
+        sizes: 'any',
+        purpose: 'any',
+      },
+      {
+        src: '/favicon.ico',
+        sizes: '32x32',
+        type: 'image',
+      },
+    ],
+  };
+  const json = JSON.stringify(manifest, null, 2);
   return await promisify(fs.writeFile)(MANIFEST_OUTPUT_PATH, json);
 };
 
