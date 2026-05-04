@@ -27,18 +27,12 @@ const getTaskFromMessage = (tasks, uuid) => {
 };
 
 const getTaskForMessage = (uuid, doc) => {
-  if (!doc) {
-    return;
-  }
   return getTaskFromMessage(doc.tasks, uuid) ||
          getTaskFromMessage(doc.scheduled_tasks, uuid);
 };
 
 const getTaskAndDocForMessage = (messageId, docs) => {
   for (const doc of docs) {
-    if (!doc) {
-      continue;
-    }
     const task = getTaskForMessage(messageId, doc);
     if (task) {
       return { task: task, docId: doc._id };
