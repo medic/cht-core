@@ -295,9 +295,6 @@ module.exports = {
         const docs = results.rows
           .map(r => r?.doc)
           .filter(Boolean);
-        if (docs.length !== results.rows.length) {
-          logger.warn(`Found ${results.rows.length - docs.length} message state update docs missing from allDocs response.`);
-        }
         const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
         const updated = docs.filter(doc => stateChangesByDocId[doc._id] && stateChangesByDocId[doc._id].length);
 
