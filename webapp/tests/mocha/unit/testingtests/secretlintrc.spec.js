@@ -44,6 +44,11 @@ describe('scripts/ci/.secretlintrc.json', () => {
         });
       }
     }
+    it('flags ?password=* (single asterisk is not a mask)', () => {
+      const { flagged, stdout } = runSecretlint('2024-01-01 GET /api?password=*');
+      expect(flagged).to.be.true;
+      expect(stdout).to.include('error');
+    });
   });
 
   describe('JSON key/value rule', () => {
@@ -61,6 +66,11 @@ describe('scripts/ci/.secretlintrc.json', () => {
         });
       }
     }
+    it('flags {"password":"*"} (single asterisk is not a mask)', () => {
+      const { flagged, stdout } = runSecretlint('2024-01-01 INFO: {"password":"*"}');
+      expect(flagged).to.be.true;
+      expect(stdout).to.include('error');
+    });
   });
 
   describe('user:pass@host URL rule', () => {

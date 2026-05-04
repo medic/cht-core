@@ -232,7 +232,8 @@ jobs:
         run: |
           compgen -G "tests/logs/*.log" > /dev/null || exit 0
           tmpdir=$(mktemp -d)
-          for f in tests/logs/*.log; do grep -v "OS Process #Port" "$f" > "$tmpdir/$(basename "$f")"; done
+          # Strip CouchDB OS-Process debug dumps which legitimately log user-creation doc bodies (with passwords).
+          for f in tests/logs/*.log; do grep -Ev "OS Process #?Port|OS Process .* Input ::" "$f" > "$tmpdir/$(basename "$f")"; done
           npx --no-install secretlint --secretlintrc scripts/ci/.secretlintrc.json "$tmpdir"/*.log
           rm -rf "$tmpdir"
       - name: Archive Results
