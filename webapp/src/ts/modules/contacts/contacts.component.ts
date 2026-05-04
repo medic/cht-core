@@ -130,8 +130,10 @@ export class ContactsComponent implements OnInit, OnDestroy {
       this.lastVisitedDateExtras = viewLastVisitedDate;
       this.contactTypes = contactTypes;
 
-      if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
-        this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
+      const defaultSort = this.UHCSettings.getContactsDefaultSort(settings);
+
+      if (this.lastVisitedDateExtras) {
+        this.sortDirection = this.defaultSortDirection = defaultSort || 'default';
       }
 
       const children = await this.getChildren();
@@ -225,7 +227,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  private isRelevantVisitReport (doc) {
+  private isRelevantVisitReport(doc) {
     const isRelevantDelete = doc && doc._deleted && this.isSortedByLastVisited();
     return (
       doc &&
