@@ -165,7 +165,7 @@ const getIssueNumbers = commitMessage => {
   const commitMadeByDependabot = commit => {
     let result = false;
     commit.authors.nodes.forEach((author) => {
-      if (BOTS.includes(author.user.login)) {
+      if (author.user && BOTS.includes(author.user.login)) {
         result = true;
       }
     });
@@ -176,7 +176,9 @@ const getIssueNumbers = commitMessage => {
     const authors = commit.authors.nodes;
     let authConcat = '';
     authors.forEach((author) => {
-      authConcat += ` (${author.user.login})`;
+      if (author.user) {
+        authConcat += ` (${author.user.login})`;
+      }
     });
     return authConcat.trim();
   };
@@ -321,6 +323,9 @@ Commits:
     const lines = [];
     const authors = commits.flatMap((commit) => commit.authors.nodes);
     authors.forEach((author) => {
+      if (!author.user) {
+        return;
+      }
       const { login, name, url } = author.user;
       if (login && !ignoreLogins.has(login)) {
         ignoreLogins.add(login);
