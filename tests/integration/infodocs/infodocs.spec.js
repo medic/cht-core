@@ -1,7 +1,7 @@
 const { assert } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const moment = require('moment');
 
 //
