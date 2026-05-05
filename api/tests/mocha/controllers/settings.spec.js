@@ -15,6 +15,7 @@ describe('Settings controller', () => {
     req = {};
     res = { json: sinon.stub() };
     sinon.stub(auth, 'getUserCtx');
+    sinon.stub(auth, 'check');
     sinon.stub(serverUtils, 'error');
     sinon.stub(settingsService, 'get');
     sinon.stub(settingsService, 'update');
@@ -84,10 +85,10 @@ describe('Settings controller', () => {
 
   describe('put', () => {
     it('should throw an error when not authenticated', () => {
-      auth.getUserCtx.rejects({ some: 'err' });
+      auth.check.rejects({ some: 'err' });
       return controller.put(req, res).then(() => {
-        chai.expect(auth.getUserCtx.callCount).to.equal(1);
-        chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
+        chai.expect(auth.check.callCount).to.equal(1);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_configure']]);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res, true]);
@@ -95,14 +96,10 @@ describe('Settings controller', () => {
     });
 
     it('should throw an error when user does not have permission to edit', () => {
-      sinon.stub(auth, 'hasAllPermissions').returns(false);
-      const ctx = { name: 'user' };
-      auth.getUserCtx.resolves(ctx);
+      auth.check.rejects(new PermissionError('Insufficient privileges'));
       return controller.put(req, res).then(() => {
-        chai.expect(auth.getUserCtx.callCount).to.equal(1);
-        chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
-        chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
-        chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([ctx, ['can_edit', 'can_configure']]);
+        chai.expect(auth.check.callCount).to.equal(1);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_configure']]);
         chai.expect(settingsService.update.callCount).to.equal(0);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -117,30 +114,26 @@ describe('Settings controller', () => {
 
     it('should throw an error when the update fails', () => {
       req = { body: 'my settings' };
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
-      auth.getUserCtx.resolves({ name: 'user' });
+      auth.check.resolves();
       settingsService.update.rejects({ some: 'err' });
       return controller.put(req, res).then(() => {
+        chai.expect(auth.check.callCount).to.equal(1);
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.update.args[0]).to.deep.equal(['my settings', undefined, undefined]);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
-        chai.expect(serverUtils.error.args[0]).to.deep.equal([
-          { some: 'err' },
-          req,
-          res,
-          true
-        ]);
+        chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res, true]);
       });
     });
 
     it('should update without replace or overwrite', () => {
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
-      auth.getUserCtx.resolves({ name: 'user' });
+      auth.check.resolves();
       settingsService.update.resolves();
       req = { body: 'settings' };
 
       return controller.put(req, res).then(() => {
+        chai.expect(auth.check.callCount).to.equal(1);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_configure']]);
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.update.args[0]).to.deep.equal(['settings', undefined, undefined]);
         chai.expect(res.json.callCount).to.equal(1);
@@ -149,8 +142,7 @@ describe('Settings controller', () => {
     });
 
     it('should update with replace', () => {
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
-      auth.getUserCtx.resolves({ name: 'user' });
+      auth.check.resolves();
       settingsService.update.resolves();
       req = { body: 'new settings', query: { replace: 'true' } };
 
@@ -163,8 +155,7 @@ describe('Settings controller', () => {
     });
 
     it('should update with overwrite', () => {
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
-      auth.getUserCtx.resolves({ name: 'user' });
+      auth.check.resolves();
       settingsService.update.resolves();
       req = { body: 'new settings', query: { overwrite: 'something' } };
 
@@ -177,8 +168,7 @@ describe('Settings controller', () => {
     });
 
     it('should update with overwrite and replace', () => {
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
-      auth.getUserCtx.resolves({ name: 'user' });
+      auth.check.resolves();
       settingsService.update.resolves();
       req = { body: 'new settings', query: { overwrite: 'something', replace: 'false' } };
 
@@ -191,14 +181,13 @@ describe('Settings controller', () => {
     });
 
     it('should return whether or not settings were updated', () => {
-      sinon.stub(auth, 'hasAllPermissions').returns(true);
-      auth.getUserCtx.resolves({ name: 'user' });
+      auth.check.resolves();
       settingsService.update.resolves(true);
       req = { body: 'new settings' };
 
       return controller.put(req, res).then(() => {
         chai.expect(settingsService.update.callCount).to.equal(1);
-        chai.expect(settingsService.update.args[0]).to.deep.equal(['new settings', undefined, undefined ]);
+        chai.expect(settingsService.update.args[0]).to.deep.equal(['new settings', undefined, undefined]);
         chai.expect(res.json.callCount).to.equal(1);
         chai.expect(res.json.args[0]).to.deep.equal([{ success: true, updated: true }]);
       });

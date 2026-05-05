@@ -56,6 +56,67 @@ const listFormsJSON = forms => {
 };
 
 module.exports = {
+  /**
+   * @openapi
+   * /api/v1/forms:
+   *   get:
+   *     summary: List installed forms
+   *     operationId: v1FormsGet
+   *     description: >
+   *       Returns a list of currently installed forms. By default returns a JSON array of form filenames. If the
+   *       `X-OpenRosa-Version` header is set to `1.0`, returns an OpenRosa `xformsList` compatible XML response
+   *       instead.
+   *     tags: [Config]
+   *     parameters:
+   *       - in: header
+   *         name: X-OpenRosa-Version
+   *         schema:
+   *           enum: ['1.0']
+   *         description: >
+   *           If set to "1.0", returns XML formatted forms list compatible with the
+   *           [OpenRosa FormListAPI](https://bitbucket.org/javarosa/javarosa/wiki/FormListAPI).
+   *     responses:
+   *       '200':
+   *         description: List of installed forms
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: string
+   *               example: ["anc_visit.xml", "anc_registration.xml"]
+   *           text/xml:
+   *             schema:
+   *               type: object
+   *               xml:
+   *                 name: xforms
+   *                 namespace: 'http://openrosa.org/xforms/xformsList'
+   *               description: OpenRosa xformsList compatible XML.
+   *               properties:
+   *                 xform:
+   *                   type: array
+   *                   xml:
+   *                     wrapped: false
+   *                   items:
+   *                     type: object
+   *                     xml:
+   *                       name: xform
+   *                     properties:
+   *                       name:
+   *                         type: string
+   *                         example: Visit
+   *                       formID:
+   *                         type: string
+   *                         example: ANCVisit
+   *                       hash:
+   *                         type: string
+   *                         example: 'md5:1f0f096602ed794a264ab67224608cf4'
+   *                       downloadUrl:
+   *                         type: string
+   *                         example: 'http://medic.local/api/v1/forms/anc_visit.xml'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   */
   list: (req, res) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
@@ -73,6 +134,39 @@ module.exports = {
       })
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  /**
+   * @openapi
+   * /api/v1/forms/{form}:
+   *   get:
+   *     summary: Get a form definition
+   *     operationId: v1FormsFormGet
+   *     description: >
+   *       Returns the form definition for a given form ID and format. The form parameter should
+   *       include the format extension (e.g. `pregnancyregistration.xml`). Currently only `xml`
+   *       format is supported.
+   *     tags: [Config]
+   *     parameters:
+   *       - in: path
+   *         name: form
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: "Form identifier with format extension (e.g. `pregnancyregistration.xml`)."
+   *     responses:
+   *       '200':
+   *         description: The form definition
+   *         content:
+   *           text/xml:
+   *             schema:
+   *               type: string
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '404':
+   *         $ref: '#/components/responses/NotFound'
+   */
   get: (req, res) => {
     if (!req.userCtx) {
       return serverUtils.notLoggedIn(req, res);
@@ -111,6 +205,48 @@ module.exports = {
       })
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  /**
+   * @openapi
+   * /api/v1/forms/validate:
+   *   post:
+   *     summary: Validate an XForm
+   *     operationId: v1FormsValidatePost
+   *     description: >
+   *       Validates the XForm XML passed in the request body.
+   *     tags: [Config]
+   *     x-since: 3.12.0
+   *     x-permissions:
+   *       hasAll: [can_configure]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/xml:
+   *           schema:
+   *             type: string
+   *             description: The XForm XML to validate.
+   *     responses:
+   *       '200':
+   *         description: Form validation passed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/OkResponse'
+   *       '400':
+   *         description: Form validation failed
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 error:
+   *                   type: string
+   *                   description: Description of the validation error.
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   */
   validate: (req, res) => {
     return auth
       .check(req, 'can_configure')

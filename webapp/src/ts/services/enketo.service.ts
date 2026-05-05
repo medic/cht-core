@@ -1,8 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
-import { v4 as uuid } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
+import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import { AttachmentService } from '@mm-services/attachment.service';
@@ -568,8 +569,7 @@ export class EnketoService {
     if (!valid) {
       throw new Error('Form is invalid');
     }
-
-    $('form.or').trigger('beforesave');
+    form.view.html.dispatchEvent(events.BeforeSave());
   }
 
   async completeNewReport(formInternalId, form, formDoc, contact) {

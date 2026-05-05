@@ -22,6 +22,7 @@ import { DuplicateCheck } from '@mm-services/deduplicate.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import events from 'enketo-core/src/js/event';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
@@ -441,7 +442,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         }
 
         // Updating fields before save. Ref: #6670.
-        $('form.or').trigger('beforesave');
+        form.view.html.dispatchEvent(events.BeforeSave());
 
         if (this.duplicatesAcknowledged && this.duplicates.length) {
           this.telemetryService.record(

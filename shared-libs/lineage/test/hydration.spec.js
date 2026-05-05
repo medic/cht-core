@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const lineageFactory = require('../src');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('Lineage', function() {
   let lineage;
@@ -115,7 +115,7 @@ describe('Lineage', function() {
         }
       };
       const fakeLineage = [
-        { _id: 'b', type: 'clinic' },
+        { _id: 'b', type: CONTACT_TYPES.CLINIC },
         null,
         { _id: 'd', type: 'person' },
       ];
@@ -149,7 +149,7 @@ describe('Lineage', function() {
       const fakeLineage = [
         contactInLineage,
         null,
-        { _id: 'c', type: 'clinic' }
+        { _id: 'c', type: CONTACT_TYPES.CLINIC }
       ];
 
       // when

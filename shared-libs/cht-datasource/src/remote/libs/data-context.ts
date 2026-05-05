@@ -1,13 +1,16 @@
 import logger from '@medic/logger';
-import { DataContext } from '../../libs/data-context';
+import { assertSettingsService, DataContext, SettingsService } from '../../libs/data-context';
 import { AbstractDataContext, Identifiable, isString, Nullable } from '../../libs/core';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../libs/error';
 
 /** @internal */
 export class RemoteDataContext extends AbstractDataContext {
   /** @internal */
-  constructor(readonly url: string) {
-    super();
+  constructor(
+    readonly url: string,
+    readonly settings: SettingsService,
+  ) {
+    super(settings);
   }
 }
 
@@ -26,16 +29,19 @@ export const assertRemoteDataContext: (context: DataContext) => asserts context 
 /**
  * Returns the data context based on a remote CHT API server. This function should not be used when offline
  * functionality is required.
+ * @param settings service providing access to the app settings
  * @param url the URL of the remote CHT API server. If not provided, requests will be made relative to the current
  * location.
  * @returns the data context
+ * @throws Error if the provided settings service is invalid
  */
-export const getRemoteDataContext = (url = ''): DataContext => {
+export const getRemoteDataContext = (settings: SettingsService, url = ''): DataContext => {
+  assertSettingsService(settings);
   if (!isString(url)) {
     throw new Error(`Invalid URL [${JSON.stringify(url)}].`);
   }
 
-  return new RemoteDataContext(url);
+  return new RemoteDataContext(url, settings);
 };
 
 const handleJsonResponse = async (response: Response) => {

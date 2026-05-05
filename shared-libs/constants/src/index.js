@@ -17,6 +17,8 @@ const DOC_IDS = {
 // Contact Types
 const CONTACT_TYPES = {
   HEALTH_CENTER: 'health_center',
+  CLINIC: 'clinic',
+  DISTRICT_HOSPITAL: 'district_hospital',
 };
 
 // Document Types
@@ -56,6 +58,8 @@ const USER_ROLES = {
   COUCHDB_ADMIN: '_admin',
 };
 
+const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
+
 // Document ID prefixes used for _all_docs prefix range scans.
 // For end_key, append '￰' (U+FFF0) to the prefix to bound the range.
 const PREFIXES = {
@@ -70,6 +74,7 @@ module.exports = {
   HTTP_HEADERS,
   SENTINEL_METADATA,
   USER_ROLES,
+  DB_ADMIN_ROLES,
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,
