@@ -87,18 +87,25 @@ describe('test-shared-libs.sh runner validation', () => {
 
   it('should parse realistic Mocha failure output and include test name in summary', async () => {
     // This test exercises the sed+awk parsing pipeline (lines 62-87 of the script).
-    // The mock lib echoes realistic Mocha-style output to ensure the parser
-    // correctly extracts failing test names from the structured output.
-    const mochaOutput = [
-      '  1 failing',
-      '',
-      '  1) my suite',
-      '       failing test name:',
-      '     Error: something went wrong',
-      '      at Context.<anonymous> (test.spec.js:10:5)',
-    ].join('\\n');
-
-    await createMockLib('mocha-fail', `echo -e "${mochaOutput}"; exit 1`);
+    // We write a real shell script file to avoid echo/printf escaping differences
+    // between bash and dash (the default sh on Linux). Real newlines in the script
+    // file guarantee the awk parser sees the correct Mocha-style structure.
+    const libPath = path.join(mockLibsDir, 'mocha-fail');
+    await fs.ensureDir(libPath);
+    await fs.writeFile(path.join(libPath, 'run-test.sh'), [
+      '#!/bin/sh',
+      'echo "  1 failing"',
+      'echo ""',
+      'echo "  1) my suite"',
+      'echo "       failing test name:"',
+      'echo "     Error: something went wrong"',
+      'echo "      at Context.anonymous (test.spec.js:10:5)"',
+      'exit 1',
+    ].join('\n'), { mode: 0o755 });
+    await fs.writeJson(path.join(libPath, 'package.json'), {
+      name: 'mocha-fail',
+      scripts: { test: 'sh run-test.sh' }
+    });
 
     const result = runScript();
 
