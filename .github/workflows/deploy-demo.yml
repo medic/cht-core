@@ -8,6 +8,9 @@ on:
         type: string
         required: true
 
+permissions:
+  contents: read
+
 env:
   DEMO_URL: ${{ secrets.DEMO_CHT_URL }}
   DEMO_USER: ${{ secrets.DEMO_CHT_USER }}
@@ -37,19 +40,20 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Checkout code at tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
           ref: ${{ env.TAG }}
+          persist-credentials: false
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a  # v4
         with:
           aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - uses: azure/setup-kubectl@v4
-      - uses: azure/setup-helm@v4.1.0
+      - uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede  # v4
+      - uses: azure/setup-helm@b7246b12e77f7134dc2d460a3d5bad15bbe29390  # v4.1.0
 
       - name: Configure kubectl context
         run: |
@@ -60,7 +64,7 @@ jobs:
           helm list -n "$HELM_NAMESPACE"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
