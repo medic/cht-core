@@ -81,7 +81,7 @@ describe('MultipleUserCtrl controller', () => {
               },
               role: 'chw',
               geolocalized: 'false',
-              type: DOC_TYPES.CONTACT,
+              type: 'contact',
               contact_type: 'c62_chw',
               name: 'test user'
             },
