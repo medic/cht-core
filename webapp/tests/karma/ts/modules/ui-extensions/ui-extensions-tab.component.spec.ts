@@ -89,12 +89,36 @@ describe('UiExtensionsTabComponent', () => {
     });
     expect(component.loading).to.be.false;
     expect(component.errorStack).to.be.undefined;
+    expect(component.accentColor).to.be.undefined;
     expect(component.extensionTitle).to.equal(EXTENSION_TITLE);
     expect(uiExtensionsService.getExtension).to.have.been.calledOnceWithExactly(EXTENSION_ID);
     expect(performanceService.track).to.have.been.calledOnceWithExactly();
     expect(trackStop).to.have.been.calledOnceWithExactly({ name: `ui-extension:${EXTENSION_ID}:render` });
     expect(chtDatasourceService.get).to.have.been.calledOnceWithExactly();
     expect(userContactSummaryService.get).to.have.been.calledOnceWithExactly();
+  }));
+
+  it('applies accent_color to the toolbar when provided', fakeAsync(() => {
+    uiExtensionsService.getExtension.resolves({
+      properties: {
+        id: EXTENSION_ID,
+        title: EXTENSION_TITLE,
+        type: 'app_main_tab',
+        config: MOCK_CONFIG,
+        accent_color: '#FF5733',
+      },
+      Element: MOCK_ELEMENT,
+    });
+
+    fixture.detectChanges();
+    flush();
+
+    expect(component.accentColor).to.equal('#FF5733');
+    expect(component.loading).to.be.false;
+
+    fixture.detectChanges();
+    const toolbar = fixture.nativeElement.querySelector('.tool-bar');
+    expect(toolbar.style.backgroundColor).to.equal('rgb(255, 87, 51)');
   }));
 
   it('handles an error being thrown getting the extension', fakeAsync(() => {

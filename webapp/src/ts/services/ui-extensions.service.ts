@@ -12,6 +12,7 @@ interface UiExtensionProperties {
   readonly resource_icon?: string;
   readonly title?: string;
   readonly config?: Record<string, unknown>;
+  readonly accent_color?: string;
 }
 
 interface UiExtension {
