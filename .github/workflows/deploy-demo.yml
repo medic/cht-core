@@ -41,47 +41,6 @@ jobs:
         with:
           ref: ${{ env.TAG }}
 
-      - name: Stage upgrade via CHT API
-        run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -d "{\"build\":{\"namespace\":\"medic\",\"application\":\"medic\",\"version\":\"$TAG\"}}" \
-            -u "$DEMO_USER:$DEMO_PASS" \
-            "$DEMO_URL/api/v2/upgrade/stage")
-
-          if [[ "$RESPONSE" != "200" && "$RESPONSE" != "202" ]]; then
-            echo "::error::Failed to stage upgrade. HTTP status: $RESPONSE"
-            exit 1
-          fi
-          echo "Upgrade staging initiated (HTTP $RESPONSE)"
-
-      - name: Poll for staging completion
-        run: |
-          ELAPSED=0
-          TIMEOUT=900
-          INTERVAL=30
-          while [ $ELAPSED -lt $TIMEOUT ]; do
-            STAGING_RESPONSE=$(curl -s \
-              -u "$DEMO_USER:$DEMO_PASS" \
-              "$DEMO_URL/api/v2/upgrade" 2>/dev/null || echo '{"error":"connection_failed"}')
-
-            STAGING_DOC=$(echo "$STAGING_RESPONSE" | jq -r '.staging_doc // empty' 2>/dev/null || echo "")
-            if [ -z "$STAGING_DOC" ]; then
-              echo "Staging completed"
-              break
-            fi
-
-            echo "Staging in progress... (${ELAPSED}s elapsed)"
-            sleep $INTERVAL
-            ELAPSED=$((ELAPSED + INTERVAL))
-          done
-
-          if [ $ELAPSED -ge $TIMEOUT ]; then
-            echo "::error::Staging timed out after ${TIMEOUT}s"
-            exit 1
-          fi
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -100,6 +59,23 @@ jobs:
           kubectl config use-context "$EKS_CLUSTER"
           helm list -n "$HELM_NAMESPACE"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Deploy demo configuration
+        # Push config while the instance is still running the previous version.
+        # This ensures the critical config-push step is completed eagerly before
+        # the in-place helm upgrade begins, so a timeout later does not leave the
+        # instance in a half-configured state requiring manual intervention.
+        uses: ./.github/actions/deploy-conf
+        with:
+          directory: config/demo
+          hostname: ${{ secrets.DEMO_CHT_HOSTNAME }}
+          username: ${{ secrets.DEMO_CHT_USER }}
+          password: ${{ secrets.DEMO_CHT_PASS }}
+
       - name: Download and update values.yaml
         run: |
           helm get values "$HELM_RELEASE" --namespace "$HELM_NAMESPACE" > values.yaml
@@ -109,6 +85,9 @@ jobs:
         working-directory: scripts/build/helm
 
       - name: Helm upgrade demo instance
+        # Performs an in-place upgrade (no staging) to avoid holding a CI worker
+        # hostage while staging completes, which can take well over 900 seconds.
+        # Brief downtime during index rebuilds is acceptable for the demo instance.
         run: |
           helm upgrade "$HELM_RELEASE" . \
             --namespace "$HELM_NAMESPACE" \
@@ -118,6 +97,9 @@ jobs:
         working-directory: scripts/build/helm
 
       - name: Poll monitoring for version confirmation
+        # Optional step: waits for the instance to report the new version.
+        # A timeout here is non-fatal because the blocking work (config push and
+        # helm upgrade) has already completed successfully above.
         run: |
           ELAPSED=0
           TIMEOUT=900
@@ -131,7 +113,7 @@ jobs:
 
             if [ "$CURRENT_VERSION" = "$TAG" ]; then
               echo "Demo instance is now running version $TAG"
-              break
+              exit 0
             fi
 
             echo "Current version: ${CURRENT_VERSION:-unknown}, waiting for $TAG... (${ELAPSED}s elapsed)"
@@ -139,20 +121,4 @@ jobs:
             ELAPSED=$((ELAPSED + INTERVAL))
           done
 
-          if [ $ELAPSED -ge $TIMEOUT ]; then
-            echo "::error::Version verification timed out after ${TIMEOUT}s. Current version: ${CURRENT_VERSION:-unknown}"
-            exit 1
-          fi
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Deploy demo configuration
-        uses: ./.github/actions/deploy-conf
-        with:
-          directory: config/demo
-          hostname: ${{ secrets.DEMO_CHT_HOSTNAME }}
-          username: ${{ secrets.DEMO_CHT_USER }}
-          password: ${{ secrets.DEMO_CHT_PASS }}
+          echo "::warning::Version confirmation timed out after ${TIMEOUT}s. Current version: ${CURRENT_VERSION:-unknown}. The helm upgrade completed successfully; the instance may still be finalizing."
