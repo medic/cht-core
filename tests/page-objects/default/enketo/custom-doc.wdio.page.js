@@ -1,4 +1,4 @@
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { DOC_IDS } = require('@medic/constants');
 
 const AVERAGE_EXTENSION_LIB = `
