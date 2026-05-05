@@ -190,64 +190,38 @@ describe('Header Component', () => {
   });
 
   describe('UI extension options', () => {
-    it('should initialize uiExtensionOptions as empty array', () => {
+    it('should initialize uiExtensionOptions as empty array', async () => {
       fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
       expect(component.uiExtensionOptions).to.deep.equal([]);
     });
 
     it('should load app_drawer_tab extensions and map them to menu options', async () => {
       uiExtensionsService.getPropertiesByType.resolves([
         { id: 'ext1', type: 'app_drawer_tab', title: 'Hello Extension', resource_icon: 'hello-icon' },
+        { id: 'ext2', type: 'app_drawer_tab', title: 'Goodbye Extension', icon: 'fa-goodbye' },
       ]);
 
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(uiExtensionsService.getPropertiesByType.calledWith('app_drawer_tab')).to.be.true;
-      expect(component.uiExtensionOptions).to.have.length(1);
-      expect(component.uiExtensionOptions[0]).to.deep.include({
-        routerLink: 'ui-extensions/ext1',
-        translationKey: 'Hello Extension',
-        resourceIcon: 'hello-icon',
-      });
-    });
-
-    it('should map icon property for font-awesome icons', async () => {
-      uiExtensionsService.getPropertiesByType.resolves([
-        { id: 'ext2', type: 'app_drawer_tab', title: 'FA Extension', icon: 'fa-star' },
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(component.uiExtensionOptions).to.deep.equal([
+        {
+          routerLink: 'ui-extensions/ext1',
+          translationKey: 'Hello Extension',
+          resourceIcon: 'hello-icon',
+          icon: 'fa-question-circle'
+        },
+        {
+          routerLink: 'ui-extensions/ext2',
+          translationKey: 'Goodbye Extension',
+          resourceIcon: undefined,
+          icon: 'fa-goodbye'
+        },
       ]);
-
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      expect(component.uiExtensionOptions[0]).to.deep.include({
-        routerLink: 'ui-extensions/ext2',
-        translationKey: 'FA Extension',
-        icon: 'fa-star',
-      });
-      expect(component.uiExtensionOptions[0].resourceIcon).to.be.undefined;
-    });
-
-    it('should filter out extensions without a title', async () => {
-      uiExtensionsService.getPropertiesByType.resolves([
-        { id: 'no-title', type: 'app_drawer_tab', resource_icon: 'some-icon' },
-        { id: 'has-title', type: 'app_drawer_tab', title: 'Visible', resource_icon: 'other-icon' },
-      ]);
-
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      expect(component.uiExtensionOptions).to.have.length(1);
-      expect(component.uiExtensionOptions[0].translationKey).to.equal('Visible');
-    });
-
-    it('should handle service returning no app_drawer_tab extensions', async () => {
-      uiExtensionsService.getPropertiesByType.resolves([]);
-
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      expect(component.uiExtensionOptions).to.deep.equal([]);
     });
   });
 

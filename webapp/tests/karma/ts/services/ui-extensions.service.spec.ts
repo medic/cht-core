@@ -13,10 +13,7 @@ describe('UiExtensionsService', () => {
   let http;
 
   beforeEach(() => {
-    sessionService = {
-      hasRole: sinon.stub(),
-      userCtx: sinon.stub().returns({ name: 'user', roles: [] }),
-    };
+    sessionService = { hasRole: sinon.stub() };
     http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
@@ -67,23 +64,6 @@ describe('UiExtensionsService', () => {
       const result = await service.getPropertiesByType('tab');
 
       expect(result).to.deep.equal([]);
-    });
-
-    it('should not fetch or mark initialized when user is not logged in', async () => {
-      sessionService.userCtx.returns(null);
-      const extensions = [{ id: 'ext-1', type: 'tab' }];
-      http.get.returns(of(extensions));
-
-      const result = await service.getPropertiesByType('tab');
-
-      expect(http.get.callCount).to.equal(0);
-      expect(result).to.deep.equal([]);
-
-      // After login, should fetch properly
-      sessionService.userCtx.returns({ name: 'user', roles: [] });
-      const result2 = await service.getPropertiesByType('tab');
-      expect(http.get.callCount).to.equal(1);
-      expect(result2).to.deep.equal([{ id: 'ext-1', type: 'tab' }]);
     });
   });
 

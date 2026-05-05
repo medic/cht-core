@@ -144,7 +144,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
         routerLink: `ui-extensions/${ext.id}`,
         translationKey: ext.title!,
         resourceIcon: ext.resource_icon,
-        ...(ext.icon && { icon: ext.icon }),
+        icon: ext.icon || 'fa-question-circle',
         canDisplay: true,
       }));
   }

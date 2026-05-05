@@ -36,9 +36,6 @@ export class UiExtensionsService {
     if (this.initialized) {
       return;
     }
-    if (!this.sessionService.userCtx()) {
-      return;
-    }
     await this.loadExtensionProperties();
     this.initialized = true;
   }

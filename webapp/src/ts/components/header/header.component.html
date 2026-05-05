@@ -96,14 +96,12 @@
           <ng-container *ngFor="let ext of uiExtensionOptions">
             <li>
               <a role="menuitem" tabindex="-1" [routerLink]="ext.routerLink">
-                <span *ngIf="ext.resourceIcon" [innerHTML]="ext.resourceIcon | resourceIcon"></span>
-                <i *ngIf="!ext.resourceIcon && ext.icon" class="fa fa-fw {{ext.icon}}"></i>
+                <span class="nav-icon" *ngIf="ext.resourceIcon" [innerHTML]="ext.resourceIcon | resourceIcon"></span>
+                <i *ngIf="!ext.resourceIcon" class="fa fa-fw {{ext.icon}}"></i>
                 <span>{{ext.translationKey | translate}}</span>
               </a>
             </li>
           </ng-container>
-
-          <li class="divider"><hr></li>
 
           <li role="presentation">
             <a routerLink="trainings" role="menuitem" tabindex="-1">

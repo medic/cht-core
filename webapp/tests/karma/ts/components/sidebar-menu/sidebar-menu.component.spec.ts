@@ -207,7 +207,7 @@ describe('SidebarMenuComponent', () => {
     beforeEach(async () => {
       uiExtensionsService.getPropertiesByType.resolves([
         { id: 'ext-reports', type: 'app_drawer_tab', title: 'custom.reports', resource_icon: 'reports-icon' },
-        { id: 'ext-map', type: 'app_drawer_tab', title: 'custom.map', resource_icon: 'map-icon' },
+        { id: 'ext-map', type: 'app_drawer_tab', title: 'custom.map', icon: 'fa-user' },
       ]);
 
       await TestBed.resetTestingModule();
@@ -252,12 +252,14 @@ describe('SidebarMenuComponent', () => {
           translationKey: 'custom.reports',
           routerLink: 'ui-extensions/ext-reports',
           resourceIcon: 'reports-icon',
+          icon: 'fa-question-circle',
           canDisplay: true,
         },
         {
           translationKey: 'custom.map',
           routerLink: 'ui-extensions/ext-map',
-          resourceIcon: 'map-icon',
+          resourceIcon: undefined,
+          icon: 'fa-user',
           canDisplay: true,
         },
         {
@@ -304,23 +306,5 @@ describe('SidebarMenuComponent', () => {
         ['app_drawer_tab'], ['app_drawer_tab'], ['app_drawer_tab']
       ]);
     }));
-
-    describe('when app_drawer_tab extension uses font-awesome icon', () => {
-      beforeEach(async () => {
-        uiExtensionsService.getPropertiesByType.resolves([
-          { id: 'ext-fa', type: 'app_drawer_tab', title: 'FA Extension', icon: 'fa-star' },
-        ]);
-
-        await TestBed.resetTestingModule();
-        await createComponent();
-      });
-
-      it('should map extension icon to icon property and not set resourceIcon', () => {
-        const extOption = component.menuOptions.find(opt => opt.routerLink === 'ui-extensions/ext-fa');
-        expect(extOption?.icon).to.equal('fa-star');
-        expect(extOption?.resourceIcon).to.be.undefined;
-      });
-    });
   });
 });
-
