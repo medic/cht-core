@@ -110,8 +110,9 @@ describe('test-shared-libs.sh runner validation', () => {
     const result = runScript();
 
     expect(result.status).to.not.equal(0);
-    // The awk pipeline should have extracted the test name into the summary
-    expect(result.stderr).to.contain('failing test name');
+    // FAILED_LIBS_SUMMARY (which contains extracted test names) is printed to stdout (line 116 of
+    // the script has no >&2). Only the ERROR headline on line 115 goes to stderr.
+    expect(result.stdout).to.contain('failing test name');
   });
 
   it('should exit 0 silently when LIBS_DIR does not exist', () => {
