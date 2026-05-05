@@ -103,7 +103,7 @@ export class FormatDateService {
     for (let i = 0; i < this.config.ageBreaks.length; i++) {
       const ageBreak = this.config.ageBreaks[i];
       const diff = date.diff(end, ageBreak.unit);
-      if (Math.abs(diff) > ageBreak.min) {
+      if (Math.abs(diff) >= ageBreak.min) {
         return { quantity: diff, key: ageBreak.key };
       }
     }

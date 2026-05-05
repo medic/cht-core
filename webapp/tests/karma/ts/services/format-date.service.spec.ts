@@ -148,6 +148,22 @@ describe('FormatDate service', () => {
       expect(relativeTime.args[0]).to.deep.equal([0, true, 'dd', false]);
     });
 
+    it('shows singular year when exactly 1 year old', () => {
+      relativeTime.returns('1 year');
+      const dob = moment().subtract(1, 'years');
+      const actual = service.age(dob);
+      expect(actual).to.equal('1 year');
+      expect(relativeTime.args[0]).to.deep.equal([1, true, 'y', false]);
+    });
+
+    it('shows singular month when exactly 1 month old', () => {
+      relativeTime.returns('1 month');
+      const dob = moment().subtract(1, 'months');
+      const actual = service.age(dob);
+      expect(actual).to.equal('1 month');
+      expect(relativeTime.args[0]).to.deep.equal([1, true, 'M', false]);
+    });
+
     it('calculates age at death if known', () => {
       relativeTime.returns('100 years');
       const dob = moment().subtract(120, 'years');
