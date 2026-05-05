@@ -140,16 +140,12 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     const extensions = await this.uiExtensionsService.getPropertiesByType('app_drawer_tab');
     return extensions
       .filter(ext => ext.title)
-      .map(ext => {
-        const isFontAwesome = ext.icon?.startsWith('fa-');
-        return {
-          routerLink: `ui-extensions/${ext.id}`,
-          translationKey: ext.title!,
-          icon: isFontAwesome ? ext.icon : undefined,
-          resourceIcon: isFontAwesome ? undefined : ext.icon,
-          canDisplay: true,
-        };
-      });
+      .map(ext => ({
+        routerLink: `ui-extensions/${ext.id}`,
+        translationKey: ext.title!,
+        resourceIcon: ext.icon,
+        canDisplay: true,
+      }));
   }
 
   private async setMenuOptions(showPrivacyPolicy: boolean) {

@@ -36,8 +36,10 @@ export class UiExtensionsTabComponent implements AfterViewInit {
     const extensionId = this.route.snapshot.params['id'];
     const trackRender = this.performanceService.track();
     try {
-      const extension = await this.uiExtensionsService.getExtension(extensionId);
-      const { properties: { title, config, accent_color }, Element } = extension;
+      const {
+        properties: { title, config, accent_color },
+        Element
+      } = await this.uiExtensionsService.getExtension(extensionId);
       this.extensionTitle = title ?? '';
       this.accentColor = accent_color;
       if (!customElements.get(extensionId)) {

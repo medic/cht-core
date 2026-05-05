@@ -207,7 +207,7 @@ describe('SidebarMenuComponent', () => {
     beforeEach(async () => {
       uiExtensionsService.getPropertiesByType.resolves([
         { id: 'ext-reports', type: 'app_drawer_tab', title: 'custom.reports', icon: 'reports-icon' },
-        { id: 'ext-map', type: 'app_drawer_tab', title: 'custom.map', icon: 'fa-map-marker' },
+        { id: 'ext-map', type: 'app_drawer_tab', title: 'custom.map', icon: 'map-icon' },
       ]);
 
       await TestBed.resetTestingModule();
@@ -251,15 +251,13 @@ describe('SidebarMenuComponent', () => {
         {
           translationKey: 'custom.reports',
           routerLink: 'ui-extensions/ext-reports',
-          icon: undefined,
           resourceIcon: 'reports-icon',
           canDisplay: true,
         },
         {
           translationKey: 'custom.map',
           routerLink: 'ui-extensions/ext-map',
-          icon: 'fa-map-marker',
-          resourceIcon: undefined,
+          resourceIcon: 'map-icon',
           canDisplay: true,
         },
         {

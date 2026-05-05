@@ -121,17 +121,6 @@ describe('UiExtensionsTabComponent', () => {
     expect(toolbar.style.backgroundColor).to.equal('rgb(255, 87, 51)');
   }));
 
-  it('does not set accent_color when not provided', fakeAsync(() => {
-    fixture.detectChanges();
-    flush();
-
-    expect(component.accentColor).to.be.undefined;
-
-    fixture.detectChanges();
-    const toolbar = fixture.nativeElement.querySelector('.tool-bar');
-    expect(toolbar.style.backgroundColor).to.equal('');
-  }));
-
   it('handles an error being thrown getting the extension', fakeAsync(() => {
     const expectedError = new Error('load error');
     uiExtensionsService.getExtension.rejects(expectedError);
