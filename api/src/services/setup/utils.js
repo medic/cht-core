@@ -49,25 +49,18 @@ const deleteStagedDdocs = async () => {
   }
 };
 
-
 /**
  * Runs view cleanup for every database.
  */
 const cleanup = () => {
-  setImmediate(async () => {
-    for (const database of DATABASES) {
-      try {
-        logger.info(`Running view cleanup for ${database.name}`);
-        await database.db.viewCleanup();
-      } catch (err) {
-        logger.error('Error while running cleanup: %o', err);
-      }
-    }
-    try {
-      await db.nouveauCleanup();
-    } catch (err) {
+  for (const database of DATABASES) {
+    logger.info(`Running view cleanup for ${database.name}`);
+    database.db.viewCleanup().catch(err => {
       logger.error('Error while running cleanup: %o', err);
-    }
+    });
+  }
+  db.nouveauCleanup().catch(err => {
+    logger.error('Error while running cleanup: %o', err);
   });
 };
 /**
@@ -307,7 +300,6 @@ const unstageStagedDdocs = async () => {
 
       const unstagedId = ddocsService.unstageId(ddoc._id);
       const ddocToReplace = ddocs.find(existentDdoc => unstagedId === existentDdoc._id);
-
       if (ddocToReplace) {
         ddoc._rev = ddocToReplace._rev;
       } else {
