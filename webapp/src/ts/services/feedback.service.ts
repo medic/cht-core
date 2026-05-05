@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { DbService } from '@mm-services/db.service';
@@ -195,10 +195,10 @@ export class FeedbackService {
     const language = await this.languageService.get();
 
     const time = new Date().toISOString();
-    const uuid = uuidv4();
+    const id = uuid();
 
     return {
-      _id: `feedback-${time}-${uuid}`,
+      _id: `feedback-${time}-${id}`,
       meta: {
         time,
         user: this.sessionService.userCtx(),

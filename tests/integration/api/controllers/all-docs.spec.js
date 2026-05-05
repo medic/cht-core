@@ -151,12 +151,15 @@ describe('all_docs handler', () => {
     };
     const lineage = { _id: 'PARENT_PLACE' };
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: lineage }, type: 'clinic' },
-      { _id: 'allowed_report', 
-        contact: { _id: 'fixture:offline', parent: lineage }, type: DOC_TYPES.DATA_RECORD, form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: lineage }, type: 'clinic' },
-      { _id: 'denied_report', contact: { _id: 'fixture:online', 
-        parent: lineage }, type: DOC_TYPES.DATA_RECORD, form: 'a' },
+
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline', parent: lineage }, 
+        type: CONTACT_TYPES.CLINIC },
+      { _id: 'allowed_report', contact: { _id: 'fixture:offline', parent: lineage }, 
+        type: DOC_TYPES.DATA_RECORD, form: 'a' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online', parent: lineage }, 
+        type: CONTACT_TYPES.CLINIC },
+      { _id: 'denied_report', contact: { _id: 'fixture:online', parent: lineage }, 
+        type: DOC_TYPES.DATA_RECORD, form: 'a' },
       { _id: 'allowed_task', user: PREFIXES.COUCH_USER + 'offline', type: 'task', owner: 'fixture:user:offline' },
       { _id: 'denied_task', user: PREFIXES.COUCH_USER + 'online', type: 'task', owner: 'fixture:user:offline' },
       { _id: 'allowed_target', user: PREFIXES.COUCH_USER + 'offline', type: 'target', owner: 'fixture:user:offline' },
@@ -177,8 +180,8 @@ describe('all_docs handler', () => {
 
   it('filters offline users when requested with key param', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' }
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC }
     ];
 
     return utils
@@ -195,9 +198,9 @@ describe('all_docs handler', () => {
 
   it('filters offline users when requested with keys param', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
       { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
       { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
     ];
 
@@ -225,16 +228,16 @@ describe('all_docs handler', () => {
 
   it('filters offline users when requested with start_key / end_key', () => {
     const docs = [
-      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '6', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '7', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '8', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '9', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '10', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: '1', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '2', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '3', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '4', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '5', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '6', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '7', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '8', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '9', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '10', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
     ];
 
     return utils
@@ -255,11 +258,11 @@ describe('all_docs handler', () => {
 
   it('should filter offline users requests when requesting keys with include_docs', () => {
     const docs = [
-      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
+      { _id: '1', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '2', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '3', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '4', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '5', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC }
     ];
     const keys = docs.map(doc => doc._id);
 
@@ -282,11 +285,11 @@ describe('all_docs handler', () => {
 
   it('should filter offline users requests with skip and limit', () => {
     const docs = [
-      { _id: '1', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '2', parent: { _id: 'fixture:online'}, type: 'clinic' },
-      { _id: '3', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' },
-      { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
+      { _id: '1', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '2', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '3', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '4', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
+      { _id: '5', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC }
     ];
 
     return utils
@@ -307,9 +310,9 @@ describe('all_docs handler', () => {
 
   it('returns correct info for restricted deleted documents', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
       { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
       { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
     ];
 
@@ -416,9 +419,9 @@ describe('all_docs handler', () => {
 
   it('filters offline users results when db name is not medic', () => {
     const docs = [
-      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: 'clinic' },
+      { _id: 'allowed_contact', parent: { _id: 'fixture:offline'}, type: CONTACT_TYPES.CLINIC },
       { _id: 'allowed_report', contact: { _id: 'fixture:offline'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
-      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: 'clinic' },
+      { _id: 'denied_contact', parent: { _id: 'fixture:online'}, type: CONTACT_TYPES.CLINIC },
       { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' },
     ];
 
@@ -478,7 +481,7 @@ describe('all_docs handler', () => {
         {
           // depth = 1
           _id: 'the_clinic',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         },
         {

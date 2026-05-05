@@ -3,8 +3,6 @@ const utils = require('./utils');
 const map = utils.loadView('medic-db', 'medic-client', 'docs_by_id_lineage');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
-
-
 describe('docs_by_id_lineage view', () => {
   beforeEach(() => {
     map.reset();
@@ -111,10 +109,10 @@ describe('docs_by_id_lineage view', () => {
       expect(result[0]).to.deep.equal({ key: [ 'person', 0 ], value: { _id: 'person' }});
 
       map.reset();
-      const clinic = { _id: 'clinic', type: 'clinic' };
+      const clinic = { _id: 'clinic', type: CONTACT_TYPES.CLINIC };
       const resultClinic = map(clinic, true);
       expect(resultClinic.length).to.equal(1);
-      expect(resultClinic[0]).to.deep.equal({ key: [ 'clinic', 0 ], value: { _id: 'clinic' }});
+      expect(resultClinic[0]).to.deep.equal({ key: [ CONTACT_TYPES.CLINIC, 0 ], value: { _id: 'clinic' }});
 
       map.reset();
       const healthCenter = { _id: 'healthCenter', type: 'health_center' };

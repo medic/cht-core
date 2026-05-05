@@ -9,7 +9,7 @@ const db = require('../../src/db');
 const request = require('@medic/couch-request');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('due tasks', () => {
   let schedule;
@@ -276,7 +276,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -374,7 +374,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -467,7 +467,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -546,7 +546,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -657,7 +657,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -775,7 +775,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -882,7 +882,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -996,7 +996,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -1215,7 +1215,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -1455,7 +1455,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -1582,7 +1582,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
@@ -1716,7 +1716,7 @@ describe('due tasks', () => {
         type: 'person',
         parent: {
           _id: 'b',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: {
             _id: 'c',
             type: 'person',
