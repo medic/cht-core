@@ -230,6 +230,7 @@ describe('Auth Service', () => {
             'analytics',
           ],
         },
+        roles: { national_admin: {} },
       });
       chtDatasourceService.init();
 
@@ -259,6 +260,7 @@ describe('Auth Service', () => {
             'analytics',
           ],
         },
+        roles: { analytics: {} },
       });
       chtDatasourceService.init();
 
@@ -278,6 +280,7 @@ describe('Auth Service', () => {
             'analytics',
           ],
         },
+        roles: { analytics: {} },
       });
       chtDatasourceService.init();
 
@@ -372,6 +375,7 @@ describe('Auth Service', () => {
           can_add_places: ['national_admin', 'district_admin'],
           can_roll_over: ['national_admin', 'district_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
       const permissions = [
@@ -392,6 +396,7 @@ describe('Auth Service', () => {
           can_backup_facilities: ['national_admin', 'district_admin'],
           can_backup_people: ['national_admin', 'district_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
       const permissions = [
@@ -440,6 +445,7 @@ describe('Auth Service', () => {
           random2: ['national_admin'],
           random3: ['national_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
 
@@ -463,6 +469,7 @@ describe('Auth Service', () => {
           random1: ['national_admin'],
           random3: ['national_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
 
