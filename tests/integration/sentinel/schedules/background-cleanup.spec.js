@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const { expect } = require('chai');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { CONTACT_TYPES } = require('@medic/constants');
 
 const docToKeep = { _id: uuid() };
