@@ -3,6 +3,6 @@
   <main_file type="file">main_upload.png</main_file>
   <doc1 db-doc="true">
     <type>thing_1</type>
-    <sub_file type="binary">sub_upload.png</sub_file>
+    <sub_file type="file">sub_upload.png</sub_file>
   </doc1>
 </my-form>

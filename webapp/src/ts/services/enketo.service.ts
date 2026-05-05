@@ -362,10 +362,13 @@ export class EnketoService {
     return form;
   }
 
-  private findBinaryNodeByFilename($record, filename: string) {
+  private findFileNodeByFilename($record, filename: string) {
+    // After upload, Enketo's Nodeset.setVal rewrites file-widget nodes from
+    // type="binary" to type="file" (#10903 §6.5). Inline-binary blobs from
+    // draw/signature widgets keep type="binary" and are handled separately.
     let match = null;
     $record
-      .find('[type=binary]')
+      .find('[type=file]')
       .each((_idx, element) => {
         if ($(element).text() === filename) {
           match = element;
@@ -513,25 +516,29 @@ export class EnketoService {
     };
 
     // Route FileManager files to the correct owner doc.
-    // For each file, find the [type=binary] node whose text matches
+    // For each file, find the [type=file] node whose text matches
     // the filename, then resolve the owner from its position in the
     // XML tree.
     FileManager
       .getCurrentFiles()
       .forEach(file => {
         const ownerDoc = resolveOwnerDoc(
-          this.findBinaryNodeByFilename($record, file.name) ?? $record[0]
+          this.findFileNodeByFilename($record, file.name) ?? $record[0]
         );
         this.attachmentService.add(ownerDoc, `user-file-${file.name}`, file, file.type, false);
       });
 
+    // The legacy filename scheme is xpath-based (rooted at doc.form) because
+    // inline-binary widgets (draw/signature) do not store the filename as a
+    // question value, so xpath is the only stable mapping from answer to
+    // attachment. The xpath naming is unchanged when routing to a sub-doc;
+    // only the target doc differs.
     const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
-      const formId = ownerDoc === doc ? doc.form : ownerDoc.type;
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
-        (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
+        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
       this.attachmentService.add(ownerDoc, filename, file, type, alreadyEncoded);
     };
 
