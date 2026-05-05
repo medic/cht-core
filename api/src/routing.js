@@ -63,7 +63,6 @@ const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const wellKnownController = require('./controllers/well-known');
-const docByTypeShim = require('./controllers/doc-by-type-shim');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
 const startupLog = require('./services/setup/startup-log');
@@ -330,16 +329,6 @@ const ONLINE_ONLY_ENDPOINTS = [
 // block offline users from accessing some unaudited CouchDB endpoints
 ONLINE_ONLY_ENDPOINTS.forEach(url => {
   return app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall);
-});
-
-// Emulate the deleted `medic-client/doc_by_type` view for external tools that
-// still query it (e.g. cht-conf). Must come before the `_view` proxy below.
-[
-  `${routePrefix}_design/medic-client/_view/doc_by_type`,
-  `${routePrefix}_design/:staged:medic-client/_view/doc_by_type`,
-].forEach(url => {
-  app.get(url, docByTypeShim.request);
-  app.post(url, jsonParser, docByTypeShim.request);
 });
 
 // allow anyone to access their session
