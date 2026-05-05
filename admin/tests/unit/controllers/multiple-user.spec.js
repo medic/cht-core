@@ -1,5 +1,3 @@
-const { DOC_TYPES } = require('@medic/constants');
-
 describe('MultipleUserCtrl controller', () => {
   'use strict';
 
