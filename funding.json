@@ -1,5 +1,5 @@
 {
-    "version": "v2.0.0",
+    "version": "v1.1.0",
     "entity": {
         "type": "organisation",
         "role": "steward",
