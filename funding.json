@@ -44,19 +44,77 @@
                 "type": "other",
                 "address": "https://medic.org/donate/",
                 "description": "Donation"
+            },
+            {
+                "guid": "gh-sponsors",
+                "type": "payment-provider",
+                "address": "https://github.com/sponsors/medic"
             }
         ],
         "plans": [
             {
-                "guid": "support",
+                "guid": "sustain-monthly",
                 "status": "active",
-                "name": "Community Health Toolkit Support",
-                "description": "Pay anything you wish to show your support for the CHT. Thank you for contributing to achieving health for all in the digital age!",
-                "amount": 0,
+                "name": "Sustain the CHT Core (Monthly)",
+                "description": "Support ongoing maintenance, security updates, and developer infrastructure for the Community Health Toolkit — the open-source platform powering 182,000+ health workers across 24 countries. Funds core engineering time to keep the CHT reliable, performant, and free for all implementers.",
+                "amount": 10000,
+                "currency": "USD",
+                "frequency": "monthly",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+            {
+                "guid": "sustain-one-time",
+                "status": "active",
+                "name": "Sustain the CHT Core (One-Time)",
+                "description": "Same as above, one-time contribution.",
+                "amount": 150000,
                 "currency": "USD",
                 "frequency": "one-time",
                 "channels": [
-                    "donate"
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+            {
+                "guid": "feature",
+                "status": "active",
+                "name": "Fund a CHT Feature or Integration",
+                "description": "Sponsor the development of a new requested CHT module, functionality, or integration — past work includes offline-first data sync, AI-assisted task prioritization for CHWs, and local languages support, as well as integrations with other health systems such as DHIS2 and OpenMRS. Work is scoped collaboratively and credited publicly. Ideal for organizations with aligned technical or programmatic interests.",
+                "amount": 25000,
+                "currency": "USD",
+                "frequency": "one-time",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+            {
+                "guid": "security",
+                "status": "active",
+                "name": "CHT Security Audit",
+                "description": "The CHT handles sensitive health data for millions of patients across low-resource settings. Fund a comprehensive third-party security audit of the CHT codebase — covering data privacy, authentication, and vulnerability assessment — ensuring the platform meets global health data security standards. Results are published openly to benefit the broader digital health ecosystem.",
+                "amount": 20000,
+                "currency": "USD",
+                "frequency": "one-time",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+                        {
+                "guid": "infra",
+                "status": "active",
+                "name": "CHT Hosting & Developer Infrastructure",
+                "description": "Cover the cloud hosting, CI/CD pipelines, and testing infrastructure that keeps CHT development running. This is the unglamorous but essential cost that keeps open-source projects sustainable — and often the first thing that breaks when nonprofit budgets tighten.",
+                "amount": 20000,
+                "currency": "USD",
+                "frequency": "one-time",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
                 ]
             }
         ],
