@@ -59,7 +59,7 @@ describe('test-shared-libs.sh runner validation', () => {
     const result = runScript();
 
     expect(result.status).to.not.equal(0);
-    expect(result.stdout).to.contain("shared-lib 'fail-1' FAILED");
+    expect(result.stdout).to.contain(`shared-lib 'fail-1' FAILED`);
     expect(result.stderr).to.contain('ERROR: The following 1 shared lib(s) failed');
   });
 
@@ -107,7 +107,7 @@ describe('test-shared-libs.sh runner validation', () => {
     expect(result.stderr).to.contain('failing test name');
   });
 
-  it('should exit 0 silently when LIBS_DIR does not exist', async () => {
+  it('should exit 0 silently when LIBS_DIR does not exist', () => {
     // Documents the behaviour: a non-existent LIBS_DIR causes the glob to expand
     // literally and [[ -d ]] skips it, so the script exits 0 with no work done.
     // This test ensures a future change doesn't accidentally turn it into a hard error.
