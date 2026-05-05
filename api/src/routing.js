@@ -208,7 +208,8 @@ app.use(
 app.use(rateLimiterMiddleware);
 app.use(jsonQueryParser);
 app.use((req, res, next) => {
-  req.url = req.url.replace(/\/+/g, '/');
+  const [pathname, ...rest] = req.url.split('?');
+  req.url = pathname.replace(/\/+/g, '/') + (rest.length ? '?' + rest.join('?') : '');
   next();
 });
 
