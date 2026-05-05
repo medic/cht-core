@@ -477,16 +477,16 @@ const shouldDocumentBeKept = (doc, filters) => {
          filters.patterns.some(pattern => doc._id.match(pattern));
 };
 
-const waitForSettings = async (checkFn, retries = 15) => {
+const waitForSettings = async (previousRev, retries = 15) => {
   const settings = await request({ path: '/api/v1/settings' });
-  if (checkFn(settings)) {
+  if (settings._rev !== previousRev) {
     return;
   }
   if (retries <= 0) {
     throw new Error('Timed out waiting for settings update');
   }
   await delayPromise(500);
-  return waitForSettings(checkFn, retries - 1);
+  return waitForSettings(previousRev, retries - 1);
 };
 
 const deleteSentinelDocs = async (docsToKeep) => {
@@ -563,11 +563,8 @@ const updateCustomSettings = async (updates) => {
   });
 };
 
-const waitForSettingsUpdateLogs = (type) => {
-  if (type === 'sentinel') {
-    return waitForSentinelLogs(true, /Reminder messages allowed between/);
-  }
-  return waitForApiLogs(/Settings updated/);
+const waitForSentinelSettingsUpdateLogs = () => {
+  return waitForSentinelLogs(true, /Reminder messages allowed between/);
 };
 
 /**
@@ -611,11 +608,27 @@ const updateSettings = async (updates, options = {}) => {
   if (revert) {
     await revertSettings(true);
   }
-  const watcher = ignoreReload && Object.keys(updates).length && await waitForSettingsUpdateLogs(ignoreReload);
+
+  let previousRev;
+  if (ignoreReload && ignoreReload !== 'sentinel') {
+    const settings = await request({ path: '/api/v1/settings' });
+    previousRev = settings._rev;
+  }
+
+  const watcher = ignoreReload === 'sentinel' && 
+                  Object.keys(updates).length && 
+                  await waitForSentinelSettingsUpdateLogs();
+
   await updateCustomSettings(updates);
+
   if (!ignoreReload && !sync) {
     return await commonElements.closeReloadModal(true);
   }
+
+  if (previousRev && Object.keys(updates).length) {
+    await waitForSettings(previousRev);
+  }
+
   if (watcher) {
     await watcher.promise;
   }
@@ -650,7 +663,12 @@ const revertCustomSettings = async () => {
  * @return {Promise}       completion promise
  */
 const revertSettings = async ignoreRefresh => {
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+  let previousRev;
+  if (ignoreRefresh && ignoreRefresh !== 'sentinel') {
+    const settings = await request({ path: '/api/v1/settings' });
+    previousRev = settings._rev;
+  }
+  const watcher = ignoreRefresh === 'sentinel' && await waitForSentinelSettingsUpdateLogs();
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
@@ -662,7 +680,14 @@ const revertSettings = async ignoreRefresh => {
     return;
   }
 
-  await watcher.promise;
+  if (previousRev) {
+    await waitForSettings(previousRev);
+  }
+
+  if (watcher) {
+    await watcher.promise;
+  }
+  
   return needsRefresh;
 };
 
@@ -760,7 +785,14 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
-  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+
+  let previousRev;
+  if (ignoreRefresh && ignoreRefresh !== 'sentinel') {
+    const settings = await request({ path: '/api/v1/settings' });
+    previousRev = settings._rev;
+  }
+  const watcher = ignoreRefresh === 'sentinel' && await waitForSentinelSettingsUpdateLogs();
+
   const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
@@ -768,6 +800,9 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
     watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
+    if (previousRev) {
+      await waitForSettings(previousRev);
+    }
     watcher && await watcher.promise;
   } else {
     watcher?.cancel();
