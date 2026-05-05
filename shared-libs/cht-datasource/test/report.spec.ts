@@ -9,7 +9,7 @@ import * as Remote from '../src/remote';
 import * as Core from '../src/libs/core';
 import { fakeGenerator } from './utils';
 import * as Input from '../src/input';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('report', () => {
   const dataContext = { } as DataContext;
@@ -83,7 +83,7 @@ describe('report', () => {
           type: 'person',
           parent: {
             _id: 'parent_id',
-            type: 'clinic'
+            type: CONTACT_TYPES.CLINIC
           }
         }
       } as Report.v1.ReportWithLineage;

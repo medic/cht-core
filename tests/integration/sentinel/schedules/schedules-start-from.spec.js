@@ -10,12 +10,12 @@ const contacts = [
     _id: 'district_hospital',
     name: 'District hospital',
     type: 'contact',
-    contact_type: 'district_hospital',
+    contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'the_district_hospital',
     reported_date: new Date().getTime()
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: 'contact',
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
@@ -29,12 +29,12 @@ const contacts = [
     type: 'contact',
     contact_type: 'clinic',
     place_id: 'the_clinic',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'person',
       parent: {
         _id: 'clinic',
-        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       }
     },
     reported_date: new Date().getTime()
@@ -45,7 +45,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'patient',
-    parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '+444999',
     reported_date: new Date().getTime()
   },
@@ -65,7 +65,7 @@ const contacts = [
     type: 'contact',
     contact_type: 'person',
     patient_id: 'the_middle_man',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: '+11111111',
     reported_date: new Date().getTime()
   }
@@ -215,7 +215,7 @@ describe('schedules alternative start_from', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'person',
-        parent: { _id: 'clinic', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } }
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
       }
     };
 
@@ -231,7 +231,7 @@ describe('schedules alternative start_from', () => {
       reported_date: moment().valueOf(),
       contact: {
         _id: 'middle_man',
-        parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } }
+        parent: { _id: 'health_center', parent: { _id: 'district_hospital' } }
       },
     };
 
