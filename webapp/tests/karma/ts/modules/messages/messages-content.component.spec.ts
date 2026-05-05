@@ -124,7 +124,7 @@ describe('MessagesContentComponent', () => {
   describe('Messages without contact', () => {
     it('should pull the contact phone number from the first message and show empty user name', async () => {
       const id = '12';
-      const type = DOC_TYPES.CONTACT;
+      const type = 'contact';
       const phone = '+12';
       const res = {
         doc: {
@@ -158,7 +158,7 @@ describe('MessagesContentComponent', () => {
 
     it('should not fail when no contact and no conversation', () => {
       const id = '12';
-      const type = DOC_TYPES.CONTACT;
+      const type = 'contact';
       activatedRouteParams.next(`${type}:${id}`);
       lineageModelGeneratorService.contact.rejects({ code: 404 });
       messageContactService.getConversation.resolves([]);

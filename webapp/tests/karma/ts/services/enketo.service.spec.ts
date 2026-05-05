@@ -403,7 +403,7 @@ describe('Enketo service', () => {
       const callbackMock = () => { };
       const instanceData = {
         health_center: {
-          type: DOC_TYPES.CONTACT,
+          type: 'contact',
           contact_type: 'health_center',
           parent: 'parent',
         },

@@ -777,7 +777,7 @@ describe('Authorization service', () => {
         })
         .then(result => {
           result.should.have.deep.members([
-            { id: 'r2', fields: { key: ['contact'], 
+            { id: 'r2', fields: { key: ['contact'],
               subject: 'contact', type: DOC_TYPES.DATA_RECORD } }, // depth 1
             { id: 'r3', fields: { key: ['parent'], subject: 'parent', type: 'task' } }, // not a report, but depth 0
             {
