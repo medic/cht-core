@@ -1,6 +1,6 @@
 const utils = require('@utils');
-const uuid = require('uuid').v4;
-const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
+const uuid = require('uuid').v7;
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 const getRows = (result) => {
   const rows = result.split('\n');

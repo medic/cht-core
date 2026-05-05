@@ -3,7 +3,7 @@ const chai = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const password = 'passwordSUP3RS3CR37!';

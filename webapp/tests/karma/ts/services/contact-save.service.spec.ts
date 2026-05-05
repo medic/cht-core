@@ -353,7 +353,7 @@ describe('ContactSave service', () => {
 
       expect(attachmentService.add.callCount).to.equal(1);
       const attachmentName = attachmentService.add.getCall(0).args[1];
-      const uuidRegex = /^user-file-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.png$/i;
+      const uuidRegex = /^user-file-[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.png$/i;
       expect(attachmentName, 'Should use a UUID when all non-extension characters are stripped').to.match(uuidRegex);
 
       const savedDoc = result.preparedDocs[0];
