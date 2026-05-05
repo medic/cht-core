@@ -24,7 +24,6 @@ import { SenderComponent } from '@mm-components/sender/sender.component';
 import { PerformanceService } from '@mm-services/performance.service';
 import { AuthDirective } from '@mm-directives/auth.directive';
 import { AuthService } from '@mm-services/auth.service';
-import { DOC_TYPES } from '@medic/constants';
 
 describe('MessagesContentComponent', () => {
   let component: MessagesContentComponent;
