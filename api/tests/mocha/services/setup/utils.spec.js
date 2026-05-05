@@ -166,13 +166,8 @@ describe('Setup utils', () => {
       mockDb(db.users);
     });
 
-    it('should start view cleanup for every database', async () => {
+    it('should start view cleanup for every database', () => {
       utils.cleanup();
-      clock.runAll();
-      // Allow the async background loop to proceed
-      for (let i = 0; i < 10; i++) {
-        await Promise.resolve();
-      }
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -188,11 +183,9 @@ describe('Setup utils', () => {
       db.sentinel.viewCleanup.rejects(error);
 
       utils.cleanup();
-      clock.runAll();
-      // Allow the async background loop to proceed
-      for (let i = 0; i < 10; i++) {
-        await Promise.resolve();
-      }
+
+      await Promise.resolve();
+      await Promise.resolve();
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.nouveauCleanup.callCount).to.equal(1);
@@ -211,11 +204,9 @@ describe('Setup utils', () => {
       db.nouveauCleanup.rejects(error);
 
       utils.cleanup();
-      clock.runAll();
-      // Allow the async background loop to proceed
-      for (let i = 0; i < 10; i++) {
-        await Promise.resolve();
-      }
+
+      await Promise.resolve();
+      await Promise.resolve();
 
       expect(db.nouveauCleanup.callCount).to.equal(1);
 
