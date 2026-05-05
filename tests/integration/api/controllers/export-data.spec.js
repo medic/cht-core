@@ -1,5 +1,5 @@
 const utils = require('@utils');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 const getRows = (result) => {
