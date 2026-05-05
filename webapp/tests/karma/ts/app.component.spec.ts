@@ -52,6 +52,7 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
+import { PREFIXES } from '@medic/constants';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 
 describe('AppComponent', () => {
@@ -628,8 +629,8 @@ describe('AppComponent', () => {
 
       expect(changesListener['user-context'].filter({ id: 'something' })).to.equal(false);
       expect(changesListener['user-context'].filter({ id: 'someperson' })).to.equal(false);
-      expect(changesListener['user-context'].filter({ id: 'org.couchdb.user:someone' })).to.equal(false);
-      expect(changesListener['user-context'].filter({ id: 'org.couchdb.user:adm' })).to.equal(true);
+      expect(changesListener['user-context'].filter({ id: PREFIXES.COUCH_USER + 'someone' })).to.equal(false);
+      expect(changesListener['user-context'].filter({ id: PREFIXES.COUCH_USER + 'adm' })).to.equal(true);
 
       sessionService.userCtx.returns(false);
 

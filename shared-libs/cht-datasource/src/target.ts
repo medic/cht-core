@@ -16,6 +16,7 @@ import * as Remote from './remote';
 import { InvalidArgumentError } from './libs/error';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
 import { assertCursor, assertLimit } from './libs/parameter-validators';
+import { PREFIXES } from '@medic/constants';
 
 const getTargetId = (
   identifier: (ReportingPeriodQualifier & ContactIdQualifier & UsernameQualifier) | IdQualifier
@@ -32,7 +33,7 @@ const getTargetId = (
   }
 
   return byId(
-    `target~${identifier.reportingPeriod}~${identifier.contactId}~org.couchdb.user:${identifier.username}`
+    `target~${identifier.reportingPeriod}~${identifier.contactId}~${PREFIXES.COUCH_USER}${identifier.username}`
   );
 };
 

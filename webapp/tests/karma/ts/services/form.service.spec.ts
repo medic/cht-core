@@ -41,6 +41,7 @@ import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { Contact, Qualifier, Report } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -897,7 +898,7 @@ describe('Form service', () => {
           fields: { name: 'Silly' },
           content: '<doc><name>Silly</name></doc>',
           content_type: 'xml',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           reported_date: 500,
           geolocation: originalGeoData,
           geolocation_log: [originalGeoLogEntry]
@@ -985,7 +986,7 @@ describe('Form service', () => {
         fields: { name: 'Silly' },
         content: '<doc><name>Silly</name></doc>',
         content_type: 'xml',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
       });
       dbBulkDocs.resolves([{ ok: true, id: '6', rev: '2-abc' }]);
@@ -1292,7 +1293,7 @@ describe('Form service', () => {
                 from: '555',
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
-                type: 'data_record',
+                type: DOC_TYPES.DATA_RECORD,
               },
               {
                 geolocation: { geo: 'data' },
@@ -1344,7 +1345,7 @@ describe('Form service', () => {
                 from: '555',
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
-                type: 'data_record',
+                type: DOC_TYPES.DATA_RECORD,
                 transitioned: true,
               },
               {
@@ -1389,7 +1390,7 @@ describe('Form service', () => {
         contactRecordToJs: sinon.stub(),
       };
 
-      getDuplicates.returnsArg(2);
+      getDuplicates.resolvesArg(2);
 
       TestBed.configureTestingModule({
         providers: [

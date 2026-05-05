@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
-const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, SENTINEL_METADATA, PREFIXES } = require('@medic/constants');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -61,7 +61,7 @@ const SERVICES = {
 };
 const CONTAINER_NAMES = {};
 const originalTranslations = {};
-const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
+const COUCH_USER_ID_PREFIX = PREFIXES.COUCH_USER;
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const COMPOSE_OVERRIDE_FILE = path.resolve(__dirname, '../cht-core-test.override.yml');
 const PERMANENT_TYPES = [DOC_TYPES.TRANSLATIONS, 'translations-backup', 'user-settings', 'info'];
@@ -143,6 +143,10 @@ const loginUser = async (username = constants.USERNAME, password = constants.PAS
     body: { user: username, password: password },
     method: 'POST',
   });
+};
+
+const getUserDoc = (userName = constants.USERNAME) => {
+  return getDoc(COUCH_USER_ID_PREFIX + userName);
 };
 
 const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
@@ -436,9 +440,9 @@ const PROTECTED_DOCS = [
   constants.USER_CONTACT_ID,
   `${COUCH_USER_ID_PREFIX}${constants.USERNAME}`,
   constants.DEFAULT_USER_ADMIN_TRAINING_DOC._id,
-  'migration-log',
+  DOC_IDS.MIGRATION_LOG,
   'resources',
-  'branding',
+  DOC_IDS.BRANDING,
   DOC_IDS.PARTNERS,
   DOC_IDS.SETTINGS,
   /^_design/
@@ -783,7 +787,6 @@ const getLoggedInUser = async () => {
     return userCtx.name;
   } catch (err) {
     console.warn('Error getting userCtx', err.message);
-    return;
   }
 };
 
@@ -893,6 +896,19 @@ const getUserSettings = ({ contactId, name }) => {
       const contactIdMatches = !contactId || doc.contact_id === contactId;
       return nameMatches && contactIdMatches;
     }));
+};
+
+const waitForApiCrash = async () => {
+  let retryCount = 180;
+  do {
+    try {
+      await request({ path: '/api/info' });
+      await delayPromise(500);
+    } catch {
+      return;
+    }
+  } while (retryCount-- > 0);
+  throw new Error('API expected to crash, but still running after 1.5 minutes');
 };
 
 const listenForApi = async () => {
@@ -1085,6 +1101,25 @@ const waitForDocRev = (ids) => {
   });
 };
 
+const waitForAuditCount = async (docId, expectedCount, retries = 15) => {
+  const results = await auditDb.allDocs({
+    start_key: docId,
+    end_key: `${docId}\ufff0`,
+    include_docs: true
+  });
+  const totalHistory = results.rows.reduce((acc, row) => acc + (row.doc.history ? row.doc.history.length : 0), 0);
+  if (totalHistory >= expectedCount) {
+    return;
+  }
+  if (retries <= 0) {
+    throw new Error(`Timed out waiting for audit count to reach ${expectedCount} for doc ${docId}`);
+  }
+  await delayPromise(200);
+  return waitForAuditCount(docId, expectedCount, retries - 1);
+};
+
+
+
 const getDefaultSettings = () => {
   const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
@@ -1116,7 +1151,7 @@ const addTranslations = async (languageCode, translations = {}) => {
       throw err;
     });
   };
-  
+
   const saveTranslationsDoc = async () => {
     const translationsDoc = await getTranslationsDoc(languageCode);
     if (builtinTranslations.includes(languageCode)) {
@@ -1361,6 +1396,8 @@ const prepK3DServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
 
+  await disableCompaction();
+
   await loginUser();
   await setupUserDoc();
 };
@@ -1379,6 +1416,8 @@ const prepServices = async (defaultSettings) => {
   }
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
   await runAndLogApiStartupMessage('Getting default forms', getDefaultForms);
+
+  await disableCompaction();
 
   await loginUser();
   await setupUserDoc();
@@ -1405,6 +1444,20 @@ const getLogs = (container) => {
       logWriteStream.end();
     });
   });
+};
+
+// compaction will delete bodies from old revs
+// some tests specifically test loading older revs for offline users, which intermittenly fail when compaction runs.
+const disableCompaction = async () => {
+  const nodes = await request({ path: '/_membership' });
+  for (const node of nodes.cluster_nodes) {
+    await request({
+      path: `/_node/${node}/_config/smoosh.ratio_dbs/min_changes`,
+      method: 'PUT',
+      body: '"100000000000"',
+      json: false,
+    });
+  }
 };
 
 const saveLogs = async () => {
@@ -1725,6 +1778,7 @@ module.exports = {
   hostURL,
   parseCookieResponse,
   setupUserDoc,
+  getUserDoc,
   request,
   requestOnTestDb,
   requestOnTestMetaDb,
@@ -1762,7 +1816,9 @@ module.exports = {
   delayPromise,
   setTransitionSeqToNow,
   waitForDocRev,
+  waitForAuditCount,
   getDefaultSettings,
+
   addTranslations,
   enableLanguage,
   enableLanguages,
@@ -1795,4 +1851,5 @@ module.exports = {
   deletePurgeDbs,
   saveLogs,
   waitForIndexes,
+  waitForApiCrash,
 };

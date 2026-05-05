@@ -7,6 +7,7 @@ const contactTypesUtils = require('@medic/contact-types-utils');
 const { Contact, Person, Qualifier } = require('@medic/cht-datasource');
 const NAME = 'update_clinics';
 const FACILITY_NOT_FOUND = 'sys.facility_not_found';
+const { DOC_TYPES } = require('@medic/constants');
 
 const config = require('../config');
 
@@ -91,7 +92,7 @@ module.exports = {
   filter: ({ doc, info }) => {
     return Boolean(
       doc &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       !doc.contact &&
       !transitionUtils.hasRun(info, NAME)
     );

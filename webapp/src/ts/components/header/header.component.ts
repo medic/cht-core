@@ -6,8 +6,6 @@ import { Selectors } from '@mm-selectors/index';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
-import { SettingsService } from '@mm-services/settings.service';
-
 
 import { RouterLink } from '@angular/router';
 import { AuthDirective } from '@mm-directives/auth.directive';
@@ -60,7 +58,6 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly dbSyncService: DBSyncService,
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
-    private settingsService: SettingsService,
     private headerTabsService: HeaderTabsService,
     private readonly uiExtensionsService: UiExtensionsService,
   ) {
@@ -97,9 +94,8 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   }
 
   private getHeaderTabs() {
-    this.settingsService
-      .get()
-      .then(settings => this.headerTabsService.getAuthorizedTabs(settings))
+    this.headerTabsService
+      .getAuthorizedTabs()
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });

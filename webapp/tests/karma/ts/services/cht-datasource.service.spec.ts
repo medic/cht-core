@@ -136,7 +136,6 @@ describe('CHTScriptApiService service', () => {
       const baz = result.v1.getExtensionLib('baz.js');
       expect(baz).to.be.undefined;
     });
-
   });
 
   describe('bind()', () => {

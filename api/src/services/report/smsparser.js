@@ -171,8 +171,7 @@ const fieldParsers = {
   string: (raw, field, key) => {
     if (field.list) {
       const cleaned = stripInvisibleCharacters(raw);
-      for (const i of field.list) {
-        const item = field.list[i];
+      for (const item of field.list) {
         if (item[0] === cleaned) {
           return item[1];
         }
@@ -219,7 +218,7 @@ const fieldParsers = {
     }
     logger.warn(`The provided phone number ${raw} is invalid`);
 
-    // Returning raw here becuase what to do with invalid phone
+    // Returning raw here because what to do with invalid phone
     // is defined in transitions so error will be thrown there if required.
     // Warning is logged just in case.
     return raw;
@@ -344,12 +343,12 @@ exports.parse = (def, doc) => {
  * @returns {Array} - An array of values from the raw sms message
  */
 exports.parseArray = (def, doc) => {
-  const parser = getParser(def, doc);
-  const obj = parser(def, doc);
-
   if (!def || !def.fields) {
     return [];
   }
+
+  const parser = getParser(def, doc);
+  const obj = parser(def, doc);
 
   // collect field keys into array
   const arr = Object.keys(def.fields).map(k => obj[k]);

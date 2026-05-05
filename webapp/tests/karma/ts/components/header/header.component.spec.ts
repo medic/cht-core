@@ -10,7 +10,6 @@ import { HeaderComponent } from '@mm-components/header/header.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
-import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
@@ -24,7 +23,6 @@ describe('Header Component', () => {
   let dbSyncService;
   let modalService;
   let storageInfoService;
-  let settingsService;
   let headerTabsService;
   let uiExtensionsService;
   let customResourceService;
@@ -37,7 +35,6 @@ describe('Header Component', () => {
       init: sinon.stub(),
       stop: sinon.stub()
     };
-    settingsService = { get: sinon.stub().resolves({ header_tabs: {} }) };
     headerTabsService = {
       get: sinon.stub().returns([]),
       getAuthorizedTabs: sinon.stub().resolves([
@@ -77,7 +74,6 @@ describe('Header Component', () => {
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: ModalService, useValue: modalService },
           { provide: StorageInfoService, useValue: storageInfoService },
-          { provide: SettingsService, useValue: settingsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
           { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: CustomResourceService, useValue: customResourceService },
@@ -161,12 +157,12 @@ describe('Header Component', () => {
     expect(component.showPrivacyPolicy).to.be.true;
   });
 
-  it('should load header tabs from settings service', async () => {
+  it('should load header tabs from header tabs service', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(settingsService.get.callCount).to.equal(1);
     expect(headerTabsService.getAuthorizedTabs.callCount).to.equal(1);
+    expect(headerTabsService.getAuthorizedTabs.args[0]).to.deep.equal([]);
   });
 
   it('should set permitted tabs after loading', async () => {

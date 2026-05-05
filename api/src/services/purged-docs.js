@@ -5,10 +5,11 @@ const purgingUtils = require('@medic/purging-utils');
 const config = require('../config');
 const configWatcher = require('./config-watcher');
 const purgedDocsCache = require('./purged-docs-cache');
+const { PREFIXES } = require('@medic/constants');
 const _ = require('lodash');
 
 const DB_NOT_FOUND_ERROR = new Error('not_found');
-const USER_DOC_PREFIX = 'org.couchdb.user:';
+const USER_DOC_PREFIX = PREFIXES.COUCH_USER;
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
   const dbName = purgingUtils.getPurgeDbName(environment.db, hash);

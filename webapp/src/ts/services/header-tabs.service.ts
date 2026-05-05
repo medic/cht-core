@@ -1,16 +1,20 @@
 import { Injectable } from '@angular/core';
 
 import { AuthService } from '@mm-services/auth.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HeaderTabsService {
   constructor(
-    private authService: AuthService
+    private readonly authService: AuthService,
+    private readonly settingsService: SettingsService,
+    private readonly uiExtensionsService: UiExtensionsService
   ) { }
 
-  private readonly tabs: HeaderTab[] = [
+  private readonly DEFAULT_TABS: HeaderTab[] = [
     {
       name: 'messages',
       route: 'messages',
@@ -61,61 +65,60 @@ export class HeaderTabsService {
     }
   ];
 
-  /**
-   * Returns the list of header tabs.
-   * If settings are passed as parameter, then it will add the tab.icon and tab.resourceIcon when available.
-   *
-   * @param settings {Object} Settings of CHT-Core instance.
-   *
-   * @returns HeaderTab[]
-   */
-  get(settings?): HeaderTab[] {
-    if (!settings?.header_tabs) {
-      return this.tabs;
-    }
+  private tabs?: HeaderTab[];
 
-    this.tabs.forEach(tab => {
-      if (!settings.header_tabs[tab.name]) {
-        return;
-      }
-
-      if (settings.header_tabs[tab.name].icon && settings.header_tabs[tab.name].icon.startsWith('fa-')) {
-        tab.icon = settings.header_tabs[tab.name].icon;
-      }
-
-      if (settings.header_tabs[tab.name].resource_icon) {
-        tab.resourceIcon = settings.header_tabs[tab.name].resource_icon;
-      }
+  private async getHeaderTabs() {
+    const { header_tabs } = await this.settingsService.get();
+    const headerTabs = this.DEFAULT_TABS.map(tab => {
+      const tabSettings = header_tabs?.[tab.name];
+      return {
+        ...tab,
+        icon: tabSettings?.icon?.startsWith('fa-') ? tabSettings.icon : tab.icon,
+        resourceIcon: tabSettings?.resource_icon ? tabSettings.resource_icon : tab.resourceIcon
+      };
     });
+
+    const tabAuthorization = await Promise.all(headerTabs.map(tab => this.authService.has(tab.permissions)));
+    return headerTabs.filter((tab, index) => tabAuthorization[index]);
+  }
+
+  private async getUiExtensionTabs() {
+    const extensions = await this.uiExtensionsService.getPropertiesByType('app_main_tab');
+    return extensions.map(ext => ({
+      name: `ui-extension-${ext.id}`,
+      route: `ui-extensions/${ext.id}`,
+      defaultIcon: 'fa-question-circle',
+      translation: ext.title!,
+      permissions: [], // Extensions are already filtered by role in getPropertiesByType
+      resourceIcon: ext.resource_icon,
+      icon: ext.icon
+    }));
+  }
+
+  /**
+   * Returns the list of authorized header tabs according to the current user's permissions.
+   *
+   * @returns Promise<HeaderTab[]>
+   */
+  async getAuthorizedTabs(): Promise<HeaderTab[]> {
+    if (!this.tabs) {
+      const [headerTabs, uiExtensionTabs] = await Promise.all([
+        this.getHeaderTabs(),
+        this.getUiExtensionTabs()
+      ]);
+      this.tabs = [...headerTabs, ...uiExtensionTabs];
+    }
 
     return this.tabs;
   }
 
   /**
-   * Returns the list of authorized header tabs according to the current user's permissions.
-   * If settings are passed as parameter, then it will add the tab.icon and tab.resourceIcon when available.
-   *
-   * @param settings {Object} Settings of CHT-Core instance.
-   *
-   * @returns Promise<HeaderTab[]>
-   */
-  async getAuthorizedTabs(settings?): Promise<HeaderTab[]> {
-    const tabs = this.get(settings);
-    const tabAuthorization = await Promise.all(tabs.map(tab => this.authService.has(tab.permissions)));
-
-    return tabs.filter((tab, index) => tabAuthorization[index]);
-  }
-
-  /**
    * Returns the primary tab according to the current user's permissions.
-   * If settings are passed as parameter, then it will add the tab.icon and tab.resourceIcon when available.
-   *
-   * @param settings {Object} Settings of CHT-Core instance.
    *
    * @returns Promise<HeaderTab>
    */
-  async getPrimaryTab(settings?): Promise<HeaderTab> {
-    const tabs = await this.getAuthorizedTabs(settings);
+  async getPrimaryTab(): Promise<HeaderTab> {
+    const tabs = await this.getAuthorizedTabs();
 
     return tabs?.[0];
   }

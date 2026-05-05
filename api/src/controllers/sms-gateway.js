@@ -68,9 +68,31 @@ const checkAuth = req => auth.check(req, 'can_access_gateway_api');
 
 module.exports = {
   /**
-   * Check that the endpoint exists
-   * @param {Object} req The request
-   * @param {Object} res The response
+   * @openapi
+   * /api/sms:
+   *   get:
+   *     summary: Check SMS gateway connectivity
+   *     operationId: smsGet
+   *     description: >
+   *       Returns a simple response to verify that the cht-gateway SMS endpoint is available.
+   *       See the [cht-gateway documentation](https://github.com/medic/cht-gateway) for more details.
+   *     tags: [SMS]
+   *     x-permissions:
+   *       hasAll: [can_access_gateway_api]
+   *     responses:
+   *       '200':
+   *         description: Gateway endpoint is available
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 medic-gateway:
+   *                   type: boolean
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
    */
   get: (req, res) => {
     return checkAuth(req)
@@ -78,10 +100,76 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   /**
-   * Stores new incoming messages, outgoing message status updates,
-   * and returns outgoing messages that are ready to be sent. 
-   * @param {Object} req The request
-   * @param {Object} res The response
+   * @openapi
+   * /api/sms:
+   *   post:
+   *     summary: Exchange SMS messages with cht-gateway
+   *     operationId: smsPost
+   *     description: >
+   *       Processes incoming messages and delivery status updates from cht-gateway, and returns
+   *       outgoing messages that are ready to be sent.
+   *       See the [cht-gateway documentation](https://github.com/medic/cht-gateway) for more details.
+   *     tags: [SMS]
+   *     x-permissions:
+   *       hasAll: [can_access_gateway_api]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               messages:
+   *                 type: array
+   *                 description: Incoming messages to process.
+   *                 items:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       description: The message id.
+   *                     from:
+   *                       type: string
+   *                       description: The sender's phone number.
+   *                     content:
+   *                       type: string
+   *                       description: The message content.
+   *                   required: [id, from, content]
+   *               updates:
+   *                 type: array
+   *                 description: Delivery status updates for previously sent messages.
+   *                 items:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       description: The message id.
+   *                     status:
+   *                       enum: [UNSENT, PENDING, SENT, DELIVERED, FAILED]
+   *                       description: The delivery status from the gateway.
+   *                     reason:
+   *                       type: string
+   *                       description: The reason for failure, if applicable.
+   *                   required: [id, status]
+   *             required: [messages]
+   *     responses:
+   *       '200':
+   *         description: Outgoing messages ready to be sent
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 messages:
+   *                   type: array
+   *                   description: Outgoing messages for the gateway to send.
+   *                   items:
+   *                     type: object
+   *                     additionalProperties: true
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
    */
   post: (req, res) => {
     return checkAuth(req)

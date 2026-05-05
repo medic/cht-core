@@ -7,6 +7,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const constants = require('@constants');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Training Materials Page', () => {
   it('admin User without contact should be able to complete training', async () => {
@@ -45,7 +46,7 @@ describe('Training Materials Page', () => {
 
     before(async () => {
       await commonPage.reloadSession();
-      const facility = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+      const facility = placeFactory.place().build({ _id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
       const user = userFactory.build({ roles: [ 'pharmacist', 'chw' ] });
 
       const ONE_MINUTE = 60 * 1000;
