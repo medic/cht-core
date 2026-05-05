@@ -11,7 +11,7 @@ import contactTypeUtils from '@medic/contact-types-utils';
 import { SettingsService } from '../../../src/local/libs/data-context';
 import * as Input from '../../../src/input';
 import * as Report from '../../../src/report';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('local lineage lib', () => {
   let debug: SinonStub;
@@ -485,7 +485,7 @@ describe('local lineage lib', () => {
 
     it('does not throw when parent type is valid', () => {
       const childType = { id: 'health_center' };
-      const parent = { _id: 'parent-1', _rev: 'rev-1', type: 'district_hospital' };
+      const parent = { _id: 'parent-1', _rev: 'rev-1', type: CONTACT_TYPES.DISTRICT_HOSPITAL };
       getTypeId.returns('district_hospital');
       isParentOf.returns(true);
 
@@ -496,8 +496,8 @@ describe('local lineage lib', () => {
 
     it('throws InvalidArgumentError when parent type is not valid', () => {
       const childType = { id: 'health_center' };
-      const parent = { _id: 'parent-1', _rev: 'rev-1', type: 'clinic' };
-      getTypeId.returns('clinic');
+      const parent = { _id: 'parent-1', _rev: 'rev-1', type: CONTACT_TYPES.CLINIC };
+      getTypeId.returns(CONTACT_TYPES.CLINIC);
       isParentOf.returns(false);
 
       expect(() => Lineage.assertHasValidParentType(childType, parent))

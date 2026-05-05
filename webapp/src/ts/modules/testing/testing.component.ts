@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { v4 as uuid } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { CookieService } from 'ngx-cookie-service';
 
 import { DebugService } from '@mm-services/debug.service';

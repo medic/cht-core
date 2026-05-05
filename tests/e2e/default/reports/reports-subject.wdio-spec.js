@@ -13,7 +13,7 @@ describe('Reports Subject', () => {
   const places = placeFactory.generateHierarchy();
   const districtHospital = places.get('district_hospital');
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const user = userFactory.build({ place: clinic._id });
 
   const person = personFactory.build({
