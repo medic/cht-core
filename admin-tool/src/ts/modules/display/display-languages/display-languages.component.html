@@ -5,6 +5,9 @@
     } @else {
       <div class="tab-content container-fluid">
         <form class="custom-form">
+          @if (loadingError) {
+            <p class="loading-error">{{ loadingError | translate }}</p>
+          }
           <div class="form-group">
             <label for="locale">{{ 'Default Application Language' | translate }}</label>
             <select id="locale" name="locale" class="form-control small" [(ngModel)]="localeLanguage">
@@ -81,6 +84,11 @@
                   @if (languageModel.missing > 0) {
                     <div class="alert alert-warning" role="alert">
                       {{ 'Missing translations' | translate: { missing: languageModel.missing } }}
+                    </div>
+                  }
+                  @if (languageError?.code === languageModel.doc.code) {
+                    <div class="alert alert-danger" role="alert">
+                      {{ languageError!.message | translate }}
                     </div>
                   }
                   <div>

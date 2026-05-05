@@ -67,6 +67,12 @@ export class DisplayLanguagesComponent implements OnInit {
 
   /** Outgoing message language code saved in settings, used to display star icons in the accordion */
   savedLocaleOutgoingLanguage = '';
+  
+  /** Error message shown when the initial page load fails */
+  loadingError: string | null = null;
+
+  /** Error for the language that failed to enable/disable, contains the code and message */
+  languageError: { code: string, message: string } | null = null;
 
   constructor(private languageService: LanguagesService, private settingsService: SettingsService){}
 
@@ -87,6 +93,7 @@ export class DisplayLanguagesComponent implements OnInit {
       this.savedLocaleOutgoingLanguage = languageSettings.localeOutgoing;
     } catch (error) {
       console.error('Error fetching languages', error);
+      this.loadingError = 'Error fetching languages';
     } finally {
       this.loadingPageStatus = false;
     }
@@ -133,6 +140,7 @@ export class DisplayLanguagesComponent implements OnInit {
       await this.ngOnInit();
     } catch (error) {
       console.error('Error disabling language', error);
+      this.languageError = { code: doc.code, message: 'Error disabling language' };
     }
   }
 
@@ -148,6 +156,7 @@ export class DisplayLanguagesComponent implements OnInit {
       await this.ngOnInit();
     } catch (error) {
       console.error('Error enabling language', error);
+      this.languageError = { code: doc.code, message: 'Error enabling language' };
     }
   }
 

@@ -1,20 +1,6 @@
-@import (reference) "../../../../../css/variables.less";
+@import "../../../../../css/base-modal.less";
 
 .modal {
-  &.in {
-    opacity: 1;
-  }
-  .modal-header {
-    border-bottom: 0.0625rem solid @gray-light;
-    .modal-title {
-      font-size: @font-large;
-      font-weight: bold;
-    }
-    .close {
-      font-size: 1.25rem;
-      cursor: pointer;
-    }
-  }
   .modal-dialog {
     max-width: 60rem;
     width: 90%;
@@ -26,22 +12,7 @@
     flex-direction: column;
   }
   .modal-body {
-    padding: 1.25rem;
     overflow-y: auto;
     flex: 1;
   }
-  .modal-footer {
-    border-top: 0.0625rem solid @gray-light;
-    text-align: right;
-    .btn {
-      margin-left: 0.3125rem;
-    }
-    .btn-link {
-      text-decoration: none;
-      text-transform: capitalize;
-    }
-  }
-}
-.modal-backdrop {
-  opacity: 0.5;
 }

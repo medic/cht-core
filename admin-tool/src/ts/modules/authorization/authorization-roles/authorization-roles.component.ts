@@ -39,6 +39,9 @@ export class AuthorizationRolesComponent implements OnInit {
   /** Controls visibility of the inline loader during add operation */ 
   isAddingRole = false;
 
+  /** Error message shown when the initial page load fails */
+  loadingError: string | null = null;
+
   constructor(private settingsService: SettingsService, private translate: TranslateService) {}
 
   /**
@@ -53,6 +56,7 @@ export class AuthorizationRolesComponent implements OnInit {
       this.roles = Object.entries(rolesMap).map(([key, value]) => ({ key, value }));
     } catch (error) {
       console.error('Error fetching roles', error);
+      this.loadingError = 'Error fetching roles';
     } finally {
       this.loadingPageStatus = false;
     }
