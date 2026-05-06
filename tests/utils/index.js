@@ -708,7 +708,6 @@ const deleteLocalDocs = async () => {
   await saveDocs(docsToDelete);
 };
 
-const hasModal = () => $('#update-available').isDisplayed();
 
 const getDefaultForms = async () => {
   const docName = '_local/default-forms';
