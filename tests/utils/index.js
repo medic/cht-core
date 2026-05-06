@@ -477,16 +477,16 @@ const shouldDocumentBeKept = (doc, filters) => {
          filters.patterns.some(pattern => doc._id.match(pattern));
 };
 
-const waitForSettings = async (previousRev, retries = 15) => {
+const waitForSettings = async (checkFn, retries = 15) => {
   const settings = await request({ path: '/api/v1/settings' });
-  if (settings._rev !== previousRev) {
+  if (checkFn(settings)) {
     return;
   }
   if (retries <= 0) {
     throw new Error('Timed out waiting for settings update');
   }
   await delayPromise(500);
-  return waitForSettings(previousRev, retries - 1);
+  return waitForSettings(checkFn, retries - 1);
 };
 
 const deleteSentinelDocs = async (docsToKeep) => {
@@ -563,8 +563,11 @@ const updateCustomSettings = async (updates) => {
   });
 };
 
-const waitForSentinelSettingsUpdateLogs = () => {
-  return waitForSentinelLogs(true, /Reminder messages allowed between/);
+const waitForSettingsUpdateLogs = (type) => {
+  if (type === 'sentinel') {
+    return waitForSentinelLogs(true, /Reminder messages allowed between/);
+  }
+  return waitForApiLogs(/Settings updated/);
 };
 
 /**
@@ -608,27 +611,11 @@ const updateSettings = async (updates, options = {}) => {
   if (revert) {
     await revertSettings(true);
   }
-
-  let previousRev;
-  if (ignoreReload && ignoreReload !== 'sentinel') {
-    const settings = await request({ path: '/api/v1/settings' });
-    previousRev = settings._rev;
-  }
-
-  const watcher = ignoreReload === 'sentinel' && 
-                  Object.keys(updates).length && 
-                  await waitForSentinelSettingsUpdateLogs();
-
+  const watcher = ignoreReload && Object.keys(updates).length && await waitForSettingsUpdateLogs(ignoreReload);
   await updateCustomSettings(updates);
-
   if (!ignoreReload && !sync) {
     return await commonElements.closeReloadModal(true);
   }
-
-  if (previousRev && Object.keys(updates).length) {
-    await waitForSettings(previousRev);
-  }
-
   if (watcher) {
     await watcher.promise;
   }
@@ -663,12 +650,7 @@ const revertCustomSettings = async () => {
  * @return {Promise}       completion promise
  */
 const revertSettings = async ignoreRefresh => {
-  let previousRev;
-  if (ignoreRefresh && ignoreRefresh !== 'sentinel') {
-    const settings = await request({ path: '/api/v1/settings' });
-    previousRev = settings._rev;
-  }
-  const watcher = ignoreRefresh === 'sentinel' && await waitForSentinelSettingsUpdateLogs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
@@ -680,14 +662,7 @@ const revertSettings = async ignoreRefresh => {
     return;
   }
 
-  if (previousRev) {
-    await waitForSettings(previousRev);
-  }
-
-  if (watcher) {
-    await watcher.promise;
-  }
-  
+  await watcher.promise;
   return needsRefresh;
 };
 
@@ -785,14 +760,7 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
-
-  let previousRev;
-  if (ignoreRefresh && ignoreRefresh !== 'sentinel') {
-    const settings = await request({ path: '/api/v1/settings' });
-    previousRev = settings._rev;
-  }
-  const watcher = ignoreRefresh === 'sentinel' && await waitForSentinelSettingsUpdateLogs();
-
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
@@ -800,9 +768,6 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
     watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    if (previousRev) {
-      await waitForSettings(previousRev);
-    }
     watcher && await watcher.promise;
   } else {
     watcher?.cancel();
@@ -946,7 +911,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const waitForApiCrash = async () => {
-  let retryCount = 180;
+  let retryCount = 300;
   do {
     try {
       await request({ path: '/api/info' });
@@ -959,7 +924,7 @@ const waitForApiCrash = async () => {
 };
 
 const listenForApi = async () => {
-  const totalTries = 180; // 3 minutes
+  const totalTries = 300; // 5 minutes
   let retryCount = totalTries;
   do {
     try {
@@ -977,7 +942,7 @@ const listenForApi = async () => {
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
-  throw new Error('API failed to start after 3 minutes');
+  throw new Error('API failed to start after 5 minutes');
 };
 
 const dockerComposeCmd = (params) => {
