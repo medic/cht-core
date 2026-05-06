@@ -98,9 +98,7 @@ describe('Sub-contact attachment routing', () => {
     await commonEnketoPage.addFileInputValue('Primary Contact Photo', primaryContactPhotoPath);
 
     for (let i = 0; i < repeatChildren.length; i++) {
-      if (i > 0) {
-        await commonEnketoPage.addRepeatSection();
-      }
+      await commonEnketoPage.addRepeatSection();
       await commonEnketoPage.setInputValue('Child Name', repeatChildren[i].name);
       await commonEnketoPage.addFileInputValue('Child Photo', repeatChildren[i].photoPath, { repeatIndex: i });
     }
@@ -203,7 +201,7 @@ describe('Sub-contact attachment routing', () => {
 
     await commonEnketoPage.addRepeatSection();
     await commonEnketoPage.setInputValue('Child Name', 'Kid Two');
-    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath, { repeatIndex: 1 });
+    await commonEnketoPage.addFileInputValue('Child Photo', familyPhotoPath, { repeatIndex: 0 });
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
