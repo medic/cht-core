@@ -19,7 +19,16 @@ const isParentMuted = async (parentRef) => {
   if (!parentId) {
     return false;
   }
-  const parent = await lineage.fetchHydratedDoc(parentId);
+  let parent;
+  try {
+    parent = await lineage.fetchHydratedDoc(parentId);
+  } catch (err) {
+    // Defer to the underlying create handler so it produces its own error for missing parents.
+    if (err?.status === 404 || err?.code === 404) {
+      return false;
+    }
+    throw err;
+  }
   if (!parent) {
     return false;
   }

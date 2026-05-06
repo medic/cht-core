@@ -33,6 +33,18 @@ describe('muted-parent service', () => {
       expect(await mutedParent.isParentMuted('p1')).to.equal(false);
     });
 
+    it('returns false when fetchHydratedDoc throws a 404 (defers to underlying handler)', async () => {
+      const notFound = Object.assign(new Error('Document not found: p1'), { status: 404 });
+      lineage.fetchHydratedDoc.rejects(notFound);
+      expect(await mutedParent.isParentMuted('p1')).to.equal(false);
+    });
+
+    it('rethrows non-404 errors from fetchHydratedDoc', async () => {
+      const boom = Object.assign(new Error('boom'), { status: 500 });
+      lineage.fetchHydratedDoc.rejects(boom);
+      await expect(mutedParent.isParentMuted('p1')).to.be.rejectedWith(boom);
+    });
+
     it('returns true when the immediate parent is muted', async () => {
       lineage.fetchHydratedDoc.resolves({ _id: 'p1', muted: '2025-01-01T00:00:00Z' });
       expect(await mutedParent.isParentMuted('p1')).to.equal(true);
