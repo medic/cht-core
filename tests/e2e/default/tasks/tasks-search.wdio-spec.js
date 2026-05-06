@@ -1,44 +1,51 @@
 const utils = require('@utils');
-const sentinelUtils = require('@utils/sentinel');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
-const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
-const searchPage = require('@page-objects/default/search/search.wdio.page');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
+const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
+const sentinelUtils = require('@utils/sentinel');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Tasks Free Text Search', () => {
-
   const places = placeFactory.generateHierarchy();
+  const districtHospital = places.get('district_hospital');
+  const healthCenter = places.get('health_center');
   const clinic = places.get(CONTACT_TYPES.CLINIC);
-  const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
   const chwContact = personFactory.build({
-    name: 'Megan Spice',
-    phone: '+12068881234',
+    name: 'CHW Search User',
+    phone: '+12068881235',
     place: healthCenter._id,
     parent: healthCenter,
   });
 
   const chw = userFactory.build({
-    username: 'offlineuser_tasks_search',
+    username: 'offlineuser_search_tasks',
     isOffline: true,
     place: healthCenter._id,
     contact: chwContact._id,
   });
 
-  const patientWithAccents = personFactory.build({
-    name: 'Élodie Patient',
-    patient_id: 'patient_elodie',
+  const patient1 = personFactory.build({
+    name: 'Margaret Williams',
+    patient_id: 'patient_search_1',
     parent: clinic,
     reported_date: Date.now(),
   });
 
-  const patientPlain = personFactory.build({
-    name: 'Bob Patient',
-    patient_id: 'patient_bob',
+  const patient2 = personFactory.build({
+    name: 'Rajesh Kumar',
+    patient_id: 'patient_search_2',
+    parent: clinic,
+    reported_date: Date.now(),
+  });
+
+  const patientWithAccents = personFactory.build({
+    name: 'Élodie Laurent',
+    patient_id: 'patient_search_3',
     parent: clinic,
     reported_date: Date.now(),
   });
@@ -47,58 +54,128 @@ describe('Tasks Free Text Search', () => {
     await utils.saveDocs([
       ...places.values(),
       chwContact,
+      patient1,
+      patient2,
       patientWithAccents,
-      patientPlain,
     ]);
-    await utils.createUsers([ chw ]);
+    await utils.createUsers([chw]);
+    await tasksPage.compileTasks('tasks-filter-config.js', false);
     await sentinelUtils.waitForSentinel();
-
-    // Compile task configuration via API before login.
-    // Avoid `sync: true` here because that requires interacting with the UI hamburger menu.
-    await tasksPage.compileTasks('tasks-breadcrumbs-config.js', false);
     await loginPage.login(chw);
-    await commonPage.tabsSelector.analyticsTab().waitForDisplayed();
-    await commonPage.sync();
   });
 
   after(async () => {
-    await utils.deleteUsers([ chw ]);
-    await utils.revertDb([/^form:/], true);
-    await utils.revertSettings(true);
+    await utils.deleteUsers([chw]);
   });
 
-  it('filters tasks by contact name (diacritics-insensitive) and clears search', async () => {
+  beforeEach(async () => {
     await commonPage.goToTasks();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
+  });
 
-    const initialCount = await tasksPage.getTaskListCount();
-    expect(initialCount).to.be.greaterThan(0);
+  it('should filter tasks by contact name', async () => {
+    const allTasks = await tasksPage.getTasks();
+    const totalCount = allTasks.length;
+    expect(totalCount).to.be.greaterThan(0);
+
+    await searchPage.performSearch('Margaret');
+
+    const filteredTasks = await tasksPage.getTasks();
+    const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
+    expect(filteredInfos.length).to.be.greaterThan(0);
+    expect(filteredInfos.length).to.be.lessThan(totalCount);
+    filteredInfos.forEach(info => {
+      expect(info.contactName).to.equal('Margaret Williams');
+    });
+
+    await searchPage.clearSearch();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
+  });
+
+  it('should match contact names ignoring diacritics', async () => {
+    const allTasks = await tasksPage.getTasks();
+    const totalCount = allTasks.length;
 
     await searchPage.performSearch('elodie');
-    await browser.waitUntil(async () => (await tasksPage.getTaskListCount()) !== initialCount, {
-      timeout: 10000,
-      timeoutMsg: 'Expected task list to be filtered after search'
-    });
 
-    const filteredInfos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
+    const filteredTasks = await tasksPage.getTasks();
+    const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
     expect(filteredInfos.length).to.be.greaterThan(0);
-    filteredInfos.forEach(info => expect(info.contactName).to.equal(patientWithAccents.name));
+    filteredInfos.forEach(info => {
+      expect(info.contactName).to.equal('Élodie Laurent');
+    });
 
     await searchPage.clearSearch();
-    await browser.waitUntil(async () => (await tasksPage.getTaskListCount()) === initialCount, {
-      timeout: 10000,
-      timeoutMsg: 'Expected task list to be restored after clearing search'
-    });
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
   });
 
-  it('filters tasks by task title substring', async () => {
-    await commonPage.goToTasks();
-    await searchPage.performSearch('person_create');
+  it('should filter tasks by task title', async () => {
+    const allTasks = await tasksPage.getTasks();
+    const totalCount = allTasks.length;
 
-    const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
-    expect(infos.length).to.be.greaterThan(0);
-    infos.forEach(info => expect(info.formTitle).to.contain('person_create'));
+    await searchPage.performSearch('Assessment');
+
+    const filteredTasks = await tasksPage.getTasks();
+    const filteredInfos = await tasksPage.getTasksListInfos(filteredTasks);
+    expect(filteredInfos.length).to.be.greaterThan(0);
+    expect(filteredInfos.length).to.be.lessThan(totalCount);
+    filteredInfos.forEach(info => {
+      expect(info.formTitle).to.equal('Assessment');
+    });
 
     await searchPage.clearSearch();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
+  });
+
+  it('should show no tasks when search has no match', async () => {
+    await searchPage.performSearch('xyznonexistent');
+
+    const noTasksMessage = await tasksPage.isTaskElementDisplayed('p', 'No tasks found');
+    expect(noTasksMessage).to.be.true;
+
+    await searchPage.clearSearch();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
+  });
+
+  it('should restore full task list when search is cleared', async () => {
+    const allTasks = await tasksPage.getTasks();
+    const totalCount = allTasks.length;
+
+    await searchPage.performSearch('Rajesh');
+    const filteredTasks = await tasksPage.getTasks();
+    expect(filteredTasks.length).to.be.lessThan(totalCount);
+
+    await searchPage.clearSearch();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
+
+    const restoredTasks = await tasksPage.getTasks();
+    expect(restoredTasks.length).to.equal(totalCount);
+  });
+
+  it('should combine search with sidebar filters', async () => {
+    const allTasks = await tasksPage.getTasks();
+    const totalCount = allTasks.length;
+
+    await searchPage.performSearch('Margaret');
+    const searchFiltered = await tasksPage.getTasks();
+    const searchCount = searchFiltered.length;
+
+    await tasksPage.openSidebarFilter();
+    await tasksPage.filterByTaskType('Home Visit');
+    await commonPage.waitForPageLoaded();
+
+    const combinedTasks = await tasksPage.getTasks();
+    const combinedInfos = await tasksPage.getTasksListInfos(combinedTasks);
+
+    expect(combinedInfos.length).to.be.greaterThan(0);
+    expect(combinedInfos.length).to.be.at.most(searchCount);
+    combinedInfos.forEach(info => {
+      expect(info.contactName).to.equal('Margaret Williams');
+      expect(info.formTitle).to.equal('Home Visit');
+    });
+
+    await tasksPage.resetFilters();
+    await searchPage.clearSearch();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
   });
 });
-

@@ -9,6 +9,10 @@ interface TaskWithLineage extends TaskEmission {
 
 const getGlobalState = (state): GlobalState => state.global || {};
 
+// Strips diacritical marks and lowercases the input so that accented
+// characters like "Élodie" can be matched by searching "elodie".
+// NFD decomposition splits accented characters into base + combining marks,
+// and the regex strips the combining marks (Unicode range U+0300-U+036F).
 const normalizeText = (value?: string): string => {
   if (!value) {
     return '';
@@ -16,46 +20,53 @@ const normalizeText = (value?: string): string => {
   return value
     .toString()
     .toLowerCase()
-    // NFD decomposition splits accented characters into base + combining diacritical marks,
-    // and the regex then strips those combining marks (Unicode range U+0300–U+036F),
-    // so that e.g. 'Élodie' becomes 'elodie' and can be matched without accents.
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .trim();
 };
 
-const taskMatchesSearch = (task: TaskWithLineage, normalizedSearch: string): boolean => {
-  if (!normalizedSearch) {
-    return true;
-  }
-
-  const candidates = [
+const getSearchCandidates = (task: TaskWithLineage): string[] => {
+  return [
     task?.contact?.name,
     ...(task?.lineage || []),
     task?.title,
   ].filter(Boolean) as string[];
+};
 
-  if (!candidates.length) {
-    return false;
+const FUSE_OPTIONS = {
+  threshold: 0.2,        // 0 = exact, 1 = match anything; 0.2 allows minor typos
+  distance: 50,          // how far from expected position a match can appear
+  minMatchCharLength: 3, // skip fuzzy matching for very short queries
+  ignoreLocation: true,  // match can appear anywhere in the string
+};
+
+const filterTasksBySearch = (tasks: TaskWithLineage[], normalizedSearch: string): TaskWithLineage[] => {
+  // First pass: fast substring match on normalized text
+  const substringMatched: TaskWithLineage[] = [];
+  const remaining: TaskWithLineage[] = [];
+
+  for (const task of tasks) {
+    const candidates = getSearchCandidates(task);
+    if (candidates.some(c => normalizeText(c).includes(normalizedSearch))) {
+      substringMatched.push(task);
+    } else if (candidates.length) {
+      remaining.push(task);
+    }
   }
 
-  const substringMatch = candidates.some(c => normalizeText(c).includes(normalizedSearch));
-  if (substringMatch) {
-    return true;
+  // Second pass: fuzzy match only on tasks that didn't match by substring.
+  // Build one Fuse index over all remaining candidates to avoid per-task overhead.
+  if (normalizedSearch.length >= FUSE_OPTIONS.minMatchCharLength && remaining.length) {
+    const entries = remaining.flatMap((task, idx) =>
+      getSearchCandidates(task).map(candidate => ({ candidate, idx }))
+    );
+    const fuse = new Fuse(entries, { ...FUSE_OPTIONS, keys: ['candidate'] });
+    const fuzzyMatchIndices = new Set(fuse.search(normalizedSearch).map(r => r.item.idx));
+    const fuzzyMatched = remaining.filter((_, idx) => fuzzyMatchIndices.has(idx));
+    return [...substringMatched, ...fuzzyMatched];
   }
 
-  const fuse = new Fuse(candidates, {
-    // threshold: 0 = exact match only, 1 = match anything.
-    threshold: 0.2,       
-    // distance: limits how far from the start of the string a match can be found.
-    distance: 50,
-    // Require at least 3 characters to trigger fuzzy matching,
-    minMatchCharLength: 3, 
-    // ignoreLocation: true means the match can appear anywhere in the string,
-    ignoreLocation: true,
-  });
-
-  return fuse.search(normalizedSearch).length > 0;
+  return substringMatched;
 };
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
@@ -79,7 +90,7 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
   if (filters.search) {
     const normalizedSearch = normalizeText(filters.search);
     if (normalizedSearch) {
-      filtered = filtered.filter(task => taskMatchesSearch(task, normalizedSearch));
+      filtered = filterTasksBySearch(filtered, normalizedSearch);
     }
   }
 

@@ -700,6 +700,45 @@ describe('Selectors', () => {
         const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
         expect(result).to.deep.equal([tasksState.tasksList[0]]);
       });
+
+      it('should return all tasks when search is empty', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'] },
+            { _id: 'task2', title: 'ANC Visit', contact: { name: 'Bob' }, lineage: [], lineageIds: ['c2'] },
+          ],
+        };
+
+        const globalState = { filters: { search: '' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal(tasksState.tasksList);
+      });
+
+      it('should return empty array when no tasks match the search', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', contact: { name: 'Alice' }, lineage: ['Village'], lineageIds: ['c1'] },
+          ],
+        };
+
+        const globalState = { filters: { search: 'zzzznotfound' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([]);
+      });
+
+      it('should combine search with other filters', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Home Visit', overdue: true, contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'] },
+            { _id: 'task2', title: 'Home Visit', overdue: false, contact: { name: 'Alice' }, lineage: [], lineageIds: ['c2'] },
+            { _id: 'task3', title: 'Assessment', overdue: true, contact: { name: 'Bob' }, lineage: [], lineageIds: ['c3'] },
+          ],
+        };
+
+        const globalState = { filters: { search: 'alice', taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
     });
   });
 });
