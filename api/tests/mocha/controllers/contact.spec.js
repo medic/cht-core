@@ -4,6 +4,7 @@ const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const {expect} = require('chai');
+const contactDelete = require('../../../src/services/contact-delete');
 
 describe('Contact Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -250,6 +251,49 @@ describe('Contact Controller', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+    });
+
+    describe('delete', () => {
+      beforeEach(() => {
+        req = { params: { uuid: 'contact-uuid' } };
+      });
+
+      it('deletes a contact and returns summary', async () => {
+        const deleteResult = { deleted: { contacts: 3, reports: 2 } };
+        sinon.stub(contactDelete, 'deleteContact').resolves(deleteResult);
+
+        await controller.v1.delete(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_delete_contacts', 'can_edit'] }
+        )).to.be.true;
+        expect(contactDelete.deleteContact.calledOnceWithExactly('contact-uuid')).to.be.true;
+        expect(res.json.calledOnceWithExactly(deleteResult)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('returns 404 when contact does not exist', async () => {
+        sinon.stub(contactDelete, 'deleteContact').resolves(null);
+
+        await controller.v1.delete(req, res);
+
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 404, message: 'Contact not found' },
+          req,
+          res
+        )).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+      });
+
+      it('returns 403 when user lacks permission', async () => {
+        const err = { status: 403, message: 'Forbidden' };
+        assertPermissions.rejects(err);
+
+        await controller.v1.delete(req, res);
+
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
     });

@@ -2,6 +2,7 @@ const auth = require('../auth');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
+const contactDelete = require('../services/contact-delete');
 
 const getContact = ctx.bind(Contact.v1.get);
 const getContactWithLineage = ctx.bind(Contact.v1.getWithLineage);
@@ -131,6 +132,62 @@ module.exports = {
       }
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/contact/{uuid}:
+     *   delete:
+     *     summary: Recursively delete a contact and its subtree
+     *     operationId: v1ContactUuidDelete
+     *     description: >
+     *       Deletes the contact identified by `uuid` along with all descendant contacts and
+     *       all reports linked to any contact in the deleted subtree.
+     *       This mirrors the behaviour of `cht-conf delete-contacts` but exposes it as a
+     *       REST endpoint so callers do not need CLI access.
+     *     tags: [Contact]
+     *     x-since: 5.3.0
+     *     x-permissions:
+     *       hasAny: [can_delete_contacts, can_edit]
+     *     parameters:
+     *       - in: path
+     *         name: uuid
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The id of the contact to delete
+     *     responses:
+     *       '200':
+     *         description: Deletion summary
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 deleted:
+     *                   type: object
+     *                   properties:
+     *                     contacts:
+     *                       type: integer
+     *                       description: Number of contact documents deleted
+     *                     reports:
+     *                       type: integer
+     *                       description: Number of linked report documents deleted
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     */
+    delete: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_delete_contacts', 'can_edit'] });
+      const { params: { uuid } } = req;
+      const result = await contactDelete.deleteContact(uuid);
+      if (!result) {
+        return serverUtils.error({ status: 404, message: 'Contact not found' }, req, res);
+      }
+      return res.json(result);
     }),
   },
 };
