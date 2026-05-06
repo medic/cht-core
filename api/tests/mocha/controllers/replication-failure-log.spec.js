@@ -4,6 +4,7 @@ const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const replicationFailureLogController = require('../../../src/controllers/replication-failure-log');
 const replicationFailureLogService = require('../../../src/services/replication/replication-failure-log');
+const pagination = require('../../../src/services/pagination');
 const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 
 describe('Replication Failure Log Controller', () => {
@@ -57,8 +58,8 @@ describe('Replication Failure Log Controller', () => {
     expect(replicationFailureLogService.get.args[0][0]).to.deep.equal({
       user: undefined,
       reportingPeriod: currentPeriod,
-      cursor: undefined,
-      limit: replicationFailureLogService.DEFAULT_LIMIT,
+      cursor: 0,
+      limit: pagination.DEFAULT_LIMIT,
     });
     expect(res.json.callCount).to.equal(1);
     expect(res.json.args[0][0]).to.deep.equal({ data: [], cursor: null });
@@ -74,8 +75,8 @@ describe('Replication Failure Log Controller', () => {
     expect(replicationFailureLogService.get.args[0][0]).to.deep.equal({
       user: 'bob',
       reportingPeriod: undefined,
-      cursor: undefined,
-      limit: replicationFailureLogService.DEFAULT_LIMIT,
+      cursor: 0,
+      limit: pagination.DEFAULT_LIMIT,
     });
   });
 
@@ -89,7 +90,7 @@ describe('Replication Failure Log Controller', () => {
     expect(replicationFailureLogService.get.args[0][0].reportingPeriod).to.equal('2025-11');
   });
 
-  it('should pass user, reporting_period, cursor and limit through to the service', async () => {
+  it('should validate cursor and limit before calling the service', async () => {
     req.query.user = 'bob';
     req.query.reporting_period = '2025-11';
     req.query.cursor = '10';
@@ -107,23 +108,35 @@ describe('Replication Failure Log Controller', () => {
     expect(replicationFailureLogService.get.args[0][0]).to.deep.equal({
       user: 'bob',
       reportingPeriod: '2025-11',
-      cursor: '10',
+      cursor: 10,
       limit: 50,
     });
     expect(res.json.callCount).to.equal(1);
     expect(res.json.args[0][0]).to.deep.equal(serviceResult);
   });
 
-  it('should fall back to default limit when limit is invalid; cursor is passed through unchanged', async () => {
-    req.query.cursor = 'whatever-the-service-validates-it';
-    req.query.limit = '-5';
+  it('should respond 400 when the cursor is invalid', async () => {
+    req.query.cursor = 'not-a-number';
     auth.getUserCtx.resolves({ roles: [COUCHDB_ADMIN] });
-    replicationFailureLogService.get.resolves({ data: [], cursor: null });
 
     await replicationFailureLogController.get(req, res);
 
-    expect(replicationFailureLogService.get.args[0][0].cursor).to.equal('whatever-the-service-validates-it');
-    expect(replicationFailureLogService.get.args[0][0].limit).to.equal(replicationFailureLogService.DEFAULT_LIMIT);
+    expect(replicationFailureLogService.get.callCount).to.equal(0);
+    expect(serverUtils.error.callCount).to.equal(1);
+    expect(serverUtils.error.args[0][0].name).to.equal('InvalidArgumentError');
+    expect(serverUtils.error.args[0][0].message).to.match(/cursor must be a non-negative integer/);
+  });
+
+  it('should respond 400 when the limit is invalid', async () => {
+    req.query.limit = '-5';
+    auth.getUserCtx.resolves({ roles: [COUCHDB_ADMIN] });
+
+    await replicationFailureLogController.get(req, res);
+
+    expect(replicationFailureLogService.get.callCount).to.equal(0);
+    expect(serverUtils.error.callCount).to.equal(1);
+    expect(serverUtils.error.args[0][0].name).to.equal('InvalidArgumentError');
+    expect(serverUtils.error.args[0][0].message).to.match(/limit must be a positive integer/);
   });
 
   it('should return error when the service throws', async () => {

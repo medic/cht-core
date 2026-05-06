@@ -8,41 +8,48 @@ const personFactory = require('@factories/cht/contacts/person');
 
 const password = 'passwordSUP3RS3CR37!';
 
-const replicationGetIds = (username) => {
-  const options = {
-    path: '/api/v1/replication/get-ids',
-    auth: { username, password }
-  };
-  return utils.request(options);
-};
+// Replication requests get a fail-fast abort signal. The success path completes in tens of
+// milliseconds, so the timeout doesn't proc. The failure path (nouveau stopped) would otherwise wait
+// ~60s for couchdb to give up on its internal nouveau connection — instead we cancel the client
+// after ABORT_AFTER_MS, which trips captureReplicationFailures via `res.on('close')` and writes the
+// failure log immediately with status_code=0.
+const ABORT_AFTER_MS = 2000;
+// Time after the client abort to let the failure-log doc settle in couchdb before assertions.
+const SETTLE_DELAY_MS = 500;
+
+const replicationGetIds = (username) => utils.request({
+  path: '/api/v1/replication/get-ids',
+  auth: { username, password },
+  signal: AbortSignal.timeout(ABORT_AFTER_MS),
+});
 
 const facility = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL });
-const bobPlace = placeFactory.place().build({
+const mathilPlace = placeFactory.place().build({
   type: CONTACT_TYPES.HEALTH_CENTER,
   parent: { _id: facility._id },
-  place_id: 'shortcode:bobville'
+  place_id: 'shortcode:mathilville'
 });
-const clarePlace = placeFactory.place().build({
+const janicePlace = placeFactory.place().build({
   type: CONTACT_TYPES.HEALTH_CENTER,
   parent: { _id: facility._id },
-  place_id: 'shortcode:clareville'
+  place_id: 'shortcode:janiceville'
 });
-const bobContact = personFactory.build({
+const mathilContact = personFactory.build({
   role: 'chw',
-  parent: { _id: bobPlace._id, parent: { _id: facility._id } },
-  name: 'Bob',
-  patient_id: 'shortcode:user:bob'
+  parent: { _id: mathilPlace._id, parent: { _id: facility._id } },
+  name: 'Mathil',
+  patient_id: 'shortcode:user:mathil'
 });
-const clareContact = personFactory.build({
+const janiceContact = personFactory.build({
   role: 'chw',
-  parent: { _id: clarePlace._id, parent: { _id: facility._id } },
-  name: 'Clare',
-  patient_id: 'shortcode:user:clare'
+  parent: { _id: janicePlace._id, parent: { _id: facility._id } },
+  name: 'Janice',
+  patient_id: 'shortcode:user:janice'
 });
 
 const users = [
-  userFactory.build({ username: 'bob', password, place: bobPlace._id, contact: bobContact._id, roles: ['chw'] }),
-  userFactory.build({ username: 'clare', password, place: clarePlace._id, contact: clareContact._id, roles: ['chw'] }),
+  userFactory.build({ username: 'mathil', password, place: mathilPlace._id, contact: mathilContact._id, }),
+  userFactory.build({ username: 'janice', password, place: janicePlace._id, contact: janiceContact._id, }),
 ];
 
 // This test depends on stopping Nouveau service in order to fail the replication requests, so we capture how the user
@@ -92,11 +99,11 @@ describe('replication failure logging @docker', () => {
 
   const requestDocsExpectingError = async (username) => {
     await expect(replicationGetIds(username)).to.be.rejectedWith();
-    await utils.delayPromise(100); // wait for doc to be written
+    await utils.delayPromise(SETTLE_DELAY_MS);
   };
 
   before(async () => {
-    await utils.saveDocs([facility, bobPlace, clarePlace, bobContact, clareContact]);
+    await utils.saveDocs([facility, mathilPlace, janicePlace, mathilContact, janiceContact]);
     await utils.createUsers(users, true);
   });
 
@@ -111,8 +118,8 @@ describe('replication failure logging @docker', () => {
 
   describe('on successful replication', () => {
     it('should not create a failure log on a successful requests', async () => {
-      await replicationGetIds('bob');
-      await replicationGetIds('clare');
+      await replicationGetIds('mathil');
+      await replicationGetIds('janice');
 
       const response = await getFailureLogs();
       expect(response.data).to.deep.equal([]);
@@ -126,31 +133,33 @@ describe('replication failure logging @docker', () => {
     });
 
     it('should create a failure log when the request fails', async () => {
-      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('mathil');
 
-      const log = await getUserFailureLog('bob');
+      const log = await getUserFailureLog('mathil');
       expect(log).to.not.have.property('type');
-      expect(log.user).to.equal('bob');
+      expect(log.user).to.equal('mathil');
       expect(log.failures.length).to.eq(1);
       expect(log.failures[0]).to.have.keys(
         'date', 'status_code', 'duration', 'request_id', 'roles', 'subjects_count', 'docs_count', 'unpurged_docs_count'
       );
-      expect(log.failures[0].status_code).to.be.at.least(400);
+      // status_code=0 marks "client disconnected before the response was sent" (writableFinished
+      // is false). The test client aborts mid-request because nouveau is stopped; see ABORT_AFTER_MS.
+      expect(log.failures[0].status_code).to.equal(0);
       expect(log.failures[0].roles).to.be.an('array').that.is.not.empty;
       expect(log.failures[0].subjects_count).to.equal(6);
-      // nouveau is stopped, so getDocsByReplicationKey throws before docs_count and
-      // unpurged_docs_count are computed; they fall back to 'unknown'.
+      // The abort fires while getDocsByReplicationKey is still waiting on the (stopped) nouveau,
+      // so docs_count and unpurged_docs_count have not been set yet → 'unknown'.
       expect(log.failures[0].docs_count).to.equal('unknown');
       expect(log.failures[0].unpurged_docs_count).to.equal('unknown');
       expect(log.total_failures).to.equal(1);
     });
 
     it('should accumulate failures in the same log document', async () => {
-      await requestDocsExpectingError('bob');
-      await requestDocsExpectingError('bob');
-      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('mathil');
 
-      const log = await getUserFailureLog('bob');
+      const log = await getUserFailureLog('mathil');
       expect(log.failures).to.be.an('array').that.has.lengthOf(3);
       expect(log.total_failures).to.equal(3);
       log.failures.forEach(failure => {
@@ -172,10 +181,10 @@ describe('replication failure logging @docker', () => {
 
     it('should cap stored failures at 50 and track total count', async () => {
       // Create an initial failure to get a real log doc
-      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('mathil');
 
       // Seed the log doc with 50 existing failures
-      const logId = getFailureLogId('bob');
+      const logId = getFailureLogId('mathil');
       const existentLog = await utils.logsDb.get(logId);
       existentLog.failures = Array.from({ length: 50 }, (_, i) => ({
         date: Date.now() - (50 - i) * 1000,
@@ -186,9 +195,9 @@ describe('replication failure logging @docker', () => {
       existentLog.total_failures = 50;
       await utils.logsDb.put(existentLog);
 
-      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('mathil');
 
-      const log = await getUserFailureLog('bob');
+      const log = await getUserFailureLog('mathil');
       expect(log.failures).to.have.lengthOf(50);
       expect(log.total_failures).to.equal(51);
       expect(log.failures[0].request_id).to.equal('seed-1');
@@ -204,27 +213,27 @@ describe('replication failure logging @docker', () => {
 
       for (const period of previousPeriods) {
         await utils.logsDb.put({
-          _id: `replication-fail-${period}-bob`,
-          user: 'bob',
+          _id: `replication-fail-${period}-mathil`,
+          user: 'mathil',
           date: moment(period, 'YYYY-MM').valueOf(),
           total_failures: 0,
           failures: [],
         });
       }
 
-      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('mathil');
 
       // New log for the current reporting period
       const currentPeriod = moment().format('YYYY-MM');
-      const currentResponse = await getFailureLogs({ user: 'bob', reportingPeriod: currentPeriod });
+      const currentResponse = await getFailureLogs({ user: 'mathil', reportingPeriod: currentPeriod });
       expect(currentResponse.data).to.have.lengthOf(1);
-      expect(currentResponse.data[0]._id).to.equal(`replication-fail-${currentPeriod}-bob`);
+      expect(currentResponse.data[0]._id).to.equal(`replication-fail-${currentPeriod}-mathil`);
       expect(currentResponse.data[0].failures).to.have.lengthOf(1);
       expect(currentResponse.data[0].total_failures).to.equal(1);
 
       // Previous periods' logs are untouched
       for (const period of previousPeriods) {
-        const oldResponse = await getFailureLogs({ user: 'bob', reportingPeriod: period });
+        const oldResponse = await getFailureLogs({ user: 'mathil', reportingPeriod: period });
         expect(oldResponse.data).to.have.lengthOf(1);
         expect(oldResponse.data[0].failures).to.have.lengthOf(0);
         expect(oldResponse.data[0].total_failures).to.equal(0);
@@ -239,8 +248,8 @@ describe('replication failure logging @docker', () => {
 
       for (const period of previousPeriods) {
         await utils.logsDb.put({
-          _id: `replication-fail-${period}-bob`,
-          user: 'bob',
+          _id: `replication-fail-${period}-mathil`,
+          user: 'mathil',
           date: moment(period, 'YYYY-MM').valueOf(),
           total_failures: 3,
           failures: [
@@ -249,42 +258,42 @@ describe('replication failure logging @docker', () => {
         });
       }
 
-      await requestDocsExpectingError('bob');
+      await requestDocsExpectingError('mathil');
 
-      const { data } = await getFailureLogs({ user: 'bob' });
+      const { data } = await getFailureLogs({ user: 'mathil' });
       const ids = data.map(log => log._id).sort();
-      expect(ids).to.include(`replication-fail-${moment().format('YYYY-MM')}-bob`);
+      expect(ids).to.include(`replication-fail-${moment().format('YYYY-MM')}-mathil`);
       for (const period of previousPeriods) {
-        expect(ids).to.include(`replication-fail-${period}-bob`);
+        expect(ids).to.include(`replication-fail-${period}-mathil`);
       }
       data.forEach(log => {
         expect(log).to.not.have.property('type');
-        expect(log.user).to.equal('bob');
+        expect(log.user).to.equal('mathil');
         expect(log.failures).to.be.an('array');
       });
     });
 
     it('should return full bodies for all users when no filters are provided', async () => {
-      await requestDocsExpectingError('bob');
-      await requestDocsExpectingError('clare');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('janice');
 
       const response = await getFailureLogs();
       expect(response.data.length).to.be.at.least(2);
 
-      const bobLog = response.data.find(log => log.user === 'bob');
-      expect(bobLog.failures).to.have.lengthOf(1);
-      expect(bobLog.total_failures).to.equal(1);
+      const mathilLog = response.data.find(log => log.user === 'mathil');
+      expect(mathilLog.failures).to.have.lengthOf(1);
+      expect(mathilLog.total_failures).to.equal(1);
 
-      const clareLog = response.data.find(log => log.user === 'clare');
-      expect(clareLog.failures).to.have.lengthOf(1);
-      expect(clareLog.total_failures).to.equal(1);
+      const janiceLog = response.data.find(log => log.user === 'janice');
+      expect(janiceLog.failures).to.have.lengthOf(1);
+      expect(janiceLog.total_failures).to.equal(1);
 
-      expect(bobLog._id).to.not.equal(clareLog._id);
+      expect(mathilLog._id).to.not.equal(janiceLog._id);
     });
 
     it('should respect the limit parameter and return a next-page cursor', async () => {
-      await requestDocsExpectingError('bob');
-      await requestDocsExpectingError('clare');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('janice');
 
       const response = await getFailureLogs({ limit: 1 });
       expect(response.data).to.have.lengthOf(1);
@@ -292,8 +301,8 @@ describe('replication failure logging @docker', () => {
     });
 
     it('should walk pages via the returned cursor', async () => {
-      await requestDocsExpectingError('bob');
-      await requestDocsExpectingError('clare');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('janice');
 
       const firstPage = await getFailureLogs({ limit: 1 });
       expect(firstPage.data).to.have.lengthOf(1);

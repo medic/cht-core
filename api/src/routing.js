@@ -916,17 +916,10 @@ app.all(
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.get(
-  '/api/v1/initial-replication/get-ids',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  authorization.captureReplicationFailures,
-  replication.getDocIds,
-);
-app.get(
   '/api/v1/replication/get-ids',
   authorization.handleAuthErrors,
-  authorization.captureReplicationFailures,
   authorization.onlineUserPassThrough,
+  authorization.captureReplicationFailures,
   replication.getDocIds,
 );
 app.post(

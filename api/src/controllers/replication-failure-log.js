@@ -1,13 +1,9 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const replicationFailureLog = require('../services/replication/replication-failure-log');
+const pagination = require('../services/pagination');
 const errors = require('../errors');
 const moment = require('moment');
-
-const parsePositiveInt = (value, fallback) => {
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
-};
 
 module.exports = {
   /**
@@ -129,8 +125,8 @@ module.exports = {
       const result = await replicationFailureLog.get({
         user: req.query.user,
         reportingPeriod,
-        cursor: req.query.cursor,
-        limit: parsePositiveInt(req.query.limit, replicationFailureLog.DEFAULT_LIMIT),
+        cursor: pagination.parseCursor(req.query.cursor),
+        limit: pagination.parseLimit(req.query.limit),
       });
       res.json(result);
     } catch (err) {

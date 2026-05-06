@@ -1,30 +1,12 @@
 const db = require('../../db');
 const moment = require('moment');
-const { InvalidArgumentError } = require('@medic/cht-datasource');
+const pagination = require('../pagination');
 
-const LOG_TYPE = 'replication-fail';
+const TYPE_PREFIX = `replication-fail-`;
 const MAX_FAILURES = 50;
-const DEFAULT_LIMIT = 100;
-// Reporting-period segment `YYYY-MM-` after the type prefix
-const REPORTING_PERIOD_SEGMENT_LENGTH = 8;
-
-const validateCursor = (cursor) => {
-  if (cursor === undefined || cursor === null) {
-    return 0;
-  }
-  if (typeof cursor !== 'string') {
-    throw new InvalidArgumentError(
-      `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}].`
-    );
-  }
-  const skip = Number(cursor);
-  if (!Number.isInteger(skip) || skip < 0) {
-    throw new InvalidArgumentError(
-      `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}].`
-    );
-  }
-  return skip;
-};
+const REPORTING_PERIOD_FORMAT = 'YYYY-MM';
+const UNKNOWN = 'unknown';
+const MAX_PERIODS = 60;
 
 const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const log = await getLog(userCtx.name);
@@ -38,9 +20,9 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
     duration: duration,
     request_id: requestId,
     roles: userCtx.roles,
-    subjects_count: userCtx.subjectsCount ?? 'unknown',
-    docs_count: userCtx.docsCount ?? 'unknown',
-    unpurged_docs_count: userCtx.unpurgedDocsCount ?? 'unknown',
+    subjects_count: userCtx.subjectsCount ?? UNKNOWN,
+    docs_count: userCtx.docsCount ?? UNKNOWN,
+    unpurged_docs_count: userCtx.unpurgedDocsCount ?? UNKNOWN,
   };
 
   log.failures.push(failure);
@@ -52,7 +34,12 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   return db.medicLogs.put(log);
 };
 
-const getDocId = (userName) => `${LOG_TYPE}-${moment().format('YYYY-MM')}-${userName}`;
+const getDocId = (userName, reportingPeriod) => {
+  if (!reportingPeriod) {
+    reportingPeriod = moment().format(REPORTING_PERIOD_FORMAT);
+  }
+  return `${TYPE_PREFIX}${reportingPeriod}-${userName}`;
+};
 
 const getLog = async (userName) => {
   const docId = getDocId(userName);
@@ -84,47 +71,109 @@ const getOne = async (docId) => {
   }
 };
 
-// Returns full failure log documents matching the given filters as a paginated `Page<Log>`:
-//   { data: Log[], cursor: string|null }
-// `cursor` is an opaque token (currently a stringified skip offset) that callers pass back to fetch
-// the next page; `null` means there are no more pages.
-// - user + reportingPeriod → single doc lookup (always one page, cursor = null)
-// - otherwise: list matching ids, paginate, bulk-fetch the page's bodies
-const get = async ({ user, reportingPeriod, cursor, limit = DEFAULT_LIMIT } = {}) => {
-  const skip = validateCursor(cursor);
+const getRangeForReportingPeriod = (reportingPeriod) => {
+  const prefix = reportingPeriod ? `${TYPE_PREFIX}${reportingPeriod}-` : TYPE_PREFIX;
+  return { startkey: prefix, endkey: `${prefix}\ufff0` };
+};
 
-  if (user && reportingPeriod) {
-    const doc = await getOne(`${LOG_TYPE}-${reportingPeriod}-${user}`);
-    return { data: doc ? [doc] : [], cursor: null };
+const findOldestReportingPeriod = async () => {
+  const result = await db.medicLogs.allDocs({ ...getRangeForReportingPeriod(), limit: 1 });
+  if (!result.rows.length) {
+    return null;
   }
+  // Doc id format: `replication-fail-YYYY-MM-<userName>`.
+  return result.rows[0].id.substring(TYPE_PREFIX.length, TYPE_PREFIX.length + REPORTING_PERIOD_FORMAT.length);
+};
 
-  const typePrefix = `${LOG_TYPE}-`;
-  const prefix = reportingPeriod ? `${typePrefix}${reportingPeriod}-` : typePrefix;
+// Returns every YYYY-MM string from `from` (inclusive) up to the current period (inclusive).
+// `from` is clamped to [now - MAX_PERIODS, now] to defend against malformed doc ids (too-old or
+// future-dated) polluting the candidate-key array.
+const enumerateReportingPeriods = (fromPeriod) => {
+  const MONTH = 'month';
+  const now = moment();
+  const earliestAllowed = now.clone().subtract(MAX_PERIODS, MONTH);
+  const from = moment(fromPeriod, REPORTING_PERIOD_FORMAT, true);
+  const candidate = from.isValid() ? from : earliestAllowed;
+  const start = moment.max(earliestAllowed, moment.min(candidate, now));
 
-  const index = await db.medicLogs.allDocs({
-    startkey: prefix,
-    endkey: `${prefix}\ufff0`,
+  const periods = [];
+  const cursor = start.clone();
+  while (cursor.isSameOrBefore(now, MONTH)) {
+    periods.push(cursor.format(REPORTING_PERIOD_FORMAT));
+    cursor.add(1, MONTH);
+  }
+  return periods;
+};
+
+const getSingleDoc = async (user, reportingPeriod) => {
+  const doc = await getOne(getDocId(user, reportingPeriod));
+  return {
+    data: doc ? [doc] : [],
+    cursor: null,
+  };
+};
+
+const getPageByRange = async ({ reportingPeriod, skip, limit }) => {
+  // Fetch `limit + 1` rows and use the trailing row as a definitive "is there a next page?" signal —
+  // a `data.length === limit` heuristic would over-report when the total is an exact multiple of limit.
+  const result = await db.medicLogs.allDocs({
+    ...getRangeForReportingPeriod(reportingPeriod),
+    skip,
+    limit: limit + 1,
+    include_docs: true,
   });
+  const hasMore = result.rows.length > limit;
+  const data = (hasMore ? result.rows.slice(0, limit) : result.rows).map(row => row.doc);
+  return {
+    data,
+    cursor: pagination.buildNextCursor(skip, data.length, hasMore),
+  };
+};
 
-  let ids = index.rows.map(row => row.id);
-  if (user) {
-    ids = ids.filter(id => id.substring(typePrefix.length + REPORTING_PERIOD_SEGMENT_LENGTH) === user);
-  }
-
-  const pageIds = ids.slice(skip, skip + limit);
-  const nextSkip = skip + pageIds.length;
-  const nextCursor = nextSkip < ids.length ? String(nextSkip) : null;
-
-  if (!pageIds.length) {
+const getPageByUser = async ({ user, skip, limit }) => {
+  const oldestPeriod = await findOldestReportingPeriod();
+  if (!oldestPeriod) {
     return { data: [], cursor: null };
   }
 
-  const result = await db.medicLogs.allDocs({ keys: pageIds, include_docs: true });
-  return { data: result.rows.map(row => row.doc), cursor: nextCursor };
+  // Username is the doc-id suffix, preventing prefix-scan; bulk-fetch the user's candidate keys (max 60).
+  const candidateKeys = enumerateReportingPeriods(oldestPeriod).map(period => getDocId(user, period));
+  const result = await db.medicLogs.allDocs({ keys: candidateKeys, include_docs: true });
+  const matched = result.rows.filter(row => row.doc).map(row => row.doc);
+  const pageData = matched.slice(skip, skip + limit);
+
+  return {
+    data: pageData,
+    cursor: pagination.buildNextCursor(skip, pageData.length, skip + pageData.length < matched.length),
+  };
+};
+
+/**
+ * Returns a page of full replication failure log documents matching the given filters.
+ *
+ * Callers must validate `cursor` and `limit` before invocation (see services/pagination). `cursor`
+ * here is the parsed skip offset (the numeric form of the opaque cursor token returned by previous
+ * calls); the function still returns a stringified next-cursor in the response.
+ *
+ * @param {object} [options]
+ * @param {string} [options.user] filter to a specific username
+ * @param {string} [options.reportingPeriod] filter to a YYYY-MM reporting period
+ * @param {number} [options.cursor=0] parsed cursor (skip offset); 0 for the first page
+ * @param {number} [options.limit=pagination.DEFAULT_LIMIT] page size
+ * @returns {Promise<{ data: object[], cursor: string|null }>} `cursor` is the token to fetch the
+ *   next page, or `null` when the current page is the last.
+ */
+const get = async ({ user, reportingPeriod, cursor = 0, limit = pagination.DEFAULT_LIMIT } = {}) => {
+  if (user && reportingPeriod) {
+    return getSingleDoc(user, reportingPeriod);
+  }
+  if (user) {
+    return getPageByUser({ user, skip: cursor, limit });
+  }
+  return getPageByRange({ reportingPeriod, skip: cursor, limit });
 };
 
 module.exports = {
   capture: captureFailure,
   get,
-  DEFAULT_LIMIT,
 };
