@@ -1,7 +1,12 @@
 import {
-  Component, Input, Output, EventEmitter,
-  OnChanges, SimpleChanges,
-  ViewChild, ElementRef
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -48,12 +53,8 @@ export interface EditUserModel {
   place: string | string[] | null;
   contact: string | null;
   token_login: boolean | '' | null;
-  tokenLoginEnabled: {
-    active: boolean;
-    expired: boolean;
-    expirationDate: string;
-    loginDate?: string;
-  } | null;
+  /** Raw token_login data as returned by the server — not transformed client-side. */
+  tokenLoginEnabled: User['token_login'] | null;
   oidc_username: string;
   password: string;
   passwordConfirm: string;
@@ -95,7 +96,9 @@ export class EditUserComponent implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() userUpdated = new EventEmitter<void>();
 
-  @ViewChild('facilitySelect') facilitySelectRef!: ElementRef<HTMLSelectElement>;
+  @ViewChild('facilitySelect')
+  facilitySelectRef!: ElementRef<HTMLSelectElement>;
+
   @ViewChild('contactSelect') contactSelectRef!: ElementRef<HTMLSelectElement>;
 
   loading = false;
@@ -107,7 +110,9 @@ export class EditUserComponent implements OnChanges {
 
   model: EditUserModel = getInitialModel();
 
-  private settingsRoles: Record<string, { name: string; offline?: boolean }> = {};
+  private settingsRoles: Record<string, { name: string; offline?: boolean }> =
+    {};
+
   private cachedSettings: any = null;
   private originalModel: EditUserModel = getInitialModel();
 
@@ -160,32 +165,19 @@ export class EditUserComponent implements OnChanges {
         : [this.user.facility_id]
       : null;
 
-    const tokenLoginData = (this.user as any).token_login;
-    const tokenLoginEnabled = tokenLoginData
-      ? {
-        active: tokenLoginData.active,
-        expired: tokenLoginData.expiration_date <= new Date().getTime(),
-        expirationDate: tokenLoginData.expiration_date
-          ? new Date(tokenLoginData.expiration_date).toLocaleDateString()
-          : '',
-        loginDate: tokenLoginData.login_date
-          ? new Date(tokenLoginData.login_date).toLocaleDateString()
-          : undefined,
-      }
-      : null;
-
     this.model = {
       id: this.user.id || '',
       username: this.user.username || '',
       fullname: this.user.fullname || '',
-      email: (this.user as any).email || '',
+      email: this.user.email || '',
       phone: this.user.phone || '',
       roles: this.filterRoles(this.user.roles || []),
       place: facilityId,
       contact: this.user.contact_id || null,
       token_login: null,
-      tokenLoginEnabled,
-      oidc_username: (this.user as any).oidc_username || '',
+      // Pass through server data as-is — do not compute derived fields client-side
+      tokenLoginEnabled: this.user.token_login ?? null,
+      oidc_username: this.user.oidc_username || '',
       password: '',
       passwordConfirm: '',
       showPassword: false,
@@ -203,7 +195,7 @@ export class EditUserComponent implements OnChanges {
     if (roles.includes('_admin')) {
       return ['_admin'];
     }
-    return roles.filter(role => !!this.settingsRoles[role]);
+    return roles.filter((role) => !!this.settingsRoles[role]);
   }
 
   private async initSelect2() {
@@ -211,18 +203,20 @@ export class EditUserComponent implements OnChanges {
       // initialValue accepts a single string — preselect the first place if multiple
       const placeIds = Array.isArray(this.model.place)
         ? this.model.place
-        : this.model.place ? [this.model.place] : [];
+        : this.model.place
+          ? [this.model.place]
+          : [];
       const initialValue = placeIds[0] || undefined;
       await this.select2SearchService.initPlaceSelect(
         this.facilitySelectRef.nativeElement,
-        { initialValue }
+        { initialValue },
       );
     }
     if (this.contactSelectRef?.nativeElement) {
       const initialValue = this.model.contact || undefined;
       await this.select2SearchService.initPersonSelect(
         this.contactSelectRef.nativeElement,
-        { initialValue }
+        { initialValue },
       );
     }
   }
@@ -231,7 +225,8 @@ export class EditUserComponent implements OnChanges {
     if (this.facilitySelectRef?.nativeElement) {
       const val = $(this.facilitySelectRef.nativeElement).val();
       if (typeof val === 'string' || Array.isArray(val)) {
-        this.model.place = Array.isArray(val) && val.length === 0 ? null : val as string;
+        this.model.place =
+          Array.isArray(val) && val.length === 0 ? null : (val as string);
       }
     }
     if (this.contactSelectRef?.nativeElement) {
@@ -243,14 +238,19 @@ export class EditUserComponent implements OnChanges {
   }
 
   private isOfflineUser(): boolean {
-    return this.model.roles.some(role => this.settingsRoles[role]?.offline === true);
+    return this.model.roles.some(
+      (role) => this.settingsRoles[role]?.offline === true,
+    );
   }
 
   get passwordHidden(): boolean {
-    return (this.allowTokenLogin && (
-      !!this.model.token_login ||
-      (this.model.token_login !== false && !!this.model.tokenLoginEnabled)
-    )) || (this.allowSSOLogin && !!this.model.oidc_username);
+    return (
+      (this.allowTokenLogin &&
+        (!!this.model.token_login ||
+          (this.model.token_login !== false &&
+            !!this.model.tokenLoginEnabled))) ||
+      (this.allowSSOLogin && !!this.model.oidc_username)
+    );
   }
 
   cancel() {
@@ -327,7 +327,6 @@ export class EditUserComponent implements OnChanges {
     const eitherFieldFilled = this.model.password || this.model.passwordConfirm;
 
     if (!disablingTokenLogin && !eitherFieldFilled) {
-      // Existing user, no password change — skip validation
       return;
     }
 
@@ -366,8 +365,13 @@ export class EditUserComponent implements OnChanges {
       return true;
     }
 
-    const placeIds = Array.isArray(this.model.place) ? this.model.place : [this.model.place];
-    const valid = await this.select2SearchService.isContactInPlace(this.model.contact, placeIds);
+    const placeIds = Array.isArray(this.model.place)
+      ? this.model.place
+      : [this.model.place];
+    const valid = await this.select2SearchService.isContactInPlace(
+      this.model.contact,
+      placeIds,
+    );
 
     if (!valid) {
       this.errors.contact = 'configuration.user.place.contact';
@@ -388,10 +392,11 @@ export class EditUserComponent implements OnChanges {
         contact_id: this.model.contact,
       };
       const resp: any = await firstValueFrom(
-        this.http.get('/api/v1/users-info', { params })
+        this.http.get('/api/v1/users-info', { params }),
       );
       if (resp?.warn) {
-        this.errors.replicationLimit = 'configuration.user.replication.limit.exceeded';
+        this.errors.replicationLimit =
+          'configuration.user.replication.limit.exceeded';
         return false;
       }
     } catch (err) {
@@ -479,7 +484,6 @@ export class EditUserComponent implements OnChanges {
 
     const updates = this.getChangedUpdates();
     if (!Object.keys(updates).length) {
-      // Nothing changed — just close
       this.reset();
       this.closed.emit();
       return;

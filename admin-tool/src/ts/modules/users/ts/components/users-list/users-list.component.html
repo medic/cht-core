@@ -1,99 +1,97 @@
 <div>
-  @if (canConfigure) {
-    <legend>{{ 'Users' | translate }}</legend>
-    <div class="btn-toolbar">
-      <button id="add-user" class="btn btn-primary" (click)="addUser()">
-        <span>{{ 'users.manage.add_single_user' | translate }}</span>
-      </button>
-      <button id="add-users" class="btn btn-primary" (click)="importUsers()">
-        <span>{{ 'users.manage.import_users' | translate }}</span>
-      </button>
-    </div>
+  <legend>{{ "Users" | translate }}</legend>
+  <div class="btn-toolbar">
+    <button id="add-user" class="btn btn-primary" (click)="addUser()">
+      <span>{{ "users.manage.add_single_user" | translate }}</span>
+    </button>
+    <button id="add-users" class="btn btn-primary" (click)="importUsers()">
+      <span>{{ "users.manage.import_users" | translate }}</span>
+    </button>
+  </div>
 
-    @if (loading) {
-      <div class="loader"></div>
+  @if (loading) {
+    <div class="loader"></div>
+  } @else {
+    @if (error) {
+      <p class="alert alert-danger" role="alert">
+        {{ "Error fetching users" | translate }}
+      </p>
     } @else {
-      @if (error) {
-        <p class="alert alert-danger" role="alert">
-          {{ 'Error fetching users' | translate }}
-        </p>
-      } @else {
-        <div class="container-fluid">
-          <div class="row selection-heading">
-            <div class="col-xs-3">{{ 'User Name' | translate }}</div>
-            <div class="col-xs-3">{{ 'Full Name' | translate }}</div>
-            <div class="col-xs-3">{{ 'Phone Number' | translate }}</div>
-            <div class="col-xs-1">{{ 'Facility' | translate }}</div>
-            <div class="col-xs-1">{{ 'Contact' | translate }}</div>
-            <div class="col-xs-1"></div>
-          </div>
-
-          @if (users.length === 0) {
-            <div class="text-center empty-state">
-              <p>{{ 'users.list.empty' | translate }}</p>
-            </div>
-          } @else {
-            @for (user of users; track user.id) {
-              <div
-                class="row selection"
-                (click)="onRowClick(user)"
-                [class.inactive]="user.inactive"
-                [title]="user.inactive ? ('Deleted user' | translate) : ''"
-              >
-                <div class="col-xs-3">{{ user.username }}</div>
-                <div class="col-xs-3">{{ user.fullname }}</div>
-                <div class="col-xs-3">{{ user.phone }}</div>
-                <div class="col-xs-1">
-                  @if (user.facility_id) {
-                    <i class="fa fa-check"></i>
-                  }
-                </div>
-                <div class="col-xs-1">
-                  @if (user.contact_id) {
-                    <i class="fa fa-check"></i>
-                  }
-                </div>
-                <div class="col-xs-1 delete">
-                  @if (!user.inactive) {
-                    <button
-                      class="btn btn-sm btn-danger"
-                      (click)="deleteUser(user, $event)"
-                      [attr.aria-label]="'Delete user' | translate"
-                    >
-                      <i class="fa fa-trash-o"></i>
-                    </button>
-                  }
-                </div>
-              </div>
-            }
-          }
+      <div class="container-fluid">
+        <div class="row selection-heading">
+          <div class="col-xs-3">{{ "User Name" | translate }}</div>
+          <div class="col-xs-3">{{ "Full Name" | translate }}</div>
+          <div class="col-xs-3">{{ "Phone Number" | translate }}</div>
+          <div class="col-xs-1">{{ "Facility" | translate }}</div>
+          <div class="col-xs-1">{{ "Contact" | translate }}</div>
+          <div class="col-xs-1"></div>
         </div>
-      }
+
+        @if (users.length === 0) {
+          <div class="text-center empty-state">
+            <p>{{ "users.list.empty" | translate }}</p>
+          </div>
+        } @else {
+          @for (user of users; track user.id) {
+            <div
+              class="row selection"
+              (click)="onRowClick(user)"
+              [class.inactive]="user.inactive"
+              [title]="user.inactive ? ('Deleted user' | translate) : ''"
+            >
+              <div class="col-xs-3">{{ user.username }}</div>
+              <div class="col-xs-3">{{ user.fullname }}</div>
+              <div class="col-xs-3">{{ user.phone }}</div>
+              <div class="col-xs-1">
+                @if (user.facility_id) {
+                  <i class="fa fa-check"></i>
+                }
+              </div>
+              <div class="col-xs-1">
+                @if (user.contact_id) {
+                  <i class="fa fa-check"></i>
+                }
+              </div>
+              <div class="col-xs-1 delete">
+                @if (!user.inactive) {
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="deleteUser(user, $event)"
+                    [attr.aria-label]="'Delete user' | translate"
+                  >
+                    <i class="fa fa-trash-o"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
     }
-
-    <create-user
-      [visible]="showCreateModal"
-      (closed)="showCreateModal = false"
-      (userCreated)="showCreateModal = false"
-    ></create-user>
-
-    <edit-user
-      [visible]="showEditModal"
-      [user]="selectedUser"
-      (closed)="showEditModal = false"
-      (userUpdated)="showEditModal = false"
-    ></edit-user>
-
-    <delete-user
-      [visible]="showDeleteModal"
-      [user]="selectedUser"
-      (closed)="showDeleteModal = false"
-      (userDeleted)="showDeleteModal = false"
-    ></delete-user>
-
-    <import-users
-      [visible]="showImportModal"
-      (closed)="showImportModal = false"
-    ></import-users>
   }
+
+  <create-user
+    [visible]="showCreateModal"
+    (closed)="showCreateModal = false"
+    (userCreated)="showCreateModal = false"
+  ></create-user>
+
+  <edit-user
+    [visible]="showEditModal"
+    [user]="selectedUser"
+    (closed)="showEditModal = false"
+    (userUpdated)="showEditModal = false"
+  ></edit-user>
+
+  <delete-user
+    [visible]="showDeleteModal"
+    [user]="selectedUser"
+    (closed)="showDeleteModal = false"
+    (userDeleted)="showDeleteModal = false"
+  ></delete-user>
+
+  <import-users
+    [visible]="showImportModal"
+    (closed)="showImportModal = false"
+  ></import-users>
 </div>

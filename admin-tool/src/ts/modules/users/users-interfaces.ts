@@ -11,6 +11,7 @@ export interface User {
   contact_id?: string;
   inactive?: boolean;
   roles?: string[];
+  oidc_username?: string;
   token_login?: {
     active: boolean;
     expiration_date: number;

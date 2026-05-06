@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
-import { AuthService } from '@admin-tool-services/auth.service';
 import { UsersService } from '@admin-tool-services/users.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
 import { CreateUserComponent } from '../create-user/create-user.component';
@@ -11,18 +10,23 @@ import { ImportUsersComponent } from '../import-users/import-users.component';
 
 /**
  * Displays and manages the list of system users.
- * Requires `can_configure` permission to access.
+ * Access is controlled by the route guard (can_configure permission).
  * Provides hooks for create, edit, delete and bulk import actions via modal components.
  */
 @Component({
   selector: 'users-list',
   standalone: true,
-  imports: [TranslatePipe, CreateUserComponent, EditUserComponent, DeleteUserComponent, ImportUsersComponent],
+  imports: [
+    TranslatePipe,
+    CreateUserComponent,
+    EditUserComponent,
+    DeleteUserComponent,
+    ImportUsersComponent,
+  ],
   templateUrl: './users-list.component.html',
   styleUrl: './users-list.component.less',
 })
 export class UsersListComponent implements OnInit, OnDestroy {
-  canConfigure = false;
   loading = false;
   error = false;
   users: Partial<User>[] = [];
@@ -36,21 +40,12 @@ export class UsersListComponent implements OnInit, OnDestroy {
 
   private usersUpdatedSubscription!: Subscription;
 
-  constructor(
-    private authService: AuthService,
-    private usersService: UsersService,
-  ) {}
+  constructor(private usersService: UsersService) {}
 
-  ngOnInit() {
-    this.authService.has('can_configure').then((result) => {
-      this.canConfigure = result;
-      if (result) {
-        this.loadUsers();
-      }
-    });
-
+  async ngOnInit() {
+    await this.loadUsers();
     this.usersUpdatedSubscription = this.usersService.usersUpdated$.subscribe(
-      () => this.loadUsers()
+      () => this.loadUsers(),
     );
   }
 

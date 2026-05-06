@@ -17,7 +17,7 @@
           >
             <span aria-hidden="true">&times;</span>
           </button>
-          <h4 class="modal-title">{{ 'Edit User' | translate }}</h4>
+          <h4 class="modal-title">{{ "Edit User" | translate }}</h4>
         </div>
 
         <!-- Body -->
@@ -36,7 +36,7 @@
 
           <!-- Username — read-only when editing -->
           <div class="form-group">
-            <label for="username">{{ 'User Name' | translate }}</label>
+            <label for="username">{{ "User Name" | translate }}</label>
             <input
               id="username"
               type="text"
@@ -48,19 +48,21 @@
 
           <!-- Full Name -->
           <div class="form-group">
-            <label for="fullname">{{ 'Full Name' | translate }}</label>
+            <label for="fullname">{{ "Full Name" | translate }}</label>
             <input
               id="fullname"
               type="text"
               class="form-control"
               [(ngModel)]="model.fullname"
             />
-            <span class="help-block text-muted">{{ 'user.fullname.help' | translate }}</span>
+            <span class="help-block text-muted">{{
+              "user.fullname.help" | translate
+            }}</span>
           </div>
 
           <!-- Email -->
           <div class="form-group" [class.has-error]="errors.email">
-            <label for="email">{{ 'Email Address' | translate }}</label>
+            <label for="email">{{ "Email Address" | translate }}</label>
             <input
               id="email"
               type="text"
@@ -78,14 +80,16 @@
             [class.required]="model.token_login"
             [class.has-error]="errors.phone"
           >
-            <label for="phone">{{ 'Phone Number' | translate }}</label>
+            <label for="phone">{{ "Phone Number" | translate }}</label>
             <input
               id="phone"
               type="text"
               class="form-control"
               [(ngModel)]="model.phone"
             />
-            <span class="help-block text-muted">{{ 'user.phone.help' | translate }}</span>
+            <span class="help-block text-muted">{{
+              "user.phone.help" | translate
+            }}</span>
             @if (errors.phone) {
               <span class="help-block">{{ errors.phone | translate }}</span>
             }
@@ -93,7 +97,7 @@
 
           <!-- Roles -->
           <div class="form-group required" [class.has-error]="errors.roles">
-            <label>{{ 'configuration.role' | translate }}</label> *
+            <label>{{ "configuration.role" | translate }}</label> *
             <ul class="list-unstyled">
               @for (role of availableRoles; track role.key) {
                 <li class="checkbox">
@@ -120,13 +124,15 @@
             [class.required]="isOfflineRole"
             [class.has-error]="errors.place"
           >
-            <label for="facility-select">{{ 'Facility' | translate }}</label>
+            <label for="facility-select">{{ "Facility" | translate }}</label>
             <select
               id="facility-select"
               class="form-control"
               #facilitySelect
             ></select>
-            <span class="help-block text-muted">{{ 'user.place.help' | translate }}</span>
+            <span class="help-block text-muted">{{
+              "user.place.help" | translate
+            }}</span>
             @if (errors.place) {
               <span class="help-block">{{ errors.place | translate }}</span>
             }
@@ -138,8 +144,12 @@
             [class.required]="isOfflineRole"
             [class.has-error]="errors.contact"
           >
-            <label for="contact-select">{{ 'associated.contact' | translate }}</label>
-            <span class="help-block text-muted">{{ 'associated.contact.help' | translate }}</span>
+            <label for="contact-select">{{
+              "associated.contact" | translate
+            }}</label>
+            <span class="help-block text-muted">{{
+              "associated.contact.help" | translate
+            }}</span>
             <select
               id="contact-select"
               class="form-control"
@@ -151,21 +161,33 @@
           </div>
 
           <!-- SSO Username -->
-          @if (allowSSOLogin && !model.token_login) {
+          @if (
+            allowSSOLogin &&
+            ((model.tokenLoginEnabled && model.token_login === false) ||
+              (!model.tokenLoginEnabled && !model.token_login))
+          ) {
             <div class="form-group">
-              <label for="sso-login">{{ 'user.sso.username' | translate }}</label>
+              <label for="sso-login">{{
+                "user.sso.username" | translate
+              }}</label>
               <input
                 id="sso-login"
                 type="text"
                 class="form-control"
                 [(ngModel)]="model.oidc_username"
               />
-              <span class="help-block text-muted">{{ 'user.sso.username.help' | translate }}</span>
+              <span class="help-block text-muted">{{
+                "user.sso.username.help" | translate
+              }}</span>
             </div>
           }
 
           <!-- Token Login — enable (when not currently enabled) -->
-          @if (allowTokenLogin && !model.tokenLoginEnabled && !(allowSSOLogin && model.oidc_username)) {
+          @if (
+            allowTokenLogin &&
+            !model.tokenLoginEnabled &&
+            !(allowSSOLogin && model.oidc_username)
+          ) {
             <div class="form-group">
               <input
                 type="checkbox"
@@ -173,25 +195,44 @@
                 [(ngModel)]="model.token_login"
               />
               <label for="token-login" class="form-check-label">
-                {{ 'configuration.enable.token.login' | translate }}
+                {{ "configuration.enable.token.login" | translate }}
               </label>
               <div class="help-block text-muted">
-                {{ 'configuration.enable.token.login.help' | translate }}
+                {{ "configuration.enable.token.login.help" | translate }}
               </div>
             </div>
           }
 
           <!-- Token Login — manage (when already enabled) -->
-          @if (allowTokenLogin && model.tokenLoginEnabled && !(allowSSOLogin && model.oidc_username)) {
+          @if (
+            allowTokenLogin &&
+            model.tokenLoginEnabled &&
+            !(allowSSOLogin && model.oidc_username)
+          ) {
             <div class="form-group">
               <p>
                 <label class="form-check-label">
-                  @if (model.tokenLoginEnabled.active && !model.tokenLoginEnabled.expired) {
-                    <span>{{ 'configuration.enable.token.login.enabled.active' | translate }}</span>
-                  } @else if (model.tokenLoginEnabled.active && model.tokenLoginEnabled.expired) {
-                    <span>{{ 'configuration.enable.token.login.enabled.expired' | translate }}</span>
+                  @if (
+                    model.tokenLoginEnabled.active &&
+                    model.tokenLoginEnabled.expiration_date > 0
+                  ) {
+                    <span>{{
+                      "configuration.enable.token.login.enabled.active"
+                        | translate
+                    }}</span>
+                  } @else if (
+                    model.tokenLoginEnabled.active &&
+                    !model.tokenLoginEnabled.expiration_date
+                  ) {
+                    <span>{{
+                      "configuration.enable.token.login.enabled.expired"
+                        | translate
+                    }}</span>
                   } @else {
-                    <span>{{ 'configuration.enable.token.login.enabled.inactive' | translate }}</span>
+                    <span>{{
+                      "configuration.enable.token.login.enabled.inactive"
+                        | translate
+                    }}</span>
                   }
                 </label>
               </p>
@@ -203,7 +244,7 @@
                   [(ngModel)]="model.token_login"
                 />
                 <label for="unmodified-token-login" class="form-check-label">
-                  {{ 'configuration.enable.token.login.no.modify' | translate }}
+                  {{ "configuration.enable.token.login.no.modify" | translate }}
                 </label>
               </div>
               <div>
@@ -214,7 +255,7 @@
                   [(ngModel)]="model.token_login"
                 />
                 <label for="disable-token-login" class="form-check-label">
-                  {{ 'configuration.enable.token.login.disable' | translate }}
+                  {{ "configuration.enable.token.login.disable" | translate }}
                 </label>
               </div>
               <div>
@@ -225,11 +266,13 @@
                   [(ngModel)]="model.token_login"
                 />
                 <label for="refresh-token-login" class="form-check-label">
-                  {{ 'configuration.enable.token.login.refresh' | translate }}
+                  {{ "configuration.enable.token.login.refresh" | translate }}
                 </label>
               </div>
               <div class="help-block text-muted">
-                {{ 'configuration.enable.token.login.refresh.help' | translate }}
+                {{
+                  "configuration.enable.token.login.refresh.help" | translate
+                }}
               </div>
             </div>
           }
@@ -237,7 +280,7 @@
           <!-- Password — optional for existing users, hidden when token/SSO active -->
           @if (!passwordHidden) {
             <div class="form-group" [class.has-error]="errors.password">
-              <label for="password">{{ 'Password' | translate }}</label>
+              <label for="password">{{ "Password" | translate }}</label>
               <div class="input-group">
                 <input
                   id="password"
@@ -251,7 +294,10 @@
                     type="button"
                     class="btn btn-default"
                     (click)="togglePassword()"
-                    [attr.aria-label]="(model.showPassword ? 'password.hide' : 'password.show') | translate"
+                    [attr.aria-label]="
+                      (model.showPassword ? 'password.hide' : 'password.show')
+                        | translate
+                    "
                   >
                     <i
                       class="fa fa-eye"
@@ -261,13 +307,17 @@
                 </span>
               </div>
               @if (errors.password) {
-                <span class="help-block">{{ errors.password | translate }}</span>
+                <span class="help-block">{{
+                  errors.password | translate
+                }}</span>
               }
             </div>
 
             <!-- Confirm Password -->
             <div class="form-group" [class.has-error]="errors.passwordConfirm">
-              <label for="password-confirm">{{ 'Confirm Password' | translate }}</label>
+              <label for="password-confirm">{{
+                "Confirm Password" | translate
+              }}</label>
               <input
                 id="password-confirm"
                 [type]="model.showPassword ? 'text' : 'password'"
@@ -276,7 +326,9 @@
                 autocomplete="new-password"
               />
               @if (errors.passwordConfirm) {
-                <span class="help-block">{{ errors.passwordConfirm | translate }}</span>
+                <span class="help-block">{{
+                  errors.passwordConfirm | translate
+                }}</span>
               }
             </div>
           }
@@ -290,7 +342,7 @@
             (click)="cancel()"
             [disabled]="loading"
           >
-            {{ 'Cancel' | translate }}
+            {{ "Cancel" | translate }}
           </button>
           <button
             type="button"
@@ -300,9 +352,9 @@
           >
             @if (loading) {
               <i class="fa fa-spinner fa-spin"></i>
-              {{ 'Submitting' | translate }}
+              {{ "Submitting" | translate }}
             } @else {
-              {{ 'Submit' | translate }}
+              {{ "Submit" | translate }}
             }
           </button>
         </div>
