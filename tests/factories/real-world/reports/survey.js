@@ -1,5 +1,5 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const assesmentFactory = require('./assessment');
 const pregnancyFactory = require('./pregnancy');
 const assesmentFollowUpFactory = require('./assessment-follow-up');
@@ -7,7 +7,7 @@ const { DOC_TYPES } = require('@medic/constants');
 
 const survey = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
+    .sequence('_id', uuid)
     .option('patient', '')
     .option('contact', '')
     .attr('form', '')

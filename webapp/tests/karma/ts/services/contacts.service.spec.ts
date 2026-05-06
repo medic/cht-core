@@ -6,7 +6,7 @@ import { ContactsService } from '@mm-services/contacts.service';
 import { DbService } from '@mm-services/db.service';
 import { CacheService } from '@mm-services/cache.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts Service', () => {
   let service: ContactsService;
@@ -67,7 +67,7 @@ describe('Contacts Service', () => {
     const clinicA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551322a',
       _rev: '2-55151d808dacc7f12fdd1513f2eddc75',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Maori Hill',
       parent: {
         _id: 'a301463e-74ba-6e2a-3424d30ef5089a7f',
@@ -77,7 +77,7 @@ describe('Contacts Service', () => {
         parent: {
           _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
           _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'Otago',
           parent: {},
           contact: {
@@ -95,7 +95,7 @@ describe('Contacts Service', () => {
     const clinicB = {
       _id: 'a301463e-74ba-6e2a-3424d30ef508a488',
       _rev: '74-30d4791ba64f13592f86023344fa9449',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Andy Bay',
       contact: {
         name: 'Gareth',
@@ -109,7 +109,7 @@ describe('Contacts Service', () => {
         parent: {
           _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
           _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           name: 'Otago',
           parent: {},
           contact: {
@@ -139,7 +139,7 @@ describe('Contacts Service', () => {
       parent: {
         _id: '920a7f6a-d01d-5cfe-7c9182fe6551510e',
         _rev: '2-5b71b72299224c2500389db753116155',
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'Christchurch',
         sent_forms: {
           R: '2014-06-30T04:08:06.657Z'
@@ -148,13 +148,13 @@ describe('Contacts Service', () => {
     };
 
     query
-      .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: ['clinic'] })
+      .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: [CONTACT_TYPES.CLINIC] })
       .resolves({ rows: [{ doc: clinicA }, { doc: clinicB }] });
     query
       .withArgs('medic-client/contacts_by_type', { include_docs: true, reduce: false, key: ['health_center'] })
       .resolves({ rows: [{ doc: healthCenter }] });
 
-    return service.get(['clinic']).then(actual => {
+    return service.get([CONTACT_TYPES.CLINIC]).then(actual => {
       expect(actual).to.deep.equal([clinicA, clinicB]);
     });
   });
@@ -162,7 +162,7 @@ describe('Contacts Service', () => {
   it('should bust cache by correct type', async () => {
     query.resolves({ rows: [] });
 
-    await service.get(['clinic']);
+    await service.get([CONTACT_TYPES.CLINIC]);
 
     expect(contactTypesService.getPlaceTypes.callCount).to.equal(1);
     expect(cacheService.register.callCount).to.equal(3);
@@ -196,7 +196,7 @@ describe('Contacts Service', () => {
     sinon.resetHistory();
 
     const thirdDoc = { _id: 'someDoc', type: 'something', contact_type: 'otherthing' };
-    contactTypesService.getTypeId.withArgs(thirdDoc).returns('clinic');
+    contactTypesService.getTypeId.withArgs(thirdDoc).returns(CONTACT_TYPES.CLINIC);
 
     expect(forDistrictHospital.invalidate({ doc: thirdDoc })).to.equal(false);
     expect(forHealthCenter.invalidate({ doc: thirdDoc })).to.equal(false);
@@ -235,7 +235,7 @@ describe('Contacts Service', () => {
     const districtHospitalA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551510e',
       _rev: '2-5b71b72299224c2500389db753116155',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Christchurch',
       sent_forms: {
         R: '2014-06-30T04:08:06.657Z'
@@ -245,7 +245,7 @@ describe('Contacts Service', () => {
     const districtHospitalB = {
       _id: '3020c2a8-2074-4df5-a5ef-0c8f77ff336',
       _rev: '4-5b71b72299224c2500389db451239867',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Saint Johns',
       sent_forms: {
         R: '2014-06-30T04:08:08.657Z'
@@ -256,11 +256,11 @@ describe('Contacts Service', () => {
     const doc = {
       _id: '123',
       _rev: '1',
-      contact_type: 'district_hospital',
+      contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       parent: undefined,
       type: ''
     };
-    contactTypesService.getTypeId.withArgs(doc).returns('clinic');
+    contactTypesService.getTypeId.withArgs(doc).returns(CONTACT_TYPES.CLINIC);
     contactTypesService.get = (_) => {
       return {
         create_form: 'form:contact:district_hospital:create',
@@ -283,7 +283,7 @@ describe('Contacts Service', () => {
       const clinicA = {
         _id: '920a7f6a-d01d-5cfe-7c9182fe6551322a',
         _rev: '2-55151d808dacc7f12fdd1513f2eddc75',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         name: 'Maori Hill',
         parent: {
           _id: 'a301463e-74ba-6e2a-3424d30ef5089a7f',
@@ -293,7 +293,7 @@ describe('Contacts Service', () => {
           parent: {
             _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
             _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'Otago',
             parent: {},
             contact: {
@@ -311,7 +311,7 @@ describe('Contacts Service', () => {
       const clinicB = {
         _id: 'a301463e-74ba-6e2a-3424d30ef508a488',
         _rev: '74-30d4791ba64f13592f86023344fa9449',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         name: 'Andy Bay',
         contact: {
           name: 'Gareth',
@@ -325,7 +325,7 @@ describe('Contacts Service', () => {
           parent: {
             _id: 'a301463e-74ba-6e2a-3424d30ef5087d1c',
             _rev: '3-42c1cfd045c5d80dd98ccc85c47f44ae',
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'Otago',
             parent: {},
             contact: {
@@ -351,11 +351,11 @@ describe('Contacts Service', () => {
       const doc = {
         _id: '123',
         _rev: '1',
-        contact_type: 'clinic',
+        contact_type: CONTACT_TYPES.CLINIC,
         parent: undefined,
         type: ''
       };
-      contactTypesService.getTypeId.withArgs(doc).returns('clinic');
+      contactTypesService.getTypeId.withArgs(doc).returns(CONTACT_TYPES.CLINIC);
       // What we want it to look like for a top level place
       contactTypesService.get = (_) => {
         return {

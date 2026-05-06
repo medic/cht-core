@@ -85,9 +85,14 @@ const assertIndeterminateFields = (result) => {
 
 describe('monitoring', () => {
   beforeEach(async () => {
-    await utils.waitForIndexes();
     await sentinelUtils.waitForSentinel();
+    await utils.waitForIndexes();
+    // the v1 test was flaking, returning different values for the nouveau index counts.
+    // the v2 test, which calls the exactly same code, never failed!
+    // assuming that calling this endpoint actually does some calculating, call it before the test
+    await getExpectedNouveauIndexes('medic-test');
   });
+
   afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
