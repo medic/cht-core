@@ -7,8 +7,8 @@ const DEFAULT_LIMIT = 100;
 // Those helpers are `@internal` and not part of the cht-datasource public API today, so we vendor the
 // logic here. Replace these with the cht-datasource exports once they are made public.
 
-const UNSPECIFIED_VALUES = [undefined, null, '']; // 0 (number) should not be treated as unspecified
-const isUnspecified = (value) => UNSPECIFIED_VALUES.includes(value);
+const UNSPECIFIED_VALUES = new Set([undefined, null, '']); // 0 (number) should not be treated as unspecified
+const isUnspecified = (value) => UNSPECIFIED_VALUES.has(value);
 
 /**
  * Parse a query-param-style integer.
