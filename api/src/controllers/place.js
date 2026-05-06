@@ -153,7 +153,7 @@ module.exports = {
         req,
         { isOnline: true, hasAny: ['can_create_places', 'can_edit'] }
       );
-      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body && req.body.parent);
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body?.parent);
       const placeDoc = await create(req.body);
       return res.json(placeDoc);
     }),

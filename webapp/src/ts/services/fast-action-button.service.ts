@@ -27,7 +27,7 @@ export class FastActionButtonService {
     private translateService: TranslateService,
     private translateFromService: TranslateFromService,
     private userSettingsService: UserSettingsService,
-    private contactMutedService: ContactMutedService,
+    private readonly contactMutedService: ContactMutedService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.reportsActions = new ReportsActions(store);

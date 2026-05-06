@@ -1,7 +1,14 @@
+const isMutedAtOrBefore = (mutedAt, beforeMillis) => {
+  if (!mutedAt) {
+    return false;
+  }
+  return !beforeMillis || new Date(mutedAt).getTime() <= beforeMillis;
+};
+
 const isMutedInLineage = (doc, beforeMillis) => {
-  let parent = doc && doc.parent;
+  let parent = doc?.parent;
   while (parent) {
-    if (parent.muted && (beforeMillis ? new Date(parent.muted).getTime() <= beforeMillis : true)) {
+    if (isMutedAtOrBefore(parent.muted, beforeMillis)) {
       return parent._id;
     }
     parent = parent.parent;
@@ -13,7 +20,7 @@ const isMutedInLineage = (doc, beforeMillis) => {
 const findMutedAncestor = (doc, beforeMillis) => {
   let node = doc;
   while (node) {
-    if (node.muted && (beforeMillis ? new Date(node.muted).getTime() <= beforeMillis : true)) {
+    if (isMutedAtOrBefore(node.muted, beforeMillis)) {
       return node._id;
     }
     node = node.parent;

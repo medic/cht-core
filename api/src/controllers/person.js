@@ -154,7 +154,7 @@ module.exports = {
         req,
         { isOnline: true, hasAny: ['can_create_people', 'can_edit'] }
       );
-      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body && req.body.parent);
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body?.parent);
       const personDoc = await createPerson(req.body);
       return res.json(personDoc);
     }),
