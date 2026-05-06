@@ -50,8 +50,14 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
   return toDelete;
 };
 
+const getForm = async (formId) => {
+  const docId = `form:${formId}`;
+  return db.medic.get(docId);
+};
+
 module.exports = {
   getDocIdsRevPairs,
   getContext,
   getDocIdsToDelete,
+  getForm,
 };
