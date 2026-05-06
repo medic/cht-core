@@ -10,6 +10,9 @@ on:
       - 'scripts/build/helm/**'
       - '.github/workflows/helm-validation.yml'
 
+permissions:
+  contents: read
+
 jobs:
   validate-helm-templates:
     name: Validate Helm Templates
@@ -18,14 +21,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Helm
-        uses: azure/setup-helm@v4.1.0
+        uses: azure/setup-helm@b7246b12e77f7134dc2d460a3d5bad15bbe29390  # v4.1.0
 
       - name: Validate Helm Templates
         working-directory: scripts/build/helm
         run: |
           echo "Running Helm template validation..."
           ./validate-templates.sh
-

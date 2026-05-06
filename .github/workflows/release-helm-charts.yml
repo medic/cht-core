@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write  # Required to attach files to GitHub releases
+
 jobs:
   package-helm-charts:
     name: Package Helm Charts
@@ -13,13 +16,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          persist-credentials: false
 
       - name: Setup Helm
-        uses: azure/setup-helm@v4.1.0
+        uses: azure/setup-helm@b7246b12e77f7134dc2d460a3d5bad15bbe29390  # v4.1.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4 # zizmor: ignore[cache-poisoning]
         with:
           node-version: '22.15'
 
@@ -50,15 +55,14 @@ jobs:
           ls -la release-assets/
 
       - name: Upload Release Assets
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: helm-charts-${{ github.ref_name }}
           path: release-assets/
           retention-days: 30
 
       - name: Attach Helm Chart to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release-assets/*
+        run: gh release upload "$TAG_NAME" release-assets/* --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}

@@ -9,8 +9,10 @@ interface UiExtensionProperties {
   readonly type: string;
   readonly roles?: string[];
   readonly icon?: string;
+  readonly resource_icon?: string;
   readonly title?: string;
   readonly config?: Record<string, unknown>;
+  readonly accent_color?: string;
 }
 
 interface UiExtension {

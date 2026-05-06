@@ -117,7 +117,7 @@ export class SessionService {
   }
 
   isAdmin(userCtx?) {
-    return this.hasRole('_admin', userCtx);
+    return this.hasRole(USER_ROLES.COUCHDB_ADMIN, userCtx);
   }
 
   /**

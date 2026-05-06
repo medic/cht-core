@@ -5,6 +5,7 @@ const smsparser = require('./report/smsparser');
 const validate = require('./report/validate');
 const { PublicError } = require('../errors');
 const DATE_NUMBER_STRING = /(\d{13,})/;
+const { DOC_TYPES } = require('@medic/constants');
 
 // matches invisible characters that can mess up our parsing
 // specifically: u200B, u200C, u200D, uFEFF
@@ -103,7 +104,7 @@ const getDataRecord = (formData, options) => {
   const def = getForm(options.form);
 
   const record = {
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     from: phoneNumber.normalize(config.get(), options.from) || options.from,
     form: form,
     errors: [],

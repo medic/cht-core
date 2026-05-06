@@ -20,11 +20,11 @@ describe.skip('Muting', () => {
   const contact1 = personFactory.build({
     name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });
   const clinic1 = Object.assign({},
-    places.get('clinic'),
+    places.get(CONTACT_TYPES.CLINIC),
     { name: 'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
 
   const clinic2 = Object.assign({},
-    places.get('clinic'),
+    places.get(CONTACT_TYPES.CLINIC),
     { name: 'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
 
   const onlineUser = userFactory.build({

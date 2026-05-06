@@ -1,13 +1,14 @@
 const moment = require('moment');
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
-const CHT = require('@medic/cht-datasource');
+const constants = require('@medic/constants');
+const USER_ROLES = constants.USER_ROLES;
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const SHOW_PASSWORD_ICON = '/login/images/show-password.svg';
 const HIDE_PASSWORD_ICON = '/login/images/hide-password.svg';
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
-const ADMIN_ROLE = '_admin';
+const ADMIN_ROLE = USER_ROLES.COUCHDB_ADMIN;
 const FIELDS_TO_IGNORE = [
   'currentPassword',
   'passwordConfirm',
@@ -38,9 +39,8 @@ angular
     'use strict';
     'ngInject';
 
-    const datasource = DataContext.getDatasource();
+    const datasourcePromise = DataContext.then(dataContext => dataContext.getDatasource());
     $scope.cancel = () => $uibModalInstance.dismiss();
-    const getContact = DataContext.bind(CHT.Contact.v1.get);
 
     const getRoles = roles => {
       if (!roles || !roles.length) {
@@ -59,9 +59,10 @@ angular
       });
     };
 
-    const validateSkipPasswordPermission = () => {
+    const validateSkipPasswordPermission = datasource => {
       $scope.skipPasswordChange = datasource.v1.hasPermissions(
-        ['can_skip_password_change'], $scope.editUserModel.roles, $scope.permissions
+        ['can_skip_password_change'],
+        $scope.editUserModel.roles
       );
     };
 
@@ -110,7 +111,7 @@ angular
       // If $scope.model === {}, we're creating a new user.
       return $q.all([Settings(), getOidcUsername()])
         .then(([settings, oidcUsername]) => {
-          $scope.permissions = settings.permissions;
+          $scope.settings = settings;
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
           $scope.allowSSOLogin = allowSSOLogin(settings);
@@ -175,10 +176,10 @@ angular
         .map((row) => row.doc);
     };
 
-    this.setupPromise = determineEditUserModel()
-      .then(model => {
+    this.setupPromise = $q.all([determineEditUserModel(), datasourcePromise])
+      .then(([model, datasource]) => {
         $scope.editUserModel = model;
-        validateSkipPasswordPermission();
+        validateSkipPasswordPermission(datasource);
         populateFacilitynContact();
       })
       .catch(err => {
@@ -322,13 +323,14 @@ angular
       return true;
     };
 
-    const validatePlacesPermission = () => {
+    const validatePlacesPermission = datasource => {
       if (!$scope.editUserModel.place || $scope.editUserModel.place.length <= 1) {
         return true;
       }
 
       const userHasPermission = datasource.v1.hasPermissions(
-        ['can_have_multiple_places'], $scope.editUserModel.roles, $scope.permissions
+        ['can_have_multiple_places'],
+        $scope.editUserModel.roles
       );
 
       if (!userHasPermission) {
@@ -386,16 +388,16 @@ angular
         });
     };
 
-    const validateContactIsInPlace = () => {
+    const validateContactIsInPlace = datasource => {
       const placeIds = $scope.editUserModel.place;
       const contactId = $scope.editUserModel.contact;
       if (!placeIds || !contactId) {
         return $q.resolve(true);
       }
 
-      const getParent = (contactId) => {
-        return getContact(CHT.Qualifier.byUuid(contactId)).then(contact => contact.parent);
-      };
+      const getParent = contactId => datasource.v1.contact
+        .getByUuid(contactId)
+        .then(contact => contact.parent);
 
       const checkParent = (parent, placeIds) => {
         if (!parent) {
@@ -582,33 +584,26 @@ angular
       'password' ? 'text' : 'password';
     };
 
-    // #edit-user-profile is the admin view, which has additional fields.
-    $scope.editUser = () => {
-      $scope.setProcessing();
-      $scope.errors = {};
-      computeFields();
-
+    const runValidations = datasource => {
       const synchronousValidations = validateName() &&
                                      validateRole() &&
                                      validateContactAndFacility() &&
                                      validatePasswordForEditUser() &&
                                      validateEmailAddress() &&
-                                     validatePlacesPermission();
+                                     validatePlacesPermission(datasource);
 
       if (!synchronousValidations) {
         $scope.setError();
         return;
       }
 
-      const asynchronousValidations = $q
+      return $q
         .all([
           validateFacilityHierarchy(),
-          validateContactIsInPlace(),
+          validateContactIsInPlace(datasource),
           validateTokenLogin(),
         ])
-        .then(responses => responses.every(response => response));
-
-      return asynchronousValidations
+        .then(responses => responses.every(Boolean))
         .then(valid => {
           if (!valid) {
             $scope.setError();
@@ -616,7 +611,17 @@ angular
           }
 
           return validateReplicationLimit().then(() => updateUser());
-        })
+        });
+    };
+
+    // #edit-user-profile is the admin view, which has additional fields.
+    $scope.editUser = () => {
+      $scope.setProcessing();
+      $scope.errors = {};
+      computeFields();
+
+      return datasourcePromise
+        .then(runValidations)
         .catch(err => {
           if (err.key) {
             $translate(err.key, err.params).then(value => $scope.setError(err, value, err.severity));

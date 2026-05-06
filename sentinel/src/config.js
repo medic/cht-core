@@ -2,7 +2,7 @@ const _ = require('lodash');
 const db = require('./db');
 const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
-const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, PREFIXES } = require('@medic/constants');
 const translations = {};
 
 const DEFAULT_CONFIG = {
@@ -43,7 +43,7 @@ const initFeed = () => {
       if (change.id === DOC_IDS.SETTINGS) {
         logger.info('Reloading configuration');
         initConfig();
-      } else if (change.id.startsWith('messages-')) {
+      } else if (change.id.startsWith(PREFIXES.TRANSLATIONS)) {
         logger.info('Detected translations change - reloading');
         loadTranslations().then(() => initTransitionLib());
       }

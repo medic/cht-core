@@ -10,8 +10,8 @@ import { HeaderComponent } from '@mm-components/header/header.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
-import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { Selectors } from '@mm-selectors/index';
@@ -23,8 +23,8 @@ describe('Header Component', () => {
   let dbSyncService;
   let modalService;
   let storageInfoService;
-  let settingsService;
   let headerTabsService;
+  let uiExtensionsService;
   let customResourceService;
   let changesService;
 
@@ -35,7 +35,6 @@ describe('Header Component', () => {
       init: sinon.stub(),
       stop: sinon.stub()
     };
-    settingsService = { get: sinon.stub().resolves({ header_tabs: {} }) };
     headerTabsService = {
       get: sinon.stub().returns([]),
       getAuthorizedTabs: sinon.stub().resolves([
@@ -43,6 +42,9 @@ describe('Header Component', () => {
         { name: 'tasks', defaultIcon: 'fa-flag', typeName: 'task' },
         { name: 'reports', defaultIcon: 'fa-list-alt', typeName: 'report' },
       ])
+    };
+    uiExtensionsService = {
+      getPropertiesByType: sinon.stub().resolves([]),
     };
     customResourceService = {
       getAppTitle: sinon.stub().resolves('App Title'),
@@ -72,8 +74,8 @@ describe('Header Component', () => {
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: ModalService, useValue: modalService },
           { provide: StorageInfoService, useValue: storageInfoService },
-          { provide: SettingsService, useValue: settingsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
+          { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
         ]
@@ -155,12 +157,12 @@ describe('Header Component', () => {
     expect(component.showPrivacyPolicy).to.be.true;
   });
 
-  it('should load header tabs from settings service', async () => {
+  it('should load header tabs from header tabs service', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(settingsService.get.callCount).to.equal(1);
     expect(headerTabsService.getAuthorizedTabs.callCount).to.equal(1);
+    expect(headerTabsService.getAuthorizedTabs.args[0]).to.deep.equal([]);
   });
 
   it('should set permitted tabs after loading', async () => {
@@ -185,6 +187,42 @@ describe('Header Component', () => {
     component.ngOnDestroy();
 
     expect(unsubscribeSpy.callCount).to.equal(1);
+  });
+
+  describe('UI extension options', () => {
+    it('should initialize uiExtensionOptions as empty array', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(component.uiExtensionOptions).to.deep.equal([]);
+    });
+
+    it('should load app_drawer_tab extensions and map them to menu options', async () => {
+      uiExtensionsService.getPropertiesByType.resolves([
+        { id: 'ext1', type: 'app_drawer_tab', title: 'Hello Extension', resource_icon: 'hello-icon' },
+        { id: 'ext2', type: 'app_drawer_tab', title: 'Goodbye Extension', icon: 'fa-goodbye' },
+      ]);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(component.uiExtensionOptions).to.deep.equal([
+        {
+          routerLink: 'ui-extensions/ext1',
+          translationKey: 'Hello Extension',
+          resourceIcon: 'hello-icon',
+          icon: 'fa-question-circle'
+        },
+        {
+          routerLink: 'ui-extensions/ext2',
+          translationKey: 'Goodbye Extension',
+          resourceIcon: undefined,
+          icon: 'fa-goodbye'
+        },
+      ]);
+    });
   });
 
   describe('bubble counter integration', () => {

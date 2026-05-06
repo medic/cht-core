@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { of } from 'rxjs';
+import { USER_ROLES } from '@medic/constants';
+const { COUCHDB_ADMIN } = USER_ROLES;
 
 import { HttpClient } from '@angular/common/http';
 import { SessionService } from '@mm-services/session.service';
@@ -89,7 +91,7 @@ describe('Auth Service', () => {
     });
 
     it('should return true when user is db admin', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: { can_edit: ['chw'] } });
       chtDatasourceService.init();
 
@@ -232,6 +234,7 @@ describe('Auth Service', () => {
             'analytics',
           ],
         },
+        roles: { national_admin: {} },
       });
       chtDatasourceService.init();
 
@@ -241,7 +244,7 @@ describe('Auth Service', () => {
     });
 
     it('should return false when admin and !permission', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: {} });
       chtDatasourceService.init();
 
@@ -261,6 +264,7 @@ describe('Auth Service', () => {
             'analytics',
           ],
         },
+        roles: { analytics: {} },
       });
       chtDatasourceService.init();
 
@@ -280,6 +284,7 @@ describe('Auth Service', () => {
             'analytics',
           ],
         },
+        roles: { analytics: {} },
       });
       chtDatasourceService.init();
 
@@ -331,7 +336,7 @@ describe('Auth Service', () => {
     });
 
     it('should return true when admin and no disallowed permissions', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
       chtDatasourceService.init();
 
@@ -341,7 +346,7 @@ describe('Auth Service', () => {
     });
 
     it('should return true when admin and some disallowed permissions', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: { can_edit: [ 'chw' ] } });
       chtDatasourceService.init();
 
@@ -351,7 +356,7 @@ describe('Auth Service', () => {
     });
 
     it('should return false when admin and all disallowed permissions', async () => {
-      sessionService.userCtx.returns({ roles: ['_admin'] });
+      sessionService.userCtx.returns({ roles: [COUCHDB_ADMIN] });
       settingsService.get.resolves({ permissions: {} });
       chtDatasourceService.init();
 
@@ -374,6 +379,7 @@ describe('Auth Service', () => {
           can_add_places: ['national_admin', 'district_admin'],
           can_roll_over: ['national_admin', 'district_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
       const permissions = [
@@ -394,6 +400,7 @@ describe('Auth Service', () => {
           can_backup_facilities: ['national_admin', 'district_admin'],
           can_backup_people: ['national_admin', 'district_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
       const permissions = [
@@ -442,6 +449,7 @@ describe('Auth Service', () => {
           random2: ['national_admin'],
           random3: ['national_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
 
@@ -465,6 +473,7 @@ describe('Auth Service', () => {
           random1: ['national_admin'],
           random3: ['national_admin'],
         },
+        roles: { district_admin: {} },
       });
       chtDatasourceService.init();
 

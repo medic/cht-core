@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
+const { DOC_IDS } = require('../../../../shared-libs/constants');
 
 const fs = require('fs');
 
@@ -20,7 +21,7 @@ describe('add-cht-branding-doc', () => {
     await migration.run();
     chai.expect(db.medic.put.callCount).to.equal(1);
     const expected = {
-      _id: 'branding',
+      _id: DOC_IDS.BRANDING,
       resources: {
         favicon: 'favicon.ico',
         logo: 'cht-logo.png'
@@ -42,7 +43,7 @@ describe('add-cht-branding-doc', () => {
 
   it('should not update doc when updated branding doc found', async () => {
     sinon.stub(db.medic, 'get').resolves({
-      _id: 'branding',
+      _id: DOC_IDS.BRANDING,
       _rev: '123',
       resources: {
         favicon: 'favicon.ico',
