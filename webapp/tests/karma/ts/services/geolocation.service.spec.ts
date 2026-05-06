@@ -145,7 +145,21 @@ describe('Geolocation service', () => {
       });
     });
 
-    it('blocks promise completion until at least one success', () => {
+    it('resolves immediately when no geo data is available yet', () => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(() => {
+        // never calls success or failure
+      });
+
+      return service.init()().then(returned => {
+        expect(returned).to.deep.equal({
+          code: -1,
+          message: 'Geolocation not yet acquired',
+        });
+      });
+    });
+
+    it('resolves with geo data when available before form submission', () => {
       const position = {
         latitude: 1,
         longitude: 2,
@@ -155,53 +169,29 @@ describe('Geolocation service', () => {
         heading: 6,
         speed: 7,
       };
-      let successFn;
       // @ts-ignore
       window.navigator.geolocation.watchPosition.callsFake(success => {
-        successFn = success;
+        success({coords: position});
       });
 
-      const promise = service.init()().then(returned => {
+      return service.init()().then(returned => {
         expect(returned).to.deep.equal(position);
       });
-      successFn({coords: position});
-
-      return promise;
     });
 
-    it('blocks promise completion until at least one error', () => {
-      let failureFn;
-      // @ts-ignore
-      window.navigator.geolocation.watchPosition.callsFake((_, failure) => {
-        failureFn = failure;
-      });
-
-      const promise = service
-        .init()()
-        .then(returned => {
-          expect(returned.code).to.equal(43);
-        });
-
-      failureFn({code: 43, message: 'oh no!'});
-
-      return promise;
-    });
-
-    it('should resolve promise even if watcher never calls any callback', fakeAsync(() => {
-      window.navigator.geolocation.watchPosition = sinon.stub(); // make sure this never calls anything!
+    it('should resolve immediately when watcher never calls any callback', () => {
+      window.navigator.geolocation.watchPosition = sinon.stub();
 
       const deferred = service.init();
       expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
 
-      tick(31 * 1000);
-
-      return deferred().then(error => {
-        expect(error).to.deep.equal({
-          code: -2,
-          message: 'Geolocation timeout exceeded'
+      return deferred().then(result => {
+        expect(result).to.deep.equal({
+          code: -1,
+          message: 'Geolocation not yet acquired',
         });
       });
-    }));
+    });
 
     it('timeout should prioritize success from geolocation', fakeAsync(async () => {
       const position = {
