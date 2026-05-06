@@ -353,6 +353,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon-1',
         resourceIcon: 'res-1',
+        accentColor: undefined,
       });
       expect(middleExt).to.deep.equal({
         name: 'ui-extension-middle',
@@ -362,6 +363,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon-3',
         resourceIcon: undefined,
+        accentColor: undefined,
       });
       expect(lastExt).to.deep.equal({
         name: 'ui-extension-last',
@@ -371,6 +373,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: undefined,
         resourceIcon: 'res-2',
+        accentColor: undefined,
       });
     });
 
@@ -391,6 +394,7 @@ describe('HeaderTabs service', () => {
           permissions: [],
           icon: 'fa-icon',
           resourceIcon: undefined,
+          accentColor: undefined,
         }
       ]);
       expect(authService.has.callCount).to.equal(5);
@@ -412,6 +416,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon',
         resourceIcon: undefined,
+        accentColor: undefined,
       });
     });
   });

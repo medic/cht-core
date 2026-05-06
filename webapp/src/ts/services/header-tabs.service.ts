@@ -91,7 +91,8 @@ export class HeaderTabsService {
       translation: ext.title!,
       permissions: [], // Extensions are already filtered by role in getPropertiesByType
       resourceIcon: ext.resource_icon,
-      icon: ext.icon
+      icon: ext.icon,
+      accentColor: ext.accent_color,
     }));
   }
 
@@ -133,4 +134,5 @@ export interface HeaderTab {
   typeName?: string;
   icon?: string;
   resourceIcon?: string;
+  accentColor?: string;
 }

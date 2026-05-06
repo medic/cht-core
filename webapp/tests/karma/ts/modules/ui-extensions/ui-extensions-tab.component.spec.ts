@@ -6,6 +6,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BehaviorSubject } from 'rxjs';
+import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { UiExtensionsTabComponent } from '@mm-modules/ui-extensions/ui-extensions-tab.component';
@@ -54,6 +55,7 @@ describe('UiExtensionsTabComponent', () => {
     routeParams$ = new BehaviorSubject<any>({ id: EXTENSION_ID });
     activatedRoute = {
       params: routeParams$.asObservable(),
+      snapshot: { params: { id: EXTENSION_ID }, data: { tab: 'ui-extensions' } },
     };
 
     await TestBed.configureTestingModule({
@@ -126,6 +128,43 @@ describe('UiExtensionsTabComponent', () => {
     fixture.detectChanges();
     const toolbar = fixture.nativeElement.querySelector('.tool-bar');
     expect(toolbar.style.backgroundColor).to.equal('rgb(255, 87, 51)');
+  }));
+
+  it('sets currentTab to extension tab name for header_tab extensions', fakeAsync(() => {
+    const store = TestBed.inject(Store);
+    const dispatchSpy = sinon.spy(store, 'dispatch');
+
+    fixture.detectChanges();
+    flush();
+
+    const setTabAction = dispatchSpy.args.find(
+      ([action]) => action.type === '[Global] Set Current Tab'
+    );
+    expect(setTabAction).to.exist;
+    expect(setTabAction![0].payload.currentTab).to.equal(`ui-extension-${EXTENSION_ID}`);
+  }));
+
+  it('does not override currentTab for sidebar_tab extensions', fakeAsync(() => {
+    uiExtensionsService.getExtension.resolves({
+      properties: {
+        id: EXTENSION_ID,
+        title: EXTENSION_TITLE,
+        type: 'sidebar_tab',
+        config: MOCK_CONFIG
+      },
+      Element: MOCK_ELEMENT,
+    });
+
+    const store = TestBed.inject(Store);
+    const dispatchSpy = sinon.spy(store, 'dispatch');
+
+    fixture.detectChanges();
+    flush();
+
+    const setTabAction = dispatchSpy.args.find(
+      ([action]) => action.type === '[Global] Set Current Tab'
+    );
+    expect(setTabAction).to.not.exist;
   }));
 
   it('handles an error being thrown getting the extension', fakeAsync(() => {
