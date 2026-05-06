@@ -38,7 +38,7 @@ jobs:
     - name: Install bats
       run: |
         sudo apt-get update
-        sudo apt-get install -y bats
+        sudo apt-get install -y bats shellcheck
 
     - name: Login to Docker Hub
       uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3
@@ -76,6 +76,8 @@ jobs:
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
+    - name: Use system shellcheck binary
+      run: cp /usr/bin/shellcheck node_modules/shellcheck/bin/shellcheck
     - name: Compile
       run: npm run ci-compile
     - name: Setup QEMU
