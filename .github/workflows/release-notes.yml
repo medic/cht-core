@@ -15,27 +15,34 @@ on:
           - ''
           - '--skip-commit-validation'
 
+permissions:
+  contents: read
+
 jobs:
   release_notes:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          persist-credentials: false
       - name: Use Node 24
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: 24
       - name: Install Deps & Run Node Script
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MILESTONE: ${{ github.event.inputs.milestone }}
+          SKIP_COMMIT_CHECKS: ${{ github.event.inputs.skip_commit_checks }}
         run: |
           cd scripts
           npm ci
           cd release-notes
-          node index.js ${{ github.event.inputs.milestone }} ${{ github.event.inputs.skip_commit_checks }}
+          node index.js "$MILESTONE" $SKIP_COMMIT_CHECKS
       - name: Upload release note artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: release-notes
           path: ./scripts/release-notes/release-notes.md

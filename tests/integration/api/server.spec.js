@@ -4,6 +4,7 @@ const _ = require('lodash');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -332,7 +333,7 @@ describe('server', () => {
       before(async () => {
         const placeMap = utils.deepFreeze(placeFactory.generateHierarchy());
         const contact = utils.deepFreeze(personFactory.build({ name: 'contact', role: 'chw' }));
-        const place = utils.deepFreeze({ ...placeMap.get('clinic'), contact: { _id: contact._id } });
+        const place = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.CLINIC), contact: { _id: contact._id } });
         offlineUser = utils.deepFreeze(userFactory.build({
           username: 'offline-user-id',
           place: place._id,

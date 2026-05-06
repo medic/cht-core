@@ -1,4 +1,4 @@
-import { v4 as uuidV4 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
 import * as objectPath from 'object-path';
@@ -68,7 +68,7 @@ export class ContactSaveService {
   // referenced by _id by other docs if required.
   private prepare(doc): Record<string, any> {
     if (!doc._id) {
-      doc._id = uuidV4();
+      doc._id = uuid();
     }
 
     if (!doc._rev) {
@@ -104,13 +104,13 @@ export class ContactSaveService {
     const hasExtension = lastDotIndex > 0;
 
     if (!hasExtension) {
-      return fileName.replace(disallowedChars, '') || uuidV4(); // NOSONAR
+      return fileName.replace(disallowedChars, '') || uuid(); // NOSONAR
     }
 
     const stem = fileName.slice(0, lastDotIndex);
     const extension = fileName.slice(lastDotIndex);
     const sanitizedStem = stem.replace(disallowedChars, ''); // NOSONAR
-    return (sanitizedStem || uuidV4()) + extension;
+    return (sanitizedStem || uuid()) + extension;
   }
 
   /**
