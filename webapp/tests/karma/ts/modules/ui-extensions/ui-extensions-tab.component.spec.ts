@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
+import { Subject } from 'rxjs';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { UiExtensionsTabComponent } from '@mm-modules/ui-extensions/ui-extensions-tab.component';
@@ -24,6 +25,8 @@ describe('UiExtensionsTabComponent', () => {
   let performanceService;
   let userContactSummaryService;
   let trackStop;
+  let routeParams$: Subject<any>;
+  let activatedRoute;
 
   const EXTENSION_ID = 'my-extension';
   const EXTENSION_TITLE = 'My Extension Title';
@@ -48,6 +51,11 @@ describe('UiExtensionsTabComponent', () => {
         Element: MOCK_ELEMENT,
       }),
     };
+    routeParams$ = new Subject();
+    activatedRoute = {
+      snapshot: { params: { id: EXTENSION_ID } },
+      params: routeParams$.asObservable(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [
@@ -58,7 +66,7 @@ describe('UiExtensionsTabComponent', () => {
       ],
       providers: [
         provideMockStore(),
-        { provide: ActivatedRoute, useValue: { snapshot: { params: { id: EXTENSION_ID } } } },
+        { provide: ActivatedRoute, useValue: activatedRoute },
         { provide: UiExtensionsService, useValue: uiExtensionsService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: PerformanceService, useValue: performanceService },
@@ -143,5 +151,63 @@ describe('UiExtensionsTabComponent', () => {
     expect(trackStop).to.have.been.calledOnceWithExactly({ name: `ui-extension:${EXTENSION_ID}:render` });
     expect(chtDatasourceService.get).to.not.have.been.called;
     expect(userContactSummaryService.get).to.not.have.been.called;
+  }));
+
+  it('re-initializes when route params change to a different extension', fakeAsync(() => {
+    fixture.detectChanges();
+    flush();
+
+    expect(uiExtensionsService.getExtension.callCount).to.equal(1);
+    const firstElement = fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`);
+    expect(firstElement).to.exist;
+
+    const OTHER_ID = 'other-extension';
+    const OTHER_TITLE = 'Other Extension';
+    const OtherElement = class extends HTMLElement {};
+    uiExtensionsService.getExtension.resolves({
+      properties: {
+        id: OTHER_ID,
+        title: OTHER_TITLE,
+        type: 'app_main_tab',
+        config: { other: true },
+      },
+      Element: OtherElement,
+    });
+    activatedRoute.snapshot.params = { id: OTHER_ID };
+    routeParams$.next({ id: OTHER_ID });
+    flush();
+
+    expect(uiExtensionsService.getExtension.callCount).to.equal(2);
+    expect(uiExtensionsService.getExtension.secondCall.args[0]).to.equal(OTHER_ID);
+    expect(component.extensionTitle).to.equal(OTHER_TITLE);
+    const otherElement = fixture.nativeElement.querySelector(`cht-${OTHER_ID}`);
+    expect(otherElement).to.exist;
+    expect(fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`)).to.not.exist;
+  }));
+
+  it('does not re-initialize when route params emit the same extension id', fakeAsync(() => {
+    fixture.detectChanges();
+    flush();
+
+    expect(uiExtensionsService.getExtension.callCount).to.equal(1);
+
+    routeParams$.next({ id: EXTENSION_ID });
+    flush();
+
+    expect(uiExtensionsService.getExtension.callCount).to.equal(1);
+  }));
+
+  it('cleans up param subscription on destroy', fakeAsync(() => {
+    fixture.detectChanges();
+    flush();
+
+    component.ngOnDestroy();
+
+    const OTHER_ID = 'other-extension';
+    activatedRoute.snapshot.params = { id: OTHER_ID };
+    routeParams$.next({ id: OTHER_ID });
+    flush();
+
+    expect(uiExtensionsService.getExtension.callCount).to.equal(1);
   }));
 });
