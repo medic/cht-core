@@ -88,11 +88,9 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
     });
   }
 
-  if (filters.search) {
-    const normalizedSearch = normalizeText(filters.search);
-    if (normalizedSearch) {
-      filtered = filterTasksBySearch(filtered, normalizedSearch);
-    }
+  const normalizedSearch = normalizeText(filters.search);
+  if (normalizedSearch) {
+    filtered = filterTasksBySearch(filtered, normalizedSearch);
   }
 
   return filtered;
