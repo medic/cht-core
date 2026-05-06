@@ -325,5 +325,29 @@ describe('Configuration', () => {
 
     });
 
+    describe('ui extension changes', () => {
+
+      it('generates service worker when a ui-extension doc is created', () => {
+        generateServiceWorker.run.resolves();
+        return dbWatcher.medic.args[0][0]({ id: 'ui-extension:my-ext' }).then(() => {
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+        });
+      });
+
+      it('generates service worker when a ui-extension doc is updated', () => {
+        generateServiceWorker.run.resolves();
+        return dbWatcher.medic.args[0][0]({ id: 'ui-extension:another-ext' }).then(() => {
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+        });
+      });
+
+      it('does not generate service worker for unrelated doc changes', () => {
+        generateServiceWorker.run.resolves();
+        dbWatcher.medic.args[0][0]({ id: 'some-other-doc' });
+        chai.expect(generateServiceWorker.run.callCount).to.equal(0);
+      });
+
+    });
+
   });
 });

@@ -184,6 +184,10 @@ const listen = () => {
     if (extensionLibs.isLibChange(change)) {
       return handleLibsChanges();
     }
+
+    if (change.id.startsWith('ui-extension:')) {
+      return updateServiceWorker();
+    }
   });
 };
 
