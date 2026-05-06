@@ -41,32 +41,33 @@ const FUSE_OPTIONS = {
 };
 
 const filterTasksBySearch = (tasks: TaskWithLineage[], normalizedSearch: string): TaskWithLineage[] => {
-  // First pass: fast substring match on normalized text
   const substringMatched: TaskWithLineage[] = [];
-  const remaining: TaskWithLineage[] = [];
+  const remainingWithCandidates: { task: TaskWithLineage; candidates: string[] }[] = [];
 
   for (const task of tasks) {
     const candidates = getSearchCandidates(task);
     if (candidates.some(c => normalizeText(c).includes(normalizedSearch))) {
       substringMatched.push(task);
     } else if (candidates.length) {
-      remaining.push(task);
+      remainingWithCandidates.push({ task, candidates });
     }
   }
 
-  // Second pass: fuzzy match only on tasks that didn't match by substring.
-  // Build one Fuse index over all remaining candidates to avoid per-task overhead.
-  if (normalizedSearch.length >= FUSE_OPTIONS.minMatchCharLength && remaining.length) {
-    const entries = remaining.flatMap((task, idx) =>
-      getSearchCandidates(task).map(candidate => ({ candidate, idx }))
-    );
-    const fuse = new Fuse(entries, { ...FUSE_OPTIONS, keys: ['candidate'] });
-    const fuzzyMatchIndices = new Set(fuse.search(normalizedSearch).map(r => r.item.idx));
-    const fuzzyMatched = remaining.filter((_, idx) => fuzzyMatchIndices.has(idx));
-    return [...substringMatched, ...fuzzyMatched];
+  if (normalizedSearch.length < FUSE_OPTIONS.minMatchCharLength || !remainingWithCandidates.length) {
+    return substringMatched;
   }
 
-  return substringMatched;
+  // Build one Fuse index over all remaining candidates to avoid per-task overhead.
+  const entries = remainingWithCandidates.flatMap(
+    ({ candidates }, idx) => candidates.map(candidate => ({ candidate, idx }))
+  );
+  const fuse = new Fuse(entries, { ...FUSE_OPTIONS, keys: ['candidate'] });
+  const fuzzyMatchIndices = new Set(fuse.search(normalizedSearch).map(r => r.item.idx));
+  const fuzzyMatched = remainingWithCandidates
+    .filter((_, idx) => fuzzyMatchIndices.has(idx))
+    .map(({ task }) => task);
+
+  return [...substringMatched, ...fuzzyMatched];
 };
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {

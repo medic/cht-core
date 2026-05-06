@@ -11,7 +11,6 @@ const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Tasks Free Text Search', () => {
   const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
   const healthCenter = places.get('health_center');
   const clinic = places.get(CONTACT_TYPES.CLINIC);
 
