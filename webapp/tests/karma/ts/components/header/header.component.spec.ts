@@ -11,6 +11,7 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { Selectors } from '@mm-selectors/index';
@@ -23,6 +24,7 @@ describe('Header Component', () => {
   let modalService;
   let storageInfoService;
   let headerTabsService;
+  let uiExtensionsService;
   let customResourceService;
   let changesService;
 
@@ -40,6 +42,9 @@ describe('Header Component', () => {
         { name: 'tasks', defaultIcon: 'fa-flag', typeName: 'task' },
         { name: 'reports', defaultIcon: 'fa-list-alt', typeName: 'report' },
       ])
+    };
+    uiExtensionsService = {
+      getPropertiesByType: sinon.stub().resolves([]),
     };
     customResourceService = {
       getAppTitle: sinon.stub().resolves('App Title'),
@@ -70,6 +75,7 @@ describe('Header Component', () => {
           { provide: ModalService, useValue: modalService },
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: HeaderTabsService, useValue: headerTabsService },
+          { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
         ]
@@ -181,6 +187,42 @@ describe('Header Component', () => {
     component.ngOnDestroy();
 
     expect(unsubscribeSpy.callCount).to.equal(1);
+  });
+
+  describe('UI extension options', () => {
+    it('should initialize uiExtensionOptions as empty array', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(component.uiExtensionOptions).to.deep.equal([]);
+    });
+
+    it('should load app_drawer_tab extensions and map them to menu options', async () => {
+      uiExtensionsService.getPropertiesByType.resolves([
+        { id: 'ext1', type: 'app_drawer_tab', title: 'Hello Extension', resource_icon: 'hello-icon' },
+        { id: 'ext2', type: 'app_drawer_tab', title: 'Goodbye Extension', icon: 'fa-goodbye' },
+      ]);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(component.uiExtensionOptions).to.deep.equal([
+        {
+          routerLink: 'ui-extensions/ext1',
+          translationKey: 'Hello Extension',
+          resourceIcon: 'hello-icon',
+          icon: 'fa-question-circle'
+        },
+        {
+          routerLink: 'ui-extensions/ext2',
+          translationKey: 'Goodbye Extension',
+          resourceIcon: undefined,
+          icon: 'fa-goodbye'
+        },
+      ]);
+    });
   });
 
   describe('bubble counter integration', () => {

@@ -15,43 +15,6 @@
           </div>
         </a>
         <ul id="header-dropdown" *dropdownMenu class="dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="header-dropdown-link">
-          <li role="presentation" mmAuth="can_view_messages,!can_view_messages_tab">
-            <a role="menuitem" tabindex="-1" routerLink="messages">
-              <i class="fa fa-fw fa-envelope"></i>
-              <span>{{'Messages' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_tasks,!can_view_tasks_tab">
-            <a role="menuitem" tabindex="-1" routerLink="tasks">
-              <i class="fa fa-fw fa-flag"></i>
-              <span>{{'Tasks' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_reports,!can_view_reports_tab">
-            <a role="menuitem" tabindex="-1" routerLink="reports">
-              <i class="fa fa-fw fa-list-alt"></i>
-              <span>{{'Reports' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_contacts,!can_view_contacts_tab">
-            <a role="menuitem" tabindex="-1" routerLink="contacts">
-              <i class="fa fa-fw fa-user"></i>
-              <span>{{'Contacts' | translate}}</span>
-            </a>
-          </li>
-
-          <li role="presentation" mmAuth="can_view_analytics,!can_view_analytics_tab">
-            <a role="menuitem" tabindex="-1" routerLink="analytics" routerLink-opts="{reload: true}">
-              <i class="fa fa-bar-chart-o"></i>
-              <span>{{'Analytics' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" class="desktop-only" mmAuth [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]" [mmAuthOnline]="true">
-            <a href="{{adminUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
-              <i class="fa fa-fw fa-cog"></i>
-              <span>{{'admin.app.name' | translate}}</span>
-            </a>
-          </li>
 
           <li mmAuth [mmAuthOnline]="false">
             <a role="menuitem" class="storage-info">
@@ -92,6 +55,53 @@
           </li>
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
+
+          <li role="presentation" mmAuth="can_view_messages,!can_view_messages_tab">
+            <a role="menuitem" tabindex="-1" routerLink="messages">
+              <i class="fa fa-fw fa-envelope"></i>
+              <span>{{'Messages' | translate}}</span>
+            </a>
+          </li>
+          <li role="presentation" mmAuth="can_view_tasks,!can_view_tasks_tab">
+            <a role="menuitem" tabindex="-1" routerLink="tasks">
+              <i class="fa fa-fw fa-flag"></i>
+              <span>{{'Tasks' | translate}}</span>
+            </a>
+          </li>
+          <li role="presentation" mmAuth="can_view_reports,!can_view_reports_tab">
+            <a role="menuitem" tabindex="-1" routerLink="reports">
+              <i class="fa fa-fw fa-list-alt"></i>
+              <span>{{'Reports' | translate}}</span>
+            </a>
+          </li>
+          <li role="presentation" mmAuth="can_view_contacts,!can_view_contacts_tab">
+            <a role="menuitem" tabindex="-1" routerLink="contacts">
+              <i class="fa fa-fw fa-user"></i>
+              <span>{{'Contacts' | translate}}</span>
+            </a>
+          </li>
+          <li role="presentation" mmAuth="can_view_analytics,!can_view_analytics_tab">
+            <a role="menuitem" tabindex="-1" routerLink="analytics" routerLink-opts="{reload: true}">
+              <i class="fa fa-bar-chart-o"></i>
+              <span>{{'Analytics' | translate}}</span>
+            </a>
+          </li>
+          <li role="presentation" class="desktop-only" mmAuth [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]" [mmAuthOnline]="true">
+            <a href="{{adminUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
+              <i class="fa fa-fw fa-cog"></i>
+              <span>{{'admin.app.name' | translate}}</span>
+            </a>
+          </li>
+
+          <ng-container *ngFor="let ext of uiExtensionOptions">
+            <li>
+              <a role="menuitem" tabindex="-1" [routerLink]="ext.routerLink">
+                <span class="nav-icon" *ngIf="ext.resourceIcon" [innerHTML]="ext.resourceIcon | resourceIcon"></span>
+                <i *ngIf="!ext.resourceIcon" class="fa fa-fw {{ext.icon}}"></i>
+                <span>{{ext.translationKey | translate}}</span>
+              </a>
+            </li>
+          </ng-container>
 
           <li role="presentation">
             <a routerLink="trainings" role="menuitem" tabindex="-1">
@@ -136,7 +146,7 @@
     <div class="tabs small-font">
       <a *ngFor="let tab of permittedTabs" routerLink="{{tab.route}}" id="{{tab.name}}-tab" class="{{tab.name}}-tab" [class.selected]="currentTab === tab.name">
         <div class="mm-icon" [class.mm-icon-inverse]="currentTab !== tab.name">
-          <span *ngIf="!tab.resourceIcon" class="fa {{tab.icon}}"><span class="fa {{tab.defaultIcon}}"></span></span>
+          <span *ngIf="!tab.resourceIcon" class="fa {{tab.icon}}"><span *ngIf="!tab.icon" class="fa {{tab.defaultIcon}}"></span></span>
           <span *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon:tab.defaultIcon"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" *ngIf="bubbleCount[tab.typeName] > 0">
             <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="bubbleCount[tab.typeName] < 100">{{bubbleCount[tab.typeName] | localizeNumber}}</span>
