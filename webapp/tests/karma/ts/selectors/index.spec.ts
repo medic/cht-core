@@ -729,9 +729,18 @@ describe('Selectors', () => {
       it('should combine search with other filters', () => {
         const tasksState = {
           tasksList: [
-            { _id: 'task1', title: 'Home Visit', overdue: true, contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'] },
-            { _id: 'task2', title: 'Home Visit', overdue: false, contact: { name: 'Alice' }, lineage: [], lineageIds: ['c2'] },
-            { _id: 'task3', title: 'Assessment', overdue: true, contact: { name: 'Bob' }, lineage: [], lineageIds: ['c3'] },
+            {
+              _id: 'task1', title: 'Home Visit', overdue: true,
+              contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'],
+            },
+            {
+              _id: 'task2', title: 'Home Visit', overdue: false,
+              contact: { name: 'Alice' }, lineage: [], lineageIds: ['c2'],
+            },
+            {
+              _id: 'task3', title: 'Assessment', overdue: true,
+              contact: { name: 'Bob' }, lineage: [], lineageIds: ['c3'],
+            },
           ],
         };
 
