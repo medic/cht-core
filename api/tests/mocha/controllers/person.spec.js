@@ -4,6 +4,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const mutedParent = require('../../../src/services/muted-parent');
 
 describe('Person Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -31,6 +32,7 @@ describe('Person Controller', () => {
 
   beforeEach(() => {
     assertPermissions = sinon.stub(auth, 'assertPermissions').resolves();
+    sinon.stub(mutedParent, 'assertCanCreateOnMutedParent').resolves();
     serverUtilsError = sinon.stub(serverUtils, 'error');
     res = {
       json: sinon.stub(),
@@ -161,18 +163,38 @@ describe('Person Controller', () => {
           reported_date: 12312312
         };
         req = { body: input };
-        const createdPersonDoc = {...input, _id: '123', rev: '1-rev'}; 
+        const createdPersonDoc = {...input, _id: '123', rev: '1-rev'};
+        const userCtx = { roles: ['chw'] };
+        assertPermissions.resolves(userCtx);
         createPerson.resolves(createdPersonDoc);
-         
+
         await controller.v1.create(req, res);
 
         expect(assertPermissions.calledOnceWithExactly(
           req,
           { isOnline: true, hasAny: ['can_create_people', 'can_edit'] }
         )).to.be.true;
+        expect(mutedParent.assertCanCreateOnMutedParent.calledOnceWithExactly(userCtx, 'p1')).to.be.true;
         expect(createPerson.calledOnceWithExactly(input)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
         expect(res.json.calledOnceWithExactly(createdPersonDoc)).to.be.true;
+      });
+
+      it('rejects when parent is muted and user lacks can_create_contacts_under_muted_places', async () => {
+        const input = { name: 'p', type: 'person', parent: 'muted-clinic' };
+        req = { body: input };
+        const userCtx = { roles: ['chw'] };
+        assertPermissions.resolves(userCtx);
+        const permError = new Error('Insufficient privileges to create contacts on muted places');
+        permError.code = 403;
+        mutedParent.assertCanCreateOnMutedParent.rejects(permError);
+
+        await controller.v1.create(req, res);
+
+        expect(mutedParent.assertCanCreateOnMutedParent.calledOnceWithExactly(userCtx, 'muted-clinic')).to.be.true;
+        expect(createPerson.notCalled).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(permError, req, res)).to.be.true;
       });
     });
 

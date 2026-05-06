@@ -2,6 +2,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
+const mutedParent = require('../services/muted-parent');
 
 const getPerson = ctx.bind(Person.v1.get);
 const getPersonWithLineage = ctx.bind(Person.v1.getWithLineage);
@@ -149,7 +150,11 @@ module.exports = {
      *         $ref: '#/components/responses/Forbidden'
      */
     create: serverUtils.doOrError(async (req, res) => {
-      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_create_people', 'can_edit'] });
+      const userCtx = await auth.assertPermissions(
+        req,
+        { isOnline: true, hasAny: ['can_create_people', 'can_edit'] }
+      );
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body && req.body.parent);
       const personDoc = await createPerson(req.body);
       return res.json(personDoc);
     }),

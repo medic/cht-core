@@ -112,6 +112,7 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_create_contacts_under_muted_places": [],
     "can_create_records": [
       "data_entry",
       "gateway",

@@ -225,6 +225,71 @@ describe('Places API', () => {
         });
 
     });
+
+    describe('muted parent gate', () => {
+      const mutedDistrict = {
+        _id: 'fixture:muted-district-int',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
+        name: 'Muted District for integration test',
+        muted: '2025-01-01T00:00:00Z',
+      };
+
+      before(async () => {
+        await utils.saveDoc(mutedDistrict);
+      });
+
+      after(async () => {
+        await utils.deleteDoc(mutedDistrict._id);
+      });
+
+      it('rejects with 403 when parent is muted and role lacks can_create_contacts_under_muted_places', async () => {
+        onlineRequestOptions.body = {
+          name: 'Should be blocked',
+          type: CONTACT_TYPES.HEALTH_CENTER,
+          parent: mutedDistrict._id,
+        };
+
+        try {
+          await utils.request(onlineRequestOptions);
+          chai.expect.fail('Should have rejected with 403');
+        } catch (err) {
+          chai.expect(err.status).to.equal(403);
+          chai.expect(err.body).to.deep.equal({
+            code: 403,
+            error: 'Insufficient privileges to create contacts on muted places',
+          });
+        }
+      });
+
+      it('allows creation when role has can_create_contacts_under_muted_places', async () => {
+        await utils.updatePermissions(
+          ['national_admin'],
+          ['can_create_contacts_under_muted_places'],
+          [],
+          { ignoreReload: true }
+        );
+
+        onlineRequestOptions.body = {
+          name: 'Should be allowed',
+          type: CONTACT_TYPES.HEALTH_CENTER,
+          parent: mutedDistrict._id,
+        };
+
+        const result = await utils.request(onlineRequestOptions);
+        chai.expect(result.id).to.not.be.undefined;
+      });
+
+      it('does not check the muted-place permission when parent is not muted', async () => {
+        onlineRequestOptions.body = {
+          name: 'Under non-muted parent',
+          type: CONTACT_TYPES.HEALTH_CENTER,
+          parent: 'fixture:online',
+        };
+
+        const result = await utils.request(onlineRequestOptions);
+        chai.expect(result.id).to.not.be.undefined;
+      });
+    });
   });
 
 });

@@ -10,6 +10,7 @@ const db = require('./db');
 const dataContext = require('./services/data-context');
 const path = require('path');
 const auth = require('./auth');
+const mutedParent = require('./services/muted-parent');
 const prometheusMiddleware = require('prometheus-api-metrics');
 const rateLimiterMiddleware = require('./middleware/rate-limiter');
 const logger = require('@medic/logger');
@@ -586,11 +587,13 @@ app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getU
 app.postJson('/api/v1/places', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_places'])
-    .then(() => {
+    .then(async (userCtx) => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
       }
-      return places.createPlace(req.body).then(body => res.json(body));
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body.parent);
+      const body = await places.createPlace(req.body);
+      return res.json(body);
     })
     .catch(err => serverUtils.error(err, req, res));
 });
@@ -722,11 +725,13 @@ app.putJson('/api/v1/place/:uuid', place.v1.update);
 app.postJson('/api/v1/people', function(req, res) {
   auth
     .check(req, ['can_edit', 'can_create_people'])
-    .then(() => {
+    .then(async (userCtx) => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
       }
-      return people.createPerson(req.body).then(body => res.json(body));
+      await mutedParent.assertCanCreateOnMutedParent(userCtx, req.body.place);
+      const body = await people.createPerson(req.body);
+      return res.json(body);
     })
     .catch(err => serverUtils.error(err, req, res));
 });
