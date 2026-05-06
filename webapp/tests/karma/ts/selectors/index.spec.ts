@@ -609,6 +609,136 @@ describe('Selectors', () => {
         const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
         expect(result).to.deep.equal([]);
       });
+
+      it('should filter by freetext matching contact name, lineage, or title', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Alice Johnson' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['contact2']
+            },
+            {
+              _id: 'task3',
+              title: 'ANC Visit',
+              contact: { name: 'Carol' },
+              lineage: ['Village Gamma'],
+              lineageIds: ['contact3']
+            },
+          ],
+        };
+
+        const globalStateByName = { filters: { search: 'alice' } } as any;
+        const resultByName = Selectors.getFilteredTasksList.projector(tasksState, globalStateByName);
+        expect(resultByName).to.deep.equal([tasksState.tasksList[0]]);
+
+        const globalStateByLineage = { filters: { search: 'beta' } } as any;
+        const resultByLineage = Selectors.getFilteredTasksList.projector(tasksState, globalStateByLineage);
+        expect(resultByLineage).to.deep.equal([tasksState.tasksList[1]]);
+
+        const globalStateByTitle = { filters: { search: 'anc' } } as any;
+        const resultByTitle = Selectors.getFilteredTasksList.projector(tasksState, globalStateByTitle);
+        expect(resultByTitle).to.deep.equal([tasksState.tasksList[2]]);
+      });
+
+      it('should support search with Nepali and Arabic characters', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'रामकुमारी' },   
+              lineage: ['गाउँपालिका'],           
+              lineageIds: ['contact1']
+            },
+            {
+              _id: 'task2',
+              title: 'ANC Visit',
+              contact: { name: 'فاطمة' },        
+              lineage: ['مستشفى المدينة'],       
+              lineageIds: ['contact2']
+            },
+          ],
+        };
+
+        const nepaliState = { filters: { search: 'रामकुमारी' } } as any;
+        const nepaliResult = Selectors.getFilteredTasksList.projector(tasksState, nepaliState);
+        expect(nepaliResult).to.deep.equal([tasksState.tasksList[0]]);
+
+        const arabicState = { filters: { search: 'فاطمة' } } as any;
+        const arabicResult = Selectors.getFilteredTasksList.projector(tasksState, arabicState);
+        expect(arabicResult).to.deep.equal([tasksState.tasksList[1]]);
+
+        const crossScriptState = { filters: { search: 'فاطمة' } } as any;
+        const crossScriptResult = Selectors.getFilteredTasksList.projector(tasksState, crossScriptState);
+        expect(crossScriptResult).to.deep.equal([tasksState.tasksList[1]]);
+      });
+
+      it('should normalize diacritics in search', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Élodie' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['contact1']
+            },
+          ],
+        };
+
+        const globalState = { filters: { search: 'elodie' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should return all tasks when search is empty', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'] },
+            { _id: 'task2', title: 'ANC Visit', contact: { name: 'Bob' }, lineage: [], lineageIds: ['c2'] },
+          ],
+        };
+
+        const globalState = { filters: { search: '' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal(tasksState.tasksList);
+      });
+
+      it('should return empty array when no tasks match the search', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Follow up', contact: { name: 'Alice' }, lineage: ['Village'], lineageIds: ['c1'] },
+          ],
+        };
+
+        const globalState = { filters: { search: 'zzzznotfound' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([]);
+      });
+
+      it('should combine search with other filters', () => {
+        const tasksState = {
+          tasksList: [
+            { _id: 'task1', title: 'Home Visit', overdue: true, contact: { name: 'Alice' }, lineage: [], lineageIds: ['c1'] },
+            { _id: 'task2', title: 'Home Visit', overdue: false, contact: { name: 'Alice' }, lineage: [], lineageIds: ['c2'] },
+            { _id: 'task3', title: 'Assessment', overdue: true, contact: { name: 'Bob' }, lineage: [], lineageIds: ['c3'] },
+          ],
+        };
+
+        const globalState = { filters: { search: 'alice', taskOverdue: true } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
     });
   });
 });

@@ -1,12 +1,73 @@
 import { createSelector } from '@ngrx/store';
 import { GlobalState, TasksFilters } from '@mm-reducers/global';
 import { TaskEmission } from '@mm-services/rules-engine.service';
+import Fuse from 'fuse.js';
 
 interface TaskWithLineage extends TaskEmission {
   lineageIds: string[];
 }
 
 const getGlobalState = (state): GlobalState => state.global || {};
+
+// Strips diacritical marks and lowercases the input so that accented
+// characters like "Élodie" can be matched by searching "elodie".
+// NFD decomposition splits accented characters into base + combining marks,
+// and the regex strips the combining marks (Unicode range U+0300-U+036F).
+const normalizeText = (value?: string): string => {
+  if (!value) {
+    return '';
+  }
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+};
+
+const getSearchCandidates = (task: TaskWithLineage): string[] => {
+  return [
+    task?.contact?.name,
+    ...(task?.lineage || []),
+    task?.title,
+  ].filter(Boolean) as string[];
+};
+
+const FUSE_OPTIONS = {
+  threshold: 0.2,        // 0 = exact, 1 = match anything; 0.2 allows minor typos
+  distance: 50,          // how far from expected position a match can appear
+  minMatchCharLength: 3, // skip fuzzy matching for very short queries
+  ignoreLocation: true,  // match can appear anywhere in the string
+};
+
+const filterTasksBySearch = (tasks: TaskWithLineage[], normalizedSearch: string): TaskWithLineage[] => {
+  // First pass: fast substring match on normalized text
+  const substringMatched: TaskWithLineage[] = [];
+  const remaining: TaskWithLineage[] = [];
+
+  for (const task of tasks) {
+    const candidates = getSearchCandidates(task);
+    if (candidates.some(c => normalizeText(c).includes(normalizedSearch))) {
+      substringMatched.push(task);
+    } else if (candidates.length) {
+      remaining.push(task);
+    }
+  }
+
+  // Second pass: fuzzy match only on tasks that didn't match by substring.
+  // Build one Fuse index over all remaining candidates to avoid per-task overhead.
+  if (normalizedSearch.length >= FUSE_OPTIONS.minMatchCharLength && remaining.length) {
+    const entries = remaining.flatMap((task, idx) =>
+      getSearchCandidates(task).map(candidate => ({ candidate, idx }))
+    );
+    const fuse = new Fuse(entries, { ...FUSE_OPTIONS, keys: ['candidate'] });
+    const fuzzyMatchIndices = new Set(fuse.search(normalizedSearch).map(r => r.item.idx));
+    const fuzzyMatched = remaining.filter((_, idx) => fuzzyMatchIndices.has(idx));
+    return [...substringMatched, ...fuzzyMatched];
+  }
+
+  return substringMatched;
+};
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
   let filtered = tasks;
@@ -24,6 +85,13 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
     filtered = filtered.filter(task => {
       return task.lineageIds.some(id => filters.facilities?.selected.includes(id));
     });
+  }
+
+  if (filters.search) {
+    const normalizedSearch = normalizeText(filters.search);
+    if (normalizedSearch) {
+      filtered = filterTasksBySearch(filtered, normalizedSearch);
+    }
   }
 
   return filtered;
