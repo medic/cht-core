@@ -386,18 +386,6 @@ describe('DisplayPrivacyPoliciesComponent', () => {
       expect(component.responseStatus.state).to.equal('error');
       expect(component.responseStatus.msg).to.equal('display.privacy.policies.failure');
     });
-
-    it('should clear success status after 3 seconds', async () => {
-      await fixture.whenStable();
-      const clock = sinon.useFakeTimers();
-      const file = new File([''], 'en.html', { type: 'text/html' });
-      component.privacyPolicyRows[0].stagedFile = file;
-      await component.submit();
-      expect(component.responseStatus.state).to.equal('success');
-      clock.tick(3001);
-      expect(component.responseStatus).to.deep.equal({});
-      clock.restore();
-    });
   });
   describe('openAttachmentPreview', () => {
     it('should set previewAttachment', () => {

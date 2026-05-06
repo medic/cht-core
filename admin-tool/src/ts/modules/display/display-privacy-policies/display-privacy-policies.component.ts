@@ -241,11 +241,6 @@ export class DisplayPrivacyPoliciesComponent implements OnInit {
       await this.languagesService.savePrivacyPolicies(freshDoc);
       await this.ngOnInit();
       this.responseStatus = { state: 'success', msg: 'display.privacy.policies.submit.success' };
-      setTimeout(() => {
-        if (this.responseStatus.state === 'success') {
-          this.responseStatus = {};
-        }
-      }, 3000);
     } catch (error) {
       console.error('Error while uploading privacy policies', error);
       this.responseStatus = { state: 'error', msg: 'display.privacy.policies.failure' };

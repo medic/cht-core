@@ -5,12 +5,14 @@ import sinon from 'sinon';
 import { DisplayLanguagesComponent } from '@admin-tool-modules/display/display-languages/display-languages.component';
 import { LanguagesService } from '@admin-tool-services/languages.service';
 import { SettingsService } from '@admin-tool-services/settings.service';
+import { ChangesService } from '@admin-tool-services/changes.service';
 
 describe('DisplayLanguagesComponent', () => {
   let component: DisplayLanguagesComponent;
   let fixture: ComponentFixture<DisplayLanguagesComponent>;
   let languagesService;
   let settingsService;
+  let changesService;
 
   const mockLanguages = [
     {
@@ -36,12 +38,16 @@ describe('DisplayLanguagesComponent', () => {
       getLanguageSettings: sinon.stub().resolves({ locale: 'en', localeOutgoing: 'en'}),
       updateLanguageSettings: sinon.stub().resolves(),
     };
+    changesService = {
+      subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }),
+    };
 
     return TestBed.configureTestingModule({
       imports: [DisplayLanguagesComponent, TranslateModule.forRoot()],
       providers: [
         { provide: LanguagesService, useValue: languagesService },
         { provide: SettingsService, useValue: settingsService },
+        { provide: ChangesService, useValue: changesService }
       ],
     })
       .compileComponents()
@@ -119,6 +125,55 @@ describe('DisplayLanguagesComponent', () => {
       await component.ngOnInit();
       expect(consoleStub.calledOnce).to.be.true;
     });
+    it('should call changesService.subscribe on init', async () => {
+      await fixture.whenStable();
+      expect(changesService.subscribe.calledOnce).to.be.true;
+    });
+
+    it('should subscribe with key display-languages', async () => {
+      await fixture.whenStable();
+      const options = changesService.subscribe.args[0][0];
+      expect(options.key).to.equal('display-languages');
+    });
+
+    it('should pass filter that returns true for messages- documents', async () => {
+      await fixture.whenStable();
+      const options = changesService.subscribe.args[0][0];
+      expect(options.filter({ id: 'messages-en' })).to.be.true;
+    });
+
+    it('should pass filter that returns true for settings document', async () => {
+      await fixture.whenStable();
+      const options = changesService.subscribe.args[0][0];
+      expect(options.filter({ id: 'settings' })).to.be.true;
+    });
+
+    it('should pass filter that returns false for unrelated documents', async () => {
+      await fixture.whenStable();
+      const options = changesService.subscribe.args[0][0];
+      expect(options.filter({ id: 'medic-client' })).to.be.false;
+    });
+
+    it('should call ngOnInit when changes callback fires', async () => {
+      await fixture.whenStable();
+      const initialCallCount = languagesService.getLanguages.callCount;
+      const options = changesService.subscribe.args[0][0];
+      await options.callback();
+      expect(languagesService.getLanguages.callCount).to.be.greaterThan(initialCallCount);
+    });
+  });
+  describe('ngOnDestroy', () => {
+    it('should call unsubscribe on destroy', async () => {
+      await fixture.whenStable();
+      component.ngOnDestroy();
+      const unsubscribe = changesService.subscribe.returnValues[0].unsubscribe;
+      expect(unsubscribe.calledOnce).to.be.true;
+    });
+
+    it('should not throw if changesSubscription is null', () => {
+      component['changesSubscription'] = null;
+      expect(() => component.ngOnDestroy()).to.not.throw();
+    });
   });
   describe('submitLanguageSettings', () => {
     it('should set responseStatus to loading at start', () => {
@@ -140,15 +195,6 @@ describe('DisplayLanguagesComponent', () => {
       await component.submitLanguageSettings();
       expect(component.responseStatus.state).to.equal('success');
       expect(component.responseStatus.msg).to.equal('Saved');
-    });
-
-    it('should clear responseStatus after 3 seconds', async () => {
-      const clock = sinon.useFakeTimers();
-      await component.submitLanguageSettings();
-      expect(component.responseStatus.state).to.equal('success');
-      clock.tick(3001);
-      expect(component.responseStatus).to.deep.equal({});
-      clock.restore();
     });
 
     it('should set responseStatus to error on failure', async () => {

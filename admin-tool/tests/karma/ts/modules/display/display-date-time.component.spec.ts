@@ -268,15 +268,6 @@ describe('DisplayDateTimeComponent', () => {
       await component.setSettingsDate();
       expect(consoleStub.calledOnce).to.be.true;
     });
-
-    it('should clear success status after 3 seconds', async () => {
-      const clock = sinon.useFakeTimers();
-      await component.setSettingsDate();
-      expect(component.responseStatus.state).to.equal('success');
-      clock.tick(3001);
-      expect(component.responseStatus).to.deep.equal({});
-      clock.restore();
-    });
   });
 
   describe('DOM', () => {

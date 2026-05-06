@@ -1,5 +1,5 @@
 import { LanguagesService } from '@admin-tool-services/languages.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { LanguageDoc, LanguageModel } from '../display-interfaces';
 import { ResponseStatus } from '@admin-tool-modules/global-modules-interfaces';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -9,6 +9,8 @@ import { DisplayLanguagesUploadComponent } from './display-languages-upload/disp
 import * as properties from 'properties';
 import { SettingsService, LanguageSettings } from '@admin-tool-services/settings.service';
 import { FormsModule } from '@angular/forms';
+import { ChangesService } from '@admin-tool-services/changes.service';
+import { DOC_IDS } from '@medic/constants';
 
 /**
  * Component for managing language documents and language settings in the CHT instance.
@@ -33,7 +35,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './display-languages.component.html',
   styleUrl: './display-languages.component.less'
 })
-export class DisplayLanguagesComponent implements OnInit {
+export class DisplayLanguagesComponent implements OnInit, OnDestroy{
 
   /** List of language models for template iteration */
   languages: LanguageModel[] = [];
@@ -74,7 +76,14 @@ export class DisplayLanguagesComponent implements OnInit {
   /** Error for the language that failed to enable/disable, contains the code and message */
   languageError: { code: string, message: string } | null = null;
 
-  constructor(private languageService: LanguagesService, private settingsService: SettingsService){}
+  /** Subscription to CouchDB changes feed, cleaned up on destroy */
+  private changesSubscription: { unsubscribe: () => void } | null = null;
+
+  constructor(
+    private languageService: LanguagesService, 
+    private settingsService: SettingsService, 
+    private changesService: ChangesService
+  ){}
 
   /**
    * Fetches all language documents and language settings on init.
@@ -91,12 +100,22 @@ export class DisplayLanguagesComponent implements OnInit {
       this.localeOutgoingLanguage = languageSettings.localeOutgoing;
       this.savedLocaleLanguage = languageSettings.locale;
       this.savedLocaleOutgoingLanguage = languageSettings.localeOutgoing;
+
+      this.changesSubscription = this.changesService.subscribe({
+        key: 'display-languages',
+        filter: change => change.id.startsWith('messages-') || change.id === DOC_IDS.SETTINGS,
+        callback: () => this.ngOnInit()
+      });
     } catch (error) {
       console.error('Error fetching languages', error);
       this.loadingError = 'Error fetching languages';
     } finally {
       this.loadingPageStatus = false;
     }
+  }
+  
+  ngOnDestroy(): void {
+    this.changesSubscription?.unsubscribe();
   }
 
   /**
@@ -116,11 +135,6 @@ export class DisplayLanguagesComponent implements OnInit {
       this.savedLocaleLanguage = this.localeLanguage;
       this.savedLocaleOutgoingLanguage = this.localeOutgoingLanguage;
       this.responseStatus = { state: 'success', msg: 'Saved'};
-      setTimeout(() => {
-        if (this.responseStatus.state === 'success') {
-          this.responseStatus = {};
-        }
-      }, 3000);
 
     } catch (error) {
       console.error('Error updating language settings', error);
