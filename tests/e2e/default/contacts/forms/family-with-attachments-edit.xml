@@ -5,10 +5,10 @@
     <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/data/family/name:label">
+          <text id="/data/family_with_attachments/name:label">
             <value>Family Name</value>
           </text>
-          <text id="/data/family/photo:label">
+          <text id="/data/family_with_attachments/photo:label">
             <value>Family Photo</value>
           </text>
           <text id="/data/repeat:label">
@@ -24,14 +24,14 @@
       </itext>
       <instance>
         <data id="contact:family_with_attachments:edit" version="2026-05-06" prefix="J1!contact:family_with_attachments:edit!" delimiter="#">
-          <family>
+          <family_with_attachments>
             <parent>PARENT</parent>
             <type>contact</type>
             <contact_type>family_with_attachments</contact_type>
             <name/>
             <photo/>
             <contact/>
-          </family>
+          </family_with_attachments>
           <repeat>
             <child jr:template="">
               <parent>PARENT</parent>
@@ -45,12 +45,12 @@
           </meta>
         </data>
       </instance>
-      <bind nodeset="/data/family/parent" type="string"/>
-      <bind nodeset="/data/family/type" type="string"/>
-      <bind nodeset="/data/family/contact_type" type="string"/>
-      <bind nodeset="/data/family/name" type="string" required="true()"/>
-      <bind nodeset="/data/family/photo" type="binary"/>
-      <bind nodeset="/data/family/contact" type="string"/>
+      <bind nodeset="/data/family_with_attachments/parent" type="string"/>
+      <bind nodeset="/data/family_with_attachments/type" type="string"/>
+      <bind nodeset="/data/family_with_attachments/contact_type" type="string"/>
+      <bind nodeset="/data/family_with_attachments/name" type="string" required="true()"/>
+      <bind nodeset="/data/family_with_attachments/photo" type="binary"/>
+      <bind nodeset="/data/family_with_attachments/contact" type="string"/>
       <bind nodeset="/data/repeat/child/parent" type="string"/>
       <bind nodeset="/data/repeat/child/type" type="string"/>
       <bind nodeset="/data/repeat/child/name" type="string"/>
@@ -59,12 +59,12 @@
     </model>
   </h:head>
   <h:body>
-    <group ref="/data/family">
-      <input ref="/data/family/name">
-        <label ref="jr:itext('/data/family/name:label')"/>
+    <group ref="/data/family_with_attachments">
+      <input ref="/data/family_with_attachments/name">
+        <label ref="jr:itext('/data/family_with_attachments/name:label')"/>
       </input>
-      <upload ref="/data/family/photo" mediatype="image/*">
-        <label ref="jr:itext('/data/family/photo:label')"/>
+      <upload ref="/data/family_with_attachments/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/family_with_attachments/photo:label')"/>
       </upload>
     </group>
     <group ref="/data/repeat">
