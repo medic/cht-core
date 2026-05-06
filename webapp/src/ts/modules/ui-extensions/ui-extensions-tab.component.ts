@@ -34,7 +34,7 @@ export class UiExtensionsTabComponent implements AfterViewInit {
 
   private async initializeExtension() {
     const extensionId = this.route.snapshot.params['id'];
-    const elementName = `cht-${extensionId}`;
+    const elementName = `cht-${extensionId.toLowerCase()}`;
     const trackRender = this.performanceService.track();
     try {
       const {
