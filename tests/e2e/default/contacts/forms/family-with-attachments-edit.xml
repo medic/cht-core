@@ -11,12 +11,6 @@
           <text id="/data/family/photo:label">
             <value>Family Photo</value>
           </text>
-          <text id="/data/contact/name:label">
-            <value>Primary Contact Name</value>
-          </text>
-          <text id="/data/contact/photo:label">
-            <value>Primary Contact Photo</value>
-          </text>
           <text id="/data/repeat:label">
             <value>Children</value>
           </text>
@@ -36,14 +30,8 @@
             <contact_type>family_with_attachments</contact_type>
             <name/>
             <photo/>
-            <contact>NEW</contact>
+            <contact/>
           </family>
-          <contact>
-            <parent>PARENT</parent>
-            <type>person</type>
-            <name/>
-            <photo/>
-          </contact>
           <repeat>
             <child jr:template="">
               <parent>PARENT</parent>
@@ -63,10 +51,6 @@
       <bind nodeset="/data/family/name" type="string" required="true()"/>
       <bind nodeset="/data/family/photo" type="binary"/>
       <bind nodeset="/data/family/contact" type="string"/>
-      <bind nodeset="/data/contact/parent" type="string"/>
-      <bind nodeset="/data/contact/type" type="string"/>
-      <bind nodeset="/data/contact/name" type="string" required="true()"/>
-      <bind nodeset="/data/contact/photo" type="binary"/>
       <bind nodeset="/data/repeat/child/parent" type="string"/>
       <bind nodeset="/data/repeat/child/type" type="string"/>
       <bind nodeset="/data/repeat/child/name" type="string"/>
@@ -81,14 +65,6 @@
       </input>
       <upload ref="/data/family/photo" mediatype="image/*">
         <label ref="jr:itext('/data/family/photo:label')"/>
-      </upload>
-    </group>
-    <group ref="/data/contact">
-      <input ref="/data/contact/name">
-        <label ref="jr:itext('/data/contact/name:label')"/>
-      </input>
-      <upload ref="/data/contact/photo" mediatype="image/*">
-        <label ref="jr:itext('/data/contact/photo:label')"/>
       </upload>
     </group>
     <group ref="/data/repeat">
