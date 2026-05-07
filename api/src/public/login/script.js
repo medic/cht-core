@@ -13,7 +13,7 @@ let selectedLocale;
 let translations;
 
 const PASSWORD_INPUT_ID = 'password';
-const PASSWORD_CONTAINER_ID = 'password-container';
+const PASSWORD_CONTAINER_ID = 'password-container'; //NoSONAR
 
 const setTokenState = className => {
   document.getElementById('wrapper').className = `has-error ${className}`;
