@@ -4,7 +4,7 @@ import { expect } from 'chai';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DbService } from '@mm-services/db.service';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('LineageModelGenerator service', () => {
   let service;
@@ -368,7 +368,7 @@ describe('LineageModelGenerator service', () => {
         },
         {
           _id: 'contact1',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           contact: { _id: 'contact3', parent: { _id: 'parent3' } },
           parent: { _id: 'parent3' },
         }
@@ -421,7 +421,7 @@ describe('LineageModelGenerator service', () => {
           },
           {
             _id: 'contact1',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: {
               _id: 'contact3',
               name: 'contact 3',

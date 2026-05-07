@@ -19,6 +19,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Selectors } from '@mm-selectors/index';
+import { ResourceIconsService } from '@mm-services/resource-icons.service';
 import { CONTACT_TYPES } from '@medic/constants';
 
 describe('AnalyticsTargetsComponent', () => {
@@ -103,6 +104,7 @@ describe('AnalyticsTargetsComponent', () => {
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: SettingsService, useValue: settingsService },
           { provide: TelemetryService, useValue: telemetryService },
+          { provide: ResourceIconsService, useValue: { getImg: sinon.stub().returns('') } },
         ]
       })
       .compileComponents()
@@ -323,5 +325,75 @@ describe('AnalyticsTargetsComponent', () => {
     expect(component.loading).to.be.false;
     expect(globalActions.setTitle.notCalled).to.be.true;
     expect(globalActions.setShowContent.calledOnceWithExactly(false)).to.be.true;
+  }));
+
+  it('should display goal as count number when limit_count_to_goal is set and count exceeds goal', fakeAsync(() => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', type: 'count', goal: 10, limit_count_to_goal: true, value: { pass: 15, total: 15 } },
+    ]);
+
+    component.ngOnInit();
+    tick(50);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.count .number').innerText).to.equal('10');
+  }));
+
+  it('should display goal as count number when limit_count_to_goal is set and count equals goal', fakeAsync(() => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', type: 'count', goal: 10, limit_count_to_goal: true, value: { pass: 10, total: 10 } },
+    ]);
+
+    component.ngOnInit();
+    tick(50);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.count .number').innerText).to.equal('10');
+  }));
+
+  it('should display actual count when limit_count_to_goal is set but count is below goal', fakeAsync(() => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', type: 'count', goal: 10, limit_count_to_goal: true, value: { pass: 5, total: 5 } },
+    ]);
+
+    component.ngOnInit();
+    tick(50);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.count .number').innerText).to.equal('5');
+  }));
+
+  it('should display actual count when limit_count_to_goal is not set and count exceeds goal', fakeAsync(() => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', type: 'count', goal: 10, value: { pass: 15, total: 15 } },
+    ]);
+
+    component.ngOnInit();
+    tick(50);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.count .number').innerText).to.equal('15');
+  }));
+
+  it('should display actual count when limit_count_to_goal is set but target has no goal', fakeAsync(() => {
+    sinon.reset();
+    rulesEngineService.isEnabled.resolves(true);
+    rulesEngineService.fetchTargets.resolves([
+      { id: 'target1', type: 'count', goal: -1, limit_count_to_goal: true, value: { pass: 15, total: 15 } },
+    ]);
+
+    component.ngOnInit();
+    tick(50);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.count .number').innerText).to.equal('15');
   }));
 });
