@@ -34,6 +34,7 @@ export class UiExtensionsTabComponent implements AfterViewInit {
 
   private async initializeExtension() {
     const extensionId = this.route.snapshot.params['id'];
+    const elementName = `cht-${extensionId.toLowerCase()}`;
     const trackRender = this.performanceService.track();
     try {
       const {
@@ -42,10 +43,10 @@ export class UiExtensionsTabComponent implements AfterViewInit {
       } = await this.uiExtensionsService.getExtension(extensionId);
       this.extensionTitle = title ?? '';
       this.accentColor = accent_color;
-      if (!customElements.get(extensionId)) {
-        customElements.define(extensionId, Element);
+      if (!customElements.get(elementName)) {
+        customElements.define(elementName, Element);
       }
-      const element = document.createElement(extensionId);
+      const element = document.createElement(elementName);
 
       Object.assign(element, {
         cht: await this.chtDatasourceService.get(),
