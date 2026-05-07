@@ -76,7 +76,7 @@ module.exports = defineConfig([
       '@stylistic/max-len': ['error', { code: 120, ignoreUrls: true, tabWidth: 2}],
       'max-len': 'off',
       'no-redeclare': ['error', { builtinGlobals: false }],
-      '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: true }],
+      '@stylistic/quotes': ['error', 'single', { allowTemplateLiterals: 'always' }],
       '@stylistic/semi': ['error', 'always'],
       '@stylistic/array-bracket-newline': [ 'error', 'consistent' ],
       '@stylistic/arrow-spacing': [

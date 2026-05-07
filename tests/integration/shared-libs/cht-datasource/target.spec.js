@@ -94,7 +94,7 @@ const targetDifferentReportingPeriod = utils.deepFreeze(createTarget({
 
 
 describe('cht-datasource Target', () => {
-  const dataContext = getRemoteDataContext(utils.getOrigin());
+  const dataContext = getRemoteDataContext({ getAll: () => ({}) }, utils.getOrigin());
 
   before(async () => {
     setAuth();

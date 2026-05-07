@@ -1,5 +1,5 @@
 const utils = require('@utils');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const querystring = require('querystring');
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');
@@ -100,7 +100,7 @@ describe('Users API', () => {
       },
       {
         _id: newPlaceId,
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       },
       {
         _id: newContactId,
@@ -1625,7 +1625,7 @@ describe('Users API', () => {
 
       await utils.saveDocs([ facility, person ]);
       await utils.createUsers([{ ...user, password }, { ...userProgramOfficer, password }]);
-
+      await utils.updateSettings({ roles: { program_officer: { name: 'Program Officer' } } }, { ignoreReload: true });
       await utils.updatePermissions(['program_officer'], ['can_view_users'], [], { ignoreReload: true });
     });
 
