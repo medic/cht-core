@@ -547,13 +547,13 @@ describe('replication', () => {
           {
             // depth = 1,
             _id: 'target~chw',
-            type: 'target',
+            type: DOC_TYPES.TARGET,
             owner: 'fixture:user:chw',
           },
           {
             // depth = 1
             _id: 'task~chw',
-            type: 'task',
+            type: DOC_TYPES.TASK,
             user: PREFIXES.COUCH_USER + 'chw',
           },
           {
@@ -632,7 +632,7 @@ describe('replication', () => {
         },
         {
           _id: 'target~depth_person1',
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           owner: 'depth_person1',
         },
         {
@@ -645,7 +645,7 @@ describe('replication', () => {
         },
         {
           _id: 'target~depth_person2',
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           owner: 'depth_person2',
         },
         {
@@ -658,7 +658,7 @@ describe('replication', () => {
         },
         {
           _id: 'target~out_of_hierarchy',
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           owner: 'out_of_hierarchy',
         },
       ];

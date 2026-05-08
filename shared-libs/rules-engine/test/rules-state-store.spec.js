@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const { RestorableRulesStateStore } = require('./mocks');
 const md5 = require('md5');
+const { DOC_TYPES } = require('@medic/constants');
 
 const sinon = require('sinon');
 const moment = require('moment');
@@ -203,7 +204,7 @@ describe('rules-state-store', () => {
     const onStateChange = sinon.stub().resolves();
     await rulesStateStore.build(mockSettings, onStateChange);
     await rulesStateStore.storeTargetEmissions([], [{
-      _id: '1', type: 'target', pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' }
+      _id: '1', type: DOC_TYPES.TARGET, pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' }
     }]);
     const { aggregate, isUpdated } = await rulesStateStore.aggregateStoredTargetEmissions();
     expect(aggregate).to.deep.equal({
@@ -226,8 +227,8 @@ describe('rules-state-store', () => {
     expect(aggregate).to.deep.equal(result.aggregate);
 
     await rulesStateStore.storeTargetEmissions([], [
-      { _id: '1', type: 'target', pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' } },
-      { _id: '2', type: 'target', pass: true, date: now.valueOf() - 2000, contact: { _id: 'b' } }
+      { _id: '1', type: DOC_TYPES.TARGET, pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' } },
+      { _id: '2', type: DOC_TYPES.TARGET, pass: true, date: now.valueOf() - 2000, contact: { _id: 'b' } }
     ]);
 
     const updated = await rulesStateStore.aggregateStoredTargetEmissions();
@@ -322,7 +323,7 @@ describe('rules-state-store', () => {
       expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000 + 5000);
 
       clock.tick(5000);
-      await rulesStateStore.storeTargetEmissions([], [{ type: 'target', contact: { _id: 'c' } }]);
+      await rulesStateStore.storeTargetEmissions([], [{ type: DOC_TYPES.TARGET, contact: { _id: 'c' } }]);
       expect(rulesStateStore.stateLastUpdatedAt()).to.equal(one + 5000 + 5000 + 5000);
     });
   });
@@ -372,9 +373,9 @@ describe('rules-state-store', () => {
 
       await rulesStateStore.build(mockSettings, onStateChange);
       await rulesStateStore.storeTargetEmissions([], [
-        { _id: 'abc', type: 'target', pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' } },
-        { _id: '2', type: 'target', pass: true, date: 10, contact: { _id: 'a' } },
-        { _id: '3', type: 'target', pass: true, date: 20, contact: { _id: 'b' } },
+        { _id: 'abc', type: DOC_TYPES.TARGET, pass: true, date: now.valueOf() - 1000, contact: { _id: 'a' } },
+        { _id: '2', type: DOC_TYPES.TARGET, pass: true, date: 10, contact: { _id: 'a' } },
+        { _id: '3', type: DOC_TYPES.TARGET, pass: true, date: 20, contact: { _id: 'b' } },
       ]);
       const interval = {
         start: moment().startOf('month').valueOf(),
@@ -404,9 +405,9 @@ describe('rules-state-store', () => {
 
       await rulesStateStore.build(mockSettings, onStateChange);
       await rulesStateStore.storeTargetEmissions([], [
-        { _id: '1', type: 'target', pass: true, date: now.valueOf(), contact: { _id: 'a' } },
-        { _id: '2', type: 'target', pass: true, date: oneMonthAgo.valueOf(), contact: { _id: 'a' } },
-        { _id: '3', type: 'target', pass: true, date: oneMonthAgo.valueOf(), contact: { _id: 'b' } },
+        { _id: '1', type: DOC_TYPES.TARGET, pass: true, date: now.valueOf(), contact: { _id: 'a' } },
+        { _id: '2', type: DOC_TYPES.TARGET, pass: true, date: oneMonthAgo.valueOf(), contact: { _id: 'a' } },
+        { _id: '3', type: DOC_TYPES.TARGET, pass: true, date: oneMonthAgo.valueOf(), contact: { _id: 'b' } },
       ]);
       expect(onStateChange.callCount).to.equal(2);
 

@@ -6,6 +6,7 @@ const sinon = require('sinon');
 const { engineSettings, chtDocs, mockEmission, MS_IN_DAY } = require('./mocks');
 const rulesEmitter = require('../src/rules-emitter');
 const transformTaskEmissionToDoc = rewire('../src/transform-task-emission-to-doc');
+const { DOC_TYPES } = require('@medic/constants');
 
 const NOW = moment('2000-01-01');
 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
@@ -239,7 +240,7 @@ describe('transform-task-emission-to-doc', () => {
         isUpdated: true,
         taskDoc: {
           _id: `task~user~pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
-          type: 'task',
+          type: DOC_TYPES.TASK,
           authoredOn: NOW.valueOf(),
           user: 'user',
           requester: 'patient',

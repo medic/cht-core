@@ -6,7 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const chai = require('chai');
-const { USER_ROLES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const getUserId = n => `${PREFIXES.COUCH_USER}${n}`;
 const password = 'passwordSUP3RS3CR37!';
@@ -92,7 +92,7 @@ describe('Users API', () => {
         contact_id: null,
         name: username,
         fullname: 'Test Apiuser',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         roles: [
           'chw',
           'data_entry',
@@ -314,7 +314,7 @@ describe('Users API', () => {
           utils.request(`/_users/${PREFIXES.COUCH_USER}philip`)
         ]))
         .then(([userSettings, user]) => {
-          chai.expect(userSettings).to.include({ name: 'philip', type: 'user-settings' });
+          chai.expect(userSettings).to.include({ name: 'philip', type: DOC_TYPES.USER_SETTINGS });
           chai.expect(user).to.deep.include({ name: 'philip', type: 'user', roles: ['district_admin'] });
           chai.expect(userSettings.facility_id).to.deep.equal(user.facility_id);
 
@@ -422,7 +422,7 @@ describe('Users API', () => {
       }));
       docs.push(...Array.from(Array(nbrTasks), () => ({
         _id: `task~${PREFIXES.COUCH_USER}offline~${uuid()}`,
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline'
       })));
       await utils.saveDocs(docs);
@@ -640,7 +640,7 @@ describe('Users API', () => {
     const expectCorrectUserSettings = (userSettings, extra = {}) => {
       const defaultProps = {
         name: 'testuser',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         roles: ['district_admin'],
         facility_id: 'fixture:test',
         contact_id: 'fixture:user:testuser',
@@ -2257,7 +2257,7 @@ describe('Users API', () => {
         });
         expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
           ...expectedUserData,
-          type: 'user-settings',
+          type: DOC_TYPES.USER_SETTINGS,
           oidc_login: true,
         });
       });
@@ -2291,7 +2291,7 @@ describe('Users API', () => {
           });
           expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            type: 'user-settings',
+            type: DOC_TYPES.USER_SETTINGS,
             oidc_login: true,
           });
         });
@@ -2342,7 +2342,7 @@ describe('Users API', () => {
           });
           expect(userSettingsDoc).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            type: 'user-settings',
+            type: DOC_TYPES.USER_SETTINGS,
             ...(originalUserData.oidc_username ? { oidc_login: true } : {})
           });
 
@@ -2362,7 +2362,7 @@ describe('Users API', () => {
           });
           expect(updatedUserSettings).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            type: 'user-settings',
+            type: DOC_TYPES.USER_SETTINGS,
             oidc_login: !!updatedUserData.oidc_username
           });
         });
@@ -2444,7 +2444,7 @@ describe('Users API', () => {
           });
           expect(updatedUserSettings).excluding(skippedUserFields).to.deep.equal({
             ...expectedUserData,
-            type: 'user-settings',
+            type: DOC_TYPES.USER_SETTINGS,
             phone: userData.phone,
             oidc_login: true
           });

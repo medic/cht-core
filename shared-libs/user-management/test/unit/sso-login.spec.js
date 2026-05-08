@@ -5,7 +5,7 @@ const config = require('../../src/libs/config');
 const service = require('../../src/sso-login');
 const passwords = require('../../src/libs/passwords');
 const db = require('../../src/libs/db');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 describe('SSO Login service', () => {
   const GENERATED_PASSWORD = 'generatedPassword';
@@ -120,7 +120,7 @@ describe('SSO Login service', () => {
     ].forEach((data) => {
       it('should return error message when token login modified to be invalid', async () => {
         const user = { password: 'testPassword', oidc_username: 'test' };
-        const userSettings = { type: 'user-settings' };
+        const userSettings = { type: DOC_TYPES.USER_SETTINGS };
 
         const result = await service.validateSsoLoginUpdate(data, user, userSettings);
 
@@ -131,7 +131,7 @@ describe('SSO Login service', () => {
         expect(generatePassword.notCalled).to.be.true;
         expect(db.users.query.notCalled).to.be.true;
         expect(user).to.deep.equal({ password: 'testPassword', oidc_username: 'test' });
-        expect(userSettings).to.deep.equal({ type: 'user-settings' });
+        expect(userSettings).to.deep.equal({ type: DOC_TYPES.USER_SETTINGS });
       });
     });
 
@@ -141,7 +141,7 @@ describe('SSO Login service', () => {
     ].forEach((data) => {
       it('should return error message when password modified to be invalid', async () => {
         const user = { password: 'testPassword', oidc_username: 'test' };
-        const userSettings = { type: 'user-settings' };
+        const userSettings = { type: DOC_TYPES.USER_SETTINGS };
 
         const result = await service.validateSsoLoginUpdate(data, user, userSettings);
 
@@ -152,13 +152,13 @@ describe('SSO Login service', () => {
         expect(generatePassword.notCalled).to.be.true;
         expect(db.users.query.notCalled).to.be.true;
         expect(user).to.deep.equal({ password: 'testPassword', oidc_username: 'test' });
-        expect(userSettings).to.deep.equal({ type: 'user-settings' });
+        expect(userSettings).to.deep.equal({ type: DOC_TYPES.USER_SETTINGS });
       });
     });
 
     it('should not return when auth fields not modified on invalid user', async () => {
       const user = { password: 'testPassword', oidc_username: 'test' };
-      const userSettings = { type: 'user-settings' };
+      const userSettings = { type: DOC_TYPES.USER_SETTINGS };
 
       const result = await service.validateSsoLoginUpdate({ contact: 'z' }, user, userSettings);
 
@@ -167,7 +167,7 @@ describe('SSO Login service', () => {
       expect(generatePassword.notCalled).to.be.true;
       expect(db.users.query.notCalled).to.be.true;
       expect(user).to.deep.equal({ password: 'testPassword', oidc_username: 'test' });
-      expect(userSettings).to.deep.equal({ type: 'user-settings' });
+      expect(userSettings).to.deep.equal({ type: DOC_TYPES.USER_SETTINGS });
     });
 
     it('should return error message when duplicate oidc user exists', async () => {

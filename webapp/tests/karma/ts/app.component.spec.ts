@@ -52,7 +52,7 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
-import { PREFIXES } from '@medic/constants';
+import { PREFIXES, DOC_TYPES } from '@medic/constants';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -632,7 +632,7 @@ describe('AppComponent', () => {
 
       await getComponent();
 
-      expect(changesListener['user-context'].filter({ doc: { type: 'user-settings', name: 'a' }}))
+      expect(changesListener['user-context'].filter({ doc: { type: DOC_TYPES.USER_SETTINGS, name: 'a' }}))
         .to.equal(false);
     });
 

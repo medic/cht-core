@@ -72,7 +72,7 @@ describe('RulesEngineService', () => {
   };
   const sampleTaskDoc = {
     _id: 'taskdoc',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     owner: 'contact-1234',
     emission: {
       _id: 'emission_id',
@@ -93,7 +93,7 @@ describe('RulesEngineService', () => {
 
   const userSettingsDoc = {
     _id: PREFIXES.COUCH_USER + 'username',
-    type: 'user-settings',
+    type: DOC_TYPES.USER_SETTINGS,
     roles: [],
   };
   const chtScriptApi = {
@@ -400,7 +400,8 @@ describe('RulesEngineService', () => {
       expect(result).to.be.true;
       const changeFeed = changesService.subscribe.args[0][0];
       expect(changeFeed.filter({ id: 'id' })).to.be.false;
-      expect(changeFeed.filter({ id: 'id', doc: { _id: 'task', type: 'task', requester: 'requester' } })).to.be.false;
+      expect(changeFeed.filter({ id: 'id', doc: { _id: 'task', 
+        type: DOC_TYPES.TASK, requester: 'requester' } })).to.be.false;
       expect(changeFeed.filter(changeFeedFormat({ _id: 'doc' }))).to.be.false;
       expect(changeFeed.filter(changeFeedFormat({ _id: 'a', 
         type: DOC_TYPES.DATA_RECORD, form: undefined }))).to.be.false;
@@ -436,7 +437,7 @@ describe('RulesEngineService', () => {
       expect(result).to.be.true;
       const changeFeed = changesService.subscribe.args[1][0];
       expect(changeFeed.filter({ id: 'id' })).to.be.false;
-      expect(changeFeed.filter(changeFeedFormat({ _id: 'task', type: 'task' }))).to.be.false;
+      expect(changeFeed.filter(changeFeedFormat({ _id: 'task', type: DOC_TYPES.TASK }))).to.be.false;
     });
 
     it('should emit when contacts were marked as dirty', fakeAsync(async () => {
@@ -524,7 +525,7 @@ describe('RulesEngineService', () => {
       const docs = [
         { _id: 'report', type: DOC_TYPES.DATA_RECORD },
         { _id: 'contact', type: 'contact' },
-        { _id: 'target', type: 'target' },
+        { _id: 'target', type: DOC_TYPES.TARGET },
         { _id: 'whatever', type: 'whatever' },
       ];
       await service.monitorExternalChanges({ docs });
@@ -542,10 +543,10 @@ describe('RulesEngineService', () => {
         last_seq: 20,
         docs: [
           { _id: 'report1', fields: { patient_id: 'patient' }, type: DOC_TYPES.DATA_RECORD },
-          { _id: 'task~1', emission: { _id: '??' }, requester: 'patient_uuid', type: 'task' },
+          { _id: 'task~1', emission: { _id: '??' }, requester: 'patient_uuid', type: DOC_TYPES.TASK },
           { _id: 'contact2', type: 'contact', name: 'C', patient_id: 'patient2' },
-          { _id: 'task~2', emission: { _id: '??' }, requester: 'other_patient', type: 'task' },
-          { _id: 'task~3', emission: { _id: '!!' }, requester: 'other_patient', type: 'task' },
+          { _id: 'task~2', emission: { _id: '??' }, requester: 'other_patient', type: DOC_TYPES.TASK },
+          { _id: 'task~3', emission: { _id: '!!' }, requester: 'other_patient', type: DOC_TYPES.TASK },
           { _id: 'report2', fields: { patient_uuid: 'etc' }, type: DOC_TYPES.DATA_RECORD },
         ]
       };
@@ -1049,7 +1050,7 @@ describe('RulesEngineService', () => {
         id: 'task-1',
         doc: {
           _id: 'task-1',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           emission: {
             _id: 'emission-1',
             dueDate: '2023-10-24',
@@ -1120,7 +1121,7 @@ describe('RulesEngineService', () => {
         id: 'task-cancelled',
         doc: {
           _id: 'task-cancelled',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           state: 'Cancelled',
           emission: {
             _id: 'emission-cancelled',
@@ -1138,7 +1139,7 @@ describe('RulesEngineService', () => {
         id: 'task-ready',
         doc: {
           _id: 'task-ready',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           state: 'Ready',
           emission: {
             _id: 'emission-ready',
@@ -1176,7 +1177,7 @@ describe('RulesEngineService', () => {
     it('should fetch previous month targets when ReportingPeriod.PREVIOUS is passed', async () => {
       const targetDoc = {
         _id: `target~2025-01~user~${PREFIXES.COUCH_USER}fred`,
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'fred',
         owner: 'user',
         reporting_period: '2025-01',
@@ -1267,7 +1268,7 @@ describe('RulesEngineService', () => {
     it('should calculate correct reporting period for previous month', async () => {
       const targetDoc = {
         _id: `target~2025-01~user~${PREFIXES.COUCH_USER}fred`,
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'fred',
         owner: 'user',
         reporting_period: '2025-01',
@@ -1288,7 +1289,7 @@ describe('RulesEngineService', () => {
     it('should process multiple targets', async () => {
       const targetDoc = {
         _id: `target~2025-01~user~${PREFIXES.COUCH_USER}fred`,
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'fred',
         owner: 'user',
         reporting_period: '2025-01',

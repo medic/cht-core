@@ -10,6 +10,7 @@ import {
   byContactIds,
   byId
 } from '../../src/qualifier';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('remote target', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -65,7 +66,7 @@ describe('remote target', () => {
     describe('getPage', () => {
       const doc = [
         {
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           user: 'user-1',
           owner: 'd3f6b91e-b095-48ef-a524-705e29fd9f6d',
           reporting_period: '2025-01',
@@ -76,7 +77,7 @@ describe('remote target', () => {
           ]
         },
         {
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           user: 'user-2',
           owner: 'c4e6b91e-b095-48ef-b524-805e28fd9c7d',
           reporting_period: '2025-01',

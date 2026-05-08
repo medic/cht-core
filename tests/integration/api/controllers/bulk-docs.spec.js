@@ -389,25 +389,25 @@ describe('bulk-docs handler', () => {
     const docs = [
       {
         _id: 'allowed_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'online',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:online',
       },
@@ -907,22 +907,22 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person',
       },
     ];
@@ -964,22 +964,22 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_allowed_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'new_denied_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'new_allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'fixture:user:offline',
       },
       {
         _id: 'new_denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person',
       },
     ];
@@ -1055,22 +1055,22 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person',
       },
     ];
@@ -1112,22 +1112,22 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_allowed_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'new_denied_task',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'new_allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'fixture:user:offline',
       },
       {
         _id: 'new_denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person',
       },
     ];
@@ -1212,12 +1212,12 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person',
       },
       {
         _id: 'denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'whoever',
       },
     ];
@@ -1269,12 +1269,12 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'new_allowed_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'new_person',
       },
       {
         _id: 'new_denied_target',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'whoever',
       },
     ];
@@ -1346,7 +1346,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'target~existing_person',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person',
       },
       {
@@ -1370,7 +1370,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'target~existing_person2',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'existing_person2',
       },
     ];
@@ -1411,7 +1411,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'target~new_person',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'new_person',
       },
       {
@@ -1435,7 +1435,7 @@ describe('bulk-docs handler', () => {
       },
       {
         _id: 'target~new_person2',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'new_person2',
       },
     ];

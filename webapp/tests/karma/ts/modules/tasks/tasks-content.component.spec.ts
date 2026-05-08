@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { DOC_TYPES } from '@medic/constants';
 
 import { FormService } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -149,7 +150,7 @@ describe('TasksContentComponent', () => {
     expect(render.callCount).to.equal(1);
     expect(render.args[0][0]).to.deep.include({
       selector: '#task-report',
-      type: 'task',
+      type: DOC_TYPES.TASK,
       formDoc: form,
       instanceData: 'nothing',
     });
@@ -544,7 +545,7 @@ describe('TasksContentComponent', () => {
       expect(formService.render.callCount).to.equal(1);
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#task-report',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         formDoc: form,
         instanceData: action.content,
       });
@@ -610,7 +611,7 @@ describe('TasksContentComponent', () => {
       expect(formService.render.callCount).to.equal(1);
       expect(formService.render.args[0][0]).to.deep.include({
         selector: '#task-report',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         formDoc: { ...form },
         instanceData: { ...action.content },
       });

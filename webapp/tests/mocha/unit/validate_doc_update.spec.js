@@ -15,7 +15,7 @@ describe('validate doc update', () => {
     return {
       _id: PREFIXES.COUCH_USER + 'sally',
       name: 'sally',
-      type: 'user-settings',
+      type: DOC_TYPES.USER_SETTINGS,
       roles: []
     };
   };

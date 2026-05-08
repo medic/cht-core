@@ -298,8 +298,8 @@ describe('Export Data V2.0', () => {
 
     const otherDocs = [
       { _id: uuid(), type: DOC_TYPES.DATA_RECORD, form: 'a-form', fields: {} },
-      { _id: uuid(), type: 'task' },
-      { _id: uuid(), type: 'target' },
+      { _id: uuid(), type: DOC_TYPES.TASK },
+      { _id: uuid(), type: DOC_TYPES.TARGET },
     ];
 
     before(async () => {

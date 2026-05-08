@@ -1,5 +1,5 @@
 const utils = require('./utils');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 describe('remove-user-language migration', function() {
 
@@ -8,7 +8,7 @@ describe('remove-user-language migration', function() {
       {
         _id: PREFIXES.COUCH_USER + 'withlang',
         name: 'withlang',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         known: true,
         language: 'en',
         roles: [],
@@ -18,7 +18,7 @@ describe('remove-user-language migration', function() {
       {
         _id: PREFIXES.COUCH_USER + 'nolang',
         name: 'nolang',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         known: true,
         roles: [],
         fullname: 'No Lang',
@@ -29,7 +29,7 @@ describe('remove-user-language migration', function() {
       {
         _id: PREFIXES.COUCH_USER + 'withlang',
         name: 'withlang',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         known: true,
         roles: [],
         fullname: 'With Lang',
@@ -38,7 +38,7 @@ describe('remove-user-language migration', function() {
       {
         _id: PREFIXES.COUCH_USER + 'nolang',
         name: 'nolang',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         known: true,
         roles: [],
         fullname: 'No Lang',

@@ -15,7 +15,7 @@ const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
 const { Person, Place, Qualifier, Contact, getDatasource } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
-const { USER_ROLES, PREFIXES } = require('@medic/constants');
+const { USER_ROLES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const USER_PREFIX = PREFIXES.COUCH_USER;
 
@@ -454,7 +454,7 @@ const getSettingsUpdates = (username, data) => {
 
   const settings = {
     name: username,
-    type: 'user-settings'
+    type: DOC_TYPES.USER_SETTINGS
   };
 
   SETTINGS_EDITABLE_FIELDS.forEach(key => {

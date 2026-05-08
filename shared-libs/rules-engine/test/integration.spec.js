@@ -228,7 +228,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
       expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'username',
         owner: 'user',
         reporting_period: TARGET_INTERVAL,
@@ -262,7 +262,7 @@ describe(`Rules Engine Integration Tests`, () => {
       const dateNext = moment(TEST_START + MS_IN_DAY * 39).format('YYYY-MM');
       expect(db.bulkDocs.args[3][0].docs[0]).to.deep.include({
         _id: `target~${dateNext}~user~${PREFIXES.COUCH_USER}username`,
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'user',
         reporting_period: dateNext,
       });
@@ -282,7 +282,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
       expect(db.bulkDocs.args[1][0].docs.length).to.eq(1);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'username',
         owner: 'user',
       });
@@ -527,12 +527,12 @@ describe(`Rules Engine Integration Tests`, () => {
       const headlessReport = { _id: 'report', type: DOC_TYPES.DATA_RECORD, form: 'form', patient_id: 'headless' };
       const headlessReport2 = { _id: 'report2', type: DOC_TYPES.DATA_RECORD, form: 'form', patient_id: 'headless2' };
       const taskOwnedByHeadless = {
-        _id: 'task', type: 'task', state: 'Ready', owner: 'headless', emission: {
+        _id: 'task', type: DOC_TYPES.TASK, state: 'Ready', owner: 'headless', emission: {
           _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(),
         }
       };
       const taskEmittedByHeadless2 = {
-        _id: 'task2', type: 'task', state: 'Ready', requester: 'headless2', emission: {
+        _id: 'task2', type: DOC_TYPES.TASK, state: 'Ready', requester: 'headless2', emission: {
           _id: 'emitted', dueDate: Date.now(), startDate: Date.now(), endDate: Date.now(),
         }
       };

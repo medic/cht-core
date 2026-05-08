@@ -255,7 +255,7 @@ describe('TasksComponent', () => {
       doc: { _id: 'clinic', type: CONTACT_TYPES.CLINIC }})).to.be.true;
     expect(changesFeed.filter({ id: 'report', doc: { _id: 'report', 
       type: DOC_TYPES.DATA_RECORD, form: 'form' }})).to.be.true;
-    expect(changesFeed.filter({ id: 'task', doc: { _id: 'task', type: 'task' }})).to.be.true;
+    expect(changesFeed.filter({ id: 'task', doc: { _id: 'task', type: DOC_TYPES.TASK }})).to.be.true;
 
     expect(changesFeed.filter({ id: 'foo', doc: { _id: 'a', 
       type: DOC_TYPES.DATA_RECORD, form: undefined }})).to.be.false;
@@ -322,7 +322,7 @@ describe('TasksComponent', () => {
     store.refreshState();
 
     const changesArgs = changesService.subscribe.args[0][0];
-    const change = { doc: { type: 'task' } };
+    const change = { doc: { type: DOC_TYPES.TASK } };
     changesArgs.callback(change);
     tick(2000); // wait for debounced function to fire
     flush();

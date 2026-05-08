@@ -1,12 +1,13 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
+const { DOC_TYPES } = require('@medic/constants');
 
 const targetState = require('../src/target-state');
 
 const mockTargetDefinition = () => ({ id: 'target' });
 const mockTargets = (items = [mockTargetDefinition()]) => items;
 const mockEmission = assigned => Object.assign(
-  { _id: '123', type: 'target', pass: true, contact: { _id: 'a', reported_date: 1 } },
+  { _id: '123', type: DOC_TYPES.TARGET, pass: true, contact: { _id: 'a', reported_date: 1 } },
   assigned
 );
 const calendarInterval = require('@medic/calendar-interval');

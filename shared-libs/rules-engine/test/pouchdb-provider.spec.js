@@ -44,28 +44,28 @@ const reportConnectedByPlaceUuid = {
 };
 const taskOwnedByChtContact = {
   _id: 'taskOwnedBy',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   owner: 'patient',
 };
 const taskRequestedByChtContact = {
   _id: 'taskRequestedBy',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
 };
 const taskRequestedByChtPlace = {
   _id: 'taskRequestedByPlace',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'place',
 };
 const headlessTask = {
   _id: 'headlessTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'headless',
   owner: 'headless',
 };
 const cancelledTask = {
   _id: 'cancelledTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
   owner: 'patient',
   state: 'Cancelled',
@@ -73,7 +73,7 @@ const cancelledTask = {
 
 const completedTask = {
   _id: 'completedTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
   owner: 'patient',
   state: 'Completed',
@@ -81,7 +81,7 @@ const completedTask = {
 
 const failedTask = {
   _id: 'failedTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
   owner: 'patient',
   state: 'Failed',
@@ -89,7 +89,7 @@ const failedTask = {
 
 const readyTask = {
   _id: 'readyTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
   owner: 'patient',
   state: 'Ready',
@@ -97,7 +97,7 @@ const readyTask = {
 
 const draftTask = {
   _id: 'draftTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
   owner: 'patient',
   state: 'Draft',
@@ -105,7 +105,7 @@ const draftTask = {
 
 const readyTaskForPlace = {
   _id: 'readyPlaceTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'place',
   owner: 'place',
   state: 'Ready',
@@ -113,7 +113,7 @@ const readyTaskForPlace = {
 
 const cancelledTaskForPlace = {
   _id: 'cancelledPlaceTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'place',
   owner: 'place',
   state: 'Cancelled',
@@ -229,7 +229,7 @@ describe('pouchdb provider', () => {
       expect(firstTargetDoc).excluding('_rev').to.deep.eq({
         _id: `target~2019-07~user~${PREFIXES.COUCH_USER}username`,
         updated_date: moment().startOf('day').valueOf(),
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'user',
         user: PREFIXES.COUCH_USER + 'username',
         targets,
@@ -246,7 +246,7 @@ describe('pouchdb provider', () => {
       expect(secondTargetDoc).excluding('_rev').to.deep.eq({
         _id: `target~2019-07~user~${PREFIXES.COUCH_USER}username`,
         updated_date: moment().startOf('day').valueOf(),
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         owner: 'user',
         user: PREFIXES.COUCH_USER + 'username',
         targets: nextTargets,

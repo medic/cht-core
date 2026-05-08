@@ -3,6 +3,7 @@ const { chtDocs, mockEmission, MS_IN_DAY, engineSettings } = require('./mocks');
 const moment = require('moment');
 const rewire = require('rewire');
 const sinon = require('sinon');
+const { DOC_TYPES } = require('@medic/constants');
 
 const RulesEmitter = require('../src/rules-emitter');
 let refreshRulesEmissionsContact;
@@ -390,7 +391,7 @@ describe('refresh-rules-emissions', () => {
 
       expect(firstResult.updatedTaskDocs.length).to.eq(1);
       expect(firstResult.updatedTaskDocs[0]).to.nested.include({
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Ready',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
@@ -406,7 +407,7 @@ describe('refresh-rules-emissions', () => {
       const secondResult = await refreshRulesEmissionsContact(secondData);
       expect(secondResult.updatedTaskDocs.length).to.eq(1);
       expect(secondResult.updatedTaskDocs[0]).to.nested.include({
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Cancelled',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
         'stateHistory[0].state': 'Ready',
@@ -429,7 +430,7 @@ describe('refresh-rules-emissions', () => {
       expect(thirdResult.updatedTaskDocs[0]._rev).to.be.undefined;
       expect(thirdResult.updatedTaskDocs.length).to.eq(1);
       expect(thirdResult.updatedTaskDocs[0]).to.nested.include({
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Ready',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
@@ -460,7 +461,7 @@ describe('refresh-rules-emissions', () => {
 
       expect(firstResult.updatedTaskDocs.length).to.eq(1);
       expect(firstResult.updatedTaskDocs[0]).to.nested.include({
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Ready',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
@@ -481,14 +482,14 @@ describe('refresh-rules-emissions', () => {
       // first task and last task are cancelled because they are older
       expect(secondResult.updatedTaskDocs[0]).to.deep.equal(firstResult.updatedTaskDocs[0]);
       expect(secondResult.updatedTaskDocs[0]).to.nested.include({
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Cancelled',
         stateReason: 'duplicate',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',
       });
       expect(secondResult.updatedTaskDocs[1]).to.deep.equal(externalTask2);
       expect(secondResult.updatedTaskDocs[1]).to.nested.include({
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Cancelled',
         stateReason: 'duplicate',
         'emission._id': 'pregReport~pregnancy-facility-visit-reminder~anc.facility_reminder',

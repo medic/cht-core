@@ -34,7 +34,7 @@ describe('Test utils', () => {
         {id: DOC_IDS.PARTNERS, doc: {_id: DOC_IDS.PARTNERS}},
         {id: '001', doc: {type: DOC_TYPES.TRANSLATIONS}},
         {id: '002', doc: {type: 'translations-backup'}},
-        {id: '003', doc: {type: 'user-settings'}},
+        {id: '003', doc: {type: DOC_TYPES.USER_SETTINGS}},
         {id: '004', doc: {type: 'info'}},
         {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'form:pregnancy', doc: {type: 'form', _id: 'form:pregnancy'}},

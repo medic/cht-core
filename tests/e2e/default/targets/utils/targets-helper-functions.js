@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { DOC_TYPES } = require('@medic/constants');
 
 module.exports = {
   REPORTING_PERIOD: {
@@ -7,7 +8,7 @@ module.exports = {
   },
   createTargetDoc: (tag, contactId, { user = 'irrelevant', targets = [] } = {}) => ({
     _id: `target~${tag}~${contactId}~${user}`,
-    type: 'target',
+    type: DOC_TYPES.TARGET,
     reporting_period: tag,
     owner: contactId,
     targets,

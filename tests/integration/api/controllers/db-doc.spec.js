@@ -555,7 +555,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'target~existing_person',
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           owner: 'existing_person',
         },
         {
@@ -579,7 +579,7 @@ describe('db-doc handler', () => {
         },
         {
           _id: 'target~existing_person2',
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           owner: 'existing_person2',
         },
       ];
@@ -1166,7 +1166,7 @@ describe('db-doc handler', () => {
       const supervisorRequestOptions = { auth: { username: 'supervisor', password }, };
       const allowedTask = {
         _id: 'task1',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
@@ -1174,7 +1174,7 @@ describe('db-doc handler', () => {
       };
       const deniedTask = {
         _id: 'task2',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: 'any_other_user',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
@@ -1183,7 +1183,7 @@ describe('db-doc handler', () => {
 
       const allowedTarget = {
         _id: 'target1',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
@@ -1191,7 +1191,7 @@ describe('db-doc handler', () => {
 
       const deniedTarget = {
         _id: 'target2',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
@@ -1562,7 +1562,7 @@ describe('db-doc handler', () => {
 
       const allowedTask = {
         _id: 'task1',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
@@ -1570,7 +1570,7 @@ describe('db-doc handler', () => {
       };
       const deniedTask = {
         _id: 'task2',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: 'any_other_user',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
@@ -1579,14 +1579,14 @@ describe('db-doc handler', () => {
 
       const allowedTarget = {
         _id: 'target1',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
       const deniedTarget = {
         _id: 'target2',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],
@@ -1901,7 +1901,7 @@ describe('db-doc handler', () => {
 
       const allowedTask = {
         _id: 'task1',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
@@ -1909,7 +1909,7 @@ describe('db-doc handler', () => {
       };
       const deniedTask = {
         _id: 'task2',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         user: 'any_other_user',
         owner: 'fixture:offline:clinic',
         requester: 'fixture:offline:clinic',
@@ -1918,14 +1918,14 @@ describe('db-doc handler', () => {
 
       const allowedTarget = {
         _id: 'target1',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:offline:clinic',
         targets: [],
       };
       const deniedTarget = {
         _id: 'target2',
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:online:clinic',
         targets: [],

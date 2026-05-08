@@ -3,7 +3,7 @@ const path = require('path');
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const sinon = require('sinon');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const defaultSettings = require('../../../../../config/default/app_settings.json');
 const service = require('../../../../src/services/export/dhis');
@@ -473,7 +473,7 @@ const mockContact = (username, override) => Object.assign({
 
 const mockTargetDoc = (username, interval, override) => Object.assign({
   _id: `target~${interval}~${PREFIXES.COUCH_USER}${username}~${username}-guid`,
-  type: 'target',
+  type: DOC_TYPES.TARGET,
   owner: `${username}-guid`,
   user: `${PREFIXES.COUCH_USER}${username}`,
   targets: [

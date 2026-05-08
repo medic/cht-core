@@ -138,14 +138,14 @@ describe('docs_by_replication_key', () => {
     },
     {
       _id: 'task_created_by_user',
-      type: 'task',
+      type: DOC_TYPES.TASK,
       user: PREFIXES.COUCH_USER + 'username',
       requester: 'someuser',
       owner: 'testpatient',
     },
     {
       _id: 'target_created_by_user',
-      type: 'target',
+      type: DOC_TYPES.TARGET,
       user: PREFIXES.COUCH_USER + 'username',
       owner: 'testuser',
     },
@@ -228,14 +228,14 @@ describe('docs_by_replication_key', () => {
     },
     {
       _id: 'task_created_by_other_user',
-      type: 'task',
+      type: DOC_TYPES.TASK,
       user: PREFIXES.COUCH_USER + 'not_username',
       requester: 'someuser',
       owner: 'testpatient',
     },
     {
       _id: 'target_created_by_other_user',
-      type: 'target',
+      type: DOC_TYPES.TARGET,
       user: PREFIXES.COUCH_USER + 'not_username',
       owner: 'not_someuser',
     },

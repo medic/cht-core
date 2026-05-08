@@ -7,7 +7,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 describe('Message Tab - Sender Data', () => {
   const places = placeFactory.generateHierarchy();
@@ -43,7 +43,7 @@ describe('Message Tab - Sender Data', () => {
     _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     language: 'en',
     known: true,
-    type: 'user-settings',
+    type: DOC_TYPES.USER_SETTINGS,
     roles: [ 'chw' ],
     facility_id: [ healthCenter1._id, healthCenter2._id ],
     contact_id: contactWithManyPlaces._id,

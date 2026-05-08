@@ -6,6 +6,7 @@ import * as LocalDoc from '../../src/local/libs/doc';
 import * as Target from '../../src/local/target';
 import { LocalDataContext } from '../../src/local/libs/data-context';
 import { and, byReportingPeriod, byContactId, byContactIds, byId } from '../../src/qualifier';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('local target', () => {
   let localContext: LocalDataContext;
@@ -41,7 +42,7 @@ describe('local target', () => {
             { id: 'target1', value: { pass: 5, total: 6 } },
             { id: 'target2', value: { pass: 8, total: 10, percent: 80 } },
           ],
-          type: 'target'
+          type: DOC_TYPES.TARGET
         };
         getDocByIdInner.resolves(doc);
 
@@ -74,7 +75,7 @@ describe('local target', () => {
           owner: 'owner',
           reporting_period: '2025-01',
           updated_date: 123,
-          type: 'target'
+          type: DOC_TYPES.TARGET
         },
         {
           user: 'user',
@@ -88,21 +89,21 @@ describe('local target', () => {
           owner: 'owner',
           updated_date: 123,
           targets: [],
-          type: 'target'
+          type: DOC_TYPES.TARGET
         },
         {
           user: 'user',
           reporting_period: '2025-01',
           updated_date: 123,
           targets: [],
-          type: 'target'
+          type: DOC_TYPES.TARGET
         },
         {
           owner: 'owner',
           reporting_period: '2025-01',
           updated_date: 123,
           targets: [],
-          type: 'target'
+          type: DOC_TYPES.TARGET
         },
       ].forEach(invalidDoc => {
         it('returns null if the identified doc is not a target', async () => {
@@ -128,7 +129,7 @@ describe('local target', () => {
         reporting_period: '2025-01',
         updated_date: 123,
         targets: [],
-        type: 'target'
+        type: DOC_TYPES.TARGET
       };
       const target1 = {
         _id: 'target~2025-01~contact-2',
@@ -137,7 +138,7 @@ describe('local target', () => {
         reporting_period: '2025-01',
         updated_date: 124,
         targets: [],
-        type: 'target'
+        type: DOC_TYPES.TARGET
       };
       const target2 = {
         _id: 'target~2025-01~contact-2',
@@ -146,7 +147,7 @@ describe('local target', () => {
         reporting_period: '2025-01',
         updated_date: 124,
         targets: [],
-        type: 'target'
+        type: DOC_TYPES.TARGET
       };
       const invalidTarget = {
         _id: 'target~2025-01~contact-2'

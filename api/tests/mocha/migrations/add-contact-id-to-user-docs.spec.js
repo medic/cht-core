@@ -3,14 +3,14 @@ const { expect } = require('chai');
 const db = require('../../../src/db');
 const logger = require('@medic/logger');
 const migration = require('../../../src/migrations/add-contact-id-to-user-docs');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const BATCH_SIZE = 100;
 
 const createUserSettingsDoc = (id, contactId) => {
   const userSettings = {
     _id: id,
-    type: 'user-settings',
+    type: DOC_TYPES.USER_SETTINGS,
   };
   if (contactId) {
     userSettings.contact_id = contactId;

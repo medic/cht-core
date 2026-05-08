@@ -488,7 +488,7 @@ describe('TokenLogin service', () => {
         name: 'sally',
         roles: ['a', 'b'],
         phone: 'c',
-        type: 'user-settings',
+        type: DOC_TYPES.USER_SETTINGS,
         token_login: { active: true, expiration_date: 0 },
       };
 
@@ -522,7 +522,7 @@ describe('TokenLogin service', () => {
           name: 'sally',
           roles: ['a', 'b'],
           phone: 'c',
-          type: 'user-settings',
+          type: DOC_TYPES.USER_SETTINGS,
           token_login: { active: false, expiration_date: 0, login_date: 123 },
         }]);
       });

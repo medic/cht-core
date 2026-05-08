@@ -7,7 +7,7 @@ const {
   engineSettings,
   defaultConfigSettingsDoc
 } = require('./mocks');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
@@ -15,7 +15,6 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');
-const { DOC_TYPES } = require('@medic/constants');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
@@ -41,19 +40,19 @@ const headlessReport = {
 };
 const taskOwnedByChtContact = {
   _id: 'taskOwnedBy',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   owner: 'patient',
   emission: {},
 };
 const taskRequestedByChtContact = {
   _id: 'taskRequestedBy',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'patient',
   emission: {},
 };
 const headlessTask = {
   _id: 'headlessTask',
-  type: 'task',
+  type: DOC_TYPES.TASK,
   requester: 'headless',
   owner: 'headless',
   emission: {},
@@ -186,7 +185,7 @@ describe('provider-wireup integration tests', () => {
       expect(rulesStateStore.aggregateStoredTargetEmissions.callCount).to.equal(1);
       expect(db.bulkDocs.callCount).to.equal(1);
       expect(db.bulkDocs.args[0][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         targets: [],
       });
 
@@ -210,7 +209,7 @@ describe('provider-wireup integration tests', () => {
       const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
       expect([...new Set(docTypes)]).to.deep.equal(['task']);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         targets: [],
       });
 
@@ -234,7 +233,7 @@ describe('provider-wireup integration tests', () => {
       const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
       expect([...new Set(docTypes)]).to.deep.equal(['task']);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         targets: [],
       });
 
@@ -258,7 +257,7 @@ describe('provider-wireup integration tests', () => {
       const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
       expect([...new Set(docTypes)]).to.deep.equal(['task']);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         targets: [],
       });
 
@@ -283,7 +282,7 @@ describe('provider-wireup integration tests', () => {
       const docTypes = db.bulkDocs.args[0][0].map(doc => doc.type);
       expect([...new Set(docTypes)]).to.deep.equal(['task']);
       expect(db.bulkDocs.args[1][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         targets: [],
       });
 
@@ -318,12 +317,12 @@ describe('provider-wireup integration tests', () => {
       expect(db.bulkDocs.callCount).to.eq(2);
       expect(db.bulkDocs.args[0][0].docs.length).to.equal(1);
       expect(db.bulkDocs.args[0][0].docs[0]).to.deep.include({
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         targets: [],
       });
       expect(db.bulkDocs.args[1][0][0]).to.nested.include({
         _id: 'headlessTask',
-        type: 'task',
+        type: DOC_TYPES.TASK,
         state: 'Cancelled', // invalid due to no emission data
       });
     });
@@ -359,7 +358,7 @@ describe('provider-wireup integration tests', () => {
         reportDocs: [headlessReport],
         taskDocs: [{
           _id: 'headlessTask',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           owner: 'headless',
           requester: 'headless',
           state: 'Cancelled',
@@ -518,7 +517,7 @@ describe('provider-wireup integration tests', () => {
       const writtenDoc = await db.get(`target~2024-01~mock_user_id~${PREFIXES.COUCH_USER}username`);
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
         _id: `target~2024-01~mock_user_id~${PREFIXES.COUCH_USER}username`,
-        type: 'target',
+        type: DOC_TYPES.TARGET,
         updated_date: moment().startOf('day').valueOf(),
         owner: 'mock_user_id',
         user: PREFIXES.COUCH_USER + 'username',
@@ -1164,66 +1163,66 @@ describe('provider-wireup integration tests', () => {
       await db.bulkDocs([
         {
           _id: 'cancelledTask1',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           owner: 'patient',
           state: 'Cancelled',
         },
         {
           _id: 'cancelledTask2',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           owner: 'patient',
           state: 'Cancelled',
         },
         {
           _id: 'completedTask',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           requester: 'patient',
           owner: 'patient',
           state: 'Completed',
         },
         {
           _id: 'readyTask1',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           requester: 'patient',
           owner: 'patient',
           state: 'Ready',
         },
         {
           _id: 'readyTask2',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           requester: 'patient',
           owner: 'patient',
           state: 'Ready',
         },
         {
           _id: 'draftTask1',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           requester: 'patient',
           owner: 'patient',
           state: 'Draft',
         },
         {
           _id: 'draftTask2',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           requester: 'patient',
           owner: 'patient',
           state: 'Draft',
         },
         {
           _id: 'draftTaskHeadless',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           owner: 'headless',
           state: 'Draft',
         },
         {
           _id: 'readyTaskHeadless',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           owner: 'headless',
           state: 'Ready',
         },
         {
           _id: 'failedTaskHeadless',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           owner: 'headless',
           state: 'Failed',
         },

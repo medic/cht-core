@@ -159,7 +159,7 @@ const daysAgo = days => moment().subtract(days, 'days').format('Y-MM-DD');
 const tasks = [
   {
     _id: 'task1~user1',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user1',
     owner: 'contact1',
     state: 'Draft',
@@ -171,7 +171,7 @@ const tasks = [
   },
   {
     _id: 'task2~user1',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user1',
     owner: 'contact1',
     state: 'Draft',
@@ -183,7 +183,7 @@ const tasks = [
   },
   {
     _id: 'task3~user1',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user1',
     owner: 'contact1',
     state: 'Completed',
@@ -195,7 +195,7 @@ const tasks = [
   },
   {
     _id: 'task4~user1',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user1',
     owner: 'contact1',
     state: 'Completed',
@@ -207,7 +207,7 @@ const tasks = [
   },
   {
     _id: 'task1~user2',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'contact1',
     state: 'Ready',
@@ -219,7 +219,7 @@ const tasks = [
   },
   {
     _id: 'task2~user2',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'contact1',
     state: 'Ready',
@@ -231,7 +231,7 @@ const tasks = [
   },
   {
     _id: 'task3~user2',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'contact1',
     state: 'Failed',
@@ -243,7 +243,7 @@ const tasks = [
   },
   {
     _id: 'task4~user2',
-    type: 'task',
+    type: DOC_TYPES.TASK,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'contact1',
     state: 'Failed',
@@ -259,7 +259,7 @@ const latestTargetInterval = moment().subtract(7, 'months').format('YYYY-MM');
 const targets = [
   {
     _id: `target~${moment().subtract(9, 'months').format('YYYY-MM')}~${PREFIXES.COUCH_USER}user2`,
-    type: 'target',
+    type: DOC_TYPES.TARGET,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'fixture:user:user2',
     reporting_period: moment().subtract(9, 'months').format('YYYY-MM'),
@@ -267,7 +267,7 @@ const targets = [
   },
   {
     _id: `target~${moment().subtract(6, 'months').format('YYYY-MM')}~${PREFIXES.COUCH_USER}user2`,
-    type: 'target',
+    type: DOC_TYPES.TARGET,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'fixture:user:user2',
     reporting_period: moment().subtract(6, 'months').format('YYYY-MM'),
@@ -275,7 +275,7 @@ const targets = [
   },
   {
     _id: `target~${moment().subtract(7, 'months').subtract(2, 'days').format('YYYY-MM')}~${PREFIXES.COUCH_USER}user2`,
-    type: 'target',
+    type: DOC_TYPES.TARGET,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'fixture:user:user2',
     reporting_period: moment().subtract(7, 'months').subtract(2, 'days').format('YYYY-MM'),
@@ -283,7 +283,7 @@ const targets = [
   },
   {
     _id: `target~${moment().subtract(3, 'months').format('YYYY-MM')}~${PREFIXES.COUCH_USER}user2`,
-    type: 'target',
+    type: DOC_TYPES.TARGET,
     user: PREFIXES.COUCH_USER + 'user2',
     owner: 'fixture:user:user2',
     reporting_period: moment().subtract(3, 'months').format('YYYY-MM'),

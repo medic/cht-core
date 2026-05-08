@@ -1816,7 +1816,7 @@ describe('WebappEnketoFormContext', () => {
     const context = new WebappEnketoFormContext('#sel', 'task', { doc: 1 }, { data: 1 });
     expect(context).to.deep.include({
       selector: '#sel',
-      type: 'task',
+      type: DOC_TYPES.TASK,
       formDoc: { doc: 1 },
       instanceData: { data: 1 },
     });

@@ -2,7 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const { expect } = require('chai');
-const { PREFIXES, CONTACT_TYPES } = require('@medic/constants');
+const { PREFIXES, CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const place = utils.deepFreeze(placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL }));
 const offlineUser = utils.deepFreeze(userFactory.build({
@@ -23,7 +23,7 @@ const createTarget = ({
 }) => {
   return {
     _id: `target~${reporting_period}~${owner}~${user}`,
-    type: 'target',
+    type: DOC_TYPES.TARGET,
     user,
     owner,
     reporting_period,

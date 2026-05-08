@@ -160,10 +160,13 @@ describe('all_docs handler', () => {
         type: CONTACT_TYPES.CLINIC },
       { _id: 'denied_report', contact: { _id: 'fixture:online', parent: lineage }, 
         type: DOC_TYPES.DATA_RECORD, form: 'a' },
-      { _id: 'allowed_task', user: PREFIXES.COUCH_USER + 'offline', type: 'task', owner: 'fixture:user:offline' },
-      { _id: 'denied_task', user: PREFIXES.COUCH_USER + 'online', type: 'task', owner: 'fixture:user:offline' },
-      { _id: 'allowed_target', user: PREFIXES.COUCH_USER + 'offline', type: 'target', owner: 'fixture:user:offline' },
-      { _id: 'denied_target', user: PREFIXES.COUCH_USER + 'online', type: 'target', owner: 'fixture:user:online' },
+      { _id: 'allowed_task', user: PREFIXES.COUCH_USER + 'offline', 
+        type: DOC_TYPES.TASK, owner: 'fixture:user:offline' },
+      { _id: 'denied_task', user: PREFIXES.COUCH_USER + 'online', type: DOC_TYPES.TASK, owner: 'fixture:user:offline' },
+      { _id: 'allowed_target', user: PREFIXES.COUCH_USER + 'offline', 
+        type: DOC_TYPES.TARGET, owner: 'fixture:user:offline' },
+      { _id: 'denied_target', user: PREFIXES.COUCH_USER + 'online', 
+        type: DOC_TYPES.TARGET, owner: 'fixture:user:online' },
     ];
 
     return utils
@@ -561,17 +564,17 @@ describe('all_docs handler', () => {
         {
           // depth = 2
           _id: 'target~offline',
-          type: 'target',
+          type: DOC_TYPES.TARGET,
           owner: 'fixture:user:offline',
         },
         {
           _id: 'task~supervisor',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           user: PREFIXES.COUCH_USER + 'supervisor',
         },
         {
           _id: 'task~offline',
-          type: 'task',
+          type: DOC_TYPES.TASK,
           user: PREFIXES.COUCH_USER + 'offline',
         }
       ];

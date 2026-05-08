@@ -154,7 +154,7 @@ describe('Create User for Contacts Transition', () => {
 
     [
       [{ type: DOC_TYPES.DATA_RECORD }],
-      [{ type: 'person' }, { type: 'user-settings' }, { type: DOC_TYPES.DATA_RECORD }],
+      [{ type: 'person' }, { type: DOC_TYPES.USER_SETTINGS }, { type: DOC_TYPES.DATA_RECORD }],
     ].forEach(docs => {
       it('returns true when given a report', () => {
         expect(transition.filter(docs)).to.be.true;
@@ -172,7 +172,7 @@ describe('Create User for Contacts Transition', () => {
     it('returns false when given documents that are not data records', () => {
       const docs = [
         { type: 'person' },
-        { type: 'user-settings' },
+        { type: DOC_TYPES.USER_SETTINGS },
         { type: 'something_else' },
       ];
 
