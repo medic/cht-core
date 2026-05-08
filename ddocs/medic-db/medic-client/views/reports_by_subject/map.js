@@ -1,8 +1,11 @@
 function(doc) {
   if (doc.type === 'data_record' && doc.form) {
+    var emitted = {};
     var emitField = function(obj, field) {
-      if (obj[field]) {
-        emit(obj[field], doc.reported_date);
+      var value = obj[field];
+      if (value && !emitted[value]) {
+        emitted[value] = true;
+        emit(value, doc.reported_date);
       }
     };
 
