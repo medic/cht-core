@@ -1,9 +1,9 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 
 const user = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
+    .sequence('_id', uuid)
     .attr('name', '')
     .attr('type', 'user')
     .attr('roles', '')
