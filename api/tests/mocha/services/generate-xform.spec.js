@@ -794,7 +794,7 @@ describe('generate-xform service', () => {
   </form>`;
       expect(replaceAllMarkdown(given)).to.equal(expected.trim());
       expect(markdown.toHtml.callCount).to.equal(3);
-      expect(markdown.toHtml.args).to.deep.equal([['1'], ['3'], ['2']]);
+      expect(markdown.toHtml.args).to.deep.equal([['1'], ['2'], ['3']]);
     });
 
     it('does not convert content outside of questions and hints', () => {
