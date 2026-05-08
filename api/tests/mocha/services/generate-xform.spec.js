@@ -688,6 +688,23 @@ describe('generate-xform service', () => {
       expect(markdown.toHtml.args[0][0]).to.equal('abc');
     });
 
+     it('replaces details.or-hint guidance hints', () => {
+      sinon.stub(markdown, 'toHtml').returns('def');
+      const given = `
+ <root> 
+  <form>
+    <details class="or-hint">abc</details>
+  </form>
+  </root>`;
+       const expected = `
+  <form>
+    <details class="or-hint">def</details>
+  </form>`;
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(1);
+      expect(markdown.toHtml.args[0][0]).to.equal('abc');
+    });
+
     it('replaces all questions and hints', () => {
       sinon.stub(markdown, 'toHtml')
         .withArgs('1').returns('a')

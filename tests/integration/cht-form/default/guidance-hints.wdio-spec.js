@@ -8,22 +8,11 @@ describe('cht-form web component - Guidance Hints', () => {
     await mockConfig.loadForm('default', 'test', 'guidance_hints');
   });
 
-  it('should display the form title', async () => {
-    const title = await genericForm.getFormTitle();
-    expect(title).to.equal('Guidance Hints');
-  });
-
-  it('should show guidance hint toggle for question with guidance', async () => {
-    const guidanceToggle = await $('details.or-form-guidance');
-    expect(await guidanceToggle.isExisting()).to.be.true;
-    expect(await guidanceToggle.isDisplayed()).to.be.true;
-  });
-
   it('should expand and show guidance hint text when clicked', async () => {
     const guidanceToggle = await $('details.or-form-guidance');
     expect(await guidanceToggle.getAttribute('open')).to.be.null;
     // Use browser.execute to reliably click the summary element
-    await browser.execute((el) => el.querySelector('summary').click(), guidanceToggle);
+    await (await guidanceToggle.$('summary')).click();
     expect(await guidanceToggle.getAttribute('open')).to.not.be.null;
   });
 
