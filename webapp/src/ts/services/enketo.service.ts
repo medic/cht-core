@@ -541,7 +541,7 @@ export class EnketoService {
     const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
-      const formId = ownerDoc === doc ? doc.form : ownerDoc.type;
+      const formId = ownerDoc.form || doc.form;
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
 <<<<<<< HEAD

@@ -186,12 +186,14 @@ export class ContactSaveService {
     xmlStr: string,
   ) {
     const mainDoc = preparedDocs[0];
-    const $record = xmlStr ? $($.parseXML(xmlStr)) : null;
-    const root = ($record?.children(':first')[0]) as Element | undefined;
-    const formId = root ? $(root).attr('id') : undefined;
-    const ctx: ContactOwnerContext | null = root
-      ? { root, preparedDocs, mainDoc, submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0 }
-      : null;
+    const root = $.parseXML(xmlStr).documentElement;
+    const formId = $(root).attr('id');
+    const ctx: ContactOwnerContext = { 
+      root, 
+      preparedDocs, 
+      mainDoc, 
+      submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0 
+    }l;
 
     const newAttachmentNamesByDoc = new Map<Record<string, any>, Set<string>>();
     const fileNameMapByDoc = new Map<Record<string, any>, Map<string, string>>();
