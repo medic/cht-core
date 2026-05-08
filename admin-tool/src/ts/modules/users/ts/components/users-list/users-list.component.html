@@ -70,19 +70,24 @@
     }
   }
 
-  <create-user
+  <!-- Create User -->
+  <user-form
+    mode="create"
     [visible]="showCreateModal"
     (closed)="showCreateModal = false"
-    (userCreated)="showCreateModal = false"
-  ></create-user>
+    (userSaved)="showCreateModal = false"
+  ></user-form>
 
-  <edit-user
+  <!-- Edit User -->
+  <user-form
+    mode="edit"
     [visible]="showEditModal"
     [user]="selectedUser"
     (closed)="showEditModal = false"
-    (userUpdated)="showEditModal = false"
-  ></edit-user>
+    (userSaved)="showEditModal = false"
+  ></user-form>
 
+  <!-- Delete User -->
   <delete-user
     [visible]="showDeleteModal"
     [user]="selectedUser"
@@ -90,6 +95,7 @@
     (userDeleted)="showDeleteModal = false"
   ></delete-user>
 
+  <!-- Import Users -->
   <import-users
     [visible]="showImportModal"
     (closed)="showImportModal = false"

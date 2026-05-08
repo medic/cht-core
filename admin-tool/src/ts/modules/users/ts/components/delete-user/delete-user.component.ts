@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { DeleteUserService } from '@admin-tool-services/delete-user.service';
 import { UsersService } from '@admin-tool-services/users.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
 
@@ -25,10 +24,7 @@ export class DeleteUserComponent {
   loading = false;
   error: string | null = null;
 
-  constructor(
-    private deleteUserService: DeleteUserService,
-    private usersService: UsersService,
-  ) {}
+  constructor(private usersService: UsersService) {}
 
   cancel() {
     this.error = null;
@@ -43,7 +39,7 @@ export class DeleteUserComponent {
     this.loading = true;
     this.error = null;
     try {
-      await this.deleteUserService.deleteUser(this.user.username);
+      await this.usersService.deleteUser(this.user.username);
       this.usersService.notifyUsersUpdated();
       this.userDeleted.emit();
       this.closed.emit();

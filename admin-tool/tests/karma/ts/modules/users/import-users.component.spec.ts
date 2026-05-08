@@ -3,21 +3,16 @@ import { expect } from 'chai';
 import sinon, { SinonStub } from 'sinon';
 import { TranslateModule } from '@ngx-translate/core';
 import { ImportUsersComponent } from '@admin-tool-modules/users/ts/components/import-users/import-users.component';
-import { CreateUserService } from '@admin-tool-services/create-user.service';
 import { UsersService } from '@admin-tool-services/users.service';
 
-interface CreateUserServiceMock {
-  createMultipleUsers: SinonStub;
-}
-
 interface UsersServiceMock {
+  createMultipleUsers: SinonStub;
   notifyUsersUpdated: SinonStub;
 }
 
 describe('ImportUsersComponent', () => {
   let component: ImportUsersComponent;
   let fixture: ComponentFixture<ImportUsersComponent>;
-  let createUserService: CreateUserServiceMock;
   let usersService: UsersServiceMock;
 
   const mockFile = (content: string, name = 'users.csv'): File => {
@@ -32,19 +27,18 @@ describe('ImportUsersComponent', () => {
   const stabilize = async () => {
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   };
 
   beforeEach(async () => {
-    createUserService = { createMultipleUsers: sinon.stub() };
-    usersService = { notifyUsersUpdated: sinon.stub() };
+    usersService = {
+      createMultipleUsers: sinon.stub(),
+      notifyUsersUpdated: sinon.stub(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [ImportUsersComponent, TranslateModule.forRoot()],
-      providers: [
-        { provide: CreateUserService, useValue: createUserService },
-        { provide: UsersService, useValue: usersService },
-      ],
+      providers: [{ provide: UsersService, useValue: usersService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImportUsersComponent);
@@ -83,7 +77,10 @@ describe('ImportUsersComponent', () => {
     });
 
     it('should set filename when a file is selected', () => {
-      const file = mockFile('username,password\nnight_wing,Str0ng!Pass99', 'heroes.csv');
+      const file = mockFile(
+        'username,password\nnight_wing,Str0ng!Pass99',
+        'heroes.csv',
+      );
       component.onFileSelected(mockFileEvent(file));
       expect(component.filename).to.equal('heroes.csv');
     });
@@ -97,29 +94,25 @@ describe('ImportUsersComponent', () => {
 
   describe('Many', () => {
     it('should count successful imports correctly', async () => {
-      createUserService.createMultipleUsers.resolves([
+      usersService.createMultipleUsers.resolves([
         { 'user-settings': { id: 'org.couchdb.user:night_wing' } },
         { 'user-settings': { id: 'org.couchdb.user:star_fire' } },
         { error: 'Username already taken' },
       ]);
-
       component.onFileSelected(mockFileEvent(mockFile('csv content')));
       await component.processUpload();
-
       expect(component.summary?.successful).to.equal(2);
       expect(component.summary?.failed).to.equal(1);
       expect(component.summary?.total).to.equal(3);
     });
 
     it('should count all failures when all rows error', async () => {
-      createUserService.createMultipleUsers.resolves([
+      usersService.createMultipleUsers.resolves([
         { error: 'Invalid username' },
         { error: 'Invalid username' },
       ]);
-
       component.onFileSelected(mockFileEvent(mockFile('csv content')));
       await component.processUpload();
-
       expect(component.summary?.successful).to.equal(0);
       expect(component.summary?.failed).to.equal(2);
     });
@@ -128,11 +121,11 @@ describe('ImportUsersComponent', () => {
   describe('Boundaries', () => {
     it('should not call createMultipleUsers when no file is uploaded', async () => {
       await component.processUpload();
-      expect(createUserService.createMultipleUsers.callCount).to.equal(0);
+      expect(usersService.createMultipleUsers.callCount).to.equal(0);
     });
 
     it('should handle empty API response array', async () => {
-      createUserService.createMultipleUsers.resolves([]);
+      usersService.createMultipleUsers.resolves([]);
       component.onFileSelected(mockFileEvent(mockFile('csv content')));
       await component.processUpload();
       expect(component.summary?.total).to.equal(0);
@@ -140,7 +133,7 @@ describe('ImportUsersComponent', () => {
     });
 
     it('should handle non-array API response', async () => {
-      createUserService.createMultipleUsers.resolves(null);
+      usersService.createMultipleUsers.resolves(null);
       component.onFileSelected(mockFileEvent(mockFile('csv content')));
       await component.processUpload();
       expect(component.summary?.total).to.equal(0);
@@ -185,7 +178,7 @@ describe('ImportUsersComponent', () => {
     });
 
     it('should move to processing screen when processUpload is called', async () => {
-      createUserService.createMultipleUsers.resolves([]);
+      usersService.createMultipleUsers.resolves([]);
       component.onFileSelected(mockFileEvent(mockFile('csv')));
       const promise = component.processUpload();
       expect(component.screen).to.equal('processing');
@@ -193,7 +186,7 @@ describe('ImportUsersComponent', () => {
     });
 
     it('should move to summary screen after successful upload', async () => {
-      createUserService.createMultipleUsers.resolves([
+      usersService.createMultipleUsers.resolves([
         { 'user-settings': { id: 'org.couchdb.user:night_wing' } },
       ]);
       component.onFileSelected(mockFileEvent(mockFile('csv')));
@@ -202,7 +195,7 @@ describe('ImportUsersComponent', () => {
     });
 
     it('should notify usersService after successful upload', async () => {
-      createUserService.createMultipleUsers.resolves([]);
+      usersService.createMultipleUsers.resolves([]);
       component.onFileSelected(mockFileEvent(mockFile('csv')));
       await component.processUpload();
       expect(usersService.notifyUsersUpdated.callCount).to.equal(1);
@@ -210,16 +203,19 @@ describe('ImportUsersComponent', () => {
 
     it('should call createMultipleUsers with the file text content', async () => {
       const csvContent = 'username,password\nnight_wing,Str0ng!Pass99';
-      createUserService.createMultipleUsers.resolves([]);
+      usersService.createMultipleUsers.resolves([]);
       component.onFileSelected(mockFileEvent(mockFile(csvContent)));
       await component.processUpload();
-      expect(createUserService.createMultipleUsers.calledWith(csvContent)).to.be.true;
+      expect(usersService.createMultipleUsers.calledWith(csvContent)).to.be
+        .true;
     });
   });
 
   describe('Exceptions', () => {
     it('should show error and return to upload screen when API fails', async () => {
-      createUserService.createMultipleUsers.rejects({ error: { message: 'Server error' } });
+      usersService.createMultipleUsers.rejects({
+        error: { message: 'Server error' },
+      });
       component.onFileSelected(mockFileEvent(mockFile('csv')));
       await component.processUpload();
       expect(component.screen).to.equal('upload');
@@ -227,14 +223,14 @@ describe('ImportUsersComponent', () => {
     });
 
     it('should show fallback error when API returns no message', async () => {
-      createUserService.createMultipleUsers.rejects({});
+      usersService.createMultipleUsers.rejects({});
       component.onFileSelected(mockFileEvent(mockFile('csv')));
       await component.processUpload();
       expect(component.error).to.equal('users.import.error');
     });
 
     it('should not notify usersService when upload fails', async () => {
-      createUserService.createMultipleUsers.rejects({});
+      usersService.createMultipleUsers.rejects({});
       component.onFileSelected(mockFileEvent(mockFile('csv')));
       await component.processUpload();
       expect(usersService.notifyUsersUpdated.callCount).to.equal(0);
@@ -243,17 +239,13 @@ describe('ImportUsersComponent', () => {
 
   describe('Scenarios', () => {
     it('should complete full happy path: select file → confirm → process → summary', async () => {
-      createUserService.createMultipleUsers.resolves([
+      usersService.createMultipleUsers.resolves([
         { 'user-settings': { id: 'org.couchdb.user:night_wing' } },
         { 'user-settings': { id: 'org.couchdb.user:star_fire' } },
       ]);
-
-      // Step 1: select file
       component.onFileSelected(mockFileEvent(mockFile('csv', 'heroes.csv')));
       expect(component.screen).to.equal('confirm');
       expect(component.filename).to.equal('heroes.csv');
-
-      // Step 2: confirm and process
       await component.processUpload();
       expect(component.screen).to.equal('summary');
       expect(component.summary?.successful).to.equal(2);

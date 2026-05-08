@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { CreateUserService } from '@admin-tool-services/create-user.service';
 import { UsersService } from '@admin-tool-services/users.service';
 
 type Screen = 'upload' | 'confirm' | 'processing' | 'summary';
@@ -39,10 +38,7 @@ export class ImportUsersComponent {
 
   private uploadedFile: File | null = null;
 
-  constructor(
-    private createUserService: CreateUserService,
-    private usersService: UsersService,
-  ) {}
+  constructor(private usersService: UsersService) {}
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -64,12 +60,11 @@ export class ImportUsersComponent {
 
     try {
       const csv = await this.uploadedFile.text();
-      const results: any[] = await this.createUserService.createMultipleUsers(csv);
+      const results: any[] = await this.usersService.createMultipleUsers(csv);
 
-      // Build summary from API response array
       const rows = Array.isArray(results) ? results : [];
-      const successful = rows.filter(r => !r.error).length;
-      const failed = rows.filter(r => !!r.error).length;
+      const successful = rows.filter((r) => !r.error).length;
+      const failed = rows.filter((r) => !!r.error).length;
       const outputFileUrl = this.convertResultsToCSV(rows);
 
       this.summary = {
@@ -116,20 +111,28 @@ export class ImportUsersComponent {
   private convertResultsToCSV(results: any[]): string {
     const eol = '\r\n';
     const delimiter = ',';
-    const columns = ['import.status:excluded', 'import.message:excluded', 'import.username:excluded'];
+    const columns = [
+      'import.status:excluded',
+      'import.message:excluded',
+      'import.username:excluded',
+    ];
     let output = columns.join(delimiter) + eol;
 
     results.forEach((record: any) => {
       const status = record.error ? 'error' : 'imported';
       const message = record.error
-        ? (typeof record.error === 'string' ? record.error : JSON.stringify(record.error))
+        ? typeof record.error === 'string'
+          ? record.error
+          : JSON.stringify(record.error)
         : 'imported on ' + new Date().toISOString();
-      const username = record['user-settings']?.id?.replace('org.couchdb.user:', '') ?? '';
-      output += [
-        this.escapeCSV(status),
-        this.escapeCSV(message),
-        this.escapeCSV(username),
-      ].join(delimiter) + eol;
+      const username =
+        record['user-settings']?.id?.replace('org.couchdb.user:', '') ?? '';
+      output +=
+        [
+          this.escapeCSV(status),
+          this.escapeCSV(message),
+          this.escapeCSV(username),
+        ].join(delimiter) + eol;
     });
 
     const file = new Blob([output], { type: 'text/csv;charset=utf-8;' });

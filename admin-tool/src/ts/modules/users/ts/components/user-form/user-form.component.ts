@@ -3,6 +3,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  OnInit,
   OnChanges,
   SimpleChanges,
   ViewChild,
@@ -12,11 +13,13 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
-import { EditUserService } from '@admin-tool-services/edit-user.service';
 import { Select2SearchService } from '@admin-tool-services/select2search.service';
 import { SettingsService } from '@admin-tool-services/settings.service';
 import { UsersService } from '@admin-tool-services/users.service';
-import { User } from '@admin-tool-modules/users/users-interfaces';
+import {
+  User,
+  CreateUserErrors,
+} from '@admin-tool-modules/users/users-interfaces';
 
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
@@ -29,72 +32,43 @@ const FIELDS_TO_IGNORE = [
   'tokenLoginEnabled',
 ];
 
-export interface EditUserErrors {
-  username?: string;
-  fullname?: string;
-  email?: string;
-  phone?: string;
-  roles?: string;
-  place?: string;
-  contact?: string;
-  password?: string;
-  passwordConfirm?: string;
-  submit?: string;
-  replicationLimit?: string;
-}
-
-export interface EditUserModel {
-  id: string;
-  username: string;
-  fullname: string;
-  email: string;
-  phone: string;
-  roles: string[];
-  place: string | string[] | null;
-  contact: string | null;
-  token_login: boolean | '' | null;
-  /** Raw token_login data as returned by the server — not transformed client-side. */
-  tokenLoginEnabled: User['token_login'] | null;
-  oidc_username: string;
-  password: string;
-  passwordConfirm: string;
-  showPassword: boolean;
-}
-
-const getInitialModel = (): EditUserModel => ({
+const getInitialModel = () => ({
   id: '',
   username: '',
   fullname: '',
   email: '',
   phone: '',
-  roles: [],
-  place: null,
-  contact: null,
-  token_login: null,
-  tokenLoginEnabled: null,
+  roles: [] as string[],
+  place: null as string | string[] | null,
+  contact: null as string | null,
+  token_login: null as boolean | null,
+  tokenLoginEnabled: null as User['token_login'] | null,
   oidc_username: '',
   password: '',
   passwordConfirm: '',
   showPassword: false,
 });
 
+type UserFormModel = ReturnType<typeof getInitialModel>;
+
 /**
- * Modal component for editing an existing user.
- * Controlled by the parent via the `visible` and `user` inputs.
- * Emits `closed` when dismissed and `userUpdated` on successful update.
+ * Shared modal component for creating and editing users.
+ * Controlled by `mode` input — 'create' shows an empty form, 'edit' pre-populates from `user`.
+ * Emits `closed` when dismissed and `userSaved` on successful create or update.
  */
 @Component({
-  selector: 'edit-user',
+  selector: 'user-form',
   standalone: true,
   imports: [FormsModule, TranslatePipe],
-  templateUrl: './edit-user.component.html',
-  styleUrl: './edit-user.component.less',
+  templateUrl: './user-form.component.html',
+  styleUrl: './user-form.component.less',
 })
-export class EditUserComponent implements OnChanges {
+export class UserFormComponent implements OnInit, OnChanges {
   @Input() visible = false;
+  @Input() mode: 'create' | 'edit' = 'create';
   @Input() user: User | null = null;
   @Output() closed = new EventEmitter<void>();
-  @Output() userUpdated = new EventEmitter<void>();
+  @Output() userSaved = new EventEmitter<void>();
 
   @ViewChild('facilitySelect')
   facilitySelectRef!: ElementRef<HTMLSelectElement>;
@@ -102,42 +76,59 @@ export class EditUserComponent implements OnChanges {
   @ViewChild('contactSelect') contactSelectRef!: ElementRef<HTMLSelectElement>;
 
   loading = false;
-  errors: EditUserErrors = {};
+  errors: CreateUserErrors = {};
   availableRoles: { key: string; label: string }[] = [];
   isOfflineRole = false;
   allowTokenLogin = false;
   allowSSOLogin = false;
 
-  model: EditUserModel = getInitialModel();
+  model: UserFormModel = getInitialModel();
 
   private settingsRoles: Record<string, { name: string; offline?: boolean }> =
     {};
 
   private cachedSettings: any = null;
-  private originalModel: EditUserModel = getInitialModel();
+  private originalModel: UserFormModel = getInitialModel();
+
+  get isEditMode(): boolean {
+    return this.mode === 'edit';
+  }
+
+  get title(): string {
+    return this.isEditMode ? 'Edit User' : 'Add User';
+  }
+
+  get submitLabel(): string {
+    return this.isEditMode ? 'Submit' : 'Add User';
+  }
 
   constructor(
-    private editUserService: EditUserService,
     private http: HttpClient,
     private select2SearchService: Select2SearchService,
     private settingsService: SettingsService,
     private usersService: UsersService,
   ) {}
 
-  /**
-   * When the modal becomes visible and a user is provided, load settings
-   * and populate the model from the user object.
-   */
+  ngOnInit() {
+    if (!this.isEditMode) {
+      this.loadSettings();
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['visible']?.currentValue === true && this.user) {
-      this.loadSettingsAndPopulate();
+    if (changes['visible']?.currentValue === true) {
+      if (this.isEditMode && this.user) {
+        this.loadSettingsAndPopulate();
+      } else {
+        setTimeout(() => this.initSelect2(), 0);
+      }
     }
     if (changes['visible']?.currentValue === false) {
       this.reset();
     }
   }
 
-  async loadSettingsAndPopulate() {
+  private async loadSettings() {
     try {
       this.cachedSettings = await this.settingsService.get();
       this.settingsRoles = this.cachedSettings.roles ?? {};
@@ -146,12 +137,15 @@ export class EditUserComponent implements OnChanges {
         .map(([key, role]: [string, any]) => ({ key, label: role.name }));
       this.allowTokenLogin = !!this.cachedSettings.token_login?.enabled;
       this.allowSSOLogin = !!this.cachedSettings.oidc_provider;
-      this.populateModel();
-      // Defer Select2 init to next tick so modal DOM is rendered
-      setTimeout(() => this.initSelect2(), 0);
     } catch (err) {
       console.error('Error loading settings', err);
     }
+  }
+
+  async loadSettingsAndPopulate() {
+    await this.loadSettings();
+    this.populateModel();
+    setTimeout(() => this.initSelect2(), 0);
   }
 
   private populateModel() {
@@ -166,6 +160,7 @@ export class EditUserComponent implements OnChanges {
       : null;
 
     this.model = {
+      ...getInitialModel(),
       id: this.user.id || '',
       username: this.user.username || '',
       fullname: this.user.fullname || '',
@@ -174,16 +169,10 @@ export class EditUserComponent implements OnChanges {
       roles: this.filterRoles(this.user.roles || []),
       place: facilityId,
       contact: this.user.contact_id || null,
-      token_login: null,
-      // Pass through server data as-is — do not compute derived fields client-side
       tokenLoginEnabled: this.user.token_login ?? null,
       oidc_username: this.user.oidc_username || '',
-      password: '',
-      passwordConfirm: '',
-      showPassword: false,
     };
 
-    // Store original for diffing changed fields on submit
     this.originalModel = { ...this.model, roles: [...this.model.roles] };
     this.isOfflineRole = this.isOfflineUser();
   }
@@ -200,23 +189,20 @@ export class EditUserComponent implements OnChanges {
 
   private async initSelect2() {
     if (this.facilitySelectRef?.nativeElement) {
-      // initialValue accepts a single string — preselect the first place if multiple
       const placeIds = Array.isArray(this.model.place)
         ? this.model.place
         : this.model.place
           ? [this.model.place]
           : [];
-      const initialValue = placeIds[0] || undefined;
       await this.select2SearchService.initPlaceSelect(
         this.facilitySelectRef.nativeElement,
-        { initialValue },
+        { initialValue: placeIds[0] || undefined },
       );
     }
     if (this.contactSelectRef?.nativeElement) {
-      const initialValue = this.model.contact || undefined;
       await this.select2SearchService.initPersonSelect(
         this.contactSelectRef.nativeElement,
-        { initialValue },
+        { initialValue: this.model.contact || undefined },
       );
     }
   }
@@ -244,11 +230,17 @@ export class EditUserComponent implements OnChanges {
   }
 
   get passwordHidden(): boolean {
+    if (this.isEditMode) {
+      return (
+        (this.allowTokenLogin &&
+          (!!this.model.token_login ||
+            (this.model.token_login !== false &&
+              !!this.model.tokenLoginEnabled))) ||
+        (this.allowSSOLogin && !!this.model.oidc_username)
+      );
+    }
     return (
-      (this.allowTokenLogin &&
-        (!!this.model.token_login ||
-          (this.model.token_login !== false &&
-            !!this.model.tokenLoginEnabled))) ||
+      (this.allowTokenLogin && !!this.model.token_login) ||
       (this.allowSSOLogin && !!this.model.oidc_username)
     );
   }
@@ -272,7 +264,15 @@ export class EditUserComponent implements OnChanges {
     this.isOfflineRole = this.isOfflineUser();
   }
 
-  // --- Validation sub-methods ---
+  // --- Validation ---
+
+  private validateUsername() {
+    if (!this.model.username) {
+      this.errors.username = 'field.required';
+    } else if (!/^[a-z0-9_-]+$/.test(this.model.username)) {
+      this.errors.username = 'username.invalid';
+    }
+  }
 
   private validateEmail() {
     if (this.model.email && !/^[^\s@]+@[^\s@]+$/.test(this.model.email)) {
@@ -310,12 +310,6 @@ export class EditUserComponent implements OnChanges {
     }
   }
 
-  /**
-   * Password validation for edit differs from create:
-   * - If token login or SSO is active, clear and skip password fields
-   * - If disabling token login (token_login === false), password is required
-   * - For existing users, password is optional — only validate if either field is filled
-   */
   private validatePassword() {
     if (this.passwordHidden) {
       this.model.password = '';
@@ -323,35 +317,39 @@ export class EditUserComponent implements OnChanges {
       return;
     }
 
-    const disablingTokenLogin = this.model.token_login === false;
-    const eitherFieldFilled = this.model.password || this.model.passwordConfirm;
-
-    if (!disablingTokenLogin && !eitherFieldFilled) {
-      return;
+    if (this.isEditMode) {
+      const disablingTokenLogin = this.model.token_login === false;
+      const eitherFieldFilled =
+        this.model.password || this.model.passwordConfirm;
+      if (!disablingTokenLogin && !eitherFieldFilled) {
+        return;
+      }
     }
 
     if (!this.model.password) {
       this.errors.password = 'field.required';
       return;
     }
-
     if (this.model.password.length < PASSWORD_MINIMUM_LENGTH) {
       this.errors.password = 'password.length.minimum';
       return;
     }
-
     if (passwordTester(this.model.password) < PASSWORD_MINIMUM_SCORE) {
       this.errors.password = 'password.weak';
       return;
     }
-
-    if (this.model.password !== this.model.passwordConfirm) {
+    if (!this.model.passwordConfirm) {
+      this.errors.passwordConfirm = 'field.required';
+    } else if (this.model.password !== this.model.passwordConfirm) {
       this.errors.passwordConfirm = 'Passwords must match';
     }
   }
 
   private validate(): boolean {
     this.errors = {};
+    if (!this.isEditMode) {
+      this.validateUsername();
+    }
     this.validateEmail();
     this.validateRoles();
     this.validatePhone();
@@ -406,15 +404,10 @@ export class EditUserComponent implements OnChanges {
     return true;
   }
 
-  /**
-   * Returns only the fields that have changed compared to the original model.
-   * Password is included only if non-empty.
-   * Internal/meta fields are excluded.
-   */
   private getChangedUpdates(): Record<string, any> {
     const updates: Record<string, any> = {};
 
-    for (const key of Object.keys(this.model) as (keyof EditUserModel)[]) {
+    for (const key of Object.keys(this.model) as (keyof UserFormModel)[]) {
       if (key === 'id' || FIELDS_TO_IGNORE.includes(key)) {
         continue;
       }
@@ -467,7 +460,6 @@ export class EditUserComponent implements OnChanges {
 
   async submit() {
     this.computeFields();
-
     if (!this.validate()) {
       return;
     }
@@ -482,25 +474,47 @@ export class EditUserComponent implements OnChanges {
       return;
     }
 
-    const updates = this.getChangedUpdates();
-    if (!Object.keys(updates).length) {
-      this.reset();
-      this.closed.emit();
-      return;
-    }
-
-    this.loading = true;
-    this.errors = {};
-    try {
-      await this.editUserService.updateUser(this.model.username, updates);
-      this.usersService.notifyUsersUpdated();
-      this.reset();
-      this.userUpdated.emit();
-      this.closed.emit();
-    } catch (err: any) {
-      this.errors.submit = err?.error?.message || 'Error updating user';
-    } finally {
-      this.loading = false;
+    if (this.isEditMode) {
+      const updates = this.getChangedUpdates();
+      if (!Object.keys(updates).length) {
+        this.reset();
+        this.closed.emit();
+        return;
+      }
+      this.loading = true;
+      this.errors = {};
+      try {
+        await this.usersService.updateUser(this.model.username, updates);
+        this.usersService.notifyUsersUpdated();
+        this.reset();
+        this.userSaved.emit();
+        this.closed.emit();
+      } catch (err: any) {
+        this.errors.submit = err?.error?.message || 'Error updating user';
+      } finally {
+        this.loading = false;
+      }
+    } else {
+      this.loading = true;
+      this.errors = {};
+      try {
+        const { password, token_login, oidc_username, ...userBaseProperties } =
+          this.model;
+        await this.usersService.createUser({
+          ...userBaseProperties,
+          token_login: token_login || undefined,
+          oidc_username: oidc_username || undefined,
+          password: this.passwordHidden ? undefined : password,
+        });
+        this.usersService.notifyUsersUpdated();
+        this.reset();
+        this.userSaved.emit();
+        this.closed.emit();
+      } catch (err: any) {
+        this.errors.submit = err?.error?.message || 'users.create.error';
+      } finally {
+        this.loading = false;
+      }
     }
   }
 }

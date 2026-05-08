@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { DbService } from '@admin-tool-services/db.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
 
 /**
- * Handles fetching and updating users.
- * Exposes a shared observable to notify other components when the user list should be refreshed.
+ * Handles all user-related HTTP communication and state management.
  *
- * Uses the medic-client/doc_by_type CouchDB view directly (same as the AngularJS app) so that
- * inactive (deleted) users are included in the list and shown as greyed out.
- * The API endpoints (v1/users, v2/users) do not return inactive users.
+ * - Fetches users from the CouchDB view directly so inactive users are included
+ * - Exposes a shared observable to notify components when the user list should refresh
+ * - Wraps POST /api/v3/users (create single), POST /api/v2/users (bulk CSV import),
+ *   POST /api/v1/users/:username (update) and DELETE /api/v1/users/:username (delete)
  */
 @Injectable({
   providedIn: 'root',
@@ -23,12 +24,14 @@ export class UsersService {
    */
   usersUpdated$ = this.usersUpdatedSubject.asObservable();
 
-  constructor(private db: DbService) {}
+  constructor(
+    private db: DbService,
+    private http: HttpClient,
+  ) {}
 
   /**
    * Fetches the full list of users from the CouchDB view, including inactive (deleted) users.
    * Inactive users have `inactive: true` and are displayed as greyed out in the list.
-   * @returns a promise that resolves to an array of user-settings documents
    */
   async getUsers(): Promise<Partial<User>[]> {
     const result = await this.db.get().query('medic-client/doc_by_type', {
@@ -38,17 +41,70 @@ export class UsersService {
     return result.rows
       .map((row: any) => row.doc)
       .filter(Boolean)
-      .map((doc: any): Partial<User> => ({
-        id: doc._id,
-        username: doc.name,
-        fullname: doc.fullname,
-        email: doc.email,
-        phone: doc.phone,
-        facility_id: doc.facility_id,
-        contact_id: doc.contact_id,
-        roles: doc.roles,
-        inactive: doc.inactive,
-      }));
+      .map(
+        (doc: any): Partial<User> => ({
+          id: doc._id,
+          username: doc.name,
+          fullname: doc.fullname,
+          email: doc.email,
+          phone: doc.phone,
+          facility_id: doc.facility_id,
+          contact_id: doc.contact_id,
+          roles: doc.roles,
+          inactive: doc.inactive,
+        }),
+      );
+  }
+
+  /**
+   * Creates a new user in the system.
+   * @param user object containing username, password, roles and optional fields
+   */
+  async createUser(user: any): Promise<any> {
+    return firstValueFrom(
+      this.http.post('/api/v3/users', user, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      }),
+    );
+  }
+
+  /**
+   * Bulk imports users from a CSV string.
+   * @param csv raw CSV string
+   */
+  async createMultipleUsers(csv: string): Promise<any> {
+    return firstValueFrom(
+      this.http.post('/api/v2/users', csv, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'text/csv',
+          Accept: 'application/json',
+        },
+      }),
+    );
+  }
+
+  /**
+   * Sends a partial update for an existing user.
+   * @param username the username of the user to update (without org.couchdb.user: prefix)
+   * @param updates the fields to update
+   */
+  updateUser(username: string, updates: Record<string, any>): Promise<void> {
+    return firstValueFrom(
+      this.http.post<void>(`/api/v1/users/${username}`, updates),
+    );
+  }
+
+  /**
+   * Deletes a user by username.
+   * @param username the username of the user to delete (without org.couchdb.user: prefix)
+   */
+  deleteUser(username: string): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`/api/v1/users/${username}`));
   }
 
   /**

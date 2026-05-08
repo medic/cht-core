@@ -1,17 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { expect } from 'chai';
-import sinon from 'sinon';
+import sinon, { SinonStub } from 'sinon';
 import { TranslateModule } from '@ngx-translate/core';
 import { DeleteUserComponent } from '@admin-tool-modules/users/ts/components/delete-user/delete-user.component';
-import { DeleteUserService } from '@admin-tool-services/delete-user.service';
 import { UsersService } from '@admin-tool-services/users.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
+
+interface UsersServiceMock {
+  deleteUser: SinonStub;
+  notifyUsersUpdated: SinonStub;
+}
 
 describe('DeleteUserComponent', () => {
   let component: DeleteUserComponent;
   let fixture: ComponentFixture<DeleteUserComponent>;
-  let deleteUserService: any;
-  let usersService: any;
+  let usersService: UsersServiceMock;
 
   const mockUser: Partial<User> = {
     id: '1',
@@ -22,20 +25,19 @@ describe('DeleteUserComponent', () => {
   const stabilize = async () => {
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await fixture.whenStable();
   };
 
   beforeEach(async () => {
-    deleteUserService = { deleteUser: sinon.stub() };
-    usersService = { notifyUsersUpdated: sinon.stub() };
+    usersService = {
+      deleteUser: sinon.stub(),
+      notifyUsersUpdated: sinon.stub(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [DeleteUserComponent, TranslateModule.forRoot()],
-      providers: [
-        { provide: DeleteUserService, useValue: deleteUserService },
-        { provide: UsersService, useValue: usersService },
-      ],
+      providers: [{ provide: UsersService, useValue: usersService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DeleteUserComponent);
@@ -83,7 +85,7 @@ describe('DeleteUserComponent', () => {
       component.user = mockUser as User;
       await stabilize();
       const body = fixture.nativeElement.querySelector('.modal-body');
-      expect(body.textContent).to.include('b_wayne'); // username rendered directly, not through translate pipe
+      expect(body.textContent).to.include('b_wayne');
     });
   });
 
@@ -91,13 +93,13 @@ describe('DeleteUserComponent', () => {
     it('should not call deleteUser when user has no username', async () => {
       component.user = { id: '1' } as User;
       await component.confirm();
-      expect(deleteUserService.deleteUser.callCount).to.equal(0);
+      expect(usersService.deleteUser.callCount).to.equal(0);
     });
 
     it('should not call deleteUser when user is null', async () => {
       component.user = null;
       await component.confirm();
-      expect(deleteUserService.deleteUser.callCount).to.equal(0);
+      expect(usersService.deleteUser.callCount).to.equal(0);
     });
   });
 
@@ -115,25 +117,17 @@ describe('DeleteUserComponent', () => {
       expect(component.error).to.be.null;
     });
 
-    it('should call deleteUser with the username on submit', async () => {
+    it('should call deleteUser with the username on confirm', async () => {
       component.user = mockUser as User;
-      deleteUserService.deleteUser.resolves({});
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.resolves({});
       await component.confirm();
-
-      expect(deleteUserService.deleteUser.calledWith('b_wayne')).to.be.true;
+      expect(usersService.deleteUser.calledWith('b_wayne')).to.be.true;
     });
 
     it('should notify usersService after successful delete', async () => {
       component.user = mockUser as User;
-      deleteUserService.deleteUser.resolves({});
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.resolves({});
       await component.confirm();
-
       expect(usersService.notifyUsersUpdated.callCount).to.equal(1);
     });
 
@@ -143,46 +137,30 @@ describe('DeleteUserComponent', () => {
       component.userDeleted.subscribe(userDeletedSpy);
       component.closed.subscribe(closedSpy);
       component.user = mockUser as User;
-      deleteUserService.deleteUser.resolves({});
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.resolves({});
       await component.confirm();
-
       expect(userDeletedSpy.callCount).to.equal(1);
       expect(closedSpy.callCount).to.equal(1);
     });
 
     it('should set error when deleteUser fails', async () => {
       component.user = mockUser as User;
-      deleteUserService.deleteUser.rejects({ error: { message: 'Server error' } });
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.rejects({ error: { message: 'Server error' } });
       await component.confirm();
-
       expect(component.error).to.equal('Server error');
     });
 
     it('should set fallback error when API returns no message', async () => {
       component.user = mockUser as User;
-      deleteUserService.deleteUser.rejects({});
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.rejects({});
       await component.confirm();
-
       expect(component.error).to.equal('Error deleting document');
     });
 
     it('should set loading to false after failed delete', async () => {
       component.user = mockUser as User;
-      deleteUserService.deleteUser.rejects({});
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.rejects({});
       await component.confirm();
-
       expect(component.loading).to.equal(false);
     });
   });
@@ -192,12 +170,8 @@ describe('DeleteUserComponent', () => {
       const userDeletedSpy = sinon.spy();
       component.userDeleted.subscribe(userDeletedSpy);
       component.user = mockUser as User;
-      deleteUserService.deleteUser.rejects({});
-      await stabilize();
-      await new Promise(resolve => setTimeout(resolve, 0));
-
+      usersService.deleteUser.rejects({});
       await component.confirm();
-
       expect(userDeletedSpy.callCount).to.equal(0);
     });
   });
@@ -216,7 +190,8 @@ describe('DeleteUserComponent', () => {
       component.user = mockUser as User;
       component.loading = true;
       await stabilize();
-      const buttons = fixture.nativeElement.querySelectorAll('button[disabled]');
+      const buttons =
+        fixture.nativeElement.querySelectorAll('button[disabled]');
       expect(buttons.length).to.be.greaterThan(0);
     });
   });

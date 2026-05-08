@@ -1,8 +1,11 @@
-@import (reference) "../../../../../../css/variables.less";
-@import "../../../../../../css/base-modal.less";
+@import 'variables';
 
 .modal {
   display: block;
+
+  &.in {
+    opacity: 1;
+  }
 
   .modal-dialog {
     width: 50%;
@@ -11,7 +14,22 @@
     margin: 5% auto;
   }
 
+  .modal-header {
+    border-bottom: 0.0625rem solid @gray-light;
+
+    .modal-title {
+      font-size: @font-large;
+      font-weight: bold;
+    }
+
+    .close {
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+  }
+
   .modal-body {
+    padding: 1.25rem;
     max-height: 28rem;
     overflow-y: auto;
 
@@ -33,6 +51,7 @@
         .form-control {
           border-color: @red;
         }
+
         .help-block {
           color: @red;
         }
@@ -72,4 +91,17 @@
       }
     }
   }
+
+  .modal-footer {
+    border-top: 0.0625rem solid @gray-light;
+    text-align: right;
+
+    .btn {
+      margin-left: 0.3125rem;
+    }
+  }
+}
+
+.modal-backdrop {
+  opacity: 0.5;
 }

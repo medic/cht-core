@@ -17,7 +17,7 @@
           >
             <span aria-hidden="true">&times;</span>
           </button>
-          <h4 class="modal-title">{{ "Edit User" | translate }}</h4>
+          <h4 class="modal-title">{{ title | translate }}</h4>
         </div>
 
         <!-- Body -->
@@ -34,16 +34,29 @@
             </p>
           }
 
-          <!-- Username — read-only when editing -->
-          <div class="form-group">
+          <!-- Username — editable on create, read-only on edit -->
+          <div
+            class="form-group"
+            [class.required]="!isEditMode"
+            [class.has-error]="errors.username"
+          >
             <label for="username">{{ "User Name" | translate }}</label>
             <input
               id="username"
               type="text"
               class="form-control"
               [(ngModel)]="model.username"
-              disabled
+              [disabled]="isEditMode"
+              autocomplete="off"
             />
+            @if (!isEditMode) {
+              <span class="help-block text-muted">{{
+                "user.username.help" | translate
+              }}</span>
+            }
+            @if (errors.username) {
+              <span class="help-block">{{ errors.username | translate }}</span>
+            }
           </div>
 
           <!-- Full Name -->
@@ -161,11 +174,7 @@
           </div>
 
           <!-- SSO Username -->
-          @if (
-            allowSSOLogin &&
-            ((model.tokenLoginEnabled && model.token_login === false) ||
-              (!model.tokenLoginEnabled && !model.token_login))
-          ) {
+          @if (allowSSOLogin && !model.token_login) {
             <div class="form-group">
               <label for="sso-login">{{
                 "user.sso.username" | translate
@@ -182,7 +191,7 @@
             </div>
           }
 
-          <!-- Token Login — enable (when not currently enabled) -->
+          <!-- Token Login — enable (shown in both modes when not already enabled) -->
           @if (
             allowTokenLogin &&
             !model.tokenLoginEnabled &&
@@ -203,8 +212,9 @@
             </div>
           }
 
-          <!-- Token Login — manage (when already enabled) -->
+          <!-- Token Login — manage (shown in edit mode when already enabled) -->
           @if (
+            isEditMode &&
             allowTokenLogin &&
             model.tokenLoginEnabled &&
             !(allowSSOLogin && model.oidc_username)
@@ -277,9 +287,13 @@
             </div>
           }
 
-          <!-- Password — optional for existing users, hidden when token/SSO active -->
+          <!-- Password -->
           @if (!passwordHidden) {
-            <div class="form-group" [class.has-error]="errors.password">
+            <div
+              class="form-group"
+              [class.required]="!isEditMode"
+              [class.has-error]="errors.password"
+            >
               <label for="password">{{ "Password" | translate }}</label>
               <div class="input-group">
                 <input
@@ -306,6 +320,11 @@
                   </button>
                 </span>
               </div>
+              @if (!isEditMode) {
+                <span class="help-block text-muted">{{
+                  "update.password.help" | translate
+                }}</span>
+              }
               @if (errors.password) {
                 <span class="help-block">{{
                   errors.password | translate
@@ -314,7 +333,11 @@
             </div>
 
             <!-- Confirm Password -->
-            <div class="form-group" [class.has-error]="errors.passwordConfirm">
+            <div
+              class="form-group"
+              [class.required]="!isEditMode"
+              [class.has-error]="errors.passwordConfirm"
+            >
               <label for="password-confirm">{{
                 "Confirm Password" | translate
               }}</label>
@@ -354,7 +377,7 @@
               <i class="fa fa-spinner fa-spin"></i>
               {{ "Submitting" | translate }}
             } @else {
-              {{ "Submit" | translate }}
+              {{ submitLabel | translate }}
             }
           </button>
         </div>

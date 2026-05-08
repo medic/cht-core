@@ -3,8 +3,7 @@ import { Subscription } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { UsersService } from '@admin-tool-services/users.service';
 import { User } from '@admin-tool-modules/users/users-interfaces';
-import { CreateUserComponent } from '../create-user/create-user.component';
-import { EditUserComponent } from '../edit-user/edit-user.component';
+import { UserFormComponent } from '../user-form/user-form.component';
 import { DeleteUserComponent } from '../delete-user/delete-user.component';
 import { ImportUsersComponent } from '../import-users/import-users.component';
 
@@ -18,8 +17,7 @@ import { ImportUsersComponent } from '../import-users/import-users.component';
   standalone: true,
   imports: [
     TranslatePipe,
-    CreateUserComponent,
-    EditUserComponent,
+    UserFormComponent,
     DeleteUserComponent,
     ImportUsersComponent,
   ],
