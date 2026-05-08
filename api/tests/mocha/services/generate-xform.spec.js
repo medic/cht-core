@@ -688,7 +688,7 @@ describe('generate-xform service', () => {
       expect(markdown.toHtml.args[0][0]).to.equal('abc');
     });
 
-     it('replaces details.or-hint guidance hints', () => {
+    it('replaces details.or-hint guidance hints', () => {
       sinon.stub(markdown, 'toHtml').returns('def');
       const given = `
  <root> 
@@ -696,7 +696,7 @@ describe('generate-xform service', () => {
     <details class="or-hint">abc</details>
   </form>
   </root>`;
-       const expected = `
+      const expected = `
   <form>
     <details class="or-hint">def</details>
   </form>`;

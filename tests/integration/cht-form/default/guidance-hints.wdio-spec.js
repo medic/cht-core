@@ -1,5 +1,4 @@
 const mockConfig = require('../mock-config');
-const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 
 describe('cht-form web component - Guidance Hints', () => {

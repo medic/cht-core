@@ -140,8 +140,8 @@ const replaceAllMarkdown = (form) => {
   });
 
   // Now render markdown
-    const richTextElements = form.querySelectorAll('span.question-label, span.or-hint, details.or-hint');
-    richTextElements.forEach((el, index) => {
+  const richTextElements = form.querySelectorAll('span.question-label, span.or-hint, details.or-hint');
+  richTextElements.forEach((el, index) => {
     const original = el.innerHTML;
     let rendered = markdown.toHtml(original);
     rendered = convertDynamicUrls(rendered);
