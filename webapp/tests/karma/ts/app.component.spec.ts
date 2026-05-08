@@ -192,7 +192,7 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
-    interactionTrackingService = { init: sinon.stub() };
+    interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -520,6 +520,42 @@ describe('AppComponent', () => {
     expect(modalService.show.callCount).to.equal(1);
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
+
+  describe('visibilitychange', () => {
+    let originalHiddenDescriptor;
+
+    beforeEach(() => {
+      originalHiddenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+    });
+
+    afterEach(() => {
+      if (originalHiddenDescriptor) {
+        Object.defineProperty(Document.prototype, 'hidden', originalHiddenDescriptor);
+      }
+    });
+
+    const setHidden = (hidden: boolean) => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
+    };
+
+    it('persists the interaction buffer when the tab becomes hidden', async () => {
+      await getComponent();
+      setHidden(true);
+
+      window.dispatchEvent(new Event('visibilitychange'));
+
+      expect(interactionTrackingService.persistBuffer.callCount).to.equal(1);
+    });
+
+    it('does not persist when the tab becomes visible', async () => {
+      await getComponent();
+      setHidden(false);
+
+      window.dispatchEvent(new Event('visibilitychange'));
+
+      expect(interactionTrackingService.persistBuffer.called).to.be.false;
+    });
+  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {

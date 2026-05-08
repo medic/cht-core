@@ -157,7 +157,7 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.removeScrollTracking();
     this.interactionTrackingService.record('task_list:leave');
-    this.interactionTrackingService.flush();
+    this.interactionTrackingService.endSession();
     this.subscription.unsubscribe();
     this.tasksActions.clearTaskList();
     this.tasksActions.setTasksLoaded(false);

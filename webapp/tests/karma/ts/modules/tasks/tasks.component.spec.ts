@@ -56,7 +56,7 @@ describe('TasksComponent', () => {
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
     telemetryService = { record: sinon.stub() };
-    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [

@@ -1,17 +1,22 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Inject, Injectable, NgZone } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 
 import { AuthService } from '@mm-services/auth.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-const moment = require('moment');
 
 interface InteractionEvent {
   action: string;
   timestamp: number;
   ref?: string;
   detail?: string;
+}
+
+interface BufferedEvent extends InteractionEvent {
+  session: string;
+  sessionStartedAt: number;
 }
 
 interface InteractionSession {
@@ -29,26 +34,48 @@ interface InteractionLogDoc {
     user: string;
     deviceId: string;
     date: string;
-    versions: string[];
+    version: string;
   };
 }
+
+type Day = {
+  formatted: string;
+  now: number;
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class InteractionTrackingService {
   private static readonly PERMISSION = 'can_track_task_interactions';
+  private static readonly PREFIX = 'interaction';
+  private static readonly POUCH_PREFIX = '_pouch_';
+  private static readonly NAME_DIVIDER = '-';
   private static readonly MAX_EVENTS_PER_DAY = 500;
-  private static readonly SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes of inactivity ends session
-  private static readonly SAVE_INTERVAL_MS = 5 * 60 * 1000; // persist current session every 5 minutes
+  private static readonly BUFFER_FLUSH_THRESHOLD = 50;
+
+  private static readonly DB_NAME_PATTERN = new RegExp(
+    `^${InteractionTrackingService.PREFIX}-[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]-.+$`
+  );
+
+  private static readonly DB_NAME_USER_PATTERN = new RegExp(
+    `^${InteractionTrackingService.PREFIX}-\\d{4}-\\d{1,2}-\\d{1,2}-(.+)$`
+  );
 
   private currentSession: string | null = null;
   private sessionStartedAt: number | null = null;
-  private events: InteractionEvent[] = [];
-  private sessionTimer: ReturnType<typeof setTimeout> | null = null;
-  private saveTimer: ReturnType<typeof setInterval> | null = null;
-  private totalEventsToday = 0;
+  private lastEventKey: string | null = null;
+
+  private buffer: BufferedEvent[] = [];
+  private currentDayKey: string | null = null;
+  private persistedEventCount = 0;
+
+  // Promise-based guard for aggregation work.
+  private aggregationInFlight: Promise<void> | null = null;
+
   private enabled = false;
+  private user!: string;
+  private windowRef;
 
   constructor(
     private readonly authService: AuthService,
@@ -57,203 +84,333 @@ export class InteractionTrackingService {
     private readonly versionService: VersionService,
     private readonly telemetryService: TelemetryService,
     private readonly ngZone: NgZone,
-  ) {}
+    @Inject(DOCUMENT) private readonly document: Document,
+  ) {
+    this.windowRef = this.document.defaultView;
+  }
 
   async init(): Promise<void> {
-    this.enabled = await this.authService.has(InteractionTrackingService.PERMISSION);
+    const user = this.sessionService.userCtx()?.name;
+    if (!user) {
+      return;
+    }
+    const granted = await this.authService.has(InteractionTrackingService.PERMISSION);
+    if (!granted) {
+      return;
+    }
+
+    this.user = user;
+    const currentDay = this.getCurrentDay();
+    try {
+      await this.aggregateOldDb(currentDay);
+    } catch (error) {
+      console.error('Error aggregating leftover interaction DBs', error);
+    }
+
+    this.currentDayKey = currentDay.formatted;
+    this.persistedEventCount = await this.readPersistedCount(currentDay);
+    this.enabled = true;
   }
 
   /**
-   * Start a new interaction session. If a session is already active, it is flushed first.
-   * @param session Name of the session context (e.g., 'tasks')
+   * Start a new interaction session. Subsequent record() calls are tagged with
+   * this session and a fresh sessionStartedAt.
    */
   startSession(session: string): void {
-    this.ngZone.runOutsideAngular(() => {
-      if (!this.enabled) {
-        return;
-      }
-      if (this.currentSession) {
-        this.flush();
-      }
-      this.currentSession = session;
-      this.sessionStartedAt = Date.now();
-      this.events = [];
-      this.resetSessionTimer();
-      this.startSaveInterval();
-    });
+    if (!this.enabled) {
+      return;
+    }
+    this.currentSession = session;
+    this.sessionStartedAt = Date.now();
+    this.lastEventKey = null;
   }
 
   /**
-   * Record an interaction event within the current session.
-   * @param action The action identifier (e.g., 'task_list:scroll', 'task:open')
-   * @param ref Optional non-PII reference (e.g., task type id, form id)
-   * @param detail Optional extra context (e.g., list position)
+   * Stop accepting events and persist the in-memory buffer.
    */
-  record(action: string, ref?: string, detail?: string) {
-    this.ngZone.runOutsideAngular(() => this._record(action, ref, detail));
+  async endSession(): Promise<void> {
+    return this.ngZone.runOutsideAngular(() => this._endSession());
   }
 
-  private _record(action: string, ref?: string, detail?: string) {
-    if (!this.currentSession || this.hasReachedDailyLimit()) {
-      return;
-    }
-
-    if (this.isDuplicate(action, ref, detail)) {
-      return;
-    }
-
-    this.events.push(this.buildEvent(action, ref, detail));
-
-    if (this.hasReachedDailyLimit()) {
-      this.flush();
-      return;
-    }
-
-    this.resetSessionTimer();
-  }
-
-  private hasReachedDailyLimit(): boolean {
-    return (this.totalEventsToday + this.events.length) >= InteractionTrackingService.MAX_EVENTS_PER_DAY;
-  }
-
-  private isDuplicate(action: string, ref?: string, detail?: string): boolean {
-    const lastEvent = this.events[this.events.length - 1];
-    return lastEvent?.action === action && lastEvent?.ref === ref && lastEvent?.detail === detail;
-  }
-
-  private buildEvent(action: string, ref?: string, detail?: string): InteractionEvent {
-    const event: InteractionEvent = { action, timestamp: Date.now() };
-    if (ref) {
-      event.ref = ref;
-    }
-    if (detail) {
-      event.detail = detail;
-    }
-    return event;
-  }
-
-  /**
-   * End the current session, persist it, and clear session state.
-   */
-  async flush() {
-    return this.ngZone.runOutsideAngular(() => this._flush(true));
-  }
-
-  /**
-   * Persist the current session's events without ending it.
-   */
-  async save() {
-    return this.ngZone.runOutsideAngular(() => this._flush(false));
-  }
-
-  private async _flush(endSession: boolean) {
-    const hasData = this.currentSession && this.events.length > 0;
-
-    if (hasData) {
-      await this._persist();
-    }
-
-    if (endSession) {
-      this.clearSession();
-    }
-  }
-
-  private async _persist() {
-    const session = this.currentSession!;
-    const startedAt = this.sessionStartedAt!;
-    const events = [...this.events];
-
-    try {
-      const metaDb = this.dbService.get({ meta: true });
-      const doc = await this.getOrCreateDailyDoc(metaDb);
-      await this.upsertSession(doc, { session, startedAt, events });
-      await metaDb.put(doc);
-    } catch (error) {
-      console.error('Error saving interaction log', error);
-    }
-  }
-
-  private async upsertSession(doc: InteractionLogDoc, { session, startedAt, events }: InteractionSession) {
-    const existingSession = doc.sessions.find(s => s.startedAt === startedAt);
-    if (existingSession) {
-      existingSession.events = events;
-    } else {
-      doc.sessions.push({ session, startedAt, events });
-    }
-
-    this.totalEventsToday = doc.sessions.reduce((sum, s) => sum + s.events.length, 0);
-
-    const version = await this.getAppVersion();
-    if (!doc.metadata.versions.includes(version)) {
-      doc.metadata.versions.push(version);
-    }
-  }
-
-  private async getOrCreateDailyDoc(metaDb: any): Promise<InteractionLogDoc> {
-    const dailyDocId = this.getDailyDocId();
-    try {
-      return await metaDb.get(dailyDocId);
-    } catch (err: any) {
-      if (err.status !== 404) {
-        throw err;
-      }
-      return {
-        _id: dailyDocId,
-        type: 'interaction-log',
-        metadata: {
-          user: this.sessionService.userCtx()?.name,
-          deviceId: this.telemetryService.getUniqueDeviceId(),
-          date: this.getTodayDate(),
-          versions: [],
-        },
-        sessions: [],
-      };
-    }
-  }
-
-  private getDailyDocId(): string {
-    const date = this.getTodayDate();
-    const user = this.sessionService.userCtx()?.name || 'unknown';
-    const deviceId = this.telemetryService.getUniqueDeviceId();
-    return `interaction-${date}-${user}-${deviceId}`;
-  }
-
-  private getTodayDate(): string {
-    return moment().format('YYYY-MM-DD');
-  }
-
-  private clearSession(): void {
+  private async _endSession() {
+    const hadSession = !!this.currentSession;
     this.currentSession = null;
     this.sessionStartedAt = null;
-    this.events = [];
-    if (this.sessionTimer) {
-      clearTimeout(this.sessionTimer);
-      this.sessionTimer = null;
-    }
-    if (this.saveTimer) {
-      clearInterval(this.saveTimer);
-      this.saveTimer = null;
+    this.lastEventKey = null;
+    if (hadSession) {
+      await this._persistBuffer();
     }
   }
 
-  private resetSessionTimer(): void {
-    if (this.sessionTimer) {
-      clearTimeout(this.sessionTimer);
+  /**
+   * Record an interaction event into the in-memory buffer. The buffer is
+   * persisted in batches at threshold, on endSession(), or on visibilitychange.
+   */
+  record(action: string, ref?: string, detail?: string): void {
+    if (!this.enabled || !this.currentSession || this.sessionStartedAt === null) {
+      return;
     }
-    this.sessionTimer = setTimeout(
-      () => this.flush(),
-      InteractionTrackingService.SESSION_TIMEOUT_MS,
-    );
+
+    const eventKey = `${action}|${ref ?? ''}|${detail ?? ''}`;
+    if (eventKey === this.lastEventKey) {
+      return;
+    }
+
+    const currentDay = this.getCurrentDay();
+
+    if (this.currentDayKey !== currentDay.formatted) {
+      this.persistBuffer();
+    }
+
+    if (this.persistedEventCount + this.buffer.length >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
+      return;
+    }
+
+    this.buffer.push({
+      action,
+      timestamp: currentDay.now,
+      session: this.currentSession,
+      sessionStartedAt: this.sessionStartedAt,
+      ...(ref ? { ref } : {}),
+      ...(detail ? { detail } : {}),
+    });
+    this.lastEventKey = eventKey;
+
+    if (this.buffer.length >= InteractionTrackingService.BUFFER_FLUSH_THRESHOLD) {
+      this.persistBuffer();
+    }
   }
 
-  private startSaveInterval(): void {
-    if (this.saveTimer) {
-      clearInterval(this.saveTimer);
+  /**
+   * Persist the in-memory buffer in a single bulkDocs write to the day-DB
+   * matching the events' day. Owns all per-day state cleanup: if the date has
+   * changed since the buffer was filled, the snapshot writes to the previous
+   * day's DB and the tracker resets for the new day.
+   */
+  async persistBuffer(): Promise<void> {
+    return this.ngZone.runOutsideAngular(() => this._persistBuffer());
+  }
+
+  private async _persistBuffer() {
+    if (!this.enabled || !this.windowRef) {
+      return;
     }
-    this.saveTimer = setInterval(
-      () => this.save(),
-      InteractionTrackingService.SAVE_INTERVAL_MS,
-    );
+
+    const snapshot = this.buffer;
+    const snapshotDayKey = this.currentDayKey;
+    this.buffer = [];
+
+    const currentDayKey = this.getCurrentDay().formatted;
+    if (this.currentDayKey !== currentDayKey) {
+      this.currentDayKey = currentDayKey;
+      this.persistedEventCount = 0;
+      this.lastEventKey = null;
+    }
+
+    if (!snapshot.length || !snapshotDayKey) {
+      return;
+    }
+
+    try {
+      await this.writeEvents(snapshotDayKey, snapshot);
+      if (snapshotDayKey === this.currentDayKey) {
+        this.persistedEventCount += snapshot.length;
+      }
+    } catch (error) {
+      console.error('Error persisting interaction buffer', error);
+    }
+  }
+
+  private async writeEvents(day: string, events: BufferedEvent[]): Promise<void> {
+    const dbName = this.dayDbNameForDate(day);
+    const db = this.windowRef.PouchDB(dbName);
+    try {
+      await db.bulkDocs(events.map(e => this.toEventDoc(e)));
+    } finally {
+      this.closeDb(db);
+    }
+  }
+
+  private toEventDoc(event: BufferedEvent) {
+    const doc: any = {
+      action: event.action,
+      timestamp: event.timestamp,
+      session: event.session,
+      sessionStartedAt: event.sessionStartedAt,
+    };
+    if (event.ref) {
+      doc.ref = event.ref;
+    }
+    if (event.detail) {
+      doc.detail = event.detail;
+    }
+    return doc;
+  }
+
+  private aggregateOldDb(currentDay: Day): Promise<void> {
+    if (this.aggregationInFlight) {
+      return this.aggregationInFlight;
+    }
+    this.aggregationInFlight = this.doAggregate(currentDay).finally(() => {
+      this.aggregationInFlight = null;
+    });
+    return this.aggregationInFlight;
+  }
+
+  private async doAggregate(currentDay: Day): Promise<void> {
+    const dbNames = await this.findInteractionDbs();
+    const currentDayDbName = this.dayDbNameForDate(currentDay.formatted);
+
+    const oldDbs =
+      dbNames.filter(name => name !== currentDayDbName && this.dbBelongsToUser(name, this.user));
+    for (const name of oldDbs) {
+      try {
+        await this.aggregateAndDestroy(name);
+      } catch (error) {
+        console.error('Error aggregating interaction DB', name, error);
+      }
+    }
+  }
+
+  private async findInteractionDbs(): Promise<string[]> {
+    const databases = await this.windowRef.indexedDB.databases();
+    return (databases || [])
+      .map(db => db?.name?.replace(InteractionTrackingService.POUCH_PREFIX, '') || '')
+      .filter(name => this.isValidDbName(name));
+  }
+
+  private isValidDbName(name: string): boolean {
+    return InteractionTrackingService.DB_NAME_PATTERN.test(name);
+  }
+
+  private dbBelongsToUser(dbName: string, userSuffix: string): boolean {
+    const match = dbName.match(InteractionTrackingService.DB_NAME_USER_PATTERN);
+    return match?.[1] === userSuffix;
+  }
+
+  private async aggregateAndDestroy(dbName: string): Promise<void> {
+    const db = this.windowRef.PouchDB(dbName);
+    try {
+      const result = await db.allDocs({ include_docs: true });
+      const sessions = this.groupBySession(result.rows.map(row => row.doc));
+      const aggregateDoc = await this.buildAggregateDoc(dbName, sessions);
+      await this.putAggregate(aggregateDoc);
+      await db.destroy();
+    } catch (error) {
+      this.closeDb(db);
+      throw error;
+    }
+  }
+
+  private async putAggregate(doc: InteractionLogDoc): Promise<void> {
+    try {
+      await this.dbService.get({ meta: true }).put(doc);
+    } catch (error: any) {
+      if (error?.status !== 409) {
+        throw error;
+      }
+      doc._id = [doc._id, 'conflicted', Date.now()].join(InteractionTrackingService.NAME_DIVIDER);
+      (doc.metadata as any).conflicted = true;
+      await this.dbService.get({ meta: true }).put(doc);
+    }
+  }
+
+  private groupBySession(docs: any[]): InteractionSession[] {
+    const map = new Map<number, InteractionSession>();
+    for (const doc of docs) {
+      if (!doc || typeof doc.sessionStartedAt !== 'number') {
+        continue;
+      }
+      let entry = map.get(doc.sessionStartedAt);
+      if (!entry) {
+        entry = { session: doc.session, startedAt: doc.sessionStartedAt, events: [] };
+        map.set(doc.sessionStartedAt, entry);
+      }
+      const event: InteractionEvent = { action: doc.action, timestamp: doc.timestamp };
+      if (doc.ref) {
+        event.ref = doc.ref;
+      }
+      if (doc.detail) {
+        event.detail = doc.detail;
+      }
+      entry.events.push(event);
+    }
+    const sessions = [...map.values()].sort((a, b) => a.startedAt - b.startedAt);
+    sessions.forEach(s => s.events.sort((a, b) => a.timestamp - b.timestamp));
+    return sessions;
+  }
+
+  private async buildAggregateDoc(dbName: string, sessions: InteractionSession[]): Promise<InteractionLogDoc> {
+    const date = this.parseDbDate(dbName);
+    const version = await this.getAppVersion();
+    return {
+      _id: this.aggregateDocId(date),
+      type: 'interaction-log',
+      sessions,
+      metadata: {
+        user: this.user,
+        deviceId: this.telemetryService.getUniqueDeviceId(),
+        date,
+        version,
+      },
+    };
+  }
+
+  private aggregateDocId(date: string): string {
+    return [
+      InteractionTrackingService.PREFIX,
+      date,
+      this.user,
+      this.telemetryService.getUniqueDeviceId(),
+    ].join(InteractionTrackingService.NAME_DIVIDER);
+  }
+
+  private parseDbDate(dbName: string): string {
+    const parts = dbName.split(InteractionTrackingService.NAME_DIVIDER);
+    return `${parts[1]}-${parts[2]}-${parts[3]}`;
+  }
+
+  private dayDbNameForDate(date: string): string {
+    return [
+      InteractionTrackingService.PREFIX,
+      date,
+      this.user,
+    ].join(InteractionTrackingService.NAME_DIVIDER);
+  }
+
+  private async readPersistedCount(day: Day): Promise<number> {
+    if (!this.windowRef) {
+      return 0;
+    }
+    const db = this.windowRef.PouchDB(this.dayDbNameForDate(day.formatted));
+    try {
+      const info = await db.info();
+      return info?.doc_count || 0;
+    } catch (error) {
+      console.error('Error reading interaction DB info', error);
+      return 0;
+    } finally {
+      this.closeDb(db);
+    }
+  }
+
+  private getCurrentDay(): Day {
+    const date = new Date();
+    return {
+      now: date.getTime(),
+      formatted: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+    };
+  }
+
+  private closeDb(db: any) {
+    if (!db || db._destroyed || db._closed) {
+      return;
+    }
+    try {
+      db.close();
+    } catch (error) {
+      console.error('Error closing interaction DB', error);
+    }
   }
 
   private async getAppVersion(): Promise<string> {

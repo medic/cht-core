@@ -29,7 +29,7 @@ describe('TasksSidebarFilterComponent', () => {
       get: sinon.stub().resolves([]),
       getDescendants: sinon.stub().resolves([]),
     };
-    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     await TestBed.configureTestingModule({
       imports: [

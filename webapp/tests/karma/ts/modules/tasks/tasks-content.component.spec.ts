@@ -59,7 +59,7 @@ describe('TasksContentComponent', () => {
     chtDatasourceService = {
       bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
-    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -161,6 +161,23 @@ describe('TasksContentComponent', () => {
     expect(getContact.callCount).to.eq(0);
     expect(setEnketoEditedStatus.callCount).to.equal(1);
     expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
+  });
+
+  it('records task:open with the task title as ref and list index as detail', async () => {
+    tasks = [{
+      _id: '123',
+      title: 'Home visit',
+      actions: [{ type: 'report', form: 'pregnancy_visit', content: {} }],
+    }];
+
+    await compileComponent();
+
+    const taskOpenCalls = interactionTrackingService.record.getCalls()
+      .filter(call => call.args[0] === 'task:open');
+    expect(taskOpenCalls).to.have.length(1);
+    const [, ref, detail] = taskOpenCalls[0].args;
+    expect(ref).to.equal('Home visit');
+    expect(detail).to.equal('0');
   });
 
   it('successful hydration', async () => {

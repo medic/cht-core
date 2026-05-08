@@ -52,7 +52,7 @@ describe('TasksGroupComponent', () => {
       getIdsForTasks: sinon.stub(),
       getTasksBreakdown: sinon.stub().resolves({}),
     };
-    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), flush: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -695,6 +695,25 @@ describe('TasksGroupComponent', () => {
         ['/tasks/emission6'],
         ['/tasks/emission7'],
       ]);
+    });
+
+    it('records task_group:select with the task title as ref', () => {
+      // Title (not form id) distinguishes task types — two task definitions can
+      // share the same `actions[0].form`.
+      component.tasks = [
+        { _id: 'emission-uuid-1', title: 'Home visit', actions: [{ form: 'home_visit' }] },
+      ];
+      store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
+      store.overrideSelector(Selectors.getPreventNavigation, true);
+      store.refreshState();
+      router.getCurrentNavigation.returns({ extras: { state: { tab: 'tasks', id: 'emission-uuid-1' } } });
+
+      expect(component.canDeactivate('/tasks/emission-uuid-1')).to.equal(true);
+
+      const selectCalls = interactionTrackingService.record.getCalls()
+        .filter(call => call.args[0] === 'task_group:select');
+      expect(selectCalls).to.have.length(1);
+      expect(selectCalls[0].args[1]).to.equal('Home visit');
     });
   });
 

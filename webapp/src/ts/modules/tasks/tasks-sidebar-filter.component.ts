@@ -152,8 +152,10 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
       const count = this.filterCount[filter.fieldId] || 0;
       if (count > 0) {
         this.telemetryService.record(`tasks:filter:apply:${filter.fieldId}`, count);
-        const selected = Array.from(filter.filter?.selected || []).join(',');
-        this.interactionTrackingService.record('task_filter:select', filter.fieldId, selected);
+        // Record only the field id and selected count — the selected values themselves can
+        // contain facility UUIDs (facility filter) or task titles (task-type filter, which may
+        // include `{{contact.name}}` interpolation in some deployments).
+        this.interactionTrackingService.record('task_filter:select', filter.fieldId, String(count));
       }
     });
   }
