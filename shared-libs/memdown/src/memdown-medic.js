@@ -57,6 +57,16 @@ module.exports = (rootDir='./') => {
   if (!ddocs) {
     ddocs = [];
     filesIn(`${rootDir}/ddocs/medic-db`).forEach(ddoc => loadDdoc(rootDir, 'medic-db', ddoc));
+
+    // Load offline-only tasks view for tests
+    const tasksMapPath = `${rootDir}/webapp/src/js/bootstrapper/offline-ddocs/medic-offline-tasks/tasks_by_contact.js`;
+    if (fs.existsSync(tasksMapPath)) {
+      const tasksMap = readFile(tasksMapPath).replace(/module.exports.map = /, '');
+      ddocs.push({
+        _id: '_design/medic-offline-tasks',
+        views: { tasks_by_contact: { map: tasksMap } }
+      });
+    }
   }
   const db = new PouchDB(uuid(), { adapter: 'memory' });
   return Promise.all(ddocs.map(ddoc => db.put(ddoc)))
