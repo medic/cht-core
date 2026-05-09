@@ -17,7 +17,6 @@ const {
   INTERNAL_CONTRIBUTOR
 } = process.env;
 const DEFAULT_API_PORT = 5988;
-const MODULES = ['webapp', 'admin'];
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
@@ -229,10 +228,9 @@ const exec = async (command, args, options = ({})) => {
 };
 
 const npmCiModules = async () => {
-  for (const cwd of MODULES) {
-    console.log(`\n\nRunning "npm ci" on ${cwd}\n\n`);
-    await exec('npm', ['ci'], { cwd });
-  }
+  // webapp and admin are now part of the root workspace, so their dependencies
+  // are installed during the root 'npm install'.
+  console.log('\n\nSkipping "npm ci" on webapp and admin (managed by workspace)\n\n');
 };
 
 const makeWorkingDir = async () => {

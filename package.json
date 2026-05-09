@@ -13,7 +13,13 @@
   },
   "type": "commonjs",
   "workspaces": [
-    "./shared-libs/*"
+    "admin",
+    "api",
+    "sentinel",
+    "webapp",
+    "shared-libs/*",
+    "tests/scalability",
+    ".github/actions/update-staging-url-placeholders"
   ],
   "scripts": {
     "postinstall": "patch-package",

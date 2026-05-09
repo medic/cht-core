@@ -1,5 +1,8 @@
+const path = require('path');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+const RESOLVE_NODE_MODULE = (p) => path.resolve(__dirname, '../node_modules/', p);
 
 module.exports = {
   resolve: {
@@ -10,19 +13,19 @@ module.exports = {
       'enketo/file-manager': 'src/js/enketo/file-manager',
       'enketo/translator': 'src/js/enketo/translator',
       './repeat': 'src/js/enketo/repeat',
-      'extended-xpath': 'node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-      'openrosa-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-extensions',
+      'extended-xpath': RESOLVE_NODE_MODULE('openrosa-xpath-evaluator/src/extended-xpath'),
+      'openrosa-extensions': RESOLVE_NODE_MODULE('openrosa-xpath-evaluator/src/openrosa-extensions'),
       // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
       // https://github.com/enketo/enketo-core/issues/454
-      '../../js/dropdown.jquery': 'node_modules/bootstrap/js/dropdown',
-      'bikram-sambat': 'node_modules/bikram-sambat',
-      'messageformat': 'node_modules/messageformat/index',
-      'lodash/core': 'node_modules/lodash/core',
-      'lodash/uniqBy': 'node_modules/lodash/uniqBy',
-      'lodash/flatten': 'node_modules/lodash/flatten',
-      'lodash/intersection': 'node_modules/lodash/intersection',
-      'lodash/partial': 'node_modules/lodash/partial',
-      'lodash/uniq': 'node_modules/lodash/uniq',
+      '../../js/dropdown.jquery': RESOLVE_NODE_MODULE('bootstrap/js/dropdown'),
+      'bikram-sambat': RESOLVE_NODE_MODULE('bikram-sambat'),
+      'messageformat': RESOLVE_NODE_MODULE('messageformat/index'),
+      'lodash/core': RESOLVE_NODE_MODULE('lodash/core'),
+      'lodash/uniqBy': RESOLVE_NODE_MODULE('lodash/uniqBy'),
+      'lodash/flatten': RESOLVE_NODE_MODULE('lodash/flatten'),
+      'lodash/intersection': RESOLVE_NODE_MODULE('lodash/intersection'),
+      'lodash/partial': RESOLVE_NODE_MODULE('lodash/partial'),
+      'lodash/uniq': RESOLVE_NODE_MODULE('lodash/uniq'),
 
       // enketo geopicker widget css requires these two images as backgrounds
       // they don't exist in the enketo source and the styles are commented out in the latest version
@@ -37,7 +40,7 @@ module.exports = {
       // Only include the jquery version from the package.json (and not any different versions pulled in transitively).
       // Once https://github.com/select2/select2/issues/5993 is resolved, we should try to coalesce back on one version
       // of jquery and remove this alias.
-      'jquery': __dirname + '/node_modules/jquery',
+      'jquery': __dirname + '/../node_modules/jquery',
     },
     fallback: {
       path: false,

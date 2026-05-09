@@ -11,7 +11,7 @@ cp -r webapp/src/audio api/build/static/webapp/
 cp -r webapp/src/fonts api/build/static/webapp/
 cp -r webapp/src/img api/build/static/webapp/
 cp admin/src/templates/index.html api/build/static/admin
-cp -r admin/node_modules/font-awesome/fonts api/build/static/admin
+cp -r node_modules/font-awesome/fonts api/build/static/admin
 cp -r webapp/src/fonts api/build/static/admin
 
 echo "copy-static-files: done"

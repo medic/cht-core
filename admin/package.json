@@ -18,6 +18,7 @@
     "jquery": "3.7.1",
     "ng-redux": "^4.4.5",
     "redux": "^4.2.1",
+    "@uirouter/core": "^6.0.8",
     "select2": "^4.0.13"
   },
   "resolutions": {
