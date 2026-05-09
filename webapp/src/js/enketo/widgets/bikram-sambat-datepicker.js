@@ -36,13 +36,61 @@ class Bikramsambatdatepicker extends Widget {
 
         $parent.append( TEMPLATE );
 
+        const $inputGroup = $parent.children( '.bikram-sambat-input-group' );
+
         bikram_sambat_bs.initListeners( $parent, $realDateInput );
+
+        const $monthError = $parent.find( '.bs-month-error' );
+        const $monthBtn = $parent.find( '.bs-month-dropdown-btn' );
+        const $monthInput = $parent.find( 'input[name="month"]' );
+
+        // Show error and clear real date when day/year entered without a month
+        $parent.find( '.devanagari-number-input' ).on( 'change blur', function() {
+          const hasDay = !!$parent.find( 'input[name="day"]' ).val();
+          const hasYear = !!$parent.find( 'input[name="year"]' ).val();
+          const hasMonth = !!$monthInput.val() && $monthInput.val() !== '0';
+          if ( (hasDay || hasYear) && !hasMonth ) {
+            $monthBtn.addClass( 'btn-danger' ).removeClass( 'btn-default' );
+            $monthError.show();
+            $realDateInput.val( '' ).trigger( 'change' );
+          } else if ( hasMonth ) {
+            $monthBtn.addClass( 'btn-default' ).removeClass( 'btn-danger' );
+            $monthError.hide();
+          }
+        } );
+
+        // Clear error state when month is selected
+        $parent.find( '.dropdown-menu li' ).on( 'click', function() {
+          $monthBtn.addClass( 'btn-default' ).removeClass( 'btn-danger' );
+          $monthError.hide();
+        } );
+
+        // Set today's date in BS
+        $parent.find( '.bs-today-btn' ).on( 'click', function() {
+          const todayGreg = new Date().toISOString().split( 'T' )[0];
+          bikram_sambat_bs.setDate_greg_text( $inputGroup, $realDateInput, todayGreg );
+          $monthBtn.addClass( 'btn-default' ).removeClass( 'btn-danger' );
+          $monthError.hide();
+        } );
+
+        // Clear all fields
+        $parent.find( '.bs-clear-btn' ).on( 'click', function() {
+          $parent.find( 'input[name="day"]' ).val( '' );
+          $monthInput.val( '' );
+          $parent.find( 'input[name="year"]' ).val( '' );
+          $monthBtn
+            .addClass( 'btn-default' )
+            .removeClass( 'btn-danger' )
+            .html( 'महिना <span class="caret"></span>' );
+          $monthError.hide();
+          $realDateInput.val( '' ).trigger( 'change' );
+        } );
 
         if ( initialVal ) {
           bikram_sambat_bs.setDate_greg_text(
-            $parent.children( '.bikram-sambat-input-group' ),
+            $inputGroup,
             $realDateInput,
-            initialVal 
+            initialVal
           );
         }
       });
@@ -57,8 +105,8 @@ const TEMPLATE =
       'maxlength="2">' +
     '<input name="month" type="hidden">' +
     '<div class="input-group-btn">' +
-      '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" ' +
-        'aria-expanded="false">महिना <span class="caret"></span>' +
+      '<button type="button" class="btn btn-default dropdown-toggle bs-month-dropdown-btn" data-toggle="dropdown" ' +
+        'aria-haspopup="true" aria-expanded="false">महिना <span class="caret"></span>' +
       '</button>' +
       '<ul class="dropdown-menu">' +
         '<li><a>बैशाख</a></li>' +
@@ -77,4 +125,11 @@ const TEMPLATE =
     '</div>' +
     '<input name="year" type="tel" class="form-control devanagari-number-input" placeholder="साल" aria-label="साल" ' +
       'maxlength="4">' +
+    '<div class="input-group-btn">' +
+      '<button type="button" class="btn btn-default bs-today-btn" title="आजको मिति सेट गर्नुस्">आज</button>' +
+      '<button type="button" class="btn btn-default bs-clear-btn" title="मिति हटाउनुस्">✕</button>' +
+    '</div>' +
+    '<span class="bs-month-error" style="display:none;color:#a94442;font-size:12px;margin-top:4px;">' +
+      'महिना छान्नुस्' +
+    '</span>' +
   '</div>';
