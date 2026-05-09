@@ -185,7 +185,7 @@ describe('Form service', () => {
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
     userContactSummaryService = { get: sinon.stub() };
-    customResourceService = { getResource: sinon.stub() };
+    customResourceService = { getXml: sinon.stub() };
 
     const getSiblings = sinon.stub();
     getDuplicates = sinon.stub();
@@ -709,9 +709,9 @@ describe('Form service', () => {
 
     it('loads jr://file/ resource as XML external instance', async () => {
       setupRenderStubs();
-      const xmlData = '<root><item><name>a</name><label>Choice A</label></item></root>';
-      customResourceService.getResource.withArgs('items.xml')
-        .returns({ data: btoa(xmlData), content_type: 'application/xml' });
+      const xmlDoc = new DOMParser()
+        .parseFromString('<root><item><name>a</name><label>Choice A</label></item></root>', 'text/xml');
+      customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
       const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
 
       await service.render(formContext);
@@ -719,61 +719,32 @@ describe('Form service', () => {
       expect(formContext.externalInstances).to.be.an('array');
       const itemsEntry = formContext.externalInstances!.find(e => e.id === 'items');
       expect(itemsEntry).to.not.be.undefined;
-      expect(itemsEntry!.xml).to.be.instanceof(Document);
+      expect(itemsEntry!.xml).to.equal(xmlDoc);
     });
 
-    it('converts jr://file-csv/ resource via csvToXml', async () => {
+    it('throws when resource is not found', async () => {
       setupRenderStubs();
-      customResourceService.getResource.withArgs('items.xml').returns(null);
-      customResourceService.getResource.withArgs('remote.csv').returns({
-        data: btoa('name,label\na,Choice A'),
-        content_type: 'text/csv'
-      });
+      customResourceService.getXml.withArgs('items.xml').returns(null);
       const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
 
-      await service.render(formContext);
-
-      const remoteEntry = formContext.externalInstances!.find(e => e.id === 'remote-data');
-      expect(remoteEntry).to.not.be.undefined;
-      const xmlStr = new XMLSerializer().serializeToString(remoteEntry!.xml);
-      expect(xmlStr).to.include('<name>a</name>');
-      expect(xmlStr).to.include('<label>Choice A</label>');
-    });
-
-    it('skips instance when resource is not found', async () => {
-      setupRenderStubs();
-      customResourceService.getResource.returns(null);
-      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
-
-      await service.render(formContext);
-
-      expect(consoleErrorMock.called).to.be.true;
-      expect(formContext.externalInstances!.find(e => e.id === 'items')).to.be.undefined;
+      await expect(service.render(formContext)).to.be.rejectedWith('not found in resources');
     });
 
     it('sets formContext.externalInstances during render', async () => {
       setupRenderStubs();
-      const xmlData = '<root><item><name>a</name></item></root>';
-      const csvData = 'name,label\na,Choice A';
-      customResourceService.getResource.withArgs('items.xml')
-        .returns({ data: btoa(xmlData), content_type: 'application/xml' });
-      customResourceService.getResource.withArgs('remote.csv')
-        .returns({ data: btoa(csvData), content_type: 'text/csv' });
+      const xmlDoc = new DOMParser().parseFromString('<root><item><name>a</name></item></root>', 'text/xml');
+      customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
       const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
 
       await service.render(formContext);
 
-      expect(formContext.externalInstances).to.be.an('array').with.lengthOf(2);
-      const ids = formContext.externalInstances!.map(e => e.id);
-      expect(ids).to.include('items');
-      expect(ids).to.include('remote-data');
+      expect(formContext.externalInstances).to.be.an('array').with.lengthOf(1);
+      expect(formContext.externalInstances![0].id).to.equal('items');
     });
 
-    it('cache: second render with same filename skips re-parsing', async () => {
-      const xmlData = '<root><item><name>a</name></item></root>';
-      customResourceService.getResource.withArgs('items.xml')
-        .returns({ data: btoa(xmlData), content_type: 'application/xml' });
-      customResourceService.getResource.withArgs('remote.csv').returns(null);
+    it('cache: CustomResourceService.getXml called once per render (caching is in CustomResourceService)', async () => {
+      const xmlDoc = new DOMParser().parseFromString('<root><item><name>a</name></item></root>', 'text/xml');
+      customResourceService.getXml.withArgs('items.xml').returns(xmlDoc);
 
       UserContact.resolves({ contact_id: '123-user-contact' });
       xmlFormsService.canAccessForm.resolves(true);
@@ -790,23 +761,7 @@ describe('Form service', () => {
       await service.render(ctx1);
       await service.render(ctx2);
 
-      expect(customResourceService.getResource.withArgs('items.xml').callCount).to.equal(1);
-    });
-
-    it('escapeXml handles all five XML entities in CSV values', async () => {
-      setupRenderStubs();
-      // Use properly-quoted CSV: double-quote is escaped as "" inside a quoted field
-      const csv = 'name,label\nspecial,"a & b < c > d "" e \' f"';
-      customResourceService.getResource.withArgs('items.xml').returns(null);
-      customResourceService.getResource.withArgs('remote.csv').returns({ data: btoa(csv), content_type: 'text/csv' });
-      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
-
-      await service.render(formContext);
-
-      const remoteEntry = formContext.externalInstances!.find(e => e.id === 'remote-data');
-      expect(remoteEntry).to.not.be.undefined;
-      const labelEl = remoteEntry!.xml.querySelector('label');
-      expect(labelEl!.textContent).to.equal('a & b < c > d " e \' f');
+      expect(customResourceService.getXml.withArgs('items.xml').callCount).to.equal(2);
     });
   });
 

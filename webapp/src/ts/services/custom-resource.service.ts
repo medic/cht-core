@@ -12,6 +12,7 @@ export class CustomResourceService {
   private readonly RESOURCE_DOC_IDS = [DOC_IDS.RESOURCES, DOC_IDS.BRANDING, DOC_IDS.PARTNERS];
 
   private readonly initResources;
+  private readonly xmlCache = new Map<string, Document>();
 
   private readonly cache = {
     resources: {
@@ -109,6 +110,9 @@ export class CustomResourceService {
       .then(res => {
         this.cache[docId].doc = res;
         this.cache[docId].htmlContent = {};
+        if (docId === DOC_IDS.RESOURCES) {
+          this.xmlCache.clear();
+        }
         this.updateDom($(document.body), docId);
       })
       .catch(err => {
@@ -137,6 +141,21 @@ export class CustomResourceService {
 
   getResource(name: string): { content_type: string, data: string } | null {
     return this.getAttachment(name, DOC_IDS.RESOURCES);
+  }
+
+  getXml(name: string): Document | null {
+    if (this.xmlCache.has(name)) {
+      return this.xmlCache.get(name)!;
+    }
+    const resource = this.getResource(name);
+    if (!resource) {
+      return null;
+    }
+    const bytes = Uint8Array.from(atob(resource.data), c => c.codePointAt(0)!);
+    const content = new TextDecoder().decode(bytes);
+    const xml = new DOMParser().parseFromString(content, 'text/xml');
+    this.xmlCache.set(name, xml);
+    return xml;
   }
 
   replacePlaceholders($elem) {

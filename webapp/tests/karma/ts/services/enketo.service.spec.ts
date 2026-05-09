@@ -292,6 +292,7 @@ describe('Enketo service', () => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
+        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
       });
     });
 
@@ -409,24 +410,8 @@ describe('Enketo service', () => {
       return service.renderForm(formContext, doc, userSettings).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         const external = EnketoForm.args[0][1].external;
-        const itemsEntry = external.find(e => e.id === 'items');
-        expect(itemsEntry).to.not.be.undefined;
-        expect(itemsEntry!.xml).to.equal(externalDoc);
-      });
-    });
-
-    it('uses empty array for options.external when no contact summaries or external instances', () => {
-      enketoInit.returns([]);
-      EnketoPrepopulationData.returns('<xml></xml>');
-      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'));
-      const doc = {
-        html: $('<div>my form</div>'),
-        model: VISIT_MODEL,
-      };
-      const userSettings = { language: 'en' };
-      return service.renderForm(formContext, doc, userSettings).then(() => {
-        expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
+        expect(external[0].id).to.equal('contact-summary');
+        expect(external[1]).to.deep.equal(externalInstances[0]);
       });
     });
 

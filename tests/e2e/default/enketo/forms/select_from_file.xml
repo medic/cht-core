@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<h:html
+  xmlns="http://www.w3.org/2002/xforms"
+  xmlns:h="http://www.w3.org/1999/xhtml"
+  xmlns:jr="http://openrosa.org/javarosa"
+  xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>Select from file</h:title>
+    <model>
+      <instance>
+        <data id="select_from_file" version="1">
+          <color/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <instance id="colors" src="jr://file/colors.xml"/>
+      <bind nodeset="/data/color" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <select1 ref="/data/color">
+      <label>Select a color</label>
+      <itemset nodeset="instance('colors')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+  </h:body>
+</h:html>

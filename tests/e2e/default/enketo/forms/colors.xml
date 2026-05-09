@@ -1,0 +1,14 @@
+<root>
+  <item>
+    <name>red</name>
+    <label>Red</label>
+  </item>
+  <item>
+    <name>green</name>
+    <label>Green</label>
+  </item>
+  <item>
+    <name>blue</name>
+    <label>Blue</label>
+  </item>
+</root>

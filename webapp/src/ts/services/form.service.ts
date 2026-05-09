@@ -184,123 +184,37 @@ export class FormService {
     };
   }
 
-  private readonly externalInstanceCache = new Map<string, Document>();
-
-  private readonly XML_ENTITIES: Record<string, string> = {
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&apos;',
-  };
-
-  private escapeXml(value: string): string {
-    let result = '';
-    for (const ch of value) {
-      result += this.XML_ENTITIES[ch] ?? ch;
-    }
-    return result;
-  }
-
-  private handleQuote(row: string, i: number, inQuotes: boolean, field: string) {
-    if (inQuotes && row[i + 1] === '"') {
-      return { field: field + '"', inQuotes: true, advance: 1 };
-    }
-    return { field, inQuotes: !inQuotes, advance: 0 };
-  }
-
-  private handleNonQuoteChar(ch: string, fields: string[], field: string, inQuotes: boolean): string {
-    if (ch !== ',') {
-      return field + ch;
-    }
-    if (inQuotes) {
-      return field + ',';
-    }
-    fields.push(field.trim());
-    return '';
-  }
-
-  private parseCsvRow(row: string): string[] {
-    const fields: string[] = [];
-    let field = '';
-    let inQuotes = false;
-    for (let i = 0; i < row.length; i++) {
-      const ch = row[i];
-      if (ch === '"') {
-        const r = this.handleQuote(row, i, inQuotes, field);
-        field = r.field;
-        inQuotes = r.inQuotes;
-        i += r.advance;
-      } else {
-        field = this.handleNonQuoteChar(ch, fields, field, inQuotes);
-      }
-    }
-    fields.push(field.trim());
-    return fields;
-  }
-
-  private csvToXml(csv: string): Document {
-    const rows = csv.split(/\r?\n/).filter(line => line.trim());
-    const headers = this.parseCsvRow(rows.shift() ?? '');
-    let xmlStr = '<root>';
-    for (const line of rows) {
-      const values = this.parseCsvRow(line);
-      const cells = headers.map((h, i) => `<${h}>${this.escapeXml(values[i] ?? '')}</${h}>`).join('');
-      xmlStr += '<item>' + cells + '</item>';
-    }
-    xmlStr += '</root>';
-    return new DOMParser().parseFromString(xmlStr, 'text/xml');
-  }
-
-  private decodeResourceData(data: string): string {
-    const bytes = Uint8Array.from(atob(data), c => c.codePointAt(0)!);
-    return new TextDecoder().decode(bytes);
-  }
-
-  private getFilenameFromSrc(src: string): { filename: string; isCsv: boolean } | undefined {
-    if (src.startsWith('jr://file-csv/')) {
-      return { filename: src.slice('jr://file-csv/'.length), isCsv: true };
-    }
+  private getFilenameFromSrc(src: string): string | undefined {
     if (src.startsWith('jr://file/')) {
-      return { filename: src.slice('jr://file/'.length), isCsv: false };
+      return src.slice('jr://file/'.length);
     }
     return undefined;
   }
 
   private loadExternalInstance(src: string, id: string): ExternalInstance | undefined {
-    const parsed = this.getFilenameFromSrc(src);
-    if (!parsed) {
+    const filename = this.getFilenameFromSrc(src);
+    if (!filename) {
       return undefined;
     }
-    const { filename, isCsv } = parsed;
-    if (this.externalInstanceCache.has(filename)) {
-      return { id, xml: this.externalInstanceCache.get(filename)! };
+    const xml = this.customResourceService.getXml(filename);
+    if (!xml) {
+      throw new Error(`External dataset "${id}" not found in resources. Only XML files are supported.`);
     }
-    const resource = this.customResourceService.getResource(filename);
-    if (!resource) {
-      console.error(`External dataset "${filename}" not found in resources`);
-      return undefined;
-    }
-    try {
-      const content = this.decodeResourceData(resource.data);
-      const xml = isCsv ? this.csvToXml(content) : new DOMParser().parseFromString(content, 'text/xml');
-      this.externalInstanceCache.set(filename, xml);
-      return { id, xml };
-    } catch (err) {
-      console.error(`Error parsing external dataset "${filename}"`, err);
-      return undefined;
-    }
+    return { id, xml };
   }
 
   private getExternalInstances(model: string): ExternalInstance[] {
     const results: ExternalInstance[] = [];
-    $(model).find('instance[src]').each((_, el) => {
-      const src = $(el).attr('src') ?? '';
-      const id = $(el).attr('id') ?? '';
-      if (!id) {
-        return;
-      }
-      const instance = this.loadExternalInstance(src, id);
-      if (instance) {
-        results.push(instance);
-      }
-    });
+    $(model)
+      .find('instance[src][id]:not([src=""]):not([id=""])')
+      .each((_, el) => {
+        const src = $(el).attr('src')!;
+        const id = $(el).attr('id')!;
+        const instance = this.loadExternalInstance(src, id);
+        if (instance) {
+          results.push(instance);
+        }
+      });
     return results;
   }
 
