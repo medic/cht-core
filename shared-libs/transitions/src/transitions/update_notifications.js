@@ -51,7 +51,7 @@ module.exports = {
       messages.addError(doc, { code: 'notification_error', message: msg });
     } else {
       const errorMessage = 
-      `Failed to complete notification request, event type "${event_type}" misconfigured.`;
+        `Failed to complete notification request, event type "${event_type}" misconfigured.`;
       messages.addError(doc, { code: 'notification_error', message: errorMessage });
     }
   },
