@@ -1,4 +1,4 @@
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const utils = require('@utils');
 const moment = require('moment');
 const commonPage = require('@page-objects/default/common/common.wdio.page');

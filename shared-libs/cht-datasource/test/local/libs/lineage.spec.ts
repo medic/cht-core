@@ -496,8 +496,8 @@ describe('local lineage lib', () => {
 
     it('throws InvalidArgumentError when parent type is not valid', () => {
       const childType = { id: 'health_center' };
-      const parent = { _id: 'parent-1', _rev: 'rev-1', type: 'clinic' };
-      getTypeId.returns('clinic');
+      const parent = { _id: 'parent-1', _rev: 'rev-1', type: CONTACT_TYPES.CLINIC };
+      getTypeId.returns(CONTACT_TYPES.CLINIC);
       isParentOf.returns(false);
 
       expect(() => Lineage.assertHasValidParentType(childType, parent))
