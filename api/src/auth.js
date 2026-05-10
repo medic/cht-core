@@ -86,9 +86,13 @@ module.exports = {
     try {
       const decoded = Buffer.from(authHeader.split(' ')[1], 'base64').toString();
       const colonIdx = decoded.indexOf(':');
-      const username = decoded.substring(0, colonIdx);
-      const password = decoded.substring(colonIdx + 1);
-      return { username, password };
+      if (colonIdx === -1) {
+        throw new Error('missing colon separator');
+      }
+      return {
+        username: decoded.substring(0, colonIdx),
+        password: decoded.substring(colonIdx + 1)
+      };
     } catch {
       throw Error('Corrupted Auth header');
     }

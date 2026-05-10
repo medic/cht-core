@@ -248,8 +248,10 @@ describe('Auth', () => {
       chai.expect(result).to.deep.equal({ username: 'alice', password: '' });
     });
 
-    it('returns false when req has no headers', () => {
-      chai.expect(auth.basicAuthCredentials({})).to.be.false;
+    it('throws Corrupted Auth header when credential has no colon separator', () => {
+      chai.expect(() => auth.basicAuthCredentials({
+        headers: { authorization: `Basic ${encode('usernameonly')}` }
+      })).to.throw('Corrupted Auth header');
     });
   });
 
