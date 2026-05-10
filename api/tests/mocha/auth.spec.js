@@ -216,6 +216,43 @@ describe('Auth', () => {
     });
   });
 
+  describe('basicAuthCredentials', () => {
+    const encode = (str) => Buffer.from(str).toString('base64');
+
+    it('returns false when authorization header is missing', () => {
+      chai.expect(auth.basicAuthCredentials({ headers: {} })).to.be.false;
+    });
+
+    it('returns false when authorization header is not Basic', () => {
+      chai.expect(auth.basicAuthCredentials({ headers: { authorization: 'Bearer token' } })).to.be.false;
+    });
+
+    it('extracts username and password from a valid Basic auth header', () => {
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: `Basic ${encode('alice:mypassword')}` }
+      });
+      chai.expect(result).to.deep.equal({ username: 'alice', password: 'mypassword' });
+    });
+
+    it('preserves colons in the password', () => {
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: `Basic ${encode('alice:P@ss:word:123')}` }
+      });
+      chai.expect(result).to.deep.equal({ username: 'alice', password: 'P@ss:word:123' });
+    });
+
+    it('handles an empty password', () => {
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: `Basic ${encode('alice:')}` }
+      });
+      chai.expect(result).to.deep.equal({ username: 'alice', password: '' });
+    });
+
+    it('returns false when req has no headers', () => {
+      chai.expect(auth.basicAuthCredentials({})).to.be.false;
+    });
+  });
+
   describe('assertPermissions', () => {
     const requestOptions = {
       url: 'http://abc.com/_session',
