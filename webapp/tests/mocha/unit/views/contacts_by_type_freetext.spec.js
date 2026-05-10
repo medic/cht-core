@@ -207,4 +207,17 @@ describe('contacts_by_type_freetext', () => {
       { key: ['district_hospital', 'name:बुद्ध élève'], value }
     ]);
   });
+
+  it('normalizes Devanagari numerals to Latin in emitted keys', () => {
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'Person १२३४५' };
+
+    const emitted = mapFn(doc, true);
+
+    const value = expectedValue({ typeIndex: 0, name: 'person १२३४५' });
+    expect(emitted).to.deep.equal([
+      { key: ['district_hospital', 'person'], value },
+      { key: ['district_hospital', '12345'], value },
+      { key: ['district_hospital', 'name:person 12345'], value }
+    ]);
+  });
 });

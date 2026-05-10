@@ -11,11 +11,14 @@ export const validateCursor = (cursor: Nullable<string>): number => {
   return skip;
 };
 
+const normalizeDevanagariNumerals = (str: string): string =>
+  str.replace(/[०-९]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x0030));
+
 /** @internal */
 export const normalizeFreetextQualifier = <T extends FreetextQualifier> (qualifier: T): T => {
   return {
     ...qualifier,
-    freetext: qualifier.freetext.trim().toLowerCase()
+    freetext: normalizeDevanagariNumerals(qualifier.freetext.trim().toLowerCase())
   };
 };
 

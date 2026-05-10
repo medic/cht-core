@@ -2,6 +2,9 @@ module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
   const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
 
+  const normalizeNumerals = (str) => str.replace(/[०-९]/g, (d) =>
+    String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x0030));
+
   const usedKeys = [];
   const emitMaybe = function(type, key, value) {
     if (usedKeys.indexOf(key) === -1 && // Not already used
@@ -21,7 +24,7 @@ module.exports.map = (doc) => {
       return;
     }
     if (typeof value === 'string') {
-      const lowerValue = value.toLowerCase();
+      const lowerValue = normalizeNumerals(value.toLowerCase());
       lowerValue
         .split(/\s+/)
         .forEach(word => emitMaybe(type, word, order));
