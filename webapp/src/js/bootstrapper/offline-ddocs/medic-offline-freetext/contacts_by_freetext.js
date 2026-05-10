@@ -2,7 +2,7 @@ module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
   const normalizeNumerals = (str) => str.replace(/[०-९]/g, (d) =>
-    String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x0030));
+    String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
 
   const usedKeys = [];
   const emitMaybe = (key, value) => {
