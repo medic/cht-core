@@ -22,6 +22,7 @@ import {
   NonEmptyArray,
 } from '../../src/libs/core';
 import sinon, { SinonStub } from 'sinon';
+import { SettingsService } from '../../src/libs/data-context';
 
 describe('core lib', () => {
   afterEach(() => sinon.restore());
@@ -322,8 +323,16 @@ describe('core lib', () => {
   describe('AbstractDataContext', () => {
     class TestDataContext extends AbstractDataContext { }
 
+    const settingsService = { getAll: () => ({}) } as SettingsService;
+
+    it('exposes the provided settings service', () => {
+      const ctx = new TestDataContext(settingsService);
+
+      expect(ctx.settings).to.equal(settingsService);
+    });
+
     it('bind', () => {
-      const ctx = new TestDataContext();
+      const ctx = new TestDataContext(settingsService);
       const testFn = sinon.stub().returns('test');
 
       const result = ctx.bind<string>(testFn);
