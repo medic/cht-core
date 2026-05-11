@@ -31,14 +31,14 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
     private readonly userContactSummaryService: UserContactSummaryService,
   ) {}
 
-  async ngAfterViewInit() {
-    await this.initializeExtension();
+  ngAfterViewInit() {
+    let currentExtensionId = undefined;
     this.paramSubscription = this.route.params.subscribe(async (params) => {
-      const currentTag = this.container?.nativeElement?.firstElementChild?.tagName?.toLowerCase();
-      const newTag = `cht-${params['id'].toLowerCase()}`;
-      if (currentTag && currentTag !== newTag) {
-        await this.initializeExtension();
+      if (currentExtensionId === params['id']) {
+        return;
       }
+      currentExtensionId = params['id'];
+      this.initializeExtension(params['id']);
     });
   }
 
@@ -46,8 +46,7 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
     this.paramSubscription?.unsubscribe();
   }
 
-  private async initializeExtension() {
-    const extensionId = this.route.snapshot.params['id'];
+  private async initializeExtension(extensionId: string) {
     const elementName = `cht-${extensionId.toLowerCase()}`;
     this.loading = true;
     this.errorStack = undefined;

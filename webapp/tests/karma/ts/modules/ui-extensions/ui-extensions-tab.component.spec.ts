@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { provideMockStore } from '@ngrx/store/testing';
 
 import { UiExtensionsTabComponent } from '@mm-modules/ui-extensions/ui-extensions-tab.component';
@@ -25,7 +25,7 @@ describe('UiExtensionsTabComponent', () => {
   let performanceService;
   let userContactSummaryService;
   let trackStop;
-  let routeParams$: Subject<any>;
+  let routeParams$: BehaviorSubject<any>;
   let activatedRoute;
 
   const EXTENSION_ID = 'my-extension';
@@ -51,9 +51,8 @@ describe('UiExtensionsTabComponent', () => {
         Element: MOCK_ELEMENT,
       }),
     };
-    routeParams$ = new Subject();
+    routeParams$ = new BehaviorSubject<any>({ id: EXTENSION_ID });
     activatedRoute = {
-      snapshot: { params: { id: EXTENSION_ID } },
       params: routeParams$.asObservable(),
     };
 
@@ -158,29 +157,29 @@ describe('UiExtensionsTabComponent', () => {
     flush();
 
     expect(uiExtensionsService.getExtension.callCount).to.equal(1);
+    expect(uiExtensionsService.getExtension.firstCall.args[0]).to.equal(EXTENSION_ID);
     const firstElement = fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`);
     expect(firstElement).to.exist;
 
-    const OTHER_ID = 'other-extension';
-    const OTHER_TITLE = 'Other Extension';
+    const otherId = 'other-extension';
+    const otherTitle = 'Other Extension';
     const OtherElement = class extends HTMLElement {};
     uiExtensionsService.getExtension.resolves({
       properties: {
-        id: OTHER_ID,
-        title: OTHER_TITLE,
+        id: otherId,
+        title: otherTitle,
         type: 'app_main_tab',
         config: { other: true },
       },
       Element: OtherElement,
     });
-    activatedRoute.snapshot.params = { id: OTHER_ID };
-    routeParams$.next({ id: OTHER_ID });
+    routeParams$.next({ id: otherId });
     flush();
 
     expect(uiExtensionsService.getExtension.callCount).to.equal(2);
-    expect(uiExtensionsService.getExtension.secondCall.args[0]).to.equal(OTHER_ID);
-    expect(component.extensionTitle).to.equal(OTHER_TITLE);
-    const otherElement = fixture.nativeElement.querySelector(`cht-${OTHER_ID}`);
+    expect(uiExtensionsService.getExtension.secondCall.args[0]).to.equal(otherId);
+    expect(component.extensionTitle).to.equal(otherTitle);
+    const otherElement = fixture.nativeElement.querySelector(`cht-${otherId}`);
     expect(otherElement).to.exist;
     expect(fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`)).to.not.exist;
   }));
@@ -201,11 +200,11 @@ describe('UiExtensionsTabComponent', () => {
     fixture.detectChanges();
     flush();
 
+    expect(uiExtensionsService.getExtension.callCount).to.equal(1);
+
     component.ngOnDestroy();
 
-    const OTHER_ID = 'other-extension';
-    activatedRoute.snapshot.params = { id: OTHER_ID };
-    routeParams$.next({ id: OTHER_ID });
+    routeParams$.next({ id: 'other-extension' });
     flush();
 
     expect(uiExtensionsService.getExtension.callCount).to.equal(1);
