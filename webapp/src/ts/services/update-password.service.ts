@@ -18,7 +18,7 @@ export class UpdatePasswordService {
    * @param      {string} currentPassword  Password for Basic Auth
    * @param      {string} newPassword      Password to set
    */
-  update(username, currentPassword, newPassword): Promise<Object> {
+  update(username: string, currentPassword: string, newPassword: string): Promise<Object> {
     const url = '/api/v1/users/' + username;
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',

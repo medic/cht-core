@@ -26,7 +26,7 @@ export class ContactsService {
       .then(types => {
         const cacheByType = {};
         types.forEach(type => {
-          cacheByType[type.id as string] = this.cacheService.register({
+          cacheByType[type.id as string] = this.cacheService.register<Record<string, unknown>[]>({
             get: (callback) => {
               return this.dbService
                 .get()

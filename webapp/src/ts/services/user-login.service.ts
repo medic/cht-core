@@ -18,7 +18,7 @@ export class UserLoginService {
    * @param {String} username username of the user to be logged in.
    * @param {String} password password of the user.
    */
-  login(username, password): Promise<Object> {
+  login(username: string, password: string): Promise<Object> {
 
     const url = '/' + this.location.dbName + '/login';
 

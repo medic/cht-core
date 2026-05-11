@@ -5,20 +5,20 @@ import {ChangesService} from '@mm-services/changes.service';
 type CacheCallback<T = unknown> = (err: unknown, result?: T) => void;
 
 export interface CacheChange {
-  id?: string;
+  id: string;
   doc?: { _id?: string; [key: string]: unknown };
   [key: string]: unknown;
 }
 
-interface CacheRegisterOptions<T = unknown, C = CacheChange> {
+interface CacheRegisterOptions<T = unknown> {
   get: (done: CacheCallback<T>) => void;
-  invalidate?: (change: C) => boolean;
+  invalidate?: (change: CacheChange) => boolean;
 }
 
-interface CacheEntry<T = unknown, C = CacheChange> {
+interface CacheEntry<T = unknown> {
   docs: T | null;
   pending: boolean;
-  invalidate?: (change: C) => boolean;
+  invalidate?: (change: CacheChange) => boolean;
   callbacks: CacheCallback<T>[];
 }
 
@@ -33,6 +33,9 @@ export class CacheService {
       key: 'cache',
       callback: (change) => {
         this.caches.forEach((cache) => {
+          // Optional chaining is required: `invalidate` is documented as optional (see register
+          // docstring), but the original AngularJS call site was unguarded. Without `?.` the
+          // runtime would crash on any consumer that omits invalidate.
           if (cache.invalidate?.(change)) {
             cache.docs = null;
             cache.pending = false;
@@ -54,8 +57,8 @@ export class CacheService {
    *     If no invalidate function is provided the cache will never
    *     invalidate.
    */
-  register<T = unknown, C = CacheChange>(options: CacheRegisterOptions<T, C>) {
-    const cache: CacheEntry<T, C> = {
+  register<T = unknown>(options: CacheRegisterOptions<T>) {
+    const cache: CacheEntry<T> = {
       docs: null,
       pending: false,
       invalidate: options.invalidate,
