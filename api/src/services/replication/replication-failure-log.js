@@ -76,28 +76,12 @@ const getRangeForReportingPeriod = (reportingPeriod) => {
   return { startkey: prefix, endkey: `${prefix}\ufff0` };
 };
 
-const findOldestReportingPeriod = async () => {
-  const result = await db.medicLogs.allDocs({ ...getRangeForReportingPeriod(), limit: 1 });
-  if (!result.rows.length) {
-    return null;
-  }
-  // Doc id format: `replication-fail-YYYY-MM-<userName>`.
-  return result.rows[0].id.substring(TYPE_PREFIX.length, TYPE_PREFIX.length + REPORTING_PERIOD_FORMAT.length);
-};
-
-// Returns every YYYY-MM string from `from` (inclusive) up to the current period (inclusive).
-// `from` is clamped to [now - MAX_PERIODS, now] to defend against malformed doc ids (too-old or
-// future-dated) polluting the candidate-key array.
-const enumerateReportingPeriods = (fromPeriod) => {
+const enumerateReportingPeriods = () => {
   const MONTH = 'month';
   const now = moment();
-  const earliestAllowed = now.clone().subtract(MAX_PERIODS, MONTH);
-  const from = moment(fromPeriod, REPORTING_PERIOD_FORMAT, true);
-  const candidate = from.isValid() ? from : earliestAllowed;
-  const start = moment.max(earliestAllowed, moment.min(candidate, now));
+  const cursor = now.clone().subtract(MAX_PERIODS, MONTH);
 
   const periods = [];
-  const cursor = start.clone();
   while (cursor.isSameOrBefore(now, MONTH)) {
     periods.push(cursor.format(REPORTING_PERIOD_FORMAT));
     cursor.add(1, MONTH);
@@ -131,13 +115,7 @@ const getPageByRange = async ({ reportingPeriod, skip, limit }) => {
 };
 
 const getPageByUser = async ({ user, skip, limit }) => {
-  const oldestPeriod = await findOldestReportingPeriod();
-  if (!oldestPeriod) {
-    return { data: [], cursor: null };
-  }
-
-  // Username is the doc-id suffix, preventing prefix-scan; bulk-fetch the user's candidate keys (max 60).
-  const candidateKeys = enumerateReportingPeriods(oldestPeriod).map(period => getDocId(user, period));
+  const candidateKeys = enumerateReportingPeriods().map(period => getDocId(user, period));
   const result = await db.medicLogs.allDocs({ keys: candidateKeys, include_docs: true });
   const matched = result.rows.filter(row => row.doc).map(row => row.doc);
   const pageData = matched.slice(skip, skip + limit);

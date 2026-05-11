@@ -99,69 +99,42 @@ describe('Replication Failure Log Service', () => {
     describe('with user only', () => {
       beforeEach(() => sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf()));
 
-      it('should find oldest period via a limit-1 lookup, then bulk-fetch the user\'s candidate keys', async () => {
+      const candidateKeysFor = (user) => {
+        const start = moment('2021-04', 'YYYY-MM');
+        return Array.from(
+          { length: 61 },
+          (_, i) => `replication-fail-${start.clone().add(i, 'month').format('YYYY-MM')}-${user}`
+        );
+      };
+      const rowsFor = (user, docsById) => candidateKeysFor(user).map(key => (
+        docsById.has(key) ? { id: key, doc: docsById.get(key) } : { key, error: 'not_found' }
+      ));
+
+      it('should bulk-fetch the user\'s candidate keys and return the matched docs', async () => {
         const bobApril = { _id: 'replication-fail-2026-04-bob', user: 'bob', failures: [{}] };
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-2026-02-clare' }],
-        });
-        db.medicLogs.allDocs.onSecondCall().resolves({
-          rows: [
-            { key: 'replication-fail-2026-02-bob', error: 'not_found' },
-            { key: 'replication-fail-2026-03-bob', error: 'not_found' },
-            { id: bobApril._id, doc: bobApril },
-          ],
-        });
+        db.medicLogs.allDocs.resolves({ rows: rowsFor('bob', new Map([[bobApril._id, bobApril]])) });
 
         const result = await replicationFailureLog.get({ user: 'bob' });
 
-        expect(db.medicLogs.allDocs.callCount).to.equal(2);
+        expect(db.medicLogs.allDocs.callCount).to.equal(1);
         expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-          startkey: 'replication-fail-',
-          endkey: 'replication-fail-\ufff0',
-          limit: 1,
-        });
-        expect(db.medicLogs.allDocs.args[1][0]).to.deep.equal({
-          keys: [
-            'replication-fail-2026-02-bob',
-            'replication-fail-2026-03-bob',
-            'replication-fail-2026-04-bob',
-          ],
+          keys: candidateKeysFor('bob'),
           include_docs: true,
         });
         expect(result).to.deep.equal({ data: [bobApril], cursor: null });
       });
 
       it('should apply cursor + limit after filtering and surface the next-page cursor', async () => {
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-2026-01-clare' }],
-        });
         const docs = [
           { _id: 'replication-fail-2026-01-bob' },
           { _id: 'replication-fail-2026-02-bob' },
           { _id: 'replication-fail-2026-03-bob' },
           { _id: 'replication-fail-2026-04-bob' },
         ];
-        db.medicLogs.allDocs.onSecondCall().resolves({
-          rows: docs.map(doc => ({ id: doc._id, doc })),
-        });
+        db.medicLogs.allDocs.resolves({ rows: rowsFor('bob', new Map(docs.map(d => [d._id, d]))) });
 
         const result = await replicationFailureLog.get({ user: 'bob', cursor: 1, limit: 2 });
 
-        expect(db.medicLogs.allDocs.callCount).to.equal(2);
-        expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-          startkey: 'replication-fail-',
-          endkey: 'replication-fail-\ufff0',
-          limit: 1,
-        });
-        expect(db.medicLogs.allDocs.args[1][0]).to.deep.equal({
-          keys: [
-            'replication-fail-2026-01-bob',
-            'replication-fail-2026-02-bob',
-            'replication-fail-2026-03-bob',
-            'replication-fail-2026-04-bob',
-          ],
-          include_docs: true,
-        });
         expect(result.data.map(doc => doc._id)).to.deep.equal([
           'replication-fail-2026-02-bob',
           'replication-fail-2026-03-bob',
@@ -169,140 +142,35 @@ describe('Replication Failure Log Service', () => {
         expect(result.cursor).to.equal('3');
       });
 
-      it('should not make a second allDocs call when there are no replication failure logs at all', async () => {
-        db.medicLogs.allDocs.resolves({ rows: [] });
+      it('should return an empty page when the user has no logs in the lookback window', async () => {
+        db.medicLogs.allDocs.resolves({ rows: rowsFor('bob', new Map()) });
 
         const result = await replicationFailureLog.get({ user: 'bob' });
 
         expect(db.medicLogs.allDocs.callCount).to.equal(1);
-        expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-          startkey: 'replication-fail-',
-          endkey: 'replication-fail-\ufff0',
-          limit: 1,
-        });
-        expect(result).to.deep.equal({ data: [], cursor: null });
-      });
-
-      it('should return an empty page when no candidate keys match (user has no logs)', async () => {
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-2026-04-clare' }],
-        });
-        db.medicLogs.allDocs.onSecondCall().resolves({
-          rows: [{ key: 'replication-fail-2026-04-bob', error: 'not_found' }],
-        });
-
-        const result = await replicationFailureLog.get({ user: 'bob' });
-
-        expect(db.medicLogs.allDocs.callCount).to.equal(2);
-        expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-          startkey: 'replication-fail-',
-          endkey: 'replication-fail-\ufff0',
-          limit: 1,
-        });
-        expect(db.medicLogs.allDocs.args[1][0]).to.deep.equal({
-          keys: ['replication-fail-2026-04-bob'],
-          include_docs: true,
-        });
         expect(result).to.deep.equal({ data: [], cursor: null });
       });
 
       it('should handle usernames that contain dashes', async () => {
         const doc = { _id: 'replication-fail-2026-04-sir-bob', user: 'sir-bob', failures: [] };
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-2026-04-clare' }],
-        });
-        db.medicLogs.allDocs.onSecondCall().resolves({
-          rows: [{ id: doc._id, doc }],
-        });
+        db.medicLogs.allDocs.resolves({ rows: rowsFor('sir-bob', new Map([[doc._id, doc]])) });
 
         const result = await replicationFailureLog.get({ user: 'sir-bob' });
 
-        expect(db.medicLogs.allDocs.callCount).to.equal(2);
         expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-          startkey: 'replication-fail-',
-          endkey: 'replication-fail-\ufff0',
-          limit: 1,
-        });
-        expect(db.medicLogs.allDocs.args[1][0]).to.deep.equal({
-          keys: ['replication-fail-2026-04-sir-bob'],
+          keys: candidateKeysFor('sir-bob'),
           include_docs: true,
         });
         expect(result).to.deep.equal({ data: [doc], cursor: null });
       });
 
-      it('should clamp to the 61 intervals if the discovered period is unrealistically old', async () => {
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-1800-01-attacker' }],
-        });
-        db.medicLogs.allDocs.onSecondCall().resolves({ rows: [] });
+      it('should return all matches in a single page on a long-running instance', async () => {
+        const docs = candidateKeysFor('bob').map(id => ({ _id: id, user: 'bob', failures: [] }));
+        db.medicLogs.allDocs.resolves({ rows: docs.map(doc => ({ id: doc._id, doc })) });
 
         const result = await replicationFailureLog.get({ user: 'bob' });
 
-        const keys = db.medicLogs.allDocs.args[1][0].keys;
-        expect(keys[0]).to.equal('replication-fail-2021-04-bob');
-        expect(keys[keys.length - 1]).to.equal('replication-fail-2026-04-bob');
-        expect(keys).to.have.lengthOf(61);
-        expect(result).to.deep.equal({ data: [], cursor: null });
-      });
-
-      it('should clamp when the discovered period is malformed', async () => {
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-XXXX-XX-bogus' }],
-        });
-        db.medicLogs.allDocs.onSecondCall().resolves({ rows: [] });
-
-        const result = await replicationFailureLog.get({ user: 'bob' });
-
-        const keys = db.medicLogs.allDocs.args[1][0].keys;
-        expect(keys[0]).to.equal('replication-fail-2021-04-bob');
-        expect(keys).to.have.lengthOf(61);
-        expect(result).to.deep.equal({ data: [], cursor: null });
-      });
-
-      it('should clamp when the discovered period is in the future', async () => {
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-2099-01-attacker' }],
-        });
-        db.medicLogs.allDocs.onSecondCall().resolves({ rows: [] });
-
-        const result = await replicationFailureLog.get({ user: 'bob' });
-
-        expect(db.medicLogs.allDocs.args[1][0]).to.deep.equal({
-          keys: ['replication-fail-2026-04-bob'],
-          include_docs: true,
-        });
-        expect(result).to.deep.equal({ data: [], cursor: null });
-      });
-
-      it('should return all matches in a default-limit page on a long-running instance', async () => {
-        db.medicLogs.allDocs.onFirstCall().resolves({
-          rows: [{ id: 'replication-fail-2020-01-bob' }],
-        });
-        const start = moment('2021-04', 'YYYY-MM');
-        const expectedKeys = [];
-        const docs = [];
-        for (let i = 0; i < 61; i++) {
-          const period = start.clone().add(i, 'month').format('YYYY-MM');
-          const id = `replication-fail-${period}-bob`;
-          expectedKeys.push(id);
-          docs.push({ _id: id, user: 'bob', failures: [] });
-        }
-        db.medicLogs.allDocs.onSecondCall().resolves({
-          rows: docs.map(doc => ({ id: doc._id, doc })),
-        });
-
-        const result = await replicationFailureLog.get({ user: 'bob' });
-
-        expect(db.medicLogs.allDocs.callCount).to.equal(2);
-        expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-          startkey: 'replication-fail-',
-          endkey: 'replication-fail-\ufff0',
-          limit: 1,
-        });
-        expect(db.medicLogs.allDocs.args[1][0]).to.deep.equal({
-          keys: expectedKeys,
-          include_docs: true,
-        });
+        expect(db.medicLogs.allDocs.callCount).to.equal(1);
         expect(result.data).to.have.lengthOf(61);
         expect(result.data).to.deep.equal(docs);
         expect(result.cursor).to.equal(null);
