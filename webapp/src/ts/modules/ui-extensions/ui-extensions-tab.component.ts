@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NgIf } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
@@ -13,12 +14,14 @@ import { TranslatePipe } from '@ngx-translate/core';
   templateUrl: './ui-extensions-tab.component.html',
   imports: [ToolBarComponent, ErrorLogComponent, TranslatePipe, NgIf]
 })
-export class UiExtensionsTabComponent implements AfterViewInit {
+export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
   @ViewChild('uiElementTab') container!: ElementRef;
   extensionTitle = '';
   loading = true;
   errorStack?: string;
   accentColor?: string;
+
+  private paramSubscription?: Subscription;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -28,13 +31,30 @@ export class UiExtensionsTabComponent implements AfterViewInit {
     private readonly userContactSummaryService: UserContactSummaryService,
   ) {}
 
-  async ngAfterViewInit() {
-    await this.initializeExtension();
+  ngAfterViewInit() {
+    let currentExtensionId = undefined;
+    this.paramSubscription = this.route.params.subscribe(async (params) => {
+      if (currentExtensionId === params['id']) {
+        return;
+      }
+      currentExtensionId = params['id'];
+      this.initializeExtension(params['id']);
+    });
   }
 
-  private async initializeExtension() {
-    const extensionId = this.route.snapshot.params['id'];
+  ngOnDestroy() {
+    this.paramSubscription?.unsubscribe();
+  }
+
+  private async initializeExtension(extensionId: string) {
     const elementName = `cht-${extensionId.toLowerCase()}`;
+    this.loading = true;
+    this.errorStack = undefined;
+    this.accentColor = undefined;
+    this.extensionTitle = '';
+    if (this.container?.nativeElement) {
+      this.container.nativeElement.innerHTML = '';
+    }
     const trackRender = this.performanceService.track();
     try {
       const {
