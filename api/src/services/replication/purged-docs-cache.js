@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../../db');
 const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const { setTimeout: setTimeoutPromise } = require('node:timers/promises');

@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const auth = require('../../../src/auth');
 require('chai').should();
 const controller = require('../../../src/controllers/bulk-docs');
-const service = require('../../../src/services/bulk-docs');
+const service = require('../../../src/services/replication/bulk-docs');
 const serverUtils = require('../../../src/server-utils');
 
 let testReq;
