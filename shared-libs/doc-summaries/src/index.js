@@ -15,7 +15,8 @@ const getLineage = (contact) => {
 
 const isMissingSubjectError = (error) => {
   return error.code === 'sys.missing_fields' &&
-    error.fields?.some(field => SUBJECT_FIELDS.has(field));
+    Array.isArray(error.fields) &&
+    error.fields.some(field => SUBJECT_FIELDS.has(field));
 };
 
 const getReference = (doc) => {
