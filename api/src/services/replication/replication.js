@@ -1,16 +1,19 @@
-const db = require('../db');
+const db = require('../../db');
 const authorization = require('./authorization');
 const purgedDocs = require('./purged-docs');
 const _ = require('lodash');
-const replicationLimitLog = require('../services/replication-limit-log');
+const replicationLimitLog = require('./replication-limit-log');
 
 const getContext = async (userCtx) => {
   const info = await db.medic.info();
   const authContext = await authorization.getAuthorizationContext(userCtx);
+  userCtx.subjectsCount = authContext.subjectIds.length;
   const docsByReplicationKey = await authorization.getDocsByReplicationKey(authContext);
 
   const allowedIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey);
+  userCtx.docsCount = allowedIds.length;
   const unpurgedIds = await purgedDocs.getUnPurgedIds(userCtx, allowedIds);
+  userCtx.unpurgedDocsCount = unpurgedIds.length;
 
   const excludeTasks = { includeTasks: false };
   const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTasks);
