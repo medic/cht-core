@@ -49,6 +49,11 @@
                 "guid": "gh-sponsors",
                 "type": "payment-provider",
                 "address": "https://github.com/sponsors/medic"
+            },
+            {
+                "guid": "paypal",
+                "type": "payment-provider",
+                "address": "https://www.paypal.com/ncp/payment/BGQHTF5WFJCL4"
             }
         ],
         "plans": [
@@ -62,7 +67,8 @@
                 "frequency": "monthly",
                 "channels": [
                     "donate",
-                    "gh-sponsors"
+                    "gh-sponsors",
+                    "paypal"
                 ]
             },
             {
@@ -75,7 +81,8 @@
                 "frequency": "one-time",
                 "channels": [
                     "donate",
-                    "gh-sponsors"
+                    "gh-sponsors",
+                    "paypal"
                 ]
             },
             {
@@ -88,7 +95,8 @@
                 "frequency": "one-time",
                 "channels": [
                     "donate",
-                    "gh-sponsors"
+                    "gh-sponsors",
+                    "paypal"
                 ]
             },
             {
@@ -101,7 +109,8 @@
                 "frequency": "one-time",
                 "channels": [
                     "donate",
-                    "gh-sponsors"
+                    "gh-sponsors",
+                    "paypal"
                 ]
             },
                         {
@@ -114,7 +123,8 @@
                 "frequency": "one-time",
                 "channels": [
                     "donate",
-                    "gh-sponsors"
+                    "gh-sponsors",
+                    "paypal"
                 ]
             }
         ],
