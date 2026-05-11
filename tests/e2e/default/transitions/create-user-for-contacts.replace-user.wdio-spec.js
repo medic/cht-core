@@ -62,21 +62,42 @@ describe('Create user for contacts', () => {
   /**
    * Ongoing replication can be interrupted by the user being edited on the server side.
    * A 401 for a replication request will create a feedback doc, which will fail the test.
+   * Document update conflicts are expected during the conflict scenario test and should be ignored.
    */
-  const assertFeedbackDocs = async () => {
+  const assertFeedbackDocs = async (expectedConflicts = []) => {
     const feedbackDocs = await chtDbUtils.getFeedbackDocs();
     if (!feedbackDocs.length) {
       return;
     }
 
+    /**
+     * Document update conflicts are expected during the "conflict scenario" test case
+     * (where a contact is modified both offline and online). This intentional
+     * sync conflict is verified using waitForConflicts.
+     */
     const feedbackDocsToIgnore = [ 'Http failure response', 'Server error' ];
 
     const unknownMessages = feedbackDocs
-      .map(doc => doc.info.message)
-      .filter(message => !feedbackDocsToIgnore.find(toIgnore => message.includes(toIgnore)));
+      .filter(doc => {
+        const message = doc.info.message;
+        const args = (doc.arguments || []).join(' ');
+        const fullContent = `${message} ${args}`;
 
-    if (!unknownMessages.length) {
-      await chtDbUtils.clearFeedbackDocs();
+        const isExpectedConflict = (message.includes('Document update conflict') || message.includes('Error selecting contact')) &&
+          expectedConflicts.some(expected => fullContent.includes(expected));
+
+        if (isExpectedConflict) {
+          return false;
+        }
+
+        return !feedbackDocsToIgnore.some(toIgnore => fullContent.includes(toIgnore));
+      })
+      .map(doc => doc.info.message);
+
+    await chtDbUtils.clearFeedbackDocs();
+
+    if (unknownMessages.length) {
+      throw new Error(`Unexpected feedback docs found: ${unknownMessages.join(', ')}`);
     }
   };
 
@@ -680,6 +701,8 @@ describe('Create user for contacts', () => {
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // New contact created
+        const isExpectedConflict = (message.includes('Document update conflict') || message.includes('Error selecting contact')) &&
+          expectedConflicts.some(expected => fullContent.includes(expected));
         const newContact = await utils.getDoc(replacementContactId);
         expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
         // Basic report not re-parented
