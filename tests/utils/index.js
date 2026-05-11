@@ -477,18 +477,6 @@ const shouldDocumentBeKept = (doc, filters) => {
          filters.patterns.some(pattern => doc._id.match(pattern));
 };
 
-const waitForSettings = async (checkFn, retries = 100) => {
-  const settings = await request({ path: '/api/v1/settings' });
-  if (checkFn(settings)) {
-    return;
-  }
-  if (retries <= 0) {
-    throw new Error('Timed out waiting for settings update');
-  }
-  await delayPromise(50);
-  return waitForSettings(checkFn, retries - 1);
-};
-
 const deleteSentinelDocs = async (docsToKeep) => {
   const allDocs = await sentinelDb.allDocs({ include_docs: true });
   const sentinelDocsToDelete = allDocs.rows
@@ -621,12 +609,12 @@ const updateSettings = async (updates, options = {}) => {
 
   await updateCustomSettings(updates);
 
-  if (!ignoreReload && !sync) {
-    await commonElements.closeReloadModal(true);
-  }
-
   if (watcher) {
     await watcher.promise;
+  }
+
+  if (!ignoreReload && !sync) {
+    await commonElements.closeReloadModal(true);
   }
   if (sync) {
     await commonElements.sync();
@@ -1837,7 +1825,6 @@ module.exports = {
   delayPromise,
   setTransitionSeqToNow,
   waitForDocRev,
-  waitForSettings,
   waitForAuditCount,
   getDefaultSettings,
 
