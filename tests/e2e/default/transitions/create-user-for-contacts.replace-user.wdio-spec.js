@@ -659,7 +659,7 @@ describe('Create user for contacts', () => {
         // afterEach will handle deleting the other version.
         await utils.revertDb([/^form:/], true);
 
-        await assertFeedbackDocs();
+        await assertFeedbackDocs([originalContactId]);
       });
 
       it('does not create a new user or re-parent reports when the transition is disabled', async () => {
