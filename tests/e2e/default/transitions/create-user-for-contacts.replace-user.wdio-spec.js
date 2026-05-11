@@ -83,7 +83,8 @@ describe('Create user for contacts', () => {
         const args = (doc.arguments || []).join(' ');
         const fullContent = `${message} ${args}`;
 
-        const isExpectedConflict = (message.includes('Document update conflict') || message.includes('Error selecting contact')) &&
+        const isExpectedConflict = (message.includes('Document update conflict') ||
+          message.includes('Error selecting contact')) &&
           expectedConflicts.some(expected => fullContent.includes(expected));
 
         if (isExpectedConflict) {
@@ -701,8 +702,6 @@ describe('Create user for contacts', () => {
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // New contact created
-        const isExpectedConflict = (message.includes('Document update conflict') || message.includes('Error selecting contact')) &&
-          expectedConflicts.some(expected => fullContent.includes(expected));
         const newContact = await utils.getDoc(replacementContactId);
         expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
         // Basic report not re-parented
