@@ -236,7 +236,7 @@ jobs:
           tmpdir=$(mktemp -d)
           # Strip CouchDB OS-Process debug dumps which legitimately log user-creation doc bodies (with passwords).
           for f in tests/logs/*.log; do grep -Ev "OS Process #?Port|OS Process .* Input ::" "$f" > "$tmpdir/$(basename "$f")"; done
-          npx --no-install secretlint --secretlintrc scripts/ci/.secretlintrc.json "$tmpdir"/*.log
+          npm run scan-logs -- "$tmpdir"/*.log
           rm -rf "$tmpdir"
       - name: Archive Results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
@@ -419,8 +419,9 @@ jobs:
       run: |
         compgen -G "tests/logs/*.log" > /dev/null || exit 0
         tmpdir=$(mktemp -d)
-        for f in tests/logs/*.log; do grep -v "OS Process #Port" "$f" > "$tmpdir/$(basename "$f")"; done
-        npx --no-install secretlint --secretlintrc scripts/ci/.secretlintrc.json "$tmpdir"/*.log
+        # Strip CouchDB OS-Process debug dumps which legitimately log user-creation doc bodies (with passwords).
+        for f in tests/logs/*.log; do grep -Ev "OS Process #?Port|OS Process .* Input ::" "$f" > "$tmpdir/$(basename "$f")"; done
+        npm run scan-logs -- "$tmpdir"/*.log
         rm -rf "$tmpdir"
 
     - name: Archive Results
