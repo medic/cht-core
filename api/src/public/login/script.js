@@ -181,7 +181,7 @@ const isUsingSupportedBrowser = () => getBowserParser()?.satisfies({
 
 const isSafariBrowser = () => /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
-const isUsingTooOldChrome = () => getBowserParser()?.satisfies({ chrome: '<90' }) ?? false;
+const isUsingUnsupportedChrome = () => getBowserParser()?.satisfies({ chrome: '<90' }) ?? false;
 
 const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
 
@@ -201,9 +201,9 @@ const isUsingChtAndroidV1 = () => {
 };
 
 // It will return true if the browser should be blocked from using the app
-// (Safari, or Chrome older than the supported minimum)
+// (Safari, or an unsupported Chrome version)
 const shouldBlockBrowser = () => {
-  return isSafariBrowser() || isUsingTooOldChrome();
+  return isSafariBrowser() || isUsingUnsupportedChrome();
 };
 
 const checkUnsupportedBrowser = () => {
@@ -213,7 +213,6 @@ const checkUnsupportedBrowser = () => {
 
   let outdatedComponentKey;
   const isSafari = isSafariBrowser();
-  const isTooOldChrome = isUsingTooOldChrome();
 
   if (isUsingChtAndroid()) {
     if (!isUsingChtAndroidV1()) {
@@ -233,7 +232,7 @@ const checkUnsupportedBrowser = () => {
       translations[selectedLocale][outdatedComponentKey];
     document.getElementById('unsupported-browser')?.classList.remove('hidden');
 
-    if (isSafari || isTooOldChrome) {
+    if (shouldBlockBrowser()) {
       document.getElementById('login-fields')?.classList.add('hidden');
       document.querySelector('.locale-wrapper .loading')?.classList.add('hidden');
     }
