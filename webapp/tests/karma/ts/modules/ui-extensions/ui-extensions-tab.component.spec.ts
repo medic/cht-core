@@ -45,7 +45,7 @@ describe('UiExtensionsTabComponent', () => {
         properties: {
           id: EXTENSION_ID,
           title: EXTENSION_TITLE,
-          type: 'app_main_tab',
+          type: 'header_tab',
           config: MOCK_CONFIG
         },
         Element: MOCK_ELEMENT,
@@ -110,7 +110,7 @@ describe('UiExtensionsTabComponent', () => {
       properties: {
         id: EXTENSION_ID,
         title: EXTENSION_TITLE,
-        type: 'app_main_tab',
+        type: 'header_tab',
         config: MOCK_CONFIG,
         accent_color: '#FF5733',
       },
@@ -168,7 +168,7 @@ describe('UiExtensionsTabComponent', () => {
       properties: {
         id: otherId,
         title: otherTitle,
-        type: 'app_main_tab',
+        type: 'header_tab',
         config: { other: true },
       },
       Element: OtherElement,

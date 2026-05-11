@@ -194,20 +194,20 @@ describe('Header Component', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
       expect(component.uiExtensionOptions).to.deep.equal([]);
     });
 
-    it('should load app_drawer_tab extensions and map them to menu options', async () => {
+    it('should load sidebar_tab extensions and map them to menu options', async () => {
       uiExtensionsService.getPropertiesByType.resolves([
-        { id: 'ext1', type: 'app_drawer_tab', title: 'Hello Extension', resource_icon: 'hello-icon' },
-        { id: 'ext2', type: 'app_drawer_tab', title: 'Goodbye Extension', icon: 'fa-goodbye' },
+        { id: 'ext1', type: 'sidebar_tab', title: 'Hello Extension', resource_icon: 'hello-icon' },
+        { id: 'ext2', type: 'sidebar_tab', title: 'Goodbye Extension', icon: 'fa-goodbye' },
       ]);
 
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('app_drawer_tab');
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
       expect(component.uiExtensionOptions).to.deep.equal([
         {
           routerLink: 'ui-extensions/ext1',

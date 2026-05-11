@@ -137,7 +137,7 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
   }
 
   private async getUiExtensionOptions() {
-    const extensions = await this.uiExtensionsService.getPropertiesByType('app_drawer_tab');
+    const extensions = await this.uiExtensionsService.getPropertiesByType('sidebar_tab');
     return extensions
       .filter(ext => ext.title)
       .map(ext => ({

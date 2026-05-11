@@ -103,7 +103,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
 
   private loadUiExtensionOptions() {
     this.uiExtensionsService
-      .getPropertiesByType('app_drawer_tab')
+      .getPropertiesByType('sidebar_tab')
       .then(extensions => {
         this.uiExtensionOptions = extensions
           .map(ext => ({

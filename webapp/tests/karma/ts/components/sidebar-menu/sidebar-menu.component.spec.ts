@@ -203,11 +203,11 @@ describe('SidebarMenuComponent', () => {
     expect(modalService.show.args[0][0]).to.deep.equal(FeedbackComponent);
   });
 
-  describe('UI Extension options (app_drawer_tab)', () => {
+  describe('UI Extension options (sidebar_tab)', () => {
     beforeEach(async () => {
       uiExtensionsService.getPropertiesByType.resolves([
-        { id: 'ext-reports', type: 'app_drawer_tab', title: 'custom.reports', resource_icon: 'reports-icon' },
-        { id: 'ext-map', type: 'app_drawer_tab', title: 'custom.map', icon: 'fa-user' },
+        { id: 'ext-reports', type: 'sidebar_tab', title: 'custom.reports', resource_icon: 'reports-icon' },
+        { id: 'ext-map', type: 'sidebar_tab', title: 'custom.map', icon: 'fa-user' },
       ]);
 
       await TestBed.resetTestingModule();
@@ -215,7 +215,7 @@ describe('SidebarMenuComponent', () => {
     });
 
     it('should populate ui extension options from registered extensions', () => {
-      expect(uiExtensionsService.getPropertiesByType.args).to.deep.equal([['app_drawer_tab'], ['app_drawer_tab']]);
+      expect(uiExtensionsService.getPropertiesByType.args).to.deep.equal([['sidebar_tab'], ['sidebar_tab']]);
 
       expect(component.menuOptions).excluding('click').to.deep.equal([
         {
@@ -295,7 +295,7 @@ describe('SidebarMenuComponent', () => {
     });
 
     it('should rebuild menuOptions preserving extension positions when privacy policy changes', fakeAsync(() => {
-      expect(uiExtensionsService.getPropertiesByType.args).to.deep.equal([['app_drawer_tab'], ['app_drawer_tab']]);
+      expect(uiExtensionsService.getPropertiesByType.args).to.deep.equal([['sidebar_tab'], ['sidebar_tab']]);
       store.overrideSelector(Selectors.getShowPrivacyPolicy, true);
       store.refreshState();
       flush();
@@ -303,7 +303,7 @@ describe('SidebarMenuComponent', () => {
       const privacyPolicy = component.menuOptions.find(opt => opt.routerLink === 'privacy-policy');
       expect(privacyPolicy?.canDisplay).to.be.true;
       expect(uiExtensionsService.getPropertiesByType.args).to.deep.equal([
-        ['app_drawer_tab'], ['app_drawer_tab'], ['app_drawer_tab']
+        ['sidebar_tab'], ['sidebar_tab'], ['sidebar_tab']
       ]);
     }));
   });

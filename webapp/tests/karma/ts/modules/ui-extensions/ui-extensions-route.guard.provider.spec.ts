@@ -27,15 +27,15 @@ describe('UiExtensionsTabRouteGuardProvider', () => {
 
   afterEach(() => sinon.restore());
 
-  it('should activate for app_main_tab type', async () => {
-    uiExtensionsService.getProperties.resolves({ id: 'ext-1', type: 'app_main_tab' });
+  it('should activate for header_tab type', async () => {
+    uiExtensionsService.getProperties.resolves({ id: 'ext-1', type: 'header_tab' });
     const result = await guard.canActivate(getRoute('ext-1'));
     expect(result).to.be.true;
     expect(uiExtensionsService.getProperties).to.have.been.calledOnceWithExactly('ext-1');
   });
 
-  it('should activate for app_drawer_tab type', async () => {
-    uiExtensionsService.getProperties.resolves({ id: 'ext-2', type: 'app_drawer_tab' });
+  it('should activate for sidebar_tab type', async () => {
+    uiExtensionsService.getProperties.resolves({ id: 'ext-2', type: 'sidebar_tab' });
     const result = await guard.canActivate(getRoute('ext-2'));
     expect(result).to.be.true;
     expect(uiExtensionsService.getProperties).to.have.been.calledOnceWithExactly('ext-2');
