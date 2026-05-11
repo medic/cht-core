@@ -2,6 +2,7 @@ const chai = require('chai');
 const { v7: uuid } = require('uuid');
 const utils = require('@utils');
 const apiUtils = require('./utils');
+const sentinelUtils = require('@utils/sentinel');
 
 const settings = {
   transitions: {
@@ -43,7 +44,10 @@ const postMessages = (messages) => {
       watchChanges,
       utils.request(getPostOpts('/api/sms', { messages: messages }))
     ])
-    .then(([changes]) => changes.map(change => change.id));
+    .then(([changes]) => {
+      const ids = changes.map(change => change.id);
+      return sentinelUtils.waitForSentinel(ids).then(() => ids);
+    });
 };
 
 const getRecipient = doc => doc.tasks[0].messages[0].to;
@@ -158,10 +162,6 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          if (doc.tasks.length > 1) {
-            // this test has been flaking on GHA only (no repro locally)
-            console.log(JSON.stringify(doc, null, 2));
-          }
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
