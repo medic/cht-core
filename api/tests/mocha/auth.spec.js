@@ -216,6 +216,19 @@ describe('Auth', () => {
     });
   });
 
+  describe('basicAuthCredentials', () => {
+    it('parses passwords that include colons', () => {
+      const username = 'alice';
+      const password = 'P@ss:word123';
+      const authHeader = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
+      req.headers.authorization = `Basic ${authHeader}`;
+
+      const result = auth.basicAuthCredentials(req);
+
+      chai.expect(result).to.deep.equal({ username, password });
+    });
+  });
+
   describe('assertPermissions', () => {
     const requestOptions = {
       url: 'http://abc.com/_session',
