@@ -7,62 +7,170 @@ const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 /* global window */
 const { CONTACT_TYPES } = require('@medic/constants');
 const path = require('path');
-const moment = require('moment');
 const chtConfUtils = require('@utils/cht-conf');
 
 const INTERACTION_DOC_PREFIX = 'interaction-';
 
-const getInteractionDocsFromMetaDb = async ({ username }) => {
-  const qs = {
+const FAKE_YESTERDAY_MS = Date.UTC(2025, 0, 15, 12, 0, 0); // 2025-01-15 12:00 UTC
+const FAKE_YESTERDAY_DATE = '2025-1-15';                   // service's `YYYY-M-D` format
+
+const NON_DETERMINISTIC_FIELDS = ['_id', '_rev', 'deviceId', 'version'];
+
+// Date-only init script. Full fake timers (`browser.emulate('clock')`) breaks
+// zone.js by overriding setTimeout/setInterval, firing cancelled RxJS actions.
+// Init scripts only run on full document loads, so callers must refresh to
+// apply the override before the app bootstraps `interactionTrackingService`.
+const installFakeDate = (ms) => browser.addInitScript((fakeMs) => {
+  const RealDate = Date;
+  // eslint-disable-next-line func-style
+  function FakeDate(...args) {
+    if (!(this instanceof FakeDate)) {
+      return RealDate(...args);
+    }
+    return args.length === 0 ? new RealDate(fakeMs) : new RealDate(...args);
+  }
+  FakeDate.prototype = RealDate.prototype;
+  FakeDate.prototype.constructor = FakeDate;
+  FakeDate.now = () => fakeMs;
+  FakeDate.UTC = RealDate.UTC;
+  FakeDate.parse = RealDate.parse;
+  window.Date = FakeDate;
+}, ms);
+
+let clockScript;
+
+const installClockYesterday = async () => {
+  clockScript = await installFakeDate(FAKE_YESTERDAY_MS);
+  await commonPage.refresh();
+  await modalPage.submit();
+};
+
+const advanceFakeClock = async (msFromYesterday) => {
+  await clockScript.remove();
+  clockScript = await installFakeDate(FAKE_YESTERDAY_MS + msFromYesterday);
+  await commonPage.refresh();
+  await modalPage.submit();
+};
+
+const restoreClockAndRefresh = async () => {
+  if (clockScript) {
+    await clockScript.remove();
+    clockScript = undefined;
+  }
+  await commonPage.refresh();
+  await commonPage.waitForPageLoaded();
+};
+
+/**
+ * Drive the visibilitychange handler so the buffer flushes to the per-day DB
+ */
+const triggerVisibilityChange = async () => {
+  await browser.execute(() => {
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+    window.dispatchEvent(new Event('visibilitychange'));
+  });
+  await browser.execute(() => {
+    Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+  });
+};
+
+const getInteractionMetaDocs = () => browser.execute(async () => {
+  const metaDb = window.CHTCore.DB.get({ meta: true });
+  const response = await metaDb.allDocs({
     include_docs: true,
-    startkey: INTERACTION_DOC_PREFIX,
-    endkey: `${INTERACTION_DOC_PREFIX}\ufff0`,
-  };
+    startkey: 'interaction-',
+    endkey: 'interaction-\ufff0',
+  });
+  return response.rows.map(row => row.doc);
+});
+
+const getInteractionMetaDocsFromServer = async ({ username }) => {
   const metaDocs = await utils.requestOnTestMetaDb({
     userName: username,
     path: '/_all_docs',
-    qs,
+    qs: {
+      include_docs: true,
+      startkey: INTERACTION_DOC_PREFIX,
+      endkey: `${INTERACTION_DOC_PREFIX}\ufff0`,
+    },
   });
   return metaDocs.rows.map(({ doc }) => doc);
 };
 
-const clearInteractionDocsFromMetaDb = async ({ username }) => {
-  const docs = await getInteractionDocsFromMetaDb({ username });
-  docs.forEach(doc => doc._deleted = true);
-  await utils.requestOnTestMetaDb({ userName: username, path: '/_bulk_docs', method: 'POST', body: { docs } });
+/**
+ * Wait for init()'s aggregation to surface the aggregate in the local meta DB.
+ */
+const waitForAggregateDoc = async (username, timeout = 10000) => {
+  let aggregate;
+  await browser.waitUntil(async () => {
+    const docs = await getInteractionMetaDocs();
+    aggregate = docs.find(d => d.type === 'interaction-log' && d.metadata?.user === username);
+    return !!aggregate;
+  }, { timeout, interval: 200, timeoutMsg: 'Aggregate doc never appeared in meta DB' });
+  return aggregate;
 };
 
-const getInteractionDocFromBrowser = async (expectedCount = 1) => {
-  await browser.pause(100);
-  const result = await browser.execute(async (INTERACTION_DOC_PREFIX) => {
-    const metaDb = window.CHTCore.DB.get({ meta: true });
-    return await metaDb.allDocs({
-      include_docs: true,
-      startkey: INTERACTION_DOC_PREFIX,
-      endkey: `${INTERACTION_DOC_PREFIX}\ufff0`
+const todayDbExistsForUser = async (username) => browser.execute(async (un) => {
+  const dbs = (await window.indexedDB.databases()) || [];
+  return dbs.some(d => d.name?.startsWith('_pouch_interaction-') && d.name.endsWith(`-${un}`));
+}, username);
+
+// Submitted home_visits mark the patient's `person_create` task as completed,
+// so tests inherit a shrinking list unless we wipe task docs between tests.
+// Replication after re-login pulls down the cleared state and the rules engine
+// regenerates fresh tasks from the unchanged report history.
+const deleteTaskDocs = async () => {
+  const result = await utils.requestOnTestDb({ path: '/_all_docs?include_docs=true' });
+  const ids = result.rows
+    .filter(r => r.doc?.type === 'task')
+    .map(r => r.id);
+  if (ids.length) {
+    await utils.deleteDocs(ids);
+  }
+};
+
+// Aggregate docs in the user's server meta DB replicate back on every login,
+// so without wiping them each test would see the previous test's aggregate
+// (first match wins in waitForAggregateDoc).
+const deleteServerInteractionDocs = async (username) => {
+  try {
+    const docs = await getInteractionMetaDocsFromServer({ username });
+    if (!docs.length) {
+      return;
+    }
+    await utils.requestOnTestMetaDb({
+      userName: username,
+      path: '/_bulk_docs',
+      method: 'POST',
+      body: { docs: docs.map(d => ({ _id: d._id, _rev: d._rev, _deleted: true })) },
     });
-  }, INTERACTION_DOC_PREFIX);
+  } catch (err) {
+    if (err.status === 404) {
+      return;
+    }
+    throw err;
+  }
 
-  expect(result.rows.length).to.equal(
-    expectedCount,
-    `different than ${expectedCount} interaction docs found in the browser meta db`
-  );
-  return result.rows[0]?.doc;
 };
 
-const triggerVisibilityChange = async () => {
-  await browser.execute(() => {
-    Object.defineProperty(document, 'hidden', { value: true, writable: true, configurable: true });
-    window.dispatchEvent(new Event('visibilitychange'));
+// Production timestamps are ms-precise so events sort chronologically by
+// timestamp; the frozen-clock test gives every event the same timestamp, so
+// normalize both sides by (action, ref, detail) before deep-equal.
+const sortEvents = (events) => events.slice().sort((a, b) => {
+  const k = (e) => `${e.action}|${e.ref ?? ''}|${e.detail ?? ''}`;
+  return k(a).localeCompare(k(b));
+});
+
+const expectAggregateEqual = (actual, expected) => {
+  const normalize = (agg) => ({
+    ...agg,
+    sessions: (agg.sessions || []).map(s => ({ ...s, events: sortEvents(s.events) })),
   });
-  await browser.pause(1000);
-  await browser.execute(() => {
-    Object.defineProperty(document, 'hidden', { value: false, writable: true, configurable: true });
-  });
-  await browser.pause(1000);
+  expect(normalize(actual)).excludingEvery(NON_DETERMINISTIC_FIELDS).to.deep.equal(normalize(expected));
 };
 
 describe('Interaction Tracking', () => {
@@ -78,11 +186,13 @@ describe('Interaction Tracking', () => {
     role: 'chw'
   });
 
+  // Anchor reported_date to fake yesterday so the task config's
+  // [reported_date - 3d, reported_date + 7d] window includes FAKE_YESTERDAY_MS.
   const patients = Array.from({ length: 6 }, (_, i) => personFactory.build({
     name: `Patient Interaction ${i + 1}`,
     patient_id: `patient_interaction_${i + 1}`,
     parent: clinic,
-    reported_date: Date.now(),
+    reported_date: FAKE_YESTERDAY_MS,
   }));
 
   const chw = userFactory.build({
@@ -104,33 +214,30 @@ describe('Interaction Tracking', () => {
     await sentinelUtils.waitForSentinel();
   });
 
-  describe('when can_track_task_interactions permission is disabled', () => {
-    before(async () => {
-      await utils.updatePermissions(['chw'], [], ['can_track_task_interactions'], { ignoreReload: true });
-      await loginPage.login(chw);
-    });
-
+  describe('when can_track_task_interactions permission is denied', () => {
     beforeEach(async () => {
+      await deleteTaskDocs();
+      await deleteServerInteractionDocs(chw.username);
+      await loginPage.login(chw);
+      await installClockYesterday();
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
     });
 
-    after(async () => {
+    afterEach(async () => {
       await commonPage.reloadSession();
-      await clearInteractionDocsFromMetaDb(chw);
     });
 
-    it('should not record interaction logs when permission is denied', async () => {
+    it('does not create a per-day DB or write any meta doc', async () => {
       await tasksPage.openTaskByIndex(0);
-
       await triggerVisibilityChange();
 
-      const interactionDoc = await getInteractionDocFromBrowser(0);
-      expect(interactionDoc).to.not.exist;
+      expect(await todayDbExistsForUser(chw.username)).to.equal(false);
+      expect(await getInteractionMetaDocs()).to.deep.equal([]);
     });
   });
 
-  describe('when task_group permission is enabled', () => {
+  describe('when can_track_task_interactions is enabled and task_group is enabled', () => {
     before(async () => {
       await utils.updatePermissions(
         ['chw'],
@@ -138,24 +245,25 @@ describe('Interaction Tracking', () => {
         [],
         { ignoreReload: true }
       );
-      await loginPage.login(chw);
     });
 
     beforeEach(async () => {
+      await deleteTaskDocs();
+      await deleteServerInteractionDocs(chw.username);
+      await loginPage.login(chw);
+      await installClockYesterday();
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
     });
 
-    after(async () => {
+    afterEach(async () => {
       await commonPage.reloadSession();
-      await clearInteractionDocsFromMetaDb(chw);
     });
 
-    it('should record task interactions in order with expected event structure', async () => {
+    it('records the full task→submit→group flow into a single-session aggregate', async () => {
       await tasksPage.openTaskByIndex(0);
       await genericForm.submitForm();
 
-      // tasks group is displayed
       await tasksPage.waitForTasksGroupLoaded();
       const groupTasks = await tasksPage.getTasksInGroup();
       expect(groupTasks.length).to.equal(5);
@@ -163,199 +271,238 @@ describe('Interaction Tracking', () => {
       await tasksPage.waitForTaskContentLoaded('Home Visit');
       await genericForm.submitForm();
 
-      // we can also navigate to another page to trigger the flush, but at this point task group is open
-      // this means that navigating away will open a popup, and dealing with it has the potential of making
-      // this test flaky. so opting for the visibility change trigger here.
       await triggerVisibilityChange();
+      await restoreClockAndRefresh();
 
-      const interactionDoc = await getInteractionDocFromBrowser();
-
-      const lastSession = interactionDoc.sessions[interactionDoc.sessions.length - 1];
-      expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '6' },
-        { action: 'task:open', ref: 'person_create', detail: '0' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task:form_save', ref: 'home_visit' },
-        { action: 'task:complete', ref: 'home_visit' },
-        { action: 'task_group:show', detail: '5' },
-        { action: 'task_group:select', ref: 'person_create' },
-        { action: 'task_group:leave' },
-        { action: 'task:open', ref: 'person_create', detail: '0' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task:form_save', ref: 'home_visit' },
-        { action: 'task:complete', ref: 'home_visit' },
-        { action: 'task_group:show', detail: '4' },
-      ]);
+      const aggregate = await waitForAggregateDoc(chw.username);
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [{
+          session: 'tasks',
+          startedAt: FAKE_YESTERDAY_MS,
+          events: [
+            { action: 'task_list:open', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task_list:loaded', timestamp: FAKE_YESTERDAY_MS, detail: '6' },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '0' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:form_save', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:complete', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task_group:show', timestamp: FAKE_YESTERDAY_MS, detail: '5' },
+            { action: 'task_group:select', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create' },
+            { action: 'task_group:leave', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '0' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:form_save', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:complete', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task_group:show', timestamp: FAKE_YESTERDAY_MS, detail: '4' },
+          ],
+        }],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
+      });
     });
   });
 
-  describe('when task_group is disabled', () => {
+  describe('when can_track_task_interactions is enabled and task_group is disabled', () => {
     before(async () => {
       await utils.updatePermissions(
         ['chw'],
         ['can_track_task_interactions'],
-        ['can_view_tasks_group'], // inconsistent task sorting can make tests inconsistent
+        ['can_view_tasks_group'], // inconsistent task sorting can make tests flaky
         { ignoreReload: true }
       );
-      await loginPage.login(chw);
     });
 
     beforeEach(async () => {
+      await deleteTaskDocs();
+      await deleteServerInteractionDocs(chw.username);
+      await loginPage.login(chw);
+      await installClockYesterday();
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
     });
 
-    after(async () => {
+    afterEach(async () => {
       await commonPage.reloadSession();
-      await clearInteractionDocsFromMetaDb(chw);
     });
 
-    it('should record task interactions in order with expected event structure', async () => {
+    it('records a single-session\'s worth of events with the right shape', async () => {
       await tasksPage.scrollTaskList();
       await tasksPage.openTaskByIndex(0);
       await genericForm.submitForm();
       await commonPage.waitForPageLoaded();
       await tasksPage.openTaskByIndex(1);
 
+      // Navigating away ends the session and drains the buffer.
       await commonPage.goToMessages();
+      await restoreClockAndRefresh();
 
-      await commonPage.goToTasks();
-
-      const interactionDoc = await getInteractionDocFromBrowser();
-
-      expect(interactionDoc._id).to.include(
-        `${INTERACTION_DOC_PREFIX}${moment().format('YYYY-MM-DD')}-${chw.username}`
-      );
-      expect(interactionDoc.type).to.equal('interaction-log');
-
-      expect(interactionDoc.metadata.user).to.equal(chw.username);
-      expect(interactionDoc.metadata.deviceId).to.be.a('string').and.not.be.empty;
-      expect(interactionDoc.metadata.date).to.be.a('string');
-      expect(interactionDoc.metadata.versions).to.be.an('array').with.lengthOf.at.least(1);
-
-      // All sessions should be named 'tasks'
-      expect(interactionDoc.sessions.length).to.be.greaterThanOrEqual(1);
-      interactionDoc.sessions.forEach(session => {
-        expect(session.session).to.equal('tasks');
-        expect(session.events).to.be.an('array').and.not.be.empty;
+      const aggregate = await waitForAggregateDoc(chw.username);
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [{
+          session: 'tasks',
+          startedAt: FAKE_YESTERDAY_MS,
+          events: [
+            { action: 'task_list:open', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task_list:loaded', timestamp: FAKE_YESTERDAY_MS, detail: '4' },
+            { action: 'task_list:scroll', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '0' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:form_save', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:complete', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '1' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task_list:leave', timestamp: FAKE_YESTERDAY_MS },
+          ],
+        }],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
       });
-
-      const allEvents = interactionDoc.sessions.flatMap(s => s.events);
-
-      allEvents.forEach(event => {
-        expect(event.action).to.be.a('string');
-        expect(event.timestamp).to.be.a('number');
-      });
-
-      expect(allEvents).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '4' },
-        { action: 'task_list:scroll' },
-        { action: 'task:open', ref: 'person_create', detail: '0' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task:form_save', ref: 'home_visit' },
-        { action: 'task:complete', ref: 'home_visit' },
-        { action: 'task:open', ref: 'person_create', detail: '1' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task_list:leave' },
-      ]);
     });
 
-    it('should flush interaction logs in order when navigating away from tasks', async () => {
+    it('flushes events when navigating away from /tasks', async () => {
       await tasksPage.openTaskByIndex(0);
-
       await commonPage.goToReports();
+      await restoreClockAndRefresh();
 
-      const interactionDoc = await getInteractionDocFromBrowser();
-
-      const lastSession = interactionDoc.sessions[interactionDoc.sessions.length - 1];
-      expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '3' },
-        { action: 'task:open', ref: 'person_create', detail: '0' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task_list:leave' },
-      ]);
+      const aggregate = await waitForAggregateDoc(chw.username);
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [{
+          session: 'tasks',
+          startedAt: FAKE_YESTERDAY_MS,
+          events: [
+            { action: 'task_list:open', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task_list:loaded', timestamp: FAKE_YESTERDAY_MS, detail: '3' },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '0' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task_list:leave', timestamp: FAKE_YESTERDAY_MS },
+          ],
+        }],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
+      });
     });
 
-    it('should accumulate multiple sessions in order in the same daily document', async () => {
+    it('preserves session boundaries across multiple visits to the tasks tab', async () => {
+      // Session 1 at FAKE_YESTERDAY_MS
       await tasksPage.openTaskByIndex(0);
       await commonPage.goToReports();
 
+      // Advance the fake clock so session 2 has a distinct sessionStartedAt.
+      const SESSION_GAP_MS = 60 * 1000;
+      await advanceFakeClock(SESSION_GAP_MS);
+
+      // Session 2 at FAKE_YESTERDAY_MS + 60_000
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
-
       await tasksPage.scrollTaskList();
       await tasksPage.openTaskByIndex(1);
       await commonPage.goToMessages();
 
-      const interactionDoc = await getInteractionDocFromBrowser();
-      const lastTwoSessions = interactionDoc.sessions.slice(-2);
+      await restoreClockAndRefresh();
 
-      expect(lastTwoSessions[0].events).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '3' },
-        { action: 'task:open', ref: 'person_create', detail: '0' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task_list:leave' },
-      ]);
-
-      expect(lastTwoSessions[1].events).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '3' },
-        { action: 'task_list:scroll' },
-        { action: 'task:open', ref: 'person_create', detail: '1' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        { action: 'task_list:leave' },
-      ]);
+      const aggregate = await waitForAggregateDoc(chw.username);
+      const T1 = FAKE_YESTERDAY_MS;
+      const T2 = FAKE_YESTERDAY_MS + SESSION_GAP_MS;
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [
+          {
+            session: 'tasks',
+            startedAt: T1,
+            events: [
+              { action: 'task_list:open', timestamp: T1 },
+              { action: 'task_list:loaded', timestamp: T1, detail: '3' },
+              { action: 'task:open', timestamp: T1, ref: 'person_create', detail: '0' },
+              { action: 'task:form_open', timestamp: T1, ref: 'home_visit' },
+              { action: 'task_list:leave', timestamp: T1 },
+            ],
+          },
+          {
+            session: 'tasks',
+            startedAt: T2,
+            events: [
+              { action: 'task_list:open', timestamp: T2 },
+              { action: 'task_list:loaded', timestamp: T2, detail: '3' },
+              { action: 'task_list:scroll', timestamp: T2 },
+              { action: 'task:open', timestamp: T2, ref: 'person_create', detail: '1' },
+              { action: 'task:form_open', timestamp: T2, ref: 'home_visit' },
+              { action: 'task_list:leave', timestamp: T2 },
+            ],
+          },
+        ],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
+      });
     });
 
-    it('should flush interaction logs in order when browser tab is hidden', async () => {
+    it('flushes events when the browser tab becomes hidden', async () => {
       await tasksPage.scrollTaskList();
       await tasksPage.openTaskByIndex(2);
-
       await triggerVisibilityChange();
+      await restoreClockAndRefresh();
 
-      const interactionDoc = await getInteractionDocFromBrowser();
-
-      const lastSession = interactionDoc.sessions[interactionDoc.sessions.length - 1];
-      expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '3' },
-        { action: 'task_list:scroll' },
-        { action: 'task:open', ref: 'person_create', detail: '2' },
-        { action: 'task:form_open', ref: 'home_visit' },
-      ]);
+      const aggregate = await waitForAggregateDoc(chw.username);
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [{
+          session: 'tasks',
+          startedAt: FAKE_YESTERDAY_MS,
+          events: [
+            { action: 'task_list:open', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task_list:loaded', timestamp: FAKE_YESTERDAY_MS, detail: '3' },
+            { action: 'task_list:scroll', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '2' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+          ],
+        }],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
+      });
     });
 
-    it('should flush interaction logs to the server meta db when syncing', async () => {
-      await tasksPage.openTaskByIndex(1);
+    it('replicates the aggregate doc to the server\'s users-meta DB on sync', async () => {
+      await tasksPage.openTaskByIndex(0);
+      await commonPage.goToReports();
+      await restoreClockAndRefresh();
 
-      await triggerVisibilityChange();
-      await commonPage.refresh();
-
+      // Wait for the aggregate to land locally before we attempt to sync.
+      await waitForAggregateDoc(chw.username);
       await commonPage.sync();
+      await sentinelUtils.waitForSentinel();
 
-      const interactionDocs = await getInteractionDocsFromMetaDb(chw);
-      expect(interactionDocs.length).to.equal(1);
-
-      const doc = interactionDocs.find(d => d.type === 'interaction-log');
-      expect(doc).to.not.be.undefined;
-      expect(doc.metadata.user).to.equal(chw.username);
-      expect(doc.sessions).to.have.lengthOf.at.least(1);
-
-      const lastSession = doc.sessions[doc.sessions.length - 1];
-      expect(lastSession.events).excludingEvery('timestamp').to.deep.equal([
-        { action: 'task_list:open' },
-        { action: 'task_list:loaded', detail: '3' },
-        { action: 'task_list:scroll' },
-        { action: 'task:open', ref: 'person_create', detail: '2' },
-        { action: 'task:form_open', ref: 'home_visit' },
-        // ^ generated by the test before, the session continued after visibility was restored
-        { action: 'task:open', ref: 'person_create', detail: '1' },
-        { action: 'task:form_open', ref: 'home_visit' },
-      ]);
+      const serverDocs = await getInteractionMetaDocsFromServer({ username: chw.username });
+      const aggregate = serverDocs.find(d => d.type === 'interaction-log');
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [{
+          session: 'tasks',
+          startedAt: FAKE_YESTERDAY_MS,
+          events: [
+            { action: 'task_list:open', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task_list:loaded', timestamp: FAKE_YESTERDAY_MS, detail: '3' },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '0' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task_list:leave', timestamp: FAKE_YESTERDAY_MS },
+          ],
+        }],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
+      });
     });
   });
 });
