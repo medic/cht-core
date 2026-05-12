@@ -26,6 +26,11 @@ jobs:
     name: Deploy to demo
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Scope secrets to the `demo` GitHub environment so this workflow can only
+    # access deployment credentials when running against the demo target. This
+    # satisfies the zizmor `secrets-outside-env` audit and limits the blast
+    # radius if the workflow is ever misused.
+    environment: demo
     env:
       INPUT_TAG: ${{ github.event.inputs.tag }}
 
