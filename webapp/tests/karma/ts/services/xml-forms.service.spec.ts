@@ -1382,7 +1382,7 @@ describe('XmlForms service', () => {
         const options = dbQuery.args[0][0];
         expect(options.include_docs).to.equal(true);
         expect(options.start_key).to.equal('form:');
-        expect(options.end_key).to.equal('form:￰');
+        expect(options.end_key).to.equal('form:\ufff0');
       });
     });
 

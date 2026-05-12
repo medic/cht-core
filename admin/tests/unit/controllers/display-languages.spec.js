@@ -122,7 +122,7 @@ describe('Display Languages controller', function() {
 
     chai.expect(db.allDocs.firstCall.args[0]).to.deep.equal({
       start_key: 'messages-',
-      end_key: 'messages-￰',
+      end_key: 'messages-\ufff0',
       include_docs: true,
     });
     chai.expect(scope.languagesModel.totalTranslations).to.equal(5);

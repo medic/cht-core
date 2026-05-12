@@ -696,7 +696,7 @@ const getDefaultForms = async () => {
   } catch {
     const result = await db.allDocs({
       startkey: PREFIXES.FORM,
-      endkey: PREFIXES.FORM + '￰',
+      endkey: PREFIXES.FORM + '\ufff0',
     });
     const doc = {
       _id: docName,
@@ -887,7 +887,7 @@ const getAllUserSettings = () => db
   .allDocs({
     include_docs: true,
     start_key: PREFIXES.COUCH_USER,
-    end_key: PREFIXES.COUCH_USER + '￰',
+    end_key: PREFIXES.COUCH_USER + '\ufff0',
   })
   .then(response => response.rows.map(row => row.doc));
 

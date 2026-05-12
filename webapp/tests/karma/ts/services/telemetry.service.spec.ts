@@ -233,7 +233,7 @@ describe('TelemetryService', () => {
           build_info: { version: '3.0.0' }
         });
       medicDb.allDocs
-        .withArgs({ start_key: 'form:', end_key: 'form:￰', include_docs: true })
+        .withArgs({ start_key: 'form:', end_key: 'form:\ufff0', include_docs: true })
         .resolves({
           rows: [
             {
@@ -326,7 +326,7 @@ describe('TelemetryService', () => {
       expect(formsAllDocsCalls.length).to.equal(2);
       expect(formsAllDocsCalls[0].args[0]).to.deep.equal({
         start_key: 'form:',
-        end_key: 'form:￰',
+        end_key: 'form:\ufff0',
         include_docs: true,
       });
       expect(telemetryDb.destroy.calledTwice).to.be.true;
@@ -465,7 +465,7 @@ describe('TelemetryService', () => {
         }
       });
       medicDb.allDocs
-        .withArgs({ start_key: 'form:', end_key: 'form:￰', include_docs: true })
+        .withArgs({ start_key: 'form:', end_key: 'form:\ufff0', include_docs: true })
         .resolves({ rows: [] });
       medicDb.allDocs
         .withArgs({ key: 'settings' })

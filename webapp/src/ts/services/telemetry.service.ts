@@ -72,7 +72,7 @@ export class TelemetryService {
         this.dbService.get().get('_design/medic-client'),
         this.dbService.get().allDocs({
           start_key: PREFIXES.FORM,
-          end_key: PREFIXES.FORM + '￰',
+          end_key: PREFIXES.FORM + '\ufff0',
           include_docs: true,
         }),
         this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })

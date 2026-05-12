@@ -60,7 +60,7 @@ describe('DisplayTranslationsCtrl controller', function() {
     chai.expect(allDocsStub.firstCall.args).to.deep.equal([
       {
         start_key: 'messages-',
-        end_key: 'messages-￰',
+        end_key: 'messages-\ufff0',
         include_docs: true,
       }
     ]);

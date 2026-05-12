@@ -116,7 +116,7 @@ const queryDocs = (db, view, key) => db
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getAllUserSettings = () => db.medic
-  .allDocs({ include_docs: true, start_key: USER_PREFIX, end_key: USER_PREFIX + '￰' })
+  .allDocs({ include_docs: true, start_key: USER_PREFIX, end_key: USER_PREFIX + '\ufff0' })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getSettingsByIds = async (ids) => {
@@ -127,7 +127,7 @@ const getSettingsByIds = async (ids) => {
 };
 
 const getAllUsers = async () => db.users
-  .allDocs({ include_docs: true, start_key: USER_PREFIX, end_key: USER_PREFIX + '￰' })
+  .allDocs({ include_docs: true, start_key: USER_PREFIX, end_key: USER_PREFIX + '\ufff0' })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getUsers = async (facilityId, contactId) => {

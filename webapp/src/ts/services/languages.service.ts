@@ -24,7 +24,7 @@ export class LanguagesService {
       .get()
       .allDocs({
         start_key: PREFIXES.TRANSLATIONS,
-        end_key: PREFIXES.TRANSLATIONS + '￰',
+        end_key: PREFIXES.TRANSLATIONS + '\ufff0',
         include_docs: true,
       });
 
