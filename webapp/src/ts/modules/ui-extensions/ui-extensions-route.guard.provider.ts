@@ -2,7 +2,7 @@ import { CanActivate, ActivatedRouteSnapshot } from '@angular/router';
 import { Injectable } from '@angular/core';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 
-const ALLOWED_TYPES = new Set(['app_main_tab', 'app_drawer_tab']);
+const ALLOWED_TYPES = new Set(['header_tab', 'sidebar_tab']);
 
 @Injectable({
   providedIn: 'root'

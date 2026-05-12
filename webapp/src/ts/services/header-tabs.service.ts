@@ -83,7 +83,7 @@ export class HeaderTabsService {
   }
 
   private async getUiExtensionTabs() {
-    const extensions = await this.uiExtensionsService.getPropertiesByType('app_main_tab');
+    const extensions = await this.uiExtensionsService.getPropertiesByType('header_tab');
     return extensions.map(ext => ({
       name: `ui-extension-${ext.id}`,
       route: `ui-extensions/${ext.id}`,

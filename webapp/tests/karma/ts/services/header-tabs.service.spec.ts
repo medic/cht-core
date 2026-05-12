@@ -324,7 +324,7 @@ describe('HeaderTabs service', () => {
     it('should append UI extension tabs after the default tabs', async () => {
       authService.has.returns(true);
       uiExtensionsService.getPropertiesByType
-        .withArgs('app_main_tab')
+        .withArgs('header_tab')
         .resolves([
           { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1' },
           { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
@@ -376,7 +376,7 @@ describe('HeaderTabs service', () => {
 
     it('should include UI extensions even when no default tabs are authorized', async () => {
       authService.has.returns(false);
-      uiExtensionsService.getPropertiesByType.withArgs('app_main_tab').resolves([
+      uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
         { id: 'ext', title: 'Extension', icon: 'fa-icon' },
       ]);
 
@@ -398,7 +398,7 @@ describe('HeaderTabs service', () => {
 
     it('should return UI extension tab as primary when no default tabs are authorized', async () => {
       authService.has.returns(false);
-      uiExtensionsService.getPropertiesByType.withArgs('app_main_tab').resolves([
+      uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
         { id: 'ext', title: 'Extension', icon: 'fa-icon' },
       ]);
 
