@@ -11,7 +11,6 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 import { CONTACT_TYPES } from '@medic/constants';
 
-
 const DEFAULT_FORM_ID = 'cht-form-id';
 
 @Component({

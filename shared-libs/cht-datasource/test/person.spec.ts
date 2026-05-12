@@ -13,7 +13,7 @@ import { CONTACT_TYPES } from '@medic/constants';
 
 const { PERSON } = CONTACT_TYPES;
 
-describe(PERSON, () => {
+describe('person', () => {
   const dataContext = {} as DataContext;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;

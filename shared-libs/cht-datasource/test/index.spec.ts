@@ -46,7 +46,7 @@ describe('CHT Script API - getDatasource', () => {
     beforeEach(() => v1 = datasource.v1);
 
     it('contains expected keys', () => expect(v1).to.have.all.keys([
-      'contact', 'hasPermissions', 'hasAnyPermission', PERSON, 'place', 'report', 'target'
+      'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report', 'target'
     ]));
 
     it('hasPermissions', () => {
@@ -193,7 +193,7 @@ describe('CHT Script API - getDatasource', () => {
       });
     });
 
-    describe(PERSON, () => {
+    describe('person', () => {
       let person: typeof v1.person;
 
       beforeEach(() => person = v1.person);
