@@ -24,6 +24,7 @@ export class HeaderTabsService {
       typeName: 'message',
       icon: undefined,
       resourceIcon: undefined,
+      weight: 1,
     },
     {
       name: 'tasks',
@@ -34,6 +35,7 @@ export class HeaderTabsService {
       typeName: 'task',
       icon: undefined,
       resourceIcon: undefined,
+      weight: 2,
     },
     {
       name: 'reports',
@@ -44,6 +46,7 @@ export class HeaderTabsService {
       typeName: 'report',
       icon: undefined,
       resourceIcon: undefined,
+      weight: 3,
     },
     {
       name: 'contacts',
@@ -53,6 +56,7 @@ export class HeaderTabsService {
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      weight: 4,
     },
     {
       name: 'analytics',
@@ -62,8 +66,11 @@ export class HeaderTabsService {
       permissions: ['can_view_analytics', 'can_view_analytics_tab'],
       icon: undefined,
       resourceIcon: undefined,
+      weight: 5,
     }
   ];
+
+  private readonly DEFAULT_UI_EXTENSION_WEIGHT = 6;
 
   private tabs?: HeaderTab[];
 
@@ -74,7 +81,8 @@ export class HeaderTabsService {
       return {
         ...tab,
         icon: tabSettings?.icon?.startsWith('fa-') ? tabSettings.icon : tab.icon,
-        resourceIcon: tabSettings?.resource_icon ? tabSettings.resource_icon : tab.resourceIcon
+        resourceIcon: tabSettings?.resource_icon ? tabSettings.resource_icon : tab.resourceIcon,
+        weight: tabSettings?.weight ?? tab.weight
       };
     });
 
@@ -91,7 +99,8 @@ export class HeaderTabsService {
       translation: ext.title!,
       permissions: [], // Extensions are already filtered by role in getPropertiesByType
       resourceIcon: ext.resource_icon,
-      icon: ext.icon
+      icon: ext.icon,
+      weight: ext.weight ?? this.DEFAULT_UI_EXTENSION_WEIGHT
     }));
   }
 
@@ -106,7 +115,7 @@ export class HeaderTabsService {
         this.getHeaderTabs(),
         this.getUiExtensionTabs()
       ]);
-      this.tabs = [...headerTabs, ...uiExtensionTabs];
+      this.tabs = [...headerTabs, ...uiExtensionTabs].sort((a, b) => a.weight - b.weight);
     }
 
     return this.tabs;
@@ -133,4 +142,5 @@ export interface HeaderTab {
   typeName?: string;
   icon?: string;
   resourceIcon?: string;
+  weight: number;
 }

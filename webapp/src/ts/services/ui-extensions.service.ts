@@ -13,6 +13,7 @@ interface UiExtensionProperties {
   readonly title?: string;
   readonly config?: Record<string, unknown>;
   readonly accent_color?: string;
+  readonly weight?: number;
 }
 
 interface UiExtension {
@@ -70,7 +71,20 @@ export class UiExtensionsService {
 
   async getPropertiesByType(type: string): Promise<UiExtensionProperties[]> {
     await this.init();
-    return this.extensionProperties.filter(extension => extension.type === type);
+    return this.extensionProperties
+      .filter(extension => extension.type === type)
+      .sort((a, b) => {
+        if (a.weight !== undefined && b.weight !== undefined) {
+          return a.weight - b.weight;
+        }
+        if (a.weight !== undefined) {
+          return -1;
+        }
+        if (b.weight !== undefined) {
+          return 1;
+        }
+        return a.id.localeCompare(b.id);
+      });
   }
 
   async getProperties(id: string): Promise<UiExtensionProperties> {
