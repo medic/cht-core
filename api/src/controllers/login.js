@@ -380,7 +380,22 @@ const validatePasswordReset = (password) => {
 };
 
 const validateSession = async (req) => {
-  const sessionRes = await createSession(req);
+  let sessionRes = await createSession(req);
+  if (sessionRes.status === 401) {
+    const user = req.body.user;
+    const lowercasedUser = user && user.toLowerCase();
+    if (lowercasedUser && lowercasedUser !== user) {
+      // try fallback with lowercase
+      const originalUser = req.body.user;
+      req.body.user = lowercasedUser;
+      sessionRes = await createSession(req);
+      if (sessionRes.status !== 200) {
+        // restore original user if fallback also failed, so error handling uses it
+        req.body.user = originalUser;
+      }
+    }
+  }
+
   if (sessionRes.status !== 200) {
     const error = new Error('Not logged in');
     error.status = sessionRes.status;

@@ -133,7 +133,7 @@ const translate = () => {
 };
 
 const getUsername = function() {
-  return document.getElementById('user')?.value.toLowerCase().trim();
+  return document.getElementById('user')?.value.trim();
 };
 
 const getRedirectUrl = function() {
