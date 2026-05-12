@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml"
+        xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:jr="http://openrosa.org/javarosa">
+  <h:head>
+    <h:title>db-doc-multi-file-upload</h:title>
+
+    <model>
+      <instance>
+        <db-doc-multi-file-upload id="db-doc-multi-file-upload">
+          <name/>
+          <main_photo/>
+          <sub_doc_a db-doc="true">
+            <type>sub_record_a</type>
+            <photo_a/>
+          </sub_doc_a>
+          <sub_doc_a_ref db-doc-ref="/db-doc-multi-file-upload/sub_doc_a"/>
+          <sub_doc_b db-doc="true">
+            <type>sub_record_b</type>
+            <photo_b/>
+          </sub_doc_b>
+          <sub_doc_b_ref db-doc-ref="/db-doc-multi-file-upload/sub_doc_b"/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </db-doc-multi-file-upload>
+      </instance>
+
+      <bind nodeset="/db-doc-multi-file-upload/name" type="string"/>
+      <bind nodeset="/db-doc-multi-file-upload/main_photo" type="binary"/>
+      <bind nodeset="/db-doc-multi-file-upload/sub_doc_a/photo_a" type="binary"/>
+      <bind nodeset="/db-doc-multi-file-upload/sub_doc_b/photo_b" type="binary"/>
+    </model>
+  </h:head>
+
+  <h:body>
+    <input ref="/db-doc-multi-file-upload/name">
+      <label>Name</label>
+    </input>
+    <upload ref="/db-doc-multi-file-upload/main_photo" mediatype="image/*">
+      <label>Main photo</label>
+    </upload>
+    <upload ref="/db-doc-multi-file-upload/sub_doc_a/photo_a" mediatype="image/*">
+      <label>Sub doc A photo</label>
+    </upload>
+    <upload ref="/db-doc-multi-file-upload/sub_doc_b/photo_b" mediatype="image/*">
+      <label>Sub doc B photo</label>
+    </upload>
+  </h:body>
+</h:html>
