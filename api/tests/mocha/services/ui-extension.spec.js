@@ -14,6 +14,16 @@ describe('UI Extension service', () => {
 
   afterEach(() => sinon.restore());
 
+  describe('isExtensionChange', () => {
+    it('is falsy for unrelated doc', () => {
+      expect(service.isExtensionChange({ id: 'some-other-doc' })).to.be.false;
+    });
+
+    it('returns true for a ui-extension doc', () => {
+      expect(service.isExtensionChange({ id: 'ui-extension:my-ext' })).to.be.true;
+    });
+  });
+
   describe('getScript', () => {
     it('handles undefined doc', async () => {
       dbGet.resolves(undefined);

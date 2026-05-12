@@ -13,6 +13,8 @@ const getExtensionDoc = (name) => {
 };
 
 module.exports = {
+  isExtensionChange: ({ id }) => id.startsWith(PREFIX),
+
   getScript: async (name) => {
     const doc = await getExtensionDoc(name);
     const attachment = doc?._attachments?.['extension.js'];
