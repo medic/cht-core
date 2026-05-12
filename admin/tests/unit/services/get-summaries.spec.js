@@ -1,4 +1,4 @@
-const { DOC_TYPES: docTypes } = require('@medic/constants');
+
 
 describe('GetSummaries service', () => {
 
@@ -82,7 +82,7 @@ describe('GetSummaries service', () => {
         { doc: {
           _id: 'a',
           _rev: '1',
-          type: docTypes.DATA_RECORD,
+          type: 'data_record',
           form: 'delivery',
           from: '+123',
           contact: {
@@ -105,7 +105,7 @@ describe('GetSummaries service', () => {
         { doc: {
           _id: 'b',
           _rev: '2',
-          type: docTypes.DATA_RECORD,
+          type: 'data_record',
           form: 'registration',
           sent_by: '+321',
           errors: [ { code: 'sys.missing_fields', fields: [ 'patient_id' ] } ],
@@ -181,7 +181,7 @@ describe('GetSummaries service', () => {
         { doc: {
           _id: 'b',
           _rev: '2',
-          type: docTypes.CONTACT,
+          type: 'contact',
           contact_type: 'patient',
           phone: '+123',
           parent: {
@@ -215,7 +215,7 @@ describe('GetSummaries service', () => {
             _rev: '2',
             name: '+123',
             phone: '+123',
-            type: docTypes.CONTACT,
+            type: 'contact',
             contact_type: 'patient',
             contact: undefined,
             lineage: [ 'f', 'g' ],

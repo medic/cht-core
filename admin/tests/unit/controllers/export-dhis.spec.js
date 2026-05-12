@@ -1,4 +1,4 @@
-const { DOC_TYPES: docTypes } = require('@medic/constants');
+
 
 describe('dhis2 export controller', () => {
   const { expect } = chai;
@@ -102,7 +102,7 @@ describe('dhis2 export controller', () => {
     id: `contact-${name}`,
     doc: Object.assign({
       _id: `contact-${name}`,
-      type: docTypes.CONTACT,
+      type: 'contact',
       contact_type: 'person',
       name,
       dhis: {
