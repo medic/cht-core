@@ -129,7 +129,9 @@ export class GeolocationService {
       }
       this.finalise();
 
-      return this.deferred.promise;
+      const promise = this.deferred.promise;
+      this.deferred = null;
+      return promise;
     };
 
     complete.cancel = this.stopWatching.bind(this);

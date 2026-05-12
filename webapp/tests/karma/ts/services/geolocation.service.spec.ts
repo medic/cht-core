@@ -179,6 +179,38 @@ describe('Geolocation service', () => {
       });
     });
 
+    it('discards late GPS success callback after form submission', async () => {
+      const position = {
+        latitude: 1,
+        longitude: 2,
+        altitude: 3,
+        accuracy: 4,
+        altitudeAccuracy: 5,
+        heading: 6,
+        speed: 7,
+      };
+      let successFn;
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(success => {
+        successFn = success;
+      });
+
+      const complete = service.init();
+      const result = await complete();
+
+      expect(result).to.deep.equal({
+        code: -1,
+        message: 'Geolocation not yet acquired',
+      });
+      expect(Telemetry.record.callCount).to.equal(1);
+      expect(Telemetry.record.args[0][0]).to.equal('geolocation:failure:-1');
+
+      successFn({ coords: position });
+
+      expect(Telemetry.record.callCount).to.equal(1);
+      expect(Telemetry.record.args[0][0]).to.equal('geolocation:failure:-1');
+    });
+
     it('should resolve immediately when watcher never calls any callback', () => {
       window.navigator.geolocation.watchPosition = sinon.stub();
 
