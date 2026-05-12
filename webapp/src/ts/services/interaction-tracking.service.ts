@@ -59,7 +59,7 @@ export class InteractionTrackingService {
   );
 
   private static readonly DB_NAME_USER_PATTERN = new RegExp(
-    `^${InteractionTrackingService.PREFIX}-\\d{4}-\\d{1,2}-\\d{1,2}-(.+)$`
+    String.raw`^${InteractionTrackingService.PREFIX}-\d{4}-\d{1,2}-\d{1,2}-(.+)$`
   );
 
   private currentSession: string | null = null;
@@ -75,7 +75,7 @@ export class InteractionTrackingService {
 
   private enabled = false;
   private user!: string;
-  private windowRef;
+  private readonly windowRef;
 
   constructor(
     private readonly authService: AuthService,
@@ -147,38 +147,44 @@ export class InteractionTrackingService {
    * persisted in batches at threshold, on endSession(), or on visibilitychange.
    */
   record(action: string, ref?: string, detail?: string): void {
-    if (!this.enabled || !this.currentSession || this.sessionStartedAt === null) {
+    if (!this.canRecord()) {
       return;
     }
-
     const eventKey = `${action}|${ref ?? ''}|${detail ?? ''}`;
     if (eventKey === this.lastEventKey) {
       return;
     }
-
     const currentDay = this.getCurrentDay();
-
-    if (this.currentDayKey !== currentDay.formatted) {
-      this.persistBuffer();
-    }
-
-    if (this.persistedEventCount + this.buffer.length >= InteractionTrackingService.MAX_EVENTS_PER_DAY) {
+    if (!this.hasCapacity(currentDay)) {
       return;
     }
-
-    this.buffer.push({
-      action,
-      timestamp: currentDay.now,
-      session: this.currentSession,
-      sessionStartedAt: this.sessionStartedAt,
-      ...(ref ? { ref } : {}),
-      ...(detail ? { detail } : {}),
-    });
+    this.appendEvent(action, currentDay, ref, detail);
     this.lastEventKey = eventKey;
-
     if (this.buffer.length >= InteractionTrackingService.BUFFER_FLUSH_THRESHOLD) {
       this.persistBuffer();
     }
+  }
+
+  private canRecord(): boolean {
+    return this.enabled && !!this.currentSession && this.sessionStartedAt !== null;
+  }
+
+  private hasCapacity(currentDay: Day): boolean {
+    if (this.currentDayKey !== currentDay.formatted) {
+      this.persistBuffer();
+    }
+    return this.persistedEventCount + this.buffer.length < InteractionTrackingService.MAX_EVENTS_PER_DAY;
+  }
+
+  private appendEvent(action: string, currentDay: Day, ref?: string, detail?: string): void {
+    this.buffer.push({
+      action,
+      timestamp: currentDay.now,
+      session: this.currentSession!,
+      sessionStartedAt: this.sessionStartedAt!,
+      ...(ref ? { ref } : {}),
+      ...(detail ? { detail } : {}),
+    });
   }
 
   /**
@@ -284,7 +290,7 @@ export class InteractionTrackingService {
   }
 
   private dbBelongsToUser(dbName: string, userSuffix: string): boolean {
-    const match = dbName.match(InteractionTrackingService.DB_NAME_USER_PATTERN);
+    const match = InteractionTrackingService.DB_NAME_USER_PATTERN.exec(dbName);
     return match?.[1] === userSuffix;
   }
 
@@ -318,26 +324,35 @@ export class InteractionTrackingService {
   private groupBySession(docs: any[]): InteractionSession[] {
     const map = new Map<number, InteractionSession>();
     for (const doc of docs) {
-      if (!doc || typeof doc.sessionStartedAt !== 'number') {
-        continue;
-      }
-      let entry = map.get(doc.sessionStartedAt);
-      if (!entry) {
-        entry = { session: doc.session, startedAt: doc.sessionStartedAt, events: [] };
-        map.set(doc.sessionStartedAt, entry);
-      }
-      const event: InteractionEvent = { action: doc.action, timestamp: doc.timestamp };
-      if (doc.ref) {
-        event.ref = doc.ref;
-      }
-      if (doc.detail) {
-        event.detail = doc.detail;
-      }
-      entry.events.push(event);
+      this.addDocToSessions(map, doc);
     }
-    const sessions = [...map.values()].sort((a, b) => a.startedAt - b.startedAt);
+    const sessions = [...map.values()];
+    sessions.sort((a, b) => a.startedAt - b.startedAt);
     sessions.forEach(s => s.events.sort((a, b) => a.timestamp - b.timestamp));
     return sessions;
+  }
+
+  private addDocToSessions(map: Map<number, InteractionSession>, doc: any): void {
+    if (!doc || typeof doc.sessionStartedAt !== 'number') {
+      return;
+    }
+    let entry = map.get(doc.sessionStartedAt);
+    if (!entry) {
+      entry = { session: doc.session, startedAt: doc.sessionStartedAt, events: [] };
+      map.set(doc.sessionStartedAt, entry);
+    }
+    entry.events.push(this.toEventFromDoc(doc));
+  }
+
+  private toEventFromDoc(doc: any): InteractionEvent {
+    const event: InteractionEvent = { action: doc.action, timestamp: doc.timestamp };
+    if (doc.ref) {
+      event.ref = doc.ref;
+    }
+    if (doc.detail) {
+      event.detail = doc.detail;
+    }
+    return event;
   }
 
   private async buildAggregateDoc(dbName: string, sessions: InteractionSession[]): Promise<InteractionLogDoc> {
