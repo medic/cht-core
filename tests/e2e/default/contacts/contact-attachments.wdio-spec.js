@@ -34,7 +34,8 @@ describe('Contact form attachments', () => {
     icon: 'medic-person',
     create_form: 'form:contact:person_with_attachments:create',
     edit_form: 'form:contact:person_with_attachments:edit',
-    person: true
+    person: true,
+    photo_field: 'photo'
   };
 
   const translations = {
@@ -323,5 +324,40 @@ describe('Contact form attachments', () => {
     expect(contactAfter._attachments[newAttachmentName].content_type).to.equal('image/png');
     expect(contactAfter._attachments[newAttachmentName].length, 'Replaced attachment should have a valid size')
       .to.be.greaterThan(0);
+  });
+
+  describe('Displaying the profile photo', () => {
+    it('should render the photo in the profile header when a contact has one', async () => {
+      const contactName = 'Display Photo Person';
+
+      await commonPage.goToPeople(healthCenter._id);
+      await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
+      await commonEnketoPage.setInputValue('Full name', contactName);
+      await commonEnketoPage.addFileInputValue('Photo', photoPngPath);
+      await genericForm.submitForm();
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const photo = await contactPage.getContactCardPhoto();
+      await photo.waitForDisplayed();
+      const src = await photo.getAttribute('src');
+      expect(src).to.match(/^blob:/);
+    });
+
+    it('should fall back to the type icon when a contact has no photo', async () => {
+      const contactName = 'No Photo Person';
+
+      await commonPage.goToPeople(healthCenter._id);
+      await commonPage.clickFastActionFAB({ actionId: personWithAttachmentsType.id });
+      await commonEnketoPage.setInputValue('Full name', contactName);
+      await genericForm.submitForm();
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const photo = await contactPage.getContactCardPhoto();
+      expect(await photo.isExisting()).to.be.false;
+      const fallback = await $('.card .heading mm-contact-photo span .resource-icon');
+      await fallback.waitForDisplayed();
+    });
   });
 });

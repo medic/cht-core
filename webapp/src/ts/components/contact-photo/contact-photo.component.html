@@ -1,0 +1,5 @@
+<div class="loader" *ngIf="loading"></div>
+<img *ngIf="!loading && objectUrl" class="contact-photo" [src]="objectUrl"
+     [alt]="doc?.name || ('contact.profile' | translate)"/>
+<span *ngIf="!loading && !objectUrl && fallbackIcon"
+      [innerHTML]="fallbackIcon | resourceIcon"></span>
