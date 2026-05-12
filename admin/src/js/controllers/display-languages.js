@@ -93,7 +93,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         .all([
           DB().allDocs({
             start_key: PREFIXES.TRANSLATIONS,
-            end_key: PREFIXES.TRANSLATIONS + '￰',
+            end_key: PREFIXES.TRANSLATIONS + '\ufff0',
             include_docs: true
           }),
           Settings()

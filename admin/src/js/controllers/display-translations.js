@@ -58,7 +58,7 @@ angular.module('controllers').controller('DisplayTranslationsCtrl',
       return DB()
         .allDocs({
           start_key: PREFIXES.TRANSLATIONS,
-          end_key: PREFIXES.TRANSLATIONS + '￰',
+          end_key: PREFIXES.TRANSLATIONS + '\ufff0',
           include_docs: true
         })
         .then(function(results) {

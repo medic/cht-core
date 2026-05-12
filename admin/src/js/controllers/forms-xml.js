@@ -23,7 +23,7 @@ angular.module('controllers').controller('FormsXmlCtrl',
       const options = {
         include_docs: true,
         start_key: PREFIXES.FORM,
-        end_key: PREFIXES.FORM + '￰',
+        end_key: PREFIXES.FORM + '\ufff0',
       };
       return DB()
         .allDocs(options)

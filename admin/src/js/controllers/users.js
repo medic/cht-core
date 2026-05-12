@@ -27,7 +27,7 @@ angular.module('controllers').controller('UsersCtrl',
       const params = {
         include_docs: true,
         start_key: PREFIXES.COUCH_USER,
-        end_key: PREFIXES.COUCH_USER + '￰',
+        end_key: PREFIXES.COUCH_USER + '\ufff0',
       };
       DB().allDocs(params)
         .then(function(settings) {
