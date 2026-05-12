@@ -13,6 +13,7 @@ let selectedLocale;
 let translations;
 
 const PASSWORD_INPUT_ID = 'password';
+const PASSWORD_CONTAINER_ID = 'password-container'; //NoSONAR
 
 const setTokenState = className => {
   document.getElementById('wrapper').className = `has-error ${className}`;
@@ -261,7 +262,7 @@ const handlePasswordInputFocus = () => {
 const handlePasswordToggle = () => {
   const passwordToggle = document.getElementById('password-toggle');
   if (passwordToggle) {
-    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID), false);
+    passwordToggle.addEventListener('click', () => togglePassword(PASSWORD_INPUT_ID, PASSWORD_CONTAINER_ID), false);
   }
 };
 
