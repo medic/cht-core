@@ -1343,6 +1343,40 @@ describe('Enketo service', () => {
       expect(mainPhotoCall).to.exist;
       expect(mainPhotoCall[1]).to.equal('user-file/my-form/main_photo');
     });
+
+    it('should not attach removed files to sub-docs during edit', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-file-field-cleared');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      // Only the main file remains; sub_file was cleared during edit
+      const mainFile = { name: 'main_upload.png', type: 'image/png' };
+      getCurrentFiles.returns([mainFile]);
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // actual[0] = main doc, actual[1] = doc1 sub-doc
+      expect(actual.length).to.equal(2);
+
+      // Only the main file should be attached
+      const mainFileCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-main_upload.png'
+      );
+      expect(mainFileCall).to.exist;
+      expect(mainFileCall[0]._id).to.equal(actual[0]._id);
+
+      // No attachment should land on the sub-doc
+      const subDocAttachments = AddAttachment.args.filter(
+        args => args[0]._id === actual[1]._id
+      );
+      expect(subDocAttachments).to.be.empty;
+    });
   });
 
   describe('multimedia', () => {
