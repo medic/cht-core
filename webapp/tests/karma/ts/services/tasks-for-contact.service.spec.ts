@@ -6,6 +6,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('TasksForContact service', () => {
 
@@ -17,7 +18,7 @@ describe('TasksForContact service', () => {
   let service: TasksForContactService;
 
   const docId = 'dockyMcDocface';
-  const PERSON_TYPE = { id: 'person', person: true, parents: ['clinic'] };
+  const PERSON_TYPE = { id: 'person', person: true, parents: [CONTACT_TYPES.CLINIC] };
   const CLINIC_TYPE = { id: 'clinic', parents: ['health_center'] };
   const HEALTH_CENTER_TYPE = { id: 'health_center' };
 
@@ -171,11 +172,11 @@ describe('TasksForContact service', () => {
 
     it('should return main doc if is a leaf type place', async () => {
       lineageModelGeneratorService.contact.resolves({
-        doc: { _id: 'theclinic', type: 'clinic' },
+        doc: { _id: 'theclinic', type: CONTACT_TYPES.CLINIC },
         lineage: [{ _id: 'thehc', type: 'health_center' }],
       });
       expect(await service.getLeafPlaceAncestor('theclinic')).to.deep.equal({
-        doc: { _id: 'theclinic', type: 'clinic' },
+        doc: { _id: 'theclinic', type: CONTACT_TYPES.CLINIC },
         type: CLINIC_TYPE,
       });
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
@@ -185,10 +186,10 @@ describe('TasksForContact service', () => {
     it('should return lineage doc leaf type place ', async () => {
       lineageModelGeneratorService.contact.resolves({
         doc: { _id: 'theperson', type: 'person' },
-        lineage: [{ _id: 'theclinic', type: 'clinic' }, { _id: 'thehc', type: 'health_center' }],
+        lineage: [{ _id: 'theclinic', type: CONTACT_TYPES.CLINIC }, { _id: 'thehc', type: 'health_center' }],
       });
       expect(await service.getLeafPlaceAncestor('theperson')).to.deep.equal({
-        doc: { _id: 'theclinic', type: 'clinic' },
+        doc: { _id: 'theclinic', type: CONTACT_TYPES.CLINIC },
         type: CLINIC_TYPE,
       });
       expect(lineageModelGeneratorService.contact.callCount).to.equal(1);

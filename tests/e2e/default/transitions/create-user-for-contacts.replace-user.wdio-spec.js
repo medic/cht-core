@@ -11,7 +11,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const createUserForContactsPage = require('@page-objects/default/enketo/create-user-for-contacts');
 const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
-const { USER_ROLES } = require('@medic/constants');
+const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('Create user for contacts', () => {
   const NEW_USERS = [];
@@ -26,7 +26,7 @@ describe('Create user for contacts', () => {
   const DISTRICT = utils.deepFreeze(placeFactory
     .place()
     .build({
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       contact: {
         _id: USER_CONTACT._id,
       }

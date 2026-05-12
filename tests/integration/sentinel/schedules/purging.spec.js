@@ -2,13 +2,13 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 const moment = require('moment');
-const { PREFIXES, DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES, PREFIXES } = require('@medic/constants');
 
 const password = 'SuperS3creT';
 const docs = [
   {
     _id: 'clinic1',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     name: 'Clinic 1',
     parent: {},
     reported_date: 100,
@@ -376,20 +376,6 @@ const requestDeletes = async (username, ids) => {
   return result.doc_ids;
 };
 
-const getPurgeLog = () => {
-  return sentinelUtils
-    .requestOnSentinelTestDb({
-      path: '/_all_docs',
-      qs: {
-        startkey: JSON.stringify('purgelog\ufff0'),
-        limit: 1,
-        include_docs: true,
-        descending: true,
-      }
-    })
-    .then(result => result.rows[0].doc);
-};
-
 const getDocIds = docs => docs.map(doc => doc.id);
 
 const updateUser = async user => {
@@ -422,9 +408,7 @@ describe('Server side purge', () => {
   it('should purge correct docs', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
     await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
-    await sentinelUtils.waitForPurgeCompletion(seq);
-
-    const purgeLog = await getPurgeLog();
+    const purgeLog = await sentinelUtils.waitForPurgeCompletion(seq);
 
     chai.expect(Object.values(purgeLog.roles)).to.deep.equal([
       users[0].roles,

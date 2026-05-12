@@ -64,10 +64,10 @@
                   [ngClass]="storagePressureClass"
                   [style.width.%]="storageUsagePercentage"
                   [title]="'Used: ' + storageUsagePercentage.toFixed(2) + '%'"
-                  aria-label="'Used storage: ' + storageUsagePercentage.toFixed(2) + '%'">
+                  [attr.aria-label]="('storage.used' | translate) + ': ' + storageUsagePercentage.toFixed(2) + '%'">
                 </div>
               </div>
-              <span>Available space: {{availableStorageSpace}}</span>
+              <span>{{ 'storage.available.space' | translate }}: {{availableStorageSpace}}</span>
             </a>
           </li>
 

@@ -1,14 +1,14 @@
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
-const { USER_ROLES: { ADMIN } } = require('@medic/constants');
+const { USER_ROLES: { ADMIN }, CONTACT_TYPES } = require('@medic/constants');
 
 describe('admin users', () => {
   it('should allow to update the admin password and login successfully', async () => {
     const adminUser = userFactory.build({
       roles: [ADMIN],
       contact: { name: 'Philip' },
-      place: { name: 'place', type: 'district_hospital' },
+      place: { name: 'place', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
     });
     await utils.createUsers([adminUser]);
 
