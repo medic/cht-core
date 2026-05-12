@@ -1,5 +1,5 @@
 const auth = require('../auth');
-const bulkDocs = require('../services/bulk-docs');
+const bulkDocs = require('../services/replication/bulk-docs');
 const _ = require('lodash');
 const serverUtils = require('../server-utils');
 
