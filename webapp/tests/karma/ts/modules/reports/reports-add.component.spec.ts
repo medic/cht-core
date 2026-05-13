@@ -544,7 +544,7 @@ describe('Reports Add Component', () => {
         route.snapshot.params = { reportId: 'my_report' };
         const doc = { _id: 'report-id', form: 'my-form' };
         lineageModelGeneratorService.report.resolves({ doc });
-        const attachmentBlob = { attachment: 'blob' };
+        const attachmentBlob = { attachment: "blob", type: "audio/mpeg" };
         dbService.getAttachment.resolves(attachmentBlob);
         const base64 = 'base64';
         fileReaderService.base64.resolves(base64);
@@ -567,7 +567,7 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        const audioHtml = `<audio src="data:${base64}" controls></audio>`;
+        const audioHtml = `<audio src="data:audio/mpeg;base64,${base64}" controls></audio>`;
         expect(jqPreviewElement.append.calledOnceWithExactly(audioHtml)).to.be.true;
       }));
 
@@ -575,7 +575,7 @@ describe('Reports Add Component', () => {
         route.snapshot.params = { reportId: 'my_report' };
         const doc = { _id: 'report-id', form: 'my-form' };
         lineageModelGeneratorService.report.resolves({ doc });
-        const attachmentBlob = { attachment: 'blob' };
+        const attachmentBlob = { attachment: "blob", type: "video/mp4" };
         dbService.getAttachment.resolves(attachmentBlob);
         const base64 = 'base64';
         fileReaderService.base64.resolves(base64);
@@ -598,7 +598,7 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        const videoHtml = `<video src="data:${base64}" controls></video>`;
+        const videoHtml = `<video src="data:video/mp4;base64,${base64}" controls></video>`;
         expect(jqPreviewElement.append.calledOnceWithExactly(videoHtml)).to.be.true;
       }));
     });

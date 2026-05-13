@@ -201,15 +201,16 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.getAttachment(docId, legacyAttachmentName);
   }
 
-  private getPreviewElement(acceptType: string, base64: string) {
+  private getPreviewElement(acceptType: string, base64: string, mimeType: string) {
+    const dataUri = `data:${mimeType};base64,${base64}`;
     if (acceptType === 'image/*') {
-      return '<img src="data:' + base64 + '">';
+      return `<img src="${dataUri}">`;
     }
     if (acceptType === 'audio/*') {
-      return '<audio src="data:' + base64 + '" controls></audio>';
+      return `<audio src="${dataUri}" controls></audio>`;
     }
     if (acceptType === 'video/*') {
-      return '<video src="data:' + base64 + '" controls></video>';
+      return `<video src="${dataUri}" controls></video>`;
     }
     return null;
   } 
@@ -242,7 +243,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
             }
 
             const base64 = await this.fileReaderService.base64(attachmentBlob) as string;
-            const previewElement = this.getPreviewElement(acceptType, base64);
+            const mimeType = (attachmentBlob as Blob).type;
+            const previewElement = this.getPreviewElement(acceptType, base64, mimeType);
             if (!previewElement) {
               return;
             }
