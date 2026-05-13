@@ -15,7 +15,7 @@ describe('Reports Search', () => {
   // the value was chosen such that it is a sub-string of the short_name which
   // gives double output from the couchdb view
   const searchWord = 'sittu';
-  const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: 'district_hospital' });
+  const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
   const potuHealthCenter = placeFactory.place().build({
     name: 'Potu Health Center',
     type: CONTACT_TYPES.HEALTH_CENTER,

@@ -201,6 +201,10 @@ const messageRelevant = (msg, doc) => {
 };
 
 const addMessagesToDoc = (doc, config, registrations, placeRegistrations) => {
+  if (!Array.isArray(config.messages)) {
+    return;
+  }
+
   config.messages.forEach(msg => {
     if (messageRelevant(msg, doc)) {
       messages.addMessage(doc, msg, msg.recipient, {
