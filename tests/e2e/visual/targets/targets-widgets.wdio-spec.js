@@ -1,6 +1,7 @@
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -18,15 +19,14 @@ describe('Targets widgets', () => {
     place: healthCenter._id
   });
 
-  // Fewer patients with focused, extreme widget states
-  const numberOfPatients = 6;
+  const numberOfPatients = 12;
   const patients = Array.from({ length: numberOfPatients }, () => personFactory.build({
     parent: { _id: healthCenter._id, parent: healthCenter.parent }
   }));
 
   const reports = [
-    // All patients have 0 ANC visits → shows 0% percentage widget
-    ...patients.slice(0, 4).map(patient => pregnancyFactory.build({
+    // patients 0-7: pregnancies with 0 ANC visits → drives ANC % to 0%
+    ...patients.slice(0, 8).map(patient => pregnancyFactory.build({
       fields: {
         patient_id: patient._id,
         patient_uuid: patient._id,
@@ -39,8 +39,45 @@ describe('Targets widgets', () => {
       }
     })),
 
-    // All deliveries are at home → shows 100% home delivery widget
-    ...patients.slice(0, 6).map(patient => deliveryFactory.build({
+    // patients 8-11: pregnancies with 4+ ANC visits
+    ...patients.slice(8, 12).map(patient => pregnancyFactory.build({
+      fields: {
+        patient_id: patient._id,
+        patient_uuid: patient._id,
+        patient_name: patient.name,
+        anc_visits_hf: {
+          anc_visits_hf_past: {
+            visited_hf_count: '4',
+          }
+        }
+      }
+    })),
+
+    // Multiple pregnancy visits for patient[8] to show visit count widget
+    pregnancyVisitFactory.build({
+      fields: {
+        patient_id: patients[8]._id,
+        patient_uuid: patients[8]._id,
+        patient_name: patients[8].name
+      }
+    }),
+    pregnancyVisitFactory.build({
+      fields: {
+        patient_id: patients[8]._id,
+        patient_uuid: patients[8]._id,
+        patient_name: patients[8].name
+      }
+    }),
+    pregnancyVisitFactory.build({
+      fields: {
+        patient_id: patients[9]._id,
+        patient_uuid: patients[9]._id,
+        patient_name: patients[9].name
+      }
+    }),
+
+    // ALL deliveries are at home → forces 100% home delivery widget
+    ...patients.slice(0, 12).map(patient => deliveryFactory.build({
       fields: {
         patient_id: patient._id,
         patient_uuid: patient._id,
@@ -66,11 +103,11 @@ describe('Targets widgets', () => {
     await utils.deleteUsers([offlineUser]);
   });
 
-  it('should show 0% ANC completion and 100% home delivery widget states', async () => {
+  it('should show zero percent ANC completion and full home delivery widget states', async () => {
     await commonPage.waitForPageLoaded();
     await commonPage.goToAnalytics();
     await commonPage.waitForPageLoaded();
-    await browser.pause(2000);
+    await browser.pause(5000);
     await generateScreenshot('targets', 'widgets');
   });
 });
