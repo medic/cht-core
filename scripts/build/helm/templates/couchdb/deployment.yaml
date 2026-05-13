@@ -20,16 +20,7 @@ spec:
         cht.service: couchdb
     spec:
       terminationGracePeriodSeconds: 0
-      securityContext:
-        runAsUser: 0  # Run as root
-        fsGroup: 0    # Set fsGroup to root
-      {{- if .Values.toleration }}
-      tolerations:
-        - key: {{ .Values.toleration.key }}
-          operator: {{ .Values.toleration.operator }}
-          value: {{ .Values.toleration.value | quote }}
-          effect: {{ .Values.toleration.effect }}
-      {{- end }}
+{{- include "couchdb.securityContextAndTolerations" (dict "toleration" .Values.toleration) | nindent 6 }}
       {{- if and (hasKey .Values "nodes") (kindIs "map" .Values.nodes) }}
         {{- if hasKey .Values.nodes "single_node_deploy" }}
       nodeSelector:
@@ -108,16 +99,7 @@ spec:
         cht.service: couchdb-{{ $nodeNumber }}
     spec:
       terminationGracePeriodSeconds: 0
-      securityContext:
-        runAsUser: 0  # Run as root
-        fsGroup: 0    # Set fsGroup to root
-      {{- if $.Values.toleration }}
-      tolerations:
-        - key: {{ $.Values.toleration.key }}
-          operator: {{ $.Values.toleration.operator }}
-          value: {{ $.Values.toleration.value | quote }}
-          effect: {{ $.Values.toleration.effect }}
-      {{- end }}
+{{- include "couchdb.securityContextAndTolerations" (dict "toleration" $.Values.toleration) | nindent 6 }}
       {{- if and (hasKey $.Values "nodes") (kindIs "map" $.Values.nodes) }}
         {{- with index $.Values.nodes (printf "node-%d" $nodeNumber) }}
           {{- if . }}

@@ -12,6 +12,7 @@ import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import { Page } from '../src/libs/core';
 import { fakeGenerator } from './utils';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('CHT Script API - getDatasource', () => {
   let dataContext: DataContext;
@@ -46,9 +47,26 @@ describe('CHT Script API - getDatasource', () => {
       'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report', 'target'
     ]));
 
-    it('permission', () => {
-      expect(v1.hasPermissions).to.equal(hasPermissions);
-      expect(v1.hasAnyPermission).to.equal(hasAnyPermission);
+    it('hasPermissions', () => {
+      const bound = sinon.stub().returns(true);
+      dataContextBind.returns(bound);
+
+      const result = v1.hasPermissions('can_edit', ['chw']);
+
+      expect(result).to.equal(true);
+      expect(dataContextBind.calledOnceWithExactly(hasPermissions)).to.be.true;
+      expect(bound.calledOnceWithExactly('can_edit', ['chw'], undefined)).to.be.true;
+    });
+
+    it('hasAnyPermission', () => {
+      const bound = sinon.stub().returns(true);
+      dataContextBind.returns(bound);
+
+      const result = v1.hasAnyPermission([['can_edit']], ['chw']);
+
+      expect(result).to.equal(true);
+      expect(dataContextBind.calledOnceWithExactly(hasAnyPermission)).to.be.true;
+      expect(bound.calledOnceWithExactly([['can_edit']], ['chw'], undefined)).to.be.true;
     });
 
     describe('place', () => {
@@ -649,7 +667,7 @@ describe('CHT Script API - getDatasource', () => {
       it('update', async () => {
         const reportInput = {
           form: 'apoorva',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           contact: { _id: 'c1' },
           _id: '123',
           _rev: '1-abc',

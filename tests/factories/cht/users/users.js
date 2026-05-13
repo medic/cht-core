@@ -12,7 +12,7 @@ const place = {
 const contact = {
   _id: 'fixture:user:user1',
   name: 'OfflineUser',
-  phone: phoneNumber
+  phone: phoneNumber,
 };
 
 

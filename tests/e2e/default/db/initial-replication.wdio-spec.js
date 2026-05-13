@@ -5,7 +5,7 @@ const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const dataFactory = require('@factories/cht/generate');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 
 const LOCAL_ONLY_DOC_IDS = ['_design/medic-offline-freetext'];
 
@@ -18,10 +18,10 @@ describe('initial-replication', () => {
   const requiredDocs = [
     '_design/medic-client',
     DOC_IDS.SETTINGS,
-    `org.couchdb.user:${userAllowedDocs.user.username}`,
+    `${PREFIXES.COUCH_USER}${userAllowedDocs.user.username}`,
     DOC_IDS.SERVICE_WORKER_META,
     'resources',
-    'branding',
+    DOC_IDS.BRANDING,
     userAllowedDocs.user.place,
     userAllowedDocs.user.contact._id,
   ];
@@ -33,8 +33,8 @@ describe('initial-replication', () => {
 
   const getTranslationIds = async () => {
     const translationDocs = await utils.db.allDocs({
-      start_key: 'messages-',
-      end_key: 'messages-\ufff0',
+      start_key: PREFIXES.TRANSLATIONS,
+      end_key: PREFIXES.TRANSLATIONS + '\ufff0',
     });
     return translationDocs.rows.map(row => row.id);
   };

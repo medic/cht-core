@@ -20,6 +20,7 @@ const leftPanelSelectors = {
   contactName: () => $$(`${CONTENT_ROW_SELECTOR} .heading h4 span`),
   contactListLoadingStatus: () => $(`${CONTACT_LIST_SELECTOR} .loading-status`),
   firstContact: () => $(`${CONTACT_LIST_SELECTOR} li:first-child`),
+  nthContact: (n) => $(`${CONTACT_LIST_SELECTOR} li:nth-child(${n})`),
 };
 
 const rightPanelSelectors = {
@@ -62,24 +63,39 @@ const reportsCardSelectors = {
   rhsReportElementList: () => $$(RHS_REPORT_LIST_SELECTOR),
 };
 
-const PREG_CARD_TEST_ID = `div[test-id="contact.profile.pregnancy.active"]`;
+const contactSummaryCardSelector = (cardTestId) => `div[test-id="${cardTestId}"]`;
+const contactSummaryCardSelectors = (cardTestId) => {
+  return {
+    card: () => $(contactSummaryCardSelector(cardTestId)),
+    header: () => $(`${contactSummaryCardSelector(cardTestId)} button.action-header`),
+    fieldLabel: (fieldTestId) => $(
+      `${contactSummaryCardSelector(cardTestId)} div[test-id="${fieldTestId}"] label`
+    ),
+    fieldValue: (fieldTestId) => $(
+      `${contactSummaryCardSelector(cardTestId)} div[test-id="${fieldTestId}"] p.card-field-value`
+    ),
+  };
+};
+
+const pregCard = contactSummaryCardSelectors('contact.profile.pregnancy.active');
 const pregnancyCardSelectors = {
-  pregnancyCard: () => $(PREG_CARD_TEST_ID),
-  weeksPregnant: () => $(`${PREG_CARD_TEST_ID} div[test-id="Weeks Pregnant"] p.card-field-value`),
-  edd: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.edd"] p.card-field-value`),
-  highRisk: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.risk.high"] label`),
-  nextANCVisit: () => $(`${PREG_CARD_TEST_ID} div[test-id="contact.profile.anc.next"] p.card-field-value`),
+  pregnancyCard: () => pregCard.card(),
+  weeksPregnant: () => pregCard.fieldValue('Weeks Pregnant'),
+  edd: () => pregCard.fieldValue('contact.profile.edd'),
+  highRisk: () => pregCard.fieldLabel('contact.profile.risk.high'),
+  nextANCVisit: () => pregCard.fieldValue('contact.profile.anc.next'),
 };
 
-const DEATH_CARD_TEST_ID = 'div[test-id="contact.profile.death.title"]';
+const deathCard = contactSummaryCardSelectors('contact.profile.death.title');
 const deathCardSelectors = {
-  deathCard: () => $(DEATH_CARD_TEST_ID),
-  deathDate: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.date"] p.card-field-value`),
-  deathPlace: () => $(`${DEATH_CARD_TEST_ID} div[test-id="contact.profile.death.place"] p.card-field-value`),
+  deathCard: () => deathCard.card(),
+  deathDate: () => deathCard.fieldValue('contact.profile.death.date'),
+  deathPlace: () => deathCard.fieldValue('contact.profile.death.place'),
 };
 
+const immunizationCard = contactSummaryCardSelectors('contact.profile.immunizations');
 const inmunizationCardSelectors = {
-  inmunizationCard: () => $('div[test-id="contact.profile.immunizations"]'),
+  inmunizationCard: () => immunizationCard.card(),
 };
 
 const editDistrictHospitalSelectors = {
@@ -418,6 +434,11 @@ const openFirstContact = async () => {
   await firstContact.click();
 };
 
+const openNthContact = async (n) => {
+  const nthContact = leftPanelSelectors.nthContact(n);
+  await nthContact.click();
+};
+
 const openPrimaryContactSearchDropdown = async () => {
   await editDistrictHospitalSelectors.primaryContactSearchDropdown().click();
 };
@@ -432,6 +453,12 @@ const selectPrimaryContactSearchFirstResult = async () => {
   await editDistrictHospitalSelectors.primaryContactSearchFirstResult().click();
 };
 
+const waitForContactsLoaded = async (timeout) => {
+  await browser.waitUntil(
+    async () => (await leftPanelSelectors.contentRows()).length > 0,
+    { timeout: timeout }
+  );
+};
 
 module.exports = {
   genericForm,
@@ -443,6 +470,7 @@ module.exports = {
   pregnancyCardSelectors,
   deathCardSelectors,
   inmunizationCardSelectors,
+  contactSummaryCardSelectors,
   selectLHSRowByText,
   selectRHSRowById,
   getReportFiltersText,
@@ -476,9 +504,11 @@ module.exports = {
   getCurrentPersonEditFormValues,
   filterReportViewAll,
   openFirstContact,
+  openNthContact,
   openPrimaryContactSearchDropdown,
   inputPrimaryContactSearchValue,
   selectPrimaryContactSearchFirstResult,
   openSortMenu,
   selectSortOrder,
+  waitForContactsLoaded,
 };
