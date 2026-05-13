@@ -231,12 +231,12 @@ describe('HeaderTabs service', () => {
       const tabs = await service.getAuthorizedTabs();
 
       expect(tabs.map(t => t.name)).to.deep.equal([
+        'ui-extension-first',
         'messages',
         'tasks',
         'reports',
         'contacts',
         'analytics',
-        'ui-extension-first',
         'ui-extension-middle',
         'ui-extension-last',
       ]);
