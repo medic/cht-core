@@ -206,6 +206,7 @@ describe('TasksContentComponent', () => {
       something: 'nothing',
       task_id: '123',
     });
+    expect(interactionTrackingService.record.args).to.deep.include(['task:form_open', 'A']);
   });
 
   it('successful hydration with existent action content', async () => {
@@ -440,6 +441,7 @@ describe('TasksContentComponent', () => {
       expect(component.contentError).to.equal(false);
       expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(0);
+      expect(interactionTrackingService.record.args).to.deep.include(['task:back']);
     });
 
     it('should set cancel callback correctly when skipping details', async () => {
@@ -764,15 +766,22 @@ describe('TasksContentComponent', () => {
         name: 'enketo:tasks:the form id:add:save',
         recordApdex: true,
       });
+
+      expect(interactionTrackingService.record.args).to.deep.include.members([
+        ['task:form_save', 'the form id'],
+        ['task:complete', 'the form id'],
+      ]);
     });
   });
 
   describe('navigationCancel', () => {
     it('should call navigation cancel', () => {
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      component.formId = 'the form id';
       component.navigationCancel();
       expect(navigationCancel.callCount).to.equal(1);
       expect(navigationCancel.args[0]).to.deep.equal([]);
+      expect(interactionTrackingService.record.args).to.deep.include(['task:cancel', 'the form id']);
     });
   });
 

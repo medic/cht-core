@@ -337,6 +337,38 @@ describe('TasksComponent', () => {
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
 
+  describe('interaction tracking', () => {
+    it('opens a tasks session on init and records task_list:open then task_list:loaded with the count', async () => {
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves([
+        { _id: 't1', emission: { _id: 'e1', dueDate: '2020-10-21', owner: 'a' } },
+        { _id: 't2', emission: { _id: 'e2', dueDate: '2020-10-22', owner: 'b' } },
+      ]);
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+
+      expect(interactionTrackingService.startSession.args).to.deep.equal([['tasks']]);
+      expect(interactionTrackingService.record.args).to.deep.include.members([
+        ['task_list:open'],
+        ['task_list:loaded', undefined, '2'],
+      ]);
+    });
+
+    it('records task_list:leave and ends the session on destroy', async () => {
+      await getComponent();
+      sinon.stub(TasksActions.prototype, 'clearTaskList');
+      sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+      sinon.stub(TasksActions.prototype, 'clearTaskGroup');
+      interactionTrackingService.record.resetHistory();
+
+      component.ngOnDestroy();
+
+      expect(interactionTrackingService.record.args).to.deep.include(['task_list:leave']);
+      expect(interactionTrackingService.endSession.callCount).to.equal(1);
+    });
+  });
+
   describe('listTrackBy', () => {
     it('should return task id', () => {
       expect(component.listTrackBy(10, { _id: 'aaa' })).to.equal('aaa');

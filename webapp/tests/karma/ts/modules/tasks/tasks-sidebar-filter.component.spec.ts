@@ -76,6 +76,7 @@ describe('TasksSidebarFilterComponent', () => {
     expect(setSidebarFilterStub.args[0][0]).to.deep.equal({ isOpen: true });
     expect(telemetryService.record.calledOnce).to.be.true;
     expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:open');
+    expect(interactionTrackingService.record.args).to.deep.include(['task_filter:open']);
   });
 
   it('should toggle sidebar filter closed and record telemetry', () => {
@@ -89,6 +90,7 @@ describe('TasksSidebarFilterComponent', () => {
     expect(setSidebarFilterStub.args[0][0]).to.deep.equal({ isOpen: false });
     expect(telemetryService.record.calledOnce).to.be.true;
     expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:close');
+    expect(interactionTrackingService.record.args).to.deep.include(['task_filter:close']);
   });
 
   it('should reset filters and record telemetry', () => {
@@ -103,6 +105,7 @@ describe('TasksSidebarFilterComponent', () => {
     expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:apply');
     expect(telemetryService.record.args[0][1]).to.equal(0);
     expect(telemetryService.record.args[1][0]).to.equal('tasks:filter:reset');
+    expect(interactionTrackingService.record.args).to.deep.include(['task_filter:reset']);
   });
 
   it('should not reset filters when disabled', () => {
@@ -143,6 +146,10 @@ describe('TasksSidebarFilterComponent', () => {
     expect(telemetryService.record.args[0]).to.deep.equal(['tasks:filter:apply', 3]);
     expect(telemetryService.record.args[1]).to.deep.equal(['tasks:filter:apply:overdueFilter', 1]);
     expect(telemetryService.record.args[2]).to.deep.equal(['tasks:filter:apply:taskTypeFilter', 2]);
+    expect(interactionTrackingService.record.args).to.deep.include.members([
+      ['task_filter:select', 'overdueFilter', '1'],
+      ['task_filter:select', 'taskTypeFilter', '2'],
+    ]);
   });
 
   it('should not apply filters when disabled', () => {
@@ -169,6 +176,10 @@ describe('TasksSidebarFilterComponent', () => {
     expect(telemetryService.record.calledTwice).to.be.true;
     expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:clear:overdue');
     expect(telemetryService.record.args[1][0]).to.equal('tasks:filter:clear:taskType');
+    expect(interactionTrackingService.record.args).to.deep.include.members([
+      ['task_filter:clear', 'overdue'],
+      ['task_filter:clear', 'taskType'],
+    ]);
   });
 
   it('should not record clear telemetry when clearing all filters without fieldIds', () => {

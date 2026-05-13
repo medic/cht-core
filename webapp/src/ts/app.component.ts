@@ -305,7 +305,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
-    this.interactionTrackingService.init();
     this.sessionService.init();
     this.warnOutdatedChrome();
 
@@ -316,6 +315,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => (this.initialisationComplete = true))
       .then(() => this.initUser())
       .then(() => this.initRulesEngine())
+      .then(() => this.interactionTrackingService.init())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
       .then(() => this.initBubbleCounter())

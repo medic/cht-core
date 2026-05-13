@@ -115,6 +115,7 @@ describe('TasksGroupComponent', () => {
     expect(setLoadingContent.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
     expect(clearTaskGroup.args[0]).to.deep.equal([]);
+    expect(interactionTrackingService.record.args).to.deep.include(['task_group:leave']);
   });
 
   describe('ngOnInit', () => {
@@ -484,6 +485,7 @@ describe('TasksGroupComponent', () => {
         ['tasks:group:ready:title1', 2],
         ['tasks:group:ready:title2', 3],
       ]);
+      expect(interactionTrackingService.record.args).to.deep.include(['task_group:show', undefined, '5']);
     });
 
     it('should update cherry picked tasks when tasks are refreshed, but only record telemetry once', async () => {
