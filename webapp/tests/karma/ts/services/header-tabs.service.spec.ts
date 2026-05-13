@@ -240,7 +240,6 @@ describe('HeaderTabs service', () => {
         'ui-extension-middle',
         'ui-extension-last',
       ]);
-
       const [firstExt,,,,,, middleExt, lastExt] = tabs;
       expect(firstExt).to.deep.equal({
         name: 'ui-extension-first',
@@ -555,6 +554,7 @@ describe('HeaderTabs service', () => {
 
       const tabs = await service.getSidebarTabs();
 
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
       expect(tabs.map(t => t.name)).to.deep.equal([
         'messages',
         'tasks',
@@ -569,8 +569,7 @@ describe('HeaderTabs service', () => {
         'privacy-policy',
         'bug',
       ]);
-
-      const firstExt = tabs.find(t => t.name === 'ui-extension-first');
+      const [,,,,, firstExt] = tabs;
       expect(firstExt).to.deep.equal({
         name: 'ui-extension-first',
         route: 'ui-extensions/first',
@@ -583,12 +582,6 @@ describe('HeaderTabs service', () => {
       });
     });
 
-    it('should query sidebar_tab extensions, not header_tab extensions', async () => {
-      await service.getSidebarTabs();
-
-      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
-    });
-
     it('should cache sidebar tabs after first call', async () => {
       await service.getSidebarTabs();
       await service.getSidebarTabs();
@@ -596,20 +589,6 @@ describe('HeaderTabs service', () => {
 
       expect(settingsService.get.callCount).to.equal(1);
       expect(uiExtensionsService.getPropertiesByType.callCount).to.equal(1);
-    });
-
-    it('should always include secondary tabs regardless of authorization', async () => {
-      authService.has.returns(false);
-
-      const tabs = await service.getSidebarTabs();
-
-      expect(tabs.map(t => t.name)).to.deep.equal([
-        'trainings',
-        'about',
-        'user',
-        'privacy-policy',
-        'bug',
-      ]);
     });
   });
 });

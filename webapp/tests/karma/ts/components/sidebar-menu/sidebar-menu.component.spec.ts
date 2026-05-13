@@ -90,11 +90,13 @@ describe('SidebarMenuComponent', () => {
     expect(unsubscribeSpy.calledOnce).to.be.true;
   });
 
-  it('should initialise the admin app path', () => {
+  it('should initialise the component', () => {
     expect(component.adminAppPath).to.equal('/admin/');
+    expect(component.headerTabsForSidebar).to.deep.equal([]);
+    expect(component.showPrivacyPolicy).to.be.false;
   });
 
-  it('should populate headerTabsForSidebar from headerTabsService', async () => {
+  it('should populate headerTabsForSidebar', async () => {
     const sidebarTabs: SidebarTab[] = [
       {
         name: 'messages',
@@ -118,14 +120,6 @@ describe('SidebarMenuComponent', () => {
 
     expect(headerTabsService.getSidebarTabs).to.have.been.calledOnceWithExactly();
     expect(component.headerTabsForSidebar).to.deep.equal(sidebarTabs);
-  });
-
-  it('should initialize headerTabsForSidebar as empty array before loading', () => {
-    expect(component.headerTabsForSidebar).to.deep.equal([]);
-  });
-
-  it('should default showPrivacyPolicy to false', () => {
-    expect(component.showPrivacyPolicy).to.be.false;
   });
 
   it('should update showPrivacyPolicy when the selector emits', () => {
@@ -177,9 +171,9 @@ describe('SidebarMenuComponent', () => {
         permissions: [],
       });
 
-      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show).to.have.been.calledOnce;
       expect(modalService.show.args[0][0]).to.deep.equal(FeedbackComponent);
-      expect(closeStub.calledOnce).to.be.true;
+      expect(closeStub).to.have.been.calledOnceWithExactly();
     });
 
     it('should close the sidebar for any other tab', () => {
@@ -193,8 +187,8 @@ describe('SidebarMenuComponent', () => {
         permissions: [],
       });
 
-      expect(modalService.show.called).to.be.false;
-      expect(closeStub.calledOnce).to.be.true;
+      expect(modalService.show).to.not.have.been.called;
+      expect(closeStub).to.have.been.calledOnceWithExactly();
     });
   });
 });

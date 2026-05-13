@@ -194,7 +194,7 @@ describe('Header Component', () => {
       expect(component.legacyMenuTabs).to.deep.equal([]);
     });
 
-    it('should populate legacyMenuTabs from headerTabsService.getSidebarTabs()', async () => {
+    it('should populate legacyMenuTabs', async () => {
       const sidebarTabs = [
         {
           name: 'messages',
@@ -224,7 +224,7 @@ describe('Header Component', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(headerTabsService.getSidebarTabs.callCount).to.equal(1);
+      expect(headerTabsService.getSidebarTabs).to.have.been.calledOnceWithExactly();
       expect(component.legacyMenuTabs).to.deep.equal(sidebarTabs);
     });
   });
@@ -240,7 +240,7 @@ describe('Header Component', () => {
         permissions: [],
       });
 
-      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show).to.have.been.calledOnce;
       expect(modalService.show.args[0][0]).to.equal(FeedbackComponent);
     });
 
@@ -255,7 +255,7 @@ describe('Header Component', () => {
         permissions: [],
       });
 
-      expect(modalService.show.called).to.be.false;
+      expect(modalService.show).to.not.have.been.called;
     });
   });
 

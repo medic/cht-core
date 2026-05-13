@@ -37,7 +37,7 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
     HeaderLogoPipe,
     ResourceIconPipe,
     RelativeDatePipe,
-    LocalizeNumberPipe,
+    LocalizeNumberPipe
   ]
 })
 
