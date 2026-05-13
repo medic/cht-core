@@ -775,7 +775,8 @@ describe('TasksContentComponent', () => {
   });
 
   describe('navigationCancel', () => {
-    it('should call navigation cancel', () => {
+    it('should call navigation cancel', async () => {
+      await compileComponent();
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
       component.formId = 'the form id';
       component.navigationCancel();

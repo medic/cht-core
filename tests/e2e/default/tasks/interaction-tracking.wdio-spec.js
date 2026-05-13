@@ -18,24 +18,52 @@ const INTERACTION_DOC_PREFIX = 'interaction-';
 const FAKE_YESTERDAY_MS = Date.UTC(2025, 0, 15, 12, 0, 0); // 2025-01-15 12:00 UTC
 const FAKE_YESTERDAY_DATE = '2025-1-15';                   // service's `YYYY-M-D` format
 
-const NON_DETERMINISTIC_FIELDS = ['_id', '_rev', 'deviceId', 'version'];
+// `timestamp` and `startedAt` are excluded because `Date.now()` is monotonic
+// (see `installFakeDate`); their exact values change between calls but their
+// chronological order is what matters and is enforced by the service's
+// sort-by-timestamp in `groupBySession`.
+const NON_DETERMINISTIC_FIELDS = ['_id', '_rev', 'deviceId', 'version', 'timestamp', 'startedAt'];
 
-// Date-only init script. Full fake timers (`browser.emulate('clock')`) breaks
-// zone.js by overriding setTimeout/setInterval, firing cancelled RxJS actions.
-// Init scripts only run on full document loads, so callers must refresh to
-// apply the override before the app bootstraps `interactionTrackingService`.
+// Date-only init script. We deliberately avoid `browser.emulate('clock')`,
+// which injects `@sinonjs/fake-timers` into the page:
+//   1. The vendored bundle calls `_global.process && require('util').promisify`
+//      unguarded. webpack's `process` polyfill makes `_global.process` truthy
+//      in the browser, but `require` is undefined → `ReferenceError`.
+//   2. It overrides `setTimeout`/`setInterval` globally. zone.js wraps the
+//      originals, so installed timers become "cancelled actions" the next
+//      time the scheduler flushes — the page floods with RxJS
+//      "Error: executing a cancelled action".
+// Stubbing only `Date` sidesteps both. Init scripts run before any document
+// script on every navigation, so the stub is in place by the time the app
+// bootstraps and `interactionTrackingService.init()` runs.
+//
+// `tick` makes `Date.now()` strictly monotonic. With a fully frozen clock,
+// every recorded event gets the same timestamp; the service's stable
+// sort-by-timestamp then leaves events in PouchDB's random uuid-v7 order,
+// hiding any chronological-ordering regression. A tiny per-call increment
+// preserves the fake-day semantics (1ms per call won't roll the day) and
+// restores the invariant that earlier `record()` calls have lower timestamps.
+//
+// `FakeDate.prototype = RealDate.prototype` keeps `instanceof Date` working
+// for instances we return from the zero-arg constructor (which are real
+// `RealDate` objects). Side effect: this rewrites
+// `Date.prototype.constructor = FakeDate` globally; libraries that clone a
+// date with `new x.constructor()` (no args) would get a fresh fake-now, not
+// a clone — moment/date-fns don't do that, so we accept the trade-off rather
+// than break `instanceof`.
 const installFakeDate = (ms) => browser.addInitScript((fakeMs) => {
   const RealDate = Date;
+  let tick = 0;
   // eslint-disable-next-line func-style
   function FakeDate(...args) {
     if (!(this instanceof FakeDate)) {
       return RealDate(...args);
     }
-    return args.length === 0 ? new RealDate(fakeMs) : new RealDate(...args);
+    return args.length === 0 ? new RealDate(fakeMs + tick++) : new RealDate(...args);
   }
   FakeDate.prototype = RealDate.prototype;
   FakeDate.prototype.constructor = FakeDate;
-  FakeDate.now = () => fakeMs;
+  FakeDate.now = () => fakeMs + tick++;
   FakeDate.UTC = RealDate.UTC;
   FakeDate.parse = RealDate.parse;
   window.Date = FakeDate;
@@ -43,16 +71,18 @@ const installFakeDate = (ms) => browser.addInitScript((fakeMs) => {
 
 let clockScript;
 
+// Register the init script. Callers must trigger a full document load
+// (login or refresh) so the script runs before the app bootstraps.
 const installClockYesterday = async () => {
   clockScript = await installFakeDate(FAKE_YESTERDAY_MS);
-  await commonPage.refresh();
-  await modalPage.submit();
 };
 
 const advanceFakeClock = async (msFromYesterday) => {
   await clockScript.remove();
   clockScript = await installFakeDate(FAKE_YESTERDAY_MS + msFromYesterday);
   await commonPage.refresh();
+  // The fake clock is always wrong vs. the server, so checkDateService always
+  // raises the modal on a full reload. No need to guard.
   await modalPage.submit();
 };
 
@@ -157,20 +187,8 @@ const deleteServerInteractionDocs = async (username) => {
 
 };
 
-// Production timestamps are ms-precise so events sort chronologically by
-// timestamp; the frozen-clock test gives every event the same timestamp, so
-// normalize both sides by (action, ref, detail) before deep-equal.
-const sortEvents = (events) => events.slice().sort((a, b) => {
-  const k = (e) => `${e.action}|${e.ref ?? ''}|${e.detail ?? ''}`;
-  return k(a).localeCompare(k(b));
-});
-
 const expectAggregateEqual = (actual, expected) => {
-  const normalize = (agg) => ({
-    ...agg,
-    sessions: (agg.sessions || []).map(s => ({ ...s, events: sortEvents(s.events) })),
-  });
-  expect(normalize(actual)).excludingEvery(NON_DETERMINISTIC_FIELDS).to.deep.equal(normalize(expected));
+  expect(actual).excludingEvery(NON_DETERMINISTIC_FIELDS).to.deep.equal(expected);
 };
 
 describe('Interaction Tracking', () => {
@@ -218,8 +236,9 @@ describe('Interaction Tracking', () => {
     beforeEach(async () => {
       await deleteTaskDocs();
       await deleteServerInteractionDocs(chw.username);
-      await loginPage.login(chw);
       await installClockYesterday();
+      await loginPage.login(chw);
+      await modalPage.submit();
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
     });
@@ -250,8 +269,9 @@ describe('Interaction Tracking', () => {
     beforeEach(async () => {
       await deleteTaskDocs();
       await deleteServerInteractionDocs(chw.username);
-      await loginPage.login(chw);
       await installClockYesterday();
+      await loginPage.login(chw);
+      await modalPage.submit();
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
     });
@@ -318,8 +338,9 @@ describe('Interaction Tracking', () => {
     beforeEach(async () => {
       await deleteTaskDocs();
       await deleteServerInteractionDocs(chw.username);
-      await loginPage.login(chw);
       await installClockYesterday();
+      await loginPage.login(chw);
+      await modalPage.submit();
       await commonPage.goToTasks();
       await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
     });

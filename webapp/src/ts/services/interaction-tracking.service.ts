@@ -155,7 +155,7 @@ export class InteractionTrackingService {
       return;
     }
     const currentDay = this.getCurrentDay();
-    if (!this.hasCapacity(currentDay)) {
+    if (!this.rolloverAndCheckCapacity(currentDay)) {
       return;
     }
     this.appendEvent(action, currentDay, ref, detail);
@@ -169,7 +169,11 @@ export class InteractionTrackingService {
     return this.enabled && !!this.currentSession && this.sessionStartedAt !== null;
   }
 
-  private hasCapacity(currentDay: Day): boolean {
+  // Flushes the buffer on day rollover (which synchronously resets
+  // `persistedEventCount` and `this.buffer` to 0 before the first await in
+  // `_persistBuffer`), then returns whether the per-day cap leaves room for
+  // another event.
+  private rolloverAndCheckCapacity(currentDay: Day): boolean {
     if (this.currentDayKey !== currentDay.formatted) {
       this.persistBuffer();
     }
