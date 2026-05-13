@@ -151,9 +151,10 @@ export class HeaderTabsService {
         this.getHeaderTabs(this.SIDEBAR_HEADER_TABS),
         this.getUiExtensionTabs('sidebar_tab')
       ]);
+      headerTabs.sort((a, b) => a.weight - b.weight);
       // sidebar_tab extensions should always come after the headers
       this.sidebarTabs = [
-        ...headerTabs.sort((a, b) => a.weight - b.weight),
+        ...headerTabs,
         ...uiExtensionTabs,
         ...this.SIDEBAR_TABS
       ];

@@ -182,7 +182,7 @@ describe('SidebarMenuComponent', () => {
       expect(closeStub.calledOnce).to.be.true;
     });
 
-    it('should not open the feedback modal or close the sidebar for any other tab', () => {
+    it('should close the sidebar for any other tab', () => {
       const closeStub = sinon.stub(GlobalActions.prototype, 'closeSidebarMenu');
 
       component.onTabClick({
@@ -194,7 +194,7 @@ describe('SidebarMenuComponent', () => {
       });
 
       expect(modalService.show.called).to.be.false;
-      expect(closeStub.called).to.be.false;
+      expect(closeStub.calledOnce).to.be.true;
     });
   });
 });

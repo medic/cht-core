@@ -89,10 +89,9 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
   }
 
   onTabClick(tab: SidebarTab) {
-    if (tab.name !== 'bug') {
-      return;
+    if (tab.name === 'bug') {
+      this.openFeedback();
     }
-    this.openFeedback();
     this.close();
   }
 

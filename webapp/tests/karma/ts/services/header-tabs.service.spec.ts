@@ -216,85 +216,85 @@ describe('HeaderTabs service', () => {
           weight: 10,
         },
       ]);
+    });
 
-      it('should include UI extension tabs', async () => {
-        authService.has.returns(true);
-        uiExtensionsService.getPropertiesByType
-          .withArgs('header_tab')
-          .resolves([
-            { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
-            { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
-            { id: 'last', title: 'Last Extension', resource_icon: 'res-2' },
-          ]);
-
-        const tabs = await service.getAuthorizedTabs();
-
-        expect(tabs.map(t => t.name)).to.deep.equal([
-          'messages',
-          'tasks',
-          'reports',
-          'contacts',
-          'analytics',
-          'ui-extension-first',
-          'ui-extension-middle',
-          'ui-extension-last',
+    it('should include UI extension tabs', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType
+        .withArgs('header_tab')
+        .resolves([
+          { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
+          { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
+          { id: 'last', title: 'Last Extension', resource_icon: 'res-2' },
         ]);
 
-        const [firstExt,,,,,, middleExt, lastExt] = tabs;
-        expect(firstExt).to.deep.equal({
-          name: 'ui-extension-first',
-          route: 'ui-extensions/first',
+      const tabs = await service.getAuthorizedTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'messages',
+        'tasks',
+        'reports',
+        'contacts',
+        'analytics',
+        'ui-extension-first',
+        'ui-extension-middle',
+        'ui-extension-last',
+      ]);
+
+      const [firstExt,,,,,, middleExt, lastExt] = tabs;
+      expect(firstExt).to.deep.equal({
+        name: 'ui-extension-first',
+        route: 'ui-extensions/first',
+        defaultIcon: 'fa-question-circle',
+        translation: 'First Extension',
+        permissions: [],
+        icon: 'fa-icon-1',
+        resourceIcon: 'res-1',
+        weight: 0.5,
+      });
+      expect(middleExt).to.deep.equal({
+        name: 'ui-extension-middle',
+        route: 'ui-extensions/middle',
+        defaultIcon: 'fa-question-circle',
+        translation: 'Middle Extension',
+        permissions: [],
+        icon: 'fa-icon-3',
+        resourceIcon: undefined,
+        weight: 6,
+      });
+      expect(lastExt).to.deep.equal({
+        name: 'ui-extension-last',
+        route: 'ui-extensions/last',
+        defaultIcon: 'fa-question-circle',
+        translation: 'Last Extension',
+        permissions: [],
+        icon: undefined,
+        resourceIcon: 'res-2',
+        weight: 6,
+      });
+    });
+
+    it('should include UI extensions even when no default tabs are authorized', async () => {
+      authService.has.returns(false);
+      uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
+        { id: 'ext', title: 'Extension', icon: 'fa-icon' },
+      ]);
+
+      const tabs = await service.getAuthorizedTabs();
+
+      expect(tabs).to.deep.equal([
+        {
+          name: 'ui-extension-ext',
+          route: 'ui-extensions/ext',
           defaultIcon: 'fa-question-circle',
-          translation: 'First Extension',
+          translation: 'Extension',
           permissions: [],
-          icon: 'fa-icon-1',
-          resourceIcon: 'res-1',
-          weight: 0.5,
-        });
-        expect(middleExt).to.deep.equal({
-          name: 'ui-extension-middle',
-          route: 'ui-extensions/middle',
-          defaultIcon: 'fa-question-circle',
-          translation: 'Middle Extension',
-          permissions: [],
-          icon: 'fa-icon-3',
+          icon: 'fa-icon',
           resourceIcon: undefined,
           weight: 6,
-        });
-        expect(lastExt).to.deep.equal({
-          name: 'ui-extension-last',
-          route: 'ui-extensions/last',
-          defaultIcon: 'fa-question-circle',
-          translation: 'Last Extension',
-          permissions: [],
-          icon: undefined,
-          resourceIcon: 'res-2',
-          weight: 6,
-        });
-      });
-
-      it('should include UI extensions even when no default tabs are authorized', async () => {
-        authService.has.returns(false);
-        uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
-          { id: 'ext', title: 'Extension', icon: 'fa-icon' },
-        ]);
-
-        const tabs = await service.getAuthorizedTabs();
-
-        expect(tabs).to.deep.equal([
-          {
-            name: 'ui-extension-ext',
-            route: 'ui-extensions/ext',
-            defaultIcon: 'fa-question-circle',
-            translation: 'Extension',
-            permissions: [],
-            icon: 'fa-icon',
-            resourceIcon: undefined,
-            weight: 6,
-          }
-        ]);
-        expect(authService.has.callCount).to.equal(5);
-      });
+        }
+      ]);
+      expect(authService.has.callCount).to.equal(5);
     });
 
     it('should cache tabs after first call', async () => {
