@@ -14,7 +14,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="db-object-form" version="2024-09-05 00:00:00" prefix="J1!db-object-form!" delimiter="#">
+        <data id="db-object-form" version="2026-04-30 00:00:00" prefix="J1!db-object-form!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -29,12 +29,12 @@
               <name/>
               <sex/>
             </user>
-            <user_contact>
-              <_id/>
-              <name/>
-              <sex/>
-            </user_contact>
           </inputs>
+          <user_contact>
+            <_id/>
+            <name/>
+            <sex/>
+          </user_contact>
           <people>
             <user_contact>
               <_id/>
@@ -55,9 +55,9 @@
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
       <bind nodeset="/data/inputs/user/sex" type="string"/>
-      <bind nodeset="/data/inputs/user_contact/_id" type="string" calculate="../../user/contact_id"/>
-      <bind nodeset="/data/inputs/user_contact/name" type="string"/>
-      <bind nodeset="/data/inputs/user_contact/sex" type="string"/>
+      <bind nodeset="/data/user_contact/_id" type="string" calculate="../../inputs/user/contact_id"/>
+      <bind nodeset="/data/user_contact/name" type="string"/>
+      <bind nodeset="/data/user_contact/sex" type="string"/>
       <bind nodeset="/data/people/user_contact/_id" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/people/user_contact/name" type="string"/>
       <bind nodeset="/data/people/user_contact/sex" type="string"/>
@@ -69,11 +69,11 @@
   <h:body class="pages">
     <group ref="/data/inputs">
       <group ref="/data/inputs/user">
-        <input ref="/data/inputs/user/contact_id" appearance="hidden select-contact type-person"/>
+        <input ref="/data/inputs/user/contact_id" appearance="select-contact type-person"/>
       </group>
-      <group ref="/data/inputs/user_contact">
-        <input ref="/data/inputs/user_contact/_id" appearance="hidden select-contact type-person"/>
-      </group>
+    </group>
+    <group appearance="hidden" ref="/data/user_contact">
+      <input ref="/data/user_contact/_id" appearance="select-contact type-person"/>
     </group>
     <group appearance="field-list" ref="/data/people">
       <group ref="/data/people/user_contact">
