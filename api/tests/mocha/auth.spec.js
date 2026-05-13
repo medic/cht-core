@@ -59,6 +59,15 @@ describe('Auth', () => {
       chai.expect(result).to.deep.equal({ username: 'admin', password: 'P@ss:word:456!' });
     });
 
+
+    it('handles credentials with no colon (no password)', () => {
+      const encoded = Buffer.from('justausername').toString('base64');
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: 'Basic ' + encoded }
+      });
+      chai.expect(result).to.deep.equal({ username: 'justausername', password: '' });
+    });
+
     it('throws error for corrupted base64', () => {
       chai.expect(() => auth.basicAuthCredentials({
         headers: { authorization: 'Basic NOT_VALID_BASE64!!' }
