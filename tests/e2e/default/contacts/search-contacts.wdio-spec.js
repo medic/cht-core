@@ -50,7 +50,17 @@ const latinPatient = personFactory.build({
   parent: { _id: districtHospitalId }
 });
 
-const supervisorPerson, devanagariPatient, latinPatient = personFactory.build({
+const devanagariPatient = personFactory.build({
+  name: "Devanagari १२३४५",
+  parent: { _id: districtHospitalId }
+});
+
+const latinPatient = personFactory.build({
+  name: "Latin 12345",
+  parent: { _id: districtHospitalId }
+});
+
+const supervisorPerson = personFactory.build({
     name: 'Supervisor',
     parent: { _id: districtHospitalId }
   });
