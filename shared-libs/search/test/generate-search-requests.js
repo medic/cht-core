@@ -469,6 +469,26 @@ describe('GenerateSearchRequests service', () => {
 
   });
 
+    it('normalizes Devanagari numerals in search terms', () => {
+      const result = service('contacts', { search: '१२३४५६' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('123456');
+    });
+
+    it('normalizes Devanagari numerals in multi-word search', () => {
+      const result = service('contacts', { search: 'patient १२३४' });
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].params.key).to.equal('patient');
+      chai.expect(result[1].params.key).to.equal('1234');
+    });
+
+    it('normalizes Devanagari numerals in reports search', () => {
+      const result = service('reports', { search: 'patient_id:१२३४५' });
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].params.key).to.equal('patient_id:12345');
+    });
+  });
+
   describe('shouldSortByLastVisitedDate', () => {
     it('should return false for falsy or empty inputs', () => {
       chai.expect(GenerateSeachRequests.shouldSortByLastVisitedDate()).to.equal(false);

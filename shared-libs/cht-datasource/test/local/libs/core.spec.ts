@@ -88,6 +88,27 @@ describe('local core lib', () => {
     });
   });
 
+    it('should normalize Devanagari numerals to Latin digits', () => {
+      const result = normalizeFreetextQualifier({ freetext: '१२३४५' });
+      expect(result).to.deep.equal({ freetext: '12345' });
+    });
+
+    it('should normalize all Devanagari digit values 0-9', () => {
+      const result = normalizeFreetextQualifier({ freetext: '०१२३४५६७८९' });
+      expect(result).to.deep.equal({ freetext: '0123456789' });
+    });
+
+    it('should normalize mixed Devanagari and Latin numerals', () => {
+      const result = normalizeFreetextQualifier({ freetext: '१23२३' });
+      expect(result).to.deep.equal({ freetext: '12345' });
+    });
+
+    it('should normalize Devanagari numerals in a text context', () => {
+      const result = normalizeFreetextQualifier({ freetext: 'person १२३४५' });
+      expect(result).to.deep.equal({ freetext: 'person 12345' });
+    });
+  });
+
   describe('assertFieldsUnchanged', () => {
     it('should not throw when specified fields are unchanged', () => {
       const original = { _id: '123', _rev: '1', name: 'test' };
