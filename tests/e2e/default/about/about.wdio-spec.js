@@ -21,7 +21,7 @@ describe('About page', () => {
     await expect(versionField).toBeDisplayed();
 
     const mismatchWarning = await $('[test-id="about-app-version"]');
-    await expect(mismatchWarning).not.toBeDisplayed();
+    await expect(mismatchWarning).not.toExist();
   });
 
   it('should display partners', async () => {
