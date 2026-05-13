@@ -98,8 +98,9 @@ const getPurgeDbs = () => {
 const waitForPurgeCompletion = async (seq) => {
   const waitForWipe = await utils.waitForApiLogs(/Wiping purged docs cache/);
   await utils.runSentinelTasks();
-  await waitForPurgeLog(seq);
+  const purgeLog = await waitForPurgeLog(seq);
   await waitForWipe.promise;
+  return purgeLog;
 };
 
 const waitForPurgeLog = seq => {
@@ -109,8 +110,9 @@ const waitForPurgeLog = seq => {
   };
   return requestOnSentinelTestDb('/_changes?' + querystring.stringify(params))
     .then(result => {
-      if (result.results && result.results.find(change => change.id.startsWith('purgelog:'))) {
-        return;
+      const change = result?.results?.find(change => change.id.startsWith('purgelog:'));
+      if (change) {
+        return utils.sentinelDb.get(change.id);
       }
 
       return waitForPurgeLog(result.last_seq);

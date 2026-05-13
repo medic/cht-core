@@ -9,7 +9,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('Muting Transition', () => {
   let transition:MutingTransition;
@@ -34,7 +34,7 @@ describe('Muting Transition', () => {
     };
 
     contactTypesService.includes.withArgs(sinon.match({ type: 'person' })).returns(true);
-    contactTypesService.includes.withArgs(sinon.match({ type: 'clinic' })).returns(true);
+    contactTypesService.includes.withArgs(sinon.match({ type: CONTACT_TYPES.CLINIC })).returns(true);
 
     TestBed.configureTestingModule({
       providers: [
@@ -143,14 +143,14 @@ describe('Muting Transition', () => {
       const editContacts = [
         { _id: 'contact1', _rev: 'value', type: 'person' },
         { _id: 'contact2', _rev: 'value', type: 'person' },
-        { _id: 'contact3', _rev: 'value', type: 'clinic' },
+        { _id: 'contact3', _rev: 'value', type: CONTACT_TYPES.CLINIC },
       ];
       expect(transition.filter(editContacts)).to.equal(false);
 
       const docs = [
         { _id: 'report1', type: DOC_TYPES.DATA_RECORD },
         { _id: 'report2', type: DOC_TYPES.DATA_RECORD, form: 'something' },
-        { _id: 'contact3', _rev: 'value', type: 'clinic' },
+        { _id: 'contact3', _rev: 'value', type: CONTACT_TYPES.CLINIC },
         { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' },
       ];
 
@@ -180,7 +180,7 @@ describe('Muting Transition', () => {
         { _id: 'new_report', type: DOC_TYPES.DATA_RECORD, form: 'someform' },
         { _id: 'existent_report', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'mute' },
         { _id: 'new_contact', type: 'person' },
-        { _id: 'new_contact', type: 'clinic' },
+        { _id: 'new_contact', type: CONTACT_TYPES.CLINIC },
       ];
       expect(transition.filter(docs)).to.equal(true);
     });
@@ -580,7 +580,7 @@ describe('Muting Transition', () => {
             doc: {
               _id: 'clinic1',
               contact: { _id: 'othercontact' },
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: { _id: 'place', parent: { _id: 'parent' } },
             }
           },
@@ -596,7 +596,7 @@ describe('Muting Transition', () => {
             id: 'clinic2',
             doc: {
               _id: 'clinic2',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: { _id: 'place', parent: { _id: 'parent' } },
             }
           },
@@ -655,7 +655,7 @@ describe('Muting Transition', () => {
           {
             _id: 'clinic1',
             contact: { _id: 'othercontact' },
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
@@ -677,7 +677,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'clinic2',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'place', parent: { _id: 'parent' } },
             muted: mutingDate,
             muting_history: {
@@ -739,7 +739,7 @@ describe('Muting Transition', () => {
             _id: 'place',
             place_id: 'place_id',
             muted: 1234,
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: { _id: 'chw' },
             parent: {
               _id: 'parent',
@@ -749,7 +749,7 @@ describe('Muting Transition', () => {
               parent: {
                 _id: 'grandparent',
                 contact: { _id: 'chw' },
-                type: 'district_hospital'
+                type: CONTACT_TYPES.DISTRICT_HOSPITAL
               },
             },
           },
@@ -761,7 +761,7 @@ describe('Muting Transition', () => {
             id: 'place',
             doc: {
               _id: 'place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               muted: 1234,
               contact: { _id: 'chw' },
               parent: { _id: 'parent', parent: { _id: 'grandparent' } },
@@ -771,7 +771,7 @@ describe('Muting Transition', () => {
             id: 'other_place',
             doc: {
               _id: 'other_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               muted: 65478,
               contact: { _id: 'other_chw' },
               parent: { _id: 'parent', parent: { _id: 'grandparent' } },
@@ -842,7 +842,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: { _id: 'chw' },
             parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             muting_history: {
@@ -853,7 +853,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'other_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             contact: { _id: 'other_chw' },
             parent: { _id: 'parent', parent: { _id: 'grandparent' } },
             muting_history: {
@@ -935,7 +935,7 @@ describe('Muting Transition', () => {
           place: {
             _id: 'place_uuid',
             name: 'place name',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             place_id: 'place_shortcode',
             parent: {
               _id: 'parent',
@@ -972,7 +972,7 @@ describe('Muting Transition', () => {
         getContact.withArgs(Qualifier.byUuid('place_uuid')).resolves({
           _id: 'place_uuid',
           name: 'place name',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           place_id: 'place_shortcode',
           parent: { _id: 'parent' },
           muting_history: {
@@ -1021,7 +1021,7 @@ describe('Muting Transition', () => {
           {
             _id: 'place_uuid',
             name: 'place name',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             place_id: 'place_shortcode',
             parent: { _id: 'parent' },
             muted: new Date(now).toISOString(),
@@ -1059,7 +1059,7 @@ describe('Muting Transition', () => {
           type: 'person',
           parent: {
             _id: 'parent',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             muted: 1000,
             parent: {
               _id: 'grandparent',
@@ -1115,7 +1115,7 @@ describe('Muting Transition', () => {
           type: 'person',
           parent: {
             _id: 'parent',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             muted: 1000,
             muting_history: {
               last_update: 'client_side',
@@ -1173,7 +1173,7 @@ describe('Muting Transition', () => {
           type: 'person',
           parent: {
             _id: 'parent',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               _id: 'grandparent',
               type: 'health_center',
@@ -1221,7 +1221,7 @@ describe('Muting Transition', () => {
           type: 'person',
           parent: {
             _id: 'parent',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             muted: 1000,
             muting_history: {
               last_update: 'client_side',
@@ -1275,7 +1275,7 @@ describe('Muting Transition', () => {
           {
             _id: 'new_clinic',
             name: 'clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'hc', parent: { _id: 'district' } },
           },
           {
@@ -1290,7 +1290,7 @@ describe('Muting Transition', () => {
           {
             _id: 'new_clinic',
             name: 'clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               _id: 'hc',
               name: 'hc',
@@ -1311,7 +1311,7 @@ describe('Muting Transition', () => {
             parent: {
               _id: 'new_clinic',
               name: 'clinic',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: {
                 _id: 'hc',
                 name: 'hc',
@@ -1344,7 +1344,7 @@ describe('Muting Transition', () => {
           {
             _id: 'new_clinic',
             name: 'clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'hc', parent: { _id: 'district' } },
             muted: muteTime,
             muting_history: {
@@ -1667,7 +1667,7 @@ describe('Muting Transition', () => {
           {
             _id: 'new_clinic',
             name: 'clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'hc', parent: { _id: 'district' } },
           },
           {
@@ -1683,7 +1683,7 @@ describe('Muting Transition', () => {
           {
             _id: 'new_clinic',
             name: 'clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: {
               _id: 'hc',
               name: 'hc',
@@ -1717,7 +1717,7 @@ describe('Muting Transition', () => {
           {
             _id: 'new_clinic',
             name: 'clinic',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'hc', parent: { _id: 'district' } },
             muted: muteTime,
             muting_history: {
@@ -1869,7 +1869,7 @@ describe('Muting Transition', () => {
         const docs = [
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
           },
@@ -1890,7 +1890,7 @@ describe('Muting Transition', () => {
         const hydratedDocs = [
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent', type: 'hc' },
           },
@@ -1900,7 +1900,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -1912,7 +1912,7 @@ describe('Muting Transition', () => {
             fields: { place_id: 'new_place' },
             place: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -1933,7 +1933,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
             muted: mutingDate,
@@ -1971,7 +1971,7 @@ describe('Muting Transition', () => {
         const docs = [
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
           },
@@ -1998,7 +1998,7 @@ describe('Muting Transition', () => {
         const hydratedDocs = [
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent', type: 'hc' },
           },
@@ -2008,7 +2008,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2019,7 +2019,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2031,7 +2031,7 @@ describe('Muting Transition', () => {
             fields: { place_id: 'new_place' },
             place: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2052,7 +2052,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
             muted: mutingDate,
@@ -2102,7 +2102,7 @@ describe('Muting Transition', () => {
         const docs = [
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
           },
@@ -2129,7 +2129,7 @@ describe('Muting Transition', () => {
         const hydratedDocs = [
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent', type: 'hc' },
           },
@@ -2139,7 +2139,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2150,7 +2150,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'old_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2162,7 +2162,7 @@ describe('Muting Transition', () => {
             fields: { place_id: 'new_place' },
             place: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2183,7 +2183,7 @@ describe('Muting Transition', () => {
         expect(updatedDocs).to.deep.equal([
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
             muted: mutingDate,
@@ -2246,7 +2246,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'old_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2258,7 +2258,7 @@ describe('Muting Transition', () => {
             fields: { place_id: 'old_place' },
             place: {
               _id: 'old_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2273,7 +2273,7 @@ describe('Muting Transition', () => {
         ]);
         getContact.withArgs(Qualifier.byUuid('old_place')).resolves({
           _id: 'old_place',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           name: 'clinic',
           parent: { _id: 'parent' },
         });
@@ -2330,7 +2330,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'old_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             name: 'clinic',
             parent: { _id: 'parent' },
             muted: mutingDate,
@@ -2368,7 +2368,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'old_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               name: 'clinic',
               parent: { _id: 'parent', type: 'hc' },
             },
@@ -2384,7 +2384,7 @@ describe('Muting Transition', () => {
               name: 'person',
               parent: {
                 _id: 'old_place',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 name: 'clinic',
                 parent: { _id: 'parent', type: 'hc' },
               },
@@ -2452,7 +2452,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'old_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               muted: 100,
               parent: {
                 _id: 'district',
@@ -2472,7 +2472,7 @@ describe('Muting Transition', () => {
               name: 'person',
               parent: {
                 _id: 'old_place',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 muted: 100,
                 parent: {
                   _id: 'district',
@@ -2487,9 +2487,11 @@ describe('Muting Transition', () => {
         lineageModelGenerator.docs.resolves(hydratedDocs);
         contactMutedService.getMuted.returns(true);
         placeHierarchyService.getDescendants.resolves([
-          { id: 'old_place', doc: { _id: 'old_place', type: 'clinic', muted: 100, parent: { _id: 'district' } } },
+          { id: 'old_place', doc: { _id: 'old_place', 
+            type: CONTACT_TYPES.CLINIC, muted: 100, parent: { _id: 'district' } } },
           { id: 'contact1', doc: { _id: 'contact1', type: 'person', muted: 100, parent: { _id: 'district' } } },
-          { id: 'old_place2', doc: { _id: 'old_place2', type: 'clinic', muted: 100, parent: { _id: 'district' } } },
+          { id: 'old_place2', doc: { _id: 'old_place2', 
+            type: CONTACT_TYPES.CLINIC, muted: 100, parent: { _id: 'district' } } },
         ]);
         getContact.withArgs(Qualifier.byUuid('district')).resolves({
           _id: 'district',
@@ -2524,7 +2526,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'old_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'district' },
             muting_history: {
               last_update: 'client_side',
@@ -2544,7 +2546,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'old_place2',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'district' },
             muting_history: {
               last_update: 'client_side',
@@ -2589,7 +2591,7 @@ describe('Muting Transition', () => {
             name: 'person',
             parent: {
               _id: 'old_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               muted: 100,
               parent: {
                 _id: 'district',
@@ -2609,7 +2611,7 @@ describe('Muting Transition', () => {
               name: 'person',
               parent: {
                 _id: 'old_place',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 muted: 100,
                 parent: {
                   _id: 'district',
@@ -2624,9 +2626,11 @@ describe('Muting Transition', () => {
         lineageModelGenerator.docs.resolves(hydratedDocs);
         contactMutedService.getMuted.returns(true);
         placeHierarchyService.getDescendants.resolves([
-          { id: 'old_place', doc: { _id: 'old_place', type: 'clinic', muted: 100, parent: { _id: 'district' } } },
+          { id: 'old_place', doc: { _id: 'old_place', 
+            type: CONTACT_TYPES.CLINIC, muted: 100, parent: { _id: 'district' } } },
           { id: 'contact1', doc: { _id: 'contact1', type: 'person', muted: 100, parent: { _id: 'district' } } },
-          { id: 'old_place2', doc: { _id: 'old_place2', type: 'clinic', muted: 100, parent: { _id: 'district' } } },
+          { id: 'old_place2', doc: { _id: 'old_place2', 
+            type: CONTACT_TYPES.CLINIC, muted: 100, parent: { _id: 'district' } } },
         ]);
         getContact.withArgs(Qualifier.byUuid('district')).resolves({
           _id: 'district',
@@ -2661,7 +2665,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'old_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'district' },
             muting_history: {
               last_update: 'client_side',
@@ -2681,7 +2685,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'old_place2',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'district' },
             muting_history: {
               last_update: 'client_side',
@@ -2714,7 +2718,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'parent' },
           },
           {
@@ -2731,13 +2735,13 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: { _id: 'parent', muted: 400, type: 'district' },
             },
           },
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'parent', muted: 400, type: 'district' },
           },
           {
@@ -2750,7 +2754,7 @@ describe('Muting Transition', () => {
               type: 'person',
               parent: {
                 _id: 'new_place',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'parent', muted: 400, type: 'district' },
               },
             },
@@ -2787,7 +2791,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'parent' },
           },
           {
@@ -2833,7 +2837,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'parent' },
           },
           {
@@ -2850,13 +2854,13 @@ describe('Muting Transition', () => {
             type: 'person',
             parent: {
               _id: 'new_place',
-              type: 'clinic',
+              type: CONTACT_TYPES.CLINIC,
               parent: { _id: 'parent', muted: 400, type: 'district' },
             },
           },
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'parent', muted: 400, type: 'district' },
           },
           {
@@ -2893,7 +2897,7 @@ describe('Muting Transition', () => {
           },
           {
             _id: 'new_place',
-            type: 'clinic',
+            type: CONTACT_TYPES.CLINIC,
             parent: { _id: 'parent' },
           },
           {
