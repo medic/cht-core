@@ -839,7 +839,7 @@ describe('registration', () => {
             parent: {
               _id: 'petes',
               name: 'Petes Place',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               type: 'contact',
               parent: { _id: 'west_hc', name: 'west hc', contact_type: CONTACT_TYPES.HEALTH_CENTER, type: 'contact' }
             }
@@ -868,7 +868,7 @@ describe('registration', () => {
       const contactTypes = [
         { id: CONTACT_TYPES.HEALTH_CENTER },
         { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
-        { id: 'patient', parents: ['clinic'], person: true },
+        { id: 'patient', parents: [CONTACT_TYPES.CLINIC], person: true },
       ];
       config.get.returns([eventConfig]);
       config.getAll.returns({ contact_types: contactTypes });
@@ -1279,7 +1279,7 @@ describe('registration', () => {
             parent: {
               _id: 'petes',
               name: 'Petes Place',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               type: 'contact',
               parent: {
                 _id: 'west_hc',
@@ -1306,7 +1306,8 @@ describe('registration', () => {
       const eventConfig = {
         form: 'R',
         events: [{
-          name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'parent_id' }
+          name: 'on_create', trigger: 'add_place', 
+          params: { contact_type: CONTACT_TYPES.CLINIC, parent_id: 'parent_id' }
         }],
         messages: [{
           recipient: 'reporting_unit',
@@ -1324,7 +1325,7 @@ describe('registration', () => {
       const contactTypes = [
         { id: CONTACT_TYPES.HEALTH_CENTER },
         { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
-        { id: 'patient', parents: ['clinic'], person: true },
+        { id: 'patient', parents: [CONTACT_TYPES.CLINIC], person: true },
       ];
       config.get.returns([eventConfig]);
       config.getAll.returns({ contact_types: contactTypes });
@@ -1344,7 +1345,7 @@ describe('registration', () => {
           name: 'new clinic',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'north_hc' },
           created_by: 'pete',
           reported_date: change.doc.reported_date,
@@ -1554,7 +1555,7 @@ describe('registration', () => {
             parent: {
               _id: 'petes',
               name: 'Petes Place',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               type: 'contact',
               parent: {
                 _id: 'west_hc',
@@ -1652,7 +1653,7 @@ describe('registration', () => {
             parent: {
               _id: 'petes',
               name: 'Petes Place',
-              contact_type: 'clinic',
+              contact_type: CONTACT_TYPES.CLINIC,
               type: 'contact',
               parent: {
                 _id: 'west_hc',
@@ -1680,7 +1681,7 @@ describe('registration', () => {
         form: 'R',
         events: [{
           name: 'on_create', trigger: 'add_place',
-          params: { contact_type: 'clinic', parent_id: 'fiddle', place_name_field: 'doodle' }
+          params: { contact_type: CONTACT_TYPES.CLINIC, parent_id: 'fiddle', place_name_field: 'doodle' }
         }],
         messages: [{
           recipient: 'reporting_unit',
@@ -1698,7 +1699,7 @@ describe('registration', () => {
       const contactTypes = [
         { id: CONTACT_TYPES.HEALTH_CENTER },
         { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
-        { id: 'patient', parents: ['clinic'], person: true },
+        { id: 'patient', parents: [CONTACT_TYPES.CLINIC], person: true },
       ];
       config.get.returns([eventConfig]);
       config.getAll.returns({ contact_types: contactTypes });
@@ -1718,7 +1719,7 @@ describe('registration', () => {
           name: 'newest place',
           place_id: placeId,
           source_id: change.doc._id,
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
           parent: { _id: 'north_hc' },
           created_by: 'pete',
           reported_date: change.doc.reported_date,
@@ -1749,7 +1750,7 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic' } }],
+        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: CONTACT_TYPES.CLINIC } }],
         messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_not_found',
@@ -1809,7 +1810,8 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'some_id' } }],
+        events: [{ name: 'on_create', trigger: 'add_place', 
+          params: { contact_type: CONTACT_TYPES.CLINIC, parent_id: 'some_id' } }],
         messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_field_not_provided',
@@ -1864,7 +1866,8 @@ describe('registration', () => {
       sinon.stub(db.medic, 'post').resolves();
       const eventConfig = {
         form: 'R',
-        events: [{ name: 'on_create', trigger: 'add_place', params: { contact_type: 'clinic', parent_id: 'some_id' } }],
+        events: [{ name: 'on_create', trigger: 'add_place', 
+          params: { contact_type: CONTACT_TYPES.CLINIC, parent_id: 'some_id' } }],
         messages: [{
           recipient: 'reporting_unit',
           event_type: 'parent_field_not_provided',
@@ -2102,7 +2105,7 @@ describe('registration', () => {
           reported_date: 53,
           from: '+555123',
           fields: { place_id: '79999' },
-          place: { _id: 'place_id', place_id: '79999', type: 'clinic' },
+          place: { _id: 'place_id', place_id: '79999', type: CONTACT_TYPES.CLINIC },
         },
       };
       sinon.stub(db.medic, 'post').resolves();
@@ -3070,7 +3073,7 @@ describe('registration', () => {
         patient: {
           _id: 'clinic',
           place_id: '56987',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
         }
       };
       sinon.stub(contactTypeUtils, 'isPerson').returns(false);
@@ -3082,7 +3085,8 @@ describe('registration', () => {
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
         contactTypeUtils.isPerson.callCount.should.equal(1);
-        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, { _id: 'clinic', place_id: '56987', type: 'clinic' }]);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, 
+          { _id: 'clinic', place_id: '56987', type: CONTACT_TYPES.CLINIC }]);
       });
     });
 
@@ -3151,7 +3155,7 @@ describe('registration', () => {
         patient: {
           _id: 'place',
           patient_id: '69874',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
         },
       };
 
@@ -3166,7 +3170,7 @@ describe('registration', () => {
         contactTypeUtils.isPerson.callCount.should.equal(1);
         contactTypeUtils.isPerson.args[0].should.deep.equal([
           {},
-          { _id: 'place', patient_id: '69874', type: 'clinic' }
+          { _id: 'place', patient_id: '69874', type: CONTACT_TYPES.CLINIC }
         ]);
       });
     });
@@ -3184,7 +3188,7 @@ describe('registration', () => {
         patient: {
           _id: 'place',
           place_id: '69874',
-          type: 'clinic',
+          type: CONTACT_TYPES.CLINIC,
         },
       };
 
@@ -3198,7 +3202,8 @@ describe('registration', () => {
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
         contactTypeUtils.isPerson.callCount.should.equal(1);
-        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, { _id: 'place', place_id: '69874', type: 'clinic' }]);
+        contactTypeUtils.isPerson.args[0].should.deep.equal([{}, 
+          { _id: 'place', place_id: '69874', type: CONTACT_TYPES.CLINIC }]);
       });
     });
 

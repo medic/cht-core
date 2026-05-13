@@ -18,7 +18,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { ButtonType, FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LineagePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
@@ -40,8 +40,8 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
   ]
 })
 export class MessagesComponent implements OnInit, OnDestroy {
-  private globalActions: GlobalActions;
-  private messagesActions: MessagesActions;
+  private readonly globalActions: GlobalActions;
+  private readonly messagesActions: MessagesActions;
   private destroyed = false;
   readonly buttonType = ButtonType;
 
@@ -145,17 +145,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private openSendMessageModal(modalService:ModalService, event) {
-    const target = $(event.target).closest('.send-message');
-
-    if (target.hasClass('mm-icon-disabled')) {
-      return;
-    }
-
-    event.preventDefault();
-    modalService.show(SendMessageComponent);
-  }
-
   private setConversations(conversations: Record<string, any>[] = [], {merge = false} = {}) {
     if (merge) {
       this.removeDeleted(this.conversations, conversations);
@@ -214,7 +203,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   listTrackBy(index, message) {
-    const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
+    const identifier = message.doc ? message.doc._id + message.doc._rev : message.id;
     return message.key + identifier;
   }
 

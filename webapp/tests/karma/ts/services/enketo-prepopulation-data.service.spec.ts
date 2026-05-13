@@ -8,134 +8,134 @@ describe('EnketoPrepopulationData service', () => {
   let service;
 
   const generatedForm =
-  '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
-    '<h:head>' +
-      '<model>' +
-        '<instance>' +
-          '<data id="person" version="1">' +
-            '<person><name/></person>' +
-            '<meta><instanceID/></meta>' +
-          '</data>' +
-        '</instance>' +
-        '<bind nodeset="/data/person/name" type="string"/>' +
-      '</model>' +
-    '</h:head>' +
-    '<h:body>' +
-      '<input ref="/data/person/name">' +
-        '<label>person.field.name</label>' +
-      '</input>' +
-    '</h:body>' +
-  '</h:html>';
+    '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
+      '<h:head>' +
+        '<model>' +
+          '<instance>' +
+            '<data id="person" version="1">' +
+              '<person><name/></person>' +
+              '<meta><instanceID/></meta>' +
+            '</data>' +
+          '</instance>' +
+          '<bind nodeset="/data/person/name" type="string"/>' +
+        '</model>' +
+      '</h:head>' +
+      '<h:body>' +
+        '<input ref="/data/person/name">' +
+          '<label>person.field.name</label>' +
+        '</input>' +
+      '</h:body>' +
+    '</h:html>';
 
   const editPersonForm =
-  '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-    '<model>' +
-      '<instance>' +
-        '<data id="person" version="2015-11-11">' +
-          '<inputs>' +
-            '<user>' +
-              '<name/>' +
-              '<language/>' +
-            '</user>' +
+    '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
+      '<model>' +
+        '<instance>' +
+          '<data id="person" version="2015-11-11">' +
+            '<inputs>' +
+              '<user>' +
+                '<name/>' +
+                '<language/>' +
+              '</user>' +
+              '<meta>' +
+                '<location>' +
+                  '<lat/>' +
+                  '<long/>' +
+                '</location>' +
+              '</meta>' +
+            '</inputs>' +
+            '<person>' +
+              '<type>person</type>' +
+              '<parent>PARENT</parent>' +
+              '<last_name/>' +
+              '<first_name/>' +
+              '<date_of_birth/>' +
+              '<date_of_birth_method/>' +
+              '<ephemeral_dob>' +
+                '<dob_calendar/>' +
+                '<age_years/>' +
+                '<age_months>0</age_months>' +
+                '<dob_method/>' +
+                '<dob_raw/>' +
+                '<dob/>' +
+              '</ephemeral_dob>' +
+            '</person>' +
             '<meta>' +
-              '<location>' +
-                '<lat/>' +
-                '<long/>' +
-              '</location>' +
+              '<instanceID/>' +
             '</meta>' +
-          '</inputs>' +
-          '<person>' +
-            '<type>person</type>' +
-            '<parent>PARENT</parent>' +
-            '<last_name/>' +
-            '<first_name/>' +
-            '<date_of_birth/>' +
-            '<date_of_birth_method/>' +
-            '<ephemeral_dob>' +
-              '<dob_calendar/>' +
-              '<age_years/>' +
-              '<age_months>0</age_months>' +
-              '<dob_method/>' +
-              '<dob_raw/>' +
-              '<dob/>' +
-            '</ephemeral_dob>' +
-          '</person>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</data>' +
-      '</instance>' +
-    '</model>' +
-  '</h:head></h:html>';
+          '</data>' +
+        '</instance>' +
+      '</model>' +
+    '</h:head></h:html>';
 
   const editPersonFormWithoutInputs =
-  '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-    '<model>' +
-      '<instance>' +
-        '<data id="person" version="2015-11-11">' +
-          '<person>' +
-            '<type>person</type>' +
-            '<parent>PARENT</parent>' +
-            '<last_name/>' +
-            '<first_name/>' +
-            '<date_of_birth/>' +
-            '<date_of_birth_method/>' +
-            '<ephemeral_dob>' +
-              '<dob_calendar/>' +
-              '<age_years/>' +
-              '<age_months>0</age_months>' +
-              '<dob_method/>' +
-              '<dob_raw/>' +
-              '<dob/>' +
-            '</ephemeral_dob>' +
-          '</person>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</data>' +
-      '</instance>' +
-    '</model>' +
-  '</h:head></h:html>';
+    '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
+      '<model>' +
+        '<instance>' +
+          '<data id="person" version="2015-11-11">' +
+            '<person>' +
+              '<type>person</type>' +
+              '<parent>PARENT</parent>' +
+              '<last_name/>' +
+              '<first_name/>' +
+              '<date_of_birth/>' +
+              '<date_of_birth_method/>' +
+              '<ephemeral_dob>' +
+                '<dob_calendar/>' +
+                '<age_years/>' +
+                '<age_months>0</age_months>' +
+                '<dob_method/>' +
+                '<dob_raw/>' +
+                '<dob/>' +
+              '</ephemeral_dob>' +
+            '</person>' +
+            '<meta>' +
+              '<instanceID/>' +
+            '</meta>' +
+          '</data>' +
+        '</instance>' +
+      '</model>' +
+    '</h:head></h:html>';
 
   const pregnancyForm =
-  '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-    '<model>' +
-      '<instance>' +
-        '<pregnancy id="person" version="2015-11-11">' +
-          '<inputs>' +
-            '<user>' +
-              '<name/>' +
-            '</user>' +
+    '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
+      '<model>' +
+        '<instance>' +
+          '<pregnancy id="person" version="2015-11-11">' +
+            '<inputs>' +
+              '<user>' +
+                '<name/>' +
+              '</user>' +
+              '<meta>' +
+                '<location>' +
+                  '<lat/>' +
+                  '<long/>' +
+                '</location>' +
+              '</meta>' +
+            '</inputs>' +
+            '<person>' +
+              '<type>person</type>' +
+              '<parent>PARENT</parent>' +
+              '<last_name/>' +
+              '<first_name/>' +
+              '<date_of_birth/>' +
+              '<date_of_birth_method/>' +
+              '<ephemeral_dob>' +
+                '<dob_calendar/>' +
+                '<age_years/>' +
+                '<age_months>0</age_months>' +
+                '<dob_method/>' +
+                '<dob_raw/>' +
+                '<dob/>' +
+              '</ephemeral_dob>' +
+            '</person>' +
             '<meta>' +
-              '<location>' +
-                '<lat/>' +
-                '<long/>' +
-              '</location>' +
+              '<instanceID/>' +
             '</meta>' +
-          '</inputs>' +
-          '<person>' +
-            '<type>person</type>' +
-            '<parent>PARENT</parent>' +
-            '<last_name/>' +
-            '<first_name/>' +
-            '<date_of_birth/>' +
-            '<date_of_birth_method/>' +
-            '<ephemeral_dob>' +
-              '<dob_calendar/>' +
-              '<age_years/>' +
-              '<age_months>0</age_months>' +
-              '<dob_method/>' +
-              '<dob_raw/>' +
-              '<dob/>' +
-            '</ephemeral_dob>' +
-          '</person>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</pregnancy>' +
-      '</instance>' +
-    '</model>' +
-  '</h:head></h:html>';
+          '</pregnancy>' +
+        '</instance>' +
+      '</model>' +
+    '</h:head></h:html>';
 
   beforeEach(() => {
     service = TestBed.inject(EnketoPrepopulationDataService);

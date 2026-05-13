@@ -10,7 +10,7 @@ const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('More Options Menu - Offline User - Edit permissions disabled', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const health_center = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const district_hospital = places.get('district_hospital');
   let xmlReportId;
