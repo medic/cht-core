@@ -86,7 +86,6 @@ describe('local core lib', () => {
       const result = normalizeFreetextQualifier({ freetext: 'already:normalized' });
       expect(result).to.deep.equal({ freetext: 'already:normalized' });
     });
-  });
 
     it('should normalize Devanagari numerals to Latin digits', () => {
       const result = normalizeFreetextQualifier({ freetext: '१२३४५' });
