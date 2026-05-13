@@ -52,12 +52,12 @@ describe('Edit ', () => {
     // Navigate away to a clean state so no stale overlays remain
     try {
       await browser.keys('Escape');
-    } catch (e) {
+    } catch {
       // ignore if no overlay to dismiss
     }
     try {
       await commonPage.closeReloadModal(false);
-    } catch (e) {
+    } catch {
       // ignore if no modal
     }
   });
