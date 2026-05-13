@@ -17,7 +17,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardSubtitle } from '@angular/material/card';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { MatButton } from '@angular/material/button';
-import { DecimalPipe } from '@angular/common';
+import { NgIf, NgSwitch, NgSwitchCase, NgFor, DecimalPipe } from '@angular/common';
 import { PartnerImagePipe } from '@mm-pipes/resource-icon.pipe';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
@@ -32,6 +32,10 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
     MatCardContent,
     MatButton,
     MatCardSubtitle,
+    NgIf,
+    NgSwitch,
+    NgSwitchCase,
+    NgFor,
     DecimalPipe,
     TranslatePipe,
     PartnerImagePipe,
