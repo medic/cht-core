@@ -1336,6 +1336,49 @@ describe('messageUtils', () => {
         expect(actual).to.equal(expected);
       });
 
+      it('handles BS year boundary at Chaitra 30 / Baisakh 1', () => {
+        // AD 2024-04-12 is BS 2080-12-30 (last day of Chaitra, end of BS year)
+        const chaitraEnd = new Date(2024, 3, 12);
+        // AD 2024-04-13 is BS 2081-01-01 (first day of Baisakh, start of new BS year)
+        const baisakhStart = new Date(2024, 3, 13);
+
+        const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
+        const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
+
+        const doc1 = { reported_date: chaitraEnd.getTime() };
+        const doc2 = { reported_date: baisakhStart.getTime() };
+
+        const result1 = utils.template(config, null, doc1, { message: input });
+        const result2 = utils.template(config, null, doc2, { message: input });
+
+        // Chaitra 30, 2080 — last day of the BS year
+        expect(result1).to.equal('३० चैत्र २०८०');
+        // Baisakh 1, 2081 — first day of the next BS year
+        expect(result2).to.equal('१ बैशाख २०८१');
+      });
+
+      it('handles Jestha as a 32-day month', () => {
+        // Jestha 2081 (BS month 2) has 32 days
+        // AD 2024-06-14 = BS 2081-02-32 (last day of Jestha)
+        const jesthaEnd = new Date(2024, 5, 14);
+        // AD 2024-05-14 = BS 2081-02-01 (first day of Jestha)
+        const jesthaStart = new Date(2024, 4, 14);
+
+        const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
+        const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
+
+        const doc1 = { reported_date: jesthaStart.getTime() };
+        const doc2 = { reported_date: jesthaEnd.getTime() };
+
+        const result1 = utils.template(config, null, doc1, { message: input });
+        const result2 = utils.template(config, null, doc2, { message: input });
+
+        // Jestha 1, 2081 (first day)
+        expect(result1).to.equal('१ जेष्ठ २०८१');
+        // Jestha 32, 2081 (last day — 32-day month)
+        expect(result2).to.equal('३२ जेष्ठ २०८१');
+      });
+
     });
 
     describe('template context', () => {
