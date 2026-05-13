@@ -5,13 +5,14 @@ const contactElements = require('@page-objects/default/contacts/contacts.wdio.pa
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Testing Incorrect locale', () => {
   const LANGUAGE_CODE = 'hil';
 
   const place =  placeFactory.place().build({
     name: 'hil district',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: 1000,
     parent: '',
   });

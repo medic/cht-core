@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
+import { DOC_TYPES } from '@medic/constants';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -11,6 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -50,6 +52,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     private readonly rulesEngineService: RulesEngineService,
     private readonly performanceService: PerformanceService,
     private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly telemetryService: TelemetryService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -105,7 +108,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToChanges() {
-    const isReport = doc => doc.type === 'data_record' && !!doc.form;
+    const isReport = doc => doc.type === DOC_TYPES.DATA_RECORD && !!doc.form;
     const changesSubscription = this.changesService.subscribe({
       key: 'refresh-task-list',
       filter: change => !!change.doc && (
@@ -169,6 +172,7 @@ export class TasksComponent implements OnInit, OnDestroy {
         ...this.getTaskLineage(subjects, task)
       }));
       this.tasksActions.setTasksList(tasksWithLineage);
+      this.telemetryService.record('tasks:all-tasks', tasksWithLineage.length);
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.errorStack = exception.stack;

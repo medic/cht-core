@@ -6,6 +6,7 @@ import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { LanguageService } from '@mm-services/language.service';
+import { PREFIXES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +44,7 @@ export class UserSettingsService {
   private userDocId() {
     const userCtx = this.sessionService.userCtx();
     if (userCtx) {
-      return 'org.couchdb.user:' + userCtx.name;
+      return PREFIXES.COUCH_USER + userCtx.name;
     }
   }
 

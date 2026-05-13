@@ -34,9 +34,15 @@ setSecret() {
 	if [ -z "$COUCHDB_SECRET" ]; then
 		COUCHDB_SECRET=$(cat /proc/sys/kernel/random/uuid)
 	fi
-	# Set secret only if not already present
-	if ! grep -Pzq "\[couch_httpd_auth\]\nsecret =" $CLUSTER_CREDENTIALS; then
-		printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >>$CLUSTER_CREDENTIALS
+	# Ensure [couch_httpd_auth] section exists
+	if ! grep -q '^\s*\[\s*couch_httpd_auth\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
+		printf "\n[couch_httpd_auth]\n" >> "$CLUSTER_CREDENTIALS"
+	fi
+
+	if ! sed -n '/^\s*\[\s*couch_httpd_auth\s*\]\s*$/,/^\s*\[/p' "$CLUSTER_CREDENTIALS" | grep -q '^\s*secret\s*='; then
+		sed "/^\s*\[\s*couch_httpd_auth\s*\]\s*$/a secret = $COUCHDB_SECRET" "$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp"
+		cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS"
+		rm "${CLUSTER_CREDENTIALS}.tmp"
 	fi
 }
 
@@ -44,9 +50,15 @@ setUuid() {
 	if [ -z "$COUCHDB_UUID" ]; then
 		COUCHDB_UUID=$(cat /proc/sys/kernel/random/uuid)
 	fi
-	# Set uuid only if not already present
-	if ! grep -Pzq "\[couchdb\]\nuuid =" $CLUSTER_CREDENTIALS; then
-		printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >>$CLUSTER_CREDENTIALS
+	# Ensure [couchdb] section exists
+	if ! grep -q '^\s*\[\s*couchdb\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
+		printf "\n[couchdb]\n" >> "$CLUSTER_CREDENTIALS"
+	fi
+
+	if ! sed -n '/^\s*\[\s*couchdb\s*\]\s*$/,/^\s*\[/p' "$CLUSTER_CREDENTIALS" | grep -q '^\s*uuid\s*='; then
+		sed "/^\s*\[\s*couchdb\s*\]\s*$/a uuid = $COUCHDB_UUID" "$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp"
+		cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS"
+		rm "${CLUSTER_CREDENTIALS}.tmp"
 	fi
 }
 
@@ -79,9 +91,19 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 	touch $CLUSTER_CREDENTIALS
 
 	if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ] && [ -z "$COUCHDB_SYNC_ADMINS_NODE" ]; then
-		# Create admin only if not already present
-		if ! grep -Pzq "\[admins\]\n$COUCHDB_USER =" $CLUSTER_CREDENTIALS; then
-			printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >>$CLUSTER_CREDENTIALS
+		# Ensure [admins] section exists
+		if ! grep -q '^\s*\[\s*admins\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
+			printf "\n[admins]\n" >> "$CLUSTER_CREDENTIALS"
+		fi
+
+		# Ensure user exists within [admins] section
+		if ! sed -n '/^\s*\[\s*admins\s*\]\s*$/,/^\s*\[/p' "$CLUSTER_CREDENTIALS" | grep -q "^\s*${COUCHDB_USER}\s*="; then
+			ADMIN_CREDS_LINE="$(printf '%s = %s' "$COUCHDB_USER" "$COUCHDB_PASSWORD")"
+			export ADMIN_CREDS_LINE
+			awk '/^\s*\[\s*admins\s*\]\s*$/{print; print ENVIRON["ADMIN_CREDS_LINE"]; next}1' \
+				"$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp" \
+				&& cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS" \
+				&& rm "${CLUSTER_CREDENTIALS}.tmp"
 		fi
 	fi
 
@@ -89,16 +111,22 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 		# Since changing this name after it has been set can mess up clustering, this can only run once  so a new service name can not be set on subsequent runs
 		# Should only run when creating a cluster
 		if grep "127.0.0.1" /opt/couchdb/etc/vm.args; then
-			sed -i "s/127.0.0.1/$SVC_NAME/" "/opt/couchdb/etc/vm.args"
+			sed "s/127.0.0.1/$SVC_NAME/" "/opt/couchdb/etc/vm.args" > "/opt/couchdb/etc/vm.args.tmp"
+			cp "/opt/couchdb/etc/vm.args.tmp" "/opt/couchdb/etc/vm.args"
+			rm "/opt/couchdb/etc/vm.args.tmp"
 		fi
 	fi
 
 	if [ "$COUCHDB_LOG_LEVEL" ]; then
-		if ! grep -Pzq "\[log\]\nlevel =" $CLUSTER_CREDENTIALS; then
-			printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >>$CLUSTER_CREDENTIALS
-		else
-			sed -i "s/level = .*/level = $COUCHDB_LOG_LEVEL/g" $CLUSTER_CREDENTIALS
+		# Ensure [log] section exists
+		if ! grep -q '^\s*\[\s*log\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
+			printf "\n[log]\n" >> "$CLUSTER_CREDENTIALS"
 		fi
+
+		# Always set the log level (remove old value first, then insert)
+		sed -e '/^\s*level\s*=.*/d' -e "/^\s*\[\s*log\s*\]\s*$/a level = $COUCHDB_LOG_LEVEL" "$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp"
+		cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS"
+		rm "${CLUSTER_CREDENTIALS}.tmp"
 	fi
 
 	if [ "$CLUSTER_PEER_IPS" ] || [ "$IS_CLUSTER" = false ]; then
@@ -112,9 +140,22 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 		/bin/bash /opt/couchdb/etc/set-up-cluster.sh check_if_couchdb_is_ready "http://$COUCHDB_SYNC_ADMINS_NODE:5984"
 		COUCHDB_HASHED_PASSWORD=$(curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" "http://$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/admins/$COUCHDB_USER" | sed "s/^\([\"]\)\(.*\)\1\$/\2/g")
 
-		if ! grep -Pzq "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" $CLUSTER_CREDENTIALS; then
-			printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" >>$CLUSTER_CREDENTIALS
+		# Ensure [admins] section exists
+		if ! grep -q '^\s*\[\s*admins\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
+			printf "\n[admins]\n" >> "$CLUSTER_CREDENTIALS"
 		fi
+
+		# Always set the admin credentials (remove old entry from [admins] first, then insert)
+		ADMIN_CREDS_LINE="$(printf '%s = %s' "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD")"
+		export ADMIN_CREDS_LINE
+		awk -v user="$COUCHDB_USER" '
+			/^\s*\[\s*admins\s*\]\s*$/ { in_admins=1; print; print ENVIRON["ADMIN_CREDS_LINE"]; next }
+			/^\s*\[/ { in_admins=0 }
+			in_admins && $0 ~ "^\\s*" user "\\s*=" { next }
+			1
+		' "$CLUSTER_CREDENTIALS" > "${CLUSTER_CREDENTIALS}.tmp" \
+			&& cp "${CLUSTER_CREDENTIALS}.tmp" "$CLUSTER_CREDENTIALS" \
+			&& rm "${CLUSTER_CREDENTIALS}.tmp"
 
 		COUCHDB_SECRET=$(curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" "http://$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couch_httpd_auth/secret" | sed "s/^\([\"]\)\(.*\)\1\$/\2/g")
 		setSecret

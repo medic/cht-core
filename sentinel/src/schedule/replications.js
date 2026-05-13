@@ -3,8 +3,10 @@ const db = require('../db');
 const logger = require('@medic/logger');
 const environment = require('@medic/environment');
 const request = require('@medic/couch-request');
+const { SENTINEL_METADATA } = require('@medic/constants');
 
-const PURGE_LOG_ID = '_local/purge_log';
+const PURGE_LOG_ID = SENTINEL_METADATA.PURGE_LOG;
+// Note: distinct from _local/purgelog (no underscore) used in webapp purger
 // default CouchDB purge max_document_id_number
 // https://docs.couchdb.org/en/master/cluster/purging.html#config-settings
 const BATCH_SIZE = 100;

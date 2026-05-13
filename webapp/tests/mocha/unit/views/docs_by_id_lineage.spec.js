@@ -1,6 +1,7 @@
 const expect = require('chai').expect;
 const utils = require('./utils');
 const map = utils.loadView('medic-db', 'medic-client', 'docs_by_id_lineage');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('docs_by_id_lineage view', () => {
   beforeEach(() => {
@@ -10,7 +11,7 @@ describe('docs_by_id_lineage view', () => {
     it('does not emit if doc is not a report', () => {
       const doc = {
         _id: 'messsage',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         sms_message: { }
       };
 
@@ -20,7 +21,7 @@ describe('docs_by_id_lineage view', () => {
     it('emits report document for depth 0', () => {
       const doc = {
         _id: 'report',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
       };
 
@@ -32,7 +33,7 @@ describe('docs_by_id_lineage view', () => {
     it('emits contact lineage for depth 1+', () => {
       const doc = {
         _id: 'report',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: {
           _id: 'contact1',
@@ -55,7 +56,7 @@ describe('docs_by_id_lineage view', () => {
     it('does not emit lineage for empty contact parents', () => {
       const doc1 = {
         _id: 'report1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: {}
       };
@@ -65,7 +66,7 @@ describe('docs_by_id_lineage view', () => {
 
       const doc2 = {
         _id: 'report2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: {
           _id: 'contact1',
@@ -81,7 +82,7 @@ describe('docs_by_id_lineage view', () => {
 
       const doc3 = {
         _id: 'report3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         contact: {
           _id: 'contact1',
@@ -108,10 +109,10 @@ describe('docs_by_id_lineage view', () => {
       expect(result[0]).to.deep.equal({ key: [ 'person', 0 ], value: { _id: 'person' }});
 
       map.reset();
-      const clinic = { _id: 'clinic', type: 'clinic' };
+      const clinic = { _id: 'clinic', type: CONTACT_TYPES.CLINIC };
       const resultClinic = map(clinic, true);
       expect(resultClinic.length).to.equal(1);
-      expect(resultClinic[0]).to.deep.equal({ key: [ 'clinic', 0 ], value: { _id: 'clinic' }});
+      expect(resultClinic[0]).to.deep.equal({ key: [ CONTACT_TYPES.CLINIC, 0 ], value: { _id: 'clinic' }});
 
       map.reset();
       const healthCenter = { _id: 'healthCenter', type: 'health_center' };
@@ -120,7 +121,7 @@ describe('docs_by_id_lineage view', () => {
       expect(resultHealthCenter[0]).to.deep.equal({ key: [ 'healthCenter', 0 ], value: { _id: 'healthCenter' }});
 
       map.reset();
-      const districtHospital = { _id: 'districtHospital', type: 'district_hospital' };
+      const districtHospital = { _id: 'districtHospital', type: CONTACT_TYPES.DISTRICT_HOSPITAL };
       const resultdistrictHospital = map(districtHospital, true);
       expect(resultdistrictHospital.length).to.equal(1);
       expect(resultdistrictHospital[0])

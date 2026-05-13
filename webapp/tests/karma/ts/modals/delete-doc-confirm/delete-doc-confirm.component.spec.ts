@@ -12,6 +12,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('DeleteDocConfirmComponent', () => {
   let component: DeleteDocConfirmComponent;
@@ -95,7 +96,7 @@ describe('DeleteDocConfirmComponent', () => {
         id: 'id',
         patient: {},
         rev: 'rev',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: {
           _id: 'id',
           parent: {
@@ -116,7 +117,7 @@ describe('DeleteDocConfirmComponent', () => {
         _deleted: true,
         id: 'id',
         rev: 'rev',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         contact: {
           _id: 'id',
           parent: {
@@ -146,7 +147,7 @@ describe('DeleteDocConfirmComponent', () => {
       router.url = '/something';
       component.doc = {
         id: 'id',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         parent: { _id: 'id123' },
       };
       fixture.detectChanges();
@@ -164,7 +165,7 @@ describe('DeleteDocConfirmComponent', () => {
       router.url = '/reports/id';
       component.doc = {
         id: 'id',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         parent: {
           _id: 'id123',
         },
@@ -185,7 +186,7 @@ describe('DeleteDocConfirmComponent', () => {
       router.url = '/contacts/id';
       component.doc = {
         id: 'id',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         parent: {},
       };
       fixture.detectChanges();
@@ -204,7 +205,7 @@ describe('DeleteDocConfirmComponent', () => {
       router.url = '/contacts/id';
       component.doc = {
         id: 'id',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         parent: { _id: '12345' },
       };
       fixture.detectChanges();

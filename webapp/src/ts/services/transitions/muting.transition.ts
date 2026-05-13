@@ -7,6 +7,7 @@ import { ValidationService } from '@mm-services/validation.service';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -81,7 +82,7 @@ export class MutingTransition extends Transition {
    */
   private isRelevantReport(doc) {
     // exclude docs that are not reports and existent reports.
-    if (doc._rev || doc.type !== 'data_record' || !doc.form) {
+    if (doc._rev || doc.type !== DOC_TYPES.DATA_RECORD || !doc.form) {
       return false;
     }
 

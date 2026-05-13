@@ -1194,12 +1194,12 @@ describe('DBSync service', () => {
     });
 
     it('does replicate reports', () => {
-      const actual = filterFunction({ _id: '1', type: 'data_record' });
+      const actual = filterFunction({ _id: '1', type: DOC_TYPES.DATA_RECORD });
       expect(actual).to.equal(true);
     });
 
     it('does not replicate the branding doc', () => {
-      const actual = filterFunction({ _id: 'branding' });
+      const actual = filterFunction({ _id: DOC_IDS.BRANDING });
       expect(actual).to.equal(false);
     });
 

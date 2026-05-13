@@ -5,6 +5,7 @@ const logger = require('@medic/logger');
 const messages = require('../lib/messages');
 const transitionUtils = require('./utils');
 const NAME = 'default_responses';
+const { DOC_TYPES } = require('@medic/constants');
 
 module.exports = {
   name: NAME,
@@ -13,7 +14,7 @@ module.exports = {
     return Boolean(
       doc &&
         doc.from &&
-        doc.type === 'data_record' &&
+        doc.type === DOC_TYPES.DATA_RECORD &&
         !doc.kujua_message &&
         self._isReportedAfterStartDate(doc) &&
         !transitionUtils.hasRun(info, NAME) &&
