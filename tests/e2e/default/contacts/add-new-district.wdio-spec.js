@@ -5,6 +5,7 @@ const personFactory = require('@factories/cht/contacts/person');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Add new district tests : ', () => {
 
@@ -30,7 +31,7 @@ describe('Add new district tests : ', () => {
   it('should edit district', async () => {
     const district = placeFactory.place().build({
       _id: 'dist1',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Caroline\'s district',
       contact: { _id: 'first_person' },
     });
@@ -51,7 +52,7 @@ describe('Add new district tests : ', () => {
   it('should edit district with contact_type', async () => {
     const district = placeFactory.place().build({
       _id: 'dist2',
-      type: 'district_hospital',
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       name: 'Tudor\'s district',
       contact: { _id: 'second_person' },
       contact_type: 'not a district_hospital',
