@@ -381,10 +381,15 @@ describe('local lineage lib', () => {
         }
       };
       const result = Lineage.minifyLineage(medicDb)(doc);
-      expect(result._id).to.equal('l1');
-      expect(result.parent._id).to.equal('l2');
-      const grandparent = result.parent as NormalizedParent;
-      expect(grandparent.parent._id).to.equal('l3');
+      expect(result).to.deep.equal({
+        _id: 'l1',
+        parent: {
+          _id: 'l2',
+          parent: {
+            _id: 'l3'
+          }
+        }
+      });
     });
 
     it('strips extra fields from minified lineage', () => {
