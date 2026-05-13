@@ -143,7 +143,7 @@ describe('Contacts More Menu Component', () => {
       expect(component.displayEditOption()).to.be.false;
     }));
 
-    it('should not display edit option when user does not have can_edit permission', fakeAsync(() => {
+    it('should not display edit option when user does not have can_update_contacts permission', fakeAsync(() => {
       authService.has.withArgs('can_update_contacts').resolves(false);
       authService.online.returns(true);
       userSettingsService.get.resolves({ facility_id: 'facility-1' });
