@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, discardPeriodicTasks, TestBed, waitForAsync } from '@angular/core/testing';
+import { NgIf } from '@angular/common';
 import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -64,6 +65,7 @@ describe('About Component', () => {
           RouterTestingModule,
           MatCardModule,
           MatIcon,
+          NgIf,
           AboutComponent,
           ToolBarComponent,
           NavigationComponent,
