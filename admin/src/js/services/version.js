@@ -21,13 +21,13 @@ angular.module('services').factory('Version',
 
       if (versionMatch) {
         const version = {
-          major: parseInt(versionMatch.groups.major),
-          minor: parseInt(versionMatch.groups.minor),
-          patch: parseInt(versionMatch.groups.patch)
+          major: Number.parseInt(versionMatch.groups.major),
+          minor: Number.parseInt(versionMatch.groups.minor),
+          patch: Number.parseInt(versionMatch.groups.patch)
         };
 
         if (versionMatch.groups.beta !== undefined) {
-          version.beta = parseInt(versionMatch.groups.beta);
+          version.beta = Number.parseInt(versionMatch.groups.beta);
         }
 
         if (versionMatch.groups.featureRelease !== undefined) {
