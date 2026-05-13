@@ -29,6 +29,43 @@ describe('Auth', () => {
     sinon.restore();
   });
 
+
+  describe('basicAuthCredentials', () => {
+    it('returns false when no Authorization header present', () => {
+      const result = auth.basicAuthCredentials({ headers: {} });
+      chai.expect(result).to.equal(false);
+    });
+
+    it('returns false when Authorization header is not Basic', () => {
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: 'Bearer token123' }
+      });
+      chai.expect(result).to.equal(false);
+    });
+
+    it('correctly parses credentials without colon in password', () => {
+      const encoded = Buffer.from('admin:secret123').toString('base64');
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: 'Basic ' + encoded }
+      });
+      chai.expect(result).to.deep.equal({ username: 'admin', password: 'secret123' });
+    });
+
+    it('correctly parses credentials with colon in password', () => {
+      const encoded = Buffer.from('admin:P@ss:word:456!').toString('base64');
+      const result = auth.basicAuthCredentials({
+        headers: { authorization: 'Basic ' + encoded }
+      });
+      chai.expect(result).to.deep.equal({ username: 'admin', password: 'P@ss:word:456!' });
+    });
+
+    it('throws error for corrupted base64', () => {
+      chai.expect(() => auth.basicAuthCredentials({
+        headers: { authorization: 'Basic NOT_VALID_BASE64!!' }
+      })).to.throw('Corrupted Auth header');
+    });
+  });
+
   describe('check', () => {
 
     it('returns error when not logged in', () => {
