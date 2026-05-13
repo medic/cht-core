@@ -40,7 +40,17 @@ describe('Contact Search', () => {
     parent: { _id: sittuHealthCenter._id, parent: sittuHealthCenter.parent }
   });
 
-  const supervisorPerson = personFactory.build({
+  const devanagariPatient = personFactory.build({
+  name: 'Devanagari १२३४५',
+  parent: { _id: districtHospitalId }
+});
+
+const latinPatient = personFactory.build({
+  name: 'Latin 12345',
+  parent: { _id: districtHospitalId }
+});
+
+const supervisorPerson, devanagariPatient, latinPatient = personFactory.build({
     name: 'Supervisor',
     parent: { _id: districtHospitalId }
   });
@@ -77,6 +87,26 @@ describe('Contact Search', () => {
     });
 
     after(commonPage.logout);
+
+    it('search by Devanagari numerals should cross-match Latin numeral contacts', async () => {
+      await contactPage.getAllLHSContactsNames();
+      await searchPage.performSearch('१२३४५');
+      expect(await contactPage.getAllLHSContactsNames()).to.include.members([
+        'Devanagari १२३४५',
+        'Latin 12345',
+      ]);
+      await searchPage.clearSearch();
+    });
+
+    it('search by Latin numerals should cross-match Devanagari numeral contacts', async () => {
+      await contactPage.getAllLHSContactsNames();
+      await searchPage.performSearch('12345');
+      expect(await contactPage.getAllLHSContactsNames()).to.include.members([
+        'Devanagari १२३४५',
+        'Latin 12345',
+      ]);
+      await searchPage.clearSearch();
+    });
 
     it('search by NON empty string should display results which contains match and clears search', async () => {
       await contactPage.getAllLHSContactsNames();

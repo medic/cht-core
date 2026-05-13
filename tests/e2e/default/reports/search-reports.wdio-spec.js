@@ -27,10 +27,23 @@ describe('Reports Search', () => {
     patient_id: 'sittu-patient',
     parent: { _id: sittuHospital._id, parent: sittuHospital.parent },
   });
+  const devanagariPerson = personFactory.build({
+    name: 'Devanagari',
+    patient_id: 'devanagari-numeral-patient',
+    parent: { _id: sittuHospital._id, parent: sittuHospital.parent },
+  });
+
   const potuPerson = personFactory.build({
     name: 'Potu',
     patient_id: 'potu-patient',
     parent: { _id: potuHealthCenter._id, parent: potuHealthCenter.parent },
+  });
+
+  const devanagariReport = smsPregnancyFactory.pregnancy().build({
+    fields: { patient_id: devanagariPerson.patient_id, note: '१२३४५' }
+  });
+  const latinReport = smsPregnancyFactory.pregnancy().build({
+    fields: { patient_id: devanagariPerson.patient_id, note: '12345' }
   });
 
   const reports = [
@@ -38,6 +51,8 @@ describe('Reports Search', () => {
     smsPregnancyFactory.pregnancy().build({ fields: { patient_id: potuPerson.patient_id } }),
     pregnancyFactory.build({ fields: { patient_id: sittuPerson.patient_id, case_id: 'case-12', note: searchWord } }),
     pregnancyFactory.build({ fields: { patient_id: potuPerson.patient_id, case_id: 'case-12' } }),
+    devanagariReport,
+    latinReport,
   ];
 
   const offlineUser = userFactory.build({
@@ -54,7 +69,7 @@ describe('Reports Search', () => {
   });
 
   before(async () => {
-    await utils.saveDocs([ sittuHospital, sittuPerson, potuHealthCenter, potuPerson ]);
+    await utils.saveDocs([ sittuHospital, sittuPerson, potuHealthCenter, potuPerson, devanagariPerson ]);
     await utils.saveDocs(reports);
     await utils.createUsers([offlineUser, onlineUser]);
   });
@@ -86,6 +101,26 @@ describe('Reports Search', () => {
       for (const report of allReports) {
         expect(await reportsPage.leftPanelSelectors.reportByUUID(report._id).isDisplayed()).to.be.true;
       }
+    });
+
+    it('search by Devanagari numerals should cross-match Latin numeral reports', async () => {
+      await commonPage.goToReports();
+      await searchPage.performSearch('१२३४५');
+      await commonPage.waitForLoaders();
+      expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
+      await searchPage.clearSearch();
+    });
+
+    it('search by Latin numerals should cross-match Devanagari numeral reports', async () => {
+      await commonPage.goToReports();
+      await searchPage.performSearch('12345');
+      await commonPage.waitForLoaders();
+      expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
+      expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
+      await searchPage.clearSearch();
     });
 
     it('should return results when searching by case_id', async () => {
