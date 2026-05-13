@@ -56,36 +56,6 @@
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
-          <li role="presentation" mmAuth="can_view_messages,!can_view_messages_tab">
-            <a role="menuitem" tabindex="-1" routerLink="messages">
-              <i class="fa fa-fw fa-envelope"></i>
-              <span>{{'Messages' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_tasks,!can_view_tasks_tab">
-            <a role="menuitem" tabindex="-1" routerLink="tasks">
-              <i class="fa fa-fw fa-flag"></i>
-              <span>{{'Tasks' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_reports,!can_view_reports_tab">
-            <a role="menuitem" tabindex="-1" routerLink="reports">
-              <i class="fa fa-fw fa-list-alt"></i>
-              <span>{{'Reports' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_contacts,!can_view_contacts_tab">
-            <a role="menuitem" tabindex="-1" routerLink="contacts">
-              <i class="fa fa-fw fa-user"></i>
-              <span>{{'Contacts' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_view_analytics,!can_view_analytics_tab">
-            <a role="menuitem" tabindex="-1" routerLink="analytics" routerLink-opts="{reload: true}">
-              <i class="fa fa-bar-chart-o"></i>
-              <span>{{'Analytics' | translate}}</span>
-            </a>
-          </li>
           <li role="presentation" class="desktop-only" mmAuth [mmAuthAny]="[ 'can_configure', 'can_view_outgoing_messages', 'can_export_all' ]" [mmAuthOnline]="true">
             <a href="{{adminUrl}}" role="menuitem" tabindex="-1" rel="noopener noreferrer">
               <i class="fa fa-fw fa-cog"></i>
@@ -93,46 +63,19 @@
             </a>
           </li>
 
-          <ng-container *ngFor="let ext of uiExtensionOptions">
+          <ng-container *ngFor="let tab of legacyMenuTabs">
             <li>
-              <a role="menuitem" tabindex="-1" [routerLink]="ext.routerLink">
-                <span class="nav-icon" *ngIf="ext.resourceIcon" [innerHTML]="ext.resourceIcon | resourceIcon"></span>
-                <i *ngIf="!ext.resourceIcon" class="fa fa-fw {{ext.icon}}"></i>
-                <span>{{ext.translationKey | translate}}</span>
+              <a role="menuitem" tabindex="-1"
+                 *ngIf="tab.name !== 'privacy-policy' || showPrivacyPolicy"
+                 [routerLink]="tab.route"
+                 (click)="onLegacyMenuClick(tab)">
+                <span class="nav-icon" *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon"></span>
+                <i *ngIf="!tab.resourceIcon" class="fa fa-fw {{tab.icon || tab.defaultIcon}}"></i>
+                <span>{{tab.translation | translate}}</span>
               </a>
             </li>
           </ng-container>
 
-          <li role="presentation">
-            <a routerLink="trainings" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-graduation-cap"></i>
-              <span>{{'training_materials.page.title' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation">
-            <a routerLink="about" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-question"></i>
-              <span>{{'about' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" mmAuth="can_edit_profile">
-            <a role="menuitem" tabindex="-1" routerLink="user" test-id="user-settings-menu-option">
-              <i class="fa fa-fw fa-user"></i>
-              <span>{{'edit.user.settings' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation" *ngIf="showPrivacyPolicy">
-            <a role="menuitem" tabindex="-1" routerLink="privacy-policy">
-              <i class="fa fa-fw fa-lock"></i>
-              <span>{{'privacy.policy' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" (click)="openFeedback()">
-              <i class="fa fa-fw fa-bug"></i>
-              <span>{{'Report Bug' | translate}}</span>
-            </a>
-          </li>
           <li role="presentation" *ngIf="canLogOut">
             <a role="menuitem" tabindex="-1" rel="external" (click)="logout()">
               <i class="fa fa-fw fa-power-off"></i>

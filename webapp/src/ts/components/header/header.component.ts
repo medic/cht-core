@@ -18,8 +18,7 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import { HeaderLogoPipe, ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 
-import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
-import { UiExtensionsService } from '@mm-services/ui-extensions.service';
+import { HeaderTab, HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
 
 export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
 
@@ -38,7 +37,7 @@ export const OLD_NAV_PERMISSION = 'can_view_old_navigation';
     HeaderLogoPipe,
     ResourceIconPipe,
     RelativeDatePipe,
-    LocalizeNumberPipe
+    LocalizeNumberPipe,
   ]
 })
 
@@ -51,7 +50,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   currentTab;
   bubbleCount = {};
   permittedTabs: HeaderTab[] = [];
-  uiExtensionOptions: UiExtMenuOption[] = [];
+  legacyMenuTabs: SidebarTab[] = [];
 
   constructor(
     protected readonly store: Store,
@@ -59,7 +58,6 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     protected readonly modalService: ModalService,
     protected readonly storageInfoService: StorageInfoService,
     private headerTabsService: HeaderTabsService,
-    private readonly uiExtensionsService: UiExtensionsService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
   }
@@ -68,11 +66,20 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     super.ngOnInit();
     this.additionalSubscriptions();
     this.getHeaderTabs();
-    this.loadUiExtensionOptions();
+    this.headerTabsService
+      .getSidebarTabs()
+      .then(tabs => this.legacyMenuTabs = tabs);
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
+  }
+
+  onLegacyMenuClick(tab: SidebarTab) {
+    if (tab.name !== 'bug') {
+      return;
+    }
+    this.openFeedback();
   }
 
   private additionalSubscriptions(){
@@ -100,25 +107,4 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
         this.permittedTabs = permittedTabs;
       });
   }
-
-  private loadUiExtensionOptions() {
-    this.uiExtensionsService
-      .getPropertiesByType('sidebar_tab')
-      .then(extensions => {
-        this.uiExtensionOptions = extensions
-          .map(ext => ({
-            routerLink: `ui-extensions/${ext.id}`,
-            translationKey: ext.title!,
-            resourceIcon: ext.resource_icon,
-            icon: ext.icon || 'fa-question-circle',
-          }));
-      });
-  }
-}
-
-interface UiExtMenuOption {
-  routerLink: string;
-  translationKey: string;
-  resourceIcon?: string;
-  icon?: string;
 }

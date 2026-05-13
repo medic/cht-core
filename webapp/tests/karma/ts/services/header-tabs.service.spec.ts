@@ -452,4 +452,164 @@ describe('HeaderTabs service', () => {
       });
     });
   });
+
+  describe('getSidebarTabs()', () => {
+    const SIDEBAR_SECONDARY_TABS = [
+      {
+        name: 'trainings',
+        route: 'trainings',
+        defaultIcon: 'fa-graduation-cap',
+        translation: 'training_materials.page.title',
+        permissions: [],
+      },
+      {
+        name: 'about',
+        route: 'about',
+        defaultIcon: 'fa-question',
+        translation: 'about',
+        permissions: [],
+      },
+      {
+        name: 'user',
+        route: 'user',
+        defaultIcon: 'fa-user',
+        translation: 'edit.user.settings',
+        permissions: ['can_edit_profile'],
+      },
+      {
+        name: 'privacy-policy',
+        route: 'privacy-policy',
+        defaultIcon: 'fa-lock',
+        translation: 'privacy.policy',
+        permissions: [],
+      },
+      {
+        name: 'bug',
+        defaultIcon: 'fa-bug',
+        translation: 'Report Bug',
+        permissions: [],
+      },
+    ];
+
+    it('should return only the secondary sidebar tabs when no header_tab permissions are granted', async () => {
+      authService.has.returns(false);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs).to.deep.equal(SIDEBAR_SECONDARY_TABS);
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
+    });
+
+    it('should include header tabs with negated tab permissions, sorted by weight, before secondary tabs', async () => {
+      authService.has.withArgs(['can_view_messages', '!can_view_messages_tab']).returns(true);
+      authService.has.withArgs(['can_view_tasks', '!can_view_tasks_tab']).returns(false);
+      authService.has.withArgs(['can_view_reports', '!can_view_reports_tab']).returns(true);
+      authService.has.withArgs(['can_view_contacts', '!can_view_contacts_tab']).returns(false);
+      authService.has.withArgs(['can_view_analytics', '!can_view_analytics_tab']).returns(true);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'messages',
+        'reports',
+        'analytics',
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+    });
+
+    it('should sort header tabs by weight before appending secondary tabs', async () => {
+      settingsService.get.resolves({
+        header_tabs: {
+          analytics: { weight: 0 },
+          messages: { weight: 100 },
+        }
+      });
+      authService.has.returns(true);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'analytics',
+        'tasks',
+        'reports',
+        'contacts',
+        'messages',
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+    });
+
+    it('should include sidebar_tab UI extensions between header tabs and secondary tabs', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType.withArgs('sidebar_tab').resolves([
+        { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1' },
+        { id: 'second', title: 'Second Extension', icon: 'fa-icon-2' },
+      ]);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'messages',
+        'tasks',
+        'reports',
+        'contacts',
+        'analytics',
+        'ui-extension-first',
+        'ui-extension-second',
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+
+      const firstExt = tabs.find(t => t.name === 'ui-extension-first');
+      expect(firstExt).to.deep.equal({
+        name: 'ui-extension-first',
+        route: 'ui-extensions/first',
+        defaultIcon: 'fa-question-circle',
+        translation: 'First Extension',
+        permissions: [],
+        icon: 'fa-icon-1',
+        resourceIcon: 'res-1',
+        weight: 6,
+      });
+    });
+
+    it('should query sidebar_tab extensions, not header_tab extensions', async () => {
+      await service.getSidebarTabs();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
+    });
+
+    it('should cache sidebar tabs after first call', async () => {
+      await service.getSidebarTabs();
+      await service.getSidebarTabs();
+      await service.getSidebarTabs();
+
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uiExtensionsService.getPropertiesByType.callCount).to.equal(1);
+    });
+
+    it('should always include secondary tabs regardless of authorization', async () => {
+      authService.has.returns(false);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+    });
+  });
 });

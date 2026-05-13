@@ -54,6 +54,7 @@ import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { PREFIXES } from '@medic/constants';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -98,6 +99,7 @@ describe('AppComponent', () => {
   let storageInfoService;
   let tasksNotificationService;
   let uiExtensionsService;
+  let headerTabsService;
   // End Services
 
   let globalActions;
@@ -200,6 +202,10 @@ describe('AppComponent', () => {
     formService = { setUserContext: sinon.stub() };
     updateServiceWorkerService = { update: sinon.stub() };
     uiExtensionsService = { getPropertiesByType: sinon.stub().resolves([]) };
+    headerTabsService = {
+      getAuthorizedTabs: sinon.stub().resolves([]),
+      getSidebarTabs: sinon.stub().resolves([]),
+    };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -256,6 +262,7 @@ describe('AppComponent', () => {
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
           { provide: UiExtensionsService, useValue: uiExtensionsService },
+          { provide: HeaderTabsService, useValue: headerTabsService },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {

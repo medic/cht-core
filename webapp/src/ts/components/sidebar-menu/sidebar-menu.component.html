@@ -62,24 +62,14 @@
       </div>
 
       <div class="nav-section">
-        <ng-container *ngFor="let option of menuOptions">
+        <ng-container *ngFor="let tab of headerTabsForSidebar">
           <a class="nav-item"
-            *ngIf="option.hasPermissions"
-            [routerLink]="option.routerLink"
-            [mmAuth]="option.hasPermissions"
-            (click)="option.click && option.click(); close()">
-            <span class="nav-icon" *ngIf="option.resourceIcon" [innerHTML]="option.resourceIcon | resourceIcon"></span>
-            <mat-icon *ngIf="!option.resourceIcon" [fontIcon]="option.icon"></mat-icon>
-            <span>{{ option.translationKey | translate }}</span>
-          </a>
-
-          <a class="nav-item"
-            *ngIf="!option.hasPermissions && option.canDisplay"
-            [routerLink]="option.routerLink"
-            (click)="option.click && option.click(); close()">
-            <span class="nav-icon" *ngIf="option.resourceIcon" [innerHTML]="option.resourceIcon | resourceIcon"></span>
-            <mat-icon *ngIf="!option.resourceIcon" [fontIcon]="option.icon"></mat-icon>
-            <span>{{ option.translationKey | translate }}</span>
+             *ngIf="tab.name !== 'privacy-policy' || showPrivacyPolicy"
+             [routerLink]="tab.route"
+             (click)="onTabClick(tab)">
+              <span class="nav-icon" *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon"></span>
+              <mat-icon *ngIf="!tab.resourceIcon" [fontIcon]="tab.icon || tab.defaultIcon"></mat-icon>
+              <span>{{ tab.translation | translate }}</span>
           </a>
         </ng-container>
       </div>

@@ -11,9 +11,9 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
-import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { Selectors } from '@mm-selectors/index';
 
 describe('Header Component', () => {
@@ -24,7 +24,6 @@ describe('Header Component', () => {
   let modalService;
   let storageInfoService;
   let headerTabsService;
-  let uiExtensionsService;
   let customResourceService;
   let changesService;
 
@@ -41,10 +40,8 @@ describe('Header Component', () => {
         { name: 'messages', defaultIcon: 'fa-envelope' },
         { name: 'tasks', defaultIcon: 'fa-flag', typeName: 'task' },
         { name: 'reports', defaultIcon: 'fa-list-alt', typeName: 'report' },
-      ])
-    };
-    uiExtensionsService = {
-      getPropertiesByType: sinon.stub().resolves([]),
+      ]),
+      getSidebarTabs: sinon.stub().resolves([])
     };
     customResourceService = {
       getAppTitle: sinon.stub().resolves('App Title'),
@@ -75,7 +72,6 @@ describe('Header Component', () => {
           { provide: ModalService, useValue: modalService },
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: HeaderTabsService, useValue: headerTabsService },
-          { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
         ]
@@ -189,39 +185,77 @@ describe('Header Component', () => {
     expect(unsubscribeSpy.callCount).to.equal(1);
   });
 
-  describe('UI extension options', () => {
-    it('should initialize uiExtensionOptions as empty array', async () => {
+  describe('legacy menu tabs', () => {
+    it('should initialize legacyMenuTabs as empty array', async () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
-      expect(component.uiExtensionOptions).to.deep.equal([]);
+      expect(headerTabsService.getSidebarTabs.callCount).to.equal(1);
+      expect(component.legacyMenuTabs).to.deep.equal([]);
     });
 
-    it('should load sidebar_tab extensions and map them to menu options', async () => {
-      uiExtensionsService.getPropertiesByType.resolves([
-        { id: 'ext1', type: 'sidebar_tab', title: 'Hello Extension', resource_icon: 'hello-icon' },
-        { id: 'ext2', type: 'sidebar_tab', title: 'Goodbye Extension', icon: 'fa-goodbye' },
-      ]);
+    it('should populate legacyMenuTabs from headerTabsService.getSidebarTabs()', async () => {
+      const sidebarTabs = [
+        {
+          name: 'messages',
+          route: 'messages',
+          defaultIcon: 'fa-envelope',
+          translation: 'Messages',
+          permissions: ['can_view_messages', '!can_view_messages_tab'],
+        },
+        {
+          name: 'ui-extension-first',
+          route: 'ui-extensions/first',
+          defaultIcon: 'fa-question-circle',
+          translation: 'First Extension',
+          permissions: [],
+          icon: 'fa-icon-1',
+          resourceIcon: 'res-1',
+        },
+        {
+          name: 'bug',
+          defaultIcon: 'fa-bug',
+          translation: 'Report Bug',
+          permissions: [],
+        },
+      ];
+      headerTabsService.getSidebarTabs.resolves(sidebarTabs);
 
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
-      expect(component.uiExtensionOptions).to.deep.equal([
-        {
-          routerLink: 'ui-extensions/ext1',
-          translationKey: 'Hello Extension',
-          resourceIcon: 'hello-icon',
-          icon: 'fa-question-circle'
-        },
-        {
-          routerLink: 'ui-extensions/ext2',
-          translationKey: 'Goodbye Extension',
-          resourceIcon: undefined,
-          icon: 'fa-goodbye'
-        },
-      ]);
+      expect(headerTabsService.getSidebarTabs.callCount).to.equal(1);
+      expect(component.legacyMenuTabs).to.deep.equal(sidebarTabs);
+    });
+  });
+
+  describe('onLegacyMenuClick()', () => {
+    it('should open the feedback modal when the bug tab is clicked', () => {
+      fixture.detectChanges();
+
+      component.onLegacyMenuClick({
+        name: 'bug',
+        defaultIcon: 'fa-bug',
+        translation: 'Report Bug',
+        permissions: [],
+      });
+
+      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show.args[0][0]).to.equal(FeedbackComponent);
+    });
+
+    it('should not open the feedback modal for any other tab', () => {
+      fixture.detectChanges();
+
+      component.onLegacyMenuClick({
+        name: 'messages',
+        route: 'messages',
+        defaultIcon: 'fa-envelope',
+        translation: 'Messages',
+        permissions: [],
+      });
+
+      expect(modalService.show.called).to.be.false;
     });
   });
 
