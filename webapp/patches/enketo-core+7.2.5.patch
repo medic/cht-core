@@ -63,29 +63,4 @@ index 4a71bfa..7c72f94 100644
          });
      }
  
-diff --git a/node_modules/enketo-core/src/widget/geo/geopicker.js b/node_modules/enketo-core/src/widget/geo/geopicker.js
-index 4ddbc4d..cd85096 100644
---- a/node_modules/enketo-core/src/widget/geo/geopicker.js
-+++ b/node_modules/enketo-core/src/widget/geo/geopicker.js
-@@ -252,6 +252,21 @@ class Geopicker extends Widget {
-             }
-         });
- 
-+        const mapCanvas = this.$widget.find('.map-canvas')[0];
-+        if (mapCanvas) {
-+            const resizeObserver = new ResizeObserver((entries) => {
-+                for (const entry of entries) {
-+                    if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-+                        if (that.map) {
-+                            that.map.invalidateSize();
-+                        }
-+                        resizeObserver.disconnect();
-+                    }
-+                }
-+            });
-+            resizeObserver.observe(mapCanvas);
-+        }
-+        
-         // add wide class if question is wide
-         if (this.props.wide) {
-             this.$widget.addClass('wide');
+
