@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
+import { DOC_TYPES } from '@medic/constants';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -107,7 +108,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToChanges() {
-    const isReport = doc => doc.type === 'data_record' && !!doc.form;
+    const isReport = doc => doc.type === DOC_TYPES.DATA_RECORD && !!doc.form;
     const changesSubscription = this.changesService.subscribe({
       key: 'refresh-task-list',
       filter: change => !!change.doc && (

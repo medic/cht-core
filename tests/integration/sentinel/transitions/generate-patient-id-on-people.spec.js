@@ -1,7 +1,7 @@
 const chai = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { expect } = require('chai');
 const { CONTACT_TYPES } = require('@medic/constants');
 
@@ -42,7 +42,7 @@ describe('generate_patient_id_on_people', () => {
 
     const doc = {
       _id: uuid(),
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       reported_date: new Date().getTime()
     };
 

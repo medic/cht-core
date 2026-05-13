@@ -180,10 +180,15 @@ export class ContactsEffects {
   }
 
   private async loadTargetDoc(contactId, trackName) {
+    const selected = this.selectedContact;
+    if (!selected?.doc) {
+      return;
+    }
+
     const trackPerformance = this.performanceService.track();
 
     const targetDocs = await this.targetAggregateService.getTargetDocs(
-      this.selectedContact,
+      selected,
       this.userFacilityIds,
       this.userContactId
     );
@@ -207,25 +212,36 @@ export class ContactsEffects {
       });
   }
 
-  private loadContactSummary(contactId, trackName) {
-    const trackPerformance = this.performanceService.track();
+  private async loadContactSummary(contactId, trackName) {
     const selected = this.selectedContact;
-    return this.contactSummaryService
-      .get(selected.doc, selected.reports, selected.lineage, selected.targetDoc)
-      .catch(error => {
+    if (!selected?.doc) {
+      this.contactsActions.updateSelectedContactSummary(undefined);
+      this.contactsActions.setContactsLoadingSummary(false);
+      return;
+    }
+
+    const trackPerformance = this.performanceService.track();
+    let summary;
+
+    try {
+      summary = await this.contactSummaryService.get(
+        selected.doc,
+        selected.reports,
+        selected.lineage,
+        selected.targetDoc
+      );
+
+      await this.verifySelectedContactNotChanged(contactId);
+
+      this.contactsActions.setContactsLoadingSummary(false);
+      return this.contactsActions.updateSelectedContactSummary(summary);
+    } catch (error) {
+      if (error.code !== 'SELECTED_CONTACT_CHANGED') {
         this.contactsActions.updateSelectedContactSummary({ errorStack: error.stack });
-        throw error;
-      })
-      .then(summary => {
-        return this
-          .verifySelectedContactNotChanged(contactId)
-          .then(() => {
-            this.contactsActions.setContactsLoadingSummary(false);
-            return this.contactsActions.updateSelectedContactSummary(summary);
-          });
-      })
-      .finally(() => {
-        trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
-      });
+      }
+      throw error;
+    } finally {
+      trackPerformance?.stop({ name: [ ...trackName, 'load_contact_summary' ].join(':') });
+    }
   }
 }

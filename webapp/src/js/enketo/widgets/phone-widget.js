@@ -3,6 +3,7 @@ const FormModel = require( 'enketo-core' ).FormModel;
 const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 const phoneNumber = require('@medic/phone-number');
+const { isPyxformTruthy } = require('../lib/pyxform-boolean');
 require( 'enketo-core/src/js/plugins' );
 
 const isContactPhoneValid = (settings, fieldValue) => {
@@ -58,7 +59,7 @@ class PhoneWidget extends Widget {
   _init() {
     const $input = $( this.element );
     const $wrapper = $input.closest('.question');
-    const uniqueTel = $wrapper.attr('data-cht-unique_tel') === 'true' || deprecated.isDeprecated($wrapper);
+    const uniqueTel = isPyxformTruthy($wrapper.attr('data-cht-unique_tel')) || deprecated.isDeprecated($wrapper);
     $input.attr('data-type-xml', uniqueTel ? 'unique_tel' : 'tel');
 
     // Add a proxy input field, which will send its input, formatted, to the real input field.
@@ -87,8 +88,11 @@ class PhoneWidget extends Widget {
 
 const formatAndCopy = ( $from, $to, settings ) => {
   $from.change( function() {
+    const formattedValue = getFormattedValue( settings, $from.val() );
     // Also trigger the change() event, since input was not by user.
-    $to.val( getFormattedValue( settings, $from.val() ) ).change();
+    $to.val( formattedValue ).change();
+    // Update the proxy input to display the formatted value to the user.
+    $from.val( formattedValue );
   } );
 };
 

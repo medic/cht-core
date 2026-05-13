@@ -48,7 +48,7 @@ describe('More Options Menu - Online User - Permissions enabled', () => {
 
   describe('Options displayed when there are messages, contacts and people created', () => {
     const places = placeFactory.generateHierarchy();
-    const clinic = places.get('clinic');
+    const clinic = places.get(CONTACT_TYPES.CLINIC);
     const health_center = places.get(CONTACT_TYPES.HEALTH_CENTER);
     const district_hospital = places.get('district_hospital');
     let xmlReportId;

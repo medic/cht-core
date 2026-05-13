@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const db = require('../../../src/db');
 const logger = require('@medic/logger');
 const migration = require('../../../src/migrations/add-contact-id-to-user-docs');
+const { PREFIXES } = require('@medic/constants');
 
 const BATCH_SIZE = 100;
 
@@ -29,8 +30,8 @@ const createCouchResponse = docs => ({ rows: docs.map(doc => ({ doc })) });
 
 const assertDocByTypeQueryArgs = (args, skip) => expect(args).to.deep.equal([
   {
-    startkey: 'org.couchdb.user:',
-    endkey: 'org.couchdb.user:\uffff',
+    startkey: PREFIXES.COUCH_USER,
+    endkey: PREFIXES.COUCH_USER + '\uffff',
     include_docs: true,
     limit: BATCH_SIZE,
     skip
@@ -69,7 +70,7 @@ describe('add-contact-id-to-user-docs migration', () => {
   });
 
   it('migrates the contact_id value from user-settings to _users', async () => {
-    const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:test-chw-1', 'contact-1');
+    const userSettingsDoc = createUserSettingsDoc(PREFIXES.COUCH_USER + 'test-chw-1', 'contact-1');
     medicAllDocs.resolves(createCouchResponse([userSettingsDoc]));
     const userDoc = createUserDoc(userSettingsDoc._id);
     usersAllDocs.resolves(createCouchResponse([userDoc]));
@@ -87,13 +88,13 @@ describe('add-contact-id-to-user-docs migration', () => {
   it('migrates the contact_id value for all batches', async () => {
     const userSettingsFirstBatch = Array.from(
       { length: BATCH_SIZE },
-      (_, i) => createUserSettingsDoc(`org.couchdb.user:test-chw-${i}`, `contact-${i}`)
+      (_, i) => createUserSettingsDoc(`${PREFIXES.COUCH_USER}test-chw-${i}`, `contact-${i}`)
     );
     const userSettingsSecondBatch = Array.from(
       { length: BATCH_SIZE },
-      (_, i) => createUserSettingsDoc(`org.couchdb.user:test-chw-11${i}`, `contact-11${i}`)
+      (_, i) => createUserSettingsDoc(`${PREFIXES.COUCH_USER}test-chw-11${i}`, `contact-11${i}`)
     );
-    const userSettingsThirdBatch = [createUserSettingsDoc(`org.couchdb.user:test-chw-222`, `contact-222`)];
+    const userSettingsThirdBatch = [createUserSettingsDoc(`${PREFIXES.COUCH_USER}test-chw-222`, `contact-222`)];
     medicAllDocs.onFirstCall().resolves(createCouchResponse(userSettingsFirstBatch));
     medicAllDocs.onSecondCall().resolves(createCouchResponse(userSettingsSecondBatch));
     medicAllDocs.onThirdCall().resolves(createCouchResponse(userSettingsThirdBatch));
@@ -142,7 +143,7 @@ describe('add-contact-id-to-user-docs migration', () => {
   });
 
   it('does nothing if no _users docs are found', async () => {
-    const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:test-chw-1', 'contact-1');
+    const userSettingsDoc = createUserSettingsDoc(PREFIXES.COUCH_USER + 'test-chw-1', 'contact-1');
     medicAllDocs.resolves(createCouchResponse([userSettingsDoc]));
     usersAllDocs.resolves(createCouchResponse([null]));
 
@@ -158,7 +159,7 @@ describe('add-contact-id-to-user-docs migration', () => {
   });
 
   it('overwrites any existing contact_id value in _users', async () => {
-    const userSettingsDoc = createUserSettingsDoc('org.couchdb.user:test-chw-1', 'contact-1');
+    const userSettingsDoc = createUserSettingsDoc(PREFIXES.COUCH_USER + 'test-chw-1', 'contact-1');
     medicAllDocs.resolves(createCouchResponse([userSettingsDoc]));
     const userDoc = createUserDoc(userSettingsDoc._id);
     usersAllDocs.resolves(createCouchResponse([{
