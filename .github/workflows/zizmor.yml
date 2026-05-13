@@ -1,0 +1,44 @@
+name: zizmor
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 0'  # Every Sunday at 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write  # Required for uploading SARIF to GitHub Code Scanning
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor (offline — PR)
+        if: github.event_name == 'pull_request'
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e  # v0.5.3
+        with:
+          online-audits: false
+          config: .github/zizmor.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run zizmor (online — push/schedule)
+        if: github.event_name != 'pull_request'
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e  # v0.5.3
+        with:
+          config: .github/zizmor.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

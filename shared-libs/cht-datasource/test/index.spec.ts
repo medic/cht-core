@@ -47,9 +47,26 @@ describe('CHT Script API - getDatasource', () => {
       'contact', 'hasPermissions', 'hasAnyPermission', 'person', 'place', 'report', 'target'
     ]));
 
-    it('permission', () => {
-      expect(v1.hasPermissions).to.equal(hasPermissions);
-      expect(v1.hasAnyPermission).to.equal(hasAnyPermission);
+    it('hasPermissions', () => {
+      const bound = sinon.stub().returns(true);
+      dataContextBind.returns(bound);
+
+      const result = v1.hasPermissions('can_edit', ['chw']);
+
+      expect(result).to.equal(true);
+      expect(dataContextBind.calledOnceWithExactly(hasPermissions)).to.be.true;
+      expect(bound.calledOnceWithExactly('can_edit', ['chw'], undefined)).to.be.true;
+    });
+
+    it('hasAnyPermission', () => {
+      const bound = sinon.stub().returns(true);
+      dataContextBind.returns(bound);
+
+      const result = v1.hasAnyPermission([['can_edit']], ['chw']);
+
+      expect(result).to.equal(true);
+      expect(dataContextBind.calledOnceWithExactly(hasAnyPermission)).to.be.true;
+      expect(bound.calledOnceWithExactly([['can_edit']], ['chw'], undefined)).to.be.true;
     });
 
     describe('place', () => {
