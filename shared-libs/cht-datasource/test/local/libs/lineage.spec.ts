@@ -369,28 +369,41 @@ describe('local lineage lib', () => {
 
 
   describe('minifyLineage edge cases', () => {
-    it('minifies a deeply nested lineage', () => {
-      const lineage = [
-        { _id: 'l1', name: 'level1', parent: { _id: 'l2' } },
-        { _id: 'l2', name: 'level2', parent: { _id: 'l3' } },
-        { _id: 'l3', name: 'level3' },
-      ];
-      const result = Lineage.minifyLineage(lineage);
-      expect(result[0].parent._id).to.equal('l2');
-      expect(result[1].parent._id).to.equal('l3');
+    it('minifies a doc with deeply nested parent chain', () => {
+      const doc = {
+        _id: 'l1',
+        name: 'level1',
+        parent: {
+          _id: 'l2', name: 'level2',
+          parent: {
+            _id: 'l3', name: 'level3'
+          }
+        }
+      };
+      const result = Lineage.minifyLineage(medicDb)(doc);
+      expect(result._id).to.equal('l1');
+      expect(result.parent._id).to.equal('l2');
+      const grandparent = result.parent as NormalizedParent;
+      expect(grandparent.parent._id).to.equal('l3');
     });
 
-    it('handles lineage with null entries', () => {
-      const lineage = [null, { _id: 'l1' }, null];
-      const result = Lineage.minifyLineage(lineage);
-      expect(result[0]).to.equal(null);
-      expect(result[1]).to.deep.equal({ _id: 'l1' });
-      expect(result[2]).to.equal(null);
+    it('strips extra fields from minified lineage', () => {
+      const doc = {
+        _id: 'l1',
+        _rev: 'rev-1',
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'test',
+        parent: { _id: 'l2', _rev: 'rev-2', name: 'Parent' }
+      };
+      const result = Lineage.minifyLineage(medicDb)(doc);
+      expect(result).to.deep.equal({ _id: 'l1', parent: { _id: 'l2' } });
     });
 
-    it('handles empty lineage array', () => {
-      const result = Lineage.minifyLineage([]);
-      expect(result).to.deep.equal([]);
+    it('handles doc with no parent', () => {
+      const doc = { _id: 'l1' };
+      const result = Lineage.minifyLineage(medicDb)(doc);
+      expect(result._id).to.equal('l1');
+      expect((result as any).parent).to.be.undefined;
     });
   });
 
@@ -436,6 +449,53 @@ describe('local lineage lib', () => {
     it('returns a minified copy of the document', () => {
       const result = Lineage.minifyDoc(medicDb)(doc);
       expect(result).to.deep.equal(minified);
+    });
+  });
+
+  describe('minifyDoc edge cases', () => {
+    it('strips extra fields from doc', () => {
+      const doc = {
+        _id: 'doc-1',
+        _rev: 'rev-1',
+        type: DOC_TYPES.DATA_RECORD,
+        form: 'some_form',
+        fields: { a: 1 },
+        parent: { _id: 'parent-1', _rev: 'rev-2', name: 'Parent' }
+      };
+      const result = Lineage.minifyDoc(medicDb)(doc);
+      expect(result).to.deep.equal({
+        _id: 'doc-1',
+        _rev: 'rev-1',
+        type: DOC_TYPES.DATA_RECORD,
+        parent: { _id: 'parent-1' }
+      });
+    });
+
+    it('handles doc with no parent', () => {
+      const doc = {
+        _id: 'doc-1',
+        _rev: 'rev-1',
+        type: DOC_TYPES.DATA_RECORD,
+        fields: { a: 1 }
+      };
+      const result = Lineage.minifyDoc(medicDb)(doc);
+      expect(result).to.deep.equal({
+        _id: 'doc-1',
+        _rev: 'rev-1',
+        type: DOC_TYPES.DATA_RECORD,
+      });
+    });
+
+    it('does not mutate the original document', () => {
+      const doc = {
+        _id: 'doc-1',
+        _rev: 'rev-1',
+        type: DOC_TYPES.DATA_RECORD,
+        parent: { _id: 'parent-1', name: 'Parent' }
+      };
+      const original = { ...doc, parent: { ...doc.parent } };
+      Lineage.minifyDoc(medicDb)(doc);
+      expect(doc).to.deep.equal(original);
     });
   });
 
