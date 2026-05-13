@@ -4806,6 +4806,71 @@ describe('Users service', () => {
         chai.expect(validateSsoLoginUpdate.notCalled).to.be.true;
       });
     });
+  describe('assignCsvCellValue', () => {
+    it('should convert TRUE string to boolean true', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'token_login', 'TRUE');
+      chai.expect(data.token_login).to.equal(true);
+    });
+
+    it('should convert FALSE string to boolean false', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'token_login', 'FALSE');
+      chai.expect(data.token_login).to.equal(false);
+    });
+
+    it('should keep non-boolean strings unchanged', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'username', 'mary');
+      chai.expect(data.username).to.equal('mary');
+    });
+
+    it('should keep non-string values unchanged', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'count', 42);
+      chai.expect(data.count).to.equal(42);
+    });
+
+    it('should trim whitespace from value', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'username', '  mary  ');
+      chai.expect(data.username).to.equal('mary');
+    });
+
+    it('should strip surrounding quotes from value', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'username', '"mary"');
+      chai.expect(data.username).to.equal('mary');
+    });
+
+    it('should trim whitespace from attribute name', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, '  token_login  ', 'TRUE');
+      chai.expect(data.token_login).to.equal(true);
+    });
+
+    it('should not assign to excluded attributes', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, 'contact.meta:excluded', 'value');
+      chai.expect(data['contact.meta:excluded']).to.be.undefined;
+    });
+
+    it('should not assign when attribute is empty', () => {
+      const assignCsvCellValue = service.__get__('assignCsvCellValue');
+      const data = {};
+      assignCsvCellValue(data, '', 'value');
+      chai.expect(data['']).to.be.undefined;
+    });
+  });
+
   });
 });
 
