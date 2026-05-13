@@ -467,8 +467,6 @@ describe('GenerateSearchRequests service', () => {
       });
     });
 
-  });
-
     it('normalizes Devanagari numerals in search terms', () => {
       const result = service('contacts', { search: '१२३४५६' });
       chai.expect(result.length).to.equal(1);
