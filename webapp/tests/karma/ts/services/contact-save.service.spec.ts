@@ -908,6 +908,10 @@ describe('ContactSave service', () => {
       expect(sigCall.args[2]).to.equal('BASE64_SIG_DATA');
       expect(sigCall.args[3]).to.equal('image/png');
       expect(sigCall.args[4]).to.be.true;
+      // The sibling's signature field is rewritten on the owner sub-doc to
+      // the same xpath-derived attachment name, so renderers can resolve the
+      // image by value without needing to recompute the parent prefix.
+      expect(sigCall.args[0].signature).to.equal('user-file/contact:family:create/contact/signature');
     });
 
     it('sanitizes field values per-doc', async () => {
@@ -942,6 +946,102 @@ describe('ContactSave service', () => {
       const main    = result.preparedDocs.find(d => d._id === 'main1');
       expect(sibling.photo, 'sibling photo field should be sanitized').to.equal('myphoto.png');
       expect(main.name, 'main field should be untouched').to.equal('Kigali HF');
+    });
+
+    it('main contact with empty saved binary re-attaches under the same xpath-derived name', async () => {
+      // Pre-existing main-contact state: `<binary>=""` in saved fields plus
+      // an attachment under `user-file/<form>/<rest>`. On edit the empty
+      // saved value lets the form's instance default re-apply, so the
+      // binary node arrives at submit with fresh base64.
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            '<photo type="binary">FRESH_BASE64</photo>' +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: 'FRESH_BASE64' },
+      });
+
+      // Original returned by the datasource carries the legacy-named attachment.
+      getContact.withArgs(Qualifier.byUuid('main1')).resolves({
+        _id: 'main1',
+        type: 'family',
+        name: 'Kigali HF',
+        _attachments: {
+          'user-file/contact:family:create/family/photo': { content_type: 'image/png' },
+        },
+      });
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, 'main1', 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      // Same key the prior save produced — CouchDB overwrite-in-place.
+      const photoCall = attachmentService.add.getCalls()
+        .find(c => c.args[1] === 'user-file/contact:family:create/family/photo');
+      expect(photoCall, 'attach call should exist').to.not.be.undefined;
+      expect(photoCall.args[0]._id).to.equal('main1');
+      expect(photoCall.args[2]).to.equal('FRESH_BASE64');
+      expect(main.photo).to.equal('user-file/contact:family:create/family/photo');
+      // The pre-existing attachment is reused, not orphan-removed.
+      expect(
+        attachmentService.remove.calledWith(
+          sinon.match({ _id: 'main1' }),
+          'user-file/contact:family:create/family/photo',
+        ),
+        'pre-existing attachment should NOT be removed',
+      ).to.be.false;
+    });
+
+    it('routes sibling sub-contact binary writes to the sub-doc, not main', async () => {
+      // The binary attachment lives on a sibling sub-contact
+      // (`<contact db-doc="true">`). The xpath-derived name embeds the
+      // parent form id, so the sub-doc field is written with the full
+      // reference name — sufficient on its own for renderer lookup.
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<contact db-doc="true">' +
+            '<name>Amina</name>' +
+            '<signature type="binary">FRESH_SIG_BASE64</signature>' +
+          '</contact>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', contact: 'NEW' },
+        siblings: {
+          contact: {
+            _id: 'sib1',
+            type: 'person',
+            name: 'Amina',
+            signature: 'FRESH_SIG_BASE64',
+            parent: 'PARENT',
+          },
+        },
+        repeats: {},
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      await service.save(form, null, 'family');
+
+      const sigCall = attachmentService.add.getCalls()
+        .find(c => c.args[1] === 'user-file/contact:family:create/contact/signature');
+      expect(sigCall, 'sibling-routed attach should exist').to.not.be.undefined;
+      expect(sigCall.args[0]._id, 'attachment lands on sub-doc, not main').to.equal('sib1');
+      expect(sigCall.args[2]).to.equal('FRESH_SIG_BASE64');
+      // Sub-doc's signature field carries the full reference name — a
+      // renderer keyed on `value` resolves it without needing the parent
+      // form's prefix to be reconstructable from the sub-doc alone.
+      expect(sigCall.args[0].signature).to.equal('user-file/contact:family:create/contact/signature');
     });
 
     it('runs orphan cleanup on the edit path for the main doc', async () => {

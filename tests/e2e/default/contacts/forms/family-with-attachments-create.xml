@@ -36,6 +36,7 @@
             <contact_type>family_with_attachments</contact_type>
             <name/>
             <photo/>
+            <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
             <contact>NEW</contact>
           </family_with_attachments>
           <contact>
@@ -43,6 +44,7 @@
             <type>person</type>
             <name/>
             <photo/>
+            <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
           </contact>
           <repeat>
             <child jr:template="">
@@ -50,6 +52,7 @@
               <type>person</type>
               <name/>
               <photo/>
+              <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
             </child>
           </repeat>
           <meta tag="hidden">
@@ -62,15 +65,18 @@
       <bind nodeset="/data/family_with_attachments/contact_type" type="string"/>
       <bind nodeset="/data/family_with_attachments/name" type="string" required="true()"/>
       <bind nodeset="/data/family_with_attachments/photo" type="binary"/>
+      <bind nodeset="/data/family_with_attachments/badge" type="binary" readonly="true()"/>
       <bind nodeset="/data/family_with_attachments/contact" type="string"/>
       <bind nodeset="/data/contact/parent" type="string"/>
       <bind nodeset="/data/contact/type" type="string"/>
       <bind nodeset="/data/contact/name" type="string" required="true()"/>
       <bind nodeset="/data/contact/photo" type="binary"/>
+      <bind nodeset="/data/contact/badge" type="binary" readonly="true()"/>
       <bind nodeset="/data/repeat/child/parent" type="string"/>
       <bind nodeset="/data/repeat/child/type" type="string"/>
       <bind nodeset="/data/repeat/child/name" type="string"/>
       <bind nodeset="/data/repeat/child/photo" type="binary"/>
+      <bind nodeset="/data/repeat/child/badge" type="binary" readonly="true()"/>
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
