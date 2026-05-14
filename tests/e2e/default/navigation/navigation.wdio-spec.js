@@ -54,6 +54,8 @@ describe('Navigation tests', () => {
       it('should display tab labels, when all tabs are enabled', async () => {
         const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
         expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
+        const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
+        expect(tabsButtonIcons).to.deep.equal(['fa-envelope', 'fa-flag', 'fa-list-alt', 'fa-user', 'fa-bar-chart-o']);
       });
     });
 
@@ -88,6 +90,27 @@ describe('Navigation tests', () => {
         await commonPage.goToPeople('missing');
         await commonPage.goToReports('missing');
         console.log('after loading missing person');
+      });
+
+      it('should display tabs according to header_tabs configuration', async () => {
+        await utils.updateSettings({ header_tabs: {
+          messages: {
+            weight: 44,
+            icon: 'fa-flag',
+          },
+          reports: {
+            weight: 43,
+            icon: 'fa-user',
+          },
+          contacts: {
+            weight: 1,
+            icon: 'fa-bar-chart-o'
+          },
+        } }, { ignoreReload: false });
+        const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
+        expect(tabsButtonLabelsNames).to.deep.equal(['People', 'Reports', 'Messages']);
+        const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
+        expect(tabsButtonIcons).to.deep.equal(['fa-bar-chart-o', 'fa-user', 'fa-flag']);
       });
     });
   });

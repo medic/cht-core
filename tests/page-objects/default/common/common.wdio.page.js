@@ -9,6 +9,7 @@ const getGenericAria = (text) => $(`aria/${text}`);
 
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
+  getAllButtonIcons: async () => await $$('.header .tabs .mm-icon span.fa:empty'),
   messagesTab: () => $('#messages-tab'),
   taskTab: () => $('#tasks-tab'),
   analyticsTab: () => $('#analytics-tab'),
@@ -536,6 +537,12 @@ const getAllButtonLabelsNames = async () => {
   return await getTextForElements(tabsSelector.getAllButtonLabels);
 };
 
+const getAllButtonFaIconClasses = async () => {
+  const iconElements = await (await tabsSelector.getAllButtonIcons());
+  const iconClasses = await iconElements.map(element => element.getAttribute('class'));
+  return iconClasses.map(classes => classes.split(' ').find(c => c.startsWith('fa-')));
+};
+
 const isMenuOptionEnabled = async (action) => {
   const parent = await kebabMenuSelectors[action]().parentElement().parentElement();
   return await parent.getAttribute('aria-disabled') === 'false';
@@ -662,6 +669,7 @@ module.exports = {
   openAppManagement,
   getTextForElements,
   getAllButtonLabelsNames,
+  getAllButtonFaIconClasses,
   isMenuOptionEnabled,
   isMenuOptionVisible,
   loadNextInfiniteScrollPage,
