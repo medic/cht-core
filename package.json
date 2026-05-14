@@ -68,7 +68,7 @@
     "ci-integration-all-k3d": "mocha --config tests/integration/.mocharc-k3d.js",
     "ci-integration-sentinel": "mocha --config tests/integration/.mocharc-sentinel.js",
     "ci-integration-sentinel-k3d": "mocha --config tests/integration/.mocharc-sentinel-k3d.js",
-    "scan-logs": "secretlint --secretlintrc scripts/ci/.secretlintrc.json",
+    "scan-logs": "scripts/ci/scan-logs.sh",
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "ci-webdriver-visual-desktop": "wdio run ./tests/e2e/visual/wdio.conf.js --suite=desktopTests",

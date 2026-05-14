@@ -4,7 +4,7 @@ CI helper scripts for CHT Core.
 
 ## `.secretlintrc.json` — credential leak detection
 
-Runs via `npx secretlint` in both test jobs after tests complete (see `build.yml`).
+Runs via `npm run scan-logs` in both test jobs after tests complete (see `build.yml` and `scripts/ci/scan-logs.sh`).
 Uses two rule sets:
 
 ### `@secretlint/secretlint-rule-preset-recommend`

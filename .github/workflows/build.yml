@@ -231,13 +231,7 @@ jobs:
         run: npm run ${{ matrix.cmd }}
       - name: Scan logs for credential leaks
         if: always()
-        run: |
-          compgen -G "tests/logs/*.log" > /dev/null || exit 0
-          tmpdir=$(mktemp -d)
-          # Strip CouchDB OS-Process debug dumps which legitimately log user-creation doc bodies (with passwords).
-          for f in tests/logs/*.log; do grep -Ev "OS Process #?Port|OS Process .* Input ::" "$f" > "$tmpdir/$(basename "$f")"; done
-          npm run scan-logs -- "$tmpdir"/*.log
-          rm -rf "$tmpdir"
+        run: npm run scan-logs
       - name: Archive Results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -416,13 +410,7 @@ jobs:
 
     - name: Scan logs for credential leaks
       if: always()
-      run: |
-        compgen -G "tests/logs/*.log" > /dev/null || exit 0
-        tmpdir=$(mktemp -d)
-        # Strip CouchDB OS-Process debug dumps which legitimately log user-creation doc bodies (with passwords).
-        for f in tests/logs/*.log; do grep -Ev "OS Process #?Port|OS Process .* Input ::" "$f" > "$tmpdir/$(basename "$f")"; done
-        npm run scan-logs -- "$tmpdir"/*.log
-        rm -rf "$tmpdir"
+      run: npm run scan-logs
 
     - name: Archive Results
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
