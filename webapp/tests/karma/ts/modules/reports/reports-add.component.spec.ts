@@ -514,7 +514,7 @@ describe('Reports Add Component', () => {
         route.snapshot.params = { reportId: 'my_report' };
         const doc = { _id: 'report-id', form: 'my-form' };
         lineageModelGeneratorService.report.resolves({ doc });
-        const attachmentBlob = { attachment: 'blob' };
+        const attachmentBlob = { attachment: 'blob', type: 'image/png' };
         dbService.getAttachment.resolves(attachmentBlob);
         const base64 = 'base64';
         fileReaderService.base64.resolves(base64);
@@ -537,7 +537,7 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:image/png;base64,${base64}">`)).to.be.true;
       }));
 
       it('loads form with audio attachment and loaded file name', fakeAsync(async () => {
