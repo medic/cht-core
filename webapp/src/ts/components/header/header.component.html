@@ -63,7 +63,7 @@
             </a>
           </li>
 
-          <ng-container *ngFor="let tab of legacyMenuTabs">
+          <ng-container *ngFor="let tab of headerTabsForLegacySidebar">
             <li>
               <a role="menuitem" tabindex="-1"
                  *ngIf="tab.name !== 'privacy-policy' || showPrivacyPolicy"

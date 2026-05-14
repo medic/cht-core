@@ -191,7 +191,7 @@ describe('Header Component', () => {
       await fixture.whenStable();
 
       expect(headerTabsService.getSidebarTabs.callCount).to.equal(1);
-      expect(component.legacyMenuTabs).to.deep.equal([]);
+      expect(component.headerTabsForLegacySidebar).to.deep.equal([]);
     });
 
     it('should populate legacyMenuTabs', async () => {
@@ -225,7 +225,7 @@ describe('Header Component', () => {
       await fixture.whenStable();
 
       expect(headerTabsService.getSidebarTabs).to.have.been.calledOnceWithExactly();
-      expect(component.legacyMenuTabs).to.deep.equal(sidebarTabs);
+      expect(component.headerTabsForLegacySidebar).to.deep.equal(sidebarTabs);
     });
   });
 

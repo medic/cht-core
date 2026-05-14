@@ -50,7 +50,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   currentTab;
   bubbleCount = {};
   permittedTabs: HeaderTab[] = [];
-  legacyMenuTabs: SidebarTab[] = [];
+  headerTabsForLegacySidebar: SidebarTab[] = [];
 
   constructor(
     protected readonly store: Store,
@@ -68,7 +68,7 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
     this.getHeaderTabs();
     this.headerTabsService
       .getSidebarTabs()
-      .then(tabs => this.legacyMenuTabs = tabs);
+      .then(tabs => this.headerTabsForLegacySidebar = tabs);
   }
 
   ngOnDestroy() {
@@ -76,10 +76,9 @@ export class HeaderComponent extends BaseMenuComponent implements OnInit, OnDest
   }
 
   onLegacyMenuClick(tab: SidebarTab) {
-    if (tab.name !== 'bug') {
-      return;
+    if (tab.name === 'bug') {
+      this.openFeedback();
     }
-    this.openFeedback();
   }
 
   private additionalSubscriptions(){

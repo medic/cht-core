@@ -110,7 +110,7 @@ export class HeaderTabsService {
     },
   ];
 
-  private readonly DEFAULT_UI_EXTENSION_WEIGHT = 6;
+  private readonly DEFAULT_UI_EXTENSION_WEIGHT = this.DEFAULT_TABS.length + 1;
 
   private tabs?: HeaderTab[];
   private sidebarTabs?: SidebarTab[];
