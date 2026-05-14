@@ -2,12 +2,27 @@ import * as _ from 'lodash-es';
 import { Directive, Input, HostBinding, OnChanges } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
+/**
+ * A single property accepted by `mmAuthAny`. Reflects the runtime branches
+ * in the directive's `dynamicChecks`:
+ *   - `true`            -> short-circuit allow (line: mmAuthAny.some(p => p === true))
+ *   - string            -> a single permission name
+ *   - string[]          -> an AND-group of permission names (flattened via _.flattenDeep)
+ */
+type AuthAnyValue = boolean | string | string[];
+
+/**
+ * `mmAuthAny` accepts either a single AuthAnyValue (auto-wrapped to a one-element array
+ * at runtime) or an array of them representing OR-of-AND-groups.
+ */
+type AuthAnyInput = AuthAnyValue | AuthAnyValue[];
+
 @Directive({
   selector: '[mmAuth]'
 })
 export class AuthDirective implements OnChanges {
   @Input() mmAuth?: string;
-  @Input() mmAuthAny?: any;
+  @Input() mmAuthAny?: AuthAnyInput;
   @Input() mmAuthOnline?: boolean;
 
   private hidden = true;
