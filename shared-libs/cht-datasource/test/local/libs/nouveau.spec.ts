@@ -31,9 +31,14 @@ describe('nouveau', () => {
 
     ([
       ['key:value', 'exact_match:"key:value"'],
-      ['searchterm', 'searchterm*']
+      ['searchterm', 'searchterm*'],
+      ['patient123', '(patient123* OR patient१२३*)'],
+      ['patient१२३', '(patient१२३* OR patient123*)'],
+      ['mixed१23', '(mixed१23* OR mixed123*)'],
+      ['key:123', '(exact_match:"key:123" OR exact_match:"key:१२३")'],
+      ['key:१२३', '(exact_match:"key:१२३" OR exact_match:"key:123")'],
     ] as [string, string][]).forEach(([freetext, q]) => {
-      it('should query for freetext qualifier', async () => {
+      it(`should query for freetext qualifier: ${freetext}`, async () => {
         const qualifier = Qualifier.byFreetext(freetext);
         dbFetch.resolves(mockResponse);
         const body = {
@@ -55,9 +60,13 @@ describe('nouveau', () => {
 
     ([
       ['key:value', 'contact_type:"person" AND exact_match:"key:value"'],
-      ['searchterm', 'contact_type:"person" AND searchterm*']
+      ['searchterm', 'contact_type:"person" AND searchterm*'],
+      ['patient123', 'contact_type:"person" AND (patient123* OR patient१२३*)'],
+      ['patient१२३', 'contact_type:"person" AND (patient१२३* OR patient123*)'],
+      ['key:123', 'contact_type:"person" AND (exact_match:"key:123" OR exact_match:"key:१२३")'],
+      ['key:१२३', 'contact_type:"person" AND (exact_match:"key:१२३" OR exact_match:"key:123")'],
     ] as [string, string][]).forEach(([freetext, q]) => {
-      it('should query with contact type and freetext qualifier', async () => {
+      it(`should query with contact type and freetext qualifier: ${freetext}`, async () => {
         const qualifier = Qualifier.and(
           Qualifier.byFreetext(freetext),
           Qualifier.byContactType('person')

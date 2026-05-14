@@ -4,7 +4,6 @@ import {
   ContactTypeQualifier,
   FreetextQualifier,
   isContactTypeQualifier,
-  isKeyedFreetextQualifier
 } from '../../qualifier';
 import { escapeKeys } from '@medic/nouveau';
 import { getDocById } from './doc';
@@ -14,6 +13,27 @@ const jsonContentTypeHeaders = new Headers({ 'Content-Type': 'application/json' 
 const SORT_BY_VIEW: Record<string, string> = {
   'contacts_by_freetext': 'sort_order',
   'reports_by_freetext': 'reported_date',
+};
+
+const DEVANAGARI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+
+const hasDigits = (text: string): boolean => /\d/.test(text) || /[०-९]/.test(text);
+
+const latinToDevanagari = (text: string): string =>
+  text.replace(/\d/g, c => DEVANAGARI_DIGITS[Number.parseInt(c)]);
+
+const devanagariToLatin = (text: string): string => {
+  const map: Record<string, string> = {};
+  DEVANAGARI_DIGITS.forEach((d, i) => map[d] = String(i));
+  return text.replace(/[०-९]/g, c => map[c]);
+};
+
+const convertDigits = (text: string): string => {
+  const latin = devanagariToLatin(text);
+  if (latin !== text) {
+    return latin;
+  }
+  return latinToDevanagari(text);
 };
 
 /**
@@ -32,11 +52,26 @@ const fetchWithDb = (
 ) => db.fetch(url, opts);
 
 const getQueryByFreetext = (qualifier: FreetextQualifier) => {
-  if (isKeyedFreetextQualifier(qualifier)) {
-    return `exact_match:"${qualifier.freetext}"`;
+  const { freetext } = qualifier;
+  if (!hasDigits(freetext)) {
+    return buildQueryByFreetext(freetext);
   }
-  // Fuzzy match
-  return `${escapeKeys(qualifier.freetext)}*`;
+
+  const converted = convertDigits(freetext);
+  if (converted === freetext) {
+    return buildQueryByFreetext(freetext);
+  }
+
+  const originalQuery = buildQueryByFreetext(freetext);
+  const convertedQuery = buildQueryByFreetext(converted);
+  return `(${originalQuery} OR ${convertedQuery})`;
+};
+
+const buildQueryByFreetext = (freetext: string): string => {
+  if (freetext.includes(':')) {
+    return `exact_match:"${freetext}"`;
+  }
+  return `${escapeKeys(freetext)}*`;
 };
 
 const getQueryByTypeFreetext = (qualifier: FreetextQualifier & Partial<ContactTypeQualifier>) => {
