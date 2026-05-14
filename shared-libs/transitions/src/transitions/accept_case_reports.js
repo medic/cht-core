@@ -95,7 +95,7 @@ module.exports = {
         }
         addMessagesToDoc(doc, config, registrations);
         updatePlaceUuid(doc, registrations);
-        return silenceRegistrations(doc, config, registrations);
+        return silenceRegistrations(doc, config, registrations).then(() => true);
       });
     });
 
