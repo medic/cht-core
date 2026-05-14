@@ -4,7 +4,7 @@ const assert = require('chai').assert;
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const registrationUtils = require('@medic/registration-utils');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('utils', () => {
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('utils', () => {
         contact: {
           parent: {
             _id: clinicId,
-            type: 'clinic'
+            type: CONTACT_TYPES.CLINIC
           }
         }
       }

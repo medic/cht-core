@@ -205,7 +205,8 @@ module.exports = {
     const aggregateTarget = target => {
       const aggregated = pick(
         target,
-        ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key', 'visible']
+        ['id', 'type', 'goal', 'translation_key', 'name', 'icon', 'subtitle_translation_key', 'visible',
+          'limit_count_to_goal']
       );
       aggregated.value = scoreTarget(target);
 

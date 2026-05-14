@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { adapt, assertDataContext } from '../../src/libs/data-context';
+import { adapt, assertDataContext, assertSettingsService } from '../../src/libs/data-context';
 import * as LocalContext from '../../src/local/libs/data-context';
 import * as RemoteContext from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
@@ -7,7 +7,7 @@ import { DataContext } from '../../dist';
 
 
 describe('context lib', () => {
-  const context = { bind: sinon.stub() } as DataContext;
+  const context = { bind: sinon.stub(), settings: { getAll: () => ({}) } } as unknown as DataContext;
   let isLocalDataContext: SinonStub;
   let isRemoteDataContext: SinonStub;
   let assertRemoteDataContext: SinonStub;
@@ -116,6 +116,26 @@ describe('context lib', () => {
       expect(local.notCalled).to.be.true;
       expect(assertRemoteDataContext.calledOnceWithExactly(context)).to.be.true;
       expect(remote.notCalled).to.be.true;
+    });
+  });
+
+  describe('assertSettingsService', () => {
+    it('does not throw for a valid settings service', () => {
+      const settingsService = { getAll: () => ({}) };
+
+      expect(() => assertSettingsService(settingsService)).to.not.throw();
+    });
+
+    ([
+      null,
+      {},
+      { getAll: 'not a function' },
+      'hello'
+    ] as unknown[]).forEach((settings) => {
+      it(`throws for invalid settings service: ${JSON.stringify(settings)}`, () => {
+        expect(() => assertSettingsService(settings))
+          .to.throw(`Invalid settings service [${JSON.stringify(settings)}].`);
+      });
     });
   });
 });
