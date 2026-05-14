@@ -417,7 +417,8 @@ describe('Reports Add Component', () => {
           expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
           expect(jqStub.calledWith('.file-preview')).to.be.true;
           expect(jqPreviewElement.empty.calledOnce).to.be.true;
-          expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:image/png;base64,${base64}">`)).to.be.true;
+          const imgHtml = `<img src="data:image/png;base64,${base64}">`;
+          expect(jqPreviewElement.append.calledOnceWithExactly(imgHtml)).to.be.true;
         }));
       });
 
@@ -454,7 +455,8 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:image/png;base64,${base64}">`)).to.be.true;
+        const imgHtml = `<img src="data:image/png;base64,${base64}">`;
+        expect(jqPreviewElement.append.calledOnceWithExactly(imgHtml)).to.be.true;
       }));
 
       it('loads form with unsupported attachment type', fakeAsync(async () => {
@@ -537,7 +539,8 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:image/png;base64,${base64}">`)).to.be.true;
+        const imgHtml = `<img src="data:image/png;base64,${base64}">`;
+        expect(jqPreviewElement.append.calledOnceWithExactly(imgHtml)).to.be.true;
       }));
 
       it('loads form with audio attachment and loaded file name', fakeAsync(async () => {
