@@ -3,12 +3,13 @@ const placeFactory = require('@factories/cht/contacts/place');
 const login = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Infinite scrolling', () => {
   const PAGE_SIZE = 25;
 
   before(async () => {
-    const type = 'district_hospital';
+    const type = CONTACT_TYPES.DISTRICT_HOSPITAL;
     const districtHospitals = Array
       .from({ length: 200 })
       .map((_, idx) => placeFactory.place().build({

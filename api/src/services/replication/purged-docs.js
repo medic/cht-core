@@ -1,9 +1,9 @@
-const db = require('../db');
-const dbWatcher = require('./db-watcher');
+const db = require('../../db');
+const dbWatcher = require('../db-watcher');
 const environment = require('@medic/environment');
 const purgingUtils = require('@medic/purging-utils');
-const config = require('../config');
-const configWatcher = require('./config-watcher');
+const config = require('../../config');
+const configWatcher = require('../config-watcher');
 const purgedDocsCache = require('./purged-docs-cache');
 const { PREFIXES } = require('@medic/constants');
 const _ = require('lodash');
