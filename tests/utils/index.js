@@ -607,13 +607,14 @@ const updateSettings = async (updates, options = {}) => {
 
   const watcher = Object.keys(updates).length && await waitForSettingsUpdate();
 
-  await updateCustomSettings(updates);
+  const result = await updateCustomSettings(updates);
+  const needsRefresh = result && result.updated;
 
   if (watcher) {
     await watcher.promise;
   }
 
-  if (!ignoreReload && !sync) {
+  if (!ignoreReload && !sync && (needsRefresh || await hasModal())) {
     await commonElements.closeReloadModal(true);
   }
   if (sync) {
@@ -651,7 +652,9 @@ const revertSettings = async ignoreRefresh => {
   const needsRefresh = await revertCustomSettings();
 
   if (!ignoreRefresh) {
-    await commonElements.closeReloadModal(true);
+    if (needsRefresh || await hasModal()) {
+      await commonElements.closeReloadModal(true);
+    }
     return;
   }
 
@@ -696,6 +699,8 @@ const deleteLocalDocs = async () => {
   await saveDocs(docsToDelete);
 };
 
+
+const hasModal = () => $('#update-available').isDisplayed();
 
 const getDefaultForms = async () => {
   const docName = '_local/default-forms';
@@ -761,7 +766,7 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   const needsRefresh = await revertCustomSettings();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
-  if (!ignoreRefresh) {
+  if (!ignoreRefresh && (needsRefresh || await hasModal())) {
     watcher?.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {

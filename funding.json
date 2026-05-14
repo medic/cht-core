@@ -1,12 +1,12 @@
 {
-    "version": "v1.0.0",
+    "version": "v1.1.0",
     "entity": {
         "type": "organisation",
         "role": "steward",
         "name": "Medic Mobile, Inc",
         "email": "hello@medic.org",
         "phone": "+14157469758",
-        "description": "Medic is a 501(c)(3) nonprofit organization that stewards an vibrant community building open-source software for health workers providing care in the world’s hardest-to-reach communities. Medic believes that providing communities with sophisticated, human-centered technology is an effective tool on the path to achieving a more just world, where universal health coverage is a reality and health is a secured human right.",
+        "description": "Medic is a 501(c)(3) nonprofit organization that catalyzes a vibrant community building open-source software for health workers providing care in the world’s hardest-to-reach settings. Medic believes that health for all begins with community, advances with open and innovative technology, and sustains with local autonomy.  Our work isn’t just about building the best open-source technology; it’s about shifting technological sovereignty to where it belongs — so communities can innovate, test, scale, and sustain what works themselves. As the only organization stewarding a global network around digital community health, Medic is proud to lead this transformation.",
         "webpageUrl": {
             "url": "https://github.com/medic"
         }
@@ -15,9 +15,9 @@
         {
             "guid": "cht-core",
             "name": "Community Health Toolkit (CHT)",
-            "description": "The Community Health Toolkit (CHT) is a open-source project led by a group of organizations who have come together to support the development of digital health initiatives in the hardest-to-reach areas. It provides a collection of open source technologies and open access design, technical, and implementer resources that help you build and deploy digital tools for community health. Together, we envision a world where healthcare is of the highest attainable quality, equitable, accessible, and delivered by people who are trusted in their communities. The Community Health Toolkit is a Digital Public Good.",
+            "description": "The Community Health Toolkit (CHT) is a project led by a group of organizations that have come together to support the development of digital health initiatives in the hardest-to-reach areas. It provides a collection of open-source technologies and open-access design, technical, and implementation resources that help anyone build and adapt to local contexts and deploy digital tools for community health. The Toolkit has been adopted by 8 governments and currently supports over 182,500 frontline health workers across 24 countries across Asia and Africa who deliver life-saving care to an estimated 90 million people. Together, we envision a world where healthcare is of the highest attainable quality, equitable, accessible, and delivered by people who are trusted in their communities. The CHT is a Digital Public Good.",
             "webpageUrl": {
-                "url": "https://github.com/medic/cht-core"
+                "url": "https://communityhealthtoolkit.org/"
             },
             "repositoryUrl": {
                 "url": "https://github.com/medic/cht-core"
@@ -44,19 +44,77 @@
                 "type": "other",
                 "address": "https://medic.org/donate/",
                 "description": "Donation"
+            },
+            {
+                "guid": "gh-sponsors",
+                "type": "payment-provider",
+                "address": "https://github.com/sponsors/medic"
             }
         ],
         "plans": [
             {
-                "guid": "support",
+                "guid": "sustain-monthly",
                 "status": "active",
-                "name": "Community Health Toolkit Support",
-                "description": "Pay anything you wish to show your support for the CHT. Thank you for contributing to achieving health for all in the digital age!",
-                "amount": 0,
+                "name": "Sustain the CHT Core (Monthly)",
+                "description": "Support ongoing maintenance, security updates, and developer infrastructure for the Community Health Toolkit — the open-source platform powering 182,000+ health workers across 24 countries. Funds core engineering time to keep the CHT reliable, performant, and free for all implementers.",
+                "amount": 10000,
+                "currency": "USD",
+                "frequency": "monthly",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+            {
+                "guid": "sustain-one-time",
+                "status": "active",
+                "name": "Sustain the CHT Core (One-Time)",
+                "description": "Same as above, one-time contribution.",
+                "amount": 150000,
                 "currency": "USD",
                 "frequency": "one-time",
                 "channels": [
-                    "donate"
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+            {
+                "guid": "feature",
+                "status": "active",
+                "name": "Fund a CHT Feature or Integration",
+                "description": "Sponsor the development of a new requested CHT module, functionality, or integration — past work includes offline-first data sync, AI-assisted task prioritization for CHWs, and local languages support, as well as integrations with other health systems such as DHIS2 and OpenMRS. Work is scoped collaboratively and credited publicly. Ideal for organizations with aligned technical or programmatic interests.",
+                "amount": 25000,
+                "currency": "USD",
+                "frequency": "one-time",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+            {
+                "guid": "security",
+                "status": "active",
+                "name": "CHT Security Audit",
+                "description": "The CHT handles sensitive health data for millions of patients across low-resource settings. Fund a comprehensive third-party security audit of the CHT codebase — covering data privacy, authentication, and vulnerability assessment — ensuring the platform meets global health data security standards. Results are published openly to benefit the broader digital health ecosystem.",
+                "amount": 20000,
+                "currency": "USD",
+                "frequency": "one-time",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
+                ]
+            },
+                        {
+                "guid": "infra",
+                "status": "active",
+                "name": "CHT Hosting & Developer Infrastructure",
+                "description": "Cover the cloud hosting, CI/CD pipelines, and testing infrastructure that keeps CHT development running. This is the unglamorous but essential cost that keeps open-source projects sustainable — and often the first thing that breaks when nonprofit budgets tighten.",
+                "amount": 20000,
+                "currency": "USD",
+                "frequency": "one-time",
+                "channels": [
+                    "donate",
+                    "gh-sponsors"
                 ]
             }
         ],
