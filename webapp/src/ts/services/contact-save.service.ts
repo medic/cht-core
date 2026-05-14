@@ -209,6 +209,7 @@ export class ContactSaveService {
     };
 
     // Attach files from FileManager (uploaded via file widgets), routed per sub-doc
+    const fileManagerNames = new Set<string>();
     FileManager
       .getCurrentFiles()
       .forEach(file => {
@@ -222,9 +223,13 @@ export class ContactSaveService {
         this.attachmentService.add(ownerDoc, attachmentName, file, file.type, false);
         trackNew(ownerDoc, attachmentName);
         trackFileName(ownerDoc, file.name, sanitizedFileName);
+        fileManagerNames.add(file.name);
       });
 
-    // Process binary fields from XML, routed per sub-doc
+    // Process inline binary fields from XML, routed per sub-doc. Each binary
+    // field produces two writes: an attachment under `user-file/<xpath>` on
+    // the owning doc, and the same name written back into the doc's field
+    // value so the renderer can resolve the image by value alone.
     if (ctx) {
       $(ctx.root)
         .find('[type=binary]')
@@ -233,15 +238,41 @@ export class ContactSaveService {
           if (!content) {
             return;
           }
+          // Defensive: a value that already looks like an attachment
+          // reference was never raw inline data — leave it alone so re-saves
+          // stay idempotent.
+          if (content.startsWith('user-file/')) {
+            return;
+          }
+          // Legacy markup: a file-upload widget can be tagged type="binary"
+          // and carry the uploaded filename as its text. The FileManager loop
+          // above already handled the blob; treating the filename as base64
+          // here would create a bogus second attachment and override the
+          // sanitized field value.
+          if (fileManagerNames.has(content)) {
+            return;
+          }
           const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
 
           const xpath = Xpath.getElementXPath(element);
-          // Replace instance root element node name with form internal ID
+          // replace instance root element node name with form internal ID
           const filename = this.USER_FILE_ATTACHMENT_PREFIX.slice(0, -1) +
             (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
 
           this.attachmentService.add(ownerDoc, filename, content, 'image/png', true);
           trackNew(ownerDoc, filename);
+
+          // Mirror the attachment name into the owning doc's field. The path
+          // within the doc is the element's position relative to the parsed
+          // section root (the section for main/sibling, the i-th repeat
+          // child for a repeat).
+          const container = this.findFieldContainerElement(element, ctx);
+          if (container) {
+            const fieldPath = this.computeFieldPath(element, container);
+            if (fieldPath) {
+              objectPath.set(ownerDoc, fieldPath, filename);
+            }
+          }
         });
     }
 
@@ -293,6 +324,38 @@ export class ContactSaveService {
       return preparedDocs[1 + childIdx];
     }
     return null;
+  }
+
+  /**
+   * The element whose children correspond 1:1 to the parsed owner doc's
+   * top-level fields. For main / sibling sections this is the section itself;
+   * for repeats it's the i-th `<child>` of `<repeat>`. Returned element is
+   * the anchor for `computeFieldPath`.
+   */
+  private findFieldContainerElement(el: Element, ctx: ContactOwnerContext): Element | null {
+    const section = this.findSectionForElement(el, ctx.root);
+    if (!section) {
+      return null;
+    }
+    if (section.tagName === 'repeat') {
+      const repeatChildren = Array.from(section.children) as Element[];
+      return repeatChildren.find(c => c.contains(el)) ?? null;
+    }
+    return section;
+  }
+
+  /**
+   * Dot-path of the element's position relative to its container, e.g.
+   * `<container><group><photo type="binary"/></group></container>` → `group.photo`.
+   */
+  private computeFieldPath(el: Element, container: Element): string {
+    const segments: string[] = [];
+    let node: Node | null = el;
+    while (node && node !== container) {
+      segments.unshift((node as Element).tagName);
+      node = node.parentNode;
+    }
+    return segments.join('.');
   }
 
   /**

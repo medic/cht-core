@@ -150,29 +150,46 @@ describe('Sub-contact attachment routing', () => {
     expect(family.name).to.equal('Routing Family');
     expect(family._attachments).to.exist;
     const familyAttachmentNames = Object.keys(family._attachments);
-    expect(familyAttachmentNames).to.have.lengthOf(1);
-    expect(familyAttachmentNames[0]).to.match(/^user-file-photo-for-upload-form.*\.png$/);
+    // Two attachments per owner doc: the file-widget upload (user-file-<name>)
+    // and the inline-binary `badge` baked into the form's <instance>
+    // default (user-file/<form-id>/<path>). The badge exercises the inline
+    // path: attach under the xpath-derived name and write that name as the
+    // field value.
+    expect(familyAttachmentNames).to.have.lengthOf(2);
+    expect(familyAttachmentNames).to.include(
+      'user-file/contact:family_with_attachments:create/family_with_attachments/badge'
+    );
+    expect(familyAttachmentNames.find(n => /^user-file-photo-for-upload-form.*\.png$/.test(n))).to.exist;
+    expect(family.badge).to.equal(
+      'user-file/contact:family_with_attachments:create/family_with_attachments/badge'
+    );
 
     expect(primaryContact.name).to.equal('Amina');
     expect(primaryContact._attachments).to.exist;
     const primaryAttachmentNames = Object.keys(primaryContact._attachments);
-    expect(primaryAttachmentNames).to.have.lengthOf(1);
-    expect(primaryAttachmentNames[0]).to.match(/^user-file-layers.*\.png$/);
+    expect(primaryAttachmentNames).to.have.lengthOf(2);
+    // Primary contact's xpath-derived attachment uses the sub-doc's `type`
+    // ('person') as the first path segment, not the parent form id.
+    expect(primaryAttachmentNames).to.include('user-file/person/contact/badge');
+    expect(primaryAttachmentNames.find(n => /^user-file-layers.*\.png$/.test(n))).to.exist;
+    expect(primaryContact.badge).to.equal('user-file/person/contact/badge');
 
     expect(repeatChildren).to.have.lengthOf(1);
     const [child] = repeatChildren;
     expect(child.name).to.equal('Kid Alpha');
     expect(child._attachments).to.exist;
     const childAttachmentNames = Object.keys(child._attachments);
-    expect(childAttachmentNames).to.have.lengthOf(1);
-    expect(childAttachmentNames[0]).to.match(/^user-file-icon.*\.png$/);
+    expect(childAttachmentNames).to.have.lengthOf(2);
+    expect(childAttachmentNames).to.include('user-file/person/child/badge');
+    expect(childAttachmentNames.find(n => /^user-file-icon.*\.png$/.test(n))).to.exist;
+    expect(child.badge).to.equal('user-file/person/child/badge');
 
     const allAttachmentNames = [
       ...familyAttachmentNames,
       ...primaryAttachmentNames,
       ...childAttachmentNames,
     ];
-    expect(new Set(allAttachmentNames).size).to.equal(3);
+    expect(new Set(allAttachmentNames).size).to.equal(6);
   });
 
   it('should keep saved attachments intact when adding a new repeat child on edit', async () => {
@@ -212,13 +229,26 @@ describe('Sub-contact attachment routing', () => {
     expect(snapshotAttachments(after.family)).to.deep.equal(beforeFamily);
     expect(snapshotAttachments(after.primaryContact)).to.deep.equal(beforePrimary);
 
+    // The badge from the create-form's inline-binary default carries the
+    // literal attachment name in the saved field. The edit form has no
+    // <badge>, so bindJsonToXml's reference-name skip leaves the form's
+    // (non-existent) binary node alone, no save-time attach happens for it,
+    // and the original badge attachment + field value survive the edit.
+    expect(after.family.badge).to.equal(
+      'user-file/contact:family_with_attachments:create/family_with_attachments/badge'
+    );
+    expect(after.primaryContact.badge).to.equal('user-file/person/contact/badge');
+
     const kidOneAfter = after.repeatChildren.find(c => c.name === 'Kid One');
     const kidTwoAfter = after.repeatChildren.find(c => c.name === 'Kid Two');
     expect(kidOneAfter, 'Kid One should still exist').to.exist;
     expect(kidTwoAfter, 'Kid Two should be created').to.exist;
 
     expect(snapshotAttachments(kidOneAfter)).to.deep.equal(beforeKidOne);
+    expect(kidOneAfter.badge).to.equal('user-file/person/child/badge');
 
+    // Kid Two is created on edit — the edit form has no badge default for
+    // children, so the new repeat child has no badge attachment.
     expect(kidTwoAfter._attachments).to.exist;
     const kidTwoAttachmentNames = Object.keys(kidTwoAfter._attachments);
     expect(kidTwoAttachmentNames).to.have.lengthOf(1);

@@ -337,6 +337,23 @@ describe('EnketoTranslation service', () => {
       });
     });
 
+    it('preserves text content of [type=binary] nodes', () => {
+      const xml =
+        `<data id="form" version="1">
+          <photo type="binary">user-file/form/photo</photo>
+          <signature type="binary">SOME_BASE64</signature>
+          <empty type="binary"></empty>
+          <name>Alice</name>
+        </data>`;
+
+      const js = service.reportRecordToJs(xml);
+
+      assert.equal(js.photo, 'user-file/form/photo');
+      assert.equal(js.signature, 'SOME_BASE64');
+      assert.equal(js.empty, '');
+      assert.equal(js.name, 'Alice');
+    });
+
     it('converts repeated fields to arrays - #3430', () => {
       // given
       const record = `
@@ -808,6 +825,82 @@ describe('EnketoTranslation service', () => {
         serialize(element.find('mixrepeat')[2]),
         '<mixrepeat><property>propvalue</property></mixrepeat>'
       );
+    });
+
+    describe('[type=binary] handling', () => {
+      const buildModel = (defaultText = '') => $($.parseXML(
+        `<data id="form" version="1">
+          <photo type="binary">${defaultText}</photo>
+          <name/>
+        </data>`
+      )).children().first();
+
+      it('preserves the form default when saved value is empty string', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: '', name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+        assert.equal(element.find('name').text(), 'Alice');
+      });
+
+      it('preserves the form default when saved value is null', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: null, name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('preserves the form default when saved value is undefined', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: undefined, name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('preserves the form default when saved value is a reference name', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, {
+          photo: 'user-file/form/photo',
+          name: 'Alice',
+        });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('binds through genuine inline base64 (covers injection on create)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, {
+          photo: 'INJECTED_BASE64_DATA',
+          name: 'Alice',
+        });
+        assert.equal(element.find('photo').text(), 'INJECTED_BASE64_DATA');
+      });
+
+      it('does not match values that merely contain the user-file/ substring', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        // a value that starts with something else but happens to contain user-file/
+        service.bindJsonToXml(element, {
+          photo: 'data:image/png;base64,user-file/oops',
+          name: 'Alice',
+        });
+        assert.equal(
+          element.find('photo').text(),
+          'data:image/png;base64,user-file/oops',
+          'startsWith only — substring match should not skip the bind'
+        );
+      });
+
+      it('still clears empty values on non-binary leaves (no regression)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: '', name: '' });
+        assert.equal(element.find('name').text(), '');
+      });
+
+      it('binds through saved filenames on [type=file] nodes (file-widget unaffected)', () => {
+        const element = $($.parseXML(
+          `<data id="form" version="1">
+            <upload type="file"/>
+          </data>`
+        )).children().first();
+        service.bindJsonToXml(element, { upload: 'photo.jpg-1700000000000' });
+        assert.equal(element.find('upload').text(), 'photo.jpg-1700000000000');
+      });
     });
 
     it('should remove template-like attributes', () => {

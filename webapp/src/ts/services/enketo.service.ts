@@ -478,15 +478,19 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    const docsToStore = $record
-      .find('[db-doc=true]')
-      .map((idx, element) => {
-        const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
-        docToStore._id = getId(Xpath.getElementXPath(element));
-        docToStore.reported_date = Date.now();
-        return docToStore;
-      })
-      .get();
+    // Sub-docs are parsed twice: first to populate fields (so the binary
+    // attachment loop can read each sub-doc's `type` to compute attachment
+    // names and route attachments to the right doc object), then again
+    // after the binary loop has rewritten node text to the attachment name
+    // so the final field values reflect those references rather than the
+    // stale inline base64.
+    const subDocElements = $record.find('[db-doc=true]').toArray();
+    const docsToStore = subDocElements.map((element: any) => {
+      const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+      docToStore._id = getId(Xpath.getElementXPath(element));
+      docToStore.reported_date = Date.now();
+      return docToStore;
+    });
 
     doc._id = getId('/*');
     if (xmlVersion) {
@@ -513,53 +517,56 @@ export class EnketoService {
     };
 
     // Route FileManager files to the correct owner doc.
-<<<<<<< HEAD
     // For each file, find the [type=file] node whose text matches
-=======
-    // For each file, find the [type=binary] node whose text matches
->>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
     // the filename, then resolve the owner from its position in the
     // XML tree.
     FileManager
       .getCurrentFiles()
       .forEach(file => {
         const ownerDoc = resolveOwnerDoc(
-<<<<<<< HEAD
           this.findFileNodeByFilename($record, file.name) ?? $record[0]
-=======
-          this.findBinaryNodeByFilename($record, file.name) ?? $record[0]
->>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
         );
         this.attachmentService.add(ownerDoc, `user-file-${file.name}`, file, file.type, false);
       });
 
-    // The legacy filename scheme is xpath-based (rooted at doc.form) because
-    // inline-binary widgets (draw/signature) do not store the filename as a
-    // question value, so xpath is the only stable mapping from answer to
-    // attachment. The xpath naming is unchanged when routing to a sub-doc;
-    // only the target doc differs.
-    const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
+    const attachInlineBinary = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
       const formId = ownerDoc.form || doc.form;
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
-<<<<<<< HEAD
-        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-=======
         (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
->>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
       this.attachmentService.add(ownerDoc, filename, file, type, alreadyEncoded);
+      return filename;
     };
 
     $record
       .find('[type=binary]')
       .each((idx, element) => {
         const file = $(element).text();
-        if (file) {
-          attachLegacyFile(element, file, 'image/png', true);
+        if (!file) {
+          return;
         }
+        // Defensive: skip values that already look like an attachment
+        // reference, so a re-save can't double-attach the reference string
+        // as if it were base64 data.
+        if (file.startsWith('user-file/')) {
+          return;
+        }
+        const filename = attachInlineBinary(element, file, 'image/png', true);
+        // Rewrite the node text to the attachment name. reportRecordToJs is
+        // called below on the serialized record, so doc.fields ends up with
+        // the reference name in place of the inline base64 — matching the
+        // convention used for file-widget uploads.
+        $(element).text(filename);
       });
+
+    // Re-parse sub-docs from the now-rewritten XML and merge in the
+    // reference-name field values.
+    subDocElements.forEach((element: any, idx: number) => {
+      const parsed = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+      Object.assign(docsToStore[idx], parsed);
+    });
 
     record = getOuterHTML($record[0]);
 
