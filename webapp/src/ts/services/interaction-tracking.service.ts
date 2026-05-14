@@ -332,7 +332,9 @@ export class InteractionTrackingService {
     }
     const sessions = [...map.values()];
     sessions.sort((a, b) => a.startedAt - b.startedAt);
-    sessions.forEach(s => s.events.sort((a, b) => a.timestamp - b.timestamp));
+    for (const session of sessions) {
+      session.events.sort((a, b) => a.timestamp - b.timestamp);
+    }
     return sessions;
   }
 
