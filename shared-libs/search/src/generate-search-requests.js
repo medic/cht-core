@@ -122,12 +122,12 @@ const freetextRequest = (filters, view) => {
     const results = [];
     const originalParams = freetextRequestParams(word);
     if (originalParams) {
-    results.push({ view, params: originalParams, freetext: true });
+      results.push({ view, params: originalParams, freetext: true });
     }
     if (normalizedPhone) {
       const normalizedParams = freetextRequestParams(normalizedPhone);
       if (normalizedParams) {
-      results.push({ view, params: normalizedParams, freetext: true });
+        results.push({ view, params: normalizedParams, freetext: true });
       } 
     }
     return results;
