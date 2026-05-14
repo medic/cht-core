@@ -1,4 +1,5 @@
 const utils = require('@utils');
+const moment = require('moment');
 const sentinelUtils = require('@utils/sentinel');
 
 const VIEW_INDEXES_BY_DB = {
@@ -286,12 +287,43 @@ describe('monitoring', () => {
         replication_limit: {
           count: 0,
         },
+        replication_failure: {
+          count: 0,
+        },
         connected_users: {
           count: 0,
         },
       });
 
       assertIndeterminateFields(result);
+    });
+
+    it('should count distinct users with replication failures in the last 2 calendar months', async () => {
+      const currentPeriod = moment().format('YYYY-MM');
+      const previousPeriod = moment().subtract(1, 'month').format('YYYY-MM');
+      const olderPeriod = moment().subtract(2, 'month').format('YYYY-MM');
+      const failureDoc = (period, user) => ({
+        _id: `replication-fail-${period}-${user}`,
+        user,
+        date: Date.now(),
+        total_failures: 1,
+        failures: [{ date: Date.now(), status_code: 500, duration: 100, request_id: 'seed' }],
+      });
+      // alice appears in both windowed months and must only be counted once.
+      // dan is outside the 2-month window and must be excluded.
+      const seedDocs = [
+        failureDoc(currentPeriod, 'alice'),
+        failureDoc(currentPeriod, 'bob'),
+        failureDoc(previousPeriod, 'alice'),
+        failureDoc(previousPeriod, 'clare'),
+        failureDoc(olderPeriod, 'dan'),
+      ];
+
+      await utils.logsDb.bulkDocs(seedDocs);
+
+      const result = await utils.request({ path: '/api/v2/monitoring' });
+
+      chai.expect(result.replication_failure).to.deep.equal({ count: 3 });
     });
   });
 });

@@ -763,8 +763,21 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
 
   await deleteMetaDbs();
   await deleteCredentials();
+  await clearReplicationFailureLogs();
 
   await setUserContactDoc();
+};
+
+const clearReplicationFailureLogs = async () => {
+  const result = await logsDb.allDocs({
+    startkey: 'replication-fail-',
+    endkey: 'replication-fail-\ufff0',
+  });
+  if (!result.rows.length) {
+    return;
+  }
+  const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await logsDb.bulkDocs(docs);
 };
 
 const getOrigin = () => `${constants.BASE_URL}`;
@@ -1797,6 +1810,7 @@ module.exports = {
   updateSettings,
   revertSettings,
   revertDb,
+  clearReplicationFailureLogs,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,

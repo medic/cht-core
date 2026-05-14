@@ -265,6 +265,78 @@ describe('Replication Failure Log Service', () => {
     });
   });
 
+  describe('getUsersWithFailuresCount', () => {
+    it('should return the number of distinct users in the current + previous calendar months', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({
+        rows: [
+          { id: 'replication-fail-2026-03-alice' },
+          { id: 'replication-fail-2026-03-bob' },
+          { id: 'replication-fail-2026-04-alice' },
+          { id: 'replication-fail-2026-04-clare' },
+        ],
+      });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(db.medicLogs.allDocs.callCount).to.equal(1);
+      expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
+        startkey: 'replication-fail-2026-03-',
+        endkey: 'replication-fail-2026-04-\ufff0',
+      });
+      // alice has docs in both months but is counted once.
+      expect(result).to.equal(3);
+    });
+
+    it('should return 0 when no users have failures in the window', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({ rows: [] });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(result).to.equal(0);
+    });
+
+    it('should handle usernames that contain dashes', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({
+        rows: [
+          { id: 'replication-fail-2026-03-sir-bob' },
+          { id: 'replication-fail-2026-04-sir-bob' },
+          { id: 'replication-fail-2026-04-mary-jane' },
+        ],
+      });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(result).to.equal(2);
+    });
+
+    it('should span across a year boundary', async () => {
+      sinon.useFakeTimers(new Date('2026-01-05T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({ rows: [] });
+
+      await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
+        startkey: 'replication-fail-2025-12-',
+        endkey: 'replication-fail-2026-01-\ufff0',
+      });
+    });
+
+    it('should propagate db errors', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.rejects({ status: 500, message: 'db error' });
+
+      try {
+        await replicationFailureLog.getUsersWithFailuresCount();
+        expect.fail('should have thrown');
+      } catch (err) {
+        expect(err).to.deep.equal({ status: 500, message: 'db error' });
+      }
+    });
+  });
+
   describe('capture', () => {
     it('should create a new log when none exists', async () => {
       const now = new Date('2026-04-15T12:00:00Z').valueOf();

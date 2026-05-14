@@ -5,8 +5,10 @@ const pagination = require('../pagination');
 const TYPE_PREFIX = `replication-fail-`;
 const MAX_FAILURES = 50;
 const REPORTING_PERIOD_FORMAT = 'YYYY-MM';
+const REPORTING_PERIOD_LENGTH = REPORTING_PERIOD_FORMAT.length;
 const UNKNOWN = 'unknown';
 const MAX_PERIODS = 60;
+const RECENT_PERIODS_FOR_USER_COUNT = 2;
 
 const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const log = await getLog(userCtx.name);
@@ -151,7 +153,26 @@ const get = async ({ user, reportingPeriod, cursor = 0, limit = pagination.DEFAU
   return getPageByRange({ reportingPeriod, skip: cursor, limit });
 };
 
+const getRecentReportingPeriodsRange = () => {
+  const now = moment();
+  const earliest = now.clone().subtract(RECENT_PERIODS_FOR_USER_COUNT - 1, 'month').format(REPORTING_PERIOD_FORMAT);
+  const latest = now.format(REPORTING_PERIOD_FORMAT);
+  return {
+    startkey: `${TYPE_PREFIX}${earliest}-`,
+    endkey: `${TYPE_PREFIX}${latest}-\ufff0`,
+  };
+};
+
+const usernameFromDocId = (docId) => docId.slice(TYPE_PREFIX.length + REPORTING_PERIOD_LENGTH);
+
+const getUsersWithFailuresCount = async () => {
+  const result = await db.medicLogs.allDocs(getRecentReportingPeriodsRange());
+  const users = new Set(result.rows.map(row => usernameFromDocId(row.id)));
+  return users.size;
+};
+
 module.exports = {
   capture: captureFailure,
   get,
+  getUsersWithFailuresCount,
 };

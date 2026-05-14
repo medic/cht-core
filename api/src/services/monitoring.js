@@ -5,6 +5,7 @@ const db = require('../db');
 const environment = require('@medic/environment');
 const logger = require('@medic/logger');
 const deployInfoService = require('./deploy-info');
+const replicationFailureLog = require('./replication/replication-failure-log');
 const { SENTINEL_METADATA } = require('@medic/constants');
 
 const DBS_TO_MONITOR = {
@@ -347,6 +348,15 @@ const getReplicationLimitLog = () => {
     });
 };
 
+const getReplicationFailuresUserCount = () => {
+  return replicationFailureLog
+    .getUsersWithFailuresCount()
+    .catch(err => {
+      logger.error('Error fetching replication failures user count: %o', err);
+      return -1;
+    });
+};
+
 const getConnectedUserLogs = (connectedUserInterval) => {
   const earliestTimestamp = moment().subtract(connectedUserInterval, 'days').valueOf();
   return db.medicLogs
@@ -428,13 +438,15 @@ const jsonV2 = (connectedUserInterval) => {
       jsonV1(connectedUserInterval),
       getWeeklyOutgoingMessageStatusCounts(),
       getLastHundredStatusUpdatesCounts(),
+      getReplicationFailuresUserCount(),
     ])
-    .then(([jsonV1, weeklyOutgoingMessageStatus, lastHundredCounts]) => {
+    .then(([jsonV1, weeklyOutgoingMessageStatus, lastHundredCounts, replicationFailuresUserCount]) => {
       jsonV1.messaging.outgoing = {
         total: jsonV1.messaging.outgoing.state,
         seven_days: weeklyOutgoingMessageStatus,
         last_hundred: lastHundredCounts,
       };
+      jsonV1.replication_failure = { count: replicationFailuresUserCount };
 
       return jsonV1;
     });

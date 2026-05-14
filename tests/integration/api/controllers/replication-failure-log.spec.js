@@ -1,7 +1,6 @@
 const utils = require('@utils');
 const moment = require('moment');
 const { CONTACT_TYPES } = require('@medic/constants');
-const constants = require('@constants');
 const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
@@ -81,22 +80,6 @@ describe('replication failure logging @docker', () => {
     return response.data.find(log => log._id === currentPeriodId) || response.data[0] || null;
   };
 
-  const clearLogs = async () => {
-    const result = await utils.logsDb.allDocs({
-      include_docs: true,
-      startkey: 'replication-fail-',
-      endkey: 'replication-fail-\ufff0'
-    });
-
-    const purgeDocs = {};
-    result.rows.forEach(row => purgeDocs[row.id] = [row.value.rev]);
-    await utils.request({
-      path: `/${constants.DB_NAME}-logs/_purge`,
-      method: 'POST',
-      body: purgeDocs
-    });
-  };
-
   const requestDocsExpectingError = async (username) => {
     await expect(replicationGetIds(username)).to.be.rejectedWith();
     await utils.delayPromise(SETTLE_DELAY_MS);
@@ -113,7 +96,7 @@ describe('replication failure logging @docker', () => {
   });
 
   afterEach(async () => {
-    await clearLogs();
+    await utils.clearReplicationFailureLogs();
   });
 
   describe('on successful replication', () => {

@@ -121,6 +121,14 @@ const DEFAULT_CONNECTED_USER_INTERVAL = 7;
  *         count:
  *           type: number
  *           description: Number of users that exceeded the replication limit of documents.
+ *     MonitoringReplicationFailure:
+ *       type: object
+ *       properties:
+ *         count:
+ *           type: number
+ *           description: >
+ *             Number of distinct users that had at least one replication failure in the current
+ *             or previous calendar month.
  *     MonitoringConnectedUsers:
  *       type: object
  *       properties:
@@ -372,6 +380,8 @@ module.exports = {
    *                   $ref: '#/components/schemas/MonitoringConflict'
    *                 replication_limit:
    *                   $ref: '#/components/schemas/MonitoringReplicationLimit'
+   *                 replication_failure:
+   *                   $ref: '#/components/schemas/MonitoringReplicationFailure'
    *                 connected_users:
    *                   $ref: '#/components/schemas/MonitoringConnectedUsers'
    */
