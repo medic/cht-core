@@ -138,10 +138,10 @@ describe('UiExtensionsTabComponent', () => {
     flush();
 
     const setTabAction = dispatchSpy.args.find(
-      ([action]) => action.type === '[Global] Set Current Tab'
+      ([action]: any) => action.type === '[Global] Set Current Tab'
     );
     expect(setTabAction).to.exist;
-    expect(setTabAction![0].payload.currentTab).to.equal(`ui-extension-${EXTENSION_ID}`);
+    expect((setTabAction![0] as any).payload.currentTab).to.equal(`ui-extension-${EXTENSION_ID}`);
   }));
 
   it('does not override currentTab for sidebar_tab extensions', fakeAsync(() => {
@@ -162,7 +162,7 @@ describe('UiExtensionsTabComponent', () => {
     flush();
 
     const setTabAction = dispatchSpy.args.find(
-      ([action]) => action.type === '[Global] Set Current Tab'
+      ([action]: any) => action.type === '[Global] Set Current Tab'
     );
     expect(setTabAction).to.not.exist;
   }));
