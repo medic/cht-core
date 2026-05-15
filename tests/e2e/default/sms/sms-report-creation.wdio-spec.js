@@ -29,11 +29,11 @@ const SMS_FORMS_SETTINGS = {
     DEL: {
       meta: { code: 'DEL', label: { en: 'Delivery Report' } },
       fields: {
-        patient_id: {
-          labels: { tiny: { en: 'PID' }, short: { en: 'PID' } },
+        outcome: {
+          labels: { tiny: { en: 'O' }, short: { en: 'Outcome' } },
           position: 0,
           type: 'string',
-          length: [1, 30],
+          length: [1, 10],
           required: true,
         },
       },
@@ -81,6 +81,16 @@ describe('SMS report creation', () => {
     await loginPage.cookieLogin();
   });
 
+  afterEach(async () => {
+    const { rows } = await utils.db.allDocs({ include_docs: true });
+    const reports = rows
+      .filter(({ doc }) => doc && doc.type === 'data_record')
+      .map(({ doc }) => ({ _id: doc._id, _rev: doc._rev, _deleted: true }));
+    if (reports.length) {
+      await utils.db.bulkDocs(reports);
+    }
+  });
+
   after(async () => {
     await utils.revertSettings(true);
     await utils.revertDb([/^form:/], true);
@@ -117,7 +127,7 @@ describe('SMS report creation', () => {
       await gatewayApiUtils.api.postMessage({
         id: 'msg-del-001',
         from: chwPerson.phone,
-        content: 'DEL 12345',
+        content: 'DEL live',
       });
       await sentinelUtils.waitForSentinel();
 
