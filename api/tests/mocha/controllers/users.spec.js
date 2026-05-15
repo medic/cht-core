@@ -2,14 +2,15 @@ const sinon = require('sinon');
 const chai = require('chai');
 const controller = require('../../../src/controllers/users');
 const auth = require('../../../src/auth');
-const authorization = require('../../../src/services/authorization');
+const authorization = require('../../../src/services/replication/authorization');
 const serverUtils = require('../../../src/server-utils');
-const purgedDocs = require('../../../src/services/purged-docs');
+const purgedDocs = require('../../../src/services/replication/purged-docs');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const dataContext = require('../../../src/services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
-const replicationLimitLog = require('../../../src/services/replication-limit-log');
+const replicationLimitLog = require('../../../src/services/replication/replication-limit-log');
+const { USER_ROLES: { COUCHDB_ADMIN, ADMIN }, PREFIXES } = require('@medic/constants');
 
 let req;
 let userCtx;
@@ -44,7 +45,7 @@ describe('Users Controller', () => {
 
     it('returns a user', async () => {
       const expectedUser = {
-        id: 'org.couchdb.user:chw',
+        id: PREFIXES.COUCH_USER + 'chw',
         roles: ['chw', 'district-admin'],
         contact: {
           _id: 'chw-contact',
@@ -72,7 +73,7 @@ describe('Users Controller', () => {
       const userCtx = { name: 'chw' };
       auth.getUserCtx.resolves({ name: 'chw' });
       const expectedUser = {
-        id: 'org.couchdb.user:chw',
+        id: PREFIXES.COUCH_USER + 'chw',
         roles: ['chw', 'district-admin'],
         contact: {
           _id: 'chw-contact',
@@ -102,7 +103,7 @@ describe('Users Controller', () => {
       const userCtx = { name: 'chw' };
       auth.getUserCtx.resolves(userCtx);
       const expectedUser = {
-        id: 'org.couchdb.user:chw',
+        id: PREFIXES.COUCH_USER + 'chw',
         roles: ['chw', 'district-admin'],
         contact: {
           _id: 'chw-contact',
@@ -194,16 +195,16 @@ describe('Users Controller', () => {
 
     beforeEach(() => {
       userList = [
-        { id: 'org.couchdb.user:admin', roles: ['_admin'] },
+        { id: PREFIXES.COUCH_USER + 'admin', roles: [COUCHDB_ADMIN] },
         {
-          id: 'org.couchdb.user:chw',
+          id: PREFIXES.COUCH_USER + 'chw',
           roles: ['chw', 'district-admin'],
           contact: {
             _id: 'chw-contact',
             parent: { _id: 'chw-facility' },
           }
         },
-        { id: 'org.couchdb.user:unknown' },
+        { id: PREFIXES.COUCH_USER + 'unknown' },
       ];
       req = { };
       res = { json: sinon.stub() };
@@ -223,13 +224,13 @@ describe('Users Controller', () => {
 
         await controller.list(req, res);
         const result = res.json.args[0][0];
-        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
         chai.expect(result[0].type).to.equal('_admin');
         chai.expect(result[0].roles).to.be.undefined;
-        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[1].type).to.deep.equal('chw');
         chai.expect(result[1].roles).to.be.undefined;
-        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
         chai.expect(result[2].type).to.deep.equal('unknown');
         chai.expect(result[2].roles).to.be.undefined;
       });
@@ -248,13 +249,13 @@ describe('Users Controller', () => {
 
         await controller.v2.list(req, res);
         const result = res.json.args[0][0];
-        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
         chai.expect(result[0].type).to.be.undefined;
-        chai.expect(result[0].roles).to.deep.equal([ '_admin' ]);
-        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].roles).to.deep.equal([COUCHDB_ADMIN]);
+        chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[1].type).to.be.undefined;
         chai.expect(result[1].roles).to.deep.equal([ 'chw', 'district-admin' ]);
-        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
         chai.expect(result[2].type).to.be.undefined;
         chai.expect(result[2].roles).to.be.undefined;
       });
@@ -274,7 +275,7 @@ describe('Users Controller', () => {
           .to.deep.equal({ facilityId: 'chw-facility', contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
-        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[0].type).to.be.undefined;
         chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
         chai.expect(result[0].contact._id).to.equal('chw-contact');
@@ -293,7 +294,7 @@ describe('Users Controller', () => {
         });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(1);
-        chai.expect(result[0].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'chw');
         chai.expect(result[0].type).to.be.undefined;
         chai.expect(result[0].roles).to.deep.equal(['chw', 'district-admin']);
         chai.expect(result[0].contact._id).to.equal('chw-contact');
@@ -308,9 +309,9 @@ describe('Users Controller', () => {
         chai.expect(users.getList.firstCall.args[0]).to.deep.equal({ facilityId: undefined, contactId: undefined });
         const result = res.json.args[0][0];
         chai.expect(result.length).to.equal(3);
-        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
-        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
-        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[0].id).to.equal(PREFIXES.COUCH_USER + 'admin');
+        chai.expect(result[1].id).to.equal(PREFIXES.COUCH_USER + 'chw');
+        chai.expect(result[2].id).to.equal(PREFIXES.COUCH_USER + 'unknown');
       });
     });
 
@@ -318,7 +319,7 @@ describe('Users Controller', () => {
 
   describe('info', () => {
     beforeEach(() => {
-      userCtx = { name: 'user', roles: ['admin'] };
+      userCtx = { name: 'user', roles: [ADMIN] };
       req = { query: {}, userCtx };
       res = { json: sinon.stub() };
     });
@@ -337,7 +338,7 @@ describe('Users Controller', () => {
 
     it('should catch auth ids errors', () => {
       serverUtils.error.resolves();
-      authorization.getAuthorizationContext.resolves({});
+      authorization.getAuthorizationContext.resolves({ subjectIds: [] });
       authorization.getDocsByReplicationKey.rejects({ some: 'other err' });
       sinon.stub(purgedDocs, 'getUnPurgedIds');
       return controller.info(req, res).then(() => {
@@ -352,8 +353,9 @@ describe('Users Controller', () => {
 
     it('should catch purge ids errors', () => {
       serverUtils.error.resolves();
-      authorization.getAuthorizationContext.resolves({});
+      authorization.getAuthorizationContext.resolves({ subjectIds: [] });
       authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key' });
+      authorization.filterAllowedDocIds.returns([]);
       sinon.stub(purgedDocs, 'getUnPurgedIds').rejects({ some: 'err' });
       return controller.info(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
@@ -463,10 +465,15 @@ describe('Users Controller', () => {
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(0);
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
+          // replication.getContext mutates userCtx in-place with progress markers — sinon captures
+          // by reference, so the args reflect the post-mutation state.
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
             roles: ['some_role'],
             facility_id: [req.query.facility_id],
-            contact_id: undefined
+            contact_id: undefined,
+            subjectsCount: authContext.subjectIds.length,
+            docsCount: docIds.length,
+            unpurgedDocsCount: docIds.length,
           }]);
           chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
           chai.expect(authorization.getDocsByReplicationKey.args[0]).to.deep.equal([ authContext ]);
@@ -482,7 +489,13 @@ describe('Users Controller', () => {
           ]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([
-            { ...authContext.userCtx, contact_id: undefined },
+            {
+              ...authContext.userCtx,
+              contact_id: undefined,
+              subjectsCount: authContext.subjectIds.length,
+              docsCount: docIds.length,
+              unpurgedDocsCount: docIds.length,
+            },
             docIds,
           ]);
           chai.expect(res.json.callCount).to.equal(1);
@@ -523,7 +536,10 @@ describe('Users Controller', () => {
           chai.expect(authorization.getAuthorizationContext.args[0]).to.deep.equal([{
             roles: ['some_role'],
             facility_id: [req.query.facility_id],
-            contact_id: req.query.contact_id
+            contact_id: req.query.contact_id,
+            subjectsCount: authContext.subjectIds.length,
+            docsCount: docIds.length,
+            unpurgedDocsCount: docIds.length,
           }]);
           chai.expect(authorization.getDocsByReplicationKey.callCount).to.equal(1);
           chai.expect(authorization.getDocsByReplicationKey.args[0]).to.deep.equal([authContext]);
@@ -667,10 +683,19 @@ describe('Users Controller', () => {
             roles: ['role1', 'role2'],
             facility_id: ['some_facility_id'],
             contact_id: undefined,
+            subjectsCount: authContext.subjectIds.length,
+            docsCount: docIds.length,
+            unpurgedDocsCount: docIds.length,
           }]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([
-            { ...authContext.userCtx, contact_id: undefined },
+            {
+              ...authContext.userCtx,
+              contact_id: undefined,
+              subjectsCount: authContext.subjectIds.length,
+              docsCount: docIds.length,
+              unpurgedDocsCount: docIds.length,
+            },
             docIds,
           ]);
           chai.expect(res.json.callCount).to.equal(1);
@@ -704,7 +729,7 @@ describe('Users Controller', () => {
         ];
 
         beforeEach(() => {
-          authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx }));
+          authorization.getAuthorizationContext.callsFake(userCtx => Promise.resolve({ userCtx, subjectIds: [] }));
           authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
           authorization.filterAllowedDocIds.returns(['1', '2', '3']);
           sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(['1', '2', '3']);

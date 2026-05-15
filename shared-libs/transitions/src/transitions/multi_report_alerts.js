@@ -9,6 +9,7 @@ const utils = require('../lib/utils');
 const transitionUtils = require('./utils');
 const MAX_NUM_REPORTS_THRESHOLD = 100;
 const TRANSITION_NAME = 'multi_report_alerts';
+const { DOC_TYPES } = require('@medic/constants');
 const BATCH_SIZE = 100;
 const requiredFields = [
   'is_report_counted',
@@ -366,7 +367,7 @@ module.exports = {
     return !!(
       doc &&
       doc.form &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       !transitionUtils.hasRun(info, TRANSITION_NAME) &&
       utils.isValidSubmission(doc)
     );

@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, PREFIXES } = require('@medic/constants');
 
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
@@ -243,7 +243,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when user not found', () => {
-      db.medic.get.resolves({ user: 'org.couchdb.user:someuser' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'someuser' });
       db.users.get.rejects({ status: 404 });
       return service
         .getUserByToken('omgtoken')
@@ -253,12 +253,12 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:omgtoken`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:someuser']);
+          chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'someuser']);
         });
     });
 
     it('should return false when no matches found', () => {
-      db.medic.get.resolves({ user: 'org.couchdb.user:otheruser' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'otheruser' });
       db.users.get.resolves({ token_login: { token: 'not token' } });
       return service
         .getUserByToken('sometoken')
@@ -268,12 +268,12 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:sometoken`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:otheruser']);
+          chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'otheruser']);
         });
     });
 
     it('should throw invalid when token does not match', () => {
-      db.medic.get.resolves({ user: 'org.couchdb.user:user1' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'user1' });
       db.users.get.resolves({ token_login: { active: true, token: 'different_token' } });
       return service
         .getUserByToken('sometoken')
@@ -284,7 +284,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when match is expired', () => {
-      db.medic.get.resolves({ user: 'org.couchdb.user:user' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'user' });
       db.users.get.resolves({ token_login: { active: true, token: 'the_token', expiration_date: 0 } });
       return service
         .getUserByToken('the_token')
@@ -294,14 +294,14 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
+          chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'user']);
         });
     });
 
     it('should throw when user is oidc', () => {
       sinon.stub(ssoLogin, 'isSsoLoginEnabled').returns(true);
       const future = new Date().getTime() + 1000;
-      db.medic.get.resolves({ user: 'org.couchdb.user:user' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'user' });
       db.users.get.resolves({
         oidc_username: 'true',
         token_login: {
@@ -319,16 +319,16 @@ describe('TokenLogin service', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
           chai.expect(db.users.get.callCount).to.equal(1);
-          chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user']);
+          chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'user']);
           chai.expect(ssoLogin.isSsoLoginEnabled.calledOnceWithExactly()).to.be.true;
         });
     });
 
     it('should return the row id when match is not expired', () => {
       const future = new Date().getTime() + 1000;
-      db.medic.get.resolves({ user: 'org.couchdb.user:user_id' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'user_id' });
       db.users.get.resolves({
-        _id: 'org.couchdb.user:user_id',
+        _id: PREFIXES.COUCH_USER + 'user_id',
         token_login: {
           active: true,
           token: 'the_token',
@@ -336,16 +336,16 @@ describe('TokenLogin service', () => {
         },
       });
       return service.getUserByToken('the_token').then(response => {
-        chai.expect(response).to.equal('org.couchdb.user:user_id');
+        chai.expect(response).to.equal(PREFIXES.COUCH_USER + 'user_id');
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(db.medic.get.args[0]).to.deep.equal([`token:login:the_token`]);
         chai.expect(db.users.get.callCount).to.equal(1);
-        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:user_id']);
+        chai.expect(db.users.get.args[0]).to.deep.equal([PREFIXES.COUCH_USER + 'user_id']);
       });
     });
 
     it('should throw when get errors', () => {
-      db.medic.get.resolves({ user: 'org.couchdb.user:user_id' });
+      db.medic.get.resolves({ user: PREFIXES.COUCH_USER + 'user_id' });
       db.users.get.rejects({ some: 'err' });
       return service
         .getUserByToken('t', 'h')

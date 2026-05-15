@@ -1,5 +1,6 @@
 const assert = require('chai').assert;
 const utils = require('./utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 const person = {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402',
@@ -33,7 +34,7 @@ const householdVisit = {
   _id: '5294b4c0-7499-41d5-b8d9-c548381799c0',
   _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
   form: 'household_visit',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   verified: true,
   content_type: 'xml',
   reported_date: 1517418915669,
@@ -69,7 +70,7 @@ const postNatalVisit = {
   _id: '4971a859-bde7-4ff0-a0ed-326925b83038',
   _rev: '1-daf9f65652fbe6da38911d3ffd6c1d77',
   form: 'postnatal_visit',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   content_type: 'xml',
   case_id: '12345',
   reported_date: 1517392010413,
@@ -121,7 +122,7 @@ const postNatalVisitPatientUuidNoId = Object.assign({}, postNatalVisit, {
 const jsonR = {
   _id: '60f2df4791ea8f83b531cdcf30003abe',
   _rev: '2-2fcc401c60fc33f91842482f0931fc27',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: '+13125551212',
   form: 'R',
   errors: [],
@@ -146,7 +147,7 @@ const jsonRBis = Object.assign({}, jsonR, {
 const jsonOth = {
   _id: '60f2df4791ea8f83b531cdcf3007fffa',
   _rev: '2-6a2f4afb456e70db09c2bb8348b61267',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: '+13125551212',
   form: 'OTH',
   errors: [true],
@@ -159,7 +160,7 @@ const communityEvent = {
   _id: 'e3f70ed4-7875-41ab-86f4-0808beb0fceb',
   _rev: '2-5ad6ee169ca8a5a0b21b504bbd65a85a',
   form: 'community_event',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   content_type: 'xml',
   reported_date: 1517495666367,
   contact: {
@@ -186,7 +187,7 @@ const communityEvent = {
 const jsonD = {
   _id: '60f2df4791ea8f83b531cdcf3000c44a',
   _rev: '2-b515aeb6076ef05b474a9b15bbeb1106',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: '+13125551212',
   form: 'D',
   fields: {
@@ -211,7 +212,7 @@ const jsonDBis = Object.assign({}, jsonD, {
 const jsonHousehold = {
   _id: '5294b4c0-7499-41d5-b8d9-c548381799c0',
   _rev: '2-25a86f61d544f9254b6c738ca6f644ad',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   from: '+13125551212',
   form: 'H',
   fields: {

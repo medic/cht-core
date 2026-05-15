@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const { DOC_IDS } = require('@medic/constants');
 
 const db = require('../db');
 const logger = require('@medic/logger');
 
-const BRANDING_ID = 'branding';
+const BRANDING_ID = DOC_IDS.BRANDING;
 const APP_TITLE_V1 = 'Medic';
 const APP_TITLE_V2 = 'Community Health Toolkit';
 

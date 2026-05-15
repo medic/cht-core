@@ -5,6 +5,7 @@ const messages = require('../../../src/lib/messages');
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const utils = require('../../../src/lib/utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 let alertConfig;
 
@@ -73,7 +74,7 @@ describe('multi report alerts', () => {
     }), false);
     assert.equal(transition.filter({
       doc: {
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       }
     }), false);
     assert.equal(transition.filter({
@@ -85,7 +86,7 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), false);
@@ -94,13 +95,13 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
 
     assert.equal(utils.isValidSubmission.callCount, 2);
-    assert(utils.isValidSubmission.calledWithExactly({ form: 'x', type: 'data_record'}));
+    assert(utils.isValidSubmission.calledWithExactly({ form: 'x', type: DOC_TYPES.DATA_RECORD}));
   });
 
   it('filter validation hasRun', () => {
@@ -108,7 +109,7 @@ describe('multi report alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {
         transitions: {
