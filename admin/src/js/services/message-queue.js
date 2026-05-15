@@ -1,6 +1,8 @@
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
+const constants = require('@medic/constants');
+const DOC_TYPES = constants.DOC_TYPES;
 
 angular.module('services').factory('MessageQueueUtils',
   function(
@@ -232,7 +234,7 @@ angular.module('services').factory('MessageQueue',
           stateHistory: message.task.state_history,
           content: message.sms.message,
           due: message.due,
-          link: !!message.doc.form && message.doc.type === 'data_record',
+          link: !!message.doc.form && message.doc.type === DOC_TYPES.DATA_RECORD,
           error: message.sms.error || false
         };
       });

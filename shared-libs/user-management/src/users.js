@@ -13,10 +13,11 @@ const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
-const { Person, Place, Qualifier, Contact } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier, Contact, getDatasource } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
+const { USER_ROLES, PREFIXES } = require('@medic/constants');
 
-const USER_PREFIX = 'org.couchdb.user:';
+const USER_PREFIX = PREFIXES.COUCH_USER;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -124,7 +125,7 @@ const getSettingsByIds = async (ids) => {
 };
 
 const getAllUsers = async () => db.users
-  .allDocs({ include_docs: true, start_key: 'org.couchdb.user:', end_key: 'org.couchdb.user:\ufff0' })
+  .allDocs({ include_docs: true, start_key: PREFIXES.COUCH_USER, end_key: PREFIXES.COUCH_USER + '\ufff0' })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const getUsers = async (facilityId, contactId) => {
@@ -477,7 +478,8 @@ const isPasswordChangeRequired = (user, data, fullAccess) => {
   }
 
   const userRoles = data.roles || user?.roles;
-  return !roles.hasAllPermissions(userRoles, ['can_skip_password_change']);
+  const chtDatasource = getDatasource(dataContext);
+  return !chtDatasource.v1.hasPermissions(['can_skip_password_change'], userRoles);
 };
 
 const getUserUpdates = (user, data, fullAccess = false) => {
@@ -634,7 +636,8 @@ const validateAllowedMultipleFacilities = (data, user) => {
   }
 
   const userRoles = data.roles || user?.roles;
-  if (!userRoles || !roles.hasAllPermissions(userRoles, ['can_have_multiple_places'])) {
+  const chtDatasource = getDatasource(dataContext);
+  if (!userRoles || !chtDatasource.v1.hasPermissions(['can_have_multiple_places'], userRoles)) {
     throw error400(
       'This user cannot have multiple places',
       'field is required',
@@ -1151,7 +1154,7 @@ module.exports = {
     return getUserDoc(userCtx.name, 'users')
       .catch(err => {
         if (err && err.status === 404) {
-          const data = { username: userCtx.name, roles: ['admin'] };
+          const data = { username: userCtx.name, roles: [USER_ROLES.ADMIN] };
           return validateNewUsername(userCtx.name)
             .then(() => createUser(data, {}))
             .then(() => createUserSettings(data, {}));

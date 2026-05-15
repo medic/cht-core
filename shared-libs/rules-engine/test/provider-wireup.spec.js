@@ -7,6 +7,7 @@ const {
   engineSettings,
   defaultConfigSettingsDoc
 } = require('./mocks');
+const { PREFIXES } = require('@medic/constants');
 
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
@@ -14,6 +15,7 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');
+const { DOC_TYPES } = require('@medic/constants');
 
 const pouchdbProvider = require('../src/pouchdb-provider');
 const rulesEmitter = require('../src/rules-emitter');
@@ -25,14 +27,14 @@ const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
   _id: 'reportByPlace',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   place_id: 'patient',
   reported_date: 2000,
 };
 const headlessReport = {
   _id: 'headlessReport',
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'form',
   patient_id: 'headless',
   reported_date: 1000,
@@ -73,7 +75,7 @@ let clock;
 let wireup;
 let rulesStateStore;
 const currentUserContact = { _id: 'mock_user_id' };
-const currentUserSettings = { _id: 'org.couchdb.user:username' };
+const currentUserSettings = { _id: PREFIXES.COUCH_USER + 'username' };
 const settings = {
   rules: defaultConfigSettingsDoc.tasks.rules,
   rulesAreDeclarative: true
@@ -310,7 +312,7 @@ describe('provider-wireup integration tests', () => {
         contactDocs: [],
         reportDocs: [headlessReport],
         taskDocs: [headlessTask],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
 
       expect(db.bulkDocs.callCount).to.eq(2);
@@ -341,7 +343,7 @@ describe('provider-wireup integration tests', () => {
         contactDocs: [chtDocs.contact],
         reportDocs: [headlessReport, chtDocs.pregnancyReport, reportConnectedByPlace],
         taskDocs: [headlessTask, taskRequestedByChtContact],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
 
       expect(rulesStateStore.hasAllContacts()).to.be.true;
@@ -368,7 +370,7 @@ describe('provider-wireup integration tests', () => {
             timestamp: NOW,
           }]
         }],
-        userSettingsId: 'org.couchdb.user:username',
+        userSettingsId: PREFIXES.COUCH_USER + 'username',
       });
     });
 
@@ -408,7 +410,7 @@ describe('provider-wireup integration tests', () => {
 
     it('user rewinds system clock', async () => {
       const getWrittenTaskDoc = () => {
-        const expectedId = `task~org.couchdb.user:username~${emission._id}~${Date.now()}`;
+        const expectedId = `task~${PREFIXES.COUCH_USER}username~${emission._id}~${Date.now()}`;
         const committedDocs = db.bulkDocs.args.reduce((agg, arg) => [...agg, ...(arg[0].docs || arg[0])], []);
         const doc = committedDocs.find(doc => doc._id === expectedId);
         expect(doc).to.not.be.undefined;
@@ -513,13 +515,13 @@ describe('provider-wireup integration tests', () => {
       expect(provider.commitTargetDoc.callCount).to.eq(1);
       await provider.commitTargetDoc.returnValues[0];
 
-      const writtenDoc = await db.get('target~2024-01~mock_user_id~org.couchdb.user:username');
+      const writtenDoc = await db.get(`target~2024-01~mock_user_id~${PREFIXES.COUCH_USER}username`);
       expect(writtenDoc).excluding(['targets', '_rev']).to.deep.eq({
-        _id: 'target~2024-01~mock_user_id~org.couchdb.user:username',
+        _id: `target~2024-01~mock_user_id~${PREFIXES.COUCH_USER}username`,
         type: 'target',
         updated_date: moment().startOf('day').valueOf(),
         owner: 'mock_user_id',
-        user: 'org.couchdb.user:username',
+        user: PREFIXES.COUCH_USER + 'username',
         reporting_period: '2024-01',
       });
       expect(writtenDoc.targets[0]).to.deep.eq({

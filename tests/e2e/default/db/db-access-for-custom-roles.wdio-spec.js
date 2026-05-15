@@ -6,11 +6,12 @@ const personFactory = require('@factories/cht/contacts/person');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Database access for new roles', () => {
   const NEW_ROLE = 'new_chw';
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
 
   const contact = personFactory.build({
     parent: { _id: clinic._id, parent: clinic.parent },

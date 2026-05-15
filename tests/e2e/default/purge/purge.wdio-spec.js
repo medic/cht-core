@@ -26,8 +26,8 @@ describe('purge', function() {
     return reports.filter(r => r.form === 'home_visit').map(r => r._id);
   };
 
-  const filterByCht = (userCtx, contact, reports, messages, chtScript, settings) => {
-    if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
+  const filterByCht = (userCtx, contact, reports, messages, chtScript) => {
+    if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles)) {
       return reports.filter(r => r.form === 'purge').map(r => r._id);
     }
     return reports.map(r => r._id);

@@ -4,6 +4,8 @@ import { expect } from 'chai';
 import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { DOCUMENT } from '@angular/common';
+import { USER_ROLES } from '@medic/constants';
+const { COUCHDB_ADMIN } = USER_ROLES;
 
 import { SessionService } from '@mm-services/session.service';
 import { LocationService } from '@mm-services/location.service';
@@ -156,7 +158,7 @@ describe('Session service', () => {
     });
 
     it('returns true for _admin', () => {
-      cookieGet.returns(JSON.stringify({ roles: [ '_admin' ] }));
+      cookieGet.returns(JSON.stringify({ roles: [ COUCHDB_ADMIN ] }));
       const actual = service.isAdmin();
       expect(actual).to.equal(true);
     });
