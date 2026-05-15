@@ -140,31 +140,20 @@ describe('Targets widgets', () => {
 
   after(async () => {
     await utils.revertDb([/^form:/], true);
+    await utils.revertSettings(true);
     await utils.deleteUsers([offlineUser]);
   });
 
-  afterEach(async () => {
-    await utils.revertSettings(true);
-  });
-
-  it('should show distinct states for all target widgets', async () => {
-    await commonPage.waitForPageLoaded();
-    await commonPage.goToAnalytics();
-    await commonPage.waitForPageLoaded();
-    await browser.pause(2000);
-    await generateScreenshot('targets', 'widgets');
-  });
-
-  it('should show limit count to goal state for count widgets', async () => {
+  it('should show distinct states for all target widgets including limit count to goal', async () => {
     // apply config with limit_count_to_goal: true and goal of 3
-    // we have 11 active pregnancies which exceeds goal of 3
-    // so the widget should display the goal value (3) instead of actual count
+    // 11 active pregnancies exceeds goal of 3
+    // so the widget displays the goal value instead of actual count
     const settings = await compileTargets('targets-limit-count-config.js');
     await utils.updateSettings(settings, { ignoreReload: true, sync: true, refresh: true, revert: true });
     await commonPage.waitForPageLoaded();
     await commonPage.goToAnalytics();
     await commonPage.waitForPageLoaded();
     await browser.pause(2000);
-    await generateScreenshot('targets', 'widgets-limit-count');
+    await generateScreenshot('targets', 'widgets');
   });
 });
