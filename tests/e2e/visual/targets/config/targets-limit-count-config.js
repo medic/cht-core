@@ -11,9 +11,13 @@ module.exports = [
     appliesToType: ['pregnancy'],
     appliesIf: function(contact, report) {
       const now = new Date();
-      if (!report || !report.fields) { return false; }
+      if (!report || !report.fields) {
+        return false;
+      }
       const lmp = report.fields.lmp_date_8601;
-      if (!lmp) { return false; }
+      if (!lmp) {
+        return false;
+      }
       const lmpDate = new Date(lmp);
       const eddDate = new Date(lmpDate);
       eddDate.setDate(eddDate.getDate() + 280);
