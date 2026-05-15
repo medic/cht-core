@@ -584,10 +584,9 @@ const waitForSettingsUpdate = async () => {
  *                           The keys should correspond to the settings that need to be updated,
  *                           and the values should be the new values for those settings.
  * @param {Object} [options={}] - Options to control the behavior of the update.
- * @param {boolean} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`,
+ * @param {boolean|string} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`,
  *                                                 will tail service logs and resolve when new settings are loaded.
- *                                                 By default, watches api logs, if value equals 'sentinel', will
- *                                                 watch sentinel logs instead.
+ *                                                 Both api and sentinel logs are watched.
  * @param {boolean} [options.sync=false] - If `true`, the function will perform a synchronization
  *                                         after updating the settings. Defaults to `false`.
  * @param {boolean} [options.refresh=false] - If `true`, the function will refresh the browser after
@@ -698,7 +697,6 @@ const deleteLocalDocs = async () => {
 
   await saveDocs(docsToDelete);
 };
-
 
 const hasModal = () => $('#update-available').isDisplayed();
 
@@ -913,7 +911,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const waitForApiCrash = async () => {
-  let retryCount = 300;
+  let retryCount = 180;
   do {
     try {
       await request({ path: '/api/info' });
@@ -926,7 +924,7 @@ const waitForApiCrash = async () => {
 };
 
 const listenForApi = async () => {
-  const totalTries = 300; // 5 minutes
+  const totalTries = 180; // 3 minutes
   let retryCount = totalTries;
   do {
     try {
@@ -944,7 +942,7 @@ const listenForApi = async () => {
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
-  throw new Error('API failed to start after 5 minutes');
+  throw new Error('API failed to start after 3 minutes');
 };
 
 const dockerComposeCmd = (params) => {
