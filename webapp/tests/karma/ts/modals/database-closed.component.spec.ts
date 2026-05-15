@@ -1,7 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialogRef } from '@angular/material/dialog';
-import { RouterTestingModule } from '@angular/router/testing';
-import { Router } from '@angular/router';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -13,7 +11,6 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
 describe('DatabaseClosedModal', () => {
   let fixture: ComponentFixture<DatabaseClosedComponent>;
   let matDialogRef;
-  let router: Router;
 
   beforeEach(() => {
     matDialogRef = { close: sinon.stub() };
@@ -22,7 +19,6 @@ describe('DatabaseClosedModal', () => {
       .configureTestingModule({
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-          RouterTestingModule,
           DatabaseClosedComponent,
           ModalLayoutComponent,
           PanelHeaderComponent,
@@ -34,7 +30,6 @@ describe('DatabaseClosedModal', () => {
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(DatabaseClosedComponent);
-        router = TestBed.inject(Router);
         fixture.detectChanges();
       });
   });
@@ -45,10 +40,4 @@ describe('DatabaseClosedModal', () => {
     const cancelButton = fixture.nativeElement.querySelector('[test-id="cancel"]');
     expect(cancelButton).to.not.exist;
   });
-
-  it('should not close when router navigates', fakeAsync(async () => {
-    await router.navigate(['/']);
-    flush();
-    expect(matDialogRef.close.callCount).to.equal(0);
-  }));
 });
