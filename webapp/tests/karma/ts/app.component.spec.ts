@@ -538,22 +538,16 @@ describe('AppComponent', () => {
       Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
     };
 
-    it('persists the interaction buffer when the tab becomes hidden', async () => {
+    it('persists the interaction buffer on every visibilitychange', async () => {
       await getComponent();
       setHidden(true);
-
       window.dispatchEvent(new Event('visibilitychange'));
-
-      expect(interactionTrackingService.persistBuffer.callCount).to.equal(1);
-    });
-
-    it('does not persist when the tab becomes visible', async () => {
-      await getComponent();
       setHidden(false);
-
       window.dispatchEvent(new Event('visibilitychange'));
 
-      expect(interactionTrackingService.persistBuffer.called).to.be.false;
+      // On hide the buffer flushes; on show persistBuffer is still called so
+      // the service detects a day rollover and aggregates yesterday's DB.
+      expect(interactionTrackingService.persistBuffer.callCount).to.equal(2);
     });
   });
 

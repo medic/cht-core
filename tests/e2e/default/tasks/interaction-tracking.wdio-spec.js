@@ -51,7 +51,11 @@ const NON_DETERMINISTIC_FIELDS = ['_id', '_rev', 'deviceId', 'version', 'timesta
 // date with `new x.constructor()` (no args) would get a fresh fake-now, not
 // a clone — moment/date-fns don't do that, so we accept the trade-off rather
 // than break `instanceof`.
-const installFakeDate = (ms) => browser.addInitScript((fakeMs) => {
+// `window.__fakeMs` is read on every Date call, so the test can move the fake
+// clock at runtime via `setFakeNow` (no refresh required). On each page load
+// the init script reseeds it from `initialMs`.
+const installFakeDate = (ms) => browser.addInitScript((initialMs) => {
+  window.__fakeMs = initialMs;
   const RealDate = Date;
   let tick = 0;
   // eslint-disable-next-line func-style
@@ -59,14 +63,20 @@ const installFakeDate = (ms) => browser.addInitScript((fakeMs) => {
     if (!(this instanceof FakeDate)) {
       return RealDate(...args);
     }
-    return args.length === 0 ? new RealDate(fakeMs + tick++) : new RealDate(...args);
+    return args.length === 0 ? new RealDate(window.__fakeMs + tick++) : new RealDate(...args);
   }
   FakeDate.prototype = RealDate.prototype;
   FakeDate.prototype.constructor = FakeDate;
-  FakeDate.now = () => fakeMs + tick++;
+  FakeDate.now = () => window.__fakeMs + tick++;
   FakeDate.UTC = RealDate.UTC;
   FakeDate.parse = RealDate.parse;
   window.Date = FakeDate;
+}, ms);
+
+// Move the fake clock without reloading the page. The change sticks until the
+// next full document load, at which point the init script reseeds `__fakeMs`.
+const setFakeNow = (ms) => browser.execute((m) => {
+  window.__fakeMs = m;
 }, ms);
 
 let clockScript;
@@ -485,6 +495,34 @@ describe('Interaction Tracking', () => {
             { action: 'task_list:scroll', timestamp: FAKE_YESTERDAY_MS },
             { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '2' },
             { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+          ],
+        }],
+        metadata: {
+          user: chw.username,
+          date: FAKE_YESTERDAY_DATE,
+        },
+      });
+    });
+
+    it('aggregates yesterday\'s per-day DB when the app crosses midnight without a reload', async () => {
+      await tasksPage.openTaskByIndex(0);
+      await commonPage.goToMessages();    // endSession flushes events to yesterday's per-day DB
+
+      await setFakeNow(FAKE_YESTERDAY_MS + 24 * 60 * 60 * 1000);
+      await triggerVisibilityChange();    // persistBuffer detects the day flip and aggregates
+
+      const aggregate = await waitForAggregateDoc(chw.username);
+      expectAggregateEqual(aggregate, {
+        type: 'interaction-log',
+        sessions: [{
+          session: 'tasks',
+          startedAt: FAKE_YESTERDAY_MS,
+          events: [
+            { action: 'task_list:open', timestamp: FAKE_YESTERDAY_MS },
+            { action: 'task_list:loaded', timestamp: FAKE_YESTERDAY_MS, detail: '3' },
+            { action: 'task:open', timestamp: FAKE_YESTERDAY_MS, ref: 'person_create', detail: '0' },
+            { action: 'task:form_open', timestamp: FAKE_YESTERDAY_MS, ref: 'home_visit' },
+            { action: 'task_list:leave', timestamp: FAKE_YESTERDAY_MS },
           ],
         }],
         metadata: {

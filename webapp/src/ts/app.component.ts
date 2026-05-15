@@ -732,9 +732,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   @HostListener('window:visibilitychange')
   private onVisibilityChange() {
-    if (document.hidden) {
-      this.interactionTrackingService.persistBuffer();
-    }
+    this.interactionTrackingService.persistBuffer();
   }
 
   @HostListener('window:pageshow', ['$event'])

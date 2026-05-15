@@ -210,24 +210,34 @@ export class InteractionTrackingService {
     const snapshotDayKey = this.currentDayKey;
     this.buffer = [];
 
-    const currentDayKey = this.getCurrentDay().formatted;
-    if (this.currentDayKey !== currentDayKey) {
-      this.currentDayKey = currentDayKey;
+    const currentDay = this.getCurrentDay();
+    const dayChanged = this.currentDayKey !== currentDay.formatted;
+    if (dayChanged) {
+      this.currentDayKey = currentDay.formatted;
       this.persistedEventCount = 0;
       this.lastEventKey = null;
     }
 
-    if (!snapshot.length || !snapshotDayKey) {
-      return;
+    if (snapshot.length && snapshotDayKey) {
+      try {
+        await this.writeEvents(snapshotDayKey, snapshot);
+        if (snapshotDayKey === this.currentDayKey) {
+          this.persistedEventCount += snapshot.length;
+        }
+      } catch (error) {
+        console.error('Error persisting interaction buffer', error);
+      }
     }
 
-    try {
-      await this.writeEvents(snapshotDayKey, snapshot);
-      if (snapshotDayKey === this.currentDayKey) {
-        this.persistedEventCount += snapshot.length;
+    // Long-running sessions cross midnight without a reload; fold yesterday's
+    // per-day DB into the aggregate as soon as we notice the rollover instead
+    // of waiting for the next `init()`.
+    if (dayChanged) {
+      try {
+        await this.aggregateOldDb(currentDay);
+      } catch (error) {
+        console.error('Error aggregating leftover interaction DBs', error);
       }
-    } catch (error) {
-      console.error('Error persisting interaction buffer', error);
     }
   }
 
