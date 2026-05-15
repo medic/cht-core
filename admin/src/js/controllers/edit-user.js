@@ -182,8 +182,8 @@ angular
       .then(([model, datasource]) => {
         $scope.editUserModel = model;
         $scope.loadingUserDetails = false;
-         validateSkipPasswordPermission(datasource);
-         populateFacilitynContact();
+        validateSkipPasswordPermission(datasource);
+        populateFacilitynContact();
       })
       .catch(err => {
         $log.error('Error determining user model', err);
