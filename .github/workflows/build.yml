@@ -229,6 +229,9 @@ jobs:
       - uses: azure/setup-kubectl@829323503d1be3d00ca8346e5391ca0b07a9ab0d  # v5.1.0
       - name: Run tests
         run: npm run ${{ matrix.cmd }}
+      - name: Scan logs for credential leaks
+        if: always()
+        run: npm run scan-logs
       - name: Archive Results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -404,6 +407,10 @@ jobs:
         npm install chromedriver@^107.0.3
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
+
+    - name: Scan logs for credential leaks
+      if: always()
+      run: npm run scan-logs
 
     - name: Archive Results
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
