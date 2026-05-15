@@ -584,9 +584,9 @@ const waitForSettingsUpdate = async () => {
  *                           The keys should correspond to the settings that need to be updated,
  *                           and the values should be the new values for those settings.
  * @param {Object} [options={}] - Options to control the behavior of the update.
- * @param {boolean|string} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload. if `truthy`,
- *                                                 will tail service logs and resolve when new settings are loaded.
- *                                                 Both api and sentinel logs are watched.
+ * @param {boolean|string} [options.ignoreReload=false] - if `false`, will wait for reload modal and reload.
+ *                                                 if `truthy`, will tail service logs and resolve when new
+ *                                                 settings are loaded. Both api and sentinel logs are watched.
  * @param {boolean} [options.sync=false] - If `true`, the function will perform a synchronization
  *                                         after updating the settings. Defaults to `false`.
  * @param {boolean} [options.refresh=false] - If `true`, the function will refresh the browser after
