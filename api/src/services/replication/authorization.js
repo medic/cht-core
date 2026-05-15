@@ -1,7 +1,7 @@
-const db = require('../db');
-const auth = require('../auth');
+const db = require('../../db');
+const auth = require('../../auth');
 const _ = require('lodash');
-const config = require('../config');
+const config = require('../../config');
 const viewMapUtils = require('@medic/view-map-utils');
 const registrationUtils = require('@medic/registration-utils');
 const request = require('@medic/couch-request');
@@ -448,7 +448,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
       for (const replicationKey of replicationKeys) {
         const keys = result.rows.filter(row => row.key[1] === replicationKey).map(row => row.id);
         if (keys.length) {
-          docIds.add(...keys);
+          keys.forEach(key => docIds.add(key));
         } else {
           docIds.add(replicationKey);
         }

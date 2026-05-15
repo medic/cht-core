@@ -9,7 +9,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hostpital',
 };
 

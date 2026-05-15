@@ -1,5 +1,5 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const Faker = require('@faker-js/faker');
 const chpProfile = require('./chp-profile');
 const groupOtherWomanPregnancy = require('./group-other-woman-pregnancy');
@@ -38,7 +38,7 @@ const getAgeInYears = (subtype) => {
 
 const person = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
+    .sequence('_id', uuid)
     .option('subtype', 'manager')
     .attr('parent', '')
     .attr('type', 'person')

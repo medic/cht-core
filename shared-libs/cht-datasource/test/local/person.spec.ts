@@ -11,6 +11,7 @@ import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -330,7 +331,7 @@ describe('local person', () => {
       const parent = {
         ...minifiedParent,
         _rev: '1',
-        type: 'clinic'
+        type: CONTACT_TYPES.CLINIC
       } as const;
       const personDoc = { hello: 'world' };
 

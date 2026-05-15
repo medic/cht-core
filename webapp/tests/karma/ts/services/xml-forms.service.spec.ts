@@ -15,6 +15,7 @@ import { PipesService } from '@mm-services/pipes.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('XmlForms service', () => {
   let dbGet;
@@ -329,7 +330,7 @@ describe('XmlForms service', () => {
       UserContact.resolves();
       const service = getService();
       getContactType.resolves({ person: false });
-      return service.list({ doc: { type: 'district_hospital' } }).then(actual => {
+      return service.list({ doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL } }).then(actual => {
         assert.deepEqual(_.map(actual, 'internalId'), [
           'zero',
           'one',
@@ -411,7 +412,7 @@ describe('XmlForms service', () => {
       getContactType.resolves({ person: false });
       getTypeId.returns('the correct type');
 
-      const doc = { type: 'clinic', contact_type: 'not_a_clinic', _id: 'uuid' };
+      const doc = { type: CONTACT_TYPES.CLINIC, contact_type: 'not_a_clinic', _id: 'uuid' };
 
       return service.list({ doc }).then(result => {
         expect(getTypeId.callCount).to.equal(6);
