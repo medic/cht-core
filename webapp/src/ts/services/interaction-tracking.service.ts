@@ -205,39 +205,47 @@ export class InteractionTrackingService {
     if (!this.enabled || !this.windowRef) {
       return;
     }
-
     const snapshot = this.buffer;
     const snapshotDayKey = this.currentDayKey;
     this.buffer = [];
 
     const currentDay = this.getCurrentDay();
-    const dayChanged = this.currentDayKey !== currentDay.formatted;
+    const dayChanged = this.applyDayChange(currentDay);
+    await this.flushSnapshot(snapshotDayKey, snapshot);
     if (dayChanged) {
-      this.currentDayKey = currentDay.formatted;
-      this.persistedEventCount = 0;
-      this.lastEventKey = null;
+      await this.aggregateOnDayChange(currentDay);
     }
+  }
 
-    if (snapshot.length && snapshotDayKey) {
-      try {
-        await this.writeEvents(snapshotDayKey, snapshot);
-        if (snapshotDayKey === this.currentDayKey) {
-          this.persistedEventCount += snapshot.length;
-        }
-      } catch (error) {
-        console.error('Error persisting interaction buffer', error);
-      }
+  private applyDayChange(currentDay: Day): boolean {
+    if (this.currentDayKey === currentDay.formatted) {
+      return false;
     }
+    this.currentDayKey = currentDay.formatted;
+    this.persistedEventCount = 0;
+    this.lastEventKey = null;
+    return true;
+  }
 
-    // Long-running sessions cross midnight without a reload; fold yesterday's
-    // per-day DB into the aggregate as soon as we notice the rollover instead
-    // of waiting for the next `init()`.
-    if (dayChanged) {
-      try {
-        await this.aggregateOldDb(currentDay);
-      } catch (error) {
-        console.error('Error aggregating leftover interaction DBs', error);
+  private async flushSnapshot(snapshotDayKey: string | null, snapshot: BufferedEvent[]): Promise<void> {
+    if (!snapshot.length || !snapshotDayKey) {
+      return;
+    }
+    try {
+      await this.writeEvents(snapshotDayKey, snapshot);
+      if (snapshotDayKey === this.currentDayKey) {
+        this.persistedEventCount += snapshot.length;
       }
+    } catch (error) {
+      console.error('Error persisting interaction buffer', error);
+    }
+  }
+
+  private async aggregateOnDayChange(currentDay: Day): Promise<void> {
+    try {
+      await this.aggregateOldDb(currentDay);
+    } catch (error) {
+      console.error('Error aggregating leftover interaction DBs', error);
     }
   }
 

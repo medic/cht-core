@@ -37,7 +37,7 @@ export class IntegrationApiService {
     private mrdtService:MRDTService,
     private settingsService:SettingsService,
     private androidApiService:AndroidApiService,
-    private interactionTrackingService:InteractionTrackingService,
+    private readonly interactionTrackingService:InteractionTrackingService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;
