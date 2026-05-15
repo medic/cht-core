@@ -16,7 +16,7 @@ const _ = require('lodash/core');
       part = _.escape(part);
       if (entity._id && $state) {
         const url = $state.href('contacts.detail', { id: entity._id });
-        part = '<a href="' + url + '">' + part + '</a>';
+        part = '<a href="' + _.escape(url) + '">' + part + '</a>';
       }
       return part;
     }
