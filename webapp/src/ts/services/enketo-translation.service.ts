@@ -35,12 +35,16 @@ export class EnketoTranslationService {
     path = path || '';
     const result = {};
     this.withElements(data).forEach((n:any) => {
+      const typeAttribute = n.attributes.getNamedItem('type');
       const updatedPath = path + '/' + n.nodeName;
       let value;
 
       const hasChildren = this.withElements(n.childNodes).length > 0;
       if (hasChildren) {
         value = this.nodesToJs(n.childNodes, repeatPaths, updatedPath);
+      } else if (typeAttribute && typeAttribute.value === 'binary') {
+        // this is attached to the doc instead of inlined
+        value = '';
       } else {
         value = n.textContent;
       }
@@ -144,10 +148,6 @@ export class EnketoTranslationService {
     // https://github.com/enketo/enketo-core/blob/51c5c2f494f1515a67355543b435f6aaa4b151b4/src/js/form-model.js#L436-L451
     elem.removeAttr('jr:template');
     elem.removeAttr('template');
-
-    if (this.shouldSkipBinaryBind(elem, data)) {
-      return;
-    }
 
     if (data === null || typeof data !== 'object') {
       elem.text(data);
