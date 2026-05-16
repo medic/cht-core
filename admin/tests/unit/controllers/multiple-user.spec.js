@@ -1,5 +1,3 @@
-
-
 describe('MultipleUserCtrl controller', () => {
   'use strict';
 
@@ -84,7 +82,7 @@ describe('MultipleUserCtrl controller', () => {
               role: 'chw',
               geolocalized: 'false',
               type: 'contact',
-              contact_type: 'c62_chw',
+              ontact_type: 'c62_chw',
               name: 'test user'
             },
             email: 'test@testing.com',
