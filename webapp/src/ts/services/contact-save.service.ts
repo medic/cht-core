@@ -193,7 +193,7 @@ export class ContactSaveService {
       preparedDocs, 
       mainDoc, 
       submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0 
-    }l;
+    };
 
     const newAttachmentNamesByDoc = new Map<Record<string, any>, Set<string>>();
     const fileNameMapByDoc = new Map<Record<string, any>, Map<string, string>>();
