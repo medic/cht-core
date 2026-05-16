@@ -1,5 +1,3 @@
-
-
 describe('dhis2 export controller', () => {
   const { expect } = chai;
 

@@ -1,5 +1,3 @@
-
-
 describe('ImportContacts service', function() {
 
   'use strict';
@@ -183,8 +181,7 @@ describe('ImportContacts service', function() {
     put.onCall(2).returns(Promise.resolve({ _id: 5, _rev: 1 }));
     put.onCall(3).returns(Promise.resolve({ _id: 4, _rev: 1 }));
     put.onCall(4).resolves({});
-    const contact1 = { _id: 1, contact: { name: 'john', phone: '+123', 
-      type: 'contact', contact_type: 'chp' } };
+    const contact1 = { _id: 1, contact: { name: 'john', phone: '+123', type: 'contact', contact_type: 'chp' } };
     const contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
     const contact3 = { _id: 5, name: 'mary', phone: '+123', type: 'person', contact_type: 'omg' };
 
