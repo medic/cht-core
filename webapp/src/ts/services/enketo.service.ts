@@ -362,17 +362,11 @@ export class EnketoService {
     return form;
   }
 
-  private findBinaryNodeByFilename($record, filename: string) {
-    let match = null;
-    $record
-      .find('[type=binary]')
-      .each((_idx, element) => {
-        if ($(element).text() === filename) {
-          match = element;
-          return false; // break
-        }
-      });
-    return match;
+  private findFileNodeByFilename($record, filename: string) {
+    return $record
+      .find('[type=file]')
+      .toArray()
+      .find((element) => $(element).text() === filename) ?? $record[0];
   }
 
   private xmlToDocs(doc, formXml, xmlVersion, record) {
@@ -519,7 +513,8 @@ export class EnketoService {
     // Route FileManager files to the correct owner doc.
     // For each file, find the [type=file] node whose text matches
     // the filename, then resolve the owner from its position in the
-    // XML tree.
+    // XML tree. Inline [type=binary] fields are handled separately
+    // by the loop below.
     FileManager
       .getCurrentFiles()
       .forEach(file => {
