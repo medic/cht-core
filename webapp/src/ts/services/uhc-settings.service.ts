@@ -7,13 +7,11 @@ export class UHCSettingsService {
   constructor() {}
 
   getMonthStartDate(settings) {
-    return settings &&
-      settings.uhc &&
-      (
-        settings.uhc.month_start_date ||
-        settings.uhc.visit_count &&
-        settings.uhc.visit_count.month_start_date
-      );
+    return settings?.uhc?.month_start_date ?? settings?.uhc?.visit_count?.month_start_date;
+  }
+
+  shouldEnableBikramSambatMonths(settings: Record<string, any>): boolean {
+    return !!settings?.uhc?.visit_count?.use_bikram_sambat_months;
   }
 
   getVisitCountSettings(settings?) {
@@ -24,6 +22,7 @@ export class UHCSettingsService {
     return {
       monthStartDate: this.getMonthStartDate(settings),
       visitCountGoal: settings.uhc.visit_count.visit_count_goal,
+      useBikramSambatMonths: this.shouldEnableBikramSambatMonths(settings),
     };
   }
 

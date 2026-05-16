@@ -230,6 +230,7 @@ export class RulesEngineService implements OnDestroy {
       user: rulesEngineContext.userSettingsDoc,
       rulesAreDeclarative: !!rulesEngineContext.settingsDoc?.tasks?.isDeclarative,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
+      useBikramSambatMonths: this.uhcSettingsService.shouldEnableBikramSambatMonths(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };
   }
@@ -538,7 +539,12 @@ export class RulesEngineService implements OnDestroy {
     this.cancelDebounce(this.FRESHNESS_KEY);
     await this.waitForDebounce(this.CHANGE_WATCHER_KEY);
 
-    const relevantInterval = this.calendarIntervalService.getCurrent(this.uhcMonthStartDate);
+    const settings = await this.settingsService.get();
+    const useBikramSambatMonths = this.uhcSettingsService.shouldEnableBikramSambatMonths(settings);
+    const relevantInterval = this.calendarIntervalService.getCurrent(
+      this.uhcMonthStartDate,
+      useBikramSambatMonths
+    );
     const targets = await this.rulesEngineCore
       .fetchTargets(relevantInterval)
       .on('queued', () => trackPerformanceQueueing = this.performanceService.track())
@@ -568,7 +574,8 @@ export class RulesEngineService implements OnDestroy {
     monthsAgo = 1
   ): string {
     const uhcMonthStartDate = this.uhcSettingsService.getMonthStartDate(settings);
-    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate);
+    const useBikramSambatMonths = this.uhcSettingsService.shouldEnableBikramSambatMonths(settings);
+    const currentInterval = this.calendarIntervalService.getCurrent(uhcMonthStartDate, useBikramSambatMonths);
 
     if (reportingPeriod === ReportingPeriod.CURRENT) {
       return moment(currentInterval.end)
@@ -577,7 +584,11 @@ export class RulesEngineService implements OnDestroy {
     }
 
     const previousMonthDate = moment(currentInterval.end).subtract(monthsAgo, 'months');
-    const previousInterval = this.calendarIntervalService.getInterval(uhcMonthStartDate, previousMonthDate.valueOf());
+    const previousInterval = this.calendarIntervalService.getInterval(
+      uhcMonthStartDate,
+      previousMonthDate.valueOf(),
+      useBikramSambatMonths
+    );
     return moment(previousInterval.end)
       .locale('en')
       .format(this.INTERVAL_TAG_FORMAT);

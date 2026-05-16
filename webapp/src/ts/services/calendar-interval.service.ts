@@ -8,8 +8,8 @@ export class CalendarIntervalService {
 
   constructor() { }
 
-  getCurrent(startDate:number) {
-    return CalendarInterval.getCurrent(startDate);
+  getCurrent(startDate:number, useBikramSambatMonths?: boolean) {
+    return CalendarInterval.getCurrent(startDate, useBikramSambatMonths);
   }
 
   /**
@@ -19,8 +19,9 @@ export class CalendarIntervalService {
    * the calendar interval of 2023-08-03 -> 2023-09-02
    * @param startDate {number} interval start day - 1-31
    * @param timestamp {number} date that should be included by the interval
+   * @param useBikramSambatMonths {boolean} whether to use BS calendar
    */
-  getInterval(startDate:number, timestamp:number) {
-    return CalendarInterval.getInterval(startDate, timestamp);
+  getInterval(startDate:number, timestamp:number, useBikramSambatMonths?: boolean) {
+    return CalendarInterval.getInterval(startDate, timestamp, useBikramSambatMonths);
   }
 }
