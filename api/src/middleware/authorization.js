@@ -16,7 +16,11 @@ const getUserSettings = (req) => {
     .then(userCtx => {
       req.userCtx = userCtx;
     })
-    .catch(err => err);
+    .catch(err => {
+      logger.error('Error getting user settings: %o', err);
+      req.authErr = err;
+      return err;
+    });
 };
 
 module.exports = {

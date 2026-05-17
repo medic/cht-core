@@ -210,18 +210,24 @@ describe('Authorization middleware', () => {
       testReq.userCtx = { name: 'user' };
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
-      auth.getUserSettings.withArgs({ name: 'user' }).rejects({ some: 'error' });
+      const testError = { some: 'error' };
+      auth.getUserSettings.withArgs({ name: 'user' }).rejects(testError);
+      const loggerStub = sinon.stub(logger, 'error');
 
       return middleware
         .onlineUserProxy(proxy, testReq, testRes, next)
         .then(() => {
           serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
-          next.args[0].should.deep.equal([{ some: 'error' }]);
+          next.args[0].should.deep.equal([testError]);
           proxy.web.callCount.should.equal(0);
           testReq.userCtx.should.deep.equal({ name: 'user' });
+          testReq.authErr.should.equal(testError);
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+          loggerStub.callCount.should.equal(1);
+          loggerStub.args[0][0].should.equal('Error getting user settings: %o');
+          loggerStub.args[0][1].should.equal(testError);
         });
     });
   });
@@ -261,17 +267,23 @@ describe('Authorization middleware', () => {
     it('catches user_settings errors', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
-      auth.getUserSettings.withArgs({ name: 'user' }).rejects({ some: 'error' });
+      const testError = { some: 'error' };
+      auth.getUserSettings.withArgs({ name: 'user' }).rejects(testError);
+      const loggerStub = sinon.stub(logger, 'error');
 
       return middleware
         .onlineUserPassThrough(testReq, testRes, next)
         .then(() => {
           serverUtils.error.callCount.should.equal(0);
           next.callCount.should.equal(1);
-          next.args[0].should.deep.equal([{ some: 'error' }]);
+          next.args[0].should.deep.equal([testError]);
           testReq.userCtx.should.deep.equal({ name: 'user' });
+          testReq.authErr.should.equal(testError);
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+          loggerStub.callCount.should.equal(1);
+          loggerStub.args[0][0].should.equal('Error getting user settings: %o');
+          loggerStub.args[0][1].should.equal(testError);
         });
     });
   });
@@ -446,6 +458,30 @@ describe('Authorization middleware', () => {
           testReq.userCtx.should.deep.equal({ name: 'user', contact_id: 'a' });
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+        });
+    });
+
+    it('catches user_settings errors', () => {
+      testReq.userCtx = { name: 'user' };
+      auth.getUserCtx.resolves({ name: 'user' });
+      auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
+      const testError = { some: 'error' };
+      auth.getUserSettings.withArgs({ name: 'user' }).rejects(testError);
+      const loggerStub = sinon.stub(logger, 'error');
+
+      return middleware
+        .getUserSettings(testReq, testRes, next)
+        .then(() => {
+          serverUtils.error.callCount.should.equal(0);
+          next.callCount.should.equal(1);
+          next.args[0].should.deep.equal([testError]);
+          testReq.userCtx.should.deep.equal({ name: 'user' });
+          testReq.authErr.should.equal(testError);
+          auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
+          auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+          loggerStub.callCount.should.equal(1);
+          loggerStub.args[0][0].should.equal('Error getting user settings: %o');
+          loggerStub.args[0][1].should.equal(testError);
         });
     });
   });
