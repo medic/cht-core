@@ -145,49 +145,49 @@ const getDaysSinceDOB = doc => {
  * property names atm.
  */
 const getWeeksSinceLMP = doc => {
-  const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
-  for (const prop of props) {
-    if (doc.fields) {
-      const val = doc.fields[prop];
-      if (val !== undefined && val !== null && String(val).trim() !== '') {
-        const lmp = Number(val);
-        if (!isNaN(lmp)) {
-          return lmp;
-        }
-      }
-    }
+  const fields = doc?.fields;
+  if (!fields) {
+    return;
   }
+  const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
+  const foundProp = props.find(prop => {
+    const val = fields[prop];
+    return val !== undefined && val !== null && String(val).trim() !== '';
+  });
+  if (foundProp === undefined) {
+    return;
+  }
+  const lmp = Number(fields[foundProp]);
+  return Number.isNaN(lmp) ? undefined : lmp;
 };
 
-/*
-* Given a doc, try to get the exact LMP date
-*/
 const getLMPDate = doc => {
-  const props = ['lmp_date', 'date_lmp'];
-  for (const prop of props) {
-    if (doc.fields && doc.fields[prop] !== undefined && doc.fields[prop] !== null) {
-      const lmp = parseInt(doc.fields[prop]);
-      if (!isNaN(lmp)) {//milliseconds since epoch
-        return lmp;
-      }
-    }
+  const fields = doc?.fields;
+  if (!fields) {
+    return;
   }
+  const props = ['lmp_date', 'date_lmp'];
+  const foundProp = props.find(prop => fields[prop] !== undefined && fields[prop] !== null);
+  if (foundProp === undefined) {
+    return;
+  }
+  const lmp = Number.parseInt(fields[foundProp], 10);
+  return Number.isNaN(lmp) ? undefined : lmp;
 };
 
 const setExpectedBirthDate = doc => {
   let start;
   const lmpDate = getLMPDate(doc);
-  if (lmpDate !== undefined && lmpDate !== null) {
+  if (typeof lmpDate === 'number') {
     start = moment(lmpDate);
   } else {
     const lmp = getWeeksSinceLMP(doc);
-    if (lmp !== undefined && lmp !== null) {
-      start = moment(doc.reported_date).startOf('day');
-      start.subtract(lmp, 'weeks');
+    if (typeof lmp === 'number') {
+      start = moment(doc.reported_date).startOf('day').subtract(lmp, 'weeks');
     }
   }
 
-  if (!start) {// means baby was already born, chw just wants a registration.
+  if (!start) {
     doc.lmp_date = null;
     doc.expected_date = null;
     return;
