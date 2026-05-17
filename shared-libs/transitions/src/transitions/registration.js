@@ -147,9 +147,14 @@ const getDaysSinceDOB = doc => {
 const getWeeksSinceLMP = doc => {
   const props = ['weeks_since_lmp', 'last_menstrual_period', 'lmp'];
   for (const prop of props) {
-    const lmp = Number(doc.fields && doc.fields[prop]);
-    if (!isNaN(lmp)) {
-      return lmp;
+    if (doc.fields) {
+      const val = doc.fields[prop];
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        const lmp = Number(val);
+        if (!isNaN(lmp)) {
+          return lmp;
+        }
+      }
     }
   }
 };
@@ -160,9 +165,11 @@ const getWeeksSinceLMP = doc => {
 const getLMPDate = doc => {
   const props = ['lmp_date', 'date_lmp'];
   for (const prop of props) {
-    const lmp = doc.fields && doc.fields[prop] && parseInt(doc.fields[prop]);
-    if (!isNaN(lmp)) {//milliseconds since epoch
-      return lmp;
+    if (doc.fields && doc.fields[prop] !== undefined && doc.fields[prop] !== null) {
+      const lmp = parseInt(doc.fields[prop]);
+      if (!isNaN(lmp)) {//milliseconds since epoch
+        return lmp;
+      }
     }
   }
 };
@@ -170,11 +177,11 @@ const getLMPDate = doc => {
 const setExpectedBirthDate = doc => {
   let start;
   const lmpDate = getLMPDate(doc);
-  if (lmpDate) {
+  if (lmpDate !== undefined && lmpDate !== null) {
     start = moment(lmpDate);
   } else {
     const lmp = getWeeksSinceLMP(doc);
-    if (lmp) {
+    if (lmp !== undefined && lmp !== null) {
       start = moment(doc.reported_date).startOf('day');
       start.subtract(lmp, 'weeks');
     }
