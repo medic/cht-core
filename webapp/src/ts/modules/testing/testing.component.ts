@@ -94,7 +94,7 @@ export class TestingComponent implements OnInit {
     let promise = Promise.resolve();
 
     for (let i = 0; i < parseInt(this.amountFeedbackDocs); i++) {
-      promise = promise.then(() => this.feedbackService.submit(uuid()));
+      promise = promise.then(() => this.feedbackService.submit({ message: uuid() }));
     }
 
     promise.then(() => this.generatingFeedback = false);
