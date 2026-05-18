@@ -225,7 +225,7 @@ describe('Geolocation service', () => {
       });
     });
 
-    it('should resolve with timeout error when watcher never fires and form is left open past 30s', fakeAsync(async () => {
+    it('should resolve with timeout error when watcher never fires', fakeAsync(async () => {
       (<any>window.navigator.geolocation.watchPosition).callsFake(() => {
         // watcher never calls success or failure
       });
