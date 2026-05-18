@@ -31,13 +31,10 @@
     <input ref="/db-doc-repeat-file-upload/name">
       <label>Name</label>
     </input>
-    <group ref="/db-doc-repeat-file-upload/repeat_section">
-      <label>Repeat section</label>
-      <repeat nodeset="/db-doc-repeat-file-upload/repeat_section">
-        <upload ref="/db-doc-repeat-file-upload/repeat_section/repeat_doc/repeat_photo" mediatype="image/*">
-          <label>Repeat photo</label>
-        </upload>
-      </repeat>
-    </group>
+    <repeat nodeset="/db-doc-repeat-file-upload/repeat_section">
+      <upload ref="/db-doc-repeat-file-upload/repeat_section/repeat_doc/repeat_photo" mediatype="image/*">
+        <label>Repeat photo</label>
+      </upload>
+    </repeat>
   </h:body>
 </h:html>
