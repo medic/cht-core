@@ -62,21 +62,42 @@ const closePurgeDbs = () => {
   });
 };
 
+const USERS_BATCH_SIZE = 1000;
+
 const getRoles = async () => {
   const dedupedByRoles = new Map();
   const rolesByHash = {};
 
-  const { rows } = await db.users.allDocs({ include_docs: true });
+  let startKey;
+  let hasMore = true;
 
-  for (const { doc } of rows) {
-    const userRoles = doc?.roles;
-
-    if (!Array.isArray(userRoles) || !userRoles.length || !roles.isOffline(userRoles)) {
-      continue;
+  while (hasMore) {
+    const opts = {
+      include_docs: true,
+      limit: USERS_BATCH_SIZE,
+    };
+    if (startKey) {
+      opts.startkey = startKey;
+      opts.skip = 1;
     }
 
-    const rolesList = serverSidePurgeUtils.sortedUniqueRoles(userRoles);
-    dedupedByRoles.set(JSON.stringify(rolesList), rolesList);
+    const { rows } = await db.users.allDocs(opts);
+    hasMore = rows.length === USERS_BATCH_SIZE;
+
+    if (rows.length) {
+      startKey = rows[rows.length - 1].id;
+    }
+
+    for (const { doc } of rows) {
+      const userRoles = doc?.roles;
+
+      if (!Array.isArray(userRoles) || !userRoles.length || !roles.isOffline(userRoles)) {
+        continue;
+      }
+
+      const rolesList = serverSidePurgeUtils.sortedUniqueRoles(userRoles);
+      dedupedByRoles.set(JSON.stringify(rolesList), rolesList);
+    }
   }
 
   for (const rolesList of dedupedByRoles.values()) {
