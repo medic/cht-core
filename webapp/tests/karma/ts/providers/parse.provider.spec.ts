@@ -11,6 +11,7 @@ import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Parse provider', () => {
   let provider:ParseProvider;
@@ -97,7 +98,7 @@ describe('Parse provider', () => {
         reported_date: 1602853017680,
         parent: {
           name: 'Sushi Roll Clinic',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
           reported_date: 1602852999338,
           place_id: '40046',
           contact: {

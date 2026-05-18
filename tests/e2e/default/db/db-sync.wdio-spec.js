@@ -8,7 +8,7 @@ const userSettings = require('@factories/cht/users/user-settings');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 /* global window */

@@ -88,19 +88,19 @@ const renameKey = (obj, oldKey, newKey) => {
 };
 
 const pairPlaceTypesRoles = {
-  'district_hospital': 'supervisor',
+  [CONTACT_TYPES.DISTRICT_HOSPITAL]: 'supervisor',
   [CONTACT_TYPES.HEALTH_CENTER]: 'district_admin',
   'clinic': null
 };
 
 const pairPlaceTypesNeedsUsers = {
-  'district_hospital': true,
+  [CONTACT_TYPES.DISTRICT_HOSPITAL]: true,
   [CONTACT_TYPES.HEALTH_CENTER]: true,
   'clinic': false
 };
 
 const pairPlaceTypesPersonSubtype = {
-  'district_hospital': 'manager',
+  [CONTACT_TYPES.DISTRICT_HOSPITAL]: 'manager',
   [CONTACT_TYPES.HEALTH_CENTER]: 'chw',
   'clinic': 'member_eligible_woman'
 };
@@ -112,7 +112,7 @@ const generatePerson = async (type, parents, isPrimaryContact) => {
   }
   const person = realWorldPersonFactory.generatePerson(parents, subtype);
   await createDataDoc(preconditionDataDirectory, person._id, person);
-  if (type === 'district_hospital') {
+  if (type === CONTACT_TYPES.DISTRICT_HOSPITAL) {
     managers.push(person);
   }
   return person;
@@ -120,7 +120,7 @@ const generatePerson = async (type, parents, isPrimaryContact) => {
 
 const generateUser = async (type, placeId, userName, person, isPrimaryContact) => {
   let roles = pairPlaceTypesRoles[type];
-  if (isPrimaryContact && type === 'district_hospital') {
+  if (isPrimaryContact && type === CONTACT_TYPES.DISTRICT_HOSPITAL) {
     roles = ['national_admin', USER_ROLES.ONLINE];
   }
   const personUser = realWorldUserFactory.generateUser(
