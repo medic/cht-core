@@ -225,6 +225,24 @@ describe('Geolocation service', () => {
       });
     });
 
+    it('should resolve with timeout error when watcher never fires and form is left open past 30s', fakeAsync(async () => {
+      (<any>window.navigator.geolocation.watchPosition).callsFake(() => {
+        // watcher never calls success or failure
+      });
+
+      const complete = service.init();
+      expect((<any>window.navigator.geolocation.watchPosition).callCount).to.equal(1);
+
+      tick(31 * 1000);
+
+      const result = await complete();
+      expect(result).to.deep.equal({
+        code: -2,
+        message: 'Geolocation timeout exceeded',
+      });
+      expect(Telemetry.record.calledWith('geolocation:failure:-2')).to.be.true;
+    }));
+
     it('timeout should prioritize success from geolocation', fakeAsync(async () => {
       const position = {
         latitude: 1,
