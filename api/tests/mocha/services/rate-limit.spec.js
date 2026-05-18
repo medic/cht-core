@@ -59,28 +59,24 @@ describe('rate-limit service', () => {
       auth.basicAuthCredentials.returns({ username: 'basicuser', password: 'basicpass' });
       rateLimit.get.withArgs('quay').resolves();
       rateLimit.get.withArgs('key').resolves({ remainingPoints: 1 });
-      rateLimit.get.withArgs('kee').resolves({ remainingPoints: 1 });
       rateLimit.get.withArgs('basicuser').resolves({ remainingPoints: 1 });
-      rateLimit.get.withArgs('basicpass').resolves({ remainingPoints: 1 });
       const actual = await service.isLimited(req);
       chai.expect(actual).to.be.false;
-      chai.expect(rateLimit.get.callCount).to.equal(5);
+      chai.expect(rateLimit.get.callCount).to.equal(3);
     });
 
-    it('returns false when any limit reached', async () => {
+    it('returns true when any limit reached', async () => {
       const req = {
         ip: 'quay',
         body: { user: 'key', password: 'kee' }
       };
       auth.basicAuthCredentials.returns({ username: 'basicuser', password: 'basicpass' });
       rateLimit.get.withArgs('quay').resolves();
-      rateLimit.get.withArgs('key').resolves({ remainingPoints: 1 });
-      rateLimit.get.withArgs('kee').resolves({ remainingPoints: 0 });
+      rateLimit.get.withArgs('key').resolves({ remainingPoints: 0 });
       rateLimit.get.withArgs('basicuser').resolves({ remainingPoints: 1 });
-      rateLimit.get.withArgs('basicpass').resolves({ remainingPoints: 1 });
       const actual = await service.isLimited(req);
       chai.expect(actual).to.be.true;
-      chai.expect(rateLimit.get.callCount).to.equal(3); // it short circuits when the first key is found to be limited
+      chai.expect(rateLimit.get.callCount).to.equal(2);
     });
 
   });
@@ -95,12 +91,10 @@ describe('rate-limit service', () => {
       auth.basicAuthCredentials.returns({ username: 'basicuser', password: 'basicpass' });
       rateLimit.consume.resolves();
       await service.consume(req);
-      chai.expect(rateLimit.consume.callCount).to.equal(5);
+      chai.expect(rateLimit.consume.callCount).to.equal(3);
       chai.expect(rateLimit.consume.args[0][0]).to.equal('quay');
       chai.expect(rateLimit.consume.args[1][0]).to.equal('key');
-      chai.expect(rateLimit.consume.args[2][0]).to.equal('kee');
-      chai.expect(rateLimit.consume.args[3][0]).to.equal('basicuser');
-      chai.expect(rateLimit.consume.args[4][0]).to.equal('basicpass');
+      chai.expect(rateLimit.consume.args[2][0]).to.equal('basicuser');
     });
 
     it('ignores rejections', async () => {
@@ -110,9 +104,8 @@ describe('rate-limit service', () => {
       };
       rateLimit.consume.withArgs('quay').rejects(); // rate limit exceeded
       rateLimit.consume.withArgs('key').resolves();
-      rateLimit.consume.withArgs('kee').resolves();
       await service.consume(req);
-      chai.expect(rateLimit.consume.callCount).to.equal(3);
+      chai.expect(rateLimit.consume.callCount).to.equal(2);
     });
 
   });
