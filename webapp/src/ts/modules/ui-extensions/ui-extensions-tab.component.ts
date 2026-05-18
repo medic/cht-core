@@ -1,11 +1,13 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { NgIf } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { GlobalActions } from '@mm-actions/global';
 import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -22,14 +24,19 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
   accentColor?: string;
 
   private paramSubscription?: Subscription;
+  private readonly globalActions: GlobalActions;
+  private previousTab?: string;
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly store: Store,
     private readonly chtDatasourceService: CHTDatasourceService,
     private readonly performanceService: PerformanceService,
     private readonly uiExtensionsService: UiExtensionsService,
     private readonly userContactSummaryService: UserContactSummaryService,
-  ) {}
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   ngAfterViewInit() {
     let currentExtensionId = undefined;
@@ -44,6 +51,9 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.paramSubscription?.unsubscribe();
+    if (this.previousTab) {
+      this.globalActions.setCurrentTab(this.previousTab);
+    }
   }
 
   private async initializeExtension(extensionId: string) {
@@ -58,11 +68,16 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
     const trackRender = this.performanceService.track();
     try {
       const {
-        properties: { title, config, accent_color },
+        properties: { title, config, accent_color, type },
         Element
       } = await this.uiExtensionsService.getExtension(extensionId);
       this.extensionTitle = title ?? '';
       this.accentColor = accent_color;
+
+      if (type === 'header_tab') {
+        this.previousTab = this.route.snapshot.data['tab'];
+        this.globalActions.setCurrentTab(`ui-extension-${extensionId}`);
+      }
       if (!customElements.get(elementName)) {
         customElements.define(elementName, Element);
       }

@@ -141,6 +141,7 @@ export class HeaderTabsService {
       permissions: [], // Extensions are already filtered by role in getPropertiesByType
       resourceIcon: ext.resource_icon,
       icon: ext.icon,
+      accentColor: ext.accent_color,
       weight: ext.weight ?? this.DEFAULT_UI_EXTENSION_WEIGHT
     }));
   }
@@ -200,6 +201,7 @@ export interface SidebarTab {
   permissions: string[];
   icon?: string;
   resourceIcon?: string;
+  accentColor?: string;
 }
 
 export interface HeaderTab extends SidebarTab {

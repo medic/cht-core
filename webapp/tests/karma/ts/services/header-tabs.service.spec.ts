@@ -223,7 +223,7 @@ describe('HeaderTabs service', () => {
       uiExtensionsService.getPropertiesByType
         .withArgs('header_tab')
         .resolves([
-          { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
+          { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5, accent_color: '#FF5733' },
           { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
           { id: 'last', title: 'Last Extension', resource_icon: 'res-2' },
         ]);
@@ -249,6 +249,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon-1',
         resourceIcon: 'res-1',
+        accentColor: '#FF5733',
         weight: 0.5,
       });
       expect(middleExt).to.deep.equal({
@@ -259,6 +260,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon-3',
         resourceIcon: undefined,
+        accentColor: undefined,
         weight: 6,
       });
       expect(lastExt).to.deep.equal({
@@ -269,6 +271,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: undefined,
         resourceIcon: 'res-2',
+        accentColor: undefined,
         weight: 6,
       });
     });
@@ -290,6 +293,7 @@ describe('HeaderTabs service', () => {
           permissions: [],
           icon: 'fa-icon',
           resourceIcon: undefined,
+          accentColor: undefined,
           weight: 6,
         }
       ]);
@@ -427,6 +431,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon',
         resourceIcon: undefined,
+        accentColor: undefined,
         weight: 6,
       });
     });
@@ -447,6 +452,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon',
         resourceIcon: undefined,
+        accentColor: undefined,
         weight: 0.5,
       });
     });
@@ -578,6 +584,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon-1',
         resourceIcon: 'res-1',
+        accentColor: undefined,
         weight: 0.5,
       });
       expect(secondExt).to.deep.equal({
@@ -588,6 +595,7 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon-2',
         resourceIcon: undefined,
+        accentColor: undefined,
         weight: 6,
       });
     });
