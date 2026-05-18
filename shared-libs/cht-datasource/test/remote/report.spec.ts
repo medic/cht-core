@@ -8,7 +8,9 @@ describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
   const sandbox = sinon.createSandbox();
   const postResourceOuter = sandbox.stub();
+  const postSummaryResourceOuter = sandbox.stub();
   const putResourceOuter = sandbox.stub();
+  let postResourceStub: SinonStub;
 
   let Report: typeof import('../../src/remote/report');
   let getResourceInner: SinonStub;
@@ -16,13 +18,13 @@ describe('remote report', () => {
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
   let postResourceInner: SinonStub;
+  let postSummaryResourceInner: SinonStub;
   let putResourceInner: SinonStub;
 
   before(() => {
-    sinon
-      .stub(RemoteEnv, 'postResource')
-      .withArgs('api/v1/report')
-      .returns(postResourceOuter);
+    postResourceStub = sinon.stub(RemoteEnv, 'postResource');
+    postResourceStub.withArgs('api/v1/report').returns(postResourceOuter);
+    postResourceStub.withArgs('api/v1/report/summary').returns(postSummaryResourceOuter);
     sinon
       .stub(RemoteEnv, 'putResource')
       .withArgs('api/v1/report')
@@ -39,6 +41,8 @@ describe('remote report', () => {
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
     postResourceInner = sinon.stub();
     postResourceOuter.returns(postResourceInner);
+    postSummaryResourceInner = sinon.stub();
+    postSummaryResourceOuter.returns(postSummaryResourceInner);
     putResourceInner = sinon.stub();
     putResourceOuter.returns(putResourceInner);
   });
@@ -147,6 +151,27 @@ describe('remote report', () => {
           limit: limit.toString(),
           freetext: freetext,
         })).to.be.true;
+      });
+    });
+
+    describe('getSummaries', () => {
+      it('returns empty array when given no uuids', async () => {
+        const result = await Report.v1.getSummaries(remoteContext)([]);
+
+        expect(result).to.deep.equal([]);
+        expect(postSummaryResourceOuter.notCalled).to.be.true;
+        expect(postSummaryResourceInner.notCalled).to.be.true;
+      });
+
+      it('POSTs the uuids array to the report summary endpoint', async () => {
+        const summaries = [{ _id: 'a' }, { _id: 'b' }];
+        postSummaryResourceInner.resolves(summaries);
+
+        const result = await Report.v1.getSummaries(remoteContext)(['a', 'b']);
+
+        expect(result).to.equal(summaries);
+        expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
       });
     });
 

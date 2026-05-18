@@ -129,6 +129,53 @@ describe('contact', () => {
       });
     });
 
+    describe('getSummaries', () => {
+      const uuids = ['contact-1', 'contact-2'];
+      const summaries = [{ _id: 'contact-1' }, { _id: 'contact-2' }] as Contact.v1.ContactSummary[];
+      let getSummariesFn: SinonStub;
+
+      beforeEach(() => {
+        getSummariesFn = sinon.stub();
+        adapt.returns(getSummariesFn);
+      });
+
+      it('retrieves summaries for the given uuids from the data context', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Contact.v1.getSummaries(dataContext)(uuids);
+
+        expect(result).to.equal(summaries);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getSummaries, Remote.Contact.v1.getSummaries)
+        ).to.be.true;
+        expect(getSummariesFn.calledOnceWithExactly(uuids)).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        assertDataContext.throws(new Error(`Invalid data context [null].`));
+
+        expect(() => Contact.v1.getSummaries(dataContext)).to.throw(`Invalid data context [null].`);
+
+        expect(adapt.notCalled).to.be.true;
+      });
+
+      ([
+        null,
+        undefined,
+        'not-an-array',
+        [1, 2],
+        ['valid', ''],
+      ] as unknown[]).forEach((invalid) => {
+        it(`throws an error for invalid input ${JSON.stringify(invalid)}`, async () => {
+          await expect(Contact.v1.getSummaries(dataContext)(invalid as string[]))
+            .to.be.rejectedWith(`Invalid UUIDs [${JSON.stringify(invalid)}].`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+    });
+
     describe('getUuidsPage', () => {
       const contactIds = ['contact1', 'contact2', 'contact3'] as string[];
       const cursor = '1';

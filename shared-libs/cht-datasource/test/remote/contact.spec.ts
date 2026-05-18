@@ -1,24 +1,43 @@
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
-import * as Contact from '../../src/remote/contact';
 import { expect } from 'chai';
 
 describe('remote contact', () => {
   const remoteContext = {} as RemoteDataContext;
+  const sandbox = sinon.createSandbox();
+  const postSummaryResourceOuter = sandbox.stub();
+
+  let Contact: typeof import('../../src/remote/contact');
   let getResourceInner: SinonStub;
   let getResourceOuter: SinonStub;
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
+  let postSummaryResourceInner: SinonStub;
+
+  before(() => {
+    sinon
+      .stub(RemoteEnv, 'postResource')
+      .withArgs('api/v1/contact/summary')
+      .returns(postSummaryResourceOuter);
+
+    Reflect.deleteProperty(require.cache, require.resolve('../../src/remote/contact'));
+    Contact = require('../../src/remote/contact');
+  });
 
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postSummaryResourceInner = sinon.stub();
+    postSummaryResourceOuter.returns(postSummaryResourceInner);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    sandbox.reset();
+  });
 
   describe('v1', () => {
     const identifier = { uuid: 'uuid' } as const;
@@ -66,6 +85,27 @@ describe('remote contact', () => {
         expect(result).to.be.null;
         expect(getResourceOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
         expect(getResourceInner.calledOnceWithExactly(identifier.uuid, { with_lineage: 'true' })).to.be.true;
+      });
+    });
+
+    describe('getSummaries', () => {
+      it('returns empty array when given no uuids', async () => {
+        const result = await Contact.v1.getSummaries(remoteContext)([]);
+
+        expect(result).to.deep.equal([]);
+        expect(postSummaryResourceOuter.notCalled).to.be.true;
+        expect(postSummaryResourceInner.notCalled).to.be.true;
+      });
+
+      it('POSTs the uuids array to the contact summary endpoint', async () => {
+        const summaries = [{ _id: 'a' }, { _id: 'b' }];
+        postSummaryResourceInner.resolves(summaries);
+
+        const result = await Contact.v1.getSummaries(remoteContext)(['a', 'b']);
+
+        expect(result).to.equal(summaries);
+        expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
       });
     });
 

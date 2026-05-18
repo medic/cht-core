@@ -1,9 +1,9 @@
-const docSummaries = require('@medic/doc-summaries');
+const cht = require('@medic/cht-datasource');
 
 angular.module('inboxServices').factory('GetSummaries',
   function(
     $q,
-    DB
+    DataContext
   ) {
 
     'use strict';
@@ -13,10 +13,12 @@ angular.module('inboxServices').factory('GetSummaries',
       if (!ids || !ids.length) {
         return $q.resolve([]);
       }
-      return DB().allDocs({ keys: ids, include_docs: true }).then(response => {
-        return response.rows
-          .map(row => docSummaries.summarise(row.doc))
-          .filter(summary => summary);
+      return DataContext.then(dataContext => {
+        const getContactSummaries = dataContext.bind(cht.Contact.v1.getSummaries);
+        const getReportSummaries = dataContext.bind(cht.Report.v1.getSummaries);
+        return $q.all([getContactSummaries(ids), getReportSummaries(ids)]);
+      }).then(([contactSummaries, reportSummaries]) => {
+        return [...contactSummaries, ...reportSummaries];
       });
     };
   });
