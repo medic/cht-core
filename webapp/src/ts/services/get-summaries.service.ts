@@ -11,7 +11,7 @@ export class GetSummariesService {
   private readonly getReportSummaries;
 
   constructor(
-    private chtDatasourceService: CHTDatasourceService,
+    private readonly chtDatasourceService: CHTDatasourceService,
   ) {
     this.getContactSummaries = this.chtDatasourceService.bind(Contact.v1.getSummaries);
     this.getReportSummaries = this.chtDatasourceService.bind(Report.v1.getSummaries);

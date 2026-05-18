@@ -104,9 +104,12 @@ export const getSubject = (doc: ReportLike): Report.v1.ReportSummary['subject'] 
   return subject;
 };
 
+type ReportDoc = Doc & ReportLike & { readonly form: string };
+type ContactDoc = Doc & ContactDocLike & { readonly type: string };
+
 /** @internal */
-export const isContact = (doc: Nullable<Doc> | undefined): boolean => {
-  const type = doc?.type as string | undefined;
+export const isContact = (doc: Nullable<Doc> | undefined): doc is ContactDoc => {
+  const type = (doc as ContactDocLike | null | undefined)?.type;
   if (!type) {
     return false;
   }
@@ -114,18 +117,19 @@ export const isContact = (doc: Nullable<Doc> | undefined): boolean => {
 };
 
 /** @internal */
-export const isReport = (doc: Nullable<Doc> | undefined): boolean => {
-  return doc?.type === DOC_TYPES.DATA_RECORD && !!(doc as ReportLike).form;
+export const isReport = (doc: Nullable<Doc> | undefined): doc is ReportDoc => {
+  const reportDoc = doc as ReportLike | null | undefined;
+  return reportDoc?.type === DOC_TYPES.DATA_RECORD && typeof reportDoc.form === 'string' && !!reportDoc.form;
 };
 
 /** @internal */
-export const summariseReport = (doc: ReportLike): Report.v1.ReportSummary => {
+export const summariseReport = (doc: ReportDoc): Report.v1.ReportSummary => {
   return {
-    _id: doc._id!,
-    _rev: doc._rev!,
+    _id: doc._id,
+    _rev: doc._rev,
     from: doc.from ?? doc.sent_by,
     phone: doc.contact?.phone,
-    form: doc.form!,
+    form: doc.form,
     read: doc.read,
     valid: !doc.errors?.length,
     verified: doc.verified,
@@ -138,13 +142,13 @@ export const summariseReport = (doc: ReportLike): Report.v1.ReportSummary => {
 };
 
 /** @internal */
-export const summariseContact = (doc: ContactDocLike): Contact.v1.ContactSummary => {
+export const summariseContact = (doc: ContactDoc): Contact.v1.ContactSummary => {
   return {
-    _id: doc._id!,
-    _rev: doc._rev!,
+    _id: doc._id,
+    _rev: doc._rev,
     name: doc.name ?? doc.phone,
     phone: doc.phone,
-    type: doc.type!,
+    type: doc.type,
     contact_type: doc.contact_type,
     contact: doc.contact?._id,
     lineage: getLineage(doc.parent),
@@ -167,10 +171,10 @@ export const summarise = (
   }
 
   if (isReport(doc)) {
-    return summariseReport(doc as ReportLike);
+    return summariseReport(doc);
   }
 
   if (isContact(doc)) {
-    return summariseContact(doc as ContactDocLike);
+    return summariseContact(doc);
   }
 };
