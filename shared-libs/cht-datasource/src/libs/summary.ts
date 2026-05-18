@@ -75,10 +75,10 @@ const isMissingSubjectError = (error: SubjectError): boolean => {
 
 const getReference = (doc: ReportLike): string | undefined => {
   return doc.patient_id
-    || doc.fields?.patient_id
-    || doc.fields?.patient_uuid
-    || doc.place_id
-    || doc.fields?.place_id;
+    ?? doc.fields?.patient_id
+    ?? doc.fields?.patient_uuid
+    ?? doc.place_id
+    ?? doc.fields?.place_id;
 };
 
 /** @internal */
@@ -123,7 +123,7 @@ export const summariseReport = (doc: ReportLike): Report.v1.ReportSummary => {
   return {
     _id: doc._id!,
     _rev: doc._rev!,
-    from: doc.from || doc.sent_by,
+    from: doc.from ?? doc.sent_by,
     phone: doc.contact?.phone,
     form: doc.form!,
     read: doc.read,
@@ -133,7 +133,7 @@ export const summariseReport = (doc: ReportLike): Report.v1.ReportSummary => {
     contact: doc.contact?._id,
     lineage: getLineage(doc.contact?.parent),
     subject: getSubject(doc),
-    case_id: doc.case_id || doc.fields?.case_id,
+    case_id: doc.case_id ?? doc.fields?.case_id,
   };
 };
 
@@ -142,7 +142,7 @@ export const summariseContact = (doc: ContactDocLike): Contact.v1.ContactSummary
   return {
     _id: doc._id!,
     _rev: doc._rev!,
-    name: doc.name || doc.phone,
+    name: doc.name ?? doc.phone,
     phone: doc.phone,
     type: doc.type!,
     contact_type: doc.contact_type,
