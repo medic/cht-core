@@ -1,7 +1,6 @@
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
-const docSummaries = require('@medic/doc-summaries');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
 
@@ -27,6 +26,7 @@ angular.module('services').factory('MessageQueue',
     $q,
     $translate,
     DB,
+    GetSummaries,
     Languages,
     MessageQueueUtils,
     Settings
@@ -100,16 +100,9 @@ angular.module('services').factory('MessageQueue',
             return row.id;
           });
 
-          return DB({ remote: true }).allDocs({ keys: ids, include_docs: true });
+          return GetSummaries(ids);
         })
-        .then(function(response) {
-          const summaries = response.rows
-            .map(function(row) {
-              return docSummaries.summarise(row.doc);
-            })
-            // filter out deleted/missing docs
-            .filter(Boolean);
-
+        .then(function(summaries) {
           messages.forEach(function(message) {
             message.recipient = findSummary(summaries, message);
           });

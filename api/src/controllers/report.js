@@ -6,6 +6,7 @@ const auth = require('../auth');
 const getReport = ctx.bind(Report.v1.get);
 const getReportWithLineage = ctx.bind(Report.v1.getWithLineage);
 const getReportIds = ctx.bind(Report.v1.getUuidsPage);
+const getReportSummaries = ctx.bind(Report.v1.getSummaries);
 const create = ctx.bind(Report.v1.create);
 const update = ctx.bind(Report.v1.update);
 
@@ -116,6 +117,53 @@ module.exports = {
       const qualifier = Qualifier.byFreetext(req.query.freetext);
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/report/summary:
+     *   post:
+     *     summary: Get report summaries by UUIDs
+     *     operationId: v1ReportSummaryPost
+     *     description: >
+     *       Returns compact summary records for the reports identified by the provided UUIDs. UUIDs that do not
+     *       identify an existing report are silently omitted from the result.
+     *     tags: [Report]
+     *     x-since: 4.18.0
+     *     x-permissions:
+     *       hasAll: [can_view_reports]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               uuids:
+     *                 type: array
+     *                 items:
+     *                   type: string
+     *             required: [uuids]
+     *     responses:
+     *       '200':
+     *         description: An array of report summaries
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/v1.ReportSummary'
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getSummaries: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      const summaries = await getReportSummaries(req.body?.uuids);
+      return res.json(summaries);
     }),
 
     /**

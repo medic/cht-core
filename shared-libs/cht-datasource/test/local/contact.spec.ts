@@ -140,6 +140,55 @@ describe('local contact', () => {
       });
     });
 
+    describe('getSummaries', () => {
+      let getDocsByIdsOuter: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+      });
+
+      it('returns empty array when given no uuids', async () => {
+        const result = await Contact.v1.getSummaries(localContext)([]);
+
+        expect(result).to.deep.equal([]);
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+      });
+
+      it('summarises contacts and filters out non-contact docs', async () => {
+        const contactDoc = {
+          _id: 'a',
+          _rev: '1',
+          type: 'person',
+          name: 'james',
+          phone: '+456',
+          parent: { _id: 'f', parent: { _id: 'g' } },
+        };
+        const reportDoc = { _id: 'b', _rev: '2', type: 'data_record', form: 'x' };
+        getDocsByIdsInner.resolves([contactDoc, reportDoc, null]);
+        isContact.withArgs(settings, contactDoc).returns(true);
+        isContact.withArgs(settings, reportDoc).returns(false);
+
+        const result = await Contact.v1.getSummaries(localContext)(['a', 'b', 'missing']);
+
+        expect(result).to.deep.equal([{
+          _id: 'a',
+          _rev: '1',
+          name: 'james',
+          phone: '+456',
+          type: 'person',
+          contact_type: undefined,
+          contact: undefined,
+          lineage: ['f', 'g'],
+          date_of_death: undefined,
+          muted: undefined,
+        }]);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly(['a', 'b', 'missing'])).to.be.true;
+      });
+    });
+
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
       let mockFetchHydratedDoc: sinon.SinonStub;

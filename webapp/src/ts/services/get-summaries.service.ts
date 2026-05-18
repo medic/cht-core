@@ -1,30 +1,32 @@
 import { Injectable } from '@angular/core';
+import { Contact, Report, summarise } from '@medic/cht-datasource';
 
-import { DbService } from '@mm-services/db.service';
-
-const docSummaries = require('@medic/doc-summaries');
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GetSummariesService {
+  private readonly getContactSummaries;
+  private readonly getReportSummaries;
+
   constructor(
-    private dbService:DbService,
+    private chtDatasourceService: CHTDatasourceService,
   ) {
+    this.getContactSummaries = this.chtDatasourceService.bind(Contact.v1.getSummaries);
+    this.getReportSummaries = this.chtDatasourceService.bind(Report.v1.getSummaries);
   }
 
   async get(ids?) {
     if (!ids?.length) {
-      return Promise.resolve([]);
+      return [];
     }
 
-    const result = await this.dbService
-      .get()
-      .allDocs({ keys: ids, include_docs: true });
-
-    return result?.rows
-      ?.map(row => docSummaries.summarise(row.doc))
-      .filter(summary => summary);
+    const [contactSummaries, reportSummaries] = await Promise.all([
+      this.getContactSummaries(ids),
+      this.getReportSummaries(ids),
+    ]);
+    return [...contactSummaries, ...reportSummaries];
   }
 
   getByDocs(docs) {
@@ -33,7 +35,7 @@ export class GetSummariesService {
     }
 
     return docs
-      .map(doc => docSummaries.summarise(doc))
+      .map(doc => summarise(doc))
       .filter(summary => summary);
   }
 }
