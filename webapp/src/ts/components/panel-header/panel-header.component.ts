@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgIf } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -7,7 +6,6 @@ import { TranslatePipe } from '@ngx-translate/core';
   selector: 'mm-panel-header',
   templateUrl: './panel-header.component.html',
   imports: [
-    NgIf,
     MatIcon,
     TranslatePipe,
   ],

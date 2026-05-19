@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
-import { v4 as uuid } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { first } from 'rxjs/operators';
 import { combineLatest } from 'rxjs';
 
