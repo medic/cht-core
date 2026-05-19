@@ -5,7 +5,6 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
-const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const { CONTACT_TYPES } = require('@medic/constants');
 
@@ -23,22 +22,10 @@ const SMS_FORMS_SETTINGS = {
           required: true,
         },
       },
-      public_form: true,
-      use_sentinel: true,
     },
     DEL: {
       meta: { code: 'DEL', label: { en: 'Delivery Report' } },
-      fields: {
-        outcome: {
-          labels: { tiny: { en: 'O' }, short: { en: 'Outcome' } },
-          position: 0,
-          type: 'string',
-          length: [1, 10],
-          required: true,
-        },
-      },
-      public_form: true,
-      use_sentinel: true,
+      fields: {},
     },
   },
   registrations: [
@@ -47,7 +34,7 @@ const SMS_FORMS_SETTINGS = {
       events: [{ name: 'on_create', trigger: 'add_patient', params: { patient_name_field: 'patient_name' } }],
       messages: [{
         event_type: 'report_accepted',
-        message: [{ locale: 'en', content: 'Pregnancy registered for {{fields.patient_name}}.' }],
+        translation_key: 'sms.preg.registered',
         recipient: 'reporting_unit',
       }],
     },
@@ -56,32 +43,36 @@ const SMS_FORMS_SETTINGS = {
       events: [],
       messages: [{
         event_type: 'report_accepted',
-        message: [{ locale: 'en', content: 'Delivery report received.' }],
+        translation_key: 'sms.del.received',
         recipient: 'reporting_unit',
       }],
     },
   ],
 };
 
+const findReportByGatewayRef = async (gatewayRef) => {
+  const { rows } = await utils.db.allDocs({ include_docs: true });
+  return rows.find(({ doc }) => doc && doc.sms_message && doc.sms_message.gateway_ref === gatewayRef)?.doc;
+};
+
 describe('SMS report creation', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
-
-  const chwPerson = personFactory.build({
-    phone: '+12065550100',
-    parent: { _id: healthCenter._id },
-  });
-
-  const chwUser = userFactory.build({ place: healthCenter._id, contact: chwPerson._id });
+  const chwUser = userFactory.build({ place: healthCenter._id });
 
   before(async () => {
-    await utils.saveDocs([...places.values(), chwPerson]);
+    await utils.saveDocs([...places.values(), chwUser]);
     await utils.createUsers([chwUser]);
+    await utils.addTranslations('en', {
+      'sms.preg.registered': 'Pregnancy registered for {{fields.patient_name}}.',
+      'sms.del.received': 'Delivery report received.',
+    });
     await utils.updateSettings(SMS_FORMS_SETTINGS, { ignoreReload: true });
     await loginPage.cookieLogin();
   });
 
   afterEach(async () => {
+    await sentinelUtils.waitForSentinel();
     const { rows } = await utils.db.allDocs({ include_docs: true });
     const reports = rows
       .filter(({ doc }) => doc && doc.type === 'data_record')
@@ -98,27 +89,25 @@ describe('SMS report creation', () => {
   });
 
   describe('pregnancy registration via SMS', () => {
-    it('should create a report visible in the Reports tab', async () => {
+    it('should create a report and register the patient', async () => {
       await gatewayApiUtils.api.postMessage({
         id: 'msg-preg-001',
-        from: chwPerson.phone,
+        from: chwUser.phone,
         content: 'PREG Jane Doe',
       });
       await sentinelUtils.waitForSentinel();
 
+      const report = await findReportByGatewayRef('msg-preg-001');
       await commonPage.goToReports();
-      const firstReport = await reportsPage.leftPanelSelectors.firstReport();
-      await reportsPage.openSelectedReport(firstReport);
+      await reportsPage.waitForReportsLoaded();
+      await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.reportByUUID(report._id));
       await commonPage.waitForPageLoaded();
 
-      const reportName = await reportsPage.rightPanelSelectors.reportName();
-      expect(await reportName.getText()).to.contain('Pregnancy Registration');
-
-      const senderPhone = await reportsPage.rightPanelSelectors.senderPhone();
-      expect(await senderPhone.getText()).to.contain(chwPerson.phone);
-
-      const replyMessage = await reportsPage.rightPanelSelectors.automaticReplyMessage();
-      expect(await replyMessage.getText()).to.contain('Pregnancy registered for Jane Doe');
+      expect(await (await reportsPage.rightPanelSelectors.reportName()).getText()).to.contain('Pregnancy Registration');
+      expect(await (await reportsPage.rightPanelSelectors.patientName()).getText()).to.contain('Jane Doe');
+      expect(await (await reportsPage.rightPanelSelectors.senderPhone()).getText()).to.contain(chwUser.phone);
+      expect(await (await reportsPage.rightPanelSelectors.automaticReplyMessage()).getText())
+        .to.contain('Pregnancy registered for Jane Doe');
     });
   });
 
@@ -126,24 +115,21 @@ describe('SMS report creation', () => {
     it('should create a delivery report visible in the Reports tab', async () => {
       await gatewayApiUtils.api.postMessage({
         id: 'msg-del-001',
-        from: chwPerson.phone,
-        content: 'DEL live',
+        from: chwUser.phone,
+        content: 'DEL',
       });
       await sentinelUtils.waitForSentinel();
 
+      const report = await findReportByGatewayRef('msg-del-001');
       await commonPage.goToReports();
-      const firstReport = await reportsPage.leftPanelSelectors.firstReport();
-      await reportsPage.openSelectedReport(firstReport);
+      await reportsPage.waitForReportsLoaded();
+      await reportsPage.openSelectedReport(await reportsPage.leftPanelSelectors.reportByUUID(report._id));
       await commonPage.waitForPageLoaded();
 
-      const reportName = await reportsPage.rightPanelSelectors.reportName();
-      expect(await reportName.getText()).to.contain('Delivery Report');
-
-      const senderPhone = await reportsPage.rightPanelSelectors.senderPhone();
-      expect(await senderPhone.getText()).to.contain(chwPerson.phone);
-
-      const replyMessage = await reportsPage.rightPanelSelectors.automaticReplyMessage();
-      expect(await replyMessage.getText()).to.contain('Delivery report received');
+      expect(await (await reportsPage.rightPanelSelectors.reportName()).getText()).to.contain('Delivery Report');
+      expect(await (await reportsPage.rightPanelSelectors.senderPhone()).getText()).to.contain(chwUser.phone);
+      expect(await (await reportsPage.rightPanelSelectors.automaticReplyMessage()).getText())
+        .to.contain('Delivery report received');
     });
   });
 });
