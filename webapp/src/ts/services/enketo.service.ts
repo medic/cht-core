@@ -362,6 +362,22 @@ export class EnketoService {
     return form;
   }
 
+  private findFileNodeByFilename($record, filename: string) {
+    // After upload, Enketo's Nodeset.setVal rewrites file-widget nodes from
+    // type="binary" to type="file" (#10903 §6.5). Inline-binary blobs from
+    // draw/signature widgets keep type="binary" and are handled separately.
+    let match = null;
+    $record
+      .find('[type=file]')
+      .each((_idx, element) => {
+        if ($(element).text() === filename) {
+          match = element;
+          return false; // break
+        }
+      });
+    return match;
+  }
+
   private xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
@@ -481,16 +497,49 @@ export class EnketoService {
     }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
+    // Build a lookup map: sub-doc _couchId -> prepared doc object
+    const subDocById = new Map<string, any>();
+    docsToStore.forEach(subDoc => subDocById.set(subDoc._id, subDoc));
+
+    // Resolve the owner document for a given XML element by walking
+    // up to the nearest [db-doc="true"] ancestor. Falls back to the
+    // main report doc when the element is not inside a sub-doc.
+    const resolveOwnerDoc = (element) => {
+      let node = element.parentNode;
+      while (node && node !== recordDoc) {
+        if (node._couchId && subDocById.has(node._couchId)) {
+          return subDocById.get(node._couchId);
+        }
+        node = node.parentNode;
+      }
+      return doc;
+    };
+
+    // Route FileManager files to the correct owner doc.
+    // For each file, find the [type=file] node whose text matches
+    // the filename, then resolve the owner from its position in the
+    // XML tree.
     FileManager
       .getCurrentFiles()
-      .forEach(file => this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false));
+      .forEach(file => {
+        const ownerDoc = resolveOwnerDoc(
+          this.findFileNodeByFilename($record, file.name) ?? $record[0]
+        );
+        this.attachmentService.add(ownerDoc, `user-file-${file.name}`, file, file.type, false);
+      });
 
+    // The legacy filename scheme is xpath-based (rooted at doc.form) because
+    // inline-binary widgets (draw/signature) do not store the filename as a
+    // question value, so xpath is the only stable mapping from answer to
+    // attachment. The xpath naming is unchanged when routing to a sub-doc;
+    // only the target doc differs.
     const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
+      const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
+      this.attachmentService.add(ownerDoc, filename, file, type, alreadyEncoded);
     };
 
     $record
@@ -498,9 +547,6 @@ export class EnketoService {
       .each((idx, element) => {
         const file = $(element).text();
         if (file) {
-          // Attach binary file with legacy-style filename because the actual filename is not stored as the question
-          // value in the form model (and so there is currently no way to map the answer in a saved report to the
-          // associated file attachment).
           attachLegacyFile(element, file, 'image/png', true);
         }
       });
