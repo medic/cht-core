@@ -2,12 +2,14 @@
   <name>Sally</name>
   <main_photo type="binary">main_photo_data</main_photo>
   <doc1 db-doc="true">
-    <type>thing_1</type>
+    <type>data_record</type>
+    <form>thing_1</form>
     <some_property_1>some_value_1</some_property_1>
     <photo1 type="binary">sub_photo_data_1</photo1>
   </doc1>
   <doc2 db-doc="true">
-    <type>thing_2</type>
+    <type>data_record</type>
+    <form>thing_2</form>
     <some_property_2>some_value_2</some_property_2>
     <photo2 type="binary">sub_photo_data_2</photo2>
   </doc2>
