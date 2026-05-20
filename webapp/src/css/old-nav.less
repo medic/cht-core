@@ -15,13 +15,18 @@
       top: @top-without-filter;
     }
 
-    .tool-bar .inner {
-      background-color: @top-header-color;
+    .tool-bar {
+      height: 0;
+      padding: 0;
     }
   }
 
   .app-menu-button {
     display: none;
+  }
+
+  .header .tabs .selected {
+    background-color: var(--accent-color);
   }
 
   &.messages {
@@ -74,6 +79,7 @@
   &.ui-extensions {
     .tool-bar {
       height: 0;
+      padding: 0;
     }
 
     .header .tabs .selected {

@@ -30,6 +30,9 @@
 body {
   overflow-y: hidden;
   .app-root {
+    .tool-bar {
+      background-color: var(--accent-color, @top-header-color);
+    }
     &.messages .tool-bar {
       background-color: @messages-color;
     }
@@ -45,9 +48,6 @@ body {
     &.contacts .tool-bar {
       background-color: @contacts-color;
     }
-    &.user .tool-bar {
-      background-color: @admin-color;
-    }
     &.error .tool-bar,
     &testing .tool-bar {
       background-color: @error-color;
@@ -60,7 +60,6 @@ body {
     &.privacy-policy,
     &.ui-extensions {
       .tool-bar {
-        background-color: @top-header-color;
 
         .ellipsis-title,
         .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
