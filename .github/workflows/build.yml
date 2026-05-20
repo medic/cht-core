@@ -229,6 +229,9 @@ jobs:
       - uses: azure/setup-kubectl@829323503d1be3d00ca8346e5391ca0b07a9ab0d  # v5.1.0
       - name: Run tests
         run: npm run ${{ matrix.cmd }}
+      - name: Scan logs for credential leaks
+        if: always()
+        run: npm run scan-logs
       - name: Archive Results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -405,6 +408,10 @@ jobs:
     - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }} on Chrome ${{ matrix.chrome-version }}
       run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
 
+    - name: Scan logs for credential leaks
+      if: always()
+      run: npm run scan-logs
+
     - name: Archive Results
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
@@ -479,7 +486,7 @@ jobs:
         fail-on-cache-miss: true
     - name: Publish docs to GH pages
       if: github.ref == 'refs/heads/master'
-      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e  # v4
+      uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453  # v4.1.0
       with:
         personal_token: ${{ secrets.DEPLOY_TO_GITHUB_PAGES }}
         external_repository: medic/cht-datasource
