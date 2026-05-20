@@ -227,7 +227,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.subscription.add(reduxSubscription);
   }
 
-  private isRelevantVisitReport(doc) {
+  private isRelevantVisitReport (doc) {
     const isRelevantDelete = doc && doc._deleted && this.isSortedByLastVisited();
     return (
       doc &&
