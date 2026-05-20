@@ -223,7 +223,14 @@ describe('HeaderTabs service', () => {
       uiExtensionsService.getPropertiesByType
         .withArgs('header_tab')
         .resolves([
-          { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
+          {
+            id: 'first',
+            title: 'First Extension',
+            icon: 'fa-icon-1',
+            resource_icon: 'res-1',
+            weight: 0.5,
+            accent_color: 'red'
+          },
           { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
           { id: 'last', title: 'Last Extension', resource_icon: 'res-2' },
         ]);
@@ -250,6 +257,7 @@ describe('HeaderTabs service', () => {
         icon: 'fa-icon-1',
         resourceIcon: 'res-1',
         weight: 0.5,
+        accentColor: 'red',
       });
       expect(middleExt).to.deep.equal({
         name: 'ui-extension-middle',
@@ -260,6 +268,7 @@ describe('HeaderTabs service', () => {
         icon: 'fa-icon-3',
         resourceIcon: undefined,
         weight: 6,
+        accentColor: undefined,
       });
       expect(lastExt).to.deep.equal({
         name: 'ui-extension-last',
@@ -270,6 +279,7 @@ describe('HeaderTabs service', () => {
         icon: undefined,
         resourceIcon: 'res-2',
         weight: 6,
+        accentColor: undefined,
       });
     });
 
@@ -291,6 +301,7 @@ describe('HeaderTabs service', () => {
           icon: 'fa-icon',
           resourceIcon: undefined,
           weight: 6,
+          accentColor: undefined,
         }
       ]);
       expect(authService.has.callCount).to.equal(5);
@@ -428,6 +439,7 @@ describe('HeaderTabs service', () => {
         icon: 'fa-icon',
         resourceIcon: undefined,
         weight: 6,
+        accentColor: undefined,
       });
     });
 
@@ -448,6 +460,7 @@ describe('HeaderTabs service', () => {
         icon: 'fa-icon',
         resourceIcon: undefined,
         weight: 0.5,
+        accentColor: undefined,
       });
     });
   });
@@ -548,7 +561,14 @@ describe('HeaderTabs service', () => {
     it('should include sidebar_tab UI extensions between header tabs and secondary tabs', async () => {
       authService.has.returns(true);
       uiExtensionsService.getPropertiesByType.withArgs('sidebar_tab').resolves([
-        { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
+        {
+          id: 'first',
+          title: 'First Extension',
+          icon: 'fa-icon-1',
+          resource_icon: 'res-1',
+          weight: 0.5,
+          accent_color: 'red'
+        },
         { id: 'second', title: 'Second Extension', icon: 'fa-icon-2' },
       ]);
 
@@ -579,6 +599,7 @@ describe('HeaderTabs service', () => {
         icon: 'fa-icon-1',
         resourceIcon: 'res-1',
         weight: 0.5,
+        accentColor: 'red',
       });
       expect(secondExt).to.deep.equal({
         name: 'ui-extension-second',
@@ -589,6 +610,7 @@ describe('HeaderTabs service', () => {
         icon: 'fa-icon-2',
         resourceIcon: undefined,
         weight: 6,
+        accentColor: undefined,
       });
     });
 

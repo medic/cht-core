@@ -58,7 +58,7 @@ body {
     &.testing,
     &.user,
     &.privacy-policy,
-    &.ui-extensions {
+    &[class*="ui-extension-"] {
       .tool-bar {
 
         .ellipsis-title,
@@ -95,7 +95,7 @@ body {
     &.testing,
     &.error,
     &.privacy-policy,
-    &.ui-extensions {
+    &[class*="ui-extension-"] {
       .page {
         padding-left: calc(@tab-navbar-size + 15px);
       }

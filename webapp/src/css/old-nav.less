@@ -76,7 +76,7 @@
   &.testing,
   &.privacy-policy,
   &.user,
-  &.ui-extensions {
+  &[class*="ui-extension-"] {
     .tool-bar {
       height: 0;
       padding: 0;
@@ -381,7 +381,7 @@
     &.testing,
     &.privacy-policy,
     &.user,
-    &.ui-extensions {
+    &[class*="ui-extension-"] {
       .content {
         .page {
           top: calc(@top-navbar-height + 5px);
