@@ -19,6 +19,15 @@ import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
 
 /**
+ * Prefix for every CouchDB attachment created from a form media field, shared
+ * by both pipelines so a field's value is uniformly resolved as
+ * `USER_FILE_PREFIX + value`:
+ *   - file-widget uploads  -> `user-file-<sanitized-filename>`
+ *   - inline-binary fields -> `user-file-<formId>/<xpath>/<field>`
+ */
+export const USER_FILE_PREFIX = 'user-file-';
+
+/**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
  * reused by code outside the CHT (e.g. cht-conf-test-harness). All logic that is proper to Enketo functionality should
  * be included here. Logic that is peripheral to Enketo forms (needed to support form functionality in the CHT, but not
@@ -521,18 +530,25 @@ export class EnketoService {
         const ownerDoc = resolveOwnerDoc(
           this.findFileNodeByFilename($record, file.name) ?? $record[0]
         );
-        this.attachmentService.add(ownerDoc, `user-file-${file.name}`, file, file.type, false);
+        this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${file.name}`, file, file.type, false);
       });
 
+    // Attaches an inline-binary blob under the unified naming scheme and
+    // returns the field's bare value (the attachment name minus
+    // USER_FILE_PREFIX) so the node text / parsed fields resolve via the same
+    // `USER_FILE_PREFIX + value` rule as file-widget uploads.
     const attachInlineBinary = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
-      const formId = ownerDoc.form || doc.form;
-      // replace instance root element node name with form internal ID
-      const filename = 'user-file' +
-        (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
-      this.attachmentService.add(ownerDoc, filename, file, type, alreadyEncoded);
-      return filename;
+      // Main report doc has `.form`; sub-docs carry `.type` instead — use that
+      // as the reference's first segment so each sub-doc's binaries are namespaced.
+      const formId = ownerDoc.form || ownerDoc.type || doc.form;
+      // replace instance root element node name with form internal ID, drop
+      // the leading slash -> `<formId>/<xpath>/<field>`
+      const reference = (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId))
+        .slice(1);
+      this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${reference}`, file, type, alreadyEncoded);
+      return reference;
     };
 
     $record
@@ -545,15 +561,15 @@ export class EnketoService {
         // Defensive: skip values that already look like an attachment
         // reference, so a re-save can't double-attach the reference string
         // as if it were base64 data.
-        if (file.startsWith('user-file/')) {
+        if (this.enketoTranslationService.isAttachmentRef(file)) {
           return;
         }
-        const filename = attachInlineBinary(element, file, 'image/png', true);
-        // Rewrite the node text to the attachment name. reportRecordToJs is
-        // called below on the serialized record, so doc.fields ends up with
-        // the reference name in place of the inline base64 — matching the
+        const reference = attachInlineBinary(element, file, 'image/png', true);
+        // Rewrite the node text to the bare reference value. reportRecordToJs
+        // is called below on the serialized record, so doc.fields ends up with
+        // the reference in place of the inline base64 — matching the
         // convention used for file-widget uploads.
-        $(element).text(filename);
+        $(element).text(reference);
       });
 
     // Re-parse sub-docs from the now-rewritten XML and merge in the

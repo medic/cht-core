@@ -24,6 +24,8 @@ describe('ContactSave service', () => {
   beforeEach(() => {
     enketoTranslationService = {
       contactRecordToJs: sinon.stub(),
+      // pure regex helper — delegate to the real implementation
+      isAttachmentRef: (value) => new EnketoTranslationService().isAttachmentRef(value),
     };
 
     extractLineageService = { extract: sinon.stub() };
@@ -444,7 +446,7 @@ describe('ContactSave service', () => {
       expect(
         addCall.args[1],
         'Should use XPath-based attachment name for binary field'
-      ).to.equal('user-file/contact:person:create/person/signature');
+      ).to.equal('user-file-contact:person:create/person/signature');
       expect(
         addCall.args[2],
         'Should pass the base64 content'
@@ -713,7 +715,7 @@ describe('ContactSave service', () => {
       expect(
         photoCall.args[1],
         'Photo binary field XPath-based name'
-      ).to.equal('user-file/contact:person:create/person/photo');
+      ).to.equal('user-file-contact:person:create/person/photo');
       expect(photoCall.args[2], 'Photo binary field content').to.equal('BASE64_PHOTO_DATA');
       expect(photoCall.args[3], 'Binary field content type').to.equal('image/png');
       expect(photoCall.args[4], 'Binary field should be pre-encoded').to.be.true;
@@ -722,7 +724,7 @@ describe('ContactSave service', () => {
       expect(
         signatureCall.args[1],
         'Signature binary field XPath-based name'
-      ).to.equal('user-file/contact:person:create/person/signature');
+      ).to.equal('user-file-contact:person:create/person/signature');
       expect(signatureCall.args[2], 'Signature binary field content').to.equal('BASE64_SIGNATURE_DATA');
       expect(signatureCall.args[3], 'Binary field content type').to.equal('image/png');
       expect(signatureCall.args[4], 'Binary field should be pre-encoded').to.be.true;
@@ -746,7 +748,7 @@ describe('ContactSave service', () => {
           '<family><name>Kigali HF</name></family>' +
           '<contact db-doc="true">' +
             '<name>Amina</name>' +
-            '<photo type="binary">amina.png</photo>' +
+            '<photo type="file">amina.png</photo>' +
           '</contact>' +
         '</data>';
       const form = { getDataStr: () => xml };
@@ -782,8 +784,8 @@ describe('ContactSave service', () => {
           '<meta><instanceID/></meta>' +
           '<family><name>Kigali HF</name></family>' +
           '<repeat>' +
-            '<child><name>Child A</name><photo type="binary">childA.png</photo></child>' +
-            '<child><name>Child B</name><photo type="binary">childB.png</photo></child>' +
+            '<child><name>Child A</name><photo type="file">childA.png</photo></child>' +
+            '<child><name>Child B</name><photo type="file">childB.png</photo></child>' +
           '</repeat>' +
         '</data>';
       const form = { getDataStr: () => xml };
@@ -815,13 +817,13 @@ describe('ContactSave service', () => {
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
-          '<family><name>Kigali HF</name><photo type="binary">facility.jpg</photo></family>' +
+          '<family><name>Kigali HF</name><photo type="file">facility.jpg</photo></family>' +
           '<contact db-doc="true">' +
             '<name>Amina</name>' +
-            '<photo type="binary">amina.png</photo>' +
+            '<photo type="file">amina.png</photo>' +
           '</contact>' +
           '<repeat>' +
-            '<child><name>Child A</name><photo type="binary">childA.png</photo></child>' +
+            '<child><name>Child A</name><photo type="file">childA.png</photo></child>' +
           '</repeat>' +
         '</data>';
       const form = { getDataStr: () => xml };
@@ -902,16 +904,17 @@ describe('ContactSave service', () => {
       await service.save(form, null, 'family');
 
       const sigCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file/contact:family:create/contact/signature');
+        .find(c => c.args[1] === 'user-file-contact:family:create/contact/signature');
       expect(sigCall, 'sibling-routed inline binary should exist').to.not.be.undefined;
       expect(sigCall.args[0]._id, 'inline binary should land on sibling').to.equal('sib1');
       expect(sigCall.args[2]).to.equal('BASE64_SIG_DATA');
       expect(sigCall.args[3]).to.equal('image/png');
       expect(sigCall.args[4]).to.be.true;
-      // The sibling's signature field is rewritten on the owner sub-doc to
-      // the same xpath-derived attachment name, so renderers can resolve the
-      // image by value without needing to recompute the parent prefix.
-      expect(sigCall.args[0].signature).to.equal('user-file/contact:family:create/contact/signature');
+      // The sibling's signature field is rewritten on the owner sub-doc to the
+      // bare reference (the attachment name minus USER_FILE_PREFIX), so
+      // renderers resolve the image via `user-file-` + value — the embedded
+      // parent prefix means no recomputation from the sub-doc alone.
+      expect(sigCall.args[0].signature).to.equal('contact:family:create/contact/signature');
     });
 
     it('sanitizes field values per-doc', async () => {
@@ -923,7 +926,7 @@ describe('ContactSave service', () => {
           '<family><name>Kigali HF</name></family>' +
           '<contact db-doc="true">' +
             '<name>Amina</name>' +
-            '<photo type="binary">my photo.png</photo>' +
+            '<photo type="file">my photo.png</photo>' +
           '</contact>' +
         '</data>';
       const form = { getDataStr: () => xml };
@@ -948,11 +951,11 @@ describe('ContactSave service', () => {
       expect(main.name, 'main field should be untouched').to.equal('Kigali HF');
     });
 
-    it('main contact with empty saved binary re-attaches under the same xpath-derived name', async () => {
-      // Pre-existing main-contact state: `<binary>=""` in saved fields plus
-      // an attachment under `user-file/<form>/<rest>`. On edit the empty
-      // saved value lets the form's instance default re-apply, so the
-      // binary node arrives at submit with fresh base64.
+    it('main contact re-attaches a binary under the same name (idempotent re-save)', async () => {
+      // New-format state: the saved field already holds the bare reference and
+      // the attachment is under `user-file-<form>/<rest>`. On edit the form's
+      // instance default re-applies, so the binary node arrives at submit with
+      // fresh base64 and the save recomputes the SAME name — overwrite-in-place.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -967,7 +970,59 @@ describe('ContactSave service', () => {
         doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: 'FRESH_BASE64' },
       });
 
-      // Original returned by the datasource carries the legacy-named attachment.
+      // Original returned by the datasource already carries the unified-named attachment.
+      getContact.withArgs(Qualifier.byUuid('main1')).resolves({
+        _id: 'main1',
+        type: 'family',
+        name: 'Kigali HF',
+        _attachments: {
+          'user-file-contact:family:create/family/photo': { content_type: 'image/png' },
+        },
+      });
+
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, 'main1', 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      // Same key the prior save produced — CouchDB overwrite-in-place.
+      const photoCall = attachmentService.add.getCalls()
+        .find(c => c.args[1] === 'user-file-contact:family:create/family/photo');
+      expect(photoCall, 'attach call should exist').to.not.be.undefined;
+      expect(photoCall.args[0]._id).to.equal('main1');
+      expect(photoCall.args[2]).to.equal('FRESH_BASE64');
+      expect(main.photo).to.equal('contact:family:create/family/photo');
+      // The pre-existing attachment is reused, not orphan-removed.
+      expect(
+        attachmentService.remove.calledWith(
+          sinon.match({ _id: 'main1' }),
+          'user-file-contact:family:create/family/photo',
+        ),
+        'pre-existing attachment should NOT be removed',
+      ).to.be.false;
+    });
+
+    it('leaves a legacy slash-named binary attachment intact on edit (migration out of scope)', async () => {
+      // Pre-existing legacy state: `<binary>` attachment under the old
+      // `user-file/<form>/<rest>` (slash) name. On edit the new save path
+      // writes the unified `user-file-<form>/<rest>` attachment + bare field
+      // value; the legacy attachment is not orphan-removed (orphan cleanup
+      // only touches `user-file-`-prefixed names), so the doc renders via the
+      // new branch with no data loss.
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            '<photo type="binary">FRESH_BASE64</photo>' +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: 'FRESH_BASE64' },
+      });
+
       getContact.withArgs(Qualifier.byUuid('main1')).resolves({
         _id: 'main1',
         type: 'family',
@@ -982,28 +1037,30 @@ describe('ContactSave service', () => {
       const result = await service.save(form, 'main1', 'family');
       const main = result.preparedDocs.find(d => d._id === 'main1');
 
-      // Same key the prior save produced — CouchDB overwrite-in-place.
-      const photoCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file/contact:family:create/family/photo');
-      expect(photoCall, 'attach call should exist').to.not.be.undefined;
-      expect(photoCall.args[0]._id).to.equal('main1');
-      expect(photoCall.args[2]).to.equal('FRESH_BASE64');
-      expect(main.photo).to.equal('user-file/contact:family:create/family/photo');
-      // The pre-existing attachment is reused, not orphan-removed.
+      // New unified attachment + bare field value.
+      expect(
+        attachmentService.add.calledWith(
+          sinon.match({ _id: 'main1' }),
+          'user-file-contact:family:create/family/photo',
+        ),
+        'unified-named attachment should be written',
+      ).to.be.true;
+      expect(main.photo).to.equal('contact:family:create/family/photo');
+      // Legacy slash-named attachment is left untouched (no orphan removal).
       expect(
         attachmentService.remove.calledWith(
           sinon.match({ _id: 'main1' }),
           'user-file/contact:family:create/family/photo',
         ),
-        'pre-existing attachment should NOT be removed',
+        'legacy slash-named attachment should NOT be removed',
       ).to.be.false;
     });
 
     it('routes sibling sub-contact binary writes to the sub-doc, not main', async () => {
       // The binary attachment lives on a sibling sub-contact
       // (`<contact db-doc="true">`). The xpath-derived name embeds the
-      // parent form id, so the sub-doc field is written with the full
-      // reference name — sufficient on its own for renderer lookup.
+      // parent form id, so the sub-doc field is written with the bare
+      // reference value — sufficient on its own for renderer lookup.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1034,14 +1091,14 @@ describe('ContactSave service', () => {
       await service.save(form, null, 'family');
 
       const sigCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file/contact:family:create/contact/signature');
+        .find(c => c.args[1] === 'user-file-contact:family:create/contact/signature');
       expect(sigCall, 'sibling-routed attach should exist').to.not.be.undefined;
       expect(sigCall.args[0]._id, 'attachment lands on sub-doc, not main').to.equal('sib1');
       expect(sigCall.args[2]).to.equal('FRESH_SIG_BASE64');
-      // Sub-doc's signature field carries the full reference name — a
-      // renderer keyed on `value` resolves it without needing the parent
+      // Sub-doc's signature field carries the bare reference value — a renderer
+      // keyed on `user-file-` + value resolves it without needing the parent
       // form's prefix to be reconstructable from the sub-doc alone.
-      expect(sigCall.args[0].signature).to.equal('user-file/contact:family:create/contact/signature');
+      expect(sigCall.args[0].signature).to.equal('contact:family:create/contact/signature');
     });
 
     it('runs orphan cleanup on the edit path for the main doc', async () => {
