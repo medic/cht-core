@@ -82,19 +82,6 @@ const placeRequest = (filters) => {
   return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
 };
 
-const freetextRequestParams = (word) => {
-  const params = {};
-
-  // use starts with
-  if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
-    return;
-  }
-
-  params.key = word;
-
-  return params;
-};
-
 const getNormalizedPhone = (word, settings) => {
   if (!settings?.default_country_code) {
     return null;
@@ -109,6 +96,18 @@ const getNormalizedPhone = (word, settings) => {
   return normalized;
 };
 
+const getFreetextVariants = (word, settings) => {
+  if (word.length < MINIMUM_SEARCH_TERM_LENGTH) {
+    return [];
+  }
+  const variants = [word];
+  const normalizedPhone = getNormalizedPhone(word, settings);
+  if (normalizedPhone && normalizedPhone.length >= MINIMUM_SEARCH_TERM_LENGTH) {
+    variants.push(normalizedPhone);
+  }
+  return variants;
+};
+
 const freetextRequest = (filters, view) => {
   if (!filters.search) {
     return;
@@ -117,20 +116,20 @@ const freetextRequest = (filters, view) => {
     .trim()
     .toLowerCase()
     .split(/\s+/);
-  const requests = words.flatMap((word) => {
-    const normalizedPhone = getNormalizedPhone(word, filters.settings);
-    const results = [];
-    const originalParams = freetextRequestParams(word);
-    if (originalParams) {
-      results.push({ view, params: originalParams, freetext: true });
+  const requests = words.map((word) => {
+    const variants = getFreetextVariants(word, filters.settings);
+    if (!variants.length) {
+      return null;
     }
-    if (normalizedPhone) {
-      const normalizedParams = freetextRequestParams(normalizedPhone);
-      if (normalizedParams) {
-        results.push({ view, params: normalizedParams, freetext: true });
-      } 
+    if (variants.length === 1) {
+      return { view, params: { key: variants[0] }, freetext: true };
     }
-    return results;
+    return {
+      view,
+      freetext: true,
+      union: true,
+      paramSets: variants.map(v => ({ key: v })),
+    };
   });
   return _.compact(requests);
 };
@@ -212,35 +211,44 @@ const sortByLastVisitedDate = () => {
   };
 };
 
-const makeCombinedParams = (freetextRequest, typeKey) => {
+const makeCombinedParams = (freetextParams, typeKey) => {
   const type = typeKey[0];
   const params = {};
-  if (freetextRequest.params.key) {
-    params.key = freetextRequest.params.key;
+  if (freetextParams.key) {
+    params.key = freetextParams.key;
     params.type = type;
   } else {
-    params.startkey = [ type, freetextRequest.params.startkey[0] ];
-    params.endkey = [ type, freetextRequest.params.endkey[0] ];
+    params.startkey = [ type, freetextParams.startkey[0] ];
+    params.endkey = [ type, freetextParams.endkey[0] ];
   }
   return params;
 };
 
-const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
-  const result = {
-    view: 'contacts_by_type_freetext',
-    union: typeRequests.params.keys.length > 1,
-    freetext: true
-  };
+const freetextParamsList = (freetextRequest) => {
+  return freetextRequest.paramSets || [ freetextRequest.params ];
+};
 
-  if (result.union) {
-    result.paramSets = typeRequests.params.keys.map(typeRequest => {
-      return makeCombinedParams(freetextRequest, typeRequest);
-    });
-    return result;
+const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
+  const ftParamsList = freetextParamsList(freetextRequest);
+  const paramSets = typeRequests.params.keys.flatMap(typeKey => {
+    return ftParamsList.map(ftParams => makeCombinedParams(ftParams, typeKey));
+  });
+
+  if (paramSets.length === 1) {
+    return {
+      view: 'contacts_by_type_freetext',
+      union: false,
+      freetext: true,
+      params: paramSets[0],
+    };
   }
 
-  result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
-  return result;
+  return {
+    view: 'contacts_by_type_freetext',
+    union: true,
+    freetext: true,
+    paramSets,
+  };
 };
 
 const getCombinedContactsRequests = (freetextRequests, contactsByParentRequest, typeRequest) => {

@@ -470,10 +470,14 @@ describe('GenerateSearchRequests service', () => {
     it('contacts search by local phone number searches normalized international format', () => {
       const settings = { default_country_code: '977' };
       const result = service('contacts', { search: '9841234567', settings });
-      chai.expect(result.length).to.equal(2);
-      const keys = result.map(r => r.params.key);
-      chai.expect(keys).to.include('9841234567');
-      chai.expect(keys).to.include('+9779841234567');
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].freetext).to.equal(true);
+      chai.expect(result[0].union).to.equal(true);
+      chai.expect(result[0].paramSets).to.deep.equal([
+        { key: '9841234567' },
+        { key: '+9779841234567' },
+      ]);
     });
 
     it('contacts search with international format does not duplicate request', () => {
@@ -526,19 +530,46 @@ describe('GenerateSearchRequests service', () => {
         }
       };
       const result = service('contacts', filters);
-      chai.expect(result.length).to.equal(2);
-      const keys = result.map(r => r.params.key);
-      chai.expect(keys).to.include('9841234567');
-      chai.expect(keys).to.include('+9779841234567');
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      chai.expect(result[0].paramSets).to.deep.equal([
+        { key: '9841234567', type: 'person' },
+        { key: '+9779841234567', type: 'person' },
+      ]);
     });
 
-    it('contacts local phone search does not duplicate when normalized matches original', () => {
+    it('contacts local phone search unions all (type x phone-variant) combinations', () => {
+      const settings = { default_country_code: '977' };
+      const filters = {
+        search: '9841234567',
+        settings,
+        types: {
+          selected: ['person', 'clinic']
+          // no options - skip the all-selected optimization
+        }
+      };
+      const result = service('contacts', filters);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      chai.expect(result[0].paramSets).to.deep.equal([
+        { key: '9841234567', type: 'person' },
+        { key: '+9779841234567', type: 'person' },
+        { key: '9841234567', type: 'clinic' },
+        { key: '+9779841234567', type: 'clinic' },
+      ]);
+    });
+
+    it('contacts local phone search unions original and normalized variants', () => {
       const settings = { default_country_code: '977' };
       const result = service('contacts', { search: '9779841234567', settings });
-      chai.expect(result.length).to.equal(2);
-      const keys = result.map(r => r.params.key);
-      chai.expect(keys).to.include('9779841234567');
-      chai.expect(keys).to.include('+9779841234567');
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].union).to.equal(true);
+      chai.expect(result[0].paramSets).to.deep.equal([
+        { key: '9779841234567' },
+        { key: '+9779841234567' },
+      ]);
     });
 
     it('contacts freetext with type and startkey/endkey params (range query path)', () => {
