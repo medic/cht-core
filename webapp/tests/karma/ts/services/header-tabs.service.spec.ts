@@ -51,6 +51,7 @@ describe('HeaderTabs service', () => {
           typeName: 'message',
           icon: undefined,
           resourceIcon: undefined,
+          weight: 1,
         },
         {
           name: 'reports',
@@ -61,6 +62,7 @@ describe('HeaderTabs service', () => {
           typeName: 'report',
           icon: undefined,
           resourceIcon: undefined,
+          weight: 3,
         },
         {
           name: 'analytics',
@@ -70,6 +72,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          weight: 5,
         }
       ]);
     });
@@ -102,6 +105,7 @@ describe('HeaderTabs service', () => {
           typeName: 'task',
           icon: undefined,
           resourceIcon: undefined,
+          weight: 2,
         },
         {
           name: 'contacts',
@@ -111,6 +115,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          weight: 4,
         },
         {
           name: 'analytics',
@@ -120,6 +125,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: undefined,
           resourceIcon: undefined,
+          weight: 5,
         }
       ]);
     });
@@ -148,14 +154,14 @@ describe('HeaderTabs service', () => {
       expect(analyticsTab!.typeName).to.be.undefined;
     });
 
-    it('should replace icons from settings when provided', async () => {
+    it('should replace icons and weight from settings when provided', async () => {
       settingsService.get.resolves({
         header_tabs: {
-          messages: { resource_icon: 'pomegranate-icon' },
+          messages: { resource_icon: 'pomegranate-icon', weight: 10 },
           tasks: { icon: 'fa-apple' },
           contacts: { resource_icon: 'pear-icon', icon: 'not-fa-pear-icon' },
           reports: { resource_icon: 'pineapple-icon', icon: 'not-fa-pineapple-icon' },
-          analytics: { resource_icon: 'mango-icon', icon: 'fa-mango-icon' },
+          analytics: { resource_icon: 'mango-icon', icon: 'fa-mango-icon', weight: 9 },
         }
       });
       authService.has.withArgs(['can_view_messages', 'can_view_messages_tab']).returns(true);
@@ -168,16 +174,6 @@ describe('HeaderTabs service', () => {
 
       expect(tabs).to.deep.equal([
         {
-          name: 'messages',
-          route: 'messages',
-          defaultIcon: 'fa-envelope',
-          translation: 'Messages',
-          permissions: ['can_view_messages', 'can_view_messages_tab'],
-          typeName: 'message',
-          icon: undefined,
-          resourceIcon: 'pomegranate-icon',
-        },
-        {
           name: 'tasks',
           route: 'tasks',
           defaultIcon: 'fa-flag',
@@ -186,6 +182,7 @@ describe('HeaderTabs service', () => {
           typeName: 'task',
           icon: 'fa-apple',
           resourceIcon: undefined,
+          weight: 2,
         },
         {
           name: 'contacts',
@@ -195,6 +192,7 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_contacts', 'can_view_contacts_tab'],
           icon: undefined,
           resourceIcon: 'pear-icon',
+          weight: 4,
         },
         {
           name: 'analytics',
@@ -204,8 +202,98 @@ describe('HeaderTabs service', () => {
           permissions: ['can_view_analytics', 'can_view_analytics_tab'],
           icon: 'fa-mango-icon',
           resourceIcon: 'mango-icon',
+          weight: 9,
+        },
+        {
+          name: 'messages',
+          route: 'messages',
+          defaultIcon: 'fa-envelope',
+          translation: 'Messages',
+          permissions: ['can_view_messages', 'can_view_messages_tab'],
+          typeName: 'message',
+          icon: undefined,
+          resourceIcon: 'pomegranate-icon',
+          weight: 10,
+        },
+      ]);
+    });
+
+    it('should include UI extension tabs', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType
+        .withArgs('header_tab')
+        .resolves([
+          { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
+          { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
+          { id: 'last', title: 'Last Extension', resource_icon: 'res-2' },
+        ]);
+
+      const tabs = await service.getAuthorizedTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'ui-extension-first',
+        'messages',
+        'tasks',
+        'reports',
+        'contacts',
+        'analytics',
+        'ui-extension-middle',
+        'ui-extension-last',
+      ]);
+      const [firstExt,,,,,, middleExt, lastExt] = tabs;
+      expect(firstExt).to.deep.equal({
+        name: 'ui-extension-first',
+        route: 'ui-extensions/first',
+        defaultIcon: 'fa-question-circle',
+        translation: 'First Extension',
+        permissions: [],
+        icon: 'fa-icon-1',
+        resourceIcon: 'res-1',
+        weight: 0.5,
+      });
+      expect(middleExt).to.deep.equal({
+        name: 'ui-extension-middle',
+        route: 'ui-extensions/middle',
+        defaultIcon: 'fa-question-circle',
+        translation: 'Middle Extension',
+        permissions: [],
+        icon: 'fa-icon-3',
+        resourceIcon: undefined,
+        weight: 6,
+      });
+      expect(lastExt).to.deep.equal({
+        name: 'ui-extension-last',
+        route: 'ui-extensions/last',
+        defaultIcon: 'fa-question-circle',
+        translation: 'Last Extension',
+        permissions: [],
+        icon: undefined,
+        resourceIcon: 'res-2',
+        weight: 6,
+      });
+    });
+
+    it('should include UI extensions even when no default tabs are authorized', async () => {
+      authService.has.returns(false);
+      uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
+        { id: 'ext', title: 'Extension', icon: 'fa-icon' },
+      ]);
+
+      const tabs = await service.getAuthorizedTabs();
+
+      expect(tabs).to.deep.equal([
+        {
+          name: 'ui-extension-ext',
+          route: 'ui-extensions/ext',
+          defaultIcon: 'fa-question-circle',
+          translation: 'Extension',
+          permissions: [],
+          icon: 'fa-icon',
+          resourceIcon: undefined,
+          weight: 6,
         }
       ]);
+      expect(authService.has.callCount).to.equal(5);
     });
 
     it('should cache tabs after first call', async () => {
@@ -238,6 +326,7 @@ describe('HeaderTabs service', () => {
         typeName: 'message',
         icon: undefined,
         resourceIcon: undefined,
+        weight: 1,
       });
     });
 
@@ -259,6 +348,7 @@ describe('HeaderTabs service', () => {
         typeName: 'report',
         icon: undefined,
         resourceIcon: undefined,
+        weight: 3,
       });
     });
 
@@ -287,6 +377,7 @@ describe('HeaderTabs service', () => {
         permissions: ['can_view_contacts', 'can_view_contacts_tab'],
         icon: undefined,
         resourceIcon: undefined,
+        weight: 4,
       });
     });
 
@@ -316,88 +407,8 @@ describe('HeaderTabs service', () => {
         permissions: ['can_view_analytics', 'can_view_analytics_tab'],
         icon: 'fa-mango-icon',
         resourceIcon: 'mango-icon',
+        weight: 5,
       });
-    });
-  });
-
-  describe('Custom UI Extensions', () => {
-    it('should append UI extension tabs after the default tabs', async () => {
-      authService.has.returns(true);
-      uiExtensionsService.getPropertiesByType
-        .withArgs('header_tab')
-        .resolves([
-          { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1' },
-          { id: 'middle', title: 'Middle Extension', icon: 'fa-icon-3' },
-          { id: 'last', title: 'Last Extension', resource_icon: 'res-2' },
-        ]);
-
-      const tabs = await service.getAuthorizedTabs();
-
-      expect(tabs.map(t => t.name)).to.deep.equal([
-        'messages',
-        'tasks',
-        'reports',
-        'contacts',
-        'analytics',
-        'ui-extension-first',
-        'ui-extension-middle',
-        'ui-extension-last',
-      ]);
-
-      const [,,,,,firstExt, middleExt, lastExt] = tabs;
-      expect(firstExt).to.deep.equal({
-        name: 'ui-extension-first',
-        route: 'ui-extensions/first',
-        defaultIcon: 'fa-question-circle',
-        translation: 'First Extension',
-        permissions: [],
-        icon: 'fa-icon-1',
-        resourceIcon: 'res-1',
-        accentColor: undefined,
-      });
-      expect(middleExt).to.deep.equal({
-        name: 'ui-extension-middle',
-        route: 'ui-extensions/middle',
-        defaultIcon: 'fa-question-circle',
-        translation: 'Middle Extension',
-        permissions: [],
-        icon: 'fa-icon-3',
-        resourceIcon: undefined,
-        accentColor: undefined,
-      });
-      expect(lastExt).to.deep.equal({
-        name: 'ui-extension-last',
-        route: 'ui-extensions/last',
-        defaultIcon: 'fa-question-circle',
-        translation: 'Last Extension',
-        permissions: [],
-        icon: undefined,
-        resourceIcon: 'res-2',
-        accentColor: undefined,
-      });
-    });
-
-    it('should include UI extensions even when no default tabs are authorized', async () => {
-      authService.has.returns(false);
-      uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
-        { id: 'ext', title: 'Extension', icon: 'fa-icon' },
-      ]);
-
-      const tabs = await service.getAuthorizedTabs();
-
-      expect(tabs).to.deep.equal([
-        {
-          name: 'ui-extension-ext',
-          route: 'ui-extensions/ext',
-          defaultIcon: 'fa-question-circle',
-          translation: 'Extension',
-          permissions: [],
-          icon: 'fa-icon',
-          resourceIcon: undefined,
-          accentColor: undefined,
-        }
-      ]);
-      expect(authService.has.callCount).to.equal(5);
     });
 
     it('should return UI extension tab as primary when no default tabs are authorized', async () => {
@@ -416,8 +427,178 @@ describe('HeaderTabs service', () => {
         permissions: [],
         icon: 'fa-icon',
         resourceIcon: undefined,
-        accentColor: undefined,
+        weight: 6,
       });
+    });
+
+    it('should return UI extension tab as primary when it has the lowest weight', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType.withArgs('header_tab').resolves([
+        { id: 'ext', title: 'Extension', icon: 'fa-icon', weight: 0.5 },
+      ]);
+
+      const tab = await service.getPrimaryTab();
+
+      expect(tab).to.deep.equal({
+        name: 'ui-extension-ext',
+        route: 'ui-extensions/ext',
+        defaultIcon: 'fa-question-circle',
+        translation: 'Extension',
+        permissions: [],
+        icon: 'fa-icon',
+        resourceIcon: undefined,
+        weight: 0.5,
+      });
+    });
+  });
+
+  describe('getSidebarTabs()', () => {
+    const SIDEBAR_SECONDARY_TABS = [
+      {
+        name: 'trainings',
+        route: 'trainings',
+        defaultIcon: 'fa-graduation-cap',
+        translation: 'training_materials.page.title',
+        permissions: [],
+      },
+      {
+        name: 'about',
+        route: 'about',
+        defaultIcon: 'fa-question',
+        translation: 'about',
+        permissions: [],
+      },
+      {
+        name: 'user',
+        route: 'user',
+        defaultIcon: 'fa-user',
+        translation: 'edit.user.settings',
+        permissions: ['can_edit_profile'],
+      },
+      {
+        name: 'privacy-policy',
+        route: 'privacy-policy',
+        defaultIcon: 'fa-lock',
+        translation: 'privacy.policy',
+        permissions: [],
+      },
+      {
+        name: 'bug',
+        defaultIcon: 'fa-bug',
+        translation: 'Report Bug',
+        permissions: [],
+      },
+    ];
+
+    it('should return only the secondary sidebar tabs when no header_tab permissions are granted', async () => {
+      authService.has.returns(false);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs).to.deep.equal(SIDEBAR_SECONDARY_TABS);
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
+    });
+
+    it('should include header tabs with negated tab permissions, sorted by weight, before secondary tabs', async () => {
+      authService.has.withArgs(['can_view_messages', '!can_view_messages_tab']).returns(true);
+      authService.has.withArgs(['can_view_tasks', '!can_view_tasks_tab']).returns(false);
+      authService.has.withArgs(['can_view_reports', '!can_view_reports_tab']).returns(true);
+      authService.has.withArgs(['can_view_contacts', '!can_view_contacts_tab']).returns(false);
+      authService.has.withArgs(['can_view_analytics', '!can_view_analytics_tab']).returns(true);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'messages',
+        'reports',
+        'analytics',
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+    });
+
+    it('should sort header tabs by weight before appending secondary tabs', async () => {
+      settingsService.get.resolves({
+        header_tabs: {
+          analytics: { weight: 0 },
+          messages: { weight: 100 },
+        }
+      });
+      authService.has.returns(true);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'analytics',
+        'tasks',
+        'reports',
+        'contacts',
+        'messages',
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+    });
+
+    it('should include sidebar_tab UI extensions between header tabs and secondary tabs', async () => {
+      authService.has.returns(true);
+      uiExtensionsService.getPropertiesByType.withArgs('sidebar_tab').resolves([
+        { id: 'first', title: 'First Extension', icon: 'fa-icon-1', resource_icon: 'res-1', weight: 0.5 },
+        { id: 'second', title: 'Second Extension', icon: 'fa-icon-2' },
+      ]);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
+      expect(tabs.map(t => t.name)).to.deep.equal([
+        'messages',
+        'tasks',
+        'reports',
+        'contacts',
+        'analytics',
+        'ui-extension-first',
+        'ui-extension-second',
+        'trainings',
+        'about',
+        'user',
+        'privacy-policy',
+        'bug',
+      ]);
+      const [,,,,, firstExt, secondExt] = tabs;
+      expect(firstExt).to.deep.equal({
+        name: 'ui-extension-first',
+        route: 'ui-extensions/first',
+        defaultIcon: 'fa-question-circle',
+        translation: 'First Extension',
+        permissions: [],
+        icon: 'fa-icon-1',
+        resourceIcon: 'res-1',
+        weight: 0.5,
+      });
+      expect(secondExt).to.deep.equal({
+        name: 'ui-extension-second',
+        route: 'ui-extensions/second',
+        defaultIcon: 'fa-question-circle',
+        translation: 'Second Extension',
+        permissions: [],
+        icon: 'fa-icon-2',
+        resourceIcon: undefined,
+        weight: 6,
+      });
+    });
+
+    it('should cache sidebar tabs after first call', async () => {
+      await service.getSidebarTabs();
+      await service.getSidebarTabs();
+      await service.getSidebarTabs();
+
+      expect(settingsService.get.callCount).to.equal(1);
+      expect(uiExtensionsService.getPropertiesByType.callCount).to.equal(1);
     });
   });
 });

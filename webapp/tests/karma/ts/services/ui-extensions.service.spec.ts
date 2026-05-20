@@ -145,6 +145,58 @@ describe('UiExtensionsService', () => {
 
       expect(result).to.deep.equal([]);
     });
+
+    it('should sort weighted extensions before unweighted ones', async () => {
+      const extensions = [
+        { id: 'ext-a', type: 'tab' },
+        { id: 'ext-b', type: 'tab', weight: 5 },
+      ];
+      http.get.returns(of(extensions));
+
+      const result = await service.getPropertiesByType('tab');
+
+      expect(result.map(e => e.id)).to.deep.equal(['ext-b', 'ext-a']);
+    });
+
+    it('should sort weighted extensions ascending by weight', async () => {
+      const extensions = [
+        { id: 'ext-a', type: 'tab', weight: 10 },
+        { id: 'ext-b', type: 'tab', weight: 1 },
+        { id: 'ext-c', type: 'tab', weight: 5 },
+      ];
+      http.get.returns(of(extensions));
+
+      const result = await service.getPropertiesByType('tab');
+
+      expect(result.map(e => e.id)).to.deep.equal(['ext-b', 'ext-c', 'ext-a']);
+    });
+
+    it('should sort unweighted extensions alphabetically by id', async () => {
+      const extensions = [
+        { id: 'ext-c', type: 'tab' },
+        { id: 'ext-a', type: 'tab' },
+        { id: 'ext-b', type: 'tab' },
+      ];
+      http.get.returns(of(extensions));
+
+      const result = await service.getPropertiesByType('tab');
+
+      expect(result.map(e => e.id)).to.deep.equal(['ext-a', 'ext-b', 'ext-c']);
+    });
+
+    it('should sort weighted before unweighted, each group sorted internally', async () => {
+      const extensions = [
+        { id: 'ext-c', type: 'tab' },
+        { id: 'ext-d', type: 'tab', weight: 10 },
+        { id: 'ext-a', type: 'tab' },
+        { id: 'ext-e', type: 'tab', weight: 1 },
+      ];
+      http.get.returns(of(extensions));
+
+      const result = await service.getPropertiesByType('tab');
+
+      expect(result.map(e => e.id)).to.deep.equal(['ext-e', 'ext-d', 'ext-a', 'ext-c']);
+    });
   });
 
   describe('getProperties()', () => {
