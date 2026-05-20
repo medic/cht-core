@@ -430,7 +430,7 @@ if [[ -n "$cliProjectName" && -z "$projectName" ]]; then
   projectName="$sanitized"
   projectFile="$projectName.env"
   homeDir=$(get_home_dir "$projectName")
-  if ! test -f "./$projectFile"; then
+  if ! [[ -f "./$projectFile" ]]; then
     preferredRelease="${cliChtVersion:-$(get_latest_version_string)}"
     init_env_file
     create_compose_files "$preferredRelease"
