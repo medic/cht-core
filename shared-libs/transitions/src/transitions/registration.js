@@ -170,11 +170,11 @@ const getLMPDate = doc => {
 const setExpectedBirthDate = doc => {
   let start;
   const lmpDate = getLMPDate(doc);
-  if (lmpDate) {
+  if (lmpDate !== undefined) {
     start = moment(lmpDate);
   } else {
     const lmp = getWeeksSinceLMP(doc);
-    if (lmp) {
+    if (lmp !== undefined) {
       start = moment(doc.reported_date).startOf('day');
       start.subtract(lmp, 'weeks');
     }

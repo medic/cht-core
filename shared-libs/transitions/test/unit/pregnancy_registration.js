@@ -150,11 +150,13 @@ describe('pregnancy registration with weeks since LMP', () => {
     assert(transition.filter({ doc, info: {} }));
   });
 
-  it('setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0', () => {
-    const doc = { fields: { lmp: 0 }, type: DOC_TYPES.DATA_RECORD };
+  it('setExpectedBirthDate calculates correctly when lmp is 0', () => {
+    const doc = { fields: { lmp: 0 }, type: DOC_TYPES.DATA_RECORD, reported_date: moment().valueOf() };
+    const start = moment(doc.reported_date).startOf('day');
     transition.setExpectedBirthDate(doc);
-    assert.equal(doc.lmp_date, null);
-    assert.equal(doc.expected_date, null);
+    assert(doc.lmp_date);
+    assert.equal(doc.lmp_date, start.toISOString());
+    assert.equal(doc.expected_date, start.clone().add(40, 'weeks').toISOString());
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10', () => {
@@ -267,7 +269,10 @@ describe('pregnancy registration with weeks since LMP', () => {
 
     return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
-      assert.equal(doc.lmp_date, null);
+      const expectedLmpDate = moment(doc.reported_date).startOf('day').toISOString();
+      const expectedEdd = moment(doc.reported_date).startOf('day').add(40, 'weeks').toISOString();
+      assert.equal(doc.lmp_date, expectedLmpDate);
+      assert.equal(doc.expected_date, expectedEdd);
       assert.equal(doc.patient_id, 12345);
       assert.equal(doc.tasks, undefined);
       assert.equal(db.medic.post.callCount, 1);
