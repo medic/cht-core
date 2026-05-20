@@ -540,9 +540,9 @@ export class EnketoService {
     const attachInlineBinary = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
-      // Main report doc has `.form`; sub-docs carry `.type` instead — use that
-      // as the reference's first segment so each sub-doc's binaries are namespaced.
-      const formId = ownerDoc.form || ownerDoc.type || doc.form;
+      // Sub-docs carry their own `.form`, so each sub-doc's binaries are
+      // namespaced by it; the main report doc falls back to `doc.form`.
+      const formId = ownerDoc.form || doc.form;
       // replace instance root element node name with form internal ID, drop
       // the leading slash -> `<formId>/<xpath>/<field>`
       const reference = (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId))
