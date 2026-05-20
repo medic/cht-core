@@ -144,7 +144,7 @@ module.exports = {
      *       Returns compact summary records for the contacts identified by the provided UUIDs. UUIDs that do not
      *       identify an existing contact are silently omitted from the result.
      *     tags: [Contact]
-     *     x-since: 4.18.0
+     *     x-since: 5.3.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
      *     requestBody:

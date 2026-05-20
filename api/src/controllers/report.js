@@ -27,7 +27,7 @@ module.exports = {
      *     description: >
      *       Returns a report record. Optionally includes the full contact, patient, and/or place lineage.
      *     tags: [Report]
-     *     x-since: 4.18.0
+     *     x-since: 5.3.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
      *     parameters:
