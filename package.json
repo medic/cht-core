@@ -54,6 +54,7 @@
     "unit-nginx": "cd nginx/tests && npm run test",
     "unit-haproxy": "cd haproxy/tests && make test",
     "unit-haproxy-healthcheck": "cd haproxy-healthcheck && make test",
+    "unit-docker-helper": "mocha 'scripts/docker-helper/tests/*.spec.js'",
     "wdio-default-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
     "wdio-visual-desktop": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=desktopTests",
     "wdio-visual-mobile": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/visual/wdio.conf.js --suite=mobileTests",

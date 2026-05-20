@@ -9,6 +9,8 @@ green='\033[0;32m'   #'0;32' is Green's ANSI color code
 red='\033[0;31m'   #'0;31' is Red's ANSI color code
 noColor='\033[0m'
 stagingUrl='https://staging.dev.medicmobile.org/_couch/builds_4'
+cliProjectName=
+cliChtVersion=
 
 get_existing_projects() {
   find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
@@ -88,12 +90,21 @@ show_help_intro() {
     echo ""
     echo "Start new project:"
     echo "    ./cht-docker-compose.sh"
+    echo ""
+    echo "Create new project non-interactively:"
+    echo "    ./cht-docker-compose.sh --project-name NAME [--cht-version VERSION]"
 }
 
 show_help() {
     echo ""
-    echo "Start existing project"
+    echo "Start existing project:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env"
+    echo ""
+    echo "Start existing project by name:"
+    echo "    ./cht-docker-compose.sh --project-name NAME"
+    echo ""
+    echo "Create new project non-interactively:"
+    echo "    ./cht-docker-compose.sh --project-name NAME [--cht-version VERSION]"
     echo ""
     echo "Stop and keep project:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env stop"
@@ -304,13 +315,37 @@ if [ "$(docker_not_installed)" ];then
   exit 0
 fi
 
-# can pass a project .env file as argument
+# Parse named flags; shift them out so positional args remain clean
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --project-name|-n)
+      cliProjectName="$2"
+      shift 2
+      ;;
+    --cht-version|-V)
+      cliChtVersion="$2"
+      shift 2
+      ;;
+    --help|-h)
+      show_help_intro
+      show_help
+      exit 0
+      ;;
+    -*)
+      echo ""
+      echo -e "${red}Unknown option: $1${noColor}"
+      show_help
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# Existing positional logic unchanged — $1 is the .env file (if provided)
 if [[ -n "${1-}" ]]; then
-  if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
-    show_help_intro
-    show_help
-    exit 0
-  elif [[ -f "$1" ]]; then
+  if [[ -f "$1" ]]; then
     projectFile=$1
     projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
     homeDir=$(get_home_dir "$projectName")
@@ -387,6 +422,19 @@ if [[ -n "${2-}" && -n $projectName ]]; then
     exit 0
     ;;
   esac
+fi
+
+if [[ -n "$cliProjectName" && -z "$projectName" ]]; then
+  sanitized="${cliProjectName//[^[:alnum:]]/_}"
+  sanitized=$(echo "$sanitized" | tr '[:upper:]' '[:lower:]')
+  projectName="$sanitized"
+  projectFile="$projectName.env"
+  homeDir=$(get_home_dir "$projectName")
+  if ! test -f "./$projectFile"; then
+    preferredRelease="${cliChtVersion:-$(get_latest_version_string)}"
+    init_env_file
+    create_compose_files "$preferredRelease"
+  fi
 fi
 
 if [[ -z "$projectName" ]]; then
