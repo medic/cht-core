@@ -461,13 +461,11 @@ export class FormatDataRecordService {
       return undefined;
     }
     const isImagePath = filePath => doc._attachments[filePath]?.content_type?.startsWith('image/');
-    // The field value may itself be the literal attachment name
-    // (`user-file/<xpath>`) for inline-binary fields. Required for sub-doc
-    // rendering: the parent-form prefix embedded in the name cannot be
-    // reconstructed from a sub-doc's own field path alone.
-    if (typeof value === 'string' && value.startsWith('user-file/') && isImagePath(value)) {
-      return value;
-    }
+    // A media field's value is its attachment name minus the `user-file-`
+    // prefix, for both file-widget uploads and inline-binary fields, so a
+    // single rule resolves the path. Inline-binary values carry the embedded
+    // form/sub-doc prefix (`<formId>/<xpath>/<field>`), which is what makes
+    // sub-doc rendering work without reconstructing it from the label.
     const filePath = 'user-file-' + value;
     if (isImagePath(filePath)) {
       return filePath;

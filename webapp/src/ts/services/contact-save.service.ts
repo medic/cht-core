@@ -7,6 +7,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { USER_FILE_PREFIX } from '@mm-services/enketo.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import FileManager from '../../js/enketo/file-manager';
@@ -18,12 +19,14 @@ interface ContactOwnerContext {
   submittedRepeatsLen: number;
 }
 
+type AttachmentNamesByDoc = Map<Record<string, any>, Set<string>>;
+type FileNameMapByDoc = Map<Record<string, any>, Map<string, string>>;
+
 @Injectable({
   providedIn: 'root'
 })
 export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
-  private readonly USER_FILE_ATTACHMENT_PREFIX = 'user-file-';
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
@@ -185,98 +188,120 @@ export class ContactSaveService {
     submitted: { doc; siblings?; repeats? },
     xmlStr: string,
   ) {
-    const mainDoc = preparedDocs[0];
-    const root = $.parseXML(xmlStr).documentElement;
-    const formId = $(root).attr('id');
-    const ctx: ContactOwnerContext = { 
-      root, 
-      preparedDocs, 
-      mainDoc, 
-      submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0 
+    const ctx: ContactOwnerContext = {
+      root: $.parseXML(xmlStr).documentElement,
+      preparedDocs,
+      mainDoc: preparedDocs[0],
+      submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0
     };
 
-    const newAttachmentNamesByDoc = new Map<Record<string, any>, Set<string>>();
-    const fileNameMapByDoc = new Map<Record<string, any>, Map<string, string>>();
-    const trackNew = (doc: Record<string, any>, name: string) => {
-      const set = newAttachmentNamesByDoc.get(doc) ?? new Set<string>();
-      set.add(name);
-      newAttachmentNamesByDoc.set(doc, set);
-    };
-    const trackFileName = (doc: Record<string, any>, original: string, sanitized: string) => {
-      const map = fileNameMapByDoc.get(doc) ?? new Map<string, string>();
-      map.set(original, sanitized);
-      fileNameMapByDoc.set(doc, map);
-    };
+    const newAttachmentNamesByDoc: AttachmentNamesByDoc = new Map();
+    const fileNameMapByDoc: FileNameMapByDoc = new Map();
 
-    // Attach files from FileManager (uploaded via file widgets), routed per sub-doc
+    const fileManagerNames = this.attachUploadedFiles(ctx, newAttachmentNamesByDoc, fileNameMapByDoc);
+    this.attachInlineBinaryFields(ctx, fileManagerNames, newAttachmentNamesByDoc);
+    this.finalizeDocs(preparedDocs, fileNameMapByDoc, newAttachmentNamesByDoc);
+  }
+
+  private trackNewAttachment(map: AttachmentNamesByDoc, doc: Record<string, any>, name: string) {
+    const set = map.get(doc) ?? new Set<string>();
+    set.add(name);
+    map.set(doc, set);
+  }
+
+  private trackFileName(map: FileNameMapByDoc, doc: Record<string, any>, original: string, sanitized: string) {
+    const names = map.get(doc) ?? new Map<string, string>();
+    names.set(original, sanitized);
+    map.set(doc, names);
+  }
+
+  /** Attach FileManager uploads (file widgets), routed per sub-doc. Returns the
+   * set of original filenames so the binary pass can skip file-upload widgets
+   * that carry legacy `type="binary"` markup. */
+  private attachUploadedFiles(
+    ctx: ContactOwnerContext,
+    newAttachmentNamesByDoc: AttachmentNamesByDoc,
+    fileNameMapByDoc: FileNameMapByDoc,
+  ): Set<string> {
     const fileManagerNames = new Set<string>();
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        const ownerDoc = ctx
-          ? this.findContactOwnerForFilename(file.name, ctx)
-          : mainDoc;
-
+        const ownerDoc = this.findContactOwnerForFilename(file.name, ctx);
         const sanitizedFileName = this.sanitizeFileName(file.name);
-        const attachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${sanitizedFileName}`;
+        const attachmentName = `${USER_FILE_PREFIX}${sanitizedFileName}`;
 
         this.attachmentService.add(ownerDoc, attachmentName, file, file.type, false);
-        trackNew(ownerDoc, attachmentName);
-        trackFileName(ownerDoc, file.name, sanitizedFileName);
+        this.trackNewAttachment(newAttachmentNamesByDoc, ownerDoc, attachmentName);
+        this.trackFileName(fileNameMapByDoc, ownerDoc, file.name, sanitizedFileName);
         fileManagerNames.add(file.name);
       });
+    return fileManagerNames;
+  }
 
-    // Process inline binary fields from XML, routed per sub-doc. Each binary
-    // field produces two writes: an attachment under `user-file/<xpath>` on
-    // the owning doc, and the same name written back into the doc's field
-    // value so the renderer can resolve the image by value alone.
-    if (ctx) {
-      $(ctx.root)
-        .find('[type=binary]')
-        .each((_idx, element: Element) => {
-          const content = $(element).text();
-          if (!content) {
-            return;
-          }
-          // Defensive: a value that already looks like an attachment
-          // reference was never raw inline data — leave it alone so re-saves
-          // stay idempotent.
-          if (content.startsWith('user-file/')) {
-            return;
-          }
-          // Legacy markup: a file-upload widget can be tagged type="binary"
-          // and carry the uploaded filename as its text. The FileManager loop
-          // above already handled the blob; treating the filename as base64
-          // here would create a bogus second attachment and override the
-          // sanitized field value.
-          if (fileManagerNames.has(content)) {
-            return;
-          }
-          const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
+  /** Process inline binary fields from XML, routed per sub-doc. */
+  private attachInlineBinaryFields(
+    ctx: ContactOwnerContext,
+    fileManagerNames: Set<string>,
+    newAttachmentNamesByDoc: AttachmentNamesByDoc,
+  ) {
+    $(ctx.root)
+      .find('[type=binary]')
+      .each((_idx, element: Element) => {
+        this.attachOneBinaryField(element, ctx, fileManagerNames, newAttachmentNamesByDoc);
+      });
+  }
 
-          const xpath = Xpath.getElementXPath(element);
-          // replace instance root element node name with form internal ID
-          const filename = this.USER_FILE_ATTACHMENT_PREFIX.slice(0, -1) +
-            (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId));
-
-          this.attachmentService.add(ownerDoc, filename, content, 'image/png', true);
-          trackNew(ownerDoc, filename);
-
-          // Mirror the attachment name into the owning doc's field. The path
-          // within the doc is the element's position relative to the parsed
-          // section root (the section for main/sibling, the i-th repeat
-          // child for a repeat).
-          const container = this.findFieldContainerElement(element, ctx);
-          if (container) {
-            const fieldPath = this.computeFieldPath(element, container);
-            if (fieldPath) {
-              objectPath.set(ownerDoc, fieldPath, filename);
-            }
-          }
-        });
+  /** Each binary field produces two writes: an attachment under
+   * `user-file-<formId>/<xpath>/<field>` on the owning doc, and the bare
+   * reference (`<formId>/<xpath>/<field>`) written into the doc's field value
+   * so the renderer resolves the image by `USER_FILE_PREFIX + value` alone. */
+  private attachOneBinaryField(
+    element: Element,
+    ctx: ContactOwnerContext,
+    fileManagerNames: Set<string>,
+    newAttachmentNamesByDoc: AttachmentNamesByDoc,
+  ) {
+    const content = $(element).text();
+    // Skip: empty; a value that already looks like an attachment reference
+    // (re-saves stay idempotent); or a file-upload widget tagged type="binary"
+    // whose blob the FileManager pass already attached.
+    if (!content || this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
+      return;
     }
 
-    // Per-doc field-value sanitization + orphan cleanup
+    const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
+    const reference = this.computeBinaryReference(element, ctx);
+    const attachmentName = `${USER_FILE_PREFIX}${reference}`;
+
+    this.attachmentService.add(ownerDoc, attachmentName, content, 'image/png', true);
+    this.trackNewAttachment(newAttachmentNamesByDoc, ownerDoc, attachmentName);
+
+    // Mirror the bare reference into the owning doc's field. The path within
+    // the doc is the element's position relative to the parsed section root
+    // (the section for main/sibling, the i-th repeat child for a repeat).
+    const container = this.findFieldContainerElement(element, ctx);
+    const fieldPath = container && this.computeFieldPath(element, container);
+    if (fieldPath) {
+      objectPath.set(ownerDoc, fieldPath, reference);
+    }
+  }
+
+  /** Bare attachment reference for a binary node: the element's xpath with the
+   * instance root swapped for the form internal ID and the leading slash
+   * dropped -> `<formId>/<xpath>/<field>`. */
+  private computeBinaryReference(element: Element, ctx: ContactOwnerContext): string {
+    const formId = $(ctx.root).attr('id');
+    const xpath = Xpath.getElementXPath(element);
+    return (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId)).slice(1);
+  }
+
+  /** Per-doc field-value sanitization + orphan cleanup. */
+  private finalizeDocs(
+    preparedDocs: Record<string, any>[],
+    fileNameMapByDoc: FileNameMapByDoc,
+    newAttachmentNamesByDoc: AttachmentNamesByDoc,
+  ) {
     for (const doc of preparedDocs) {
       const nameMap = fileNameMapByDoc.get(doc) ?? new Map<string, string>();
       this.sanitizeFieldValues(doc, nameMap);
@@ -417,7 +442,7 @@ export class ContactSaveService {
       if (typeof value !== 'string' || !value) {
         return false;
       }
-      const possibleAttachmentName = `${this.USER_FILE_ATTACHMENT_PREFIX}${value}`;
+      const possibleAttachmentName = `${USER_FILE_PREFIX}${value}`;
       return existingAttachmentNames.includes(possibleAttachmentName);
     };
 
@@ -425,7 +450,7 @@ export class ContactSaveService {
 
     referencedPaths.forEach(path => {
       const value = objectPath.get(doc, path);
-      referenced.add(`${this.USER_FILE_ATTACHMENT_PREFIX}${value}`);
+      referenced.add(`${USER_FILE_PREFIX}${value}`);
     });
 
     return referenced;
@@ -437,7 +462,7 @@ export class ContactSaveService {
     }
 
     Object.keys(doc._attachments)
-      .filter(name => name.startsWith(this.USER_FILE_ATTACHMENT_PREFIX) && !validAttachmentNames.has(name))
+      .filter(name => name.startsWith(USER_FILE_PREFIX) && !validAttachmentNames.has(name))
       .forEach(name => this.attachmentService.remove(doc, name));
   }
 

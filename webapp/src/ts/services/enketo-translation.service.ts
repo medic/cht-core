@@ -90,26 +90,64 @@ export class EnketoTranslationService {
     return elem.children(name);
   }
 
+  /**
+   * Recognizes an attachment-reference value: the stable, position-derived
+   * name stored for an inline-binary field once its blob has been attached,
+   * e.g. `<formId>/<xpath>/<field>` — slash-delimited XML-name segments with
+   * no `user-file-` prefix (that prefix is added only at attachment time and
+   * by the renderer). Genuine inline base64 never matches: it carries `+`/`=`
+   * characters and isn't a path of node names.
+   */
+  isAttachmentRef(value): boolean {
+    // `:` appears in contact form ids (e.g. `contact:person:create`); base64
+    // never contains `:` so allowing it here doesn't widen the base64 overlap.
+    return typeof value === 'string' && /^[A-Za-z_][\w.:-]*(?:\/[A-Za-z_][\w.:-]*)+$/.test(value);
+  }
+
+  // For [type=binary] nodes the form's <instance> default / calculate
+  // expression / itext-bound base64 is the source of truth. Skip the bind
+  // when the saved value is empty (preserve the form default / let calculate
+  // fire) or is an attachment-reference name (don't leak the reference into a
+  // binary node — the real data lives in the attachment). Genuine inline
+  // base64 (e.g. injected via instanceData on initial create) still binds.
+  private shouldSkipBinaryBind(elem, data): boolean {
+    const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
+    if (typeAttr !== 'binary') {
+      return false;
+    }
+    return [ null, undefined, '' ].includes(data) || this.isAttachmentRef(data);
+  }
+
+  private bindArrayToXml(elem, data) {
+    const parent = elem.parent();
+    elem.remove();
+
+    data.forEach((dataEntry) => {
+      const clone = elem.clone();
+      this.bindJsonToXml(clone, dataEntry);
+      parent.append(clone);
+    });
+  }
+
+  private bindObjectToXml(elem, data, childMatcher?) {
+    if (!elem.children().length) {
+      this.bindJsonToXml(elem, data._id);
+    }
+
+    Object.keys(data).forEach((key) => {
+      const current = this.findCurrentElement(elem, key, childMatcher);
+      this.bindJsonToXml(current, data[key]);
+    });
+  }
+
   bindJsonToXml(elem, data, childMatcher?) {
     // Enketo will remove all elements that have the "template" attribute
     // https://github.com/enketo/enketo-core/blob/51c5c2f494f1515a67355543b435f6aaa4b151b4/src/js/form-model.js#L436-L451
     elem.removeAttr('jr:template');
     elem.removeAttr('template');
 
-    // For [type=binary] nodes the form's <instance> default / calculate
-    // expression / itext-bound base64 is the source of truth. Skip the bind
-    // when the saved value is empty (preserve the form default / let
-    // calculate fire) or is an attachment-reference name (don't leak the
-    // reference string into a binary node — it isn't base64). Genuine inline
-    // base64 (e.g. injected via instanceData on initial create) still binds.
-    const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
-    if (typeAttr === 'binary') {
-      if (data === '' || data === null || data === undefined) {
-        return;
-      }
-      if (typeof data === 'string' && data.startsWith('user-file/')) {
-        return;
-      }
+    if (this.shouldSkipBinaryBind(elem, data)) {
+      return;
     }
 
     if (data === null || typeof data !== 'object') {
@@ -118,26 +156,11 @@ export class EnketoTranslationService {
     }
 
     if (Array.isArray(data)) {
-      const parent = elem.parent();
-      elem.remove();
-
-      data.forEach((dataEntry) => {
-        const clone = elem.clone();
-        this.bindJsonToXml(clone, dataEntry);
-        parent.append(clone);
-      });
+      this.bindArrayToXml(elem, data);
       return;
     }
 
-    if (!elem.children().length) {
-      this.bindJsonToXml(elem, data._id);
-    }
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-      const current = this.findCurrentElement(elem, key, childMatcher);
-      this.bindJsonToXml(current, value);
-    });
+    this.bindObjectToXml(elem, data, childMatcher);
   }
 
   getHiddenFieldList (model, dbDocFields:Array<any>) {
