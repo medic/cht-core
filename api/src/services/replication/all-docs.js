@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../../db');
 const authorization = require('./authorization');
 const _ = require('lodash');
 
