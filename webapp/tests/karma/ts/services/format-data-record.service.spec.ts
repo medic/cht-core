@@ -243,20 +243,20 @@ describe('FormatDataRecord service', () => {
       ]);
     });
 
-    it('returns the value as image path when value is itself a user-file/ attachment name', async () => {
-      // Inline-binary fields write the attachment name as the field value.
-      // Required for sub-doc rendering: the parent-form prefix in the name
-      // can't be reconstructed from a sub-doc's field path alone.
+    it('resolves an inline-binary field via user-file- + bare reference value', async () => {
+      // Inline-binary fields store the bare reference (`<formId>/<xpath>/<field>`)
+      // as the field value, attached under `user-file-<reference>`. The unified
+      // `user-file-` + value rule resolves it — no special branch needed, and
+      // the embedded form/sub-doc prefix makes sub-doc rendering work.
       const report = {
         _id: 'my-report',
         form: 'my-form',
         content_type: 'xml',
         fields: {
-          // Value itself is the literal attachment name on the doc.
-          photo: 'user-file/my-form/photo',
+          photo: 'my-form/photo',
         },
         _attachments: {
-          'user-file/my-form/photo': { content_type: 'image/png' },
+          'user-file-my-form/photo': { content_type: 'image/png' },
         },
       };
 
@@ -264,23 +264,23 @@ describe('FormatDataRecord service', () => {
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.photo',
-          value: 'user-file/my-form/photo',
+          value: 'my-form/photo',
           depth: 0,
-          imagePath: 'user-file/my-form/photo',
+          imagePath: 'user-file-my-form/photo',
           target: undefined,
         },
       ]);
     });
 
-    it('does not match a user-file/-prefixed value when no such attachment exists', async () => {
-      // Defensive — prefix match alone shouldn't claim the image; the
-      // attachment must exist and be an image.
+    it('returns no image path when neither the value nor the legacy fallback resolves', async () => {
+      // Defensive — a value must resolve to an existing image attachment, via
+      // either `user-file-` + value or the legacy `user-file/<label-path>`.
       const report = {
         _id: 'my-report',
         form: 'my-form',
         content_type: 'xml',
         fields: {
-          photo: 'user-file/my-form/photo',
+          photo: 'my-form/photo',
         },
         _attachments: {},
       };
