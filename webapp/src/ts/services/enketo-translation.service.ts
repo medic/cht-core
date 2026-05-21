@@ -87,7 +87,10 @@ export class EnketoTranslationService {
       return found;
     }
 
-    return elem.children(name);
+    // Match by node name in JS rather than passing `name` to the jQuery selector
+    // data keys can be `_attachments` names containing ':' / '/' (form-id-derived),
+    // which jQuery would reject as an invalid selector.
+    return elem.children().filter((_idx, child) => child.nodeName === name);
   }
 
   /**
