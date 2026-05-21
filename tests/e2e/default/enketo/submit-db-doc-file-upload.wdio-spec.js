@@ -123,7 +123,8 @@ describe('Submit form with file uploads routed to db-doc sub-documents (#10904)'
 
     await commonEnketoPage.setInputValue('Name', 'Test Repeat Sub Doc');
 
-    // First repeat instance is already present; upload a file to it
+    // The repeat starts with zero instances, so add the first intance before uploading
+    await commonEnketoPage.addRepeatSection();
     await commonEnketoPage.addFileInputValue('Repeat photo', mainImagePath, { repeatIndex: 0 });
 
     // Add a second repeat and upload a different file
