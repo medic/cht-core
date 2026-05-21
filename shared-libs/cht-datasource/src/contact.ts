@@ -4,8 +4,7 @@ import {
   Page,
 } from './libs/core';
 import {
-  ContactTypeQualifier,
-  FreetextQualifier,
+  ContactGetUuidsQualifier,
   UuidQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
@@ -15,7 +14,7 @@ import * as Local from './local';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
-  assertContactTypeFreetextQualifier,
+  assertContactGetUuidsQualifier,
   assertCursor,
   assertLimit,
   assertUuidQualifier,
@@ -91,7 +90,11 @@ export namespace v1 {
 
     /**
      * Returns an array of contact identifiers for the provided page specifications.
-     * @param qualifier the limiter defining which identifiers to return
+     * @param qualifier the limiter defining which identifiers to return. May be one of:
+     * - a {@link ContactTypeQualifier} to filter by contact type,
+     * - a {@link FreetextQualifier} to filter by freetext search,
+     * - a {@link ContactTypeQualifier} combined with a {@link FreetextQualifier},
+     * - a {@link PhoneQualifier} to filter contacts whose `phone` field matches the given value exactly.
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
@@ -101,13 +104,13 @@ export namespace v1 {
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
     const curriedFn = async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
+      qualifier: ContactGetUuidsQualifier,
       cursor: Nullable<string> = null,
       limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
     ): Promise<Page<string>> => {
       assertCursor(cursor);
       assertLimit(limit);
-      assertContactTypeFreetextQualifier(qualifier);
+      assertContactGetUuidsQualifier(qualifier);
 
       return fn(qualifier, cursor, Number(limit));
     };
@@ -131,9 +134,9 @@ export namespace v1 {
      * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      */
     const curriedGen = (
-      qualifier: ContactTypeQualifier | FreetextQualifier
+      qualifier: ContactGetUuidsQualifier
     ): AsyncGenerator<string, null> => {
-      assertContactTypeFreetextQualifier(qualifier);
+      assertContactGetUuidsQualifier(qualifier);
 
       return getPagedGenerator(getPage, qualifier);
     };

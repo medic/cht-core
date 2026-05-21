@@ -150,6 +150,65 @@ describe('remote contact', () => {
           type: contactType,
         })).to.be.true;
       });
+
+      describe('phone qualifier', () => {
+        const phone = '+15551234567';
+        const phoneQualifier = { phone };
+
+        it('passes the phone as a query param to the existing endpoint', async () => {
+          const expectedResponse = { data: ['a'], cursor };
+          getResourcesInner.resolves(expectedResponse);
+
+          const result = await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, cursor, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            cursor,
+            phone,
+          })).to.be.true;
+        });
+
+        it('omits cursor param when cursor is null', async () => {
+          const expectedResponse = { data: [], cursor: null };
+          getResourcesInner.resolves(expectedResponse);
+
+          await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            phone,
+          })).to.be.true;
+        });
+
+        it('passes the phone value as-is (no normalization)', async () => {
+          const rawPhone = '+1 (555) 123-4567';
+          getResourcesInner.resolves({ data: [], cursor: null });
+
+          await Contact.v1.getUuidsPage(remoteContext)({ phone: rawPhone }, null, limit);
+
+          expect(getResourcesInner.calledOnceWithExactly({
+            limit: limit.toString(),
+            phone: rawPhone,
+          })).to.be.true;
+        });
+
+        it('walks two cursor pages with limit 5', async () => {
+          const firstPage = { data: ['a', 'b', 'c', 'd', 'e'], cursor: '5' };
+          const secondPage = { data: ['f', 'g'], cursor: null };
+          getResourcesInner.onFirstCall().resolves(firstPage);
+          getResourcesInner.onSecondCall().resolves(secondPage);
+
+          const page1 = await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, null, 5);
+          expect(page1).to.deep.equal(firstPage);
+          expect(getResourcesInner.firstCall.args[0]).to.deep.equal({ limit: '5', phone });
+
+          const page2 = await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, page1.cursor, 5);
+          expect(page2).to.deep.equal(secondPage);
+          expect(getResourcesInner.secondCall.args[0]).to.deep.equal({ limit: '5', cursor: '5', phone });
+        });
+      });
     });
   });
 });

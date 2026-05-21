@@ -1,11 +1,13 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
 import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
 import {
+  ContactGetUuidsQualifier,
   ContactTypeQualifier,
   FreetextQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
+  isPhoneQualifier,
   UuidQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
@@ -105,14 +107,21 @@ export namespace v1 {
   export const getUuidsPage = ({ medicDb, settings }: LocalDataContext) => {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
+    const queryViewByPhone = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_phone');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
     return async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
+      qualifier: ContactGetUuidsQualifier,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<string>> => {
+      if (isPhoneQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const getPageFn = (limit: number, skip: number) => queryViewByPhone(qualifier.phone, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
       if (isContactTypeQualifier(qualifier)) {
         assertValidContactType(settings.getAll(), qualifier);
       }

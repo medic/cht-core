@@ -1,7 +1,7 @@
 import { ContactTypeQualifier, FreetextQualifier } from '../../src/qualifier';
 import { expect } from 'chai';
 import {
-  assertContactTypeFreetextQualifier,
+  assertContactGetUuidsQualifier,
   assertCursor,
   assertFreetextQualifier,
   assertLimit,
@@ -113,38 +113,38 @@ describe('libs parameter-validators', () => {
     });
   });
 
-  describe('assertContactTypeFreetextQualifier', () => {
+  describe('assertContactGetUuidsQualifier', () => {
     it('should pass when given a valid contact type qualifier', () => {
       const validContactType = { contactType: 'email' };
 
-      expect(() => assertContactTypeFreetextQualifier(validContactType)).to.not.throw();
+      expect(() => assertContactGetUuidsQualifier(validContactType)).to.not.throw();
     });
 
     it('should pass when given a valid freetext qualifier', () => {
       const validFreetext = { freetext: 'some-text' };
 
-      expect(() => assertContactTypeFreetextQualifier(validFreetext)).to.not.throw();
+      expect(() => assertContactGetUuidsQualifier(validFreetext)).to.not.throw();
     });
 
     it('should throw InvalidArgumentError when given an invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
-      expect(() => assertContactTypeFreetextQualifier(invalidQualifier)).to.throw(InvalidArgumentError);
+      expect(() => assertContactGetUuidsQualifier(invalidQualifier)).to.throw(InvalidArgumentError);
     });
 
     it('should throw InvalidArgumentError with correct message for invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
-      expect(() => assertContactTypeFreetextQualifier(invalidQualifier)).to.throw(
+      expect(() => assertContactGetUuidsQualifier(invalidQualifier)).to.throw(
         InvalidArgumentError,
-        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type and/or freetext qualifier.'
+        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, freetext, or phone qualifier.'
       );
     });
 
     it('should throw InvalidArgumentError when freetext is too short', () => {
       const shortFreetext = { freetext: 'ab' };  // Less than 3 characters
 
-      expect(() => assertContactTypeFreetextQualifier(shortFreetext)).to.throw(InvalidArgumentError);
+      expect(() => assertContactGetUuidsQualifier(shortFreetext)).to.throw(InvalidArgumentError);
     });
 
     it('should pass when object satisfies both qualifier types', () => {
@@ -153,15 +153,15 @@ describe('libs parameter-validators', () => {
         freetext: 'some text'
       };
 
-      expect(() => assertContactTypeFreetextQualifier(validBothTypes)).to.not.throw();
+      expect(() => assertContactGetUuidsQualifier(validBothTypes)).to.not.throw();
     });
 
     it('should handle null input appropriately', () => {
-      expect(() => assertContactTypeFreetextQualifier(null)).to.throw(InvalidArgumentError);
+      expect(() => assertContactGetUuidsQualifier(null)).to.throw(InvalidArgumentError);
     });
 
     it('should handle undefined input appropriately', () => {
-      expect(() => assertContactTypeFreetextQualifier(undefined)).to.throw(InvalidArgumentError);
+      expect(() => assertContactGetUuidsQualifier(undefined)).to.throw(InvalidArgumentError);
     });
   });
 

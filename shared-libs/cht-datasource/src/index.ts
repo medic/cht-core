@@ -209,6 +209,37 @@ export const getDatasource = (ctx: DataContext) => {
         ) => ctx.bind(Contact.v1.getUuids)(
           Qualifier.byFreetext(freetext)
         ),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers whose `phone` field exactly
+         * matches the given phone number. The value is matched as-is — no normalization is performed.
+         * @param phone the phone number to match
+         * @returns a generator for fetching all matching contact identifiers
+         * @throws InvalidArgumentError if `phone` is not a non-empty string
+         */
+        getUuidsByPhone: (
+          phone: string,
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.byPhone(phone)
+        ),
+
+        /**
+         * Returns all contact identifiers whose `phone` field exactly matches the given phone number,
+         * collected into a single array. Equivalent to draining {@link getUuidsByPhone} but returns a
+         * `Promise<string[]>` for callers that can't consume an `AsyncGenerator` (e.g. bundles that
+         * don't support `for await`).
+         * @param phone the phone number to match
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `phone` is not a non-empty string
+         */
+        collectUuidsByPhone: async (phone: string): Promise<string[]> => {
+          const generator = ctx.bind(Contact.v1.getUuids)(Qualifier.byPhone(phone));
+          const ids: string[] = [];
+          for await (const id of generator) {
+            ids.push(id);
+          }
+          return ids;
+        },
       },
       place: {
         /**

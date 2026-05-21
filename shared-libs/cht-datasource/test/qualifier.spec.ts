@@ -4,6 +4,7 @@ import {
   byContactId,
   byContactIds,
   byFreetext,
+  byPhone,
   byReportingPeriod,
   byUsername,
   byUuid, FreetextQualifier,
@@ -12,6 +13,7 @@ import {
   isContactIdsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
+  isPhoneQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
@@ -161,6 +163,42 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isKeyedFreetextQualifier(qualifier as FreetextQualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byPhone', () => {
+    it('builds a qualifier for searching contacts by phone', () => {
+      expect(byPhone('+15551234567')).to.deep.equal({ phone: '+15551234567' });
+    });
+
+    it('preserves whitespace and country-code formatting (no normalization)', () => {
+      expect(byPhone('  +1 (555) 123 4567  ')).to.deep.equal({ phone: '  +1 (555) 123 4567  ' });
+    });
+
+    [
+      null,
+      '',
+      { },
+      123,
+    ].forEach(phone => {
+      it(`throws an error for ${JSON.stringify(phone)}`, () => {
+        expect(() => byPhone(phone as string)).to.throw(`Invalid phone [${JSON.stringify(phone)}].`);
+      });
+    });
+  });
+
+  describe('isPhoneQualifier', () => {
+    [
+      [ null, false ],
+      [ '+15551234567', false ],
+      [ { phone: { } }, false ],
+      [ { phone: '+15551234567' }, true ],
+      [ { phone: '+15551234567', other: 'other' }, true ],
+      [ { phone: '' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isPhoneQualifier(qualifier)).to.equal(expected);
       });
     });
   });

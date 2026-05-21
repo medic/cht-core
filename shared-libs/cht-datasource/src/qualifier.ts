@@ -145,6 +145,51 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 };
 
 /**
+ * A qualifier that identifies entities based on a phone number. The value is matched against the
+ * `phone` field of the contact as-is — no normalization (whitespace, country code, etc.) is
+ * performed by the qualifier; matching parity with the underlying view is the caller's responsibility.
+ */
+export type PhoneQualifier = Readonly<{ phone: string }>;
+
+/**
+ * Builds a qualifier for finding entities by their `phone` field.
+ * @param phone the phone number to search for. Passed as-is to the underlying view.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the phone is not a non-empty string
+ */
+export const byPhone = (phone: string): PhoneQualifier => {
+  if (!isString(phone) || phone.length === 0) {
+    throw new InvalidArgumentError(`Invalid phone [${JSON.stringify(phone)}].`);
+  }
+  return { phone };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link PhoneQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link PhoneQualifier}, otherwise `false`
+ */
+export const isPhoneQualifier = (qualifier: unknown): qualifier is PhoneQualifier => {
+  return isRecord(qualifier) && hasField(qualifier, { name: 'phone', type: 'string' });
+};
+
+/**
+ * The set of qualifier shapes accepted by `Contact.v1.getUuidsPage` / `Contact.v1.getUuids` for
+ * filtering contacts. Extend this union (and {@link isContactGetUuidsQualifier}) when adding a new
+ * filtering dimension; call sites that accept any of them should reference this alias rather than
+ * spelling out the member types.
+ */
+export type ContactGetUuidsQualifier = ContactTypeQualifier | FreetextQualifier | PhoneQualifier;
+
+/**
+ * Returns `true` if the given qualifier is any member of {@link ContactGetUuidsQualifier}.
+ * @param qualifier the qualifier to check
+ */
+export const isContactGetUuidsQualifier = (qualifier: unknown): qualifier is ContactGetUuidsQualifier => {
+  return isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier) || isPhoneQualifier(qualifier);
+};
+
+/**
  * A qualifier that identifies entities based on a reporting period (e.g. a calendar month). The reporting period
  * should be represented with the format YYYY-MM (e.g. "2025-07").
  */

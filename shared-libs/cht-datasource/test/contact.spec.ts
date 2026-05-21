@@ -236,7 +236,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidContactTypeQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-            `Must be a contact type and/or freetext qualifier.`);
+            `Must be a contact type, freetext, or phone qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
@@ -251,7 +251,7 @@ describe('contact', () => {
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidFreetextQualifier, cursor, limit))
           .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-            `Must be a contact type and/or freetext qualifier.`);
+            `Must be a contact type, freetext, or phone qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
@@ -266,7 +266,8 @@ describe('contact', () => {
         isFreetextQualifier.returns(false);
 
         await expect(Contact.v1.getUuidsPage(dataContext)(invalidQualifier, cursor, limit)).to.be.rejectedWith(
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
+          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. `
+          + `Must be a contact type, freetext, or phone qualifier.`
         );
 
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -383,7 +384,7 @@ describe('contact', () => {
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidContactTypeQualifier))
           .to.throw(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
+          `Must be a contact type, freetext, or phone qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(invalidContactTypeQualifier)).to.be.true;
@@ -395,7 +396,7 @@ describe('contact', () => {
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidFreetextQualifier))
           .to.throw(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
+          `Must be a contact type, freetext, or phone qualifier.`);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;
         expect(isContactTypeQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
@@ -407,7 +408,8 @@ describe('contact', () => {
         isFreetextQualifier.returns(false);
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidQualifier)).to.throw(
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
+          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. `
+          + `Must be a contact type, freetext, or phone qualifier.`
         );
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(contactGetIdsPage.notCalled).to.be.true;

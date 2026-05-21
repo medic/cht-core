@@ -26,6 +26,7 @@ angular.module('services').factory('MessageQueue',
     $q,
     $translate,
     DB,
+    DataContext,
     Languages,
     MessageQueueUtils,
     Settings
@@ -33,6 +34,8 @@ angular.module('services').factory('MessageQueue',
 
     'use strict';
     'ngInject';
+
+    const datasourcePromise = DataContext.then(dataContext => dataContext.getDatasource());
 
     const findSummary = function(summaries, message) {
       if (!message.sms || !message.sms.to) {
@@ -94,13 +97,14 @@ angular.module('services').factory('MessageQueue',
         return messages;
       }
 
-      return DB({ remote: true })
-        .query('medic-client/contacts_by_phone', { keys: phoneNumbers })
-        .then(function(contactsByPhone) {
-          const ids = contactsByPhone.rows.map(function(row) {
-            return row.id;
-          });
-
+      return datasourcePromise
+        .then(function(datasource) {
+          return $q.all(phoneNumbers.map(function(phone) {
+            return datasource.v1.contact.collectUuidsByPhone(phone);
+          }));
+        })
+        .then(function(idsPerPhone) {
+          const ids = idsPerPhone.flat();
           return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
         })
         .then(function(summaries) {

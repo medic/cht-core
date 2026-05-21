@@ -1,5 +1,5 @@
 import { getResource, getResources, RemoteDataContext } from './libs/data-context';
-import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
+import { ContactGetUuidsQualifier, isPhoneQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Contact from '../contact';
 import { isContactType, isFreetextType } from '../libs/parameter-validators';
@@ -26,10 +26,13 @@ export namespace v1 {
 
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ContactTypeQualifier | FreetextQualifier,
+    qualifier: ContactGetUuidsQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
+    const phoneParams: Record<string, string> = isPhoneQualifier(qualifier)
+      ? { phone: qualifier.phone }
+      : {};
     const freetextParams: Record<string, string> = isFreetextType(qualifier)
       ? { freetext: qualifier.freetext }
       : {};
@@ -42,6 +45,7 @@ export namespace v1 {
       ...(cursor ? { cursor } : {}),
       ...typeParams,
       ...freetextParams,
+      ...phoneParams,
     };
     return getContactUuids(remoteContext)(queryParams);
   };
