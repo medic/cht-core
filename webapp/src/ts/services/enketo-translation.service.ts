@@ -91,12 +91,10 @@ export class EnketoTranslationService {
   }
 
   /**
-   * Recognizes an attachment-reference value: the stable, position-derived
-   * name stored for an inline-binary field once its blob has been attached,
-   * e.g. `<formId>/<xpath>/<field>` — slash-delimited XML-name segments with
-   * no `user-file-` prefix (that prefix is added only at attachment time and
-   * by the renderer). Genuine inline base64 never matches: it carries `+`/`=`
-   * characters and isn't a path of node names.
+   * True for an attachment-reference value: the position-derived name stored for
+   * an inline-binary field after its blob is attached, e.g.
+   * `<formId>/<xpath>/<field>` (slash-delimited XML names, no `user-file-`
+   * prefix). Inline base64 never matches: it carries `+`/`=` and isn't a path.
    */
   isAttachmentRef(value): boolean {
     // `:` appears in contact form ids (e.g. `contact:person:create`); base64
@@ -104,12 +102,10 @@ export class EnketoTranslationService {
     return typeof value === 'string' && /^[A-Za-z_][\w.:-]*(?:\/[A-Za-z_][\w.:-]*)+$/.test(value);
   }
 
-  // For [type=binary] nodes the form's <instance> default / calculate
-  // expression / itext-bound base64 is the source of truth. Skip the bind
-  // when the saved value is empty (preserve the form default / let calculate
-  // fire) or is an attachment-reference name (don't leak the reference into a
-  // binary node — the real data lives in the attachment). Genuine inline
-  // base64 (e.g. injected via instanceData on initial create) still binds.
+  // For [type=binary] nodes the form's instance default / calculate / itext
+  // base64 is the source of truth. Skip the bind when the saved value is empty
+  // (keep the form default) or is an attachment reference (the real data lives
+  // in the attachment). Genuine inline base64 still binds.
   private shouldSkipBinaryBind(elem, data): boolean {
     const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
     if (typeAttr !== 'binary') {

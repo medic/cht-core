@@ -19,9 +19,8 @@ import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
 
 /**
- * Prefix for every CouchDB attachment created from a form media field, shared
- * by both pipelines so a field's value is uniformly resolved as
- * `USER_FILE_PREFIX + value`:
+ * Prefix for every CouchDB attachment created from a form media field, so a
+ * field's value is uniformly resolved as `USER_FILE_PREFIX + value`:
  *   - file-widget uploads  -> `user-file-<sanitized-filename>`
  *   - inline-binary fields -> `user-file-<formId>/<xpath>/<field>`
  */
@@ -481,12 +480,10 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    // Sub-docs are parsed twice: first to populate fields (so the binary
-    // attachment loop can read each sub-doc's `type` to compute attachment
-    // names and route attachments to the right doc object), then again
-    // after the binary loop has rewritten node text to the attachment name
-    // so the final field values reflect those references rather than the
-    // stale inline base64.
+    // Sub-docs are parsed twice: first to populate fields (so the binary loop
+    // can read each sub-doc's `type` and route attachments to the right doc),
+    // then again after the loop rewrites node text to the attachment reference
+    // so the final field values use those references, not the inline base64.
     const subDocElements = $record.find('[db-doc=true]').toArray();
     const docsToStore = subDocElements.map((element: any) => {
       const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
@@ -519,11 +516,9 @@ export class EnketoService {
       return doc;
     };
 
-    // Route FileManager files to the correct owner doc.
-    // For each file, find the [type=file] node whose text matches
-    // the filename, then resolve the owner from its position in the
-    // XML tree. Inline [type=binary] fields are handled separately
-    // by the loop below.
+    // Route each FileManager file to its owner doc: match the filename against a
+    // [type=file] node, then resolve the owner from its position in the tree.
+    // Inline [type=binary] fields are handled by the loop below.
     FileManager
       .getCurrentFiles()
       .forEach(file => {
@@ -533,10 +528,9 @@ export class EnketoService {
         this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${file.name}`, file, file.type, false);
       });
 
-    // Attaches an inline-binary blob under the unified naming scheme and
-    // returns the field's bare value (the attachment name minus
-    // USER_FILE_PREFIX) so the node text / parsed fields resolve via the same
-    // `USER_FILE_PREFIX + value` rule as file-widget uploads.
+    // Attaches an inline-binary blob and returns its bare reference (attachment
+    // name minus USER_FILE_PREFIX), so node text / parsed fields resolve via the
+    // same `USER_FILE_PREFIX + value` rule as file-widget uploads.
     const attachInlineBinary = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
       const xpath = Xpath.getElementXPath(elem);
@@ -558,17 +552,14 @@ export class EnketoService {
         if (!file) {
           return;
         }
-        // Defensive: skip values that already look like an attachment
-        // reference, so a re-save can't double-attach the reference string
-        // as if it were base64 data.
+        // Skip values that already look like an attachment reference, so a
+        // re-save can't double-attach the reference string as base64 data.
         if (this.enketoTranslationService.isAttachmentRef(file)) {
           return;
         }
         const reference = attachInlineBinary(element, file, 'image/png', true);
-        // Rewrite the node text to the bare reference value. reportRecordToJs
-        // is called below on the serialized record, so doc.fields ends up with
-        // the reference in place of the inline base64 — matching the
-        // convention used for file-widget uploads.
+        // Rewrite node text to the bare reference so the re-parse below puts the
+        // reference in doc.fields instead of the inline base64.
         $(element).text(reference);
       });
 

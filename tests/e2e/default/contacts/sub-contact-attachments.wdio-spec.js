@@ -150,10 +150,9 @@ describe('Sub-contact attachment routing', () => {
     expect(family.name).to.equal('Routing Family');
     expect(family._attachments).to.exist;
     const familyAttachmentNames = Object.keys(family._attachments);
-    // Two attachments per owner doc: the file-widget upload (user-file-<name>)
-    // and the inline-binary `badge` baked into the form's <instance> default.
-    // Unified rule: the badge is attached under `user-file-<xpath>` and the
-    // field value is that same name minus the USER_FILE_PREFIX.
+    // Two attachments per owner doc: the file-widget upload and the inline-
+    // binary `badge` from the form's instance default. The badge field value is
+    // its attachment name minus the `user-file-` prefix.
     expect(familyAttachmentNames).to.have.lengthOf(2);
     const familyBadge = familyAttachmentNames.find(n => n.startsWith('user-file-') && n.endsWith('/badge'));
     expect(familyBadge, 'family badge attachment').to.exist;
@@ -225,11 +224,8 @@ describe('Sub-contact attachment routing', () => {
     expect(snapshotAttachments(after.family)).to.deep.equal(beforeFamily);
     expect(snapshotAttachments(after.primaryContact)).to.deep.equal(beforePrimary);
 
-    // The badge from the create-form's inline-binary default carries the bare
-    // reference value in the saved field. The edit form has no <badge>, so
-    // bindJsonToXml's reference-name skip leaves the form's (non-existent)
-    // binary node alone, no save-time attach happens for it, and the original
-    // badge attachment + field value survive the edit unchanged.
+    // The edit form has no <badge>, so no save-time attach happens for it and
+    // the original badge attachment + field value survive the edit unchanged.
     expect(after.family.badge).to.equal(before.family.badge);
     expect(after.primaryContact.badge).to.equal(before.primaryContact.badge);
 

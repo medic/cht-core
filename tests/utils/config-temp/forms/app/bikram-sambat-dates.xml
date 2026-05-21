@@ -1,0 +1,57 @@
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
+	<h:head>
+		<h:title>Bikram Sambat Date</h:title>
+
+		<model>
+			<instance>
+				<bikram-sambat-dates id="bikram-sambat-dates">
+					<data>
+						<date1/>
+						<date1_text/>
+						<date2/>
+						<date2_text/>
+					</data>
+					<summary>
+						<field1></field1>
+						<field2></field2>
+					</summary>
+					<meta>
+						<instanceID/>
+					</meta>
+				</bikram-sambat-dates>
+			</instance>
+
+			<bind nodeset="/bikram-sambat-dates/data/date1" type="date"/>
+			<bind nodeset="/bikram-sambat-dates/data/date1_text" type="string" readonly="true()" calculate="to-bikram-sambat(/bikram-sambat-dates/data/date1)"/>
+			<bind nodeset="/bikram-sambat-dates/data/date2" type="date"/>
+			<bind nodeset="/bikram-sambat-dates/data/date2_text" type="string" readonly="true()" calculate="to-bikram-sambat(/bikram-sambat-dates/data/date2)"/>
+			<bind nodeset="/bikram-sambat-dates/summary/field1" readonly="true()" type="string"/>
+			<bind nodeset="/bikram-sambat-dates/summary/field2" readonly="true()" type="string"/>
+		</model>
+	</h:head>
+
+	<h:body>
+		<group appearance="field-list" ref="/bikram-sambat-dates/data">
+			<input ref="/bikram-sambat-dates/data/date1">
+				<label>Date 1</label>
+			</input>
+			<input ref="/bikram-sambat-dates/data/date1_text">
+				<label>This field value is calculated like: to-bikram-sambat([date 1 path])</label>
+			</input>
+			<input ref="/bikram-sambat-dates/data/date2" appearance="bikram-sambat">
+				<label>Date 2 (Bikram Sambat)</label>
+			</input>
+			<input ref="/bikram-sambat-dates/data/date2_text">
+				<label>This field value is calculated like: to-bikram-sambat([date 2 path])</label>
+			</input>
+		</group>
+		<group appearance="field-list summary" ref="/bikram-sambat-dates/summary">
+			<input appearance="h2 red center underline" ref="/bikram-sambat-dates/summary/field1">
+				<label>date1 = **<output value=" /bikram-sambat-dates/data/date1_text "/>**</label>
+			</input>
+			<input appearance="h3 blue center underline" ref="/bikram-sambat-dates/summary/field2">
+				<label>date2 = **<output value=" /bikram-sambat-dates/data/date2_text "/>**</label>
+			</input>
+		</group>
+	</h:body>
+</h:html>
