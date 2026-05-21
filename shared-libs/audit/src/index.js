@@ -151,7 +151,28 @@ const expressCallback = async (req, responseBody, requestMetadata) => {
   await recordAudit(body, requestMetadata);
 };
 
+/**
+ * Records the archiving of documents with the given IDs at the specified date.
+ *
+ * @param {string[]} ids - Array of document IDs to be archived.
+ * @param {Date} date - The date at which the documents are being archived.
+ * @returns {Promise<void>} - A promise that resolves when the archiving process has been completed.
+ */
+const recordArchiving = async (ids, date) => {
+  const existingAuditDocs = (await db.allDocs({ keys: ids, include_docs: true }));
+
+  const newAuditDocs = [];
+  ids.forEach((id, idx) => {
+    const auditDoc = existingAuditDocs.rows[idx].doc || getAuditDoc({ id });
+
+    auditDoc.history.push({ date, archived: true });
+    newAuditDocs.push(auditDoc);
+  });
+  await db.bulkDocs(newAuditDocs);
+};
+
 module.exports = {
   fetchCallback,
   expressCallback,
+  recordArchiving,
 };

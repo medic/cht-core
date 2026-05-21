@@ -64,6 +64,7 @@ const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  ARCHIVE_JOB: 'archive:',
 };
 
 module.exports = {

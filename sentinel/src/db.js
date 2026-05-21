@@ -25,6 +25,7 @@ if (UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
@@ -35,6 +36,7 @@ if (UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
@@ -45,6 +47,7 @@ if (UNIT_TEST_ENV) {
     post: stubMe('post'),
     query: stubMe('query'),
     get: stubMe('get'),
+    getAttachment: stubMe('getAttachment'),
     changes: stubMe('changes'),
   };
 
@@ -76,7 +79,8 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.medic = new PouchDB(couchUrl, { fetch: fetchFn });
-  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn});
+  module.exports.sentinel = new PouchDB(`${couchUrl}-sentinel`, { fetch: fetchFn });
+  module.exports.archive = new PouchDB(`${couchUrl}-archive`, { fetch: fetchFn });
   module.exports.allDbs = () => request.get({ url: `${environment.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${environment.serverUrl}/${db}`);
   module.exports.close = db => {
@@ -91,6 +95,7 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.users = new PouchDB(`${environment.serverUrl}/_users`, { fetch: fetchFn });
+
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');
     const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
@@ -100,6 +105,15 @@ if (UNIT_TEST_ENV) {
       qs: queryParams,
       json: true,
       body,
+    });
+  };
+
+  module.exports.purge = (db, docs) => {
+    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, [ doc._rev, ...doc._conflicts || [] ] ]));
+
+    return request.post({
+      url: `${db.name}/_purge`,
+      body: purgePayload,
     });
   };
 }
