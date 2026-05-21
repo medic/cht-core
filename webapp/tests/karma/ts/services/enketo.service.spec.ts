@@ -1151,11 +1151,9 @@ describe('Enketo service', () => {
         { doc: { } },
         { _id: 'my-user', phone: '8989' }
       );
-      // The binary loop attaches the base64 under the unified
-      // `user-file-<formId>/<xpath>/<field>` name and rewrites the element text
-      // to the bare reference (name minus USER_FILE_PREFIX) before
-      // reportRecordToJs parses the serialized record, so doc.fields resolves
-      // via the same `user-file-` + value rule as file-widget uploads.
+      // The binary loop attaches the base64 under `user-file-<formId>/<xpath>/
+      // <field>` and rewrites the field to the bare reference, so doc.fields
+      // resolves via the same `user-file-` + value rule as file-widget uploads.
       expect(actual.fields).to.deep.equal({
         name: 'Mary',
         age: '10',
@@ -1170,13 +1168,10 @@ describe('Enketo service', () => {
     });
 
     it('reports with an empty saved binary field re-attach under the same xpath-derived name', async () => {
-      // Pre-existing report state: `my_file: ""` in saved fields plus an
-      // attachment under `user-file-<form>/<rest>`. On edit, the form's
-      // <instance> default (or a calculate) re-supplies base64 — the empty
-      // bind is skipped, so the form's binary node arrives at submit with
-      // fresh base64. The save path writes the attachment under the same
-      // xpath-derived key (CouchDB overwrite-in-place — no second entry, no
-      // orphan) and rewrites the field value to the bare reference.
+      // Pre-existing report has `my_file: ""` plus an attachment under
+      // `user-file-<form>/<rest>`. On edit the form default re-supplies fresh
+      // base64, and the save writes under the same xpath-derived key
+      // (overwrite-in-place, no orphan) and rewrites the field to the reference.
       form.validate.resolves(true);
       const content = loadXML('binary-field');
       form.getDataStr.returns(content);
@@ -1228,9 +1223,8 @@ describe('Enketo service', () => {
       expect(subPhoto2Call).to.exist;
       expect(subPhoto2Call[0]._id).to.equal(actual[2]._id);
 
-      // Each sub-doc's binary field is rewritten to its bare reference value
-      // (`<formId>/<xpath>/<field>`) on the SAME sub-doc, so renderers resolve
-      // the image via `user-file-` + value without recomputing the prefix.
+      // Each sub-doc's binary field holds its bare reference value
+      // (`<formId>/<xpath>/<field>`), resolved via `user-file-` + value.
       expect(actual[0].fields.main_photo).to.equal('my-form/main_photo');
       expect(actual[1].photo1).to.equal('thing_1/doc1/photo1');
       expect(actual[2].photo2).to.equal('thing_2/doc2/photo2');
@@ -1365,9 +1359,8 @@ describe('Enketo service', () => {
         { _id: 'my-user', phone: '8989' }
       );
 
-      // The unified xpath-derived attachment name is rooted at the owner doc's
-      // own form id (sub-docs carry their own `form`), prefixed with
-      // USER_FILE_PREFIX. The main doc falls back to the report form id.
+      // The attachment name is rooted at the owner doc's own form id (sub-docs
+      // carry their own `form`); the main doc falls back to the report form id.
       const subPhoto1Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_1');
       expect(subPhoto1Call).to.exist;
       expect(subPhoto1Call[1]).to.equal('user-file-thing_1/doc1/photo1');

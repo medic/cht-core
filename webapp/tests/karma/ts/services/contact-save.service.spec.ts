@@ -910,10 +910,8 @@ describe('ContactSave service', () => {
       expect(sigCall.args[2]).to.equal('BASE64_SIG_DATA');
       expect(sigCall.args[3]).to.equal('image/png');
       expect(sigCall.args[4]).to.be.true;
-      // The sibling's signature field is rewritten on the owner sub-doc to the
-      // bare reference (the attachment name minus USER_FILE_PREFIX), so
-      // renderers resolve the image via `user-file-` + value — the embedded
-      // parent prefix means no recomputation from the sub-doc alone.
+      // The signature field holds the bare reference (attachment name minus the
+      // `user-file-` prefix), so renderers resolve the image via that rule.
       expect(sigCall.args[0].signature).to.equal('contact:family:create/contact/signature');
     });
 
@@ -952,10 +950,8 @@ describe('ContactSave service', () => {
     });
 
     it('main contact re-attaches a binary under the same name (idempotent re-save)', async () => {
-      // New-format state: the saved field already holds the bare reference and
-      // the attachment is under `user-file-<form>/<rest>`. On edit the form's
-      // instance default re-applies, so the binary node arrives at submit with
-      // fresh base64 and the save recomputes the SAME name — overwrite-in-place.
+      // On edit the form's instance default re-supplies fresh base64, and the
+      // save recomputes the same xpath-derived name — overwrite-in-place.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1003,12 +999,10 @@ describe('ContactSave service', () => {
     });
 
     it('leaves a legacy slash-named binary attachment intact on edit (migration out of scope)', async () => {
-      // Pre-existing legacy state: `<binary>` attachment under the old
-      // `user-file/<form>/<rest>` (slash) name. On edit the new save path
-      // writes the unified `user-file-<form>/<rest>` attachment + bare field
-      // value; the legacy attachment is not orphan-removed (orphan cleanup
-      // only touches `user-file-`-prefixed names), so the doc renders via the
-      // new branch with no data loss.
+      // Pre-existing legacy attachment under the old slash name
+      // (`user-file/<form>/<rest>`). The save writes the new `user-file-<...>`
+      // attachment + bare field value; the legacy one is not orphan-removed
+      // (cleanup only touches `user-file-`-prefixed names), so no data loss.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1057,10 +1051,9 @@ describe('ContactSave service', () => {
     });
 
     it('routes sibling sub-contact binary writes to the sub-doc, not main', async () => {
-      // The binary attachment lives on a sibling sub-contact
-      // (`<contact db-doc="true">`). The xpath-derived name embeds the
-      // parent form id, so the sub-doc field is written with the bare
-      // reference value — sufficient on its own for renderer lookup.
+      // The binary attachment lives on a sibling sub-contact. The xpath-derived
+      // name embeds the parent form id, so the sub-doc field holds the bare
+      // reference value — enough on its own for renderer lookup.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1095,9 +1088,8 @@ describe('ContactSave service', () => {
       expect(sigCall, 'sibling-routed attach should exist').to.not.be.undefined;
       expect(sigCall.args[0]._id, 'attachment lands on sub-doc, not main').to.equal('sib1');
       expect(sigCall.args[2]).to.equal('FRESH_SIG_BASE64');
-      // Sub-doc's signature field carries the bare reference value — a renderer
-      // keyed on `user-file-` + value resolves it without needing the parent
-      // form's prefix to be reconstructable from the sub-doc alone.
+      // The sub-doc's signature field holds the bare reference, resolved by a
+      // renderer via `user-file-` + value.
       expect(sigCall.args[0].signature).to.equal('contact:family:create/contact/signature');
     });
 

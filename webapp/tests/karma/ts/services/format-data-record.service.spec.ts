@@ -245,9 +245,8 @@ describe('FormatDataRecord service', () => {
 
     it('resolves an inline-binary field via user-file- + bare reference value', async () => {
       // Inline-binary fields store the bare reference (`<formId>/<xpath>/<field>`)
-      // as the field value, attached under `user-file-<reference>`. The unified
-      // `user-file-` + value rule resolves it — no special branch needed, and
-      // the embedded form/sub-doc prefix makes sub-doc rendering work.
+      // as the value, attached under `user-file-<reference>`, so the same
+      // `user-file-` + value rule resolves it.
       const report = {
         _id: 'my-report',
         form: 'my-form',
@@ -273,8 +272,8 @@ describe('FormatDataRecord service', () => {
     });
 
     it('returns no image path when neither the value nor the legacy fallback resolves', async () => {
-      // Defensive — a value must resolve to an existing image attachment, via
-      // either `user-file-` + value or the legacy `user-file/<label-path>`.
+      // A value must resolve to an existing image attachment, via either
+      // `user-file-` + value or the legacy `user-file/<label-path>`.
       const report = {
         _id: 'my-report',
         form: 'my-form',

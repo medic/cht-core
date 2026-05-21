@@ -215,9 +215,9 @@ export class ContactSaveService {
     map.set(doc, names);
   }
 
-  /** Attach FileManager uploads (file widgets), routed per sub-doc. Returns the
-   * set of original filenames so the binary pass can skip file-upload widgets
-   * that carry legacy `type="binary"` markup. */
+  /** Attaches FileManager uploads, routed per sub-doc. Returns the original
+   * filenames so the binary pass can skip upload widgets that also carry
+   * `type="binary"` markup. */
   private attachUploadedFiles(
     ctx: ContactOwnerContext,
     newAttachmentNamesByDoc: AttachmentNamesByDoc,
@@ -239,7 +239,6 @@ export class ContactSaveService {
     return fileManagerNames;
   }
 
-  /** Process inline binary fields from XML, routed per sub-doc. */
   private attachInlineBinaryFields(
     ctx: ContactOwnerContext,
     fileManagerNames: Set<string>,
@@ -252,10 +251,9 @@ export class ContactSaveService {
       });
   }
 
-  /** Each binary field produces two writes: an attachment under
-   * `user-file-<formId>/<xpath>/<field>` on the owning doc, and the bare
-   * reference (`<formId>/<xpath>/<field>`) written into the doc's field value
-   * so the renderer resolves the image by `USER_FILE_PREFIX + value` alone. */
+  /** Attaches the blob to the owning doc and mirrors the bare reference into the
+   * doc's field value, so the renderer resolves the image via
+   * `USER_FILE_PREFIX + value`. */
   private attachOneBinaryField(
     element: Element,
     ctx: ContactOwnerContext,
@@ -277,8 +275,7 @@ export class ContactSaveService {
     this.attachmentService.add(ownerDoc, attachmentName, content, 'image/png', true);
     this.trackNewAttachment(newAttachmentNamesByDoc, ownerDoc, attachmentName);
 
-    // Mirror the bare reference into the owning doc's field. The path within
-    // the doc is the element's position relative to the parsed section root
+    // Field path is the element's position relative to its section container
     // (the section for main/sibling, the i-th repeat child for a repeat).
     const container = this.findFieldContainerElement(element, ctx);
     const fieldPath = container && this.computeFieldPath(element, container);
@@ -352,10 +349,9 @@ export class ContactSaveService {
   }
 
   /**
-   * The element whose children correspond 1:1 to the parsed owner doc's
-   * top-level fields. For main / sibling sections this is the section itself;
-   * for repeats it's the i-th `<child>` of `<repeat>`. Returned element is
-   * the anchor for `computeFieldPath`.
+   * The element whose children map 1:1 to the owner doc's top-level fields:
+   * the section itself for main/sibling, the i-th `<child>` of `<repeat>` for
+   * repeats. Anchors `computeFieldPath`.
    */
   private findFieldContainerElement(el: Element, ctx: ContactOwnerContext): Element | null {
     const section = this.findSectionForElement(el, ctx.root);
@@ -384,9 +380,8 @@ export class ContactSaveService {
   }
 
   /**
-   * Locates the prepared sub-doc that owns a given XML element, by walking
-   * up the DOM from the element to its section root (a direct child of the
-   * form's root element).
+   * Resolves the prepared sub-doc that owns an XML element by walking up to its
+   * section root (a direct child of the form root):
    *
    *   - main section (first non-meta/inputs/repeat element child of root) -> preparedDocs[0]
    *   - <contact> / <parent> peer of main section -> sibling doc with matching _id
@@ -409,15 +404,10 @@ export class ContactSaveService {
   }
 
   /**
-   * Locates the first `[type=file]` upload-widget element whose text
-   * content equals the given filename, then resolves the owning prepared
-   * doc. Falls back to mainDoc when no node matches (preserves behavior
-   * for forms with no matching upload field).
-   *
-   * Inline `[type=binary]` fields are routed separately by the binary
-   * processing loop in `attachToOwnerDocs`. Filename uniqueness within a
-   * form session is guaranteed by Enketo's timestamp suffix, so the first
-   * match is the only match.
+   * Resolves the owning prepared doc for a FileManager upload by matching the
+   * filename against `[type=file]` widget text, falling back to mainDoc when no
+   * node matches. Filenames are unique within a form session (Enketo's
+   * timestamp suffix), so the first match is the only match.
    */
   private findContactOwnerForFilename(filename: string, ctx: ContactOwnerContext): Record<string, any> {
     const match = $(ctx.root)
