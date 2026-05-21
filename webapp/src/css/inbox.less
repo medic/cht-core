@@ -59,7 +59,7 @@ body {
     &.user,
     &.privacy-policy,
     &[class*="ui-extension-"] {
-      .tool-bar {
+      .tool-bar:not([style*="--accent-color"]).tool-bar {
 
         .ellipsis-title,
         .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
@@ -68,6 +68,17 @@ body {
 
         .navigation .mat-icon-back path {
           fill: @text-inverse-color;
+        }
+      }
+      .tool-bar {
+
+        .ellipsis-title,
+        .app-menu-button .mat-icon[fonticon="fa-bars"]:before {
+          color: @tab-navbar-color;
+        }
+
+        .navigation .mat-icon-back path {
+          fill: @tab-navbar-color;
         }
       }
 
@@ -1579,7 +1590,8 @@ mm-sidebar-menu .mat-sidenav-container {
     &.about,
     &.testing,
     &.error,
-    &.privacy-policy {
+    &.privacy-policy,
+    &[class*="ui-extension-"] {
       .page {
         padding-left: 15px;
       }
