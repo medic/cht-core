@@ -1286,7 +1286,6 @@ describe('Enketo service', () => {
       expect(AddAttachment.callCount).to.equal(1);
       expect(AddAttachment.args[0][0]._id).to.equal(actual[0]._id);
     });
-<<<<<<< HEAD
 
     it('should fall back to main doc when FileManager file has no matching XML node', async () => {
       form.validate.resolves(true);
@@ -1353,7 +1352,7 @@ describe('Enketo service', () => {
       expect(mainDocFileCalls).to.be.empty;
     });
 
-    it('should use the main form id (not sub-doc type) for xpath-named sub-doc attachments', async () => {
+    it('should root sub-doc binary attachment names at the owner doc form id', async () => {
       form.validate.resolves(true);
       const content = loadXML('db-doc-with-binary');
       form.getDataStr.returns(content);
@@ -1366,20 +1365,20 @@ describe('Enketo service', () => {
         { _id: 'my-user', phone: '8989' }
       );
 
-      // The legacy xpath-named filename must be rooted at the main form id
-      // (`my-form`) regardless of which doc owns the attachment. Routing to
-      // a sub-doc must NOT swap the root segment to the sub-doc's `type`.
+      // The unified xpath-derived attachment name is rooted at the owner doc's
+      // own form id (sub-docs carry their own `form`), prefixed with
+      // USER_FILE_PREFIX. The main doc falls back to the report form id.
       const subPhoto1Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_1');
       expect(subPhoto1Call).to.exist;
-      expect(subPhoto1Call[1]).to.equal('user-file/my-form/doc1/photo1');
+      expect(subPhoto1Call[1]).to.equal('user-file-thing_1/doc1/photo1');
 
       const subPhoto2Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_2');
       expect(subPhoto2Call).to.exist;
-      expect(subPhoto2Call[1]).to.equal('user-file/my-form/doc2/photo2');
+      expect(subPhoto2Call[1]).to.equal('user-file-thing_2/doc2/photo2');
 
       const mainPhotoCall = AddAttachment.args.find(args => args[2] === 'main_photo_data');
       expect(mainPhotoCall).to.exist;
-      expect(mainPhotoCall[1]).to.equal('user-file/my-form/main_photo');
+      expect(mainPhotoCall[1]).to.equal('user-file-my-form/main_photo');
     });
 
     it('should not attach removed files to sub-docs during edit', async () => {
@@ -1415,8 +1414,6 @@ describe('Enketo service', () => {
       );
       expect(subDocAttachments).to.be.empty;
     });
-=======
->>>>>>> 1052a1878 (feat(#10904): route file attachments to correct sub-docs in report forms)
   });
 
   describe('multimedia', () => {
