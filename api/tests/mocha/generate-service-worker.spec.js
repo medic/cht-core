@@ -11,6 +11,9 @@ const loginController = require('../../src/controllers/login');
 const extensionLibsService = require('../../src/services/extension-libs');
 const uiExtensionService = require('../../src/services/ui-extension');
 const { DOC_IDS } = require('@medic/constants');
+const config = require('../../src/config');
+const dataContext = require('../../src/services/data-context');
+const { roles } = require('@medic/user-management')(config, db, dataContext);
 
 describe('generate service worker', () => {
   let clock;
@@ -28,6 +31,7 @@ describe('generate service worker', () => {
     sinon.stub(extensionLibsService, 'getAll');
     sinon.stub(uiExtensionService, 'getAllProperties').resolves([]);
     sinon.stub(uiExtensionService, 'getScript').resolves();
+    sinon.stub(roles, 'isOffline');
     workboxGenerate = sinon.stub();
     clock = sinon.useFakeTimers();
 
@@ -54,11 +58,13 @@ describe('generate service worker', () => {
     loginController.renderPasswordReset.resolves('passwordresetpage html');
     extensionLibsService.getAll.resolves([{ name: 'bar.js', data: 'barcode' }]);
     uiExtensionService.getAllProperties.resolves([
-      { id: 'offline-ext', roles: [{ offline: true }] },
-      { id: 'online-ext', roles: [{ offline: false }] },
+      { id: 'offline-ext', roles: ['chw'] },
+      { id: 'online-ext', roles: ['nurse'] },
       { id: 'no-roles-ext' },
       { id: 'no-script-ext' },
     ]);
+    roles.isOffline.withArgs(['chw']).returns(true);
+    roles.isOffline.withArgs(['nurse']).returns(false);
     uiExtensionService.getScript.withArgs('offline-ext').resolves({ data: 'my-script' });
     uiExtensionService.getScript.withArgs('no-roles-ext').resolves({ data: 'other extension script' });
     uiExtensionService.getScript.withArgs('no-script-ext').resolves();
@@ -110,7 +116,7 @@ describe('generate service worker', () => {
         '/extension-libs': '["bar.js"]',
         '/extension-libs/bar.js': 'barcode',
         '/ui-extension': '[{"id":"offline-ext","roles":' +
-          '[{"offline":true}]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
+          '["chw"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
         '/ui-extension/offline-ext': 'my-script',
         '/ui-extension/no-roles-ext': 'other extension script'
       },

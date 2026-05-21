@@ -1,7 +1,7 @@
-<mm-tool-bar [title]="extensionTitle | translate" [accentColor]="accentColor"/>
+<mm-tool-bar [title]="extensionTitle | translate" [accentColor]="accentColor" [class]="extensionType"/>
 
 <div class="inner">
-  <div class="inbox page">
+  <div class="inbox col-sm-12 page">
 
     <div class="empty-selection" *ngIf="loading">
       <div><div class="loader"></div></div>

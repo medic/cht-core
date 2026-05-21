@@ -31,7 +31,7 @@ describe('UiExtensionsTabComponent', () => {
   const EXTENSION_ID = 'my-extension';
   const EXTENSION_TITLE = 'My Extension Title';
   const MOCK_CHT_API = { v1: {} };
-  const MOCK_USER_SUMMARY = { context: {} };
+  const MOCK_USER_SUMMARY = { context: { userRole: 'chw' } };
   const MOCK_CONFIG = { key: 'value' };
   const MOCK_ELEMENT = class extends HTMLElement {};
 
@@ -54,6 +54,7 @@ describe('UiExtensionsTabComponent', () => {
     routeParams$ = new BehaviorSubject<any>({ id: EXTENSION_ID });
     activatedRoute = {
       params: routeParams$.asObservable(),
+      snapshot: { params: { id: EXTENSION_ID }, data: { tab: `ui-extension-${EXTENSION_ID}` } },
     };
 
     await TestBed.configureTestingModule({
@@ -84,6 +85,7 @@ describe('UiExtensionsTabComponent', () => {
   it('initializes the extension', fakeAsync(() => {
     expect(component.loading).to.be.true;
     expect(component.extensionTitle).to.equal('');
+    expect(component.extensionType).to.equal('');
 
     fixture.detectChanges();
     flush();
@@ -92,12 +94,13 @@ describe('UiExtensionsTabComponent', () => {
     expect(element.cht).to.deep.equal(MOCK_CHT_API);
     expect(element.inputs).to.deep.equal({
       config: MOCK_CONFIG,
-      userContactSummary: MOCK_USER_SUMMARY,
+      userContactSummary: MOCK_USER_SUMMARY.context,
     });
     expect(component.loading).to.be.false;
     expect(component.errorStack).to.be.undefined;
     expect(component.accentColor).to.be.undefined;
     expect(component.extensionTitle).to.equal(EXTENSION_TITLE);
+    expect(component.extensionType).to.equal('header_tab');
     expect(uiExtensionsService.getExtension).to.have.been.calledOnceWithExactly(EXTENSION_ID);
     expect(performanceService.track).to.have.been.calledOnceWithExactly();
     expect(trackStop).to.have.been.calledOnceWithExactly({ name: `ui-extension:${EXTENSION_ID}:render` });
@@ -125,7 +128,7 @@ describe('UiExtensionsTabComponent', () => {
 
     fixture.detectChanges();
     const toolbar = fixture.nativeElement.querySelector('.tool-bar');
-    expect(toolbar.style.backgroundColor).to.equal('rgb(255, 87, 51)');
+    expect(toolbar.style.getPropertyValue('--accent-color')).to.equal('#FF5733');
   }));
 
   it('handles an error being thrown getting the extension', fakeAsync(() => {
@@ -145,6 +148,7 @@ describe('UiExtensionsTabComponent', () => {
       expectedError
     );
     expect(component.extensionTitle).to.equal('');
+    expect(component.extensionType).to.equal('');
     expect(uiExtensionsService.getExtension).to.have.been.calledOnceWithExactly(EXTENSION_ID);
     expect(performanceService.track).to.have.been.calledOnceWithExactly();
     expect(trackStop).to.have.been.calledOnceWithExactly({ name: `ui-extension:${EXTENSION_ID}:render` });
@@ -168,7 +172,7 @@ describe('UiExtensionsTabComponent', () => {
       properties: {
         id: otherId,
         title: otherTitle,
-        type: 'header_tab',
+        type: 'sidebar_tab',
         config: { other: true },
       },
       Element: OtherElement,
@@ -179,6 +183,7 @@ describe('UiExtensionsTabComponent', () => {
     expect(uiExtensionsService.getExtension.callCount).to.equal(2);
     expect(uiExtensionsService.getExtension.secondCall.args[0]).to.equal(otherId);
     expect(component.extensionTitle).to.equal(otherTitle);
+    expect(component.extensionType).to.equal('sidebar_tab');
     const otherElement = fixture.nativeElement.querySelector(`cht-${otherId}`);
     expect(otherElement).to.exist;
     expect(fixture.nativeElement.querySelector(`cht-${EXTENSION_ID}`)).to.not.exist;

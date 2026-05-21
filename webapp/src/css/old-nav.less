@@ -14,14 +14,14 @@
       padding-left: 0;
       top: @top-without-filter;
     }
-
-    .tool-bar .inner {
-      background-color: @top-header-color;
-    }
   }
 
   .app-menu-button {
     display: none;
+  }
+
+  .header .tabs .selected {
+    background-color: var(--accent-color);
   }
 
   &.messages {
@@ -70,9 +70,11 @@
   &.about,
   &.testing,
   &.privacy-policy,
-  &.user {
+  &.user,
+  &[class*="ui-extension-"]:has(.sidebar_tab) {
     .tool-bar {
       height: 0;
+      background-color: @top-header-color;
     }
 
     .header .tabs .selected {
@@ -84,6 +86,14 @@
         top: @top-without-filter;
         padding-left: 15px;
         padding-top: 15px;
+      }
+    }
+  }
+
+  &[class*="ui-extension-"] {
+    .content {
+      .page {
+        padding-left: 15px;
       }
     }
   }
@@ -373,7 +383,8 @@
     &.about,
     &.testing,
     &.privacy-policy,
-    &.user {
+    &.user,
+    &[class*="ui-extension-"]:has(.sidebar_tab) {
       .content {
         .page {
           top: calc(@top-navbar-height + 5px);

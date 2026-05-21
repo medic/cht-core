@@ -17,6 +17,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
   @ViewChild('uiElementTab') container!: ElementRef;
   extensionTitle = '';
+  extensionType = '';
   loading = true;
   errorStack?: string;
   accentColor?: string;
@@ -52,16 +53,18 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
     this.errorStack = undefined;
     this.accentColor = undefined;
     this.extensionTitle = '';
+    this.extensionType = '';
     if (this.container?.nativeElement) {
       this.container.nativeElement.innerHTML = '';
     }
     const trackRender = this.performanceService.track();
     try {
       const {
-        properties: { title, config, accent_color },
+        properties: { title, config, accent_color, type },
         Element
       } = await this.uiExtensionsService.getExtension(extensionId);
       this.extensionTitle = title ?? '';
+      this.extensionType = type;
       this.accentColor = accent_color;
       if (!customElements.get(elementName)) {
         customElements.define(elementName, Element);
@@ -72,7 +75,7 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
         cht: await this.chtDatasourceService.get(),
         inputs: {
           config,
-          userContactSummary: await this.userContactSummaryService.get(),
+          userContactSummary: (await this.userContactSummaryService.get())?.context,
         },
       });
 
