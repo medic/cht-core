@@ -31,7 +31,7 @@ describe('UiExtensionsTabComponent', () => {
   const EXTENSION_ID = 'my-extension';
   const EXTENSION_TITLE = 'My Extension Title';
   const MOCK_CHT_API = { v1: {} };
-  const MOCK_USER_SUMMARY = { context: {} };
+  const MOCK_USER_SUMMARY = { context: { userRole: 'chw' } };
   const MOCK_CONFIG = { key: 'value' };
   const MOCK_ELEMENT = class extends HTMLElement {};
 
@@ -94,7 +94,7 @@ describe('UiExtensionsTabComponent', () => {
     expect(element.cht).to.deep.equal(MOCK_CHT_API);
     expect(element.inputs).to.deep.equal({
       config: MOCK_CONFIG,
-      userContactSummary: MOCK_USER_SUMMARY,
+      userContactSummary: MOCK_USER_SUMMARY.context,
     });
     expect(component.loading).to.be.false;
     expect(component.errorStack).to.be.undefined;

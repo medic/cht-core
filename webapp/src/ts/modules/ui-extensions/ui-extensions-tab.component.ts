@@ -75,7 +75,7 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
         cht: await this.chtDatasourceService.get(),
         inputs: {
           config,
-          userContactSummary: await this.userContactSummaryService.get(),
+          userContactSummary: (await this.userContactSummaryService.get())?.context,
         },
       });
 
