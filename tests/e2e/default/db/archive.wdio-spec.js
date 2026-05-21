@@ -51,7 +51,7 @@ describe('archive', function () {
     await commonElements.reloadSession();
   });
 
-  it('leaves an archived doc on the offline user device — purge does not propagate', async () => {
+  it('removes an archived doc from the offline user device on the next sync', async () => {
     await loginPage.login(user);
 
     // Confirm the report replicated to the user's device before archiving.
@@ -73,8 +73,7 @@ describe('archive', function () {
     await commonElements.sync();
 
     local = await getLocalDoc(reportToArchive._id);
-    expect(local.ok, 'archived doc must still be on the offline device after sync').to.equal(true);
-    expect(local.doc._id).to.equal(reportToArchive._id);
-    expect(local.doc.form).to.equal('home_visit');
+    expect(local.ok).to.equal(false);
+    expect(local.status).to.equal(404);
   });
 });

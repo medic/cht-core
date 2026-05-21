@@ -37,6 +37,11 @@ const getDocIdsRevPairs = async (docIds) => {
     .map(row => ({ id: row.id, rev: row.value.rev }));
 };
 
+const getArchivedDocs = async (docIds) => {
+  const result = await db.archive.allDocs({ keys: docIds });
+  return result.rows.filter(row => !row.error).map(row => row.id);
+};
+
 const getDocIdsToDelete = async (userCtx, docIds) => {
   if (!docIds.length) {
     return [];
@@ -49,6 +54,9 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
 
   const toPurge = await purgedDocs.getPurgedIds(userCtx, docIds, false);
   toDelete.push(...toPurge);
+
+  const toArchive = await getArchivedDocs(docIds);
+  toDelete.push(...toArchive);
 
   return toDelete;
 };

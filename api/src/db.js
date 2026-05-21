@@ -103,6 +103,7 @@ if (UNIT_TEST_ENV) {
   module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch: fetchFn });
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('_users'), { fetch: fetchFn });
+  module.exports.archive = new PouchDB(`${environment.couchUrl}-archive`, { fetch: fetchFn });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
