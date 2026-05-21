@@ -1,4 +1,5 @@
 FROM couchdb:3.5.0-nouveau
 
-# nouveau index location
+LABEL cht.rebuild="2026-05-21"
+
 VOLUME /data/nouveau
