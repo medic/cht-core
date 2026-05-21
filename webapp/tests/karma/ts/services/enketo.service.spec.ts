@@ -1167,6 +1167,24 @@ describe('Enketo service', () => {
       expect(AddAttachment.args[0][3]).to.equal('image/png');
     });
 
+    it('skips an empty [type=binary] node (no attachment)', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
+      );
+      dbGetAttachment.resolves('<form/>');
+
+      const [actual] = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: { } },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('');
+    });
+
     it('reports with an empty saved binary field re-attach under the same xpath-derived name', async () => {
       // Pre-existing report has `my_file: ""` plus an attachment under
       // `user-file-<form>/<rest>`. On edit the form default re-supplies fresh
