@@ -610,7 +610,11 @@ const updateSettings = async (updates, options = {}) => {
   const needsRefresh = result && result.updated;
 
   if (watcher) {
-    await watcher.promise;
+    if (needsRefresh) {
+      await watcher.promise;
+    } else {
+      watcher.cancel();
+    }
   }
 
   if (!ignoreReload && !sync && (needsRefresh || await hasModal())) {
