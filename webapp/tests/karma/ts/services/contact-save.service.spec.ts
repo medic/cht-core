@@ -421,9 +421,9 @@ describe('ContactSave service', () => {
         '<name>Jane Smith</name>' +
         '<phone>+254712345679</phone>' +
         '<sex>female</sex>' +
-        '<signature type="binary">' +
+        '<badge type="binary">' +
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' +
-        '</signature>' +
+        '</badge>' +
         '</person>' +
         '</data>';
 
@@ -446,7 +446,7 @@ describe('ContactSave service', () => {
       expect(
         addCall.args[1],
         'Should use XPath-based attachment name for binary field'
-      ).to.equal('user-file-contact:person:create/person/signature');
+      ).to.equal('user-file-contact:person:create/person/badge');
       expect(
         addCall.args[2],
         'Should pass the base64 content'
@@ -672,7 +672,7 @@ describe('ContactSave service', () => {
         '<phone>+254712345680</phone>' +
         '<sex>female</sex>' +
         '<photo type="binary">BASE64_PHOTO_DATA</photo>' +
-        '<signature type="binary">BASE64_SIGNATURE_DATA</signature>' +
+        '<badge type="binary">BASE64_BADGE_DATA</badge>' +
         '</person>' +
         '</data>';
 
@@ -720,14 +720,14 @@ describe('ContactSave service', () => {
       expect(photoCall.args[3], 'Binary field content type').to.equal('image/png');
       expect(photoCall.args[4], 'Binary field should be pre-encoded').to.be.true;
 
-      const signatureCall = attachmentService.add.getCall(3);
+      const badgeCall = attachmentService.add.getCall(3);
       expect(
-        signatureCall.args[1],
-        'Signature binary field XPath-based name'
-      ).to.equal('user-file-contact:person:create/person/signature');
-      expect(signatureCall.args[2], 'Signature binary field content').to.equal('BASE64_SIGNATURE_DATA');
-      expect(signatureCall.args[3], 'Binary field content type').to.equal('image/png');
-      expect(signatureCall.args[4], 'Binary field should be pre-encoded').to.be.true;
+        badgeCall.args[1],
+        'Badge binary field XPath-based name'
+      ).to.equal('user-file-contact:person:create/person/badge');
+      expect(badgeCall.args[2], 'Badge binary field content').to.equal('BASE64_BADGE_DATA');
+      expect(badgeCall.args[3], 'Binary field content type').to.equal('image/png');
+      expect(badgeCall.args[4], 'Binary field should be pre-encoded').to.be.true;
     });
   });
 
@@ -888,7 +888,7 @@ describe('ContactSave service', () => {
           '<family><name>Kigali HF</name></family>' +
           '<contact db-doc="true">' +
             '<name>Amina</name>' +
-            '<signature type="binary">BASE64_SIG_DATA</signature>' +
+            '<badge type="binary">BASE64_BADGE_DATA</badge>' +
           '</contact>' +
         '</data>';
       const form = { getDataStr: () => xml };
@@ -903,21 +903,92 @@ describe('ContactSave service', () => {
 
       await service.save(form, null, 'family');
 
-      const sigCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file-contact:family:create/contact/signature');
-      expect(sigCall, 'sibling-routed inline binary should exist').to.not.be.undefined;
-      expect(sigCall.args[0]._id, 'inline binary should land on sibling').to.equal('sib1');
-      expect(sigCall.args[2]).to.equal('BASE64_SIG_DATA');
-      expect(sigCall.args[3]).to.equal('image/png');
-      expect(sigCall.args[4]).to.be.true;
-      // The signature field holds the bare reference (attachment name minus the
-      // `user-file-` prefix), so renderers resolve the image via that rule.
-      expect(sigCall.args[0].signature).to.equal('contact:family:create/contact/signature');
+      const badgeCall = attachmentService.add.getCalls()
+        .find(c => c.args[1] === 'user-file-contact:family:create/contact/badge');
+      expect(badgeCall, 'sibling-routed inline binary should exist').to.not.be.undefined;
+      expect(badgeCall.args[0]._id, 'inline binary should land on sibling').to.equal('sib1');
+      expect(badgeCall.args[2]).to.equal('BASE64_BADGE_DATA');
+      expect(badgeCall.args[3]).to.equal('image/png');
+      expect(badgeCall.args[4]).to.be.true;
+      expect(badgeCall.args[0].badge).to.equal('contact:family:create/contact/badge');
+    });
+
+    it('routes inline binary content inside a repeat child to the repeat doc', async () => {
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<repeat>' +
+            '<child><name>Child A</name><badge type="binary">BASE64_KID_BADGE</badge></child>' +
+          '</repeat>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF' },
+        siblings: {},
+        repeats: { child_data: [
+          { _id: 'kid1', type: 'person', name: 'Child A', parent: 'PARENT' },
+        ] },
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+
+      const badgeCall = attachmentService.add.getCalls().find(c => c.args[2] === 'BASE64_KID_BADGE');
+      expect(badgeCall, 'repeat-child binary attach should exist').to.not.be.undefined;
+      expect(badgeCall.args[0]._id, 'binary lands on the i-th repeat doc').to.equal('kid1');
+
+      const kid = result.preparedDocs.find(d => d._id === 'kid1');
+      expect(kid.badge).to.equal(badgeCall.args[1].replace('user-file-', ''));
+    });
+
+    it('mirrors a nested-group binary value at its dotted field path', async () => {
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            '<details><photo type="binary">BASE64_NESTED</photo></details>' +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', details: {} },
+      });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      const call = attachmentService.add.getCalls().find(c => c.args[2] === 'BASE64_NESTED');
+      expect(call, 'nested binary attach should exist').to.not.be.undefined;
+      expect(main.details.photo).to.equal(call.args[1].replace('user-file-', ''));
+    });
+
+    it('skips an empty binary node (no attachment, field stays empty)', async () => {
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name><photo type="binary"></photo></family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: '' },
+      });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      expect(attachmentService.add.called, 'no attachment for an empty binary node').to.be.false;
+      expect(main.photo).to.equal('');
     });
 
     it('sanitizes field values per-doc', async () => {
-      // Sibling has a special-char filename that must be sanitized in the
-      // sibling's own field; main doc fields stay untouched.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1060,7 +1131,7 @@ describe('ContactSave service', () => {
           '<family><name>Kigali HF</name></family>' +
           '<contact db-doc="true">' +
             '<name>Amina</name>' +
-            '<signature type="binary">FRESH_SIG_BASE64</signature>' +
+            '<badge type="binary">FRESH_BADGE_BASE64</badge>' +
           '</contact>' +
         '</data>';
       const form = { getDataStr: () => xml };
@@ -1072,7 +1143,7 @@ describe('ContactSave service', () => {
             _id: 'sib1',
             type: 'person',
             name: 'Amina',
-            signature: 'FRESH_SIG_BASE64',
+            badge: 'FRESH_BADGE_BASE64',
             parent: 'PARENT',
           },
         },
@@ -1083,14 +1154,12 @@ describe('ContactSave service', () => {
 
       await service.save(form, null, 'family');
 
-      const sigCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file-contact:family:create/contact/signature');
-      expect(sigCall, 'sibling-routed attach should exist').to.not.be.undefined;
-      expect(sigCall.args[0]._id, 'attachment lands on sub-doc, not main').to.equal('sib1');
-      expect(sigCall.args[2]).to.equal('FRESH_SIG_BASE64');
-      // The sub-doc's signature field holds the bare reference, resolved by a
-      // renderer via `user-file-` + value.
-      expect(sigCall.args[0].signature).to.equal('contact:family:create/contact/signature');
+      const badgeCall = attachmentService.add.getCalls()
+        .find(c => c.args[1] === 'user-file-contact:family:create/contact/badge');
+      expect(badgeCall, 'sibling-routed attach should exist').to.not.be.undefined;
+      expect(badgeCall.args[0]._id, 'attachment lands on sub-doc, not main').to.equal('sib1');
+      expect(badgeCall.args[2]).to.equal('FRESH_BADGE_BASE64');
+      expect(badgeCall.args[0].badge).to.equal('contact:family:create/contact/badge');
     });
 
     it('runs orphan cleanup on the edit path for the main doc', async () => {
