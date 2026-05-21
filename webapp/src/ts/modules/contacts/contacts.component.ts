@@ -130,10 +130,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
       this.lastVisitedDateExtras = viewLastVisitedDate;
       this.contactTypes = contactTypes;
 
-      const defaultSort = this.UHCSettings.getContactsDefaultSort(settings);
-
-      if (this.lastVisitedDateExtras) {
-        this.sortDirection = this.defaultSortDirection = defaultSort || 'default';
+      if (this.lastVisitedDateExtras && this.UHCSettings.getContactsDefaultSort(settings)) {
+        this.sortDirection = this.defaultSortDirection = this.UHCSettings.getContactsDefaultSort(settings);
       }
 
       const children = await this.getChildren();
