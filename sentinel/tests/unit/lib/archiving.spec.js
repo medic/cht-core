@@ -102,6 +102,57 @@ describe('Sentinel archiving lib', () => {
     chai.expect(queue[0]._deleted).to.equal(true);
   });
 
+  it('appends a {date, cursor} entry to history on every saveJob, including across cycles', async () => {
+    const pending = job({ _id: 'archive:1', total: 4 });
+    const { queue, putSnapshots } = stubQueue([pending]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd', 'utf8'));
+    lib.__set__('BATCH_SIZE', 2);
+
+    let clock = 1000;
+    const nowStub = sinon.stub(Date, 'now').callsFake(() => clock);
+    const archiveBatch = sinon.stub().callsFake(() => {
+      clock += 10;
+    });
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    // Two saveJob calls: cursor 2 (mid-job), cursor 4 (last batch, also deletes).
+    // After both saves, the job's history holds one entry per saveJob.
+    chai.expect(putSnapshots).to.have.lengthOf(2);
+    chai.expect(queue[0].history).to.deep.equal([
+      { date: 1010, cursor: 2 },
+      { date: 1020, cursor: 4 },
+    ]);
+    nowStub.restore();
+  });
+
+  it('preserves prior-cycle history when resuming a job that was already partially saved', async () => {
+    const earlierHistory = [{ date: 500, cursor: 1 }];
+    const resuming = job({ _id: 'archive:1', total: 3, cursor: 1, history: [...earlierHistory] });
+    const { queue, putSnapshots } = stubQueue([resuming]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc', 'utf8'));
+    lib.__set__('BATCH_SIZE', 10);
+
+    let clock = 2000;
+    sinon.stub(Date, 'now').callsFake(() => clock);
+    const archiveBatch = sinon.stub().callsFake(() => {
+      clock += 5;
+    });
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(putSnapshots[0].history).to.deep.equal([
+      ...earlierHistory,
+      { date: 2005, cursor: 3 },
+    ]);
+    chai.expect(queue[0].history).to.deep.equal([
+      ...earlierHistory,
+      { date: 2005, cursor: 3 },
+    ]);
+  });
+
   it('resumes a job from its existing cursor', async () => {
     const resuming = job({ _id: 'archive:1', total: 4, cursor: 2 });
     stubQueue([resuming]);

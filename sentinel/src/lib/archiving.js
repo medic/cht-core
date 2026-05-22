@@ -4,17 +4,16 @@ const request = require('@medic/couch-request');
 const constants = require('@medic/constants');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
+const archivingUtils = require('@medic/archiving-utils');
 
-const ID_PREFIX = 'archive:';
-const ATTACHMENT_NAME = 'ids';
 const BATCH_SIZE = 1000;
 
 let currentlyArchiving = false;
 
 const fetchNextJob = async () => {
   const result = await db.sentinel.allDocs({
-    startkey: ID_PREFIX,
-    endkey: `${ID_PREFIX}\ufff0`,
+    startkey: constants.PREFIXES.ARCHIVE_JOB,
+    endkey: `${constants.PREFIXES.ARCHIVE_JOB}\ufff0`,
     include_docs: true,
     limit: 1,
   });
@@ -22,8 +21,8 @@ const fetchNextJob = async () => {
 };
 
 const readIds = async (job) => {
-  const buffer = await db.sentinel.getAttachment(job._id, ATTACHMENT_NAME);
-  return buffer.toString('utf8').split('\n');
+  const buffer = await db.sentinel.getAttachment(job._id, archivingUtils.ATTACHMENT_NAME);
+  return archivingUtils.decodeIds(buffer);
 };
 
 const canArchive = (doc) => {
@@ -69,17 +68,22 @@ const persistAudit = async (docsToArchive, date) => {
 };
 
 const indexViews = async () => {
-  await db.medic.query('medic/contacts_by_depth', { limit: 1 });
-  await db.medic.query('medic-client/contacts_by_last_visited', { limit: 1 });
-  await request.get({
-    url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
-    qs: { limit: 1, q: '*:*' }
-  });
+  await Promise.all([
+    db.medic.query('medic/contacts_by_depth', { limit: 1 }),
+    db.medic.query('medic-client/contacts_by_last_visited', { limit: 1 }),
+    request.get({
+      url: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
+      qs: { limit: 1, q: '*:*' }
+    })
+  ]);
 };
 
-const saveJob = async (job) => {
+const saveJob = async (job, batchSize) => {
   const latest = await db.sentinel.get(job._id);
   job._rev = latest._rev;
+  job.cursor += batchSize;
+  job.history = job.history || [];
+  job.history.push({ date: Date.now(), cursor: job.cursor });
   if (job.cursor >= job.total) {
     job._deleted = true;
   }
@@ -95,8 +99,7 @@ const processJob = async (job, deadline) => {
   while (job.cursor < job.total && Date.now() < deadline) {
     const batch = ids.slice(job.cursor, job.cursor + BATCH_SIZE);
     await archiveBatch(batch);
-    job.cursor += batch.length;
-    await saveJob(job);
+    await saveJob(job, batch.length);
     if (++batches % 10 === 0) {
       await indexViews();
     }

@@ -1,32 +1,32 @@
 const readline = require('readline');
 const { v7: uuid } = require('uuid');
 const logger = require('@medic/logger');
+const archivingUtils = require('@medic/archiving-utils');
+const constants = require('@medic/constants');
 
 const db = require('../db');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
+const errors = require('../errors');
 
 const MAX_IDS_PER_JOB = 100 * 1000;
-const ATTACHMENT_NAME = 'ids';
-const ATTACHMENT_TYPE = 'text/plain';
-const ID_PREFIX = 'archive:';
 const EXPECTED_CONTENT_TYPE = 'text/csv';
 const parseCell = (line) => line.trim().replace(/^"(.*)"$/, '$1');
 
 const checkAdmin = async (req) => {
   const userCtx = await auth.getUserCtx(req);
   if (!auth.isDbAdmin(userCtx)) {
-    throw { code: 403, reason: 'Insufficient permissions' };
+    throw new errors.AuthenticationError('User is not an admin');
   }
 };
 
 const checkContentType = (req) => {
   if (!req.is(EXPECTED_CONTENT_TYPE)) {
-    throw { code: 415, reason: `Content-Type must be ${EXPECTED_CONTENT_TYPE}` };
+    throw new errors.ContentTypeError(`Content-Type must be ${EXPECTED_CONTENT_TYPE}`);
   }
 };
 
-const buildJobId = () => `${ID_PREFIX}${uuid()}`;
+const buildJobId = () => `${constants.PREFIXES.ARCHIVE_JOB}${uuid()}`;
 
 const persistJob = async (jobs, ids) => {
   if (!ids.length) {
@@ -35,14 +35,14 @@ const persistJob = async (jobs, ids) => {
 
   const doc = {
     _id: buildJobId(),
-    type: ID_PREFIX,
-    date: new Date().toISOString(),
+    type: constants.PREFIXES.ARCHIVE_JOB,
+    date: Date.now(),
     total: ids.length,
     cursor: 0,
     _attachments: {
-      [ATTACHMENT_NAME]: {
-        content_type: ATTACHMENT_TYPE,
-        data: Buffer.from(ids.join('\n'), 'utf8'),
+      [archivingUtils.ATTACHMENT_NAME]: {
+        content_type: archivingUtils.ATTACHMENT_TYPE,
+        data: archivingUtils.encodeIds(ids),
       },
     },
   };
@@ -71,7 +71,7 @@ const processPayload = async (req) => {
   await persistJob(jobs, buffer);
 
   if (!jobs.length) {
-    throw { code: 400, reason: 'No doc IDs found in request body' };
+    throw new errors.BadRequestError('No valid doc IDs found in request body');
   }
   return jobs;
 };
