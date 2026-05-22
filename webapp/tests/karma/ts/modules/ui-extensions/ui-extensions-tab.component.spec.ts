@@ -15,7 +15,6 @@ import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { SessionService } from '@mm-services/session.service';
-import { beforeEach } from 'node:test';
 
 describe('UiExtensionsTabComponent', () => {
   let fixture: ComponentFixture<UiExtensionsTabComponent>;
