@@ -92,19 +92,6 @@ const saveJob = async (job, batchSize) => {
   await db.sentinel.put(job);
 };
 
-// Records an archive failure on the job doc without advancing the cursor. error_count
-// is bumped on every failure (so persistent failures are visible even after old entries
-// roll off); the errors array keeps only the most recent MAX_ERRORS_KEPT entries.
-const errorMessage = (err) => {
-  if (err?.message) {
-    return err.message;
-  }
-  try {
-    return String(err) || 'Unknown error';
-  } catch {
-    return 'Unknown error';
-  }
-};
 
 const recordError = async (job, err) => {
   try {
@@ -112,7 +99,7 @@ const recordError = async (job, err) => {
     job._rev = latest._rev;
     job.error_count = (job.error_count || 0) + 1;
     job.errors = job.errors || [];
-    job.errors.push({ date: Date.now(), message: errorMessage(err) });
+    job.errors.push({ date: Date.now(), message: err?.message || err?.stack || err });
     if (job.errors.length > MAX_ERRORS_KEPT) {
       job.errors = job.errors.slice(-MAX_ERRORS_KEPT);
     }
