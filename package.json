@@ -177,7 +177,7 @@
     "less": "^4.2.2",
     "loose-envify": "^1.4.0",
     "mocha": "^11.7.4",
-    "module-alias": "^2.2.3",
+    "module-alias": "^2.3.4",
     "nodemon": "^3.1.10",
     "nyc": "^17.1.0",
     "patch-package": "^8.0.1",
