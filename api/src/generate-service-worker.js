@@ -75,13 +75,19 @@ const appendExtensionLibs = async (config) => {
 };
 
 const appendUiExtensions = async (config) => {
-  const extensions = await uiExtensionService.getAllProperties();
-  const offlineExtensions = extensions.filter(ext => !ext.roles || roles.isOffline(ext.roles));
-
   // cache this even if there are no extensions so offline client knows
   config.globPatterns.push('/ui-extension');
-  config.templatedURLs['/ui-extension'] = JSON.stringify(offlineExtensions);
 
+  const extensions = await uiExtensionService.getAllProperties();
+  // Include all extensions here because this endpoint is in globPatterns and so the results for the endpoint
+  // get cached even for online users. Online users call the actual endpoint and do not get the templatedURLs value
+  // set here, but the value returned from the endpoint is cached in the browser service worker anyway. So, the
+  // service worker hash must change even when an online-only ui-extension property changes.
+  config.templatedURLs['/ui-extension'] = JSON.stringify(extensions);
+
+  // Do not include the actual endpoints for online-only extensions. These should only be called by online users and
+  // do not need to be cached in the service worker at all.
+  const offlineExtensions = extensions.filter(ext => !ext.roles || roles.isOffline(ext.roles));
   for (const ext of offlineExtensions) {
     const extPath = path.join('/ui-extension', ext.id);
     config.globPatterns.push(extPath);
