@@ -78,6 +78,8 @@ const indexViews = async () => {
   ]);
 };
 
+const MAX_ERRORS_KEPT = 5;
+
 const saveJob = async (job, batchSize) => {
   const latest = await db.sentinel.get(job._id);
   job._rev = latest._rev;
@@ -90,19 +92,54 @@ const saveJob = async (job, batchSize) => {
   await db.sentinel.put(job);
 };
 
+// Records an archive failure on the job doc without advancing the cursor. error_count
+// is bumped on every failure (so persistent failures are visible even after old entries
+// roll off); the errors array keeps only the most recent MAX_ERRORS_KEPT entries.
+const errorMessage = (err) => {
+  if (err?.message) {
+    return err.message;
+  }
+  try {
+    return String(err) || 'Unknown error';
+  } catch {
+    return 'Unknown error';
+  }
+};
+
+const recordError = async (job, err) => {
+  try {
+    const latest = await db.sentinel.get(job._id);
+    job._rev = latest._rev;
+    job.error_count = (job.error_count || 0) + 1;
+    job.errors = job.errors || [];
+    job.errors.push({ date: Date.now(), message: errorMessage(err) });
+    if (job.errors.length > MAX_ERRORS_KEPT) {
+      job.errors = job.errors.slice(-MAX_ERRORS_KEPT);
+    }
+    await db.sentinel.put(job);
+  } catch (writeErr) {
+    logger.error(`Archiving: could not record error on job ${job._id}: %o`, writeErr);
+  }
+};
+
 const processJob = async (job, deadline) => {
   logger.info(`Archiving: processing job ${job._id} (${job.cursor}/${job.total})`);
 
-  const ids = await readIds(job);
-  let batches = 0;
+  try {
+    const ids = await readIds(job);
+    let batches = 0;
 
-  while (job.cursor < job.total && Date.now() < deadline) {
-    const batch = ids.slice(job.cursor, job.cursor + BATCH_SIZE);
-    await archiveBatch(batch);
-    await saveJob(job, batch.length);
-    if (++batches % 10 === 0) {
-      await indexViews();
+    while (job.cursor < job.total && Date.now() < deadline) {
+      const batch = ids.slice(job.cursor, job.cursor + BATCH_SIZE);
+      await archiveBatch(batch);
+      await saveJob(job, batch.length);
+      if (++batches % 10 === 0) {
+        await indexViews();
+      }
     }
+  } catch (err) {
+    await recordError(job, err);
+    throw err;
   }
 };
 

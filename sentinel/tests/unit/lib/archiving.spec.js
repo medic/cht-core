@@ -186,6 +186,76 @@ describe('Sentinel archiving lib', () => {
     chai.expect(queue[1]._deleted).to.not.equal(true);
   });
 
+  it('records the error on the job doc when archiveBatch throws', async () => {
+    const failing = job({ _id: 'archive:1', total: 1 });
+    const { queue } = stubQueue([failing]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
+    sinon.stub(Date, 'now').returns(5000);
+
+    const archiveBatch = sinon.stub().rejects(new Error('disk full'));
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(queue[0].error_count).to.equal(1);
+    chai.expect(queue[0].errors).to.deep.equal([{ date: 5000, message: 'disk full' }]);
+    chai.expect(queue[0]._deleted).to.not.equal(true);
+    chai.expect(queue[0].cursor).to.equal(0);
+  });
+
+  it('caps the errors array at MAX_ERRORS_KEPT while error_count counts every failure', async () => {
+    const failing = job({
+      _id: 'archive:1',
+      total: 1,
+      error_count: 4,
+      errors: [
+        { date: 1, message: 'old-1' },
+        { date: 2, message: 'old-2' },
+        { date: 3, message: 'old-3' },
+        { date: 4, message: 'old-4' },
+      ],
+    });
+    const { queue } = stubQueue([failing]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
+    let clock = 100;
+    sinon.stub(Date, 'now').callsFake(() => ++clock);
+
+    const archiveBatch = sinon.stub().rejects(new Error('boom-5'));
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+    // Each lib.archive() call is one failed batch → one new error entry, error_count bumped.
+    await lib.archive();
+    await lib.archive();
+
+    chai.expect(queue[0].error_count).to.equal(7); // 4 seeded + 3 new
+    chai.expect(queue[0].errors).to.have.lengthOf(5);
+    // Oldest two seeded entries fell off; latest three are the new failures.
+    chai.expect(queue[0].errors.map(e => e.message)).to.deep.equal([
+      'old-3',
+      'old-4',
+      'boom-5',
+      'boom-5',
+      'boom-5',
+    ]);
+  });
+
+  it('falls back to a placeholder message when the error has no message', async () => {
+    const failing = job({ _id: 'archive:1', total: 1 });
+    const { queue } = stubQueue([failing]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
+    sinon.stub(Date, 'now').returns(9000);
+
+    // An error-shaped value with no `message` and no useful toString.
+    const archiveBatch = sinon.stub().rejects(Object.create(null));
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(queue[0].error_count).to.equal(1);
+    chai.expect(queue[0].errors[0].message).to.equal('Unknown error');
+  });
+
   it('is a no-op while another archive run is in flight', async () => {
     let release;
     sinon.stub(db.sentinel, 'allDocs').returns(new Promise(resolve => {
