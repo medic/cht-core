@@ -15,6 +15,7 @@ import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { SessionService } from '@mm-services/session.service';
+import { beforeEach } from 'node:test';
 
 describe('UiExtensionsTabComponent', () => {
   let fixture: ComponentFixture<UiExtensionsTabComponent>;
@@ -214,4 +215,119 @@ describe('UiExtensionsTabComponent', () => {
 
     expect(uiExtensionsService.getExtension.callCount).to.equal(1);
   }));
+
+  describe('global error listener', () => {
+    let addEventListenerSpy;
+    let removeEventListenerSpy;
+    let consoleErrorMock;
+
+    beforeEach(() => {
+      addEventListenerSpy = sinon.spy(globalThis, 'addEventListener');
+      removeEventListenerSpy = sinon.spy(globalThis, 'removeEventListener');
+      consoleErrorMock = sinon.stub(console, 'error');
+    });
+
+    const findCall = (calls, type) => calls.find(call => call.args[0] === type);
+
+    it('logs errors with the extension id tag when an error event fires', fakeAsync(() => {
+      fixture.detectChanges();
+      flush();
+
+      const errorRegistration = findCall(addEventListenerSpy.getCalls(), 'error');
+      const rejectionRegistration = findCall(addEventListenerSpy.getCalls(), 'unhandledrejection');
+      expect(errorRegistration!.args[1]).to.equal(rejectionRegistration!.args[1]);
+
+      const listener = errorRegistration!.args[1] as (event: any) => void;
+      const error = new Error('runtime boom');
+      listener({ error, message: error.message });
+
+      expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
+        `Error in UI extension: "${EXTENSION_ID}"`,
+        error
+      );
+    }));
+
+    it('logs the rejection reason when an unhandledrejection event fires', fakeAsync(() => {
+      fixture.detectChanges();
+      flush();
+
+      const listener = findCall(addEventListenerSpy.getCalls(), 'unhandledrejection')!
+        .args[1] as (event: any) => void;
+      const reason = new Error('reject boom');
+      const event = new PromiseRejectionEvent('unhandledrejection', {
+        promise: Promise.resolve(),
+        reason,
+      });
+      listener(event);
+
+      expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
+        `Error in UI extension: "${EXTENSION_ID}"`,
+        reason
+      );
+    }));
+
+    it('falls back to event.message when ErrorEvent has no error object', fakeAsync(() => {
+      fixture.detectChanges();
+      flush();
+
+      const listener = findCall(addEventListenerSpy.getCalls(), 'error')!
+        .args[1] as (event: any) => void;
+      listener({ error: undefined, message: 'plain message' });
+
+      expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
+        `Error in UI extension: "${EXTENSION_ID}"`,
+        'plain message'
+      );
+    }));
+
+    it('re-registers the listener with the new extension id when switching extensions', fakeAsync(() => {
+      fixture.detectChanges();
+      flush();
+
+      const initialListener = findCall(addEventListenerSpy.getCalls(), 'error')!.args[1];
+
+      const otherId = 'other-extension';
+      uiExtensionsService.getExtension.resolves({
+        properties: { id: otherId, title: 'Other', type: 'header_tab' },
+        Element: class extends HTMLElement {},
+      });
+      routeParams$.next({ id: otherId });
+      flush();
+
+      const removeErrorCall = removeEventListenerSpy.getCalls()
+        .find(call => call.args[0] === 'error' && call.args[1] === initialListener);
+      const removeRejectionCall = removeEventListenerSpy.getCalls()
+        .find(call => call.args[0] === 'unhandledrejection' && call.args[1] === initialListener);
+      expect(removeErrorCall).to.exist;
+      expect(removeRejectionCall).to.exist;
+
+      const newRegistration = addEventListenerSpy.getCalls()
+        .filter(call => call.args[0] === 'error')
+        .find(call => call.args[1] !== initialListener);
+      const newListener = newRegistration!.args[1] as (event: any) => void;
+      const error = new Error('after switch');
+      newListener({ error, message: error.message });
+
+      expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
+        `Error in UI extension: "${otherId}"`,
+        error
+      );
+    }));
+
+    it('unregisters the error listener on destroy', fakeAsync(() => {
+      fixture.detectChanges();
+      flush();
+
+      const listener = findCall(addEventListenerSpy.getCalls(), 'error')!.args[1];
+
+      component.ngOnDestroy();
+
+      const removeErrorCall = removeEventListenerSpy.getCalls()
+        .find(call => call.args[0] === 'error' && call.args[1] === listener);
+      const removeRejectionCall = removeEventListenerSpy.getCalls()
+        .find(call => call.args[0] === 'unhandledrejection' && call.args[1] === listener);
+      expect(removeErrorCall).to.exist;
+      expect(removeRejectionCall).to.exist;
+    }));
+  });
 });
