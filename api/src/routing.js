@@ -227,13 +227,14 @@ app.use(
           `${environment.buildsUrl}/`,
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
-        childSrc: [`'self'`],
+        childSrc: [`'self'`, 'https://www.youtube.com'],
         formAction: [`'self'`],
         imgSrc: [
           `'self'`,
           'data:', // unsafe
           'blob:',
-          '*.openstreetmap.org', // used for enketo geopoint widget
+          '*.openstreetmap.org',// used for enketo geopoint widget
+          'https:', 
         ],
         mediaSrc: [
           `'self'`,
