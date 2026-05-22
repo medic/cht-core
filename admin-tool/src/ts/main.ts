@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { appConfig } from './app.config';
 
 window.$ = window.jQuery = require('jquery');
+require('select2');
 window.PouchDB = require('pouchdb-browser').default;
 
 if (environment.production) {

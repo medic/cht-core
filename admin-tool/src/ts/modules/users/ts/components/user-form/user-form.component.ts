@@ -12,7 +12,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Select2SearchService } from '@admin-tool-services/select2search.service';
 import { SettingsService } from '@admin-tool-services/settings.service';
 import { UsersService } from '@admin-tool-services/users.service';
@@ -107,6 +107,7 @@ export class UserFormComponent implements OnInit, OnChanges {
     private select2SearchService: Select2SearchService,
     private settingsService: SettingsService,
     private usersService: UsersService,
+    private translateService: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -331,7 +332,10 @@ export class UserFormComponent implements OnInit, OnChanges {
       return;
     }
     if (this.model.password.length < PASSWORD_MINIMUM_LENGTH) {
-      this.errors.password = 'password.length.minimum';
+      this.errors.password = this.translateService.instant(
+        'password.length.minimum',
+        { minimum: PASSWORD_MINIMUM_LENGTH },
+      );
       return;
     }
     if (passwordTester(this.model.password) < PASSWORD_MINIMUM_SCORE) {
