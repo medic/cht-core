@@ -1536,23 +1536,7 @@ const waitForLogs = async (container, tail, ...regex) => {
     .filter(Boolean);
   const proc = spawn(cmd, params, { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
-  let readyReject;
-  const ready = new Promise((resolve, reject) => {
-    receivedFirstLine = resolve;
-    readyReject = reject;
-  });
-
-  proc.on('close', code => {
-    if (!isReady) {
-      readyReject(new Error(`Spawned process exited with code ${code} before ready`));
-    }
-  });
-
-  proc.on('error', err => {
-    if (!isReady) {
-      readyReject(err);
-    }
-  });
+  const ready = new Promise(resolve => receivedFirstLine = resolve);
 
   const checkOutput = (data) => {
     data = data.toString();
