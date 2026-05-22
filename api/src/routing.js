@@ -233,7 +233,7 @@ app.use(
           `'self'`,
           'data:', // unsafe
           'blob:',
-          '*.openstreetmap.org',// used for enketo geopoint widget
+          '*.openstreetmap.org', // used for enketo geopoint widget
           'https:', 
         ],
         mediaSrc: [
