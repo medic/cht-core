@@ -132,11 +132,16 @@ describe('UI Extensions tab', () => {
         const customElement = await $('#ui-element-tab cht-sidebar-tab');
         await customElement.waitForExist();
 
-        const title = await customElement.$('h2').getText();
-        const imgSrc = await customElement.$('img').getAttribute('src');
+        const shadowContent = await browser.execute(() => {
+          const el = document.querySelector('#ui-element-tab cht-sidebar-tab');
+          return {
+            title: el.shadowRoot.querySelector('h2')?.textContent,
+            imgSrc: el.shadowRoot.querySelector('img')?.getAttribute('src'),
+          };
+        });
         // Uses injected translate function
-        expect(title).to.equal('with-resources is starting');
-        expect(imgSrc).to.match(/^data:image\/png;base64,.+/);
+        expect(shadowContent.title).to.equal('with-resources is starting');
+        expect(shadowContent.imgSrc).to.match(/^data:image\/png;base64,.+/);
 
         const telemetries = await getTelemetry(`ui-extension:sidebar-tab:render`, user.username);
         expect(telemetries).to.have.lengthOf(1);
