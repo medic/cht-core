@@ -4,6 +4,10 @@ import {
   Page,
 } from './libs/core';
 import {
+  and,
+  byContactType,
+  byFreetext,
+  byUuid,
   ContactTypeQualifier,
   FreetextQualifier,
   UuidQualifier
@@ -138,5 +142,139 @@ export namespace v1 {
       return getPagedGenerator(getPage, qualifier);
     };
     return curriedGen;
+  };
+
+  /**
+   * Operations for working with contacts.
+   */
+  export interface Datasource {
+    /**
+     * Returns a contact by their UUID.
+     * @param uuid the UUID of the contact to retrieve
+     * @returns the contact or `null` if no contact is found for the UUID
+     * @throws InvalidArgumentError if no UUID is provided
+     */
+    getByUuid: (uuid: string) => Promise<Nullable<v1.Contact>>;
+
+    /**
+     * Returns a contact by their UUID along with the contact's parent lineage.
+     * @param uuid the UUID of the contact to retrieve
+     * @returns the contact or `null` if no contact is found for the UUID
+     * @throws InvalidArgumentError if no UUID is provided
+     */
+    getByUuidWithLineage: (uuid: string) => Promise<Nullable<v1.ContactWithLineage>>;
+
+    /**
+     * Returns an array of contact identifiers for the provided page specifications, freetext and type.
+     * @param freetext the search keyword(s)
+     * @param type the type of contact to search for
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided specifications
+     * @throws InvalidArgumentError if either `freetext` or `type` is not provided
+     * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByTypeFreetext: (
+      freetext: string,
+      type: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns an array of contact identifiers for the provided page specifications and type.
+     * @param type the type of contact to search for
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided specifications
+     * @throws InvalidArgumentError if `type` is not provided
+     * @throws InvalidArgumentError if the `type is invalid for a contact
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByType: (
+      type: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns an array of contact identifiers for the provided page specifications and freetext.
+     * @param freetext the search keyword(s)
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of identifiers to return. Default is 10000.
+     * @returns a page of contact identifiers for the provided specifications
+     * @throws InvalidArgumentError if `freetext` is not provided
+     * @throws InvalidArgumentError if the `freetext` is less than 3 characters long or if it contains white-space
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getUuidsPageByFreetext: (
+      freetext: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<string>>;
+
+    /**
+     * Returns a generator for fetching all the contact identifiers for given `freetext` and `type`.
+     * @param freetext the search keyword(s)
+     * @param type the type of contact identifiers to return
+     * @returns a generator for fetching all the contact identifiers matching the given `freetext` and `type`.
+     * @throws InvalidArgumentError if either `freetext` or `type` is not provided
+     * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
+     */
+    getUuidsByTypeFreetext: (freetext: string, type: string) => AsyncGenerator<string, null>;
+
+    /**
+     * Returns a generator for fetching all the contact identifiers for given `type`.
+     * @param type the type of contact identifiers to return
+     * @returns a generator for fetching all the contact identifiers matching the given `type`.
+     * @throws InvalidArgumentError if `type` is not provided
+     * @throws InvalidArgumentError if the `type is invalid for a contact
+     */
+    getUuidsByType: (type: string) => AsyncGenerator<string, null>;
+
+    /**
+     * Returns a generator for fetching all the contact identifiers for given `freetext`.
+     * @param freetext the search keyword(s)
+     * @returns a generator for fetching all the contact identifiers matching the given `freetext`.
+     * @throws InvalidArgumentError if `freetext`is not provided
+     * @throws InvalidArgumentError if the `freetext` is empty or invalid
+     */
+    getUuidsByFreetext: (freetext: string) => AsyncGenerator<string, null>;
+  }
+
+  /** @internal */
+  export const getDatasource = (ctx: DataContext): Datasource => {
+    return {
+      getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
+      getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
+      getUuidsPageByTypeFreetext: (
+        freetext,
+        type,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(and(byFreetext(freetext), byContactType(type)), cursor, limit),
+      getUuidsPageByType: (
+        type,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(byContactType(type), cursor, limit),
+      getUuidsPageByFreetext: (
+        freetext,
+        cursor = null,
+        limit = DEFAULT_IDS_PAGE_LIMIT
+      ) => ctx.bind(v1.getUuidsPage)(byFreetext(freetext), cursor, limit),
+      getUuidsByTypeFreetext: (freetext, type) => ctx.bind(v1.getUuids)(
+        and(byFreetext(freetext), byContactType(type))
+      ),
+      getUuidsByType: (type) => ctx.bind(v1.getUuids)(byContactType(type)),
+      getUuidsByFreetext: (freetext) => ctx.bind(v1.getUuids)(byFreetext(freetext)),
+    };
   };
 }

@@ -2,7 +2,42 @@
 
 The CHT Datasource library is intended to be agnostic and simple. It provides a versioned API from feature modules.
 
-See the TSDoc in [the code](./src/index.ts) for more information about using the API.
+## Usage
+
+To get started, get a `DataContext`:
+
+```ts
+import { getRemoteDataContext, getLocalDataContext } from '@medic/cht-datasource';
+
+const dataContext = isOnlineOnly
+  ? getRemoteDataContext(...)
+  : getLocalDataContext(...);
+```
+
+Then, use the context to perform data operations. There are two different usage modes available for performing the
+same operations.
+
+### Declarative usage mode
+```ts
+import { Person, Qualifier } from '@medic/cht-datasource';
+
+const getPerson = Person.v1.get(dataContext);
+// Or
+const getPerson = dataContext.bind(Person.v1.get);
+
+const myUuid = 'my-uuid';
+const myPerson = await getPerson(Qualifier.byUuid(uuid));
+```
+
+### Imperative usage mode
+
+```ts
+import { getDatasource } from '@medic/cht-datasource';
+
+const datasource = getDatasource(dataContext);
+const myUuid = 'my-uuid';
+const myPerson = await datasource.v1.person.getByUuid(myUuid);
+```
 
 ## Development
 

@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.build.json",
     "build-watch": "tsc --watch -p tsconfig.build.json",
     "test": "nyc --nycrcPath='../nyc.config.js' mocha \"test/**/*\"",
-    "gen-docs": "typedoc ./src/index.ts"
+    "gen-docs": "typedoc ./src/index.ts --readme none --excludeInternal"
   },
   "author": "",
   "license": "Apache-2.0",

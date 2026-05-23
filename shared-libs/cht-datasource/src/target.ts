@@ -9,7 +9,7 @@ import {
   isIdQualifier,
   ReportingPeriodQualifier,
   UsernameQualifier,
-  IdQualifier
+  IdQualifier, and, byReportingPeriod, byContactIds, byContactId, byUsername
 } from './qualifier';
 import * as Local from './local';
 import * as Remote from './remote';
@@ -160,5 +160,94 @@ export namespace v1 {
       return getPagedGenerator(getPage, qualifier);
     };
     return curriedGen;
+  };
+
+  /**
+   * Operations for working with targets.
+   */
+  export interface Datasource {
+    /**
+     * Returns a target by identifier.
+     * @param id the identifier of the target to retrieve
+     * @returns the target or `null` if no target is found for the identifier
+     * @throws InvalidArgumentError if no identifier is provided
+     */
+    getById: (id: string) => Promise<Nullable<v1.Target>>;
+
+    /**
+     * Returns the target for the given username and reporting period.
+     * @param reportingPeriod the reporting period for the target
+     * @param contactId the contact identifier of the user for the target
+     * @param username the username (without the "org.couchdb.user:" prefix) of the user for the target
+     * @returns the target or `null` if no target is found
+     * @throws InvalidArgumentError if no reporting period, contact identifier, and/or username is provided
+     */
+    getByReportingPeriodContactIdUsername: (
+      reportingPeriod: string,
+      contactId: string,
+      username: string
+    ) => Promise<Nullable<v1.Target>>;
+
+    /**
+     * Returns an array of targets for the provided page specifications.
+     * @param reportingPeriod the reporting period for the targets
+     * @param contactIds the contact identifiers for the targets
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of targets to return. Default is 100.
+     * @returns a page of targets for the provided specifications
+     * @throws InvalidArgumentError if no reporting period is provided
+     * @throws InvalidArgumentError if no contact identifiers are provided
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @see {@link getByReportingPeriodContactIds} which provides the same data, but without having to manually
+     * account for paging
+     */
+    getPageByReportingPeriodContactIds: (
+      reportingPeriod: string,
+      contactIds: string | [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Target>>;
+
+    /**
+     * Returns a generator for fetching all targets in the reporting period for the given contact identifiers.
+     * @param reportingPeriod the reporting period for the targets
+     * @param contactIds the contact identifiers for the targets
+     * @returns a generator for fetching all targets with the given type
+     * @throws InvalidArgumentError if no reporting period is provided
+     * @throws InvalidArgumentError if no contact identifiers are provided
+     */
+    getByReportingPeriodContactIds: (
+      reportingPeriod: string,
+      contactIds: string | [string, ...string[]]
+    ) => AsyncGenerator<v1.Target, null>;
+  }
+
+  /** @internal */
+  export const getDatasource = (ctx: DataContext): Datasource => {
+    return {
+      getById: (id) => ctx.bind(v1.get)(byId(id)),
+      getByReportingPeriodContactIdUsername: (reportingPeriod, contactId, username) => ctx.bind(v1.get)(and(
+        byReportingPeriod(reportingPeriod),
+        byContactId(contactId),
+        byUsername(username)
+      )),
+      getPageByReportingPeriodContactIds: (
+        reportingPeriod,
+        contactIds,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(
+        and(
+          byReportingPeriod(reportingPeriod),
+          Array.isArray(contactIds) ? byContactIds(contactIds) : byContactId(contactIds)
+        ), cursor, limit
+      ),
+      getByReportingPeriodContactIds: (reportingPeriod, contactIds) => ctx.bind(v1.getAll)(and(
+        byReportingPeriod(reportingPeriod),
+        Array.isArray(contactIds) ? byContactIds(contactIds) : byContactId(contactIds)
+      )),
+    };
   };
 }
