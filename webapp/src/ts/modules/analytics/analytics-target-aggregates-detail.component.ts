@@ -97,7 +97,7 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
     ).subscribe(([params, inited, loaded]) => {
       if (loaded && inited && params) {
         setTimeout(() => {
-          // two birds with one stone
+          // accomplish two things at once
           // both this component and the parent (analytics-target-aggregates) need to be updated
           this.getAggregatesDetail(params.id);
         });
