@@ -15,11 +15,15 @@ import * as Place from './place';
 import * as Report from './report';
 import * as Target from './target';
 
-export { Nullable, NonEmptyArray, Page } from './libs/core';
-export { DataContext } from './libs/data-context';
+export {
+  Nullable, NonEmptyArray, Page, DataObject, DataValue, DataArray, DataPrimitive, NormalizedParent
+} from './libs/core';
+export { Doc } from './libs/doc';
+export { DataContext, SettingsService } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export { InvalidArgumentError, ResourceNotFoundError } from './libs/error';
+export { SourceDatabases } from './local/libs/data-context';
 export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';

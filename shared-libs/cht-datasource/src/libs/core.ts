@@ -34,8 +34,14 @@ export const isNonEmptyArray = <T>(value: T[]): value is NonEmptyArray<T> => !!v
 /** @internal */
 export const getLastElement = <T>(array: NonEmptyArray<T>): T => array[array.length - 1];
 
-type DataValue = DataPrimitive | DataArray | DataObject;
-type DataPrimitive = string | number | boolean | Date | null | undefined;
+/**
+ * A serializable value.
+ */
+export type DataValue = DataPrimitive | DataArray | DataObject;
+/**
+ * A privative value.
+ */
+export type DataPrimitive = string | number | boolean | Date | null | undefined;
 
 const isDataPrimitive = (value: unknown): value is DataPrimitive => {
   return value === null
@@ -46,7 +52,10 @@ const isDataPrimitive = (value: unknown): value is DataPrimitive => {
     || value instanceof Date;
 };
 
-type DataArray = readonly DataValue[];
+/**
+ * A serializable array.
+ */
+export type DataArray = readonly DataValue[];
 
 const isDataArray = (value: unknown): value is DataArray => {
   return Array.isArray(value) && value.every(v => isDataPrimitive(v) || isDataArray(v) || isDataObject(v));
