@@ -29,7 +29,7 @@ describe('CHTScriptApiService service', () => {
     dbService = { get: sinon.stub().resolves({}) };
     http = { get: sinon.stub().returns(of([])) };
     translateService = { instant: sinon.stub() };
-    customResourceService = { getResource: sinon.stub() };
+    customResourceService = { getResource: sinon.stub(), init: sinon.stub().resolves() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -67,6 +67,7 @@ describe('CHTScriptApiService service', () => {
       expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(customResourceService.init.calledOnceWithExactly()).to.be.true;
     });
 
     it('should initialise service for online user', async () => {
@@ -84,6 +85,7 @@ describe('CHTScriptApiService service', () => {
       expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       expect(dbService.get.notCalled).to.be.true;
+      expect(customResourceService.init.calledOnceWithExactly()).to.be.true;
     });
 
     it('should return versioned api', async () => {

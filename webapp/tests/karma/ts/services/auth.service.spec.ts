@@ -37,7 +37,10 @@ describe('Auth Service', () => {
         { provide: DbService, useValue: { get: sinon.stub().resolves({}) } },
         { provide: HttpClient, useValue: http },
         { provide: TranslateService, useValue: { instant: sinon.stub().returns('translated') } },
-        { provide: CustomResourceService, useValue: { getResource: sinon.stub().returns(null) } },
+        { provide: CustomResourceService, useValue: {
+          getResource: sinon.stub().returns(null),
+          init: sinon.stub().resolves()
+        } },
       ]
     });
 

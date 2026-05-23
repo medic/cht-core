@@ -32,6 +32,47 @@ describe('ResourceIcons service', () => {
   });
 
 
+  describe('init', () => {
+    it('should fetch resources doc when called from constructor', fakeAsync(() => {
+      const resources = {
+        resources: { child: 'child.png' },
+        _attachments: { 'child.png': { content_type: 'image/png', data: 'kiddlywinks' } }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      expect(get.args).to.deep.equal([
+        [ DOC_IDS.BRANDING, { attachments: true } ],
+        [ DOC_IDS.PARTNERS, { attachments: true } ],
+        [ DOC_IDS.RESOURCES, { attachments: true } ],
+      ]);
+      // the resources doc should now be cached
+      const actual = service.getImg('child', DOC_IDS.RESOURCES);
+      expect(actual).to.equal(
+        '<span class="resource-icon" title="child" ><img src="data:image/png;base64,kiddlywinks" /></span>'
+      );
+      expect(get).to.have.been.calledThrice;
+    }));
+
+    it('should await resources', async () => {
+      get.resolves();
+      const service = getService();
+      await service.init();
+
+      expect(get.args).to.deep.equal([
+        [ DOC_IDS.BRANDING, { attachments: true } ],
+        [ DOC_IDS.PARTNERS, { attachments: true } ],
+        [ DOC_IDS.RESOURCES, { attachments: true } ],
+      ]);
+
+      await service.init();
+
+      // Resources are not reloaded after subsequent calls
+      expect(get).to.have.been.calledThrice;
+    });
+  });
+
   describe('getImg function', () => {
 
     it('should return empty string when given no name', () => {

@@ -33,7 +33,7 @@ export class CustomResourceService {
     private readonly db: DbService,
   ) {
     this.RESOURCE_DOC_IDS.slice(1).forEach(doc => this.updateResources(doc));
-    this.initResources = this.updateResources(this.RESOURCE_DOC_IDS[0]);
+    this.initResources = this.init();
 
     this.changes.subscribe({
       key: 'resource-icons',
@@ -118,6 +118,14 @@ export class CustomResourceService {
       });
   }
 
+  async init() {
+    if (this.initResources) {
+      return this.initResources;
+    }
+
+    return this.updateResources(this.RESOURCE_DOC_IDS[0]);
+  }
+
   getImg(name?, docId?, faPlaceholder?) {
     if (!name || !docId) {
       return '';
@@ -139,9 +147,8 @@ export class CustomResourceService {
     return this.getAttachment(name, DOC_IDS.RESOURCES);
   }
 
-  replacePlaceholders($elem) {
-    return this.initResources.then(() => {
-      this.updateDom($elem, this.RESOURCE_DOC_IDS[0]);
-    });
+  async replacePlaceholders($elem) {
+    await this.init();
+    this.updateDom($elem, this.RESOURCE_DOC_IDS[0]);
   }
 }

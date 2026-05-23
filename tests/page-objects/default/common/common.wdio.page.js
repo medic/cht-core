@@ -609,6 +609,7 @@ module.exports = {
   getJsonErrorText,
   openHamburgerMenu,
   closeHamburgerMenu,
+  hamburguerMenuItemByOption,
   openMoreOptionsMenu,
   accessEditOption,
   accessDeleteOption,
