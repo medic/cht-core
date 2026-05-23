@@ -18,3 +18,5 @@ CHT_COMPOSE_PATH=/cht/compose
 COUCHDB_PASSWORD=medicScalability
 EOF
 docker compose up -d
+sleep 60
+/root/cht-core/scripts/add-local-ip-certs-to-docker.sh  cht-nginx-1
