@@ -89,6 +89,14 @@ if ! run_validation "K3s-K3d Multi Node (pre-existing data)" \
 fi
 
 echo ""
+echo "Running Backwards Compatibility Validations..."
+
+if ! run_validation "Backwards compat (no api/sentinel sections) - K3s-K3d" \
+    "-f values/deployment-single.yaml -f values/platform-k3s-k3d.yaml -f tests/backwards-compat.yaml"; then
+    overall_success=false
+fi
+
+echo ""
 if [ "$overall_success" = true ]; then
     echo "All validations passed!"
     exit 0
