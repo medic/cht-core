@@ -1,4 +1,4 @@
-import { DataContext } from '../src';
+import { DataContext, Page } from '../src';
 import sinon, { SinonStub } from 'sinon';
 import * as Context from '../src/libs/data-context';
 import * as Qualifier from '../src/qualifier';
@@ -12,13 +12,15 @@ import * as Input from '../src/input';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('report', () => {
-  const dataContext = { } as DataContext;
+  const dataContext = { bind: () => null } as DataContext;
+  let dataContextBind: SinonStub;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
 
   beforeEach(() => {
+    dataContextBind = sinon.stub(dataContext, 'bind');
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
@@ -418,6 +420,144 @@ describe('report', () => {
         expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.update, Remote.Report.v1.update))
           .to.be.true;
         expect(updateReportDoc.calledOnceWithExactly(input)).to.be.true;
+      });
+    });
+
+    describe('getDatasource', () => {
+      let report: Report.v1.Datasource;
+
+      beforeEach(() => report = Report.v1.getDatasource(dataContext));
+
+      it('contains expected keys', () => {
+        expect(report).to.have.all.keys([
+          'getUuidsByFreetext',
+          'getUuidsPageByFreetext',
+          'getByUuid',
+          'create',
+          'update',
+          'getByUuidWithLineage',
+        ]);
+      });
+
+      it('getByUuid', async () => {
+        const expectedReport = {};
+        const reportGet = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportGet);
+        const qualifier = { uuid: 'my-report-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedReport = await report.getByUuid(qualifier.uuid);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.get)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedReport = {};
+        const reportGet = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportGet);
+        const qualifier = { uuid: 'my-report-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedReport = await report.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
+        expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getUuidsPageByFreetext', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = { data: [], cursor: null };
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const freetext = 'abc';
+        const limit = 2;
+        const cursor = '1';
+        const qualifier = { freetext };
+        const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const returnedContactIds = await report.getUuidsPageByFreetext(freetext, cursor, limit);
+
+        expect(returnedContactIds).to.equal(expectedReportIds);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuidsPage)).to.be.true;
+        expect(
+          reportGetIdsPage.calledOnceWithExactly(qualifier, cursor, limit)
+        ).to.be.true;
+        expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+
+      it('getUuidsPageByFreetext uses default cursor and limit', async () => {
+        const expectedReportIds: Page<Report.v1.Report> = {data: [], cursor: null};
+        const reportGetIdsPage = sinon.stub().resolves(expectedReportIds);
+        dataContextBind.returns(reportGetIdsPage);
+        const freetext = 'abc';
+        const qualifier = { freetext };
+        sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const returnedContactIds = await report.getUuidsPageByFreetext(freetext);
+
+        expect(returnedContactIds).to.equal(expectedReportIds);
+        expect(reportGetIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
+      });
+
+      it('getUuidsByFreetext', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetIds);
+        const freetext = 'abc';
+        const qualifier = { freetext };
+        const byFreetext = sinon.stub(Qualifier, 'byFreetext').returns(qualifier);
+
+        const res = report.getUuidsByFreetext(freetext);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+
+      it('create', async () => {
+        const reportInput = { form: 'apoorva', type: 'report', contact: 'c1' };
+        const expectedReport = {
+          ...reportInput,
+          reported_date: 12312312
+        };
+        const reportCreate = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportCreate);
+
+        const returnedReport = await report.create(reportInput);
+
+        expect(returnedReport).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.create)).to.be.true;
+        expect(reportCreate.calledOnceWithExactly(reportInput)).to.be.true;
+      });
+
+      it('update', async () => {
+        const reportInput = {
+          form: 'apoorva',
+          type: DOC_TYPES.DATA_RECORD,
+          contact: { _id: 'c1' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312,
+          fields: {}
+        };
+        const expectedReport = {
+          ...reportInput,
+          _rev: '2-def',
+        };
+        const reportUpdate = sinon.stub().resolves(expectedReport);
+        dataContextBind.returns(reportUpdate);
+
+        const returnedPlace = await report.update(reportInput);
+
+        expect(returnedPlace).to.equal(expectedReport);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.update)).to.be.true;
+        expect(reportUpdate.calledOnceWithExactly(reportInput)).to.be.true;
       });
     });
   });
