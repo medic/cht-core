@@ -65,9 +65,9 @@ export class UpdatePasswordComponent {
     try {
       const user:any = await this.userSettingsService.get();
       const username = user.name;
-      await this.updatePasswordService.update(username, currentPassword, newPassword);
+      await this.updatePasswordService.update(username, currentPassword!, newPassword!);
       try {
-        await this.userLoginService.login(username, newPassword);
+        await this.userLoginService.login(username, newPassword!);
       } catch (err) {
         if (err.status === 302) {
           this.close();

@@ -22,7 +22,7 @@ export class ExtractLineageService {
       return contact;
     }
     return contact.parent
-      ? { _id: contact._id, parent: this.extract(contact.parent) as ContactLineage }
+      ? { _id: contact._id, parent: this.extract(contact.parent) ?? undefined }
       : { _id: contact._id };
   }
 

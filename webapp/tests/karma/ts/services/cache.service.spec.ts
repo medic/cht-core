@@ -129,6 +129,23 @@ describe('Cache Service', () => {
     });
   });
 
+  it('does not crash and does not invalidate when invalidate is omitted', (done) => {
+    const docs = [ { _id: '1' } ];
+    const cache = service.register({
+      get: (callback) => callback(null, docs)
+    });
+    cache((err, results) => {
+      expect(err).to.equal(null);
+      expect(results).to.deep.equal(docs);
+      expect(() => changesCallback({ id: '1', changes: [ { rev: '1-xyz' } ] })).not.to.throw();
+      cache((err2, results2) => {
+        expect(err2).to.equal(null);
+        expect(results2).to.deep.equal(docs);
+        done();
+      });
+    });
+  });
+
   it('invalidates the cache on new doc', (done) => {
     const newDoc = { _id: '2', name: 'alex' };
     const initial = [ { _id: '1', name: 'gareth' } ];
