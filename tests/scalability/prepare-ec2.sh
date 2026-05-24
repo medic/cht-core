@@ -3,7 +3,8 @@ set -e
 
 # This script can be called remotely with:
 # sudo su -
-# source <(curl -s https://raw.githubusercontent.com/medic/cht-core/refs/heads/medic-infra-1394-graviton-do-not-merge/tests/scalability/prepare-ec2.sh)
+# curl -O https://raw.githubusercontent.com/medic/cht-core/refs/heads/medic-infra-1394-graviton-do-not-merge/tests/scalability/prepare-ec2.sh
+# bash prepare-ec2.sh
 
 
 shutdown -P +60
@@ -34,6 +35,8 @@ while [[ count -le max  ]]; do
     count=max
   fi
   ((count=count+1))
+  echo "waiting for nginx to be ready..."
+  sleep 1
 done
 
 arch=$(dpkg --print-architecture)
