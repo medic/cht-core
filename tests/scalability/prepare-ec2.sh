@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# This script can be called remotely with:
+# sudo su -
+# source <(curl -s https://raw.githubusercontent.com/medic/cht-core/refs/heads/medic-infra-1394-graviton-do-not-merge/tests/scalability/prepare-ec2.sh)
+
+
 shutdown -P +60
 mkdir -p /cht/upgrade-service  /cht/compose
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -45,3 +50,22 @@ else
   exit 1
 fi
 curl -Os ${node_exp_url}
+tar xvzf node_exporter-1.11.1.linux-*.tar.gz
+mv node_exporter/bin/node_exporter /usr/local/bin/node_exporter
+
+bash -c 'cat <<EOF > /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
+systemctl daemon-reload
+systemctl enable node_exporter
+systemctl start node_exporter
