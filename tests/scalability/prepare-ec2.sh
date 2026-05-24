@@ -42,16 +42,17 @@ node_exp_url='https://github.com/prometheus/node_exporter/releases/download/v1.1
 if [[ "$arch" == "amd64" ]]; then
   node_exp_url="${node_exp_url}amd64.tar.gz"
   echo "found amd64"
-elif [[ "$arch" e==q "arm64" ]]; then
+elif [[ "$arch" == "arm64" ]]; then
   node_exp_url="${node_exp_url}arm64.tar.gz"
   echo "found arm64"
 else
   echo "${node_exp_url} not found, exiting"
   exit 1
 fi
-curl -Os ${node_exp_url}
+echo "fetching from ${node_exp_url} "
+curl -sLO ${node_exp_url}
 tar xvzf node_exporter-1.11.1.linux-*.tar.gz
-mv node_exporter/bin/node_exporter /usr/local/bin/node_exporter
+mv node_exporter-1.11.1.linux-*/node_exporter /usr/local/bin/node_exporter
 
 bash -c 'cat <<EOF > /etc/systemd/system/node_exporter.service
 [Unit]
