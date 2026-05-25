@@ -1,5 +1,5 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
+import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByKeys, queryDocIdsByRange } from './libs/doc';
 import {
   ContactGetUuidsQualifier,
   ContactTypeQualifier,
@@ -8,6 +8,7 @@ import {
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isPhoneQualifier,
+  isPhonesQualifier,
   UuidQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
@@ -108,6 +109,7 @@ export namespace v1 {
     const queryNouveauFreetext = queryByFreetext(medicDb, 'contacts_by_freetext');
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
     const queryViewByPhone = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_phone');
+    const queryViewByPhones = queryDocIdsByKeys(medicDb, 'medic-client/contacts_by_phone');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
@@ -119,6 +121,12 @@ export namespace v1 {
       if (isPhoneQualifier(qualifier)) {
         const skip = validateCursor(cursor);
         const getPageFn = (limit: number, skip: number) => queryViewByPhone(qualifier.phone, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
+      if (isPhonesQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const getPageFn = (limit: number, skip: number) => queryViewByPhones(qualifier.phones, limit, skip);
         return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 

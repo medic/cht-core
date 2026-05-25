@@ -174,19 +174,58 @@ export const isPhoneQualifier = (qualifier: unknown): qualifier is PhoneQualifie
 };
 
 /**
+ * Bulk variant of {@link PhoneQualifier} — identifies contacts whose `phone` field matches any value
+ * in the provided list. Use this when looking up many phones in a single call to avoid N round trips.
+ * Values are matched as-is — no normalization.
+ */
+export type PhonesQualifier = Readonly<{ phones: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding entities whose `phone` field matches any of the given values.
+ * @param phones the phone numbers to search for. Passed as-is to the underlying view.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if `phones` is not a non-empty array of non-empty strings
+ */
+export const byPhones = (phones: [string, ...string[]]): PhonesQualifier => {
+  if (!Array.isArray(phones) || phones.length === 0 || !phones.every(p => isString(p) && p.length > 0)) {
+    throw new InvalidArgumentError(`Invalid phones [${JSON.stringify(phones)}].`);
+  }
+  return { phones };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link PhonesQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ */
+export const isPhonesQualifier = (qualifier: unknown): qualifier is PhonesQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'phones', type: 'object' })
+    && Array.isArray(qualifier.phones)
+    && qualifier.phones.length > 0
+    && qualifier.phones.every(p => typeof p === 'string' && p.length > 0);
+};
+
+/**
  * The set of qualifier shapes accepted by `Contact.v1.getUuidsPage` / `Contact.v1.getUuids` for
  * filtering contacts. Extend this union (and {@link isContactGetUuidsQualifier}) when adding a new
  * filtering dimension; call sites that accept any of them should reference this alias rather than
  * spelling out the member types.
  */
-export type ContactGetUuidsQualifier = ContactTypeQualifier | FreetextQualifier | PhoneQualifier;
+export type ContactGetUuidsQualifier =
+  | ContactTypeQualifier
+  | FreetextQualifier
+  | PhoneQualifier
+  | PhonesQualifier;
 
 /**
  * Returns `true` if the given qualifier is any member of {@link ContactGetUuidsQualifier}.
  * @param qualifier the qualifier to check
  */
 export const isContactGetUuidsQualifier = (qualifier: unknown): qualifier is ContactGetUuidsQualifier => {
-  return isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier) || isPhoneQualifier(qualifier);
+  return isContactTypeQualifier(qualifier)
+    || isFreetextQualifier(qualifier)
+    || isPhoneQualifier(qualifier)
+    || isPhonesQualifier(qualifier);
 };
 
 /**

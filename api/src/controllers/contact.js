@@ -167,5 +167,98 @@ module.exports = {
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
+
+    /**
+     * @openapi
+     * /api/v1/contact/uuid:
+     *   post:
+     *     summary: Get contact UUIDs (bulk variant)
+     *     operationId: v1ContactUuidPost
+     *     description: >
+     *       Bulk variant of the GET endpoint. Accepts array-valued qualifiers in a JSON body — used
+     *       when the array would not fit safely in a query string. The only multi-value qualifier
+     *       currently accepted is `phones`. Returns the same paginated `{ data, cursor }` shape as
+     *       the GET endpoint.
+     *     tags: [Contact]
+     *     x-since: 4.21.0
+     *     x-permissions:
+     *       hasAll: [can_view_contacts]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               phones:
+     *                 type: array
+     *                 items:
+     *                   type: string
+     *                 description: >
+     *                   Phone numbers to match exactly against the contact's `phone` field. Passed
+     *                   as-is — no normalization. One CouchDB round trip regardless of array size.
+     *               cursor:
+     *                 type: string
+     *                 nullable: true
+     *               limit:
+     *                 type: integer
+     *             required: [phones]
+     *     responses:
+     *       '200':
+     *         description: A page of contact UUIDs
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                     type: string
+     *                 cursor:
+     *                   $ref: '#/components/schemas/PageCursor'
+     *               required: [data, cursor]
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    postUuids: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
+
+      // POST body mirrors the GET query-param shape, with array values where the qualifier accepts
+      // many. Mutual-exclusivity rules match the GET path: list the multi-value params here and
+      // mirror COMBINABLE.
+      const QUALIFIER_PARAMS = ['phones'];
+      const COMBINABLE = [];
+      const present = QUALIFIER_PARAMS.filter(name => req.body && req.body[name] !== undefined);
+
+      if (!present.length) {
+        return serverUtils.error(
+          { status: 400, message: `At least one of body params ${QUALIFIER_PARAMS.join(', ')} is required` },
+          req,
+          res
+        );
+      }
+      if (present.length > 1 && !present.every(name => COMBINABLE.includes(name))) {
+        return serverUtils.error(
+          {
+            status: 400,
+            message: `Body params ${present.join(', ')} are mutually exclusive`,
+          },
+          req,
+          res
+        );
+      }
+
+      const qualifier = {};
+      if (req.body.phones) {
+        Object.assign(qualifier, Qualifier.byPhones(req.body.phones));
+      }
+      const docs = await getContactIds(qualifier, req.body.cursor, req.body.limit);
+      return res.json(docs);
+    }),
   },
 };

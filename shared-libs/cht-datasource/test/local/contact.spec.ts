@@ -212,6 +212,7 @@ describe('local contact', () => {
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewByType: SinonStub;
       let queryViewByPhone: SinonStub;
+      let queryViewByPhones: SinonStub;
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewTypeFreetextByKey: SinonStub;
@@ -227,6 +228,7 @@ describe('local contact', () => {
 
         queryViewByType = sinon.stub();
         queryViewByPhone = sinon.stub();
+        queryViewByPhones = sinon.stub();
         queryViewFreetextByKey = sinon.stub();
         queryViewTypeFreetextByKey = sinon.stub();
         const queryDocIdsByKeyStub = sinon.stub(LocalDoc, 'queryDocIdsByKey');
@@ -242,6 +244,10 @@ describe('local contact', () => {
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_type_freetext')
           .returns(queryViewTypeFreetextByKey);
+
+        sinon.stub(LocalDoc, 'queryDocIdsByKeys')
+          .withArgs(localContext.medicDb, 'medic-client/contacts_by_phone')
+          .returns(queryViewByPhones);
 
         queryViewFreetextByRange = sinon.stub();
         queryViewTypeFreetextByRange = sinon.stub();
@@ -408,6 +414,80 @@ describe('local contact', () => {
 
         it('throws for invalid cursor', async () => {
           const qualifier = Qualifier.byPhone('+15551234567');
+          const cursor = 'not a number';
+
+          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
+            .to.be.rejectedWith(
+              InvalidArgumentError,
+              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+            );
+        });
+      });
+
+      describe('phones qualifier (bulk)', () => {
+        beforeEach(() => {
+          useNouveauIndexes.resolves(false);
+          fetchAndFilterIdsInner.resolves(expectedResult);
+        });
+
+        ([
+          [null, 0],
+          ['2', 2]
+        ] as [string | null, number][]).forEach(([cursor, skip]) => {
+          it(`queries contacts_by_phone with keys: [...] in a single round trip [cursor=${cursor}]`,
+            async () => {
+              const phones: [string, ...string[]] = ['+15551234567', '+15559999999', '+44123456'];
+              const qualifier = Qualifier.byPhones(phones);
+
+              const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+
+              expect(res).to.deep.equal(expectedResult);
+              expect(queryViewByPhone.notCalled).to.be.true;
+              expect(queryViewByType.notCalled).to.be.true;
+              expect(queryNouveauFreetext.notCalled).to.be.true;
+              expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+
+              const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+              pageFn(limit, skip);
+
+              // Single call to the bulk view query — not N calls to the single-key one
+              expect(queryViewByPhones.calledOnceWithExactly(phones, limit, skip)).to.be.true;
+            });
+        });
+
+        it('passes phone values through to the view as-is (no normalization per element)', async () => {
+          const phones: [string, ...string[]] = ['  +1 (555) 123 4567  ', '+2'];
+          const qualifier = Qualifier.byPhones(phones);
+
+          await Contact.v1.getUuidsPage(localContext)(qualifier, null, limit);
+
+          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, 0);
+
+          expect(queryViewByPhones.calledOnceWithExactly(phones, limit, 0)).to.be.true;
+        });
+
+        it('walks two cursor pages with the same phones array', async () => {
+          const phones: [string, ...string[]] = ['+1', '+2'];
+          const qualifier = Qualifier.byPhones(phones);
+          const smallLimit = 5;
+          const firstPage = { cursor: '5', data: ['a', 'b', 'c', 'd', 'e'] };
+          const secondPage = { cursor: null, data: ['f', 'g'] };
+          fetchAndFilterIdsInner.onFirstCall().resolves(firstPage);
+          fetchAndFilterIdsInner.onSecondCall().resolves(secondPage);
+
+          const page1 = await Contact.v1.getUuidsPage(localContext)(qualifier, null, smallLimit);
+          expect(page1).to.deep.equal(firstPage);
+          expect(fetchAndFilterIdsInner.firstCall.args).to.deep.equal([smallLimit, 0]);
+
+          const page2 = await Contact.v1.getUuidsPage(localContext)(qualifier, page1.cursor, smallLimit);
+          expect(page2).to.deep.equal(secondPage);
+          expect(fetchAndFilterIdsInner.secondCall.args).to.deep.equal([smallLimit, 5]);
+        });
+
+        it('throws for invalid cursor', async () => {
+          const qualifier = Qualifier.byPhones(['+1']);
           const cursor = 'not a number';
 
           await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))

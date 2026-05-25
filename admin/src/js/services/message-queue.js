@@ -99,12 +99,9 @@ angular.module('services').factory('MessageQueue',
 
       return datasourcePromise
         .then(function(datasource) {
-          return $q.all(phoneNumbers.map(function(phone) {
-            return datasource.v1.contact.collectUuidsByPhone(phone);
-          }));
+          return datasource.v1.contact.collectUuidsByPhones(phoneNumbers);
         })
-        .then(function(idsPerPhone) {
-          const ids = idsPerPhone.flat();
+        .then(function(ids) {
           return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
         })
         .then(function(summaries) {

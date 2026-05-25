@@ -11,11 +11,18 @@ describe('remote contact', () => {
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
 
+  let postResourceInnermost: SinonStub;  // (body) => Promise<T>
+  let postResourceMiddle: SinonStub;     // (context) => (body)
+  let postResourceOuter: SinonStub;      // (path) => (context)
+
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
+    postResourceInnermost = sinon.stub();
+    postResourceMiddle = sinon.stub().returns(postResourceInnermost);
+    postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceMiddle);
   });
 
   afterEach(() => sinon.restore());
@@ -207,6 +214,55 @@ describe('remote contact', () => {
           const page2 = await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, page1.cursor, 5);
           expect(page2).to.deep.equal(secondPage);
           expect(getResourcesInner.secondCall.args[0]).to.deep.equal({ limit: '5', cursor: '5', phone });
+        });
+      });
+
+      describe('phones qualifier (bulk)', () => {
+        const phones: [string, ...string[]] = ['+15551234567', '+15559999999'];
+        const phonesQualifier = { phones };
+
+        it('POSTs to the same path with phones in the JSON body', async () => {
+          const expectedResponse = { data: ['a', 'b'], cursor };
+          postResourceInnermost.resolves(expectedResponse);
+
+          const result = await Contact.v1.getUuidsPage(remoteContext)(phonesQualifier, cursor, limit);
+
+          expect(result).to.equal(expectedResponse);
+          expect(postResourceOuter.calledOnceWithExactly('api/v1/contact/uuid')).to.be.true;
+          expect(postResourceMiddle.calledOnceWithExactly(remoteContext)).to.be.true;
+          expect(postResourceInnermost.calledOnceWithExactly({
+            phones,
+            limit,
+            cursor,
+          })).to.be.true;
+          // GET endpoint not touched
+          expect(getResourcesInner.notCalled).to.be.true;
+        });
+
+        it('omits cursor from the body when cursor is null', async () => {
+          postResourceInnermost.resolves({ data: [], cursor: null });
+
+          await Contact.v1.getUuidsPage(remoteContext)(phonesQualifier, null, limit);
+
+          expect(postResourceInnermost.calledOnceWithExactly({
+            phones,
+            limit,
+          })).to.be.true;
+        });
+
+        it('walks two cursor pages with limit 5', async () => {
+          const firstPage = { data: ['a', 'b', 'c', 'd', 'e'], cursor: '5' };
+          const secondPage = { data: ['f'], cursor: null };
+          postResourceInnermost.onFirstCall().resolves(firstPage);
+          postResourceInnermost.onSecondCall().resolves(secondPage);
+
+          const page1 = await Contact.v1.getUuidsPage(remoteContext)(phonesQualifier, null, 5);
+          expect(page1).to.deep.equal(firstPage);
+          expect(postResourceInnermost.firstCall.args[0]).to.deep.equal({ phones, limit: 5 });
+
+          const page2 = await Contact.v1.getUuidsPage(remoteContext)(phonesQualifier, page1.cursor, 5);
+          expect(page2).to.deep.equal(secondPage);
+          expect(postResourceInnermost.secondCall.args[0]).to.deep.equal({ phones, limit: 5, cursor: '5' });
         });
       });
     });

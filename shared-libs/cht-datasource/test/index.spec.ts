@@ -344,6 +344,7 @@ describe('CHT Script API - getDatasource', () => {
             'getUuidsByType',
             'getUuidsByPhone',
             'collectUuidsByPhone',
+            'collectUuidsByPhones',
           ]
         );
       });
@@ -590,6 +591,32 @@ describe('CHT Script API - getDatasource', () => {
         sinon.stub(Qualifier, 'byPhone').returns({ phone: '+15551234567' });
 
         const res = await contact.collectUuidsByPhone('+15551234567');
+
+        expect(res).to.deep.equal([]);
+      });
+
+      it('collectUuidsByPhones collects matching uuids across all input phones', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const phones: [string, ...string[]] = ['+1', '+2', '+3'];
+        const phonesQualifier = { phones };
+        const byPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+
+        const res = await contact.collectUuidsByPhones(phones);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(phonesQualifier)).to.be.true;
+        expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
+      });
+
+      it('collectUuidsByPhones returns empty array when no matches across all phones', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator([]));
+        dataContextBind.returns(contactGetIds);
+        const phones: [string, ...string[]] = ['+1', '+2'];
+        sinon.stub(Qualifier, 'byPhones').returns({ phones });
+
+        const res = await contact.collectUuidsByPhones(phones);
 
         expect(res).to.deep.equal([]);
       });
