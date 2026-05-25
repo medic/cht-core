@@ -34,9 +34,17 @@ setupCHT() {
 
   cd tests/scalability
 
+  updateUsersList
   # Update the url field using jq and save to the config file
   jq --arg url "$MEDIC_URL" '.url = $url' config.json > temp.json && mv temp.json config.json
   npm ci
+}
+
+updateUsersList() {
+  users=$(wget -qO- "$MEDIC_URL_AUTH/api/v1/users")
+  jq --argjson users "$users" \
+    '.users = [$users[] | select(.type == "chw") | {name: .username, pass: "password"}]' \
+    config.json > temp.json && mv temp.json config.json
 }
 
 setupJmeter() {

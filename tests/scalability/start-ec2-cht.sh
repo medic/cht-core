@@ -54,16 +54,15 @@ waitForInstanceUp () {
   echo Api Is up
 }
 
-seedData () {
-  echo installing cht-conf
-  npm install cht-conf
+setupTestDataGenerator() {
+  cd "$CHT_BASE_DIR"
+  echo "installing test data generator"
+  git clone https://github.com/medic/test-data-generator.git
+  cd test-data-generator
+  npm ci
+  export COUCH_URL=$1
 
-  echo Seeding data
-  echo cht url is "$1"
-  ./node_modules/.bin/cht --url="$1" --accept-self-signed-certs --force \
-      csv-to-docs \
-      upload-docs \
-      create-users
+  npm run generate ./sample-designs/easy-mode.js
 }
 
 forwardSentinelSeq () {
@@ -124,7 +123,7 @@ url=https://$PublicDnsName
 waitForInstanceUp "$url"
 
 MEDIC_CONF_URL='https://admin:medicScalability@'$PublicDnsName
-seedData "$MEDIC_CONF_URL"
+setupTestDataGenerator "$MEDIC_CONF_URL"
 forwardSentinelSeq "$MEDIC_CONF_URL"
 
 sed -i '4s~^~'MEDIC_URL="$url"'\n~' run_suite.sh
