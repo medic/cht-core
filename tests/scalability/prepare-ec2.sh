@@ -23,18 +23,21 @@ set_hostname(){
 
 output_system_info(){
   BUILD=$1
+  FILE=system.info.txt
   lines="-----------------"
-  echo $lines > system.info.txt
-  date >> system.info.txt
-  echo $lines >> system.info.txt
-  echo "Running CHT Core ${BUILD}" >> system.info.txt
-  echo $lines >> system.info.txt
-  uname -a >> system.info.txt
-  echo $lines >> system.info.txt
-  lsb_release -a >> system.info.txt
-  echo $lines >> system.info.txt
-  ec2metadata >> system.info.txt
-  echo $lines >> system.info.txt
+  echo $lines > $FILE
+  date >> $FILE
+  echo $lines >> $FILE
+  echo "Running CHT Core ${BUILD}" >> $FILE
+  echo $lines >> $FILE
+  uname -a >> $FILE
+  echo $lines >> $FILE
+  lsb_release -a >> $FILE
+  echo $lines >> $FILE
+  docker version >> $FILE
+  echo $lines >> $FILE
+  ec2metadata >> $FILE
+  echo $lines >> $FILE
 }
 
 install_docker(){
