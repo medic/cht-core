@@ -21,6 +21,22 @@ set_hostname(){
   hostnamectl set-hostname $1
 }
 
+output_system_info(){
+  BUILD=$1
+  lines="-----------------"
+  echo $lines > system.info.txt
+  date >> system.info.txt
+  echo $lines >> system.info.txt
+  echo "Running CHT Core ${BUILD}" >> system.info.txt
+  echo $lines >> system.info.txt
+  uname -a >> system.info.txt
+  echo $lines >> system.info.txt
+  lsb_release -a >> system.info.txt
+  echo $lines >> system.info.txt
+  ec2metadata >> system.info.txt
+  echo $lines >> system.info.txt
+}
+
 install_docker(){
   echo "starting install_docker"
   curl -fsSL https://get.docker.com -o get-docker.sh
@@ -109,4 +125,7 @@ install_cht "$CHT_VERSION"
 install_node_exporter
 enable_node_exporter
 install_local_ip_cert
-echo "DONE"
+output_system_info "$CHT_VERSION"
+echo
+echo "DONE! System Info saved to disk in system.info.tx"
+cat system.info.txt
