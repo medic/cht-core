@@ -18,7 +18,7 @@ add_ssh_keys(){
 
 set_hostname(){
   echo "starting set_hostname"
-  sudo hostnamectl set-hostname $1
+  hostnamectl set-hostname $1
 }
 
 install_docker(){
@@ -31,11 +31,11 @@ install_cht(){
   echo "starting install_cht"
   BUILD=$1
   COMPOSE_URL="https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:$BUILD"
-  sudo mkdir -p /cht/upgrade-service  /cht/compose
-  sudo curl -s https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml \
+  mkdir -p /cht/upgrade-service  /cht/compose
+  curl -s https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml \
     -o /cht/upgrade-service/docker-compose.yml
-  sudo curl -s "$COMPOSE_URL"/docker-compose/cht-core.yml -o /cht/compose/cht-core.yml
-  sudo curl -s "$COMPOSE_URL"/docker-compose/cht-couchdb.yml -o /cht/compose/cht-couchdb.yml
+  curl -s "$COMPOSE_URL"/docker-compose/cht-core.yml -o /cht/compose/cht-core.yml
+  curl -s "$COMPOSE_URL"/docker-compose/cht-couchdb.yml -o /cht/compose/cht-couchdb.yml
 
   echo "    install_cht got compose files"
   echo "    install_cht starting CHT"
@@ -45,7 +45,7 @@ DOCKER_CONFIG_PATH=/home/.docker
 CHT_COMPOSE_PATH=/cht/compose
 COUCHDB_PASSWORD=medicScalability
 EOF
-  sudo docker compose --progress quiet up --detach
+  docker compose --progress quiet up --detach
   echo "    install_cht CHT started"
 }
 
@@ -58,7 +58,7 @@ install_local_ip_cert(){
     nginx=$(docker ps --format "table {{.Names}}" | grep cht-nginx-1)
     if [[ "$nginx" == "cht-nginx-1" ]]; then
       curl -sO https://raw.githubusercontent.com/medic/cht-core/refs/heads/master/scripts/add-local-ip-certs-to-docker.sh
-      sudo bash ./add-local-ip-certs-to-docker.sh cht-nginx-1
+      bash ./add-local-ip-certs-to-docker.sh cht-nginx-1
       count=max
     fi
     ((count=count+1))
@@ -82,12 +82,12 @@ install_node_exporter(){
   echo "fetching from ${node_exp_url} "
   curl -sLO ${node_exp_url}
   tar xvzf node_exporter-1.11.1.linux-*.tar.gz
-  sudo mv node_exporter-1.11.1.linux-*/node_exporter /usr/local/bin/node_exporter
+  mv node_exporter-1.11.1.linux-*/node_exporter /usr/local/bin/node_exporter
 }
 
 enable_node_exporter(){
   echo "starting enable_node_exporter"
-  sudo bash -c 'cat <<EOF > /etc/systemd/system/node_exporter.service
+  bash -c 'cat <<EOF > /etc/systemd/system/node_exporter.service
 [Unit]
 Description=Node Exporter
 After=network.target
@@ -100,10 +100,15 @@ ExecStart=/usr/local/bin/node_exporter
 WantedBy=multi-user.target
 EOF'
 
-  sudo systemctl daemon-reload
-  sudo systemctl enable node_exporter
-  sudo systemctl start node_exporter
+  systemctl daemon-reload
+  systemctl enable node_exporter
+  systemctl start node_exporter
 }
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
 
 CHT_VERSION=$1
 HOST_NAME=$2
