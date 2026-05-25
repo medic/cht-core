@@ -2,28 +2,38 @@
 set -e
 
 add_ssh_keys(){
+  echo "starting add_ssh_keys"
+  mkdir -p /home/ubuntu/.ssh/
+  touch /home/ubuntu/.ssh/authorized_keys
+  echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCeiJ17mk+U7EOPqs5jKCBS+WpobaoH78co52rLv83JARJZA/1o9PscdwkojPpvaOrc7ZMaACwjtzueUzTIczSyI1pSM7b7C55bcua03oST0AxoJ5jgaYWFDLPjHRw/MinfYtF1KCDYNJ5RyqHEo2dRVVgbfa/tJU4IBT1Y4CKFWbBVLPPtTSxotoBTqFhl5tPfGko7S/idsOx1SHL2Qbw4D99zdeggCkQPHiXuf585BFTgi9AH/4rxhGWKyc0zoWyAn18ujcJ/F6qRGCckyH/mkjv/qm4gYP9dliPyfjbxuTumCINUbcoAYQf5IxFO1nxAv2gVgkUskgFTJQ1J+JsBx3yLRUd+0faX4mo90NWC+cuS5Z7xqfucz8Mt3+Jb65ri0tAurZCNzMW68qJmPYeNS273eJiu2tZUNcm9vCdarwpsTNoZQ/w1fQ0kxV5nRIs9YE5kHqj3tB0L8EkRvUlMxu2bAeng1GkL0/QXgK+pmhpdZ1ZmGhgHicntMqq+osE= diana@laptop" >> /home/ubuntu/.ssh/authorized_keys
   echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIARW6HBO5RDEHDPBOLsajCEAxP/Cn+uGQwPdBz89q5D3 mrjones@airbuntu2" >> /home/ubuntu/.ssh/authorized_keys
   echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHSPFnouayrnP39+7Y3CrMOco8BFCVQitOLwnwFEgFOi mrjones@theplip" >> /home/ubuntu/.ssh/authorized_keys
   echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKlJwZnBVjIpPgUu2GF34cPwUIFXapstbch8XfLn3rfR mrjones@plip.com" >> /home/ubuntu/.ssh/authorized_keys
 }
 
 set_hostname(){
+  echo "starting set_hostname"
   sudo hostnamectl set-hostname $1
 }
 
 install_docker(){
+  echo "starting install_docker"
   curl -fsSL https://get.docker.com -o get-docker.sh
   sh ./get-docker.sh
 }
 
 install_cht(){
-  COMPOSE_URL="https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:${BUILD}"
+  echo "starting install_cht"
+  BUILD=$1
+  COMPOSE_URL="https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:$BUILD"
   mkdir -p /cht/upgrade-service  /cht/compose
   curl -s https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml \
     -o /cht/upgrade-service/docker-compose.yml
-  curl -s "$BUILD"/docker-compose/cht-core.yml -o /cht/compose/cht-core.yml
-  curl -s "$BUILD"/docker-compose/cht-couchdb.yml -o /cht/compose/cht-couchdb.yml
+  curl -s "$COMPOSE_URL"/docker-compose/cht-core.yml -o /cht/compose/cht-core.yml
+  curl -s "$COMPOSE_URL"/docker-compose/cht-couchdb.yml -o /cht/compose/cht-couchdb.yml
 
+  echo "    install_cht got compose files"
+  echo "    install_cht starting CHT"
   cd /cht/upgrade-service/
   cat > /cht/upgrade-service//.env <<- EOF
 DOCKER_CONFIG_PATH=/home/.docker
@@ -31,26 +41,29 @@ CHT_COMPOSE_PATH=/cht/compose
 COUCHDB_PASSWORD=medicScalability
 EOF
   docker compose --progress quiet up --detach
+  echo "    install_cht CHT started"
 }
 
 install_local_ip_cert(){
+  echo "starting install_local_ip_cert"
   max=500
   count=0
+  echo -n "waiting for nginx to be ready..."
   while [[ count -le max  ]]; do
     nginx=$(docker ps --format "table {{.Names}}" | grep cht-nginx-1)
     if [[ "$nginx" == "cht-nginx-1" ]]; then
-
       curl -sO https://raw.githubusercontent.com/medic/cht-core/refs/heads/master/scripts/add-local-ip-certs-to-docker.sh
       bash ./add-local-ip-certs-to-docker.sh cht-nginx-1
       count=max
     fi
     ((count=count+1))
-    echo "waiting for nginx to be ready..."
+    echo -n "."
     sleep 1
   done
 }
 
 install_node_exporter(){
+  echo "starting install_node_exporter"
   arch=$(dpkg --print-architecture)
   node_exp_url='https://github.com/prometheus/node_exporter/releases/download/v1.11.1/node_exporter-1.11.1.linux-'
   if [[ "$arch" == "amd64" ]]; then
@@ -67,32 +80,34 @@ install_node_exporter(){
   mv node_exporter-1.11.1.linux-*/node_exporter /usr/local/bin/node_exporter
 }
 
-enabe_node_exporter(){
+enable_node_exporter(){
+  echo "starting enable_node_exporter"
   bash -c 'cat <<EOF > /etc/systemd/system/node_exporter.service
-  [Unit]
-  Description=Node Exporter
-  After=network.target
+[Unit]
+Description=Node Exporter
+After=network.target
 
-  [Service]
-  Type=simple
-  ExecStart=/usr/local/bin/node_exporter
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
 
-  [Install]
-  WantedBy=multi-user.target
-  EOF'
+[Install]
+WantedBy=multi-user.target
+EOF'
 
   systemctl daemon-reload
   systemctl enable node_exporter
   systemctl start node_exporter
 }
 
-CHT_VERSION=$2
-HOST_NAME=$3
-sudo su -
+CHT_VERSION=$1
+HOST_NAME=$2
+echo "START, CHT_VERSION ${CHT_VERSION} hostname ${HOST_NAME}"
 set_hostname "$HOST_NAME"
 add_ssh_keys
 install_docker
 install_cht "$CHT_VERSION"
 install_node_exporter
-enabe_node_exporter
+enable_node_exporter
 install_local_ip_cert
+echo "DONE"
