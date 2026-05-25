@@ -71,8 +71,9 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one of `type`, `freetext`, or `phone` must be provided. `phone` is mutually exclusive
-     *       with `type` / `freetext`; the underlying view matches phone values exactly with no normalization.
+     *       At least one qualifier param (`type`, `freetext`, or `phone`) must be provided. Qualifier
+     *       params are mutually exclusive — the only combination allowed is `type` + `freetext`
+     *       (backed by a dedicated view). Any other combination returns 400.
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -126,23 +127,42 @@ module.exports = {
      */
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      if (!req.query.freetext && !req.query.type && !req.query.phone) {
+
+      // Qualifier params are mutually exclusive by default. `type` and `freetext` are the only
+      // pair that may be combined (backed by the contacts_by_type_freetext view). When a new
+      // qualifier is added, extend QUALIFIER_PARAMS — exclusivity is automatic.
+      const QUALIFIER_PARAMS = ['type', 'freetext', 'phone'];
+      const COMBINABLE = ['type', 'freetext'];
+      const present = QUALIFIER_PARAMS.filter(name => req.query[name]);
+
+      if (!present.length) {
         return serverUtils.error(
-          { status: 400, message: 'At least one of query params freetext, type, or phone is required' },
+          { status: 400, message: `At least one of query params ${QUALIFIER_PARAMS.join(', ')} is required` },
           req,
           res
         );
       }
+      if (present.length > 1 && !present.every(name => COMBINABLE.includes(name))) {
+        return serverUtils.error(
+          {
+            status: 400,
+            message: `Query params ${present.join(', ')} are mutually exclusive `
+              + `(only ${COMBINABLE.join(' and ')} may be combined)`,
+          },
+          req,
+          res
+        );
+      }
+
       const qualifier = {};
       if (req.query.phone) {
         Object.assign(qualifier, Qualifier.byPhone(req.query.phone));
-      } else {
-        if (req.query.freetext) {
-          Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
-        }
-        if (req.query.type) {
-          Object.assign(qualifier, Qualifier.byContactType(req.query.type));
-        }
+      }
+      if (req.query.freetext) {
+        Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
+      }
+      if (req.query.type) {
+        Object.assign(qualifier, Qualifier.byContactType(req.query.type));
       }
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);

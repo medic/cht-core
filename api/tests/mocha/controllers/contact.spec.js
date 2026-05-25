@@ -230,7 +230,7 @@ describe('Contact Controller', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns 400 error when none of contactType, freetext, or phone is present', async () => {
+      it('returns 400 error when no qualifier param is present', async () => {
         req = {
           query: {
             cursor,
@@ -249,7 +249,7 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'At least one of query params freetext, type, or phone is required' },
+          { status: 400, message: 'At least one of query params type, freetext, phone is required' },
           req,
           res
         )).to.be.true;
@@ -264,10 +264,8 @@ describe('Contact Controller', () => {
           qualifierByPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneOnlyQualifier);
         });
 
-        it('builds a phone qualifier and ignores type/freetext when phone is provided', async () => {
-          req = {
-            query: { phone, type: contactType, freetext, cursor, limit }
-          };
+        it('builds a phone qualifier when phone is the only qualifier', async () => {
+          req = { query: { phone, cursor, limit } };
           const expected = { data: ['uuid-1'], cursor: 'next' };
           contactGetUuidsPage.resolves(expected);
 
@@ -278,6 +276,34 @@ describe('Contact Controller', () => {
           expect(qualifierByFreetext.notCalled).to.be.true;
           expect(contactGetUuidsPage.calledOnceWithExactly(phoneOnlyQualifier, cursor, limit)).to.be.true;
           expect(res.json.calledOnceWithExactly(expected)).to.be.true;
+        });
+
+        [
+          [{ type: contactType, phone }, 'type, phone'],
+          [{ freetext, phone }, 'freetext, phone'],
+          [{ type: contactType, freetext, phone }, 'type, freetext, phone'],
+        ].forEach(([query, presentList]) => {
+          it(`returns 400 when phone is combined with ${Object.keys(query).filter(k => k !== 'phone').join('/')}`,
+            async () => {
+              req = { query: { ...query, cursor, limit } };
+
+              await controller.v1.getUuids(req, res);
+
+              expect(qualifierByPhone.notCalled).to.be.true;
+              expect(qualifierByContactType.notCalled).to.be.true;
+              expect(qualifierByFreetext.notCalled).to.be.true;
+              expect(contactGetUuidsPage.notCalled).to.be.true;
+              expect(res.json.notCalled).to.be.true;
+              expect(serverUtilsError.calledOnceWithExactly(
+                {
+                  status: 400,
+                  message: `Query params ${presentList} are mutually exclusive `
+                    + '(only type and freetext may be combined)',
+                },
+                req,
+                res
+              )).to.be.true;
+            });
         });
 
         it('walks two cursor pages with limit 5', async () => {
