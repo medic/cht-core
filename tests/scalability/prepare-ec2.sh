@@ -23,7 +23,7 @@ DOCKER_CONFIG_PATH=/home/.docker
 CHT_COMPOSE_PATH=/cht/compose
 COUCHDB_PASSWORD=medicScalability
 EOF
-docker compose up -d
+docker compose --progress quiet up --detach
 curl -sO https://raw.githubusercontent.com/medic/cht-core/refs/heads/master/scripts/add-local-ip-certs-to-docker.sh
 
 max=120
@@ -44,10 +44,8 @@ arch=$(dpkg --print-architecture)
 node_exp_url='https://github.com/prometheus/node_exporter/releases/download/v1.11.1/node_exporter-1.11.1.linux-'
 if [[ "$arch" == "amd64" ]]; then
   node_exp_url="${node_exp_url}amd64.tar.gz"
-  echo "found amd64"
 elif [[ "$arch" == "arm64" ]]; then
   node_exp_url="${node_exp_url}arm64.tar.gz"
-  echo "found arm64"
 else
   echo "${node_exp_url} not found, exiting"
   exit 1
