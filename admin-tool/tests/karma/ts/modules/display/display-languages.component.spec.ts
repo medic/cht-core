@@ -243,10 +243,10 @@ describe('DisplayLanguagesComponent', () => {
       expect(languagesService.enableLanguage.calledWith(doc)).to.be.true;
     });
 
-    it('should reload languages after success', async () => {
+    it('should set expandedLanguageCode to doc.code on success', async () => {
       const doc = mockLanguages[0].doc as any;
       await component.enableLanguage(doc);
-      expect(languagesService.getLanguages.callCount).to.be.greaterThan(1);
+      expect(component.expandedLanguageCode).to.equal(doc.code);
     });
 
     it('should handle error if enableLanguage fails', async () => {
@@ -264,10 +264,10 @@ describe('DisplayLanguagesComponent', () => {
       expect(languagesService.disableLanguage.calledWith(doc)).to.be.true;
     });
 
-    it('should reload languages after success', async () => {
+    it('should set expandedLanguageCode to doc.code on success', async () => {
       const doc = mockLanguages[0].doc as any;
       await component.disableLanguage(doc);
-      expect(languagesService.getLanguages.callCount).to.be.greaterThan(1);
+      expect(component.expandedLanguageCode).to.equal(doc.code);
     });
 
     it('should handle error if disableLanguage fails', async () => {

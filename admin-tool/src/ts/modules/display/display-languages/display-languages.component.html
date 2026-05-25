@@ -79,6 +79,7 @@
               </div>
               <div [id]="'locale-' + languageModel.doc.code + '-body'"
                 class="panel-collapse collapse"
+                [class.in]="languageModel.doc.code === expandedLanguageCode"
                 role="tabpanel">
                 <div class="panel-body action-list">
                   @if (languageModel.missing > 0) {

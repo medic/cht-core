@@ -76,6 +76,9 @@ export class DisplayLanguagesComponent implements OnInit, OnDestroy{
   /** Error for the language that failed to enable/disable, contains the code and message */
   languageError: { code: string, message: string } | null = null;
 
+  /** Language code to expand in the accordion after a reload */
+  expandedLanguageCode: string | null = null;
+
   /** Subscription to CouchDB changes feed, cleaned up on destroy */
   private changesSubscription: { unsubscribe: () => void } | null = null;
 
@@ -144,14 +147,14 @@ export class DisplayLanguagesComponent implements OnInit, OnDestroy{
 
   /**
    * Disables a language by updating its enabled state in settings.languages.
-   * Reloads the language list after success.
+   * Sets expandedLanguageCode so the accordion reopens for this language after the changes feed reloads the list.
    *
    * @param {LanguageDoc} doc - the language document to disable
    */
   async disableLanguage(doc: LanguageDoc): Promise<void> {
     try {
       await this.languageService.disableLanguage(doc);
-      await this.ngOnInit();
+      this.expandedLanguageCode = doc.code;
     } catch (error) {
       console.error('Error disabling language', error);
       this.languageError = { code: doc.code, message: 'Error disabling language' };
@@ -160,14 +163,14 @@ export class DisplayLanguagesComponent implements OnInit, OnDestroy{
 
   /**
    * Enables a language by updating its enabled state in settings.languages.
-   * Reloads the language list after success.
+   * Sets expandedLanguageCode so the accordion reopens for this language after the changes feed reloads the list.
    *
    * @param {LanguageDoc} doc - the language document to enable
    */
   async enableLanguage(doc: LanguageDoc): Promise<void> {
     try {
       await this.languageService.enableLanguage(doc);
-      await this.ngOnInit();
+      this.expandedLanguageCode = doc.code;
     } catch (error) {
       console.error('Error enabling language', error);
       this.languageError = { code: doc.code, message: 'Error enabling language' };
@@ -177,21 +180,25 @@ export class DisplayLanguagesComponent implements OnInit, OnDestroy{
 
   /**
    * Opens the edit modal with the selected language document.
+   * Sets expandedLanguageCode so the accordion reopens for this language after the modal saves.
    *
    * @param {LanguageDoc} doc - the language document to edit
    */
   async editLanguage(doc: LanguageDoc): Promise<void> {
     this.selectedDoc = doc;
+    this.expandedLanguageCode = doc.code;
     this.showEditModal = true;
   }
 
   /**
    * Opens the upload modal with the selected language document.
+   * Sets expandedLanguageCode so the accordion reopens for this language after the modal saves.
    *
    * @param {LanguageDoc} doc - the language document to import translations into
    */
   async uploadLanguage(doc: LanguageDoc): Promise<void> {
     this.selectedDoc = doc;
+    this.expandedLanguageCode = doc.code;
     this.showUploadModal = true;
   }
 

@@ -6,6 +6,7 @@ import { FormDoc } from '@admin-tool-modules/forms/app-forms-interfaces';
 import { ResourcesDoc } from '@admin-tool-modules/resources-interfaces';
 import { ResponseStatus } from '@admin-tool-modules/global-modules-interfaces';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TranslateFromPipe } from '../translate-from.pipe';
 
 /**
  * Component for managing XForm documents in the CHT instance.
@@ -19,7 +20,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
  */
 @Component({
   selector: 'app-forms',
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, TranslateFromPipe],
   templateUrl: './app-forms.component.html',
   styleUrl: './app-forms.component.less'
 })

@@ -61,7 +61,7 @@
               @if (form.translation_key) {
                 {{ form.translation_key | translate }}
               } @else {
-                {{ form.title }}
+                {{ form.title | translateFrom }}
               }
             </div>
           </div>
