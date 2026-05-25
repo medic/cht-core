@@ -17,6 +17,14 @@ import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
+import * as contactTypesUtils from '@medic/contact-types-utils';
+
+// Behaviour applied to a db-doc child when the parent report is edited and re-saved.
+// - link:     reuse the existing child and update it in place (parent owns the data)
+// - readonly: reuse the existing child but leave it untouched (it may be edited elsewhere)
+// - recreate: legacy behaviour, mint a brand new child on every save
+type DbDocEdit = 'link' | 'readonly' | 'recreate';
+const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly', 'recreate'];
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -362,10 +370,18 @@ export class EnketoService {
     return form;
   }
 
-  private xmlToDocs(doc, formXml, xmlVersion, record) {
+  private async xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
+    const recordRoot = $record[0];
     const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
+    // Whether we are editing an existing report (it already has an id) or creating a new one.
+    const editing = !!doc._id;
+    // The fields saved by the previous save. On edit this is where we recover the ids assigned to
+    // db-doc children last time, so that we reuse the same documents instead of creating duplicates.
+    // The ids cannot be recovered from the live form data because forms do not declare an `<_id>`
+    // node, so Enketo's prepopulation drops it on the way back in.
+    const previousFields = editing ? doc.fields : undefined;
 
     const mapOrAssignId = (e, id?) => {
       if (!id) {
@@ -381,6 +397,55 @@ export class EnketoService {
     };
 
     mapOrAssignId($record[0], doc._id || uuid());
+
+    // Walk from a db-doc element up to the record root, collecting the node name (and its position
+    // amongst same-named siblings, for repeats) at each level. This mirrors the shape of `fields`.
+    const getFieldsPath = (element) => {
+      const segments: { name: string; index: number }[] = [];
+      for (let node = element; node && node !== recordRoot; node = node.parentNode) {
+        let index = 0;
+        for (let sibling = node.previousSibling; sibling; sibling = sibling.previousSibling) {
+          if (sibling.nodeType === Node.ELEMENT_NODE && sibling.nodeName === node.nodeName) {
+            index++;
+          }
+        }
+        segments.unshift({ name: node.nodeName, index });
+      }
+      return segments;
+    };
+
+    // Recover this db-doc child's last-saved `fields` subtree by navigating the previously-saved
+    // `fields`. Returns undefined for new reports or children never saved before; the recovered
+    // object's `_id` is the id to reuse so the child links instead of duplicating.
+    const recoverChildSnapshot = (element): any => {
+      if (!previousFields) {
+        return;
+      }
+      let cursor: any = previousFields;
+      for (const { name, index } of getFieldsPath(element)) {
+        if (!cursor || typeof cursor !== 'object') {
+          return;
+        }
+        cursor = cursor[name];
+        if (Array.isArray(cursor)) {
+          cursor = cursor[index];
+        }
+      }
+      return cursor && typeof cursor === 'object' ? cursor : undefined;
+    };
+
+    // Persist the child id into a direct `<_id>` child node so it serialises into `fields` and can
+    // be recovered on the next edit. The node is created if absent, reused otherwise.
+    const writeChildIdNode = (element, id) => {
+      let idNode: any = Array
+        .from(element.childNodes)
+        .find((node: any) => node.nodeType === Node.ELEMENT_NODE && node.nodeName === '_id');
+      if (!idNode) {
+        idNode = recordDoc.createElement('_id');
+        element.insertBefore(idNode, element.firstChild);
+      }
+      idNode.textContent = id;
+    };
 
     const getId = (xpath) => {
       const xPathResult = recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null);
@@ -444,13 +509,25 @@ export class EnketoService {
     };
 
     const dbDocTags: string[] = [];
+    const dbDocChildren: { element: any; intent: DbDocEdit; recoveredSnapshot?: any }[] = [];
     $record
       .find('[db-doc]')
       .filter((idx, element) => {
         return $(element).attr('db-doc')?.toLowerCase() === 'true';
       })
       .each((idx, element) => {
-        mapOrAssignId(element);
+        const intent = this.resolveDbDocEditIntent(element);
+        let recoveredSnapshot;
+        if (intent === 'recreate') {
+          // Legacy behaviour: always mint a fresh id (and never persist it) so the child is
+          // re-created on every save.
+          mapOrAssignId(element, uuid());
+        } else {
+          recoveredSnapshot = recoverChildSnapshot(element);
+          mapOrAssignId(element, recoveredSnapshot?._id);
+          writeChildIdNode(element, element._couchId);
+        }
+        dbDocChildren.push({ element, intent, recoveredSnapshot });
         dbDocTags.push(element.tagName);
       });
 
@@ -465,15 +542,42 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    const docsToStore = $record
-      .find('[db-doc=true]')
-      .map((idx, element) => {
-        const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
-        docToStore._id = getId(Xpath.getElementXPath(element));
-        docToStore.reported_date = Date.now();
-        return docToStore;
-      })
-      .get();
+    // For children we are linking to existing documents, fetch their current revisions so the
+    // in-place update does not fail with a conflict.
+    const linkIds = dbDocChildren
+      .filter(child => child.intent === 'link' && child.recoveredSnapshot?._id)
+      .map(child => child.element._couchId);
+    const existingDocs = await this.fetchExistingDocs(linkIds);
+
+    const docsToStore: any[] = [];
+    dbDocChildren.forEach(({ element, intent, recoveredSnapshot }) => {
+      const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+      docToStore._id = getId(Xpath.getElementXPath(element));
+
+      if (intent === 'readonly' && recoveredSnapshot?._id) {
+        // The document already exists and may have been edited elsewhere; leave it untouched.
+        // The id is still persisted (above) so references to it keep resolving.
+        return;
+      }
+
+      const existing = existingDocs.get(docToStore._id);
+      if (intent === 'link' && existing) {
+        // Update the existing document in place: overlay the form-managed fields while preserving the
+        // revision, original report date and any fields the form does not own (e.g. fields added by
+        // transitions, attachments). (Phase C refines this overlay to a per-field delta.)
+        docsToStore.push({
+          ...existing,
+          ...docToStore,
+          _rev: existing._rev,
+          reported_date: existing.reported_date,
+        });
+        return;
+      }
+
+      // New report, recreate child, or a linked child whose original is missing/deleted: create it.
+      docToStore.reported_date = Date.now();
+      docsToStore.push(docToStore);
+    });
 
     doc._id = getId('/*');
     if (xmlVersion) {
@@ -513,6 +617,42 @@ export class EnketoService {
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
     return docsToStore;
+  }
+
+  // Decide how a db-doc child behaves when its parent report is edited. An explicit `db-doc-edit`
+  // attribute always wins; otherwise contacts (which have their own edit forms and may be changed
+  // independently) default to `readonly`, and everything else to `link`.
+  private resolveDbDocEditIntent(element): DbDocEdit {
+    const attr = $(element).attr('db-doc-edit')?.trim().toLowerCase();
+    if (attr) {
+      if ((DB_DOC_EDIT_VALUES as string[]).includes(attr)) {
+        return attr as DbDocEdit;
+      }
+      console.warn(
+        `Unknown db-doc-edit value "${attr}" on <${element.nodeName}>. ` +
+        `Expected one of: ${DB_DOC_EDIT_VALUES.join(', ')}. Falling back to default behaviour.`
+      );
+    }
+
+    const type = $(element).children('type').text().trim();
+    const isContact = type === 'contact' || contactTypesUtils.isHardcodedType(type);
+    return isContact ? 'readonly' : 'link';
+  }
+
+  // Batch-fetch the current version of the documents we are about to update in place. Missing or
+  // deleted documents are simply omitted, so the caller re-creates them instead.
+  private async fetchExistingDocs(ids: string[]): Promise<Map<string, any>> {
+    const existing = new Map<string, any>();
+    if (!ids.length) {
+      return existing;
+    }
+    const response = await this.dbService.get().allDocs({ keys: ids, include_docs: true });
+    response.rows?.forEach((row) => {
+      if (row.doc && !row.error && !row.value?.deleted) {
+        existing.set(row.id, row.doc);
+      }
+    });
+    return existing;
   }
 
   private async update(docId) {

@@ -232,8 +232,8 @@ describe('Contact Delivery Form', () => {
       'instanceID',
       'deprecatedID',
       '__pregnancy_uuid',
-      'baby_death_profile_doc', // every extra doc is duplicated when editing
-      'child_doc', // every extra doc is duplicated when editing
+      'baby_death_profile_doc', // db-doc child reference - reuse is asserted separately below
+      'child_doc', // db-doc child reference - reuse is asserted separately below
     ];
     // fields remain identical
     expect(updatedReport.hidden_fields).to.deep.equal(initialReport.hidden_fields);
@@ -291,8 +291,9 @@ describe('Contact Delivery Form', () => {
     expect(updatedAliveBabyUUIds.length).to.deep.equal(noOfAliveBabies);
     expect(_.uniq(updatedDeadBabyUUIds).length).to.equal(noOfDeadBabies);
     expect(_.uniq(updatedAliveBabyUUIds).length).to.deep.equal(noOfAliveBabies);
-    expect(_.intersection(deadBabyUUIds, updatedDeadBabyUUIds)).to.deep.equal([]);
-    expect(_.intersection(aliveBabyUUIds, updatedAliveBabyUUIds)).to.deep.equal([]);
+    // editing reuses the extra docs (same ids) instead of duplicating them
+    expect(updatedDeadBabyUUIds).to.deep.equal(deadBabyUUIds);
+    expect(updatedAliveBabyUUIds).to.deep.equal(aliveBabyUUIds);
 
     const updatedDeadBabies = await utils.getDocs(updatedDeadBabyUUIds);
     const updatedAliveBabiles = await utils.getDocs(updatedAliveBabyUUIds);
@@ -309,7 +310,7 @@ describe('Contact Delivery Form', () => {
       blue_skin: 'no'
     };
 
-    // duplicated extra docs are identical
+    // reused extra docs keep their content across the edit
     const excludeBabyFields = ['_id', '_rev', 'reported_date', 'patient_id', 'geolocation_log', 'geolocation'];
     intialDeadBabies.forEach((initialBaby, idx) => {
       expect(initialBaby).excludingEvery(excludeBabyFields).to.deep.equal(updatedDeadBabies[idx]);
@@ -425,8 +426,8 @@ describe('Contact Delivery Form', () => {
       'instanceID',
       'deprecatedID',
       '__pregnancy_uuid',
-      'baby_death_profile_doc', // every extra doc is duplicated when editing
-      'child_doc', // every extra doc is duplicated when editing
+      'baby_death_profile_doc', // db-doc child reference - reused (not duplicated) on edit
+      'child_doc', // db-doc child reference - reused (not duplicated) on edit
     ];
     // fields have changed
     expect(updatedReport.fields).excludingEvery(exclude).not.to.deep.equal(initialReport.fields);

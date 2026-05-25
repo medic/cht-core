@@ -1051,10 +1051,12 @@ describe('Form service', () => {
         expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
+          _id: actual[1]._id,
           some_property_1: 'some_value_1',
           type: 'thing_1',
         });
         expect(actualReport.fields.doc2).to.deep.equal({
+          _id: actual[2]._id,
           some_property_2: 'some_value_2',
           type: 'thing_2',
         });
@@ -1123,10 +1125,12 @@ describe('Form service', () => {
         expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
         expect(actualReport.fields.doc1).to.deep.equal({
+          _id: actual[1]._id,
           some_property_1: 'some_value_1',
           type: 'thing_1',
         });
         expect(actualReport.fields.doc2).to.deep.equal({
+          _id: actual[2]._id,
           some_property_2: 'some_value_2',
           type: 'thing_2',
         });
