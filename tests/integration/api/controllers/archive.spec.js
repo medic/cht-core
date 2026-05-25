@@ -69,7 +69,7 @@ describe('POST /api/v1/archive', () => {
     }
     expect(err, 'expected request to be rejected').to.exist;
     expect(err.status).to.equal(400);
-    expect(err.body).to.deep.match(/no doc ids/i);
+    expect(err.body).to.deep.match(/No valid doc IDs/i);
 
     const list = await listJobs();
     expect(list.rows).to.have.lengthOf(0);

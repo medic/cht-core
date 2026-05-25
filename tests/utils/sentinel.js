@@ -147,12 +147,16 @@ const getARchivingJobs = async () => {
 
 const waitForArchiveCompletion = async () => {
   let jobs;
+  let waitForLogs;
   do {
     await utils.delayPromise(1000);
     jobs = await getARchivingJobs();
+    if (jobs.length === 1 && !waitForLogs) {
+      waitForLogs = await utils.waitForSentinelLogs(true, /Finished archiving/);
+    }
   } while (jobs.length > 0);
 
-  return await utils.waitForSentinelLogs(true, /Finished archiving/);
+  return waitForLogs?.promise;
 };
 
 module.exports = {

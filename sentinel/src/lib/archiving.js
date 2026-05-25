@@ -58,8 +58,7 @@ const archiveBatch = async (batch) => {
 const purgeInfoDocs = async (docsToArchive) => {
   const infoDocIds = docsToArchive.map(doc => `${doc._id}-info`);
   const infoDocs = await db.sentinel.allDocs({ keys: infoDocIds, include_docs: true, conflicts: true });
-
-  await db.purge(db.sentinel, infoDocs.rows.map(row => row.doc));
+  await db.purge(db.sentinel, infoDocs.rows.map(row => row.doc).filter(Boolean));
 };
 
 const persistAudit = async (docsToArchive, date) => {
