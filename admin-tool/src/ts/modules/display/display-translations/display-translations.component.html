@@ -1,0 +1,59 @@
+<div>
+  @if (loadingPageStatus) {
+    <div class="loader"></div>
+  } @else {
+    <div class="tab-content container-fluid">
+      <div class="translation-section">
+        <p>{{ 'display.translation.description' | translate }}</p>
+        <button type="button" class="btn btn-primary" (click)="addTranslation()">
+          <i class="fa fa-plus" aria-hidden="true"></i>
+          <span>{{ 'translation.add' | translate }}</span>
+        </button>
+      </div>
+
+      <div class="row selection-heading">
+        <div class="col-xs-6">
+          <select class="form-control" [(ngModel)]="leftCode" (ngModelChange)="onDropdownChange()">
+            @for (option of leftTranslationOptions; track option.code) {
+              <option [value]="option.code">{{ option.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-xs-6">
+          <select class="form-control" [(ngModel)]="rightCode" (ngModelChange)="onDropdownChange()">
+            @for (option of rightTranslationOptions; track option.code) {
+              <option [value]="option.code">{{ option.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @for (row of translationRows; track row.key) {
+        <div class="row translation" (click)="editTranslation(row.key)">
+          <div class="col-xs-6">
+            @if (row.leftValue) {
+              <span>{{ row.leftValue }}</span>
+            } @else {
+              <span class="missing-term">{{ row.key }}</span>
+            }
+          </div>
+          <div class="col-xs-6">
+            @if (row.rightValue) {
+              <span>{{ row.rightValue }}</span>
+            } @else {
+              <span class="missing-term">{{ row.key }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+  <display-translations-edit
+    [visible]="showEditModal"
+    [key]="selectedKey"
+    [docs]="docs"
+    (closed)="showEditModal = false"
+    (saved)="ngOnInit()"
+  >
+  </display-translations-edit>
+</div>

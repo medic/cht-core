@@ -1,0 +1,66 @@
+@import (reference) "../../../../css/variables.less";
+
+.form-group.required label::after {
+  content: '*';
+  margin-left: 0.25rem;
+}
+.medium {
+  max-width: 26rem;
+}
+.loader.inline {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: 0.1875rem;
+}
+.has-error {
+  .help-block {
+    color: @red;
+    font-weight: bold;
+  }
+  .form-control {
+    border-color: @red;
+  }
+}
+.error {
+  color: @red;
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
+.loading {
+  text-align: center;
+  margin-left: -9.0rem;
+}
+.tab-content {
+  padding: 0.5rem 0;
+
+  legend {
+    font-size: 1.625rem;
+    color: @gray-dark;
+    border-bottom: 0.0625rem solid @gray-light;
+    margin-bottom: 1.5rem;
+  }
+
+  .selection-heading {
+    font-weight: bold;
+    padding-bottom: 0.75rem;
+    border-bottom: 0.25rem solid @gray-light !important;
+    margin-bottom: 0;
+  }
+
+  .row {
+    padding: 0.75rem 0;
+    border-bottom: 0.0625rem solid @gray-light;
+
+    .delete {
+      visibility: hidden;
+    }
+
+    &:hover .delete {
+      visibility: visible;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}

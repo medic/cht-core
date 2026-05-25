@@ -5,15 +5,22 @@
       "mocha",
       "sinon",
       "node",
-      "sinon-chai"
-    ]
+      "sinon-chai",
+      "jquery"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../node_modules/@types",
+      "./src/types"
+    ],
   },
   "files": [
     "tests/karma/test.ts",
     "src/ts/polyfills.ts"
   ],
   "include": [
+    "src",
     "tests/karma/**/*.spec.ts",
-    "tests/karma/**/*.d.ts"
+    "tests/karma/**/*.d.ts",
   ]
 }

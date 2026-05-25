@@ -1,0 +1,391 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <!-- Header -->
+        <div class="modal-header">
+          <button
+            type="button"
+            class="close"
+            (click)="cancel()"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ title | translate }}</h4>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          @if (errors.submit) {
+            <p class="alert alert-danger" role="alert">
+              {{ errors.submit | translate }}
+            </p>
+          }
+
+          @if (errors.replicationLimit) {
+            <p class="alert alert-warning" role="alert">
+              {{ errors.replicationLimit | translate }}
+            </p>
+          }
+
+          <!-- Username — editable on create, read-only on edit -->
+          <div
+            class="form-group"
+            [class.required]="!isEditMode"
+            [class.has-error]="errors.username"
+          >
+            <label for="username">{{ "User Name" | translate }}</label>
+            <input
+              id="username"
+              type="text"
+              class="form-control"
+              [(ngModel)]="model.username"
+              [disabled]="isEditMode"
+              autocomplete="off"
+            />
+            @if (!isEditMode) {
+              <span class="help-block text-muted">{{
+                "user.username.help" | translate
+              }}</span>
+            }
+            @if (errors.username) {
+              <span class="help-block">{{ errors.username | translate }}</span>
+            }
+          </div>
+
+          <!-- Full Name -->
+          <div class="form-group">
+            <label for="fullname">{{ "Full Name" | translate }}</label>
+            <input
+              id="fullname"
+              type="text"
+              class="form-control"
+              [(ngModel)]="model.fullname"
+            />
+            <span class="help-block text-muted">{{
+              "user.fullname.help" | translate
+            }}</span>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group" [class.has-error]="errors.email">
+            <label for="email">{{ "Email Address" | translate }}</label>
+            <input
+              id="email"
+              type="text"
+              class="form-control"
+              [(ngModel)]="model.email"
+            />
+            @if (errors.email) {
+              <span class="help-block">{{ errors.email | translate }}</span>
+            }
+          </div>
+
+          <!-- Phone -->
+          <div
+            class="form-group"
+            [class.required]="model.token_login"
+            [class.has-error]="errors.phone"
+          >
+            <label for="phone">{{ "Phone Number" | translate }}</label>
+            <input
+              id="phone"
+              type="text"
+              class="form-control"
+              [(ngModel)]="model.phone"
+            />
+            <span class="help-block text-muted">{{
+              "user.phone.help" | translate
+            }}</span>
+            @if (errors.phone) {
+              <span class="help-block">{{ errors.phone | translate }}</span>
+            }
+          </div>
+
+          <!-- Roles -->
+          <div class="form-group required" [class.has-error]="errors.roles">
+            <label>{{ "configuration.role" | translate }}</label> *
+            <ul class="list-unstyled">
+              @for (role of availableRoles; track role.key) {
+                <li class="checkbox">
+                  <label [for]="'role-' + role.key">
+                    <input
+                      type="checkbox"
+                      [id]="'role-' + role.key"
+                      [checked]="model.roles.indexOf(role.key) !== -1"
+                      (click)="toggleRole(role.key)"
+                    />
+                    {{ role.label | translate }}
+                  </label>
+                </li>
+              }
+            </ul>
+            @if (errors.roles) {
+              <span class="help-block">{{ errors.roles | translate }}</span>
+            }
+          </div>
+
+          <!-- Facility -->
+          <div
+            class="form-group"
+            [class.required]="isOfflineRole"
+            [class.has-error]="errors.place"
+          >
+            <label for="facility-select">{{ "Facility" | translate }}</label>
+            <select
+              id="facility-select"
+              class="form-control"
+              #facilitySelect
+            ></select>
+            <span class="help-block text-muted">{{
+              "user.place.help" | translate
+            }}</span>
+            @if (errors.place) {
+              <span class="help-block">{{ errors.place | translate }}</span>
+            }
+          </div>
+
+          <!-- Associated Contact -->
+          <div
+            class="form-group"
+            [class.required]="isOfflineRole"
+            [class.has-error]="errors.contact"
+          >
+            <label for="contact-select">{{
+              "associated.contact" | translate
+            }}</label>
+            <span class="help-block text-muted">{{
+              "associated.contact.help" | translate
+            }}</span>
+            <select
+              id="contact-select"
+              class="form-control"
+              #contactSelect
+            ></select>
+            @if (errors.contact) {
+              <span class="help-block">{{ errors.contact | translate }}</span>
+            }
+          </div>
+
+          <!-- SSO Username -->
+          @if (allowSSOLogin && !model.token_login) {
+            <div class="form-group">
+              <label for="sso-login">{{
+                "user.sso.username" | translate
+              }}</label>
+              <input
+                id="sso-login"
+                type="text"
+                class="form-control"
+                [(ngModel)]="model.oidc_username"
+              />
+              <span class="help-block text-muted">{{
+                "user.sso.username.help" | translate
+              }}</span>
+            </div>
+          }
+
+          <!-- Token Login — enable (shown in both modes when not already enabled) -->
+          @if (
+            allowTokenLogin &&
+            !model.tokenLoginEnabled &&
+            !(allowSSOLogin && model.oidc_username)
+          ) {
+            <div class="form-group">
+              <input
+                type="checkbox"
+                id="token-login"
+                [(ngModel)]="model.token_login"
+              />
+              <label for="token-login" class="form-check-label">
+                {{ "configuration.enable.token.login" | translate }}
+              </label>
+              <div class="help-block text-muted">
+                {{ "configuration.enable.token.login.help" | translate }}
+              </div>
+            </div>
+          }
+
+          <!-- Token Login — manage (shown in edit mode when already enabled) -->
+          @if (
+            isEditMode &&
+            allowTokenLogin &&
+            model.tokenLoginEnabled &&
+            !(allowSSOLogin && model.oidc_username)
+          ) {
+            <div class="form-group">
+              <p>
+                <label class="form-check-label">
+                  @if (
+                    model.tokenLoginEnabled.active &&
+                    model.tokenLoginEnabled.expiration_date > 0
+                  ) {
+                    <span>{{
+                      "configuration.enable.token.login.enabled.active"
+                        | translate
+                    }}</span>
+                  } @else if (
+                    model.tokenLoginEnabled.active &&
+                    !model.tokenLoginEnabled.expiration_date
+                  ) {
+                    <span>{{
+                      "configuration.enable.token.login.enabled.expired"
+                        | translate
+                    }}</span>
+                  } @else {
+                    <span>{{
+                      "configuration.enable.token.login.enabled.inactive"
+                        | translate
+                    }}</span>
+                  }
+                </label>
+              </p>
+              <div>
+                <input
+                  type="radio"
+                  id="unmodified-token-login"
+                  [value]="null"
+                  [(ngModel)]="model.token_login"
+                />
+                <label for="unmodified-token-login" class="form-check-label">
+                  {{ "configuration.enable.token.login.no.modify" | translate }}
+                </label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="disable-token-login"
+                  [value]="false"
+                  [(ngModel)]="model.token_login"
+                />
+                <label for="disable-token-login" class="form-check-label">
+                  {{ "configuration.enable.token.login.disable" | translate }}
+                </label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="refresh-token-login"
+                  [value]="true"
+                  [(ngModel)]="model.token_login"
+                />
+                <label for="refresh-token-login" class="form-check-label">
+                  {{ "configuration.enable.token.login.refresh" | translate }}
+                </label>
+              </div>
+              <div class="help-block text-muted">
+                {{
+                  "configuration.enable.token.login.refresh.help" | translate
+                }}
+              </div>
+            </div>
+          }
+
+          <!-- Password -->
+          @if (!passwordHidden) {
+            <div
+              class="form-group"
+              [class.required]="!isEditMode"
+              [class.has-error]="errors.password"
+            >
+              <label for="password">{{ "Password" | translate }}</label>
+              <div class="input-group">
+                <input
+                  id="password"
+                  [type]="model.showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  [(ngModel)]="model.password"
+                  autocomplete="new-password"
+                />
+                <span class="input-group-btn">
+                  <button
+                    type="button"
+                    class="btn btn-default"
+                    (click)="togglePassword()"
+                    [attr.aria-label]="
+                      (model.showPassword ? 'password.hide' : 'password.show')
+                        | translate
+                    "
+                  >
+                    <i
+                      class="fa fa-eye"
+                      [class.fa-eye-slash]="model.showPassword"
+                    ></i>
+                  </button>
+                </span>
+              </div>
+              @if (!isEditMode) {
+                <span class="help-block text-muted">{{
+                  "update.password.help" | translate
+                }}</span>
+              }
+              @if (errors.password) {
+                <span class="help-block">{{
+                  errors.password | translate
+                }}</span>
+              }
+            </div>
+
+            <!-- Confirm Password -->
+            <div
+              class="form-group"
+              [class.required]="!isEditMode"
+              [class.has-error]="errors.passwordConfirm"
+            >
+              <label for="password-confirm">{{
+                "Confirm Password" | translate
+              }}</label>
+              <input
+                id="password-confirm"
+                [type]="model.showPassword ? 'text' : 'password'"
+                class="form-control"
+                [(ngModel)]="model.passwordConfirm"
+                autocomplete="new-password"
+              />
+              @if (errors.passwordConfirm) {
+                <span class="help-block">{{
+                  errors.passwordConfirm | translate
+                }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-default"
+            (click)="cancel()"
+            [disabled]="loading"
+          >
+            {{ "Cancel" | translate }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submit()"
+            [disabled]="loading"
+          >
+            @if (loading) {
+              <i class="fa fa-spinner fa-spin"></i>
+              {{ "Submitting" | translate }}
+            } @else {
+              {{ submitLabel | translate }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

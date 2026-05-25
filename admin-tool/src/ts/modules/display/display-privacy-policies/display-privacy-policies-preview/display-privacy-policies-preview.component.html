@@ -1,0 +1,37 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" (click)="cancel()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ 'display.privacy.policies.preview.title' | translate: { language: languageName } }}</h4>
+        </div>
+
+        <div class="modal-body" #modalBody>
+          @if (errorKey) {
+            <p class="alert alert-danger">{{ errorKey | translate }}</p>
+          } @else if (content) {
+            <div [innerHTML]="content"></div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-link" (click)="cancel()">
+            {{ 'close' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

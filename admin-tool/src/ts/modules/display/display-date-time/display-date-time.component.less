@@ -1,0 +1,107 @@
+@import (reference) "../../../../css/variables.less";
+
+.custom-form{
+  margin-bottom: 0.9375rem;
+  max-width: 31.25rem; 
+}
+
+.date-label{
+  font-family: @font-family-main;
+  margin-top: 2rem;
+  margin-bottom: 0.3125rem;
+  font-weight: bold;
+  font-size: 1rem;
+}
+.second-label{
+  margin-top: 1.25rem;
+}
+.help-block{
+  margin-top: 0.3125rem;
+  margin-bottom: 0.625rem;
+  color: @gray-medium;
+}
+.dropdown {
+  .dropdown-toggle {
+    min-width: 13.75rem;
+    padding: 0.5rem 0.875rem;
+    font-size: @font-medium;
+    border-radius: 0.375rem;
+    width: 100%;
+    text-align: left;           
+    position: relative;
+    border: 0.0625rem solid @gray-light;
+    box-shadow: 0 0.0625rem 0.1875rem rgba(0,0,0,0.1);
+
+    &:focus,
+    &:active,
+    &.active {
+        border-color: @blue-dark;            
+        box-shadow: 0 0 0 0.125rem fadeout(@blue-dark, 75%); 
+        outline: none;
+    }
+
+    .caret {
+        position: absolute;  
+        right: 0.875rem;         
+        top: 50%;
+        transform: translateY(-50%);
+    }
+  }
+
+  .dropdown-menu {
+    border-radius: 0.375rem;
+    min-width: 100%;
+    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.12); 
+
+    li a {
+      &:hover {
+        background-color: @blue-highlight;
+        color: @blue-dark;
+      }
+    }
+    li {
+      button {
+        background: none;
+        border: none;
+        border-radius: 0;
+        padding: 0.1875rem 1.25rem;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        color: #333;
+        display: block;
+        font-size: @font-medium;
+        line-height: 1.42857143;
+        white-space: nowrap;
+
+        &:hover,
+        &:focus {
+          background-color: #f5f5f5;
+          color: #262626;
+          text-decoration: none;
+          outline: none;
+        }
+      }
+    }
+  }
+}
+.button-submit{
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  background-color: @blue-dark;
+  color: white;
+  padding: 0.5rem 1.25rem;
+
+  &:hover {
+    background-color: darken(@blue-dark, 10%);
+    color: white;
+  }
+}
+
+.dropdown-date {
+  width: 13rem;
+}
+
+.dropdown-datetime {
+  width: 25rem;
+}

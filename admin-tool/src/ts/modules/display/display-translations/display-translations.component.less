@@ -1,0 +1,31 @@
+@import (reference) "../../../../css/variables.less";
+
+.translation-section {
+  margin-bottom: 3rem;
+}
+
+.selection-heading {
+  border-bottom: 0.250rem solid @gray-light;
+  padding-bottom: 0.625rem;
+  margin-bottom: 0;
+
+  select {
+    width: 60%;
+    font-weight: bold;
+  }
+}
+
+.translation {
+  border-bottom: 0.0625rem solid @gray-light;
+  padding: 0.5rem 0;
+  cursor: pointer;
+
+  &:hover {
+    background-color: @gray-light;
+  }
+}
+
+.missing-term {
+  color: @gray-dark;
+  font-style: italic;
+}

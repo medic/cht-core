@@ -1,0 +1,64 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button
+            type="button"
+            class="close"
+            (click)="cancel()"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ 'Confirm' | translate }}</h4>
+        </div>
+
+        <div class="modal-body">
+          @if (error) {
+            <p class="alert alert-danger" role="alert">
+              {{ error | translate }}
+            </p>
+          }
+          <p>
+            {{ 'Delete User' | translate }} <strong>{{ user?.username }}</strong>?
+          </p>
+          <p class="text-muted">{{ 'This action cannot be undone.' | translate }}</p>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-default"
+            (click)="cancel()"
+            [disabled]="loading"
+          >
+            {{ 'Cancel' | translate }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="confirm()"
+            [disabled]="loading"
+          >
+            @if (loading) {
+              <i class="fa fa-spinner fa-spin"></i>
+              {{ 'Deleting' | translate }}
+            } @else {
+              {{ 'Delete' | translate }}
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

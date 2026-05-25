@@ -1,0 +1,165 @@
+<div>
+  <div>
+    @if (loadingPageStatus) {
+      <div class="loader"></div>
+    } @else {
+      <div class="tab-content container-fluid">
+        <form class="custom-form">
+          @if (loadingError) {
+            <p class="loading-error">{{ loadingError | translate }}</p>
+          }
+          <div class="form-group">
+            <label for="locale">{{ 'Default Application Language' | translate }}</label>
+            <select id="locale" name="locale" class="form-control small" [(ngModel)]="localeLanguage">
+              @for (language of languages; track language.doc._id) {
+                <option [value]="language.doc.code" [disabled]="!language.enabled">
+                  {{ language.doc.name }}
+                </option>
+              }
+            </select>
+            <p class="help-block">{{ 'setup.language.subtitle' | translate }}</p>
+          </div>
+
+          <div class="form-group">
+            <label for="locale-outgoing">{{ 'Language For Outgoing Messages' | translate }}</label>
+            <select id="locale-outgoing" name="locale-outgoing" class="form-control small" [(ngModel)]="localeOutgoingLanguage">
+              @for (language of languages; track language.doc._id) {
+                <option [value]="language.doc.code" [disabled]="!language.enabled">
+                  {{ language.doc.name }}
+                </option>
+              } 
+            </select>
+            <p class="help-block">{{ 'setup.language.outgoing.subtitle' | translate }}</p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" (click)="submitLanguageSettings()" [disabled]="responseStatus.state === 'loading'">
+              {{ 'Submit' | translate }}
+            </button>
+            @if (responseStatus.state === 'loading') {
+              <div class="loader inline"></div>
+            } @else if (responseStatus.state) {
+              <span [class]="responseStatus.state!">{{ responseStatus.msg! | translate }}</span>
+            }
+          </div>
+        </form>
+        <div class="btn-bottom-spacing">
+          <button type="button" class="btn btn-primary" (click)="addLanguage()">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            <span>{{ 'Add new language' | translate }}</span>
+          </button>
+        </div>
+        <p class="help-block">{{ 'display.language.accordion.title' | translate }}</p>
+        <div id="language-accordion" class="panel-group" role="tablist">
+          @for (languageModel of languages; track languageModel.doc._id) {
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" [id]="'locale-' + languageModel.doc.code">
+                <h4 class="panel-title">
+                  <a class="collapsed"
+                    data-toggle="collapse"
+                    [attr.data-target]="'#locale-' + languageModel.doc.code + '-body'"
+                    data-parent="#language-accordion">
+                    {{ languageModel.doc.name }}
+                      @if (languageModel.doc.code === savedLocaleLanguage) {
+                        <span class="fa-stack default" [title]="'Default Application Language' | translate">
+                          <i class="fa fa-file-o fa-stack-2x"></i>
+                          <i class="fa fa-star fa-stack-1x"></i>
+                          <span class="sr-only">{{ 'Default Application Language' | translate }}</span>
+                        </span>
+                      }
+                      @if (languageModel.doc.code === savedLocaleOutgoingLanguage) {
+                        <span class="fa-stack default" [title]="'Language For Outgoing Messages' | translate">
+                          <i class="fa fa-envelope-o fa-stack-2x"></i>
+                          <i class="fa fa-star fa-stack-1x"></i>
+                          <span class="sr-only">{{ 'Language For Outgoing Messages' | translate }}</span>
+                        </span>
+                      }
+                  </a>
+                </h4>
+              </div>
+              <div [id]="'locale-' + languageModel.doc.code + '-body'"
+                class="panel-collapse collapse"
+                [class.in]="languageModel.doc.code === expandedLanguageCode"
+                role="tabpanel">
+                <div class="panel-body action-list">
+                  @if (languageModel.missing > 0) {
+                    <div class="alert alert-warning" role="alert">
+                      {{ 'Missing translations' | translate: { missing: languageModel.missing } }}
+                    </div>
+                  }
+                  @if (languageError?.code === languageModel.doc.code) {
+                    <div class="alert alert-danger" role="alert">
+                      {{ languageError!.message | translate }}
+                    </div>
+                  }
+                  <div>
+                    <button type="button" class="btn btn-link" (click)="editLanguage(languageModel.doc)">
+                      <i class="fa fa-pencil" aria-hidden="true"></i>
+                      <span>{{ 'edit' | translate }}</span>
+                    </button>
+                  </div>
+                  @if (languageModel.enabled) {
+                    <div>
+                      <button type="button" class="btn btn-link" (click)="disableLanguage(languageModel.doc)">
+                        <i class="fa fa-ban" aria-hidden="true"></i>
+                        <span>{{ 'Disable' | translate }}</span>
+                      </button>
+                    </div>
+                  } @else {
+                    <div>
+                      <button type="button" class="btn btn-link" (click)="enableLanguage(languageModel.doc)">
+                        <i class="fa fa-circle-o" aria-hidden="true"></i>
+                        <span>{{ 'Enable' | translate }}</span>
+                      </button>
+                    </div>
+                  }
+                  <div>
+                    <button type="button" class="btn btn-link" (click)="downloadLanguage(languageModel.doc)">
+                      <i class="fa fa-arrow-down" aria-hidden="true" ></i>
+                      <span>{{ 'Download' | translate }}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-link" (click)="uploadLanguage(languageModel.doc)">
+                      <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                      <span>{{ 'Upload' | translate }}</span>
+                    </button>
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-link btn-danger" (click)="deleteLanguage(languageModel.doc)">
+                      <i class="fa fa-trash-o" aria-hidden="true"></i>
+                      <span>{{ 'Delete' | translate }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  <display-languages-edit
+    [visible]="showEditModal"
+    [doc]="selectedDoc"
+    (closed)="showEditModal = false"
+    (saved)="ngOnInit()"
+  >
+  </display-languages-edit>
+  <display-languages-delete
+    [visible]="showDeleteModal"
+    [doc]="selectedDoc"
+    [localeLanguage]="savedLocaleLanguage"
+    [localeOutgoingLanguage]="savedLocaleOutgoingLanguage"
+    (closed)="showDeleteModal = false"
+    (confirmed)="ngOnInit()"
+  >
+  </display-languages-delete>
+  <display-languages-upload
+    [visible]="showUploadModal"
+    [doc]="selectedDoc"
+    (closed)="showUploadModal = false"
+    (saved)="ngOnInit()"
+  >
+  </display-languages-upload>
+</div>

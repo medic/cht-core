@@ -1,0 +1,68 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" (click)="cancel()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ (doc ? 'Edit language' : 'Add new language') | translate }}</h4>
+        </div>
+
+        <div class="modal-body">
+
+          <p>{{ 'edit.language.description' | translate }}</p>
+
+          <div class="form-group required" [class.has-error]="languageErrors.code">
+            <label for="code">{{ 'Language code' | translate }}</label>
+            <input id="code" type="text" class="form-control tiny" [(ngModel)]="model.code" [attr.disabled]="doc ? true : null" />
+            @if (languageErrors.code) {
+              <span class="help-block error">{{ languageErrors.code }}</span>
+            }
+            <span class="help-block">
+              {{ 'Language code help' | translate }}
+              <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Current_codes" target="_blank" rel="noopener noreferrer">{{ 'edit.language.code.help.link' | translate }}</a>
+            </span>
+          </div>
+
+          <div class="form-group required" [class.has-error]="languageErrors.name">
+            <label for="name">{{ 'Name' | translate }}</label>
+            <input id="name" type="text" class="form-control small" [(ngModel)]="model.name" />
+            @if (languageErrors.name) {
+              <span class="help-block error">{{ languageErrors.name }}</span>
+            }
+            <span class="help-block">{{ 'Language name help' | translate }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="rtl">
+                {{ 'RTL' | translate }}
+                <input id="rtl" type="checkbox" [(ngModel)]="model.rtl" />
+            </label>
+            <span class="help-block">{{ 'Language RTL help' | translate }}</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          @if (responseStatus.state === 'error') {
+            <p class="alert alert-danger" role="alert">{{ responseStatus.msg! | translate }}</p>
+          }
+          <button type="button" class="btn btn-link" (click)="cancel()" [disabled]="loadingModalState">
+            {{ 'Cancel' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="submit()" [disabled]="loadingModalState">
+            {{ loadingModalState ? ('Submitting' | translate) : ('Submit' | translate) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

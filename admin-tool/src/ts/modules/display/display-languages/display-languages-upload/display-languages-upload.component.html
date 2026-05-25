@@ -1,0 +1,53 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" (click)="cancel()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ 'Import translations' | translate }}</h4>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group required">
+            <label for="translations">{{ 'Translation file' | translate }}</label>
+            <input
+              #fileInput
+              id="translations"
+              type="file"
+              accept=".properties"
+              (change)="onFileChange($event)"
+            />
+            <span class="help-block">{{ 'Translation file help' | translate }}</span>
+            @if (fileError) {
+              <span class="help-block error">{{ fileError }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          @if (responseStatus.state === 'error') {
+            <p class="alert alert-danger" role="alert">{{ responseStatus.msg! | translate }}</p>
+          }
+          <button type="button" class="btn btn-link" (click)="cancel()" [attr.disabled]="loadingModalState ? true : null">
+            {{ 'Cancel' | translate }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="submit()" [attr.disabled]="loadingModalState ? true : null">
+            {{ loadingModalState ? ('Submitting' | translate) : ('Submit' | translate) }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

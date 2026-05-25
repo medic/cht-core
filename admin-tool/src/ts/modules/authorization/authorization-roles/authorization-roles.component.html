@@ -1,0 +1,87 @@
+@if (loadingPageStatus) {
+  <div class="loader"></div>
+} @else {
+  <div class="tab-content container-fluid">
+    <legend>{{'configuration.roles.add' | translate}}</legend>
+
+    <div class="form-group required" [class.has-error]="roleValidation.key">
+      <label for="key">{{'configuration.role' | translate}}</label>
+      <input id="key" class="form-control medium" [(ngModel)]="newRole.key" />
+      @if (roleValidation.key) {
+        <p class="help-block">{{ roleValidation.key }}</p>
+      }
+    </div>
+
+    <div class="form-group required" [class.has-error]="roleValidation.name">
+      <label for="name">{{'translation.key' | translate}}</label>
+      <input id="name" class="form-control medium" [(ngModel)]="newRole.name" />
+      @if (roleValidation.name) {
+        <p class="help-block">{{ roleValidation.name }}</p>
+      }
+    </div>
+
+    <div class="form-group">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" id="offline" [(ngModel)]="newRole.offline" />
+          <span>{{'configuration.role.offline' | translate}}</span>
+        </label>
+      </div>
+      <p class="help-block">{{'configuration.role.offline.warning' | translate}}</p>
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        (click)="addRole()"
+        [disabled]="responseStatus.state === 'loading'">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+        <span>{{'Submit' | translate}}</span>
+      </button>
+      @if (responseStatus.state === 'loading' && isAddingRole) {
+        <div class="loader inline"></div>
+      } @else if (responseStatus.state === 'error') {
+        <p class="error">{{ responseStatus.msg! | translate }}</p>
+      }
+    </div>
+  </div>
+  <div class="tab-content container-fluid">
+    <legend>{{'configuration.roles' | translate}}</legend>
+    <div class="row selection-heading">
+      <div class="col-xs-2">{{'configuration.role' | translate}}</div>
+      <div class="col-xs-3">{{'translation.key' | translate}}</div>
+      <div class="col-xs-4">{{'Name' | translate}}</div>
+      <div class="col-xs-2">{{'configuration.role.offline' | translate}}</div>
+      <div class="col-xs-1"></div>
+    </div>
+    @if (loadingError) {
+      <p class="loading error">{{ loadingError | translate }}</p>
+    }
+    @for (role of roles; track role.key) {
+      <div class="row">
+        <div class="col-xs-2">{{ role.key }}</div>
+        <div class="col-xs-3">{{ role.value.name }}</div>
+        <div class="col-xs-4">{{ role.value.name | translate }}</div>
+        <div class="col-xs-2">
+          @if (role.value.offline) {
+            <i class="fa fa-check" aria-label="Offline"></i>
+          } @else {
+            <span aria-label="Online"></span>
+          }
+        </div>
+        <div class="col-xs-1 delete">
+          <button
+            class="btn btn-sm btn-danger"
+            aria-label="Delete role"
+            (click)="deleteRole(role.key)"
+            [disabled]="responseStatus.state === 'loading'">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+
