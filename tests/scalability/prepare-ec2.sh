@@ -46,25 +46,14 @@ CHT_COMPOSE_PATH=/cht/compose
 COUCHDB_PASSWORD=medicScalability
 EOF
   docker compose --progress quiet up --detach
+  cd
   echo "    install_cht CHT started"
 }
 
 install_local_ip_cert(){
   echo "starting install_local_ip_cert"
-  max=500
-  count=0
-  echo -n "waiting for nginx to be ready..."
-  while [[ count -le max  ]]; do
-    nginx=$(docker ps --format "table {{.Names}}" | grep cht-nginx-1)
-    if [[ "$nginx" == "cht-nginx-1" ]]; then
-      curl -sO https://raw.githubusercontent.com/medic/cht-core/refs/heads/master/scripts/add-local-ip-certs-to-docker.sh
-      bash ./add-local-ip-certs-to-docker.sh cht-nginx-1
-      count=max
-    fi
-    ((count=count+1))
-    echo -n "."
-    sleep 1
-  done
+  curl -sO https://raw.githubusercontent.com/medic/cht-core/refs/heads/master/scripts/add-local-ip-certs-to-docker.sh
+  bash ./add-local-ip-certs-to-docker.sh cht-nginx-1
 }
 
 install_node_exporter(){
