@@ -1317,6 +1317,148 @@ describe('Enketo service', () => {
           expect(actual[0].fields.doc1._id).to.equal('child-gone');
         });
     });
+
+    it('preserves an independent edit, applies only the field the parent changed, and reports divergence', () => {
+      const consoleWarn = sinon.stub(console, 'warn');
+      form.validate.resolves(true);
+      // Parent edits some_property_1; leaves some_property_2 as it was in the last report snapshot.
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>parent_new</some_property_1>
+            <some_property_2>snapshot_val</some_property_2>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-5',
+        _rev: '3-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-1', type: 'thing_1', some_property_1: 'snap1', some_property_2: 'snapshot_val' },
+        },
+      });
+      // The live doc diverged on some_property_2 since the report was last saved (changed elsewhere).
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'child-1',
+          doc: {
+            _id: 'child-1',
+            _rev: '9-child',
+            type: 'thing_1',
+            some_property_1: 'snap1',
+            some_property_2: 'changed_elsewhere',
+            reported_date: 500,
+          },
+        }],
+      });
+
+      const divergedChildren: any[] = [];
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-5', divergedChildren)
+        .then(actual => {
+          const child = actual[1];
+          expect(child._id).to.equal('child-1');
+          expect(child.some_property_1).to.equal('parent_new');       // parent wins for the field it edited
+          expect(child.some_property_2).to.equal('changed_elsewhere'); // independent edit preserved
+          expect(divergedChildren).to.deep.equal([{ id: 'child-1', type: 'thing_1' }]);
+          expect(consoleWarn.calledOnce).to.be.true;
+        });
+    });
+
+    it('preserves a field added to the linked doc by a transition', () => {
+      const consoleWarn = sinon.stub(console, 'warn');
+      form.validate.resolves(true);
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>v2</some_property_1>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-6',
+        _rev: '2-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-2', type: 'thing_1', some_property_1: 'v1' },
+        },
+      });
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'child-2',
+          doc: {
+            _id: 'child-2',
+            _rev: '4-child',
+            type: 'thing_1',
+            some_property_1: 'v1',
+            patient_id: 'added-by-transition',
+            reported_date: 600,
+          },
+        }],
+      });
+
+      const divergedChildren: any[] = [];
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-6', divergedChildren)
+        .then(actual => {
+          const child = actual[1];
+          expect(child.some_property_1).to.equal('v2');                 // parent edit applied
+          expect(child.patient_id).to.equal('added-by-transition');     // transition field untouched
+          expect(divergedChildren).to.be.empty;        // a field only the doc has is not a divergence
+          expect(consoleWarn.called).to.be.false;
+        });
+    });
+
+    it('does not warn when the linked doc has not changed elsewhere', () => {
+      const consoleWarn = sinon.stub(console, 'warn');
+      form.validate.resolves(true);
+      form.getDataStr.returns(`
+        <data>
+          <name>Sally</name>
+          <doc1 db-doc="true">
+            <type>thing_1</type>
+            <some_property_1>same</some_property_1>
+          </doc1>
+        </data>
+      `);
+      getReport.resolves({
+        _id: 'report-7',
+        _rev: '1-report',
+        form: 'V',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1000,
+        fields: {
+          name: 'Sally',
+          doc1: { _id: 'child-3', type: 'thing_1', some_property_1: 'same' },
+        },
+      });
+      dbAllDocs.resolves({
+        rows: [{
+          id: 'child-3',
+          doc: { _id: 'child-3', _rev: '2-child', type: 'thing_1', some_property_1: 'same', reported_date: 700 },
+        }],
+      });
+
+      const divergedChildren: any[] = [];
+      return service
+        .completeExistingReport(form, { doc: {} }, 'report-7', divergedChildren)
+        .then(actual => {
+          expect(actual[1]._id).to.equal('child-3');
+          expect(divergedChildren).to.be.empty;
+          expect(consoleWarn.called).to.be.false;
+        });
+    });
   });
 
   describe('Saving attachments', () => {

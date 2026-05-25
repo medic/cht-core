@@ -20,7 +20,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { ContactSummary, EnketoFormContext, EnketoService, FormType } from '@mm-services/enketo.service';
+import { ContactSummary, DivergedChild, EnketoFormContext, EnketoService, FormType } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
@@ -306,11 +306,11 @@ export class FormService {
     return docs;
   }
 
-  private async completeReport(formInternalId, form, docId?) {
+  private async completeReport(formInternalId, form, docId?, divergedChildren?: DivergedChild[]) {
     const formDoc = await this.ngZone
       .runOutsideAngular(() => this.xmlFormsService.getDocAndFormAttachment(formInternalId));
     if (docId) {
-      return this.enketoService.completeExistingReport(form, formDoc, docId);
+      return this.enketoService.completeExistingReport(form, formDoc, docId, divergedChildren);
     }
 
     const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(formInternalId);
@@ -322,8 +322,11 @@ export class FormService {
     return docs;
   }
 
-  async save(formInternalId, form, geoHandle, docId?) {
-    const docs = await this.completeReport(formInternalId, form, docId);
+  // `divergedChildren` is an optional out-accumulator: on edit, the EnketoService pushes any linked
+  // db-doc children that had been changed elsewhere into it, so the caller (reports-add.component)
+  // can fold that into its single post-save snackbar. FormService shows no snackbar of its own here.
+  async save(formInternalId, form, geoHandle, docId?, divergedChildren?: DivergedChild[]) {
+    const docs = await this.completeReport(formInternalId, form, docId, divergedChildren);
     return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
   }
 

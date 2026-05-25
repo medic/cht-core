@@ -1,5 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';
+import { cloneDeep as _cloneDeep, isEqual as _isEqual, isPlainObject as _isPlainObject } from 'lodash-es';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
 import * as FileManager from '../../js/enketo/file-manager.js';
@@ -25,6 +26,18 @@ import * as contactTypesUtils from '@medic/contact-types-utils';
 // - recreate: legacy behaviour, mint a brand new child on every save
 type DbDocEdit = 'link' | 'readonly' | 'recreate';
 const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly', 'recreate'];
+
+// Keys that belong to the stored document itself, not to the form-managed data, and so are never
+// copied across from the re-derived form subtree when a linked child is updated in place.
+const RESERVED_CHILD_KEYS = ['_id', '_rev', '_attachments'];
+
+// A linked db-doc child that had been changed elsewhere (diverged from the report's last snapshot)
+// when the parent report was re-edited. Surfaced via an optional out-accumulator so the caller can
+// warn the user without changing the resolved docs-array shape (which cht-conf-test-harness consumes).
+export interface DivergedChild {
+  id: string;
+  type?: string;
+}
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -370,7 +383,7 @@ export class EnketoService {
     return form;
   }
 
-  private async xmlToDocs(doc, formXml, xmlVersion, record) {
+  private async xmlToDocs(doc, formXml, xmlVersion, record, divergedChildren?: DivergedChild[]) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
     const recordRoot = $record[0];
@@ -562,12 +575,31 @@ export class EnketoService {
 
       const existing = existingDocs.get(docToStore._id);
       if (intent === 'link' && existing) {
-        // Update the existing document in place: overlay the form-managed fields while preserving the
-        // revision, original report date and any fields the form does not own (e.g. fields added by
-        // transitions, attachments). (Phase C refines this overlay to a per-field delta.)
+        // Update the existing document in place. A linked doc has two writers (this report and the
+        // doc's own form), so rather than overwriting it wholesale we overlay only the fields the
+        // parent user changed this edit (vs the report's last snapshot) and keep the live value for
+        // everything else. If the live doc has diverged from that snapshot on a parent-owned field,
+        // record it so the caller can warn the user (the change is kept either way).
+        const merged = recoveredSnapshot
+          ? this.mergeChangedFields(existing, docToStore, recoveredSnapshot)
+          // No previous snapshot (legacy/first edit): fall back to the whole-subtree overlay.
+          : { ...existing, ...docToStore };
+
+        if (recoveredSnapshot) {
+          const diverged = this.collectDivergedPaths(existing, recoveredSnapshot);
+          if (diverged.length) {
+            console.warn(
+              `Linked db-doc ${docToStore._id} (type ${existing.type}) had been changed elsewhere ` +
+              `since this report was last saved; keeping those changes and applying only the edited ` +
+              `fields. Diverged paths: ${diverged.join(', ')}.`
+            );
+            divergedChildren?.push({ id: docToStore._id, type: existing.type });
+          }
+        }
+
         docsToStore.push({
-          ...existing,
-          ...docToStore,
+          ...merged,
+          _id: docToStore._id,
           _rev: existing._rev,
           reported_date: existing.reported_date,
         });
@@ -655,6 +687,57 @@ export class EnketoService {
     return existing;
   }
 
+  // Build the doc to store for a linked child by overlaying onto the live document only the fields the
+  // parent user actually changed this edit. `existing` is the live doc, `next` the form-derived
+  // subtree, `prev` the report's last-saved snapshot of this child.
+  private mergeChangedFields(existing, next, prev) {
+    const merged = _cloneDeep(existing);
+    this.applyChangedFields(merged, next, prev || {});
+    return merged;
+  }
+
+  // Recursively copy from `next` into `target` only the values that differ from `prev` (i.e. the
+  // fields the parent user changed). Unchanged fields keep the live value already in `target`; keys
+  // absent from `next` are never removed. Reserved doc keys are never copied.
+  private applyChangedFields(target, next, prev) {
+    Object.keys(next).forEach((key) => {
+      if (RESERVED_CHILD_KEYS.includes(key)) {
+        return;
+      }
+      if (_isEqual(next[key], prev?.[key])) {
+        // The parent user did not change this field this edit; keep whatever the live doc holds.
+        return;
+      }
+      if (_isPlainObject(next[key]) && _isPlainObject(target[key]) && _isPlainObject(prev?.[key])) {
+        this.applyChangedFields(target[key], next[key], prev[key]);
+        return;
+      }
+      // Leaf, array or shape change that the parent user edited: the parent wins.
+      target[key] = _cloneDeep(next[key]);
+    });
+  }
+
+  // List the parent-owned leaf paths where the live document (`existing`) differs from the report's
+  // last snapshot (`prev`) - i.e. fields that were changed elsewhere since this report last saved.
+  private collectDivergedPaths(existing, prev, prefix = ''): string[] {
+    const paths: string[] = [];
+    Object.keys(prev || {}).forEach((key) => {
+      if (RESERVED_CHILD_KEYS.includes(key)) {
+        return;
+      }
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (_isEqual(existing?.[key], prev[key])) {
+        return;
+      }
+      if (_isPlainObject(prev[key]) && _isPlainObject(existing?.[key])) {
+        paths.push(...this.collectDivergedPaths(existing[key], prev[key], path));
+        return;
+      }
+      paths.push(path);
+    });
+    return paths;
+  }
+
   private async update(docId) {
     // update an existing doc.  For convenience, get the latest version
     // and then modify the content.  This will avoid most concurrent
@@ -720,17 +803,17 @@ export class EnketoService {
     });
   }
 
-  async completeExistingReport(form, formDoc, docId) {
+  async completeExistingReport(form, formDoc, docId, divergedChildren?: DivergedChild[]) {
     await this.prepareForSave(form);
     return this.ngZone.runOutsideAngular(async () => {
       const doc = await this.update(docId);
-      return this._save(form, formDoc, doc);
+      return this._save(form, formDoc, doc, divergedChildren);
     });
   }
 
-  private async _save(form, formDoc, doc) {
+  private async _save(form, formDoc, doc, divergedChildren?: DivergedChild[]) {
     const dataString = form.getDataStr({ irrelevant: false });
-    return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
+    return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString, divergedChildren);
   }
 
   unload(form) {
