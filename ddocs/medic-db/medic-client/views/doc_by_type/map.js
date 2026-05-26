@@ -1,6 +1,6 @@
 function(doc) {
-  var indexed_types = ['form', 'user-settings'];
-  if (indexed_types.indexOf(doc.type) !== -1) {
+  var indexedTypes = ['form', 'user-settings'];
+  if (indexedTypes.indexOf(doc.type) !== -1) {
     emit([ doc.type ]);
   }
 }
