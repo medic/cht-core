@@ -1318,8 +1318,7 @@ describe('Enketo service', () => {
         });
     });
 
-    it('preserves an independent edit, applies only the field the parent changed, and reports divergence', () => {
-      const consoleWarn = sinon.stub(console, 'warn');
+    it('preserves an independent edit, applying only the field the parent changed', () => {
       form.validate.resolves(true);
       // Parent edits some_property_1; leaves some_property_2 as it was in the last report snapshot.
       form.getDataStr.returns(`
@@ -1358,21 +1357,17 @@ describe('Enketo service', () => {
         }],
       });
 
-      const divergedChildren: any[] = [];
       return service
-        .completeExistingReport(form, { doc: {} }, 'report-5', divergedChildren)
+        .completeExistingReport(form, { doc: {} }, 'report-5')
         .then(actual => {
           const child = actual[1];
           expect(child._id).to.equal('child-1');
           expect(child.some_property_1).to.equal('parent_new');       // parent wins for the field it edited
           expect(child.some_property_2).to.equal('changed_elsewhere'); // independent edit preserved
-          expect(divergedChildren).to.deep.equal([{ id: 'child-1', type: 'thing_1' }]);
-          expect(consoleWarn.calledOnce).to.be.true;
         });
     });
 
     it('preserves a field added to the linked doc by a transition', () => {
-      const consoleWarn = sinon.stub(console, 'warn');
       form.validate.resolves(true);
       form.getDataStr.returns(`
         <data>
@@ -1408,55 +1403,12 @@ describe('Enketo service', () => {
         }],
       });
 
-      const divergedChildren: any[] = [];
       return service
-        .completeExistingReport(form, { doc: {} }, 'report-6', divergedChildren)
+        .completeExistingReport(form, { doc: {} }, 'report-6')
         .then(actual => {
           const child = actual[1];
           expect(child.some_property_1).to.equal('v2');                 // parent edit applied
           expect(child.patient_id).to.equal('added-by-transition');     // transition field untouched
-          expect(divergedChildren).to.be.empty;        // a field only the doc has is not a divergence
-          expect(consoleWarn.called).to.be.false;
-        });
-    });
-
-    it('does not warn when the linked doc has not changed elsewhere', () => {
-      const consoleWarn = sinon.stub(console, 'warn');
-      form.validate.resolves(true);
-      form.getDataStr.returns(`
-        <data>
-          <name>Sally</name>
-          <doc1 db-doc="true">
-            <type>thing_1</type>
-            <some_property_1>same</some_property_1>
-          </doc1>
-        </data>
-      `);
-      getReport.resolves({
-        _id: 'report-7',
-        _rev: '1-report',
-        form: 'V',
-        type: DOC_TYPES.DATA_RECORD,
-        reported_date: 1000,
-        fields: {
-          name: 'Sally',
-          doc1: { _id: 'child-3', type: 'thing_1', some_property_1: 'same' },
-        },
-      });
-      dbAllDocs.resolves({
-        rows: [{
-          id: 'child-3',
-          doc: { _id: 'child-3', _rev: '2-child', type: 'thing_1', some_property_1: 'same', reported_date: 700 },
-        }],
-      });
-
-      const divergedChildren: any[] = [];
-      return service
-        .completeExistingReport(form, { doc: {} }, 'report-7', divergedChildren)
-        .then(actual => {
-          expect(actual[1]._id).to.equal('child-3');
-          expect(divergedChildren).to.be.empty;
-          expect(consoleWarn.called).to.be.false;
         });
     });
   });

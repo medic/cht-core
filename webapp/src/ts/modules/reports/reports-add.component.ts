@@ -14,7 +14,6 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
-import { DivergedChild } from '@mm-services/enketo.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
@@ -334,16 +333,14 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resetFormError();
     const reportId = this.selectedReport?.doc?._id;
     const formInternalId = this.selectedReport?.formInternalId;
-    // Out-accumulator the form/enketo services fill with any linked db-doc children that had been
-    // changed elsewhere, so the single post-save snackbar can mention it (see getSaveSnackbarText).
-    const divergedChildren: DivergedChild[] = [];
 
     return this.formService
-      .save(formInternalId, this.form, this.geoHandle, reportId, divergedChildren)
+      .save(formInternalId, this.form, this.geoHandle, reportId)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
         this.globalActions.setEnketoSavingStatus(false);
-        this.globalActions.setSnackbarContent(this.getSaveSnackbarText(divergedChildren));
+        const snackBarTranslationKey = this.routeSnapshot.params.reportId ? 'report.updated' : 'report.created';
+        this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
         this.router.navigate(['/reports', docs[0]._id]);
       })
@@ -362,20 +359,6 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
             this.globalActions.setEnketoError(msg);
           });
       });
-  }
-
-  // Pick the single post-save snackbar message. When editing a report whose linked db-doc children
-  // had been changed elsewhere, tell the user those changes were kept (and only their edits applied);
-  // otherwise the standard created/updated message.
-  private getSaveSnackbarText(divergedChildren: DivergedChild[]): string {
-    const editing = !!this.routeSnapshot.params.reportId;
-    if (editing && divergedChildren.length) {
-      return this.translateService.instant(
-        'report.updated.linked_doc_diverged',
-        { count: divergedChildren.length }
-      );
-    }
-    return this.translateService.instant(editing ? 'report.updated' : 'report.created');
   }
 
   navigationCancel() {
