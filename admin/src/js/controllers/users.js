@@ -1,4 +1,6 @@
 const _ = require('lodash/core');
+const constants = require('@medic/constants');
+const PREFIXES = constants.PREFIXES;
 
 angular.module('controllers').controller('UsersCtrl',
   function (
@@ -22,8 +24,12 @@ angular.module('controllers').controller('UsersCtrl',
 
     $scope.updateList = function() {
       $scope.loading = true;
-      const params = { include_docs: true, key: ['user-settings'] };
-      DB().query('medic-client/doc_by_type', params)
+      const params = {
+        include_docs: true,
+        start_key: PREFIXES.COUCH_USER,
+        end_key: PREFIXES.COUCH_USER + '\ufff0',
+      };
+      DB().allDocs(params)
         .then(function(settings) {
           $scope.users = _.map(settings.rows, 'doc');
           $scope.loading = false;

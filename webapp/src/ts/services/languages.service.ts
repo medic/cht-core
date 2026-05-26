@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
+import { PREFIXES } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +22,11 @@ export class LanguagesService {
 
     const result = await this.dbService
       .get()
-      .query('medic-client/doc_by_type', { key: [DOC_TYPES.TRANSLATIONS], include_docs: true });
+      .allDocs({
+        start_key: PREFIXES.TRANSLATIONS,
+        end_key: PREFIXES.TRANSLATIONS + '\ufff0',
+        include_docs: true,
+      });
 
     return result.rows
       .filter(row => enabledLanguages.includes(row.doc.code) || !enabledLanguages.length)

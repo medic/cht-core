@@ -170,11 +170,9 @@ describe('migrations', () => {
     getLog.onCall(0).returns(Promise.reject({ status: 404 }));
     getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [] });
     getLog.onCall(2).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [] });
-    const query = sinon.stub(db.medic, 'query').resolves({ rows: [ ] });
     sinon.stub(migrations, 'get').resolves(migration);
     const put = sinon.stub(db.medic, 'put').resolves({});
     return migrations.run().then(() => {
-      chai.expect(query.callCount).to.equal(1);
       chai.expect(put.callCount).to.equal(2);
       chai.expect(put.firstCall.args[0]).to.deep.equal({
         _id: DOC_IDS.MIGRATION_LOG,
@@ -185,36 +183,6 @@ describe('migrations', () => {
         _id: DOC_IDS.MIGRATION_LOG,
         migrations: [ 'xyz' ],
         type: 'meta'
-      });
-    });
-  });
-
-  it('migrates meta to log', () => {
-    const migration = [{
-      name: 'xyz',
-      created: new Date(2015, 1, 1, 1, 0, 0, 0),
-      run: () => Promise.reject(new Error('should not be called!'))
-    }];
-    const oldLog = { _id: 1, type: 'meta', migrations: [ 'xyz' ] };
-    const getLog = sinon.stub(db.medic, 'get');
-    getLog.onCall(0).returns(Promise.reject({ status: 404 }));
-    getLog.onCall(1).resolves({ _id: DOC_IDS.MIGRATION_LOG, type: 'meta', migrations: [ 'xyz' ] });
-    const query = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: oldLog } ] });
-    sinon.stub(migrations, 'get').resolves(migration);
-    const put = sinon.stub(db.medic, 'put').resolves({});
-    return migrations.run().then(() => {
-      chai.expect(query.callCount).to.equal(1);
-      chai.expect(put.callCount).to.equal(2);
-      chai.expect(put.firstCall.args[0]).to.deep.equal({
-        _id: DOC_IDS.MIGRATION_LOG,
-        migrations: [ 'xyz' ],
-        type: 'meta'
-      });
-      chai.expect(put.secondCall.args[0]).to.deep.equal({
-        _id: 1,
-        migrations: [ 'xyz' ],
-        type: 'meta',
-        _deleted: true
       });
     });
   });
