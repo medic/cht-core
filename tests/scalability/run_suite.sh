@@ -42,10 +42,12 @@ setupCHT() {
 
 updateUsersList() {
   curl -k -sf "$MEDIC_URL_AUTH/api/v1/users" > users_response.json
+  echo "Users response size: $(wc -c < users_response.json) bytes"
+  echo "CHW users found: $(jq '[.[] | select(.type == "chw")] | length' users_response.json)"
   jq --slurpfile users users_response.json \
     '.users = [$users[0][] | select(.type == "chw") | {name: .username, pass: "password"}]' \
     config.json > temp.json && mv temp.json config.json
-  rm users_response.json
+  echo "config.json users count: $(jq '.users | length' config.json)"
 }
 
 setupJmeter() {
