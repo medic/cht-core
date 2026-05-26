@@ -240,20 +240,20 @@ describe('Sentinel archiving lib', () => {
     ]);
   });
 
-  it('falls back to a placeholder message when the error has no message', async () => {
+  it('falls back to the stack when an error has no message', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
     const { queue } = stubQueue([failing]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
     sinon.stub(Date, 'now').returns(9000);
 
-    // An error-shaped value with no `message` and no useful toString.
-    const archiveBatch = sinon.stub().rejects(Object.create(null));
+    const stackOnly = { stack: 'Error\n    at somewhere' };
+    const archiveBatch = sinon.stub().rejects(stackOnly);
     lib.__set__('archiveBatch', archiveBatch);
 
     await lib.archive();
 
     chai.expect(queue[0].error_count).to.equal(1);
-    chai.expect(queue[0].errors[0].message).to.equal('Unknown error');
+    chai.expect(queue[0].errors[0].message).to.equal('Error\n    at somewhere');
   });
 
   it('is a no-op while another archive run is in flight', async () => {

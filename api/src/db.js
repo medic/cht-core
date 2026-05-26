@@ -23,6 +23,7 @@ if (UNIT_TEST_ENV) {
     'builds',
     'vault',
     'cache',
+    'archive',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',

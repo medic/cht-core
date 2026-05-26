@@ -6,6 +6,7 @@ const { Readable } = require('stream');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
+const errors = require('../../../src/errors');
 
 const newReq = (lines = [], { contentType = 'text/csv' } = {}) => {
   const body = lines.length ? lines.join('\n') + '\n' : '';
@@ -34,7 +35,7 @@ describe('Archive controller', () => {
   afterEach(() => sinon.restore());
 
   describe('create', () => {
-    it('responds 403 when caller is not a db admin', async () => {
+    it('responds with an AuthenticationError when caller is not a db admin', async () => {
       sinon.stub(auth, 'getUserCtx').resolves({ roles: [] });
       sinon.stub(auth, 'isDbAdmin').returns(false);
       sinon.stub(serverUtils, 'error').returns();
@@ -45,7 +46,10 @@ describe('Archive controller', () => {
       await controller.create(req, res);
 
       chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0].code).to.equal(403);
+      const err = serverUtils.error.args[0][0];
+      chai.expect(err).to.be.an.instanceOf(errors.AuthenticationError);
+      chai.expect(err.code).to.equal(401);
+      chai.expect(err.message).to.equal('User is not an admin');
       chai.expect(db.sentinel.put.callCount).to.equal(0);
     });
 
@@ -116,10 +120,10 @@ describe('Archive controller', () => {
 
       chai.expect(db.sentinel.put.callCount).to.equal(0);
       chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0]).to.deep.equal({
-        code: 415,
-        reason: 'Content-Type must be text/csv',
-      });
+      const err = serverUtils.error.args[0][0];
+      chai.expect(err).to.be.an.instanceOf(errors.ContentTypeError);
+      chai.expect(err.code).to.equal(415);
+      chai.expect(err.message).to.equal('Content-Type must be text/csv');
     });
 
     it('accepts text/csv with charset parameters', async () => {
@@ -148,10 +152,10 @@ describe('Archive controller', () => {
       chai.expect(db.sentinel.put.callCount).to.equal(0);
       chai.expect(res.json.callCount).to.equal(0);
       chai.expect(serverUtils.error.callCount).to.equal(1);
-      chai.expect(serverUtils.error.args[0][0]).to.deep.equal({
-        code: 400,
-        reason: 'No doc IDs found in request body',
-      });
+      const err = serverUtils.error.args[0][0];
+      chai.expect(err).to.be.an.instanceOf(errors.BadRequestError);
+      chai.expect(err.code).to.equal(400);
+      chai.expect(err.message).to.equal('No valid doc IDs found in request body');
     });
 
     it('rejects a body of only blank lines with 400', async () => {
