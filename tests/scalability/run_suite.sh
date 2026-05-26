@@ -34,7 +34,6 @@ setupCHT() {
 
   cd tests/scalability
 
-  updateUsersList
   # Update the url field using jq and save to the config file
   jq --arg url "$MEDIC_URL" '.url = $url' config.json > temp.json && mv temp.json config.json
   npm ci
@@ -90,6 +89,7 @@ generateReplicationData() {
   echo "Output redirected to $tmpfile"
   npm run generate ./sample-designs/easy-mode.js > "$tmpfile"
   forwardSentinelSeq
+  updateUsersList
 }
 
 generateBenchmarkData() {
