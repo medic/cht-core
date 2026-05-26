@@ -41,10 +41,11 @@ setupCHT() {
 }
 
 updateUsersList() {
-  users=$(curl -k -sf "$MEDIC_URL_AUTH/api/v1/users")
-  jq --argjson users "$users" \
-    '.users = [$users[] | select(.type == "chw") | {name: .username, pass: "password"}]' \
+  curl -k -sf "$MEDIC_URL_AUTH/api/v1/users" > users_response.json
+  jq --slurpfile users users_response.json \
+    '.users = [$users[0][] | select(.type == "chw") | {name: .username, pass: "password"}]' \
     config.json > temp.json && mv temp.json config.json
+  rm users_response.json
 }
 
 setupJmeter() {
