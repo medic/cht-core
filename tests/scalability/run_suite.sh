@@ -83,7 +83,10 @@ generateReplicationData() {
   cd "$CHT_BASE_DIR"
   cd test-data-generator
   export COUCH_URL=$MEDIC_URL_AUTH
-  npm run generate ./sample-designs/easy-mode.js
+  echo "Generating data"
+  tmpfile=$(mktemp)
+  echo "Output redirected to $tmpfile"
+  npm run generate ./sample-designs/easy-mode.js > "$tmpfile"
   forwardSentinelSeq
 }
 
@@ -92,7 +95,10 @@ generateBenchmarkData() {
   cd test-data-generator
   export COUCH_URL=$MEDIC_URL_AUTH
   curl -k -sf -X PUT "$MEDIC_URL_AUTH/not-medic"
-  npm run generate "$CHT_BASE_DIR"/cht-core/tests/scalability/couchdb-benchmark/tdg-design.js
+  echo "Generating data"
+  tmpfile=$(mktemp)
+  echo "Output redirected to $tmpfile"
+  npm run generate "$CHT_BASE_DIR"/cht-core/tests/scalability/couchdb-benchmark/tdg-design.js > "$tmpfile"
 }
 
 runCouchDbBenchmark() {
