@@ -27,8 +27,10 @@ import * as contactTypesUtils from '@medic/contact-types-utils';
 type DbDocEdit = 'link' | 'readonly' | 'recreate';
 const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly', 'recreate'];
 
-// Preserved from the live doc when overlaying form-derived fields on a linked child.
-const RESERVED_CHILD_KEYS = ['_id', '_rev', '_attachments'];
+// Doc-identity keys managed by Pouch; never copied across when overlaying form-derived fields
+// on a linked child. `_attachments` is intentionally not reserved here — the parent's edits to
+// attachments are merged through a dedicated last-writer-wins overlay (see applyChangedAttachments).
+const RESERVED_CHILD_KEYS = ['_id', '_rev'];
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -399,8 +401,9 @@ export class EnketoService {
 
     mapOrAssignId($record[0], doc._id || uuid());
 
-    // Walk from a db-doc element up to the record root, collecting the node name (and its position
-    // amongst same-named siblings, for repeats) at each level. This mirrors the shape of `fields`.
+    // Walk from a db-doc element up to the record root, collecting the node name and its position
+    // amongst same name repeats siblings.
+    // This mirrors the shape of `fields` so that we can look up the child doc subtree.
     const getFieldsPath = (element) => {
       const segments: { name: string; index: number }[] = [];
       for (let node = element; node && node !== recordRoot; node = node.parentNode) {
@@ -551,16 +554,12 @@ export class EnketoService {
       docToStore._id = getId(Xpath.getElementXPath(element));
 
       if (intent === 'readonly' && recoveredSnapshot?._id) {
-        // The document already exists and may have been edited elsewhere; leave it untouched.
-        // The id is still persisted (above) so references to it keep resolving.
         return;
       }
 
       const existing = existingDocs.get(docToStore._id);
       if (intent === 'link' && existing) {
-        // A linked doc has two writers (this report and the doc's own form). Overlay only the
-        // fields the parent user actually changed this edit, so independent edits are preserved.
-        // No previous snapshot (legacy/first edit) falls back to a whole-subtree overlay.
+        // Last writer wins: overlay only current edit - preserve independent edits.
         const merged = recoveredSnapshot
           ? this.mergeChangedFields(existing, docToStore, recoveredSnapshot)
           : { ...existing, ...docToStore };
@@ -574,7 +573,6 @@ export class EnketoService {
         return;
       }
 
-      // New report, recreate child, or a linked child whose original is missing/deleted: create it.
       docToStore.reported_date = Date.now();
       docsToStore.push(docToStore);
     });
@@ -636,8 +634,6 @@ export class EnketoService {
     return isContact ? 'readonly' : 'link';
   }
 
-  // Fetch live docs we are about to update in place. Missing/deleted ids are omitted so the
-  // caller re-creates them instead.
   private async fetchExistingDocs(ids: string[]): Promise<Map<string, any>> {
     const existing = new Map<string, any>();
     if (!ids.length) {
@@ -652,8 +648,6 @@ export class EnketoService {
     return existing;
   }
 
-  // Build the doc to store for a linked child by overlaying onto the live doc only the fields
-  // the parent user actually changed this edit (per-field, last-writer-wins).
   private mergeChangedFields(existing, next, prev) {
     const merged = _cloneDeep(existing);
     this.applyChangedFields(merged, next, prev || {});
@@ -667,6 +661,10 @@ export class EnketoService {
       if (RESERVED_CHILD_KEYS.includes(key)) {
         return;
       }
+      if (key === '_attachments') {
+        this.applyChangedAttachments(target, next._attachments);
+        return;
+      }
       if (_isEqual(next[key], prev?.[key])) {
         return;
       }
@@ -675,6 +673,19 @@ export class EnketoService {
         return;
       }
       target[key] = _cloneDeep(next[key]);
+    });
+  }
+
+  // Merge parent-edited attachments into the live linked child, last-writer-wins per name. Names
+  // absent from `nextAtts` are left as-is (no removal: clearing a parent binary field orphans the
+  // old attachment, matching how applyChangedFields also never drops keys absent from `next`).
+  private applyChangedAttachments(target, nextAtts) {
+    if (!nextAtts) {
+      return;
+    }
+    target._attachments = target._attachments || {};
+    Object.keys(nextAtts).forEach((name) => {
+      target._attachments[name] = nextAtts[name];
     });
   }
 

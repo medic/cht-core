@@ -1413,6 +1413,81 @@ describe('Enketo service', () => {
     });
   });
 
+  describe('applyChangedAttachments (linked-child attachment overlay)', () => {
+    // Called from applyChangedFields when overlaying the parent's edited fields onto a linked
+    // db-doc child. The parent's `_attachments` (routed in by an upstream PR) is merged
+    // last-writer-wins per name; names absent from `next._attachments` keep their live value.
+    beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+    });
+
+    const applyChangedAttachments = (target, nextAtts) => {
+      (service as any).applyChangedAttachments(target, nextAtts);
+      return target;
+    };
+
+    it('adds a new attachment uploaded by the parent under a new name', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-existing.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+      const nextAtts = {
+        'user-file-new.png': { content_type: 'image/png', data: 'parent-bytes' },
+      };
+
+      const merged = applyChangedAttachments(live, nextAtts);
+      expect(merged._attachments['user-file-existing.png'].data).to.equal('live-bytes');
+      expect(merged._attachments['user-file-new.png'].data).to.equal('parent-bytes');
+    });
+
+    it('overwrites the live attachment when the parent uploads under an existing name', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-photo.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+      const nextAtts = {
+        'user-file-photo.png': { content_type: 'image/png', data: 'parent-new-bytes' },
+      };
+
+      const merged = applyChangedAttachments(live, nextAtts);
+      expect(merged._attachments['user-file-photo.png'].data).to.equal('parent-new-bytes');
+    });
+
+    it('preserves a live attachment whose name is absent from the parent edit', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-untouched.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+      const nextAtts = {
+        'user-file-other.png': { content_type: 'image/png', data: 'parent-bytes' },
+      };
+
+      const merged = applyChangedAttachments(live, nextAtts);
+      expect(merged._attachments['user-file-untouched.png'].data).to.equal('live-bytes');
+      expect(merged._attachments['user-file-other.png'].data).to.equal('parent-bytes');
+    });
+
+    it('leaves live attachments untouched when next._attachments is undefined', () => {
+      const live = {
+        _id: 'child-1',
+        _attachments: {
+          'user-file-only.png': { content_type: 'image/png', data: 'live-bytes' },
+        },
+      };
+
+      const merged = applyChangedAttachments(live, undefined);
+      expect(merged._attachments).to.deep.equal({
+        'user-file-only.png': { content_type: 'image/png', data: 'live-bytes' },
+      });
+    });
+  });
+
   describe('Saving attachments', () => {
     let getCurrentFiles;
 
