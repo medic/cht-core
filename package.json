@@ -116,7 +116,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.40.0",
-    "@typescript-eslint/utils": "^8.53.1",
+    "@typescript-eslint/utils": "^8.59.3",
     "@wdio/allure-reporter": "^9.27.0",
     "@wdio/appium-service": "^9.27.0",
     "@wdio/cli": "^9.27.0",
