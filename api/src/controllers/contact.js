@@ -6,6 +6,7 @@ const serverUtils = require('../server-utils');
 const getContact = ctx.bind(Contact.v1.get);
 const getContactWithLineage = ctx.bind(Contact.v1.getWithLineage);
 const getContactIds = ctx.bind(Contact.v1.getUuidsPage);
+const getContactSummaries = ctx.bind(Contact.v1.getSummaries);
 
 /**
  * @openapi
@@ -131,6 +132,53 @@ module.exports = {
       }
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/contact/summary:
+     *   post:
+     *     summary: Get contact summaries by UUIDs
+     *     operationId: v1ContactSummaryPost
+     *     description: >
+     *       Returns compact summary records for the contacts identified by the provided UUIDs. UUIDs that do not
+     *       identify an existing contact are silently omitted from the result.
+     *     tags: [Contact]
+     *     x-since: 5.3.0
+     *     x-permissions:
+     *       hasAll: [can_view_contacts]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               uuids:
+     *                 type: array
+     *                 items:
+     *                   type: string
+     *             required: [uuids]
+     *     responses:
+     *       '200':
+     *         description: An array of contact summaries
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/v1.ContactSummary'
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getSummaries: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
+      const summaries = await getContactSummaries(req.body?.uuids);
+      return res.json(summaries);
     }),
   },
 };

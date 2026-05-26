@@ -106,6 +106,57 @@ describe('local report', () => {
       });
     });
 
+    describe('getSummaries', () => {
+      let getDocsByIdsOuter: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+      });
+
+      it('returns empty array when given no uuids', async () => {
+        const result = await Report.v1.getSummaries(localContext)([]);
+
+        expect(result).to.deep.equal([]);
+        expect(getDocsByIdsInner.notCalled).to.be.true;
+      });
+
+      it('summarises reports and filters out non-report docs', async () => {
+        const reportDoc = {
+          _id: 'a',
+          _rev: '1',
+          type: DOC_TYPES.DATA_RECORD,
+          form: 'delivery',
+          from: '+123',
+          reported_date: 100,
+          fields: { patient_id: 'f', patient_name: 'jeff' },
+        };
+        const contactDoc = { _id: 'b', _rev: '2', type: 'person', name: 'james' };
+        getDocsByIdsInner.resolves([reportDoc, contactDoc, null]);
+
+        const result = await Report.v1.getSummaries(localContext)(['a', 'b', 'missing']);
+
+        expect(result).to.deep.equal([{
+          _id: 'a',
+          _rev: '1',
+          from: '+123',
+          phone: undefined,
+          form: 'delivery',
+          read: undefined,
+          valid: true,
+          verified: undefined,
+          reported_date: 100,
+          contact: undefined,
+          lineage: [],
+          subject: { name: 'jeff', value: 'f', type: 'reference' },
+          case_id: undefined,
+        }]);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly(['a', 'b', 'missing'])).to.be.true;
+      });
+    });
+
     describe('getWithLineage', () => {
       const identifier = { uuid: 'uuid' } as const;
       let fetchHydratedDocOuter: SinonStub;

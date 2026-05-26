@@ -148,7 +148,7 @@ describe('Reports Subject', () => {
       from: user.phone,
       fields: { patient_name: '' }
     };
-    await createSmsReport(report, '1!RR!', [{ fields: 'patient_name', code: 'sys.missing_fields' }]);
+    await createSmsReport(report, '1!RR!', [{ fields: ['patient_name'], code: 'sys.missing_fields' }]);
     await verifyListReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
     await verifyOpenReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
   });

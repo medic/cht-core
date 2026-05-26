@@ -19,6 +19,7 @@ import {
   assertCursor,
   assertLimit,
   assertUuidQualifier,
+  assertUuids,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
 
@@ -39,6 +40,22 @@ export namespace v1 {
    */
   export interface ContactWithLineage extends Contact {
     readonly parent?: ContactWithLineage | NormalizedParent;
+  }
+
+  /**
+   * A compact summary of a contact record used in lists and search results.
+   */
+  export interface ContactSummary {
+    readonly _id: string;
+    readonly _rev: string;
+    readonly name?: string;
+    readonly phone?: string;
+    readonly type: string;
+    readonly contact_type?: string;
+    readonly contact?: string;
+    readonly lineage: string[];
+    readonly date_of_death?: number;
+    readonly muted?: boolean;
   }
 
   const getContact =
@@ -77,6 +94,30 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    */
   export const getWithLineage = getContact(Local.Contact.v1.getWithLineage, Remote.Contact.v1.getWithLineage);
+
+  /**
+   * Returns a function for retrieving summary records for the given contact UUIDs from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving an array of contact summaries
+   * @throws Error if a data context is not provided
+   */
+  export const getSummaries = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Contact.v1.getSummaries, Remote.Contact.v1.getSummaries);
+
+    /**
+     * Returns summary records for the provided contact UUIDs. Any UUIDs that do not identify an existing contact
+     * (or that the caller is not authorized to view) are silently omitted from the result.
+     * @param uuids the UUIDs of the contacts to summarise
+     * @returns an array of contact summaries
+     * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+     */
+    const curriedFn = async (uuids: string[]): Promise<ContactSummary[]> => {
+      assertUuids(uuids);
+      return fn(uuids);
+    };
+    return curriedFn;
+  };
 
   /**
    * Returns a function for retrieving a paged array of contact identifiers from the given data context.

@@ -28,6 +28,18 @@ export namespace v1 {
     return getReportUuids(remoteContext)(queryParams);
   };
 
+  const postReportSummary = postResource('api/v1/report/summary');
+
+  /** @internal */
+  export const getSummaries = (
+    remoteContext: RemoteDataContext
+  ) => (uuids: string[]): Promise<Report.v1.ReportSummary[]> => {
+    if (!uuids.length) {
+      return Promise.resolve([]);
+    }
+    return postReportSummary(remoteContext)({ uuids });
+  };
+
   /** @internal */
   export const create = postResource('api/v1/report');
 

@@ -26,6 +26,7 @@ angular.module('services').factory('MessageQueue',
     $q,
     $translate,
     DB,
+    GetSummaries,
     Languages,
     MessageQueueUtils,
     Settings
@@ -39,11 +40,9 @@ angular.module('services').factory('MessageQueue',
         return;
       }
 
-      const summary = summaries.rows.find(function(summary) {
-        return summary.value && summary.value.phone === message.sms.to;
+      return summaries.find(function(summary) {
+        return summary && summary.phone === message.sms.to;
       });
-
-      return summary && summary.value;
     };
 
     const findIdByKey = (contactsByReference, key) => {
@@ -101,7 +100,7 @@ angular.module('services').factory('MessageQueue',
             return row.id;
           });
 
-          return DB({ remote: true }).query('medic/doc_summaries_by_id', { keys: ids });
+          return GetSummaries(ids);
         })
         .then(function(summaries) {
           messages.forEach(function(message) {
