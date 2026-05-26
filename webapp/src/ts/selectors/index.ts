@@ -1,12 +1,62 @@
 import { createSelector } from '@ngrx/store';
 import { GlobalState, TasksFilters } from '@mm-reducers/global';
 import { TaskEmission } from '@mm-services/rules-engine.service';
+import Fuse from 'fuse.js';
 
 interface TaskWithLineage extends TaskEmission {
   lineageIds: string[];
 }
 
 const getGlobalState = (state): GlobalState => state.global || {};
+
+const normalizeText = (value?: string): string => {
+  if (!value) {
+    return '';
+  }
+  return value
+    .toString()
+    .toLowerCase()
+    // NFD decomposition splits accented characters into base + combining diacritical marks,
+    // and the regex then strips those combining marks (Unicode range U+0300–U+036F),
+    // so that e.g. 'Élodie' becomes 'elodie' and can be matched without accents.
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+};
+
+const taskMatchesSearch = (task: TaskWithLineage, normalizedSearch: string): boolean => {
+  if (!normalizedSearch) {
+    return true;
+  }
+
+  const candidates = [
+    task?.contact?.name,
+    ...(task?.lineage || []),
+    task?.title,
+  ].filter(Boolean) as string[];
+
+  if (!candidates.length) {
+    return false;
+  }
+
+  const substringMatch = candidates.some(c => normalizeText(c).includes(normalizedSearch));
+  if (substringMatch) {
+    return true;
+  }
+
+  const fuse = new Fuse(candidates, {
+    // threshold: 0 = exact match only, 1 = match anything.
+    threshold: 0.2,       
+    // distance: limits how far from the start of the string a match can be found.
+    distance: 50,
+    // Require at least 3 characters to trigger fuzzy matching,
+    minMatchCharLength: 3, 
+    // ignoreLocation: true means the match can appear anywhere in the string,
+    ignoreLocation: true,
+  });
+
+  return fuse.search(normalizedSearch).length > 0;
+};
 
 const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {}): TaskWithLineage[] => {
   let filtered = tasks;
@@ -24,6 +74,13 @@ const applyTasksFilters = (tasks: TaskWithLineage[], filters: TasksFilters = {})
     filtered = filtered.filter(task => {
       return task.lineageIds.some(id => filters.facilities?.selected.includes(id));
     });
+  }
+
+  if (filters.search) {
+    const normalizedSearch = normalizeText(filters.search);
+    if (normalizedSearch) {
+      filtered = filtered.filter(task => taskMatchesSearch(task, normalizedSearch));
+    }
   }
 
   return filtered;
