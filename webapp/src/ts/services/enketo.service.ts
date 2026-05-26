@@ -397,9 +397,8 @@ export class EnketoService {
 
     mapOrAssignId($record[0], doc._id || uuid());
 
-    // Walk from a db-doc element up to the record root, collecting the node name and its position
-    // amongst same name repeats siblings.
-    // This mirrors the shape of `fields` so that we can look up the child doc subtree.
+    // Mirrors the shape of `fields` so a db-doc child can be looked up in previousFields
+    // (repeat rows match by sibling index among same-named siblings).
     const getFieldsPath = (element) => {
       const segments: { name: string; index: number }[] = [];
       for (let node = element; node && node !== recordRoot; node = node.parentNode) {
@@ -414,8 +413,6 @@ export class EnketoService {
       return segments;
     };
 
-    // Reconstruct previous snapshot of child from parent form fields subtree
-    // before `<_id>` is overriden by the live form model that does not contain `_id`.
     const recoverChildSnapshot = (element): any => {
       if (!previousFields) {
         return;
@@ -645,8 +642,8 @@ export class EnketoService {
     return merged;
   }
 
-  // Recursively copy from `next` into `target` only the values that differ from `prev`. Keys
-  // unchanged this edit keep their live value; keys absent from `next` are never removed.
+  // Keys absent from `next` are never removed from `target` — clearing a parent field
+  // does not delete the corresponding key on the live doc.
   private applyChangedFields(target, next, prev) {
     Object.keys(next).forEach((key) => {
       if (RESERVED_CHILD_KEYS.includes(key)) {
@@ -667,9 +664,8 @@ export class EnketoService {
     });
   }
 
-  // Merge parent-edited attachments into the live linked child, last-writer-wins per name. Names
-  // absent from `nextAtts` are left as-is (no removal: clearing a parent binary field orphans the
-  // old attachment, matching how applyChangedFields also never drops keys absent from `next`).
+  // Names absent from `nextAtts` are left as-is — clearing a parent binary field orphans the
+  // old attachment on the doc rather than deleting it (mirrors applyChangedFields).
   private applyChangedAttachments(target, nextAtts) {
     if (!nextAtts) {
       return;
