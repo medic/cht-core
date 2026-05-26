@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const replicationLimitLogController = require('../../../src/controllers/replication-limit-log');
-const replicationLimitLogService = require('../../../src/services/replication-limit-log');
+const replicationLimitLogService = require('../../../src/services/replication/replication-limit-log');
 const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 
 describe('Replication Limit Log Controller', () => {
