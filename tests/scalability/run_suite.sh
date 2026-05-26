@@ -16,7 +16,7 @@ updateSystem() {
   echo installing node
   curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
   sudo bash nodesource_setup.sh # install node 22
-  apt-get install nodejs bzip2 # some npm dependency needs to be unzipped
+  apt-get install nodejs bzip2  -y # some npm dependency needs to be unzipped
 }
 
 setupCHT() {
@@ -41,13 +41,15 @@ setupCHT() {
 }
 
 updateUsersList() {
-  users=$(wget -qO- "$MEDIC_URL_AUTH/api/v1/users")
+  users=$(curl -k -sf "$MEDIC_URL_AUTH/api/v1/users")
   jq --argjson users "$users" \
     '.users = [$users[] | select(.type == "chw") | {name: .username, pass: "password"}]' \
     config.json > temp.json && mv temp.json config.json
 }
 
 setupJmeter() {
+  cd "$CHT_BASE_DIR/cht-core/tests/scalability"
+
   echo "Installing JMeter..."
   wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz -O ./apache-jmeter.tgz
   mkdir -p ./jmeter
@@ -74,6 +76,19 @@ setupTestDataGenerator() {
   git clone https://github.com/medic/test-data-generator.git
   cd test-data-generator
   npm ci
+}
+
+generateReplicationData() {
+  cd "$CHT_BASE_DIR"
+  cd test-data-generator
+  export COUCH_URL=$MEDIC_URL_AUTH
+  npm run generate ./sample-designs/easy-mode.js
+  forwardSentinelSeq
+}
+
+generateBenchmarkData() {
+  cd "$CHT_BASE_DIR"
+  cd test-data-generator
   export COUCH_URL=$MEDIC_URL_AUTH
   curl -k -sf -X PUT "$MEDIC_URL_AUTH/not-medic"
   npm run generate "$CHT_BASE_DIR"/cht-core/tests/scalability/couchdb-benchmark/tdg-design.js
@@ -108,15 +123,45 @@ uploadResults() {
   git push origin main
 }
 
+forwardSentinelSeq () {
+  local interval=15
+
+  while true; do
+    active_tasks=$(curl -sf -k "$MEDIC_URL_AUTH/_active_tasks" | jq '. | length')
+
+    # Check if the request was successful and got a number
+    if [ "$active_tasks" -eq 0 ]; then
+      echo "view indexing complete"
+      break
+    else
+      echo "Found $active_tasks active tasks. Waiting $interval seconds before next check..."
+      sleep "$interval"
+    fi
+  done
+
+  last_seq=$(curl -k -sf "$MEDIC_URL_AUTH/medic/_changes?limit=1&descending=true" | jq '.last_seq')
+  # Update sentinel queue
+  sentinel_queue=$(curl -sf -k "$MEDIC_URL_AUTH/medic-sentinel/_local/transitions-seq" | jq --arg seq "$last_seq" '.value=$seq')
+  # Put the updated sequence
+  curl -k -sf -X PUT "$MEDIC_URL_AUTH/medic-sentinel/_local/transitions-seq" \
+    -H "Content-Type: application/json" \
+    --data "$sentinel_queue"
+
+  sleep 30
+  echo Sentinel has caught up.
+}
+
 # Main execution
 main() {
   updateSystem
   setupCHT
+  setupTestDataGenerator
+  generateReplicationData
 
   setupJmeter
   runJmeterScalabilityTest
 
-  setupTestDataGenerator
+  generateBenchmarkData
   runCouchDbBenchmark
 
   uploadResults

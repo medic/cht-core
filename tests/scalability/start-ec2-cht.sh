@@ -54,45 +54,6 @@ waitForInstanceUp () {
   echo Api Is up
 }
 
-setupTestDataGenerator() {
-  cd "$CHT_BASE_DIR"
-  echo "installing test data generator"
-  git clone https://github.com/medic/test-data-generator.git
-  cd test-data-generator
-  npm ci
-  export COUCH_URL=$1
-
-  npm run generate ./sample-designs/easy-mode.js
-}
-
-forwardSentinelSeq () {
-  local interval="${2:-15}"  # Default to 30 seconds if not specified
-
-  while true; do
-    active_tasks=$(curl -sf -k "$1/_active_tasks" | jq '. | length')
-
-    # Check if the request was successful and got a number
-    if [ "$active_tasks" -eq 0 ]; then
-      echo "view indexing complete"
-      break
-    else
-      echo "Found $active_tasks active tasks. Waiting $interval seconds before next check..."
-      sleep "$interval"
-    fi
-  done
-
-  last_seq=$(curl -k -sf "$1/medic/_changes?limit=1&descending=true" | jq '.last_seq')
-  # Update sentinel queue
-  sentinel_queue=$(curl -sf -k "$1/medic-sentinel/_local/transitions-seq" | jq --arg seq "$last_seq" '.value=$seq')
-  # Put the updated sequence
-  curl -k -sf -X PUT "$1/medic-sentinel/_local/transitions-seq" \
-    -H "Content-Type: application/json" \
-    --data "$sentinel_queue"
-
-  sleep 30
-  echo Sentinel has caught up.
-}
-
 PublicDnsName=""
 getInstanceUrl () {
   echo Getting PublicDnsName
@@ -123,8 +84,6 @@ url=https://$PublicDnsName
 waitForInstanceUp "$url"
 
 MEDIC_CONF_URL='https://admin:medicScalability@'$PublicDnsName
-setupTestDataGenerator "$MEDIC_CONF_URL"
-forwardSentinelSeq "$MEDIC_CONF_URL"
 
 sed -i '4s~^~'MEDIC_URL="$url"'\n~' run_suite.sh
 sed -i '4s~^~'MEDIC_URL_AUTH="$MEDIC_CONF_URL"'\n~' run_suite.sh
