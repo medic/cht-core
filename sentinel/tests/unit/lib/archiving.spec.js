@@ -256,6 +256,25 @@ describe('Sentinel archiving lib', () => {
     chai.expect(queue[0].errors[0].message).to.equal('Error\n    at somewhere');
   });
 
+  it('falls back to the raw err value when it has neither message nor stack', async () => {
+    const failing = job({ _id: 'archive:1', total: 1 });
+    const { queue } = stubQueue([failing]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
+    sinon.stub(Date, 'now').returns(9999);
+
+    // A non-Error rejection value with no `message` and no `stack`. sinon.rejects
+    // forwards non-Error/non-string values as-is, so recordError sees the bare object
+    // and falls through to the final `|| err` branch.
+    const rawErr = { code: 42 };
+    const archiveBatch = sinon.stub().rejects(rawErr);
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(queue[0].error_count).to.equal(1);
+    chai.expect(queue[0].errors[0].message).to.equal(rawErr);
+  });
+
   it('is a no-op while another archive run is in flight', async () => {
     let release;
     sinon.stub(db.sentinel, 'allDocs').returns(new Promise(resolve => {
@@ -370,5 +389,185 @@ describe('Sentinel archiving lib', () => {
     db.sentinel.allDocs.resolves({ rows: [] });
     await lib.archive();
     chai.expect(db.sentinel.allDocs.callCount).to.equal(2);
+  });
+
+  describe('canArchive', () => {
+    it('accepts the four archivable types', () => {
+      const canArchive = lib.__get__('canArchive');
+      chai.expect(canArchive({ type: 'contact' })).to.equal(true);
+      chai.expect(canArchive({ type: 'data_record' })).to.equal(true);
+      chai.expect(canArchive({ type: 'task' })).to.equal(true);
+      chai.expect(canArchive({ type: 'target' })).to.equal(true);
+    });
+
+    it('rejects other types and missing docs', () => {
+      const canArchive = lib.__get__('canArchive');
+      chai.expect(canArchive({ type: 'person' })).to.equal(false);
+      chai.expect(canArchive({ type: 'clinic' })).to.equal(false);
+      chai.expect(canArchive({ type: 'feedback' })).to.equal(false);
+      chai.expect(canArchive({})).to.equal(false);
+      chai.expect(canArchive(null)).to.equal(false);
+      chai.expect(canArchive(undefined)).to.equal(false);
+    });
+  });
+
+  describe('archiveBatch', () => {
+    // The outer beforeEach stubs `archiveBatch` on `lib` so the loop tests can observe
+    // its inputs cheaply. These tests want the real implementation, so they rewire a
+    // fresh module instance whose `archiveBatch` is still the original code.
+    let freshLib;
+    beforeEach(() => {
+      freshLib = rewire('../../../src/lib/archiving');
+    });
+
+    it('does nothing when the batch has no usable ids', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      sinon.stub(db.medic, 'allDocs');
+      sinon.stub(db.archive, 'bulkDocs');
+      sinon.stub(db, 'purge');
+
+      await archiveBatch([]);
+      await archiveBatch(['', '   ']);
+
+      chai.expect(db.medic.allDocs.callCount).to.equal(0);
+      chai.expect(db.archive.bulkDocs.callCount).to.equal(0);
+      chai.expect(db.purge.callCount).to.equal(0);
+    });
+
+    it('archives only docs whose type passes canArchive, purges them, and audits', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      sinon.stub(Date, 'now').returns(424242);
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: 'c1', _rev: '1-a', type: 'contact', name: 'C' } },
+          { doc: { _id: 'r1', _rev: '1-b', type: 'data_record', form: 'visit' } },
+          { doc: { _id: 'p1', _rev: '1-c', type: 'person' } }, // not archivable
+          { doc: null }, // missing
+        ],
+      });
+      sinon.stub(db.archive, 'bulkDocs').resolves();
+      sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: 'c1-info', _rev: '1-x' } },
+          { doc: { _id: 'r1-info', _rev: '1-y' } },
+        ],
+      });
+      const audit = lib.__get__('audit');
+      sinon.stub(audit, 'recordArchiving').resolves();
+
+      await archiveBatch([' c1 ', 'r1', 'p1', 'missing']);
+
+      chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+        attachments: true,
+        keys: ['c1', 'r1', 'p1', 'missing'],
+        include_docs: true,
+        conflicts: true,
+      }]);
+      chai.expect(db.archive.bulkDocs.args[0][0]).to.deep.equal([
+        { _id: 'c1', _rev: '1-a', type: 'contact', name: 'C', archive_date: 424242 },
+        { _id: 'r1', _rev: '1-b', type: 'data_record', form: 'visit', archive_date: 424242 },
+      ]);
+      chai.expect(db.archive.bulkDocs.args[0][1]).to.deep.equal({ new_edits: false });
+
+      // purge is called twice: once for the medic docs, once for their *-info docs.
+      chai.expect(db.purge.callCount).to.equal(2);
+      chai.expect(db.purge.args[0][1].map(d => d._id)).to.deep.equal(['c1', 'r1']);
+      chai.expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
+        keys: ['c1-info', 'r1-info'],
+        include_docs: true,
+        conflicts: true,
+      }]);
+      chai.expect(db.purge.args[1][1].map(d => d._id)).to.deep.equal(['c1-info', 'r1-info']);
+
+      chai.expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
+    });
+
+    it('skips info docs that the sentinel db is missing without crashing the purge call', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      sinon.stub(Date, 'now').returns(1);
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [{ doc: { _id: 'r1', _rev: '1-a', type: 'data_record' } }],
+      });
+      sinon.stub(db.archive, 'bulkDocs').resolves();
+      sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'allDocs').resolves({
+        rows: [{ key: 'r1-info', error: 'not_found' }], // no .doc
+      });
+      const audit = lib.__get__('audit');
+      sinon.stub(audit, 'recordArchiving').resolves();
+
+      await archiveBatch(['r1']);
+
+      // The info-doc purge call gets an empty list (the not-found row was filtered out).
+      chai.expect(db.purge.args[1][1]).to.deep.equal([]);
+    });
+  });
+
+  describe('indexViews', () => {
+    it('fires the three index-warming queries in parallel', async () => {
+      const freshLib = rewire('../../../src/lib/archiving');
+      const indexViews = freshLib.__get__('indexViews');
+      sinon.stub(db.medic, 'query').resolves();
+      const request = freshLib.__get__('request');
+      const environment = freshLib.__get__('environment');
+      sinon.stub(environment, 'couchUrl').value('http://couch/medic');
+      sinon.stub(request, 'get').resolves();
+
+      await indexViews();
+
+      chai.expect(db.medic.query.callCount).to.equal(2);
+      chai.expect(db.medic.query.args).to.deep.equal([
+        ['medic/contacts_by_depth', { limit: 1 }],
+        ['medic-client/contacts_by_last_visited', { limit: 1 }],
+      ]);
+      chai.expect(request.get.args[0]).to.deep.equal([{
+        url: 'http://couch/medic/_design/medic/_nouveau/docs_by_replication_key',
+        qs: { limit: 1, q: '*:*' },
+      }]);
+    });
+  });
+
+  describe('recordError catch path', () => {
+    it('logs and swallows when the error-recording put itself fails', async () => {
+      const recordError = lib.__get__('recordError');
+      const failing = { _id: 'archive:1', _rev: '1-a' };
+      sinon.stub(db.sentinel, 'get').rejects(new Error('couch down'));
+      sinon.stub(db.sentinel, 'put');
+      const logger = lib.__get__('logger');
+      sinon.stub(logger, 'error');
+
+      // Should not throw — recordError owns its own try/catch.
+      await recordError(failing, new Error('original'));
+
+      chai.expect(db.sentinel.put.callCount).to.equal(0);
+      chai.expect(logger.error.callCount).to.equal(1);
+      chai.expect(logger.error.args[0][0]).to.match(/could not record error on job archive:1/);
+    });
+  });
+
+  describe('processJob exercises indexViews every 10 batches', () => {
+    it('calls indexViews after the 10th saveJob', async () => {
+      // 20 docs at BATCH_SIZE=2 = 10 batches in one cycle.
+      const pending = job({ _id: 'archive:1', total: 20 });
+      stubQueue([pending]);
+      sinon.stub(db.sentinel, 'getAttachment').resolves(
+        Buffer.from(Array.from({ length: 20 }, (_, i) => `d${i}`).join('\n'), 'utf8')
+      );
+      lib.__set__('BATCH_SIZE', 2);
+
+      const archiveBatch = sinon.stub().resolves();
+      lib.__set__('archiveBatch', archiveBatch);
+      const indexViews = sinon.stub().resolves();
+      lib.__set__('indexViews', indexViews);
+
+      await lib.archive();
+
+      chai.expect(archiveBatch.callCount).to.equal(10);
+      // indexViews fires after batch 10.
+      chai.expect(indexViews.callCount).to.equal(1);
+    });
   });
 });

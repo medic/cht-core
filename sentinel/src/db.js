@@ -51,12 +51,19 @@ if (UNIT_TEST_ENV) {
     changes: stubMe('changes'),
   };
 
+  module.exports.archive = {
+    allDocs: stubMe('allDocs'),
+    bulkDocs: stubMe('bulkDocs'),
+    get: stubMe('get'),
+    put: stubMe('put'),
+  };
 
   module.exports.allDbs = stubMe('allDbs');
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
+  module.exports.purge = stubMe('purge');
 } else {
   const service = 'sentinel';
   environment.setService(service);
