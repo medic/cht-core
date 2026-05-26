@@ -26,7 +26,10 @@ import * as contactTypesUtils from '@medic/contact-types-utils';
 type DbDocEdit = 'link' | 'readonly';
 const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly'];
 
-const RESERVED_CHILD_KEYS = ['_id', '_rev'];
+const RESERVED_CHILD_KEYS = new Set(['_id', '_rev']);
+
+// drop any key that would set a prototype rather than an own property.
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -397,20 +400,32 @@ export class EnketoService {
 
     mapOrAssignId($record[0], doc._id || uuid());
 
+    const countPrecedingSameNameSiblings = (node) => {
+      let index = 0;
+      for (let sibling = node.previousSibling; sibling; sibling = sibling.previousSibling) {
+        if (sibling.nodeType === Node.ELEMENT_NODE && sibling.nodeName === node.nodeName) {
+          index++;
+        }
+      }
+      return index;
+    };
+
     // Mirrors the shape of `fields` so a db-doc child can be looked up in previousFields
     // (repeat rows match by sibling index among same-named siblings).
     const getFieldsPath = (element) => {
       const segments: { name: string; index: number }[] = [];
       for (let node = element; node && node !== recordRoot; node = node.parentNode) {
-        let index = 0;
-        for (let sibling = node.previousSibling; sibling; sibling = sibling.previousSibling) {
-          if (sibling.nodeType === Node.ELEMENT_NODE && sibling.nodeName === node.nodeName) {
-            index++;
-          }
-        }
-        segments.unshift({ name: node.nodeName, index });
+        segments.unshift({ name: node.nodeName, index: countPrecedingSameNameSiblings(node) });
       }
       return segments;
+    };
+
+    const navigateOneSegment = (cursor, name, index) => {
+      if (!cursor || typeof cursor !== 'object') {
+        return undefined;
+      }
+      const next = cursor[name];
+      return Array.isArray(next) ? next[index] : next;
     };
 
     const recoverChildSnapshot = (element): any => {
@@ -419,13 +434,7 @@ export class EnketoService {
       }
       let cursor: any = previousFields;
       for (const { name, index } of getFieldsPath(element)) {
-        if (!cursor || typeof cursor !== 'object') {
-          return;
-        }
-        cursor = cursor[name];
-        if (Array.isArray(cursor)) {
-          cursor = cursor[index];
-        }
+        cursor = navigateOneSegment(cursor, name, index);
       }
       return cursor && typeof cursor === 'object' ? cursor : undefined;
     };
@@ -547,17 +556,7 @@ export class EnketoService {
 
       const existing = existingDocs.get(docToStore._id);
       if (intent === 'link' && existing) {
-        // Last writer wins: overlay only current edit - preserve independent edits.
-        const merged = recoveredSnapshot
-          ? this.mergeChangedFields(existing, docToStore, recoveredSnapshot)
-          : { ...existing, ...docToStore };
-
-        docsToStore.push({
-          ...merged,
-          _id: docToStore._id,
-          _rev: existing._rev,
-          reported_date: existing.reported_date,
-        });
+        docsToStore.push(this.buildLinkedDocUpdate(existing, docToStore, recoveredSnapshot));
         return;
       }
 
@@ -636,6 +635,20 @@ export class EnketoService {
     return existing;
   }
 
+  // Last writer wins: overlay only the current edit so independent edits to `existing` are preserved.
+  // With no `recoveredSnapshot` (legacy/first edit) we fall back to a whole-subtree overlay.
+  private buildLinkedDocUpdate(existing, docToStore, recoveredSnapshot) {
+    const merged = recoveredSnapshot
+      ? this.mergeChangedFields(existing, docToStore, recoveredSnapshot)
+      : { ...existing, ...docToStore };
+    return {
+      ...merged,
+      _id: docToStore._id,
+      _rev: existing._rev,
+      reported_date: existing.reported_date,
+    };
+  }
+
   private mergeChangedFields(existing, next, prev) {
     const merged = _cloneDeep(existing);
     this.applyChangedFields(merged, next, prev || {});
@@ -646,7 +659,7 @@ export class EnketoService {
   // does not delete the corresponding key on the live doc.
   private applyChangedFields(target, next, prev) {
     Object.keys(next).forEach((key) => {
-      if (RESERVED_CHILD_KEYS.includes(key)) {
+      if (RESERVED_CHILD_KEYS.has(key) || UNSAFE_KEYS.has(key)) {
         return;
       }
       if (key === '_attachments') {
@@ -672,6 +685,9 @@ export class EnketoService {
     }
     target._attachments = target._attachments || {};
     Object.keys(nextAtts).forEach((name) => {
+      if (UNSAFE_KEYS.has(name)) {
+        return;
+      }
       target._attachments[name] = nextAtts[name];
     });
   }
