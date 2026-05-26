@@ -163,10 +163,11 @@ describe('TasksContentComponent', () => {
     expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
   });
 
-  it('records task:open with the task title as ref and list index as detail', async () => {
+  it('records task:open with the raw title key as ref and list index as detail', async () => {
     tasks = [{
       _id: '123',
-      title: 'Home visit',
+      title: 'Home visit for Diana',
+      titleKey: 'tasks.home_visit.title',
       actions: [{ type: 'report', form: 'pregnancy_visit', content: {} }],
     }];
 
@@ -176,7 +177,7 @@ describe('TasksContentComponent', () => {
       .filter(call => call.args[0] === 'task:open');
     expect(taskOpenCalls).to.have.length(1);
     const [, ref, detail] = taskOpenCalls[0].args;
-    expect(ref).to.equal('Home visit');
+    expect(ref).to.equal('tasks.home_visit.title');
     expect(detail).to.equal('0');
   });
 

@@ -55,11 +55,11 @@ export class InteractionTrackingService {
   private static readonly BUFFER_FLUSH_THRESHOLD = 50;
 
   private static readonly DB_NAME_PATTERN = new RegExp(
-    `^${InteractionTrackingService.PREFIX}-[0-9]{4}-[0-1]?[0-9]-[0-3]?[0-9]-.+$`
+    String.raw`^${InteractionTrackingService.PREFIX}-\d{4}-\d{2}-\d{2}-.+$`
   );
 
   private static readonly DB_NAME_USER_PATTERN = new RegExp(
-    String.raw`^${InteractionTrackingService.PREFIX}-\d{4}-\d{1,2}-\d{1,2}-(.+)$`
+    String.raw`^${InteractionTrackingService.PREFIX}-\d{4}-\d{2}-\d{2}-(.+)$`
   );
 
   private currentSession: string | null = null;
@@ -90,6 +90,14 @@ export class InteractionTrackingService {
   }
 
   async init(): Promise<void> {
+    try {
+      await this._init();
+    } catch (error) {
+      console.warn('Interaction tracking disabled', error);
+    }
+  }
+
+  private async _init(): Promise<void> {
     const user = this.sessionService.userCtx()?.name;
     if (!user) {
       return;
@@ -98,7 +106,6 @@ export class InteractionTrackingService {
     if (!granted) {
       return;
     }
-
     this.user = user;
     const currentDay = this.getCurrentDay();
     try {
@@ -106,7 +113,6 @@ export class InteractionTrackingService {
     } catch (error) {
       console.error('Error aggregating leftover interaction DBs', error);
     }
-
     this.currentDayKey = currentDay.formatted;
     this.persistedEventCount = await this.readPersistedCount(currentDay);
     this.enabled = true;
@@ -435,9 +441,11 @@ export class InteractionTrackingService {
 
   private getCurrentDay(): Day {
     const date = new Date();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return {
       now: date.getTime(),
-      formatted: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+      formatted: `${date.getFullYear()}-${month}-${day}`,
     };
   }
 

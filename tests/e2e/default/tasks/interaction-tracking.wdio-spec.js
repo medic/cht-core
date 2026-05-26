@@ -16,7 +16,7 @@ const chtConfUtils = require('@utils/cht-conf');
 const INTERACTION_DOC_PREFIX = 'interaction-';
 
 const FAKE_YESTERDAY_MS = Date.UTC(2025, 0, 15, 12, 0, 0); // 2025-01-15 12:00 UTC
-const FAKE_YESTERDAY_DATE = '2025-1-15';                   // service's `YYYY-M-D` format
+const FAKE_YESTERDAY_DATE = '2025-01-15';                  // service's zero-padded `YYYY-MM-DD` format
 
 // `timestamp` and `startedAt` are excluded because `Date.now()` is monotonic
 // (see `installFakeDate`); their exact values change between calls but their

@@ -81,7 +81,7 @@ describe('InteractionTrackingService', () => {
     service = TestBed.inject(InteractionTrackingService);
   };
 
-  const todayDb = () => pouchInstances.get('interaction-2026-3-27-greg');
+  const todayDb = () => pouchInstances.get('interaction-2026-03-27-greg');
 
   beforeEach(() => {
     configureService(true);
@@ -103,7 +103,7 @@ describe('InteractionTrackingService', () => {
       expect((service as any).enabled).to.be.true;
       expect((service as any).user).to.equal('greg');
 
-      expect((service as any).currentDayKey).to.equal('2026-3-27');
+      expect((service as any).currentDayKey).to.equal('2026-03-27');
       expect((service as any).persistedEventCount).to.equal(0);
 
       expect((service as any).currentSession).to.be.null;
@@ -114,15 +114,15 @@ describe('InteractionTrackingService', () => {
 
     it('aggregates abandoned non-today DBs at boot', async () => {
       mockDatabases.resolves([
-        { name: '_pouch_interaction-2026-3-25-greg' },
-        { name: '_pouch_interaction-2026-3-26-greg' },
+        { name: '_pouch_interaction-2026-03-25-greg' },
+        { name: '_pouch_interaction-2026-03-26-greg' },
       ]);
-      seedDb('interaction-2026-3-25-greg', makeDbStub({
+      seedDb('interaction-2026-03-25-greg', makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [{ doc: { action: 'a', timestamp: 1, session: 'tasks', sessionStartedAt: 0 } }],
         }),
       }));
-      seedDb('interaction-2026-3-26-greg', makeDbStub({
+      seedDb('interaction-2026-03-26-greg', makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [{ doc: { action: 'b', timestamp: 2, session: 'tasks', sessionStartedAt: 0 } }],
         }),
@@ -134,7 +134,7 @@ describe('InteractionTrackingService', () => {
       // is not guaranteed, so use deep.members.
       expect(metaDb.put.args.map(args => args[0])).to.have.deep.members([
         {
-          _id: 'interaction-2026-3-25-greg-device-uuid-123',
+          _id: 'interaction-2026-03-25-greg-device-uuid-123',
           type: 'interaction-log',
           sessions: [{
             session: 'tasks',
@@ -144,12 +144,12 @@ describe('InteractionTrackingService', () => {
           metadata: {
             user: 'greg',
             deviceId: 'device-uuid-123',
-            date: '2026-3-25',
+            date: '2026-03-25',
             version: '4.5.0',
           },
         },
         {
-          _id: 'interaction-2026-3-26-greg-device-uuid-123',
+          _id: 'interaction-2026-03-26-greg-device-uuid-123',
           type: 'interaction-log',
           sessions: [{
             session: 'tasks',
@@ -159,7 +159,7 @@ describe('InteractionTrackingService', () => {
           metadata: {
             user: 'greg',
             deviceId: 'device-uuid-123',
-            date: '2026-3-26',
+            date: '2026-03-26',
             version: '4.5.0',
           },
         },
@@ -167,7 +167,7 @@ describe('InteractionTrackingService', () => {
     });
 
     it('seeds today\'s count from db.info() so the cap survives reloads', async () => {
-      seedDb('interaction-2026-3-27-greg', makeDbStub({ info: sinon.stub().resolves({ doc_count: 500 }) }));
+      seedDb('interaction-2026-03-27-greg', makeDbStub({ info: sinon.stub().resolves({ doc_count: 500 }) }));
 
       await service.init();
 
@@ -191,20 +191,18 @@ describe('InteractionTrackingService', () => {
       await service.persistBuffer();
 
       // The day-DB used for the write must be greg's, not jane's.
-      expect(windowMock.PouchDB.calledWith('interaction-2026-3-27-greg')).to.be.true;
-      expect(windowMock.PouchDB.calledWith('interaction-2026-3-27-jane')).to.be.false;
+      expect(windowMock.PouchDB.calledWith('interaction-2026-03-27-greg')).to.be.true;
+      expect(windowMock.PouchDB.calledWith('interaction-2026-03-27-jane')).to.be.false;
     });
 
     it('does not enable tracking if the auth check rejects', async () => {
       authService.has.rejects(new Error('auth service unreachable'));
+      const warn = sinon.stub(console, 'warn');
 
-      let caught: any;
-      await service.init().catch(err => caught = err);
+      await service.init();
 
-      // The error propagates to the caller (so app.component can decide what to do),
-      // but the service is left in a safe disabled state.
-      expect(caught).to.be.an('error');
-      expect(caught.message).to.equal('auth service unreachable');
+      expect(warn.calledOnceWith('Interaction tracking disabled', sinon.match.instanceOf(Error))).to.be.true;
+      expect(warn.firstCall.args[1].message).to.equal('auth service unreachable');
       expect((service as any).enabled).to.be.false;
       expect((service as any).user).to.be.undefined;
       expect((service as any).currentDayKey).to.be.null;
@@ -212,7 +210,7 @@ describe('InteractionTrackingService', () => {
 
     it('leaves state unset and silently no-ops when permission is denied', async () => {
       authService.has.resolves(false);
-      mockDatabases.resolves([{ name: '_pouch_interaction-2026-3-25-greg' }]);
+      mockDatabases.resolves([{ name: '_pouch_interaction-2026-03-25-greg' }]);
 
       await service.init();
 
@@ -228,7 +226,7 @@ describe('InteractionTrackingService', () => {
       expect((service as any).currentSession).to.be.null;
       expect((service as any).buffer).to.deep.equal([]);
       expect(metaDb.put.called).to.be.false;
-      expect(windowMock.PouchDB.calledWith('interaction-2026-3-27-greg')).to.be.false;
+      expect(windowMock.PouchDB.calledWith('interaction-2026-03-27-greg')).to.be.false;
     });
   });
 
@@ -425,7 +423,7 @@ describe('InteractionTrackingService', () => {
 
     it('handles bulkDocs errors gracefully and clears the buffer', async () => {
       const failingDb = makeDbStub({ bulkDocs: sinon.stub().rejects(new Error('IDB write failed')) });
-      seedDb('interaction-2026-3-27-greg', failingDb);
+      seedDb('interaction-2026-03-27-greg', failingDb);
 
       service.startSession('tasks');
       service.record('e1');
@@ -534,7 +532,7 @@ describe('InteractionTrackingService', () => {
       expect(countStoredEvents()).to.equal(500);
 
       // Try to bypass via time: tick forward (still same day), then more records.
-      await clock.tickAsync(60 * 60 * 1000); // 1h, still 2026-3-27
+      await clock.tickAsync(60 * 60 * 1000); // 1h, still 2026-03-27
       service.record('overflow_after_wait_1');
       service.record('overflow_after_wait_2');
       await service.persistBuffer();
@@ -564,15 +562,15 @@ describe('InteractionTrackingService', () => {
 
     it('events recorded before midnight land in yesterday\'s DB even when persisted after', async () => {
       service.startSession('tasks');
-      service.record('yesterday_event'); // recorded under 2026-3-27
+      service.record('yesterday_event'); // recorded under 2026-03-27
 
-      await clock.tickAsync(15 * 60 * 60 * 1000); // 15h → 2026-3-28 01:00
+      await clock.tickAsync(15 * 60 * 60 * 1000); // 15h → 2026-03-28 01:00
 
       service.record('today_event');
       await service.persistBuffer();
 
-      const yesterdayDb = pouchInstances.get('interaction-2026-3-27-greg');
-      const todayDbInstance = pouchInstances.get('interaction-2026-3-28-greg');
+      const yesterdayDb = pouchInstances.get('interaction-2026-03-27-greg');
+      const todayDbInstance = pouchInstances.get('interaction-2026-03-28-greg');
       expect(yesterdayDb.bulkDocs.calledOnce).to.be.true;
       expect(yesterdayDb.bulkDocs.args[0][0]).to.have.length(1);
       expect(yesterdayDb.bulkDocs.args[0][0][0].action).to.equal('yesterday_event');
@@ -590,7 +588,7 @@ describe('InteractionTrackingService', () => {
 
       // Cross midnight; buffer still holds three yesterday-tagged events
       await clock.tickAsync(15 * 60 * 60 * 1000);
-      const yesterdayDb = pouchInstances.get('interaction-2026-3-27-greg');
+      const yesterdayDb = pouchInstances.get('interaction-2026-03-27-greg');
       expect(yesterdayDb.bulkDocs.called).to.be.false;
 
       // The first record() of the new day triggers a persist of yesterday's buffered events
@@ -606,7 +604,7 @@ describe('InteractionTrackingService', () => {
       ]);
 
       // Today's buffer still holds 'd' — its day-DB hasn't been opened yet.
-      expect(pouchInstances.has('interaction-2026-3-28-greg')).to.be.false;
+      expect(pouchInstances.has('interaction-2026-03-28-greg')).to.be.false;
     });
 
     it('respects the per-day cap when yesterday\'s buffer drains across midnight', async () => {
@@ -627,8 +625,8 @@ describe('InteractionTrackingService', () => {
       service.record('today_event');
       await service.persistBuffer();
 
-      const yesterdayDb = pouchInstances.get('interaction-2026-3-27-greg');
-      const todayDbInstance = pouchInstances.get('interaction-2026-3-28-greg');
+      const yesterdayDb = pouchInstances.get('interaction-2026-03-27-greg');
+      const todayDbInstance = pouchInstances.get('interaction-2026-03-28-greg');
 
       expect(yesterdayDb.bulkDocs.calledOnce).to.be.true;
       expect(yesterdayDb.bulkDocs.args[0][0]).to.have.length(20);
@@ -651,19 +649,19 @@ describe('InteractionTrackingService', () => {
 
     it('does not aggregate other users\' DBs', async () => {
       mockDatabases.resolves([
-        { name: '_pouch_interaction-2026-3-26-greg' },
-        { name: '_pouch_interaction-2026-3-26-alice' },
-        { name: '_pouch_interaction-2026-3-26-bob-jones' },
+        { name: '_pouch_interaction-2026-03-26-greg' },
+        { name: '_pouch_interaction-2026-03-26-alice' },
+        { name: '_pouch_interaction-2026-03-26-bob-jones' },
       ]);
-      seedDb('interaction-2026-3-26-greg', makeDbStub({
+      seedDb('interaction-2026-03-26-greg', makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [{ doc: { action: 'g', timestamp: 1, session: 'tasks', sessionStartedAt: 0 } }],
         }),
       }));
       const aliceDb = makeDbStub();
       const bobDb = makeDbStub();
-      seedDb('interaction-2026-3-26-alice', aliceDb);
-      seedDb('interaction-2026-3-26-bob-jones', bobDb);
+      seedDb('interaction-2026-03-26-alice', aliceDb);
+      seedDb('interaction-2026-03-26-bob-jones', bobDb);
 
       await service.init();
 
@@ -671,7 +669,7 @@ describe('InteractionTrackingService', () => {
       expect(bobDb.allDocs.called).to.be.false;
 
       expect(metaDb.put.args).to.deep.equal([[{
-        _id: 'interaction-2026-3-26-greg-device-uuid-123',
+        _id: 'interaction-2026-03-26-greg-device-uuid-123',
         type: 'interaction-log',
         sessions: [{
           session: 'tasks',
@@ -681,20 +679,20 @@ describe('InteractionTrackingService', () => {
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
-          date: '2026-3-26',
+          date: '2026-03-26',
           version: '4.5.0',
         },
       }]]);
     });
 
     it('handles 409 conflicts on aggregate put and still destroys the source DB', async () => {
-      mockDatabases.resolves([{ name: '_pouch_interaction-2026-3-26-greg' }]);
+      mockDatabases.resolves([{ name: '_pouch_interaction-2026-03-26-greg' }]);
       const oldDb = makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [{ doc: { action: 'a', timestamp: 1, session: 'tasks', sessionStartedAt: 0 } }],
         }),
       });
-      seedDb('interaction-2026-3-26-greg', oldDb);
+      seedDb('interaction-2026-03-26-greg', oldDb);
 
       metaDb.put.onFirstCall().rejects({ status: 409 });
       metaDb.put.onSecondCall().resolves();
@@ -703,7 +701,7 @@ describe('InteractionTrackingService', () => {
 
       expect(metaDb.put.calledTwice).to.be.true;
       expect(metaDb.put.args[1][0]._id).to.match(
-        /^interaction-2026-3-26-greg-device-uuid-123-conflicted-\d+$/
+        /^interaction-2026-03-26-greg-device-uuid-123-conflicted-\d+$/
       );
       expect(metaDb.put.args[1][0].metadata.conflicted).to.equal(true);
       expect(oldDb.destroy.calledOnce).to.be.true;
@@ -711,8 +709,8 @@ describe('InteractionTrackingService', () => {
 
     it('logs and continues if one DB\'s aggregation fails', async () => {
       mockDatabases.resolves([
-        { name: '_pouch_interaction-2026-3-25-greg' },
-        { name: '_pouch_interaction-2026-3-26-greg' },
+        { name: '_pouch_interaction-2026-03-25-greg' },
+        { name: '_pouch_interaction-2026-03-26-greg' },
       ]);
       const failingDb = makeDbStub({ allDocs: sinon.stub().rejects(new Error('IDB read failed')) });
       const okDb = makeDbStub({
@@ -720,8 +718,8 @@ describe('InteractionTrackingService', () => {
           rows: [{ doc: { action: 'o', timestamp: 1, session: 'tasks', sessionStartedAt: 0 } }],
         }),
       });
-      seedDb('interaction-2026-3-25-greg', failingDb);
-      seedDb('interaction-2026-3-26-greg', okDb);
+      seedDb('interaction-2026-03-25-greg', failingDb);
+      seedDb('interaction-2026-03-26-greg', okDb);
 
       await service.init();
 
@@ -733,8 +731,8 @@ describe('InteractionTrackingService', () => {
     it('groups events into per-session entries sorted by startedAt and timestamp', async () => {
       // Yesterday's DB contains events from two sessions, written to disk
       // out of both startedAt and timestamp order.
-      mockDatabases.resolves([{ name: '_pouch_interaction-2026-3-26-greg' }]);
-      seedDb('interaction-2026-3-26-greg', makeDbStub({
+      mockDatabases.resolves([{ name: '_pouch_interaction-2026-03-26-greg' }]);
+      seedDb('interaction-2026-03-26-greg', makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [
             // Session B (startedAt=100), event at ts=200 written before its own ts=150
@@ -750,7 +748,7 @@ describe('InteractionTrackingService', () => {
       await service.init();
 
       expect(metaDb.put.args).to.deep.equal([[{
-        _id: 'interaction-2026-3-26-greg-device-uuid-123',
+        _id: 'interaction-2026-03-26-greg-device-uuid-123',
         type: 'interaction-log',
         sessions: [
           // Session A first (smaller startedAt); events sorted by timestamp.
@@ -775,15 +773,15 @@ describe('InteractionTrackingService', () => {
         metadata: {
           user: 'greg',
           deviceId: 'device-uuid-123',
-          date: '2026-3-26',
+          date: '2026-03-26',
           version: '4.5.0',
         },
       }]]);
     });
 
     it('skips malformed event docs during aggregation', async () => {
-      mockDatabases.resolves([{ name: '_pouch_interaction-2026-3-26-greg' }]);
-      seedDb('interaction-2026-3-26-greg', makeDbStub({
+      mockDatabases.resolves([{ name: '_pouch_interaction-2026-03-26-greg' }]);
+      seedDb('interaction-2026-03-26-greg', makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [
             // Valid event — must be in the aggregate.
@@ -808,14 +806,14 @@ describe('InteractionTrackingService', () => {
     });
 
     it('logs a destroy failure and does NOT write a conflicted-aggregate', async () => {
-      mockDatabases.resolves([{ name: '_pouch_interaction-2026-3-26-greg' }]);
+      mockDatabases.resolves([{ name: '_pouch_interaction-2026-03-26-greg' }]);
       const failingDb = makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [{ doc: { action: 'a', timestamp: 1, session: 'tasks', sessionStartedAt: 0 } }],
         }),
         destroy: sinon.stub().rejects(new Error('IDB destroy failed')),
       });
-      seedDb('interaction-2026-3-26-greg', failingDb);
+      seedDb('interaction-2026-03-26-greg', failingDb);
 
       await service.init();
 
@@ -823,7 +821,7 @@ describe('InteractionTrackingService', () => {
       // Destroy then failed; the error is logged but doesn't trigger a second put.
       // (Tomorrow's init will see this DB again and the 409 path will catch the retry.)
       expect(metaDb.put.calledOnce).to.be.true;
-      expect(metaDb.put.args[0][0]._id).to.equal('interaction-2026-3-26-greg-device-uuid-123');
+      expect(metaDb.put.args[0][0]._id).to.equal('interaction-2026-03-26-greg-device-uuid-123');
       expect(metaDb.put.args[0][0].metadata).to.not.have.property('conflicted');
       expect(failingDb.destroy.calledOnce).to.be.true;
       expect(consoleErrorSpy.called).to.be.true;
@@ -831,9 +829,9 @@ describe('InteractionTrackingService', () => {
 
     it('ignores DBs with prefix near-misses or invalid date patterns', async () => {
       mockDatabases.resolves([
-        { name: '_pouch_interactive-2026-3-26-greg' },
+        { name: '_pouch_interactive-2026-03-26-greg' },
         { name: '_pouch_interaction-data' },
-        { name: '_pouch_interaction-2026-3-26' },
+        { name: '_pouch_interaction-2026-03-26' },
       ]);
 
       await service.init();
@@ -874,8 +872,8 @@ describe('InteractionTrackingService', () => {
     it('falls back to "unknown" version when service worker is unavailable', async () => {
       versionService.getServiceWorker.rejects(new Error('no service worker'));
 
-      mockDatabases.resolves([{ name: '_pouch_interaction-2026-3-26-greg' }]);
-      seedDb('interaction-2026-3-26-greg', makeDbStub({
+      mockDatabases.resolves([{ name: '_pouch_interaction-2026-03-26-greg' }]);
+      seedDb('interaction-2026-03-26-greg', makeDbStub({
         allDocs: sinon.stub().resolves({
           rows: [{ doc: { action: 'a', timestamp: 1, session: 'tasks', sessionStartedAt: 0 } }],
         }),

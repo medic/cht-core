@@ -157,7 +157,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     }
 
     const taskIndex = this.tasksList.indexOf(task);
-    this.interactionTrackingService.record('task:open', task.title, String(taskIndex));
+    this.interactionTrackingService.record('task:open', task.titleKey, String(taskIndex));
 
     this.geoHandle = this.geolocationService.init();
     this.globalActions.settingSelected();

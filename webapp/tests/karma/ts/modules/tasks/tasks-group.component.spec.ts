@@ -8,7 +8,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
-import { TasksActions} from '@mm-actions/tasks';
+import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
@@ -699,12 +699,13 @@ describe('TasksGroupComponent', () => {
       ]);
     });
 
-    it('records task_group:select with the task title as ref', () => {
-      // Title (not form id) distinguishes task types — two task definitions can
-      // share the same `actions[0].form`.
-      component.tasks = [
-        { _id: 'emission-uuid-1', title: 'Home visit', actions: [{ form: 'home_visit' }] },
-      ];
+    it('records task_group:select with the raw title key as ref', () => {
+      component.tasks = [{
+        _id: 'emission-uuid-1',
+        title: 'Home visit for Diana',
+        titleKey: 'tasks.home_visit.title',
+        actions: [{ form: 'home_visit' }],
+      }];
       store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
       store.overrideSelector(Selectors.getPreventNavigation, true);
       store.refreshState();
@@ -715,7 +716,7 @@ describe('TasksGroupComponent', () => {
       const selectCalls = interactionTrackingService.record.getCalls()
         .filter(call => call.args[0] === 'task_group:select');
       expect(selectCalls).to.have.length(1);
-      expect(selectCalls[0].args[1]).to.equal('Home visit');
+      expect(selectCalls[0].args[1]).to.equal('tasks.home_visit.title');
     });
   });
 

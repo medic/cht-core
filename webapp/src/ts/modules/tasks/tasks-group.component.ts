@@ -12,7 +12,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { NgIf, NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -250,7 +250,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
     const emissionId = this.getEmissionIdFromNavigation();
     if (emissionId && this.isGroupTask(emissionId)) {
       const task = this.tasks.find((t: any) => t?._id === emissionId);
-      this.interactionTrackingService.record('task_group:select', task?.title);
+      this.interactionTrackingService.record('task_group:select', task?.titleKey);
       return true;
     }
 
