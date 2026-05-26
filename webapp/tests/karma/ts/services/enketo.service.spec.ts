@@ -1246,43 +1246,6 @@ describe('Enketo service', () => {
         });
     });
 
-    it('recreates extra docs on every edit when db-doc-edit="recreate"', () => {
-      form.validate.resolves(true);
-      form.getDataStr.returns(`
-        <data>
-          <name>Sally</name>
-          <doc1 db-doc="true" db-doc-edit="recreate">
-            <type>thing_1</type>
-            <some_property_1>some_value_1</some_property_1>
-          </doc1>
-        </data>
-      `);
-      getReport.resolves({
-        _id: 'report-3',
-        _rev: '1-report',
-        form: 'V',
-        type: DOC_TYPES.DATA_RECORD,
-        reported_date: 1000,
-        fields: {
-          name: 'Sally',
-          doc1: { _id: 'child-old', type: 'thing_1', some_property_1: 'some_value_1' },
-        },
-      });
-
-      return service
-        .completeExistingReport(form, { doc: {} }, 'report-3')
-        .then(actual => {
-          expect(actual.length).to.equal(2);
-          const child = actual[1];
-          expect(child._id).to.not.equal('child-old'); // brand new id (legacy behaviour)
-          expect(child._id).to.match(/(\w+-)\w+/);
-          expect(child._rev).to.be.undefined;           // created, not updated
-          // recreate never persists the id, so it keeps re-creating
-          expect(actual[0].fields.doc1._id).to.be.undefined;
-          expect(dbAllDocs.called).to.be.false;
-        });
-    });
-
     it('re-creates a linked extra doc, reusing its id, when the original is missing', () => {
       form.validate.resolves(true);
       form.getDataStr.returns(`

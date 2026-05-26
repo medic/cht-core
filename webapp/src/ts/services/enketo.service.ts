@@ -23,13 +23,9 @@ import * as contactTypesUtils from '@medic/contact-types-utils';
 // Behaviour applied to a db-doc child when the parent report is edited and re-saved.
 // - link:     update the existing child in place
 // - readonly: leave existing child untouched (it may be edited elsewhere)
-// - recreate: legacy behaviour, mint a brand new child on every save
-type DbDocEdit = 'link' | 'readonly' | 'recreate';
-const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly', 'recreate'];
+type DbDocEdit = 'link' | 'readonly';
+const DB_DOC_EDIT_VALUES: DbDocEdit[] = ['link', 'readonly'];
 
-// Doc-identity keys managed by Pouch; never copied across when overlaying form-derived fields
-// on a linked child. `_attachments` is intentionally not reserved here — the parent's edits to
-// attachments are merged through a dedicated last-writer-wins overlay (see applyChangedAttachments).
 const RESERVED_CHILD_KEYS = ['_id', '_rev'];
 
 /**
@@ -518,14 +514,9 @@ export class EnketoService {
       })
       .each((idx, element) => {
         const intent = this.resolveDbDocEditIntent(element);
-        let recoveredSnapshot;
-        if (intent === 'recreate') {
-          mapOrAssignId(element, uuid());
-        } else {
-          recoveredSnapshot = recoverChildSnapshot(element);
-          mapOrAssignId(element, recoveredSnapshot?._id);
-          writeChildIdNode(element, element._couchId);
-        }
+        const recoveredSnapshot = recoverChildSnapshot(element);
+        mapOrAssignId(element, recoveredSnapshot?._id);
+        writeChildIdNode(element, element._couchId);
         dbDocChildren.push({ element, intent, recoveredSnapshot });
         dbDocTags.push(element.tagName);
       });
