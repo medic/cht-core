@@ -77,6 +77,7 @@ setupTestDataGenerator() {
   echo "installing test data generator"
   git clone https://github.com/medic/test-data-generator.git
   cd test-data-generator
+  git checkout scalability
   npm ci
 }
 
