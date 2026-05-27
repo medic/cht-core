@@ -40,6 +40,8 @@ setupCHT() {
 }
 
 updateUsersList() {
+  cd "$CHT_BASE_DIR/cht-core/tests/scalability"
+
   curl -k -sf "$MEDIC_URL_AUTH/api/v1/users" > users_response.json
   echo "Users response size: $(wc -c < users_response.json) bytes"
   echo "CHW users found: $(jq '[.[] | select(.type == "chw")] | length' users_response.json)"
