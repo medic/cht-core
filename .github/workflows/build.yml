@@ -269,6 +269,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
+      actions: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
@@ -281,6 +282,12 @@ jobs:
       - run: node scripts/build/cli npmCiModules
       - name: Build Documentation
         run: npm run build-documentation
+      - name: Delete previous docs cache
+        if: github.ref == 'refs/heads/master'
+        continue-on-error: true   # cache entry might not exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh cache delete cht-datasource-docs --repo ${{ github.repository }}
       - name: Cache generated docs
         if: github.ref == 'refs/heads/master'
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
