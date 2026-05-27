@@ -22,6 +22,36 @@
     <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
     <div class="material">
       <div class="body meta">
+        <div class="card compact-card llm-overview" *ngIf="llmEnabled" [attr.test-id]="'llm-overview'">
+          <div class="action-header cell">
+            <h3>{{'contact.llm_overview.title' | translate}}</h3>
+            <span class="table-filter">
+              <span class="llm-overview-meta" *ngIf="llmGeneratedAt && !llmLoading">
+                {{(llmFromCache ? 'contact.llm_overview.cached_at' : 'contact.llm_overview.generated_at') | translate}}
+                {{llmGeneratedAt | date:'short'}}
+              </span>
+              <button
+                type="button"
+                class="btn btn-link"
+                (click)="generateLlmOverview()"
+                [disabled]="llmLoading"
+                [attr.test-id]="'llm-overview-generate'"
+              >
+                {{(llmOverviewHtml ? 'contact.llm_overview.regenerate' : 'contact.llm_overview.generate') | translate}}
+              </button>
+            </span>
+          </div>
+          <div class="loader" *ngIf="llmLoading"></div>
+          <div class="row" *ngIf="llmOverviewHtml && !llmLoading">
+            <div class="cell col-xs-12 llm-overview-body" [innerHTML]="llmOverviewHtml"></div>
+          </div>
+          <div class="row" *ngIf="llmError && !llmLoading">
+            <div class="cell col-xs-12 llm-overview-error">{{llmError}}</div>
+          </div>
+          <div class="row" *ngIf="!llmOverviewHtml && !llmLoading && !llmError">
+            <div class="cell col-xs-12 llm-overview-empty">{{'contact.llm_overview.empty' | translate}}</div>
+          </div>
+        </div>
         <div class="card">
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
             <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>

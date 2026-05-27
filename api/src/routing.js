@@ -140,10 +140,9 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
  *       Used to retrieve a range of metrics for monitoring the API’s performance and internals.
  *
  *       The response is formatted for the [Prometheus Data Model](https://prometheus.io/docs/concepts/data_model/).
- *       The metrics exposed are defined by the [prometheus-api-metrics package](https://www.npmjs.com/package/prometheus-api-metrics)
- *       and include optional default metrics and garbage collection metrics.
- *     tags: [Monitoring]
- *     responses:
+ *       The metrics exposed are defined by the [prometheus-api-metrics
+ *   package](https://www.npmjs.com/package/prometheus-api-metrics) and include optional default metrics and garbage
+ *   collection metrics. tags: [Monitoring] responses:
  *       '200':
  *         description: Prometheus metrics
  *         content:
@@ -225,7 +224,8 @@ app.use(
         connectSrc: [
           `'self'`,
           `${environment.buildsUrl}/`,
-          'maps.googleapis.com' // used for enketo geopoint widget
+          'maps.googleapis.com', // used for enketo geopoint widget
+          'http://localhost:11434', // local Ollama for LLM contact overview (dev only)
         ],
         childSrc: [`'self'`],
         formAction: [`'self'`],
@@ -301,6 +301,7 @@ app.get(
 );
 
 app.all('/medic{/{*any}}', (req, res, next) => {
+  console.warn('aici');
   if (environment.db !== 'medic') {
     req.url = req.url.replace(/\/medic\/?/, routePrefix);
   }

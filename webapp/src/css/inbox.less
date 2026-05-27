@@ -682,6 +682,52 @@ mm-analytics-filters {
   .card.children .content-row.muted h4 {
     color: @inactive-color;
   }
+
+  .card.llm-overview {
+    .llm-overview-body {
+      padding: 8px 12px 12px 12px;
+
+      h1, h2, h3, h4 {
+        font-size: @font-medium;
+        margin: 12px 0 4px 0;
+        font-weight: 600;
+      }
+
+      p, li {
+        font-size: @font-small;
+        line-height: 1.4;
+        margin: 0 0 6px 0;
+      }
+
+      ul, ol {
+        padding-left: 20px;
+        margin: 0 0 6px 0;
+      }
+
+      :first-child {
+        margin-top: 0;
+      }
+    }
+
+    .llm-overview-meta {
+      color: @label-color;
+      font-size: @font-XXS;
+      margin-right: 8px;
+      align-self: center;
+    }
+
+    .llm-overview-empty {
+      color: @label-color;
+      font-size: @font-small;
+      padding: 8px 12px;
+    }
+
+    .llm-overview-error {
+      color: @error-color;
+      font-size: @font-small;
+      padding: 8px 12px;
+    }
+  }
 }
 
 .tasks .item-content {

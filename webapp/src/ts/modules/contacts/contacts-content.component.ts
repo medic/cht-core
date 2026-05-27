@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
+import { marked } from 'marked';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
@@ -22,7 +24,7 @@ import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
-import { NgIf, NgClass, NgFor } from '@angular/common';
+import { NgIf, NgClass, NgFor, DatePipe } from '@angular/common';
 import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
@@ -35,6 +37,7 @@ import { LocalizeNumberPipe } from '@mm-pipes/number.pipe';
 import {
   ContactSummaryContentComponent
 } from '@mm-components/contact-summary-content/contact-summary-content.component';
+import { LlmContactOverviewService } from '@mm-services/llm-contact-overview.service';
 
 @Component({
   selector: 'contacts-content',
@@ -54,7 +57,8 @@ import {
     SummaryPipe,
     FormIconNamePipe,
     LocalizeNumberPipe,
-    ContactSummaryContentComponent
+    ContactSummaryContentComponent,
+    DatePipe,
   ]
 })
 export class ContactsContentComponent implements OnInit, OnDestroy {
@@ -85,6 +89,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   summaryCards: any[] = [];
   DISPLAY_LIMIT = 50;
 
+  llmEnabled = false;
+  llmLoading = false;
+  llmError: string | null = null;
+  llmOverviewHtml: SafeHtml | null = null;
+  llmGeneratedAt: number | null = null;
+  llmFromCache = false;
+  private llmLoadedForContactId: string | null = null;
+
   constructor(
     private readonly store: Store,
     private readonly route: ActivatedRoute,
@@ -101,6 +113,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private readonly mutingTransition: MutingTransition,
     private readonly contactMutedService: ContactMutedService,
     private readonly searchTelemetryService: SearchTelemetryService,
+    private readonly llmContactOverviewService: LlmContactOverviewService,
+    private readonly sanitizer: DomSanitizer,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -114,6 +128,72 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscribeToChanges();
     this.getUserFacility();
     this.resetTaskAndReportsFilter();
+    void this.refreshLlmEnabled();
+  }
+
+  private async refreshLlmEnabled() {
+    try {
+      this.llmEnabled = await this.llmContactOverviewService.isEnabled();
+    } catch (err) {
+      console.error('Error reading llm_settings', err);
+      this.llmEnabled = false;
+    }
+  }
+
+  private resetLlmOverview() {
+    this.llmOverviewHtml = null;
+    this.llmGeneratedAt = null;
+    this.llmFromCache = false;
+    this.llmError = null;
+    this.llmLoadedForContactId = null;
+  }
+
+  private async loadLlmOverviewFromCache(contactId: string) {
+    if (!this.llmEnabled || !contactId || this.llmLoadedForContactId === contactId) {
+      return;
+    }
+    this.llmLoadedForContactId = contactId;
+    try {
+      const cached = await this.llmContactOverviewService.getCached(contactId);
+      if (cached && this.selectedContact?._id === contactId) {
+        this.llmOverviewHtml = this.renderMarkdown(cached.markdown);
+        this.llmGeneratedAt = cached.generatedAt;
+        this.llmFromCache = true;
+      }
+    } catch (err) {
+      console.error('Error reading cached LLM overview', err);
+    }
+  }
+
+  async generateLlmOverview() {
+    if (!this.selectedContact?.doc || this.llmLoading) {
+      return;
+    }
+    this.llmLoading = true;
+    this.llmError = null;
+    try {
+      const contactSummaryFnSource = this.settings?.contact_summary;
+      const result = await this.llmContactOverviewService.generate({
+        contact: this.selectedContact.doc,
+        reports: this.selectedContact.reports || [],
+        lineage: this.selectedContact.lineage || [],
+        summary: this.selectedContact.summary,
+        contactSummaryFnSource,
+      });
+      this.llmOverviewHtml = this.renderMarkdown(result.markdown);
+      this.llmGeneratedAt = result.generatedAt;
+      this.llmFromCache = false;
+    } catch (err: any) {
+      console.error('Error generating LLM overview', err);
+      this.llmError = err?.message || 'Failed to generate overview';
+    } finally {
+      this.llmLoading = false;
+    }
+  }
+
+  private renderMarkdown(markdown: string): SafeHtml {
+    const html = marked.parse(markdown || '', { async: false }) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   private resetTaskAndReportsFilter() {
@@ -175,8 +255,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       void this.recordSearchTelemetry(this.selectedContact, selectedContact, filters);
       if (this.selectedContact?._id !== selectedContact?._id) {
         this.resetTaskAndReportsFilter();
+        this.resetLlmOverview();
       }
       this.selectedContact = selectedContact;
+      if (selectedContact?._id) {
+        void this.loadLlmOverviewFromCache(selectedContact._id);
+      }
       this.summaryCards = (selectedContact?.summary?.cards ?? []).map(card => ({ 
         ...card,
         collapsed: card.collapsed === true
