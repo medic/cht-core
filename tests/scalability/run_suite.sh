@@ -70,7 +70,7 @@ runJmeterScalabilityTest() {
   echo "Executing JMeter test..."
   export NODE_TLS_REJECT_UNAUTHORIZED=0
   tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
-  ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir="$tmp_dir" -Jnode_binary="$(which node)" -Jnumber_of_threads=10 -l "$tmp_dir"/cli_run.jtl -e -o "$tmp_dir"
+  ./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir="$tmp_dir" -Jnode_binary="$(which node)" -Jnumber_of_threads=30 -l "$tmp_dir"/cli_run.jtl -e -o "$tmp_dir"
   mv ./jmeter.log "$tmp_dir"/jmeter.log
 }
 
