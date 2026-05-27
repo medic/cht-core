@@ -98,7 +98,7 @@ describe('sentinel processes archive jobs', () => {
   const runArchiving = async (skipTransitions) => {
     await utils.updateSettings(
       { archive: { text_expression: 'every 1 seconds' } },
-      { ignoreReload: 'sentinel' }
+      { ignoreReload: true }
     );
     if (skipTransitions) {
       await utils.toggleSentinelTransitions();
@@ -292,7 +292,7 @@ describe('sentinel processes archive jobs', () => {
 
     // Sanity check: the doc has a conflict before we archive.
     const beforeArchive = await utils.db.get(id, { conflicts: true });
-    expect(beforeArchive._conflicts, 'expected the fixture to have a conflict revision').to.have.lengthOf(1);
+    expect(beforeArchive._conflicts).to.have.lengthOf(1);
 
     await postCsv(id);
 
