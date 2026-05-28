@@ -186,12 +186,16 @@ describe('routing', () => {
         const { BRANCH, TAG } = process.env;
         const isBranchBuild = BRANCH && !TAG;
 
+        // for tags, build_info.version is the tag (semver-valid).
+        // for branches, build_info.version is the escaped branch name: when that itself is
+        // valid semver (e.g. feature-release branches like 5.1.2-FR-foo) the api returns it,
+        // otherwise it falls back to build_info.build (which always carries the build number).
+        const branchVersion = semver.valid(ddoc.build_info.version) || ddoc.build_info.build;
         const deployInfo = {
           ...ddoc.deploy_info,
           ...ddoc.build_info,
-          version: isBranchBuild ? ddoc.build_info.build : ddoc.build_info.version
+          version: isBranchBuild ? branchVersion : ddoc.build_info.version
         };
-        // for historical reasons, for a branch the version in the ddoc is the branch name.
         expect(deployInfoOnline).to.deep.equal(deployInfo);
         expect(deployInfoOffline).to.deep.equal(deployInfo);
       });
