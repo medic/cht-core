@@ -604,6 +604,75 @@ describe('infodoc', () => {
         assert.deepEqual(db.sentinel.put.args[20], [{ ...info, transitions: change.info.transitions }]);
       });
     });
+
+    it('should record validRev and clear invalid_rev when given', () => {
+      const info = { _id: 'some-info', doc_id: 'some', invalid_rev: '1-abc' };
+      const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.saveTransitions(change, '2-def').then(() => {
+        const saved = db.sentinel.put.args[0][0];
+        assert.equal(saved.valid_rev, '2-def');
+        assert.isUndefined(saved.invalid_rev);
+      });
+    });
+  });
+
+  describe('setInvalidRev / clearInvalidRev', () => {
+    it('setInvalidRev marks the infodoc mid-write', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.setInvalidRev('some', '1-abc').then(() => {
+        assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
+        assert.equal(db.sentinel.put.args[0][0].invalid_rev, '1-abc');
+      });
+    });
+
+    it('setInvalidRev creates a blank infodoc on 404', () => {
+      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.setInvalidRev('some', null).then(() => {
+        const saved = db.sentinel.put.args[0][0];
+        assert.equal(saved._id, 'some-info');
+        assert.equal(saved.doc_id, 'some');
+        assert.equal(saved.invalid_rev, null);
+      });
+    });
+
+    it('clearInvalidRev removes the mid-write marker', () => {
+      const info = { _id: 'some-info', doc_id: 'some', invalid_rev: '1-abc' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.clearInvalidRev('some').then(() => {
+        assert.isUndefined(db.sentinel.put.args[0][0].invalid_rev);
+      });
+    });
+
+    it('retries on 409 conflict', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      const put = sinon.stub(db.sentinel, 'put');
+      put.onCall(0).rejects({ status: 409 });
+      put.onCall(1).resolves();
+
+      return lib.setInvalidRev('some', '1-abc').then(() => {
+        assert.equal(db.sentinel.put.callCount, 2);
+      });
+    });
+
+    it('throws non-409 errors', () => {
+      sinon.stub(db.sentinel, 'get').resolves({ _id: 'some-info', doc_id: 'some' });
+      sinon.stub(db.sentinel, 'put').rejects({ status: 500 });
+
+      return lib.setInvalidRev('some', '1-abc')
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => assert.equal(err.status, 500));
+    });
   });
 
   describe('saveCompletedTasks', () => {

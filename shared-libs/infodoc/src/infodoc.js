@@ -151,15 +151,15 @@ const updateTransition = (change, transition, ok) => {
   };
 };
 
-const saveTransitions = change => {
-  return saveProperty(change.id, change.info, 'transitions', {});
+const saveTransitions = (change, validRev) => {
+  return saveProperty(change.id, change.info, 'transitions', {}, validRev);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
   return saveProperty(id, infodoc, 'completed_tasks', completedTasks);
 };
 
-const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
+const saveProperty = async (id, infodoc, property, defaultValue = {}, validRev) => {
   let updatedInfoDoc;
   try {
     updatedInfoDoc = await db.sentinel.get(getInfoDocId(id));
@@ -171,13 +171,53 @@ const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
     updatedInfoDoc = infodoc;
   }
 
+  if (validRev !== undefined) {
+    updatedInfoDoc.valid_rev = validRev;
+    delete updatedInfoDoc.invalid_rev;
+  }
+
   try {
     return await db.sentinel.put(updatedInfoDoc);
   } catch (err) {
     if (err.status !== 409) {
       throw err;
     }
-    return saveProperty(id, infodoc, property, defaultValue);
+    return saveProperty(id, infodoc, property, defaultValue, validRev);
+  }
+};
+
+const setInvalidRev = (id, invalidRev) => {
+  return modifyInfoDoc(id, infoDoc => {
+    infoDoc.invalid_rev = invalidRev;
+  });
+};
+
+const clearInvalidRev = id => {
+  return modifyInfoDoc(id, infoDoc => {
+    delete infoDoc.invalid_rev;
+  });
+};
+
+const modifyInfoDoc = async (id, modify) => {
+  let infoDoc;
+  try {
+    infoDoc = await db.sentinel.get(getInfoDocId(id));
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+    infoDoc = blankInfoDoc(id);
+  }
+
+  modify(infoDoc);
+
+  try {
+    return await db.sentinel.put(infoDoc);
+  } catch (err) {
+    if (err.status !== 409) {
+      throw err;
+    }
+    return modifyInfoDoc(id, modify);
   }
 };
 
@@ -283,6 +323,8 @@ module.exports = {
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
   saveCompletedTasks: saveCompletedTasks,
+  setInvalidRev: setInvalidRev,
+  clearInvalidRev: clearInvalidRev,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
   // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup

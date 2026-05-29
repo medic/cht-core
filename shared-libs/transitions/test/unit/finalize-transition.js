@@ -24,19 +24,25 @@ describe('finalize transition', () => {
 
   it('save is called if transition results have changes', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true, rev: '2' });
+    const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
+    const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();
     transitions.finalize(
       {
-        change: { doc: doc },
+        change: { id: 'abc', doc: doc },
         results: [null, null, true],
       },
       (err, result) => {
         assert.equal(saveDoc.callCount, 1);
         assert(saveDoc.args[0][0]._rev);
         assert(!err);
-        assert.deepEqual(result, { ok: true });
+        assert.deepEqual(result, { ok: true, rev: '2' });
+        assert.equal(setInvalidRev.callCount, 1);
+        assert.deepEqual(setInvalidRev.args[0], ['abc', '1']);
         assert.equal(infodoc.saveTransitions.callCount, 1);
+        assert.deepEqual(infodoc.saveTransitions.args[0][1], '2');
+        assert.equal(clearInvalidRev.callCount, 0);
         done();
       }
     );
@@ -45,10 +51,12 @@ describe('finalize transition', () => {
   it('should callback with save errors', done => {
     const doc = { _rev: '1' };
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+    const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
+    const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();
     transitions.finalize(
       {
-        change: { doc: doc },
+        change: { id: 'abc', doc: doc },
         results: [null, null, true],
       },
       (err, result) => {
@@ -56,7 +64,10 @@ describe('finalize transition', () => {
         assert.equal(saveDoc.callCount, 1);
         assert(saveDoc.args[0][0]._rev);
         assert(!result);
+        assert.equal(setInvalidRev.callCount, 1);
         assert.equal(infodoc.saveTransitions.callCount, 0);
+        assert.equal(clearInvalidRev.callCount, 1);
+        assert.deepEqual(clearInvalidRev.args[0], ['abc']);
         done();
       }
     );

@@ -45,13 +45,34 @@ const AVAILABLE_TRANSITIONS = [
 const transitions = [];
 let loadErrors = false;
 
+const MAX_INFODOC_WAIT = 5;
+const INFODOC_WAIT_INTERVAL = 100;
+
+const isInfoDocMidWrite = infoDoc => infoDoc && infoDoc.invalid_rev !== undefined;
+
+const getConsistentInfoDoc = (change, retriesLeft) => {
+  return infodoc.get(change).then(infoDoc => {
+    if (!isInfoDocMidWrite(infoDoc) || retriesLeft <= 0) {
+      return infoDoc;
+    }
+    return new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL))
+      .then(() => getConsistentInfoDoc(change, retriesLeft - 1));
+  });
+};
+
 // applies all loaded transitions over a change
 const processChange = (change, callback) => {
   lineage
     .fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      return infodoc.get(change).then(infoDoc => {
+      return getConsistentInfoDoc(change, MAX_INFODOC_WAIT).then(infoDoc => {
+        if (isInfoDocMidWrite(infoDoc)) {
+          logger.warn(
+            `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
+          );
+          return callback();
+        }
         change.info = infoDoc;
         change.initialProcessing = !infoDoc.transitions;
         // Remove transitions from doc since those
@@ -110,7 +131,7 @@ const processDocs = docs => {
             saveDoc(change, (err, result) => {
               callback(null, err || result);
             });
-          }, { saveInfoDocFirst: true });
+          });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -232,7 +253,7 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, results, saveInfoDocFirst = false }, callback) => {
+const finalize = ({ change, results }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
   const changed = _.some(results, i => Boolean(i));
@@ -254,44 +275,25 @@ const finalize = ({ change, results, saveInfoDocFirst = false }, callback) => {
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
-  if (saveInfoDocFirst) {
-    // For sync transitions, save transitions before saving the changed
-    // document, so that the change does not appear in the changes
-    // feed until the infoDoc has been saved with the correct transitions
-    //
-    // If saveDoc fails after saveTransitions succeeded, the infodoc will
-    // reflect transitions as run while the doc itself was not updated.
-    // there will be no retry
-    return infodoc
-      .saveTransitions(change)
-      .then(() => new Promise((resolve, reject) => {
-        saveDoc(change, (err, result) => err ? reject(err) : resolve(result));
-      }))
-      .then(result => {
-        logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-        callback(null, result);
-      })
-      .catch(err => {
-        logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
-        callback(err);
-      });
-  }
-
-  // For async transitions run by sentinel, save the document first,
-  // then update the infoDoc with the transitions map
-  saveDoc(change, (err, result) => {
-    // todo: how to handle a failed save? for now just
-    // waiting until next change and try again.
-    if (err) {
+  const invalidRev = change.doc._rev ?? null;
+  return infodoc
+    .setInvalidRev(change.id, invalidRev)
+    .then(() => new Promise((resolve, reject) => {
+      saveDoc(change, (err, result) => err ? reject(err) : resolve(result));
+    }))
+    .then(result => {
+      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+      return infodoc
+        .saveTransitions(change, result.rev)
+        .then(() => callback(null, result));
+    })
+    .catch(err => {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
-      return callback(err);
-    }
-
-    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    infodoc.saveTransitions(change)
-      .then(() => callback(null, result))
-      .catch(err => callback(err));
-  });
+      return infodoc
+        .clearInvalidRev(change.id)
+        .catch(clearErr => logger.error(`error clearing invalid_rev on doc ${change.id}: %o`, clearErr))
+        .then(() => callback(err));
+    });
 };
 
 const saveDoc = (change, callback) => {
@@ -357,7 +359,7 @@ const applyTransition = ({ key, change, transition, force }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = (change, callback, { saveInfoDocFirst = false } = {}) => {
+const applyTransitions = (change, callback) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -375,7 +377,7 @@ const applyTransitions = (change, callback, { saveInfoDocFirst = false } = {}) =
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) => finalize({ change, results, saveInfoDocFirst }, callback));
+  async.series(operations, (err, results) => finalize({ change, results }, callback));
 };
 
 const availableTransitions = () => {
