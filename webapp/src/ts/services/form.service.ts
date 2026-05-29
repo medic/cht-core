@@ -404,6 +404,7 @@ export class FormService {
 
     const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
     const preparedDocs = await this.applyTransitions(docs);
+    await this.validateAttachments(preparedDocs.preparedDocs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
 

@@ -27,6 +27,7 @@ import { ErrorLogComponent } from '@mm-components/error-log/error-log.component'
 import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { AuthDirective } from '@mm-directives/auth.directive';
+import { ContactPhotoComponent } from '@mm-components/contact-photo/contact-photo.component';
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { SummaryPipe } from '@mm-pipes/message.pipe';
@@ -47,6 +48,7 @@ import {
     NgFor,
     TranslateDirective,
     AuthDirective,
+    ContactPhotoComponent,
     ContentRowListItemComponent,
     RouterLink,
     TranslatePipe,

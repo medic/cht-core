@@ -336,6 +336,23 @@ describe('EnketoTranslation service', () => {
       });
     });
 
+    it('preserves text content of [type=binary] nodes', () => {
+      const xml =
+        `<data id="form" version="1">
+          <photo type="binary">form/photo</photo>
+          <signature type="binary">SOME_BASE64</signature>
+          <empty type="binary"></empty>
+          <name>Alice</name>
+        </data>`;
+
+      const js = service.reportRecordToJs(xml);
+
+      assert.equal(js.photo, 'form/photo');
+      assert.equal(js.signature, 'SOME_BASE64');
+      assert.equal(js.empty, '');
+      assert.equal(js.name, 'Alice');
+    });
+
     it('converts repeated fields to arrays - #3430', () => {
       // given
       const record = `
@@ -807,6 +824,119 @@ describe('EnketoTranslation service', () => {
         serialize(element.find('mixrepeat')[2]),
         '<mixrepeat><property>propvalue</property></mixrepeat>'
       );
+    });
+
+    describe('[type=binary] handling', () => {
+      const buildModel = (defaultText = '') => $($.parseXML(
+        `<data id="form" version="1">
+          <photo type="binary">${defaultText}</photo>
+          <name/>
+        </data>`
+      )).children().first();
+
+      it('preserves the form default when saved value is empty string', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: '', name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+        assert.equal(element.find('name').text(), 'Alice');
+      });
+
+      it('preserves the form default when saved value is null', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: null, name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('preserves the form default when saved value is undefined', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: undefined, name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('preserves the form default when saved value is a reference name', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, {
+          photo: 'form/photo',
+          name: 'Alice',
+        });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('preserves the form default when saved value is a contact-form reference name', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, {
+          photo: 'contact:person:create/person/photo',
+          name: 'Alice',
+        });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('binds through genuine inline base64 (covers injection on create)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, {
+          photo: 'INJECTED_BASE64_DATA',
+          name: 'Alice',
+        });
+        assert.equal(element.find('photo').text(), 'INJECTED_BASE64_DATA');
+      });
+
+      it('binds through base64 even when it contains slashes (not a reference)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        // real base64 carries `+`/`=` chars, so it is not a path of node names
+        service.bindJsonToXml(element, {
+          photo: 'data:image/png;base64,iVBOR/w0K+Gg==',
+          name: 'Alice',
+        });
+        assert.equal(
+          element.find('photo').text(),
+          'data:image/png;base64,iVBOR/w0K+Gg==',
+          'base64 content should not be mistaken for a reference name'
+        );
+      });
+
+      it('still clears empty values on non-binary leaves (no regression)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: '', name: '' });
+        assert.equal(element.find('name').text(), '');
+      });
+
+      it('binds through saved filenames on [type=file] nodes (file-widget unaffected)', () => {
+        const element = $($.parseXML(
+          `<data id="form" version="1">
+            <upload type="file"/>
+          </data>`
+        )).children().first();
+        service.bindJsonToXml(element, { upload: 'photo.jpg-1700000000000' });
+        assert.equal(element.find('upload').text(), 'photo.jpg-1700000000000');
+      });
+    });
+
+    describe('isAttachmentRef', () => {
+      [
+        [ 'form/photo', true ],
+        [ 'embedded_multimedia/notes_with_media/base64_note', true ],
+        [ 'contact:person:create/person/photo', true ],
+        [ 'thing_1/doc1/photo1', true ],
+      ].forEach(([ value, expected ]) => {
+        it(`recognizes reference name "${value}"`, () => {
+          assert.equal(service.isAttachmentRef(value), expected);
+        });
+      });
+
+      [
+        [ 'photo', false ],                                  // single segment, no slash
+        [ '', false ],                                       // empty
+        [ 'INJECTED_BASE64_DATA', false ],                   // single token
+        [ 'data:image/png;base64,iVBOR/w0K+Gg==', false ],   // base64 (`+`/`=`/`;`/`,`)
+        [ 'aGVsbG8/d29ybGQ=', false ],                       // base64 with slash but `=` and one segment-ish
+        [ null, false ],
+        [ undefined, false ],
+        [ 42, false ],
+      ].forEach(([ value, expected ]) => {
+        it(`rejects non-reference value ${JSON.stringify(value)}`, () => {
+          assert.equal(service.isAttachmentRef(value), expected);
+        });
+      });
     });
 
     it('should remove template-like attributes', () => {
