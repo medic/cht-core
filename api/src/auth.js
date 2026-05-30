@@ -84,7 +84,10 @@ module.exports = {
       return false;
     }
     try {
-      const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+      const decoded = Buffer.from(authHeader.split(' ')[1], 'base64').toString();
+      const idx = decoded.indexOf(':');
+      const username = decoded.slice(0, idx);
+      const password = decoded.slice(idx + 1);
       return { username, password };
     } catch {
       throw Error('Corrupted Auth header');
