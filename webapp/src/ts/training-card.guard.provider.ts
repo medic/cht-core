@@ -9,7 +9,7 @@ import { Selectors } from '@mm-selectors/index';
 @Injectable({
   providedIn: 'root'
 })
-export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any> {
+export class TrainingCardDeactivationGuardProvider implements CanDeactivate<unknown> {
   private readonly globalActions: GlobalActions;
 
   constructor(private readonly store: Store) {
@@ -17,7 +17,7 @@ export class TrainingCardDeactivationGuardProvider implements CanDeactivate<any>
   }
 
   canDeactivate(
-    component: any,
+    component: unknown,
     currentRoute: ActivatedRouteSnapshot,
     currentState: RouterStateSnapshot,
     nextState: RouterStateSnapshot,
