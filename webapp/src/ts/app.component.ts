@@ -476,7 +476,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.databaseConnectionMonitorService
       .listenForDatabaseClosed()
       .subscribe(() => {
-        this.modalService.show(DatabaseClosedComponent);
+        this.modalService.show(DatabaseClosedComponent, { closeOnNavigation: false });
         this.closeDropdowns();
       });
   }

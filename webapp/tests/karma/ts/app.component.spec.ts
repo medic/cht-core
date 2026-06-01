@@ -512,7 +512,8 @@ describe('AppComponent', () => {
 
     expect(databaseConnectionMonitorService.listenForDatabaseClosed.callCount).to.equal(1);
     expect(modalService.show.callCount).to.equal(1);
-    expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
+    expect(modalService.show.args[0][0]).to.equal(DatabaseClosedComponent);
+    expect(modalService.show.args[0][1]).to.deep.equal({ closeOnNavigation: false });
   }));
 
   describe('Setup DB', () => {
