@@ -5,6 +5,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { DropdownService } from '@mm-services/dropdown.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -18,12 +19,13 @@ import { NavigationService } from '@mm-services/navigation.service';
 export class AndroidApiService {
 
   constructor(
-    private androidAppLauncherService:AndroidAppLauncherService,
-    private geolocationService:GeolocationService,
-    private mrdtService:MRDTService,
-    private sessionService:SessionService,
-    private zone:NgZone,
-    private navigationService:NavigationService,
+    private readonly androidAppLauncherService: AndroidAppLauncherService,
+    private readonly geolocationService: GeolocationService,
+    private readonly mrdtService: MRDTService,
+    private readonly sessionService: SessionService,
+    private readonly zone: NgZone,
+    private readonly navigationService: NavigationService,
+    private readonly dropdownService: DropdownService,
   ) { }
 
   private runInZone(property:string, args:any[]=[]) {
@@ -42,18 +44,17 @@ export class AndroidApiService {
    * Close all select2 dropdowns
    * @return {boolean} `true` if any select2s were closed.
    */
-  private closeSelect2($container) {
+  private closeSelect2($container: JQuery) {
     // If there are any select2 dropdowns open, close them.  The select
     // boxes are closed while they are checked - this saves us having to
     // iterate over them twice
     let closed = false;
     $container
       .find('select.select2-hidden-accessible')
-      .each(function() {
-        // @ts-expect-error Intentionally referencing shadowed `this` variable.
-        const elem = <any>$(this);
-        if (elem.select2('isOpen')) {
-          elem.select2('close');
+      .each((_index, element) => {
+        const elem = $(element);
+        if ((elem as any).select2('isOpen')) {
+          (elem as any).select2('close');
           closed = true;
         }
       });
@@ -64,17 +65,13 @@ export class AndroidApiService {
    * Close the highest-priority dropdown within a particular container.
    * @return {boolean} `true` if a dropdown was closed; `false` otherwise.
    */
-  private closeDropdownsIn($container) {
+  private closeDropdownsIn($container: JQuery) {
     if (this.closeSelect2($container)) {
       return true;
     }
 
-    // todo: this probably won't work because dropdowns are now angular directives!
-
     // If there is a dropdown menu open, close it
-    const $dropdown = $container.find('.filter.dropdown.open:visible');
-    if ($dropdown.length) {
-      $dropdown.removeClass('open');
+    if (this.dropdownService.closeAll()) {
       return true;
     }
 
@@ -90,11 +87,10 @@ export class AndroidApiService {
   /*
    * Find the modal with highest z-index, and ignore the rest
    */
-  private closeTopModal($modals) {
-    let $topModal;
-    $modals.each(function() {
-      // @ts-expect-error Intentionally referencing shadowed `this` variable.
-      const $modal = $(this);
+  private closeTopModal($modals: JQuery) {
+    let $topModal: JQuery | undefined;
+    $modals.each((_index, element) => {
+      const $modal = $(element);
       if (!$topModal) {
         $topModal = $modal;
         return;
@@ -104,7 +100,7 @@ export class AndroidApiService {
       }
     });
 
-    if (!this.closeDropdownsIn($topModal)) {
+    if ($topModal && !this.closeDropdownsIn($topModal)) {
       // Try to close by clicking modal's top-right `X` or `[ Cancel ]`
       // button.
       $topModal
@@ -118,13 +114,6 @@ export class AndroidApiService {
     const $modals = $('.modal:visible');
     if ($modals.length) {
       this.closeTopModal($modals);
-      return true;
-    }
-
-    // If the hotdog hamburger options menu is open, close it
-    const $optionsMenu = $('.dropdown.options.open');
-    if ($optionsMenu.length) {
-      $optionsMenu.removeClass('open');
       return true;
     }
 

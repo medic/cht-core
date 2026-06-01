@@ -9,6 +9,7 @@ import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
+import { DropdownService } from '@mm-services/dropdown.service';
 
 describe('AndroidApi service', () => {
 
@@ -19,6 +20,7 @@ describe('AndroidApi service', () => {
   let consoleErrorMock;
   let navigationService;
   let androidAppLauncherService;
+  let dropdownService;
 
   beforeEach(() => {
     sessionService = {
@@ -44,6 +46,9 @@ describe('AndroidApi service', () => {
     androidAppLauncherService = {
       resolveAndroidAppResponse: sinon.stub()
     };
+    dropdownService = {
+      closeAll: sinon.stub()
+    };
 
     consoleErrorMock = sinon.stub(console, 'error');
 
@@ -54,6 +59,7 @@ describe('AndroidApi service', () => {
         { provide: MRDTService, useValue: mrdtService },
         { provide: NavigationService, useValue: navigationService },
         { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
+        { provide: DropdownService, useValue: dropdownService },
       ],
     });
 
@@ -72,6 +78,16 @@ describe('AndroidApi service', () => {
   });
 
   describe('back', () => {
+    it('should call dropdownService.closeAll()', () => {
+      dropdownService.closeAll.returns(true);
+
+      const result = service.back();
+
+      expect(result).to.be.true;
+      expect(dropdownService.closeAll.callCount).to.equal(1);
+      expect(navigationService.goBack.callCount).to.equal(0);
+    });
+
     it('should return true and not navigate to primary tab when navigationService.goBack() is true', () => {
       navigationService.goBack.returns(true);
 

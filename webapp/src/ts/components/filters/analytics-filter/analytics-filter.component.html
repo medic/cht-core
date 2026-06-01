@@ -1,6 +1,6 @@
 <div class="analytics-sidebar-filter">
-  <span *ngIf="analyticsModules?.length > 1" class="dropdown mm-dropdown analytics-module">
-    <span id="module" class="mm-button" data-toggle="dropdown">
+  <span *ngIf="analyticsModules?.length > 1" class="dropdown mm-dropdown analytics-module" dropdown mmDropdownTracking>
+    <span id="module" class="mm-button" dropdownToggle>
       <span class="mm-button-icon">
         <span class="fa fa-bar-chart-o"></span>
       </span>
@@ -12,7 +12,7 @@
       </ng-container>
     </span>
 
-    <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
+    <ul role="menu" aria-labelledby="module" *dropdownMenu class="dropdown-menu mm-dropdown-menu">
       <li role="presentation" *ngFor="let module of analyticsModules" [attr.data-id]="module.id">
         <a [routerLink]="module.route" role="menuitem" tabindex="-1">{{ module.label | translate }}</a>
       </li>
