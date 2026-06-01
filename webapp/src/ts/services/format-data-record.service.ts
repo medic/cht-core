@@ -511,7 +511,8 @@ export class FormatDataRecordService {
     return _.filter(fields, (field) => {
       return _.every(hide, (h) => {
         const hiddenLabel = label + '.' + h;
-        return hiddenLabel !== field.label && field.label.indexOf(hiddenLabel + '.') !== 0;
+        const normalized = field.label.replace(/\[\d+\]/g, ''); // remove [0], [1], etc.
+        return hiddenLabel !== normalized && !normalized.startsWith(hiddenLabel + '.');
       });
     });
   }
