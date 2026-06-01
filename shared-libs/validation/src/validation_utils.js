@@ -8,6 +8,8 @@ const { Qualifier, Report } = require('@medic/cht-datasource');
 let db;
 let dataContext;
 
+const inFlightLocks = new Set();
+
 const lowerCaseString = obj => typeof obj === 'string' ? obj.toLowerCase() : obj;
 
 const executeExistsRequest = async (freetext) => {
@@ -71,23 +73,33 @@ const exists = async (doc, fields, options = {}) => {
   }
   const requestOptions = getExistsRequestOptions(fields, doc);
   addAdditionalFilters(options, requestOptions);
-  const responses = await getExistsResponses(requestOptions);
 
-  const ids = getIntersection(responses).filter(id => id !== doc._id);
-  if (!ids.length) {
-    return false;
+  const lockKey = [...requestOptions].sort((a, b) => a.localeCompare(b)).join('::').toLowerCase();
+  if (inFlightLocks.has(lockKey)) {
+    return true;
   }
+  inFlightLocks.add(lockKey);
 
-  const result = await db.medic.allDocs({ keys: ids, include_docs: true });
-  const startDate = parseStartDate(options.duration);
-  // filter out docs with errors
-  return result.rows.some(row => {
-    const doc = row.doc;
-    return (
-      (!doc.errors || doc.errors.length === 0) &&
-      (!startDate || doc.reported_date >= startDate)
-    );
-  });
+  try {
+    const responses = await getExistsResponses(requestOptions);
+
+    const ids = getIntersection(responses).filter(id => id !== doc._id);
+    if (!ids.length) {
+      return false;
+    }
+
+    const result = await db.medic.allDocs({ keys: ids, include_docs: true });
+    const startDate = parseStartDate(options.duration);
+    return result.rows.some(row => {
+      const rowDoc = row.doc;
+      return (
+        (!rowDoc.errors || rowDoc.errors.length === 0) &&
+        (!startDate || rowDoc.reported_date >= startDate)
+      );
+    });
+  } finally {
+    inFlightLocks.delete(lockKey);
+  }
 };
 
 const compareDateAfter = (testDate, reportedDate, duration) => {
