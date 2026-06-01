@@ -206,7 +206,8 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('catches user_settings errors', () => {
+    it('catches user_settings errors and logs them', () => {
+      sinon.stub(logger, 'error');
       testReq.userCtx = { name: 'user' };
       auth.getUserCtx.resolves({ name: 'user' });
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
@@ -222,6 +223,10 @@ describe('Authorization middleware', () => {
           testReq.userCtx.should.deep.equal({ name: 'user' });
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+          logger.error.callCount.should.equal(1);
+          logger.error.args[0][0].should.equal('Failed to get user settings: %o');
+          logger.error.args[0][1].should.deep.equal({ some: 'error' });
+          logger.error.restore();
         });
     });
   });
@@ -258,7 +263,8 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('catches user_settings errors', () => {
+    it('catches user_settings errors and logs them', () => {
+      sinon.stub(logger, 'error');
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.withArgs({ name: 'user' }).rejects({ some: 'error' });
@@ -272,6 +278,10 @@ describe('Authorization middleware', () => {
           testReq.userCtx.should.deep.equal({ name: 'user' });
           auth.isOnlineOnly.args[0][0].should.deep.equal({ name: 'user'});
           auth.getUserSettings.args[0][0].should.deep.equal({ name: 'user'});
+          logger.error.callCount.should.equal(1);
+          logger.error.args[0][0].should.equal('Failed to get user settings: %o');
+          logger.error.args[0][1].should.deep.equal({ some: 'error' });
+          logger.error.restore();
         });
     });
   });
