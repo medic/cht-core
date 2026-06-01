@@ -3,7 +3,7 @@ const moment = require('moment');
 const logger = require('@medic/logger');
 const phoneNumberParser = require('@medic/phone-number');
 const config = require('../../transitions/src/config');
-const { Qualifier, Report } = require('@medic/cht-datasource');
+const { Contact, Qualifier, Report } = require('@medic/cht-datasource');
 
 let db;
 let dataContext;
@@ -143,8 +143,9 @@ const validPhone = (value) => {
 };
 
 const uniquePhone = async (value) => {
-  const results = await db.medic.query('medic-client/contacts_by_phone', { key: value });
-  return !results?.rows?.length;
+  const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
+  const page = await getContactUuids(Qualifier.byPhone(value), null, 1);
+  return !page.data.length;
 };
 
 module.exports = {

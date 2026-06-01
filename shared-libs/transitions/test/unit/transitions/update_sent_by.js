@@ -1,13 +1,22 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const db = require('../../../src/db');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 const config = require('../../../src/config');
+const dataContext = require('../../../src/data-context');
 
 describe('update sent by', () => {
   let transition;
+  let getContactUuidsPage;
+  let getContact;
 
   beforeEach(() => {
     config.init({ getAll: sinon.stub().returns({}), });
+    getContactUuidsPage = sinon.stub();
+    getContact = sinon.stub();
+    const bind = sinon.stub();
+    bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+    bind.withArgs(Contact.v1.get).returns(getContact);
+    dataContext.init({ bind });
     transition = require('../../../src/transitions/update_sent_by');
   });
 
@@ -16,22 +25,27 @@ describe('update sent by', () => {
     sinon.restore();
   });
 
-  it('updates sent_by to clinic name if contact name', () => {
+  it('updates sent_by to clinic name if contact name', async () => {
     const doc = { from: '+34567890123' };
-    const dbView = sinon.stub(db.medic, 'query').resolves({ rows: [ { doc: { name: 'Clinic' } } ] } );
-    return transition.onMatch({ doc: doc }).then(changed => {
-      assert(changed);
-      assert.equal(doc.sent_by, 'Clinic');
-      assert(dbView.calledOnce);
-    });
+    getContactUuidsPage.resolves({ data: ['contact-uuid'], cursor: null });
+    getContact.resolves({ _id: 'contact-uuid', name: 'Clinic' });
+
+    const changed = await transition.onMatch({ doc });
+
+    assert(changed);
+    assert.equal(doc.sent_by, 'Clinic');
+    assert.isTrue(getContactUuidsPage.calledOnceWithExactly(Qualifier.byPhone('+34567890123'), null, 1));
+    assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('contact-uuid')));
   });
 
-  it('sent_by untouched if nothing available', () => {
+  it('sent_by untouched if nothing available', async () => {
     const doc = { from: 'unknown number' };
-    sinon.stub(db.medic, 'query').resolves({});
-    return transition.onMatch({ doc: doc }).then(changed => {
-      assert(!changed);
-      assert.strictEqual(doc.sent_by, undefined);
-    });
+    getContactUuidsPage.resolves({ data: [], cursor: null });
+
+    const changed = await transition.onMatch({ doc });
+
+    assert(!changed);
+    assert.strictEqual(doc.sent_by, undefined);
+    assert.isTrue(getContact.notCalled);
   });
 });

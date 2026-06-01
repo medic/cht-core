@@ -15,10 +15,10 @@ const isContactPhoneValid = (settings, fieldValue) => {
   return false;
 };
 
-const getContactIdsForPhone = (phoneNumber) => window.CHTCore.DB
-  .get()
-  .query('medic-client/contacts_by_phone', { key: phoneNumber })
-  .then(results => results.rows.map(row => row.id));
+const getContactIdsForPhone = async (phoneNumber) => {
+  const datasource = await window.CHTCore.CHTDatasource.get();
+  return datasource.v1.contact.collectUuidsByPhone(phoneNumber);
+};
 
 const isContactPhoneUnique = async (settings, fieldValue) => {
   const normalizedNumber = phoneNumber.normalize(settings, fieldValue);

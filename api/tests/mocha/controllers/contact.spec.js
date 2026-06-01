@@ -230,15 +230,13 @@ describe('Contact Controller', () => {
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns 400 error when contactType AND freetext is not present', async () => {
+      it('returns 400 error when no qualifier param is present', async () => {
         req = {
           query: {
             cursor,
             limit,
           }
         };
-        const err = { status: 400, message: 'Either query param freetext or type is required' };
-        contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
 
@@ -250,7 +248,135 @@ describe('Contact Controller', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 400, message: 'At least one of query params type, freetext, phone is required' },
+          req,
+          res
+        )).to.be.true;
+      });
+
+      describe('phone query param', () => {
+        const phone = '+15551234567';
+        const phoneOnlyQualifier = { phone };
+        let qualifierByPhone;
+
+        beforeEach(() => {
+          qualifierByPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneOnlyQualifier);
+        });
+
+        it('builds a phone qualifier when phone is the only qualifier', async () => {
+          req = { query: { phone, cursor, limit } };
+          const expected = { data: ['uuid-1'], cursor: 'next' };
+          contactGetUuidsPage.resolves(expected);
+
+          await controller.v1.getUuids(req, res);
+
+          expect(qualifierByPhone.calledOnceWithExactly(phone)).to.be.true;
+          expect(qualifierByContactType.notCalled).to.be.true;
+          expect(qualifierByFreetext.notCalled).to.be.true;
+          expect(contactGetUuidsPage.calledOnceWithExactly(phoneOnlyQualifier, cursor, limit)).to.be.true;
+          expect(res.json.calledOnceWithExactly(expected)).to.be.true;
+        });
+
+        [
+          [{ type: contactType, phone }, 'type, phone'],
+          [{ freetext, phone }, 'freetext, phone'],
+          [{ type: contactType, freetext, phone }, 'type, freetext, phone'],
+        ].forEach(([query, presentList]) => {
+          it(`returns 400 when phone is combined with ${Object.keys(query).filter(k => k !== 'phone').join('/')}`,
+            async () => {
+              req = { query: { ...query, cursor, limit } };
+
+              await controller.v1.getUuids(req, res);
+
+              expect(qualifierByPhone.notCalled).to.be.true;
+              expect(qualifierByContactType.notCalled).to.be.true;
+              expect(qualifierByFreetext.notCalled).to.be.true;
+              expect(contactGetUuidsPage.notCalled).to.be.true;
+              expect(res.json.notCalled).to.be.true;
+              expect(serverUtilsError.calledOnceWithExactly(
+                {
+                  status: 400,
+                  message: `Query params ${presentList} are mutually exclusive `
+                    + '(only type and freetext may be combined)',
+                },
+                req,
+                res
+              )).to.be.true;
+            });
+        });
+
+        it('walks two cursor pages with limit 5', async () => {
+          const firstPage = { data: ['a', 'b', 'c', 'd', 'e'], cursor: '5' };
+          const secondPage = { data: ['f'], cursor: null };
+          contactGetUuidsPage.onFirstCall().resolves(firstPage);
+          contactGetUuidsPage.onSecondCall().resolves(secondPage);
+
+          await controller.v1.getUuids({ query: { phone, cursor: null, limit: 5 } }, res);
+          expect(contactGetUuidsPage.firstCall.args).to.deep.equal([phoneOnlyQualifier, null, 5]);
+          expect(res.json.calledWith(firstPage)).to.be.true;
+
+          await controller.v1.getUuids({ query: { phone, cursor: '5', limit: 5 } }, res);
+          expect(contactGetUuidsPage.secondCall.args).to.deep.equal([phoneOnlyQualifier, '5', 5]);
+          expect(res.json.calledWith(secondPage)).to.be.true;
+        });
+      });
+    });
+
+    describe('postUuids (bulk)', () => {
+      const phones = ['+15551234567', '+15559999999'];
+      const phonesQualifier = { phones };
+      const cursor = null;
+      const limit = 100;
+      let qualifierByPhones;
+
+      beforeEach(() => {
+        qualifierByPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+      });
+
+      it('builds a phones qualifier from the JSON body', async () => {
+        req = { body: { phones, cursor, limit } };
+        const expected = { data: ['uuid-1', 'uuid-2'], cursor: 'next' };
+        contactGetUuidsPage.resolves(expected);
+
+        await controller.v1.postUuids(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
+        expect(qualifierByPhones.calledOnceWithExactly(phones)).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(phonesQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(expected)).to.be.true;
+      });
+
+      it('returns 400 when the body has no qualifier param', async () => {
+        req = { body: { cursor, limit } };
+
+        await controller.v1.postUuids(req, res);
+
+        expect(qualifierByPhones.notCalled).to.be.true;
+        expect(contactGetUuidsPage.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 400, message: 'At least one of body params phones is required' },
+          req,
+          res
+        )).to.be.true;
+      });
+
+      it('walks two cursor pages with limit 5', async () => {
+        const firstPage = { data: ['a', 'b', 'c', 'd', 'e'], cursor: '5' };
+        const secondPage = { data: ['f'], cursor: null };
+        contactGetUuidsPage.onFirstCall().resolves(firstPage);
+        contactGetUuidsPage.onSecondCall().resolves(secondPage);
+
+        await controller.v1.postUuids({ body: { phones, cursor: null, limit: 5 } }, res);
+        expect(contactGetUuidsPage.firstCall.args).to.deep.equal([phonesQualifier, null, 5]);
+        expect(res.json.calledWith(firstPage)).to.be.true;
+
+        await controller.v1.postUuids({ body: { phones, cursor: '5', limit: 5 } }, res);
+        expect(contactGetUuidsPage.secondCall.args).to.deep.equal([phonesQualifier, '5', 5]);
+        expect(res.json.calledWith(secondPage)).to.be.true;
       });
     });
   });

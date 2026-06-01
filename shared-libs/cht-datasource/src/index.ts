@@ -209,6 +209,56 @@ export const getDatasource = (ctx: DataContext) => {
         ) => ctx.bind(Contact.v1.getUuids)(
           Qualifier.byFreetext(freetext)
         ),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers whose `phone` field exactly
+         * matches the given phone number. The value is matched as-is — no normalization is performed.
+         * @param phone the phone number to match
+         * @returns a generator for fetching all matching contact identifiers
+         * @throws InvalidArgumentError if `phone` is not a non-empty string
+         */
+        getUuidsByPhone: (
+          phone: string,
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.byPhone(phone)
+        ),
+
+        /**
+         * Returns all contact identifiers whose `phone` field exactly matches the given phone number,
+         * collected into a single array. Equivalent to draining {@link getUuidsByPhone} but returns a
+         * `Promise<string[]>` for callers that can't consume an `AsyncGenerator` (e.g. bundles that
+         * don't support `for await`).
+         * @param phone the phone number to match
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `phone` is not a non-empty string
+         */
+        collectUuidsByPhone: async (phone: string): Promise<string[]> => {
+          const generator = ctx.bind(Contact.v1.getUuids)(Qualifier.byPhone(phone));
+          const ids: string[] = [];
+          for await (const id of generator) {
+            ids.push(id);
+          }
+          return ids;
+        },
+
+        /**
+         * Bulk variant of {@link collectUuidsByPhone}. Returns all contact identifiers whose `phone`
+         * field matches *any* of the given phone numbers, in a single round trip — the qualifier
+         * dispatches to one CouchDB view query (local) or one POST (remote), regardless of array
+         * size. Use this instead of `Promise.all` over `collectUuidsByPhone` when looking up many
+         * phones, to avoid the N-round-trip regression.
+         * @param phones the phone numbers to match. Values are passed as-is — no normalization.
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `phones` is not a non-empty array of non-empty strings
+         */
+        collectUuidsByPhones: async (phones: [string, ...string[]]): Promise<string[]> => {
+          const generator = ctx.bind(Contact.v1.getUuids)(Qualifier.byPhones(phones));
+          const ids: string[] = [];
+          for await (const id of generator) {
+            ids.push(id);
+          }
+          return ids;
+        },
       },
       place: {
         /**

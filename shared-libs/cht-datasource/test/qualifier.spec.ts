@@ -4,6 +4,8 @@ import {
   byContactId,
   byContactIds,
   byFreetext,
+  byPhone,
+  byPhones,
   byReportingPeriod,
   byUsername,
   byUuid, FreetextQualifier,
@@ -12,6 +14,8 @@ import {
   isContactIdsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
+  isPhoneQualifier,
+  isPhonesQualifier,
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
@@ -161,6 +165,86 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isKeyedFreetextQualifier(qualifier as FreetextQualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byPhone', () => {
+    it('builds a qualifier for searching contacts by phone', () => {
+      expect(byPhone('+15551234567')).to.deep.equal({ phone: '+15551234567' });
+    });
+
+    it('preserves whitespace and country-code formatting (no normalization)', () => {
+      expect(byPhone('  +1 (555) 123 4567  ')).to.deep.equal({ phone: '  +1 (555) 123 4567  ' });
+    });
+
+    [
+      null,
+      '',
+      { },
+      123,
+    ].forEach(phone => {
+      it(`throws an error for ${JSON.stringify(phone)}`, () => {
+        expect(() => byPhone(phone as string)).to.throw(`Invalid phone [${JSON.stringify(phone)}].`);
+      });
+    });
+  });
+
+  describe('isPhoneQualifier', () => {
+    [
+      [ null, false ],
+      [ '+15551234567', false ],
+      [ { phone: { } }, false ],
+      [ { phone: '+15551234567' }, true ],
+      [ { phone: '+15551234567', other: 'other' }, true ],
+      [ { phone: '' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isPhoneQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byPhones', () => {
+    it('builds a qualifier for the bulk lookup of contacts by phone', () => {
+      expect(byPhones(['+1', '+2', '+3'])).to.deep.equal({ phones: ['+1', '+2', '+3'] });
+    });
+
+    it('preserves whitespace and country-code formatting per element (no normalization)', () => {
+      expect(byPhones(['  +1 (555) 123 4567  ', '+2']))
+        .to.deep.equal({ phones: ['  +1 (555) 123 4567  ', '+2'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'not-an-array',
+      [],
+      [''],
+      ['valid', ''],
+      ['valid', null],
+      ['valid', 123],
+    ] as unknown as [string, ...string[]][]).forEach(phones => {
+      it(`throws an error for ${JSON.stringify(phones)}`, () => {
+        expect(() => byPhones(phones)).to.throw(`Invalid phones [${JSON.stringify(phones)}].`);
+      });
+    });
+  });
+
+  describe('isPhonesQualifier', () => {
+    [
+      [ null, false ],
+      [ ['+1'], false ],                          // bare array, not a qualifier
+      [ { phones: '+1' }, false ],                // string not array
+      [ { phones: [] }, false ],                  // empty array
+      [ { phones: ['+1', ''] }, false ],          // empty element
+      [ { phones: ['+1', null] }, false ],        // non-string element
+      [ { phones: ['+1'] }, true ],
+      [ { phones: ['+1', '+2', '+3'] }, true ],
+      [ { phones: ['+1'], other: 'other' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isPhonesQualifier(qualifier)).to.equal(expected);
       });
     });
   });

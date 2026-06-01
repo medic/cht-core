@@ -2,7 +2,6 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 const chai = require('chai');
 const config = require('../../../src/config');
-const db = require('../../../src/db');
 const dataContext = require('../../../src/data-context');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const { DOC_TYPES } = require('@medic/constants');
@@ -17,7 +16,6 @@ describe('self_report transition', () => {
       getTranslations: sinon.stub()
     });
     transition = rewire('../../../src/transitions/self_report');
-    sinon.stub(db.medic, 'query');
   });
 
   afterEach(() => {
@@ -91,28 +89,30 @@ describe('self_report transition', () => {
   });
 
   describe('onMatch', () => {
+    let getContactUuidsPage;
     let getContactWithLineage;
+    let bind;
 
     beforeEach(() => {
+      getContactUuidsPage = sinon.stub();
       getContactWithLineage = sinon.stub();
-      dataContext.init({
-        bind: sinon.stub().returns(getContactWithLineage),
-      });
+      bind = sinon.stub();
+      bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+      bind.withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage);
+      dataContext.init({ bind });
     });
 
     it('should search for the sender and add error when sender not found', () => {
       config.get.returns([{ form: 'the_form' }]);
       config.getTranslations.returns({ en: { 'messages.generic.sender_not_found': 'Sender not found' }});
-      db.medic.query.resolves({ rows: [] });
+      getContactUuidsPage.resolves({ data: [], cursor: null });
       const doc = { from: '12345', form: 'the_form' };
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { key: '12345' }
-        ]);
-        chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getContactUuidsPage.callCount).to.equal(1);
+        chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('12345'), null, 1]);
+        chai.expect(bind.calledWith(Contact.v1.getUuidsPage)).to.be.true;
+        chai.expect(bind.calledWith(Contact.v1.getWithLineage)).to.be.true;
         chai.expect(getContactWithLineage.callCount).to.equal(0);
         chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
         chai.expect(doc.errors).to.deep.equal([
@@ -148,14 +148,13 @@ describe('self_report transition', () => {
       } ]);
       config.getTranslations.returns({ en: { the_message: 'translated message' }});
 
-      db.medic.query.resolves({rows: []});
+      getContactUuidsPage.resolves({ data: [], cursor: null });
       const doc = { from: '12345', form: 'the_form'};
       return transition.onMatch({doc})
         .then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-client/contacts_by_phone', { key: '12345' } ]);
-          chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+          chai.expect(getContactUuidsPage.callCount).to.equal(1);
+          chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('12345'), null, 1]);
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc).to.have.all.keys('from', 'errors', 'form', 'tasks');
           chai.expect(doc.errors).to.deep.equal([ {message: 'translated message', code: 'sender_not_found'} ]);
@@ -175,17 +174,13 @@ describe('self_report transition', () => {
         patient_id: 'martin_id'
       };
 
-      db.medic.query.resolves({ rows: [{ id: 'the_contact' }] });
+      getContactUuidsPage.resolves({ data: ['the_contact'], cursor: null });
       getContactWithLineage.resolves(patient);
 
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { key: '654987' }
-        ]);
-        chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getContactUuidsPage.callCount).to.equal(1);
+        chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('654987'), null, 1]);
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('the_contact')]);
         chai.expect(doc).to.have.all.keys('from', 'patient', 'fields', 'form');
@@ -225,17 +220,13 @@ describe('self_report transition', () => {
         patient_id: 'martin_id'
       };
 
-      db.medic.query.resolves({ rows: [{ id: 'the_contact' }] });
+      getContactUuidsPage.resolves({ data: ['the_contact'], cursor: null });
       getContactWithLineage.resolves(patient);
 
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { key: '999999' }
-        ]);
-        chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getContactUuidsPage.callCount).to.equal(1);
+        chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('999999'), null, 1]);
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('the_contact')]);
         chai.expect(doc).to.have.all.keys('from', 'patient', 'fields', 'tasks', 'form');
@@ -248,13 +239,12 @@ describe('self_report transition', () => {
 
     it('should throw db errors', () => {
       const doc = { from: 'aaa' };
-      db.medic.query.rejects({ some: 'err' });
+      getContactUuidsPage.rejects({ some: 'err' });
       return transition
         .onMatch({ doc })
         .then(() => chai.assert.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'err' });
-          chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc).to.have.all.keys('from'); // no changes to the doc
         });
@@ -262,7 +252,7 @@ describe('self_report transition', () => {
 
     it('should throw lineage errors', () => {
       const doc = { from: '654987' };
-      db.medic.query.resolves({ rows: [{ id: 'the_contact' }] });
+      getContactUuidsPage.resolves({ data: ['the_contact'], cursor: null });
       getContactWithLineage.rejects({ other: 'err' });
 
       return transition
@@ -270,8 +260,7 @@ describe('self_report transition', () => {
         .then(() => chai.assert.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ other: 'err' });
-          chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+          chai.expect(getContactUuidsPage.callCount).to.equal(1);
           chai.expect(getContactWithLineage.callCount).to.equal(1);
           chai.expect(doc).to.have.all.keys('from'); // no changes to the doc
         });
@@ -295,17 +284,13 @@ describe('self_report transition', () => {
         patient_id: 'stan'
       };
 
-      db.medic.query.resolves({ rows: [{ id: 'contact_uuid' }] });
+      getContactUuidsPage.resolves({ data: ['contact_uuid'], cursor: null });
       getContactWithLineage.resolves(patient);
 
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { key: '111222333' }
-        ]);
-        chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getContactUuidsPage.callCount).to.equal(1);
+        chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('111222333'), null, 1]);
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact_uuid')]);
         chai.expect(doc).to.deep.equal({
@@ -333,14 +318,13 @@ describe('self_report transition', () => {
         patient_id: 'stan'
       };
 
-      db.medic.query.resolves({ rows: [{ id: 'contact1' }, { id: 'contact2' }] });
+      getContactUuidsPage.resolves({ data: ['contact1', 'contact2'], cursor: null });
       getContactWithLineage.resolves(patient);
 
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-client/contacts_by_phone', { key: '98765' } ]);
-        chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getContactUuidsPage.callCount).to.equal(1);
+        chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('98765'), null, 1]);
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('contact1')]);
         chai.expect(doc).to.deep.equal({
@@ -390,17 +374,13 @@ describe('self_report transition', () => {
         patient_id: 'martin_id'
       };
 
-      db.medic.query.resolves({ rows: [{ id: 'the_contact' }] });
+      getContactUuidsPage.resolves({ data: ['the_contact'], cursor: null });
       getContactWithLineage.resolves(patient);
 
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { key: '999999' }
-        ]);
-        chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+        chai.expect(getContactUuidsPage.callCount).to.equal(1);
+        chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('999999'), null, 1]);
         chai.expect(getContactWithLineage.callCount).to.equal(1);
         chai.expect(getContactWithLineage.args[0]).to.deep.equal([Qualifier.byUuid('the_contact')]);
         chai.expect(doc).to.have.all.keys('from', 'patient', 'fields', 'tasks', 'form', 'locale');
@@ -411,7 +391,7 @@ describe('self_report transition', () => {
       });
     });
 
-    it('should add task if a message is configured and sender not found', () => {
+    it('should add task if a message is configured and sender not found (locale)', () => {
       config.get.returns([ {
         form: 'the_form',
         messages: [
@@ -435,14 +415,13 @@ describe('self_report transition', () => {
         sw: { the_message: 'not english', other_message: 'msg' },
       });
 
-      db.medic.query.resolves({rows: []});
+      getContactUuidsPage.resolves({ data: [], cursor: null });
       const doc = { from: '12345', form: 'the_form', sms_message: { locale: 'sw' }};
       return transition.onMatch({doc})
         .then(result => {
           chai.expect(result).to.equal(true);
-          chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(db.medic.query.args[0]).to.deep.equal([ 'medic-client/contacts_by_phone', { key: '12345' } ]);
-          chai.expect(dataContext.bind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
+          chai.expect(getContactUuidsPage.callCount).to.equal(1);
+          chai.expect(getContactUuidsPage.args[0]).to.deep.equal([Qualifier.byPhone('12345'), null, 1]);
           chai.expect(getContactWithLineage.callCount).to.equal(0);
           chai.expect(doc.tasks.length).to.equal(1);
           chai.expect(doc.tasks[0].messages[0]).to.include({ to: '12345', message: 'not english' });
@@ -450,4 +429,3 @@ describe('self_report transition', () => {
     });
   });
 });
-

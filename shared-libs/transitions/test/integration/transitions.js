@@ -6,7 +6,7 @@ const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
 const dataContext = require('../../src/data-context');
-const { Contact } = require('@medic/cht-datasource');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 chai.use(chaiExclude);
@@ -382,12 +382,18 @@ describe('functional transitions', () => {
 
   describe('processDocs', () => {
     let getContactWithLineage;
+    let getContactUuidsPage;
+    let getContact;
 
     beforeEach(() => {
       getContactWithLineage = sinon.stub();
-      dataContext.init({
-        bind: sinon.stub().withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage),
-      });
+      getContactUuidsPage = sinon.stub();
+      getContact = sinon.stub();
+      const bind = sinon.stub();
+      bind.withArgs(Contact.v1.getWithLineage).returns(getContactWithLineage);
+      bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+      bind.withArgs(Contact.v1.get).returns(getContact);
+      dataContext.init({ bind });
     });
 
     it('should run all async transitions over docs and save all docs', () => {
@@ -524,19 +530,21 @@ describe('functional transitions', () => {
 
       sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
 
+      // update_clinics & update_sent_by both look up contacts by phone via cht-datasource
+      getContactUuidsPage
+        .withArgs(Qualifier.byPhone('phone1'), null, 1)
+        .resolves({ data: ['contact1'], cursor: null });
+      getContactUuidsPage
+        .withArgs(Qualifier.byPhone('phone2'), null, 1)
+        .resolves({ data: [], cursor: null });
+      getContactUuidsPage
+        .withArgs(Qualifier.byPhone('phone3'), null, 1)
+        .resolves({ data: ['contact3'], cursor: null });
+      // update_sent_by hydrates the resulting uuid via Contact.v1.get
+      getContact.withArgs(Qualifier.byUuid('contact1')).resolves(contact1);
+      getContact.withArgs(Qualifier.byUuid('contact3')).resolves(contact3);
+
       sinon.stub(db.medic, 'query')
-      // update_clinics
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: false, limit: 1 })
-        .resolves({ rows: [{ id: 'contact1', key: 'phone1' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: false, limit: 1 })
-        .resolves({ rows: [{ key: 'phone2' }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: false, limit: 1 })
-        .resolves({ rows: [{ id: 'contact3', key: 'phone3' }] })
-        //update_sent_by
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone1', include_docs: true })
-        .resolves({ rows: [{ id: 'contact1', doc: contact1 }] })
-        .withArgs('medic-client/contacts_by_phone', { key: 'phone2', include_docs: true })
-        .resolves({ rows: [{ key: 'phone2' }] })
         .withArgs('medic-client/contacts_by_phone', { key: 'phone3', include_docs: true })
         .resolves({ rows: [{ id: 'contact3', doc: contact3 }] });
 

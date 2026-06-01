@@ -342,6 +342,9 @@ describe('CHT Script API - getDatasource', () => {
             'getUuidsByFreetext',
             'getUuidsPageByType',
             'getUuidsByType',
+            'getUuidsByPhone',
+            'collectUuidsByPhone',
+            'collectUuidsByPhones',
           ]
         );
       });
@@ -548,6 +551,74 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(freetextQualifier)).to.be.true;
         expect(byFreetext.calledOnceWithExactly(freetext)).to.be.true;
+      });
+
+      it('getUuidsByPhone', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetIds);
+        const phone = '+15551234567';
+        const phoneQualifier = { phone };
+        const byPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneQualifier);
+
+        const res = contact.getUuidsByPhone(phone);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(phoneQualifier)).to.be.true;
+        expect(byPhone.calledOnceWithExactly(phone)).to.be.true;
+      });
+
+      it('collectUuidsByPhone collects all matching uuids into an array', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const phone = '+15551234567';
+        const phoneQualifier = { phone };
+        const byPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneQualifier);
+
+        const res = await contact.collectUuidsByPhone(phone);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(phoneQualifier)).to.be.true;
+        expect(byPhone.calledOnceWithExactly(phone)).to.be.true;
+      });
+
+      it('collectUuidsByPhone returns empty array when no matches', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator([]));
+        dataContextBind.returns(contactGetIds);
+        sinon.stub(Qualifier, 'byPhone').returns({ phone: '+15551234567' });
+
+        const res = await contact.collectUuidsByPhone('+15551234567');
+
+        expect(res).to.deep.equal([]);
+      });
+
+      it('collectUuidsByPhones collects matching uuids across all input phones', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const phones: [string, ...string[]] = ['+1', '+2', '+3'];
+        const phonesQualifier = { phones };
+        const byPhones = sinon.stub(Qualifier, 'byPhones').returns(phonesQualifier);
+
+        const res = await contact.collectUuidsByPhones(phones);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(phonesQualifier)).to.be.true;
+        expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
+      });
+
+      it('collectUuidsByPhones returns empty array when no matches across all phones', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator([]));
+        dataContextBind.returns(contactGetIds);
+        const phones: [string, ...string[]] = ['+1', '+2'];
+        sinon.stub(Qualifier, 'byPhones').returns({ phones });
+
+        const res = await contact.collectUuidsByPhones(phones);
+
+        expect(res).to.deep.equal([]);
       });
     });
 

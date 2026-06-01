@@ -11,6 +11,8 @@ describe('MessageQueue service', function() {
   let query;
   let translate;
   let clock;
+  let collectUuidsByPhones;
+  let DataContext;
 
   beforeEach(() => {
     Settings = sinon.stub();
@@ -34,6 +36,9 @@ describe('MessageQueue service', function() {
         fillParentsInDocs: sinon.stub()
       }
     };
+    collectUuidsByPhones = sinon.stub().resolves([]);
+    const datasource = { v1: { contact: { collectUuidsByPhones } } };
+    DataContext = Promise.resolve({ getDatasource: () => datasource });
 
 
     module('adminApp');
@@ -43,6 +48,7 @@ describe('MessageQueue service', function() {
       $provide.value('Settings', Settings);
       $provide.value('Languages', Languages);
       $provide.value('MessageQueueUtils', utils);
+      $provide.value('DataContext', DataContext);
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
     });
 
@@ -285,9 +291,7 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
-      query.withArgs('medic-client/contacts_by_phone').resolves({
-        rows: [{ id: 'contact1', value: 'contact1', key: 'phone1' }]
-      });
+      collectUuidsByPhones.withArgs(['phone1', 'phone2']).resolves(['contact1']);
 
       query.withArgs('medic/doc_summaries_by_id').resolves({
         rows: [{ id: 'contact1', value: { name: 'James', phone: 'phone1' } }]
@@ -303,14 +307,11 @@ describe('MessageQueue service', function() {
 
       return service.query('due').then(result => {
         chai.expect(result.total).to.equal(2);
-        chai.expect(query.callCount).to.equal(4);
+        chai.expect(query.callCount).to.equal(3);
+
+        chai.expect(collectUuidsByPhones.calledOnceWithExactly(['phone1', 'phone2'])).to.be.true;
 
         chai.expect(query.args[2]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { keys: ['phone1', 'phone2'] }
-        ]);
-
-        chai.expect(query.args[3]).to.deep.equal([
           'medic/doc_summaries_by_id',
           { keys: ['contact1'] }
         ]);
@@ -408,9 +409,7 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
-      query
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({ rows: [ { value: 'contact1', key: 'phone1' }, { value: 'contact2', key: 'phone2' } ] });
+      collectUuidsByPhones.withArgs(['phone1', 'phone2']).resolves(['contact1', 'contact2']);
 
       query
         .withArgs('medic/doc_summaries_by_id')
@@ -422,10 +421,8 @@ describe('MessageQueue service', function() {
         });
 
       return service.query('due').then(result => {
-        chai.expect(query.callCount).to.equal(4);
-        chai.expect(query.args[2]).to.deep.equal([
-          'medic-client/contacts_by_phone', { keys: [ 'phone1', 'phone2' ]}
-        ]);
+        chai.expect(query.callCount).to.equal(3);
+        chai.expect(collectUuidsByPhones.calledOnceWithExactly(['phone1', 'phone2'])).to.be.true;
 
         chai.expect(result.messages[0].recipient).to.equal('contact one');
         chai.expect(result.messages[1].recipient).to.equal('contact one');
@@ -587,16 +584,14 @@ describe('MessageQueue service', function() {
         to: recipient
       }]));
 
-      query
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({ rows: [{ key: 'recipient_id', value: 'recipient' }]});
+      collectUuidsByPhones.withArgs(['recipient']).resolves(['recipient_id']);
       query
         .withArgs('medic/doc_summaries_by_id')
         .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient' }}]});
 
       return service.query('tab').then(result => {
         chai.expect(result.messages.length).to.equal(15);
-        chai.expect(query.callCount).to.equal(6);
+        chai.expect(query.callCount).to.equal(5);
         chai.expect(query.args[2]).to.deep.equal([
           'medic-client/contacts_by_reference',
           {
@@ -620,10 +615,7 @@ describe('MessageQueue service', function() {
           [ 'patient1', 'patient2', 'patient3', 'place1', 'place2', 'place3' ],
         ]);
 
-        chai.expect(query.args[4]).to.deep.equal([
-          'medic-client/contacts_by_phone',
-          { keys: [ 'recipient' ]}
-        ]);
+        chai.expect(collectUuidsByPhones.calledOnceWithExactly(['recipient'])).to.be.true;
       });
     });
 
@@ -754,13 +746,9 @@ describe('MessageQueue service', function() {
         .withArgs(sinon.match({ type: 'valid' })).returns(true)
         .withArgs(sinon.match({ type: 'invalid' })).returns(false);
 
-      query
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({ rows: [
-          { key: 'recipient1', id: 'recipient1_id' },
-          { key: 'recipient2', id: 'recipient2_id' },
-          { key: 'recipient3', id: 'recipient3_id' }
-        ]});
+      collectUuidsByPhones
+        .withArgs(['recipient1', 'recipient2', 'recipient3'])
+        .resolves(['recipient1_id', 'recipient2_id', 'recipient3_id']);
       query
         .withArgs('medic/doc_summaries_by_id')
         .resolves({ rows: [
@@ -931,10 +919,9 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(query.withArgs('medic-client/contacts_by_phone').callCount).to.equal(1);
-        chai.expect(query.withArgs('medic-client/contacts_by_phone').args[0][1]).to.deep.equal({
-          keys: ['recipient1', 'recipient2', 'recipient3']
-        });
+        chai.expect(collectUuidsByPhones.calledOnceWithExactly([
+          'recipient1', 'recipient2', 'recipient3'
+        ])).to.be.true;
 
         chai.expect(result.messages).to.deep.equal([
           {
@@ -1076,9 +1063,7 @@ describe('MessageQueue service', function() {
         .withArgs(sinon.match({ type: 'valid' })).returns(true)
         .withArgs(sinon.match({ type: 'invalid' })).returns(false);
 
-      query
-        .withArgs('medic-client/contacts_by_phone')
-        .resolves({ rows: [{ key: 'recipient1', id: 'recipien_id' }]});
+      collectUuidsByPhones.withArgs(['recipient1']).resolves(['recipient_id']);
       query
         .withArgs('medic/doc_summaries_by_id')
         .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient1', name: 'recipient' }}]});

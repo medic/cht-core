@@ -128,6 +128,20 @@ export const queryDocIdsByKey = (
 ): Promise<string[]> => queryDocIds(db, view, { include_docs: false, reduce: false, key, limit, skip });
 
 /**
+ * Bulk variant of {@link queryDocIdsByKey}. Returns IDs of all docs whose emitted view key is in the
+ * provided list — one CouchDB round trip regardless of how many keys are passed.
+ * @internal
+ */
+export const queryDocIdsByKeys = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  keys: unknown[],
+  limit: number,
+  skip: number
+): Promise<string[]> => queryDocIds(db, view, { include_docs: false, reduce: false, keys, limit, skip });
+
+/**
  * Resolves a page containing an array of T using the getFunction to retrieve documents from the database
  * and the filterFunction to validate the returned documents are all type T.
  * The length of the page's data array is guaranteed to equal limit unless there is no more data to retrieve

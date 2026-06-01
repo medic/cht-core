@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const validation = require('../src/validation');
 const logger = require('@medic/logger');
-const { Qualifier, Report } = require('@medic/cht-datasource');
+const { Contact, Qualifier, Report } = require('@medic/cht-datasource');
 
 moment.suppressDeprecationWarnings = true;
 
@@ -35,6 +35,7 @@ describe('validations', () => {
 
     reportGetUuids = sinon.stub();
     dataContext.bind.returns(reportGetUuids);
+    dataContext.bind.withArgs(Contact.v1.getUuidsPage).returns(sinon.stub().resolves({ data: [], cursor: null }));
     qualifier = sinon.stub(Qualifier, 'byFreetext');
 
     validation.init({ db, config, translate, dataContext });
@@ -304,14 +305,8 @@ describe('validations', () => {
   });
 
   it('unique phone validation should fail if db query for phone returns doc', () => {
-    sinon.stub(db.medic, 'query').resolves({
-      rows: [
-        {
-          id: 'original',
-          phone: '+9779841111111'
-        }
-      ]
-    });
+    dataContext.bind.withArgs(Contact.v1.getUuidsPage)
+      .returns(sinon.stub().resolves({ data: ['original'], cursor: null }));
     const validations = [
       {
         property: 'phone_number',
@@ -326,7 +321,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'duplicate',
-      xyz: '+9779841111111',
+      phone_number: '+9779841111111',
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 1);
@@ -459,7 +454,7 @@ describe('validations', () => {
   });
 
   it('unique phone validation should pass if db query for phone does not return any doc', () => {
-    sinon.stub(db.medic, 'query').resolves({ undefined });
+    // default beforeEach stub resolves to empty data
     const validations = [
       {
         property: 'phone_number',
@@ -474,7 +469,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'unique',
-      xyz: '+9779841111111',
+      phone_number: '+9779841111111',
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
