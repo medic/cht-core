@@ -278,7 +278,12 @@ export const byContactIds = (contactIds: [string, ...string[]]): ContactIdsQuali
 };
 
 // https://stackoverflow.com/a/50375286
-type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+/**
+ * The intersection of the specified types.
+ */
+export type UnionToIntersection<U> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void ? I : never;
 
 /**
  * Combines multiple qualifiers into a single object.

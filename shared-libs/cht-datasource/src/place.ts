@@ -1,7 +1,7 @@
 import * as Contact from './contact';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
-import { ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { byContactType, byUuid, ContactTypeQualifier, UuidQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import * as Local from './local';
@@ -184,5 +184,102 @@ export namespace v1 {
       return fn(updated);
     };
     return curriedFn;
+  };
+
+  /**
+   * Operations for working with places.
+   */
+  export interface Datasource {
+    /**
+     * Returns a place by its UUID.
+     * @param uuid the UUID of the place to retrieve
+     * @returns the place or `null` if no place is found for the UUID
+     * @throws InvalidArgumentError if no UUID is provided
+     */
+    getByUuid: (uuid: string) => Promise<Nullable<v1.Place>>;
+
+    /**
+     * Returns a place by its UUID along with the place's parent lineage.
+     * @param uuid the UUID of the place to retrieve
+     * @returns the place or `null` if no place is found for the UUID
+     * @throws InvalidArgumentError if no UUID is provided
+     */
+    getByUuidWithLineage: (uuid: string) => Promise<Nullable<v1.PlaceWithLineage>>;
+
+    /**
+     * Returns an array of places for the provided page specifications.
+     * @param placeType the type of place to return
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of place to return. Default is 100.
+     * @returns a page of places for the provided specifications
+     * @throws InvalidArgumentError if no type is provided or if the type is not a supported place contact type
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     * @see {@link getByType} which provides the same data, but without having to manually account for paging
+     */
+    getPageByType: (
+      placeType: string,
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Place>>;
+
+    /**
+     * Returns a generator for fetching all places with the given type.
+     * @param placeType the type of place to return
+     * @returns a generator for fetching all places with the given type
+     * @throws InvalidArgumentError if no type if provided or if the type is not a supported place contact type
+     */
+    getByType: (placeType: string) => AsyncGenerator<v1.Place, null>;
+
+    /**
+     * Creates a new place record.
+     * @param input input fields for creating a place
+     * @returns the created place record
+     * @throws InvalidArgumentError if `type` is not provided or is not a supported place contact type
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if `parent` is not provided for types requiring a parent or is not the
+     * identifier of a valid contact. The parent contact's type must be one of the supported parent contact
+     * types for the new place.
+     * @throws InvalidArgumentError if the provided `reported_date` is not in a valid format. Valid formats are
+     * 'YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss.SSSZ', or <unix epoch>.
+     * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact
+     */
+    create: (input: Input.v1.PlaceInput) => Promise<v1.Place>;
+
+    /**
+     * Updates an existing place to have the provided data.
+     * @param updated the updated place data. The complete data for the place must be provided. Existing fields not
+     * included in the updated data will be removed from the place. If the provided parent/contact lineage is
+     * hydrated (e.g. for a {@link v1.PlaceWithLineage}), the lineage will be properly dehydrated before being
+     * stored.
+     * @returns the updated place with the new `_rev` value
+     * @throws InvalidArgumentError if `_id` is not provided
+     * @throws ResourceNotFoundError if `_id does not identify an existing place contact
+     * @throws InvalidArgumentError if `_rev` is not provided or does not match the place's current `_rev` value
+     * @throws InvalidArgumentError if `name` is not provided
+     * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact
+     * @throws InvalidArgumentError if any of the following read-only properties are changed: `reported_date`,
+     * `parent`, `type`, `contact_type`
+     */
+    update: <T extends v1.Place | v1.PlaceWithLineage>(
+      updated: Input.v1.UpdatePlaceInput<T>
+    ) => Promise<T>;
+  }
+
+  /** @internal */
+  export const getDatasource = (ctx: DataContext): Datasource => {
+    return {
+      getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
+      getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
+      getPageByType: (
+        placeType,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byContactType(placeType), cursor, limit),
+      getByType: (placeType) => ctx.bind(v1.getAll)(byContactType(placeType)),
+      create: (input) => ctx.bind(v1.create)(input),
+      update: (updated) => ctx.bind(v1.update)(updated),
+    };
   };
 }

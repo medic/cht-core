@@ -18,6 +18,10 @@ const TYPE_SOURCES = [
   'target.ts',
   'input.ts',
 ].map(file => path.join(DATASOURCE_DIR, file));
+const SCHEMAS_TO_SKIP = {
+  '*': undefined,
+  'v1.Datasource': undefined, // Imperative interface not referenced for REST apis
+};
 
 const TSJ_OPTIONS = {
   tsconfig: TSCONFIG,
@@ -136,7 +140,7 @@ const generateTsSchemas = () => {
     .map(path => ({ ...TSJ_OPTIONS, path }))
     .map(opts => tsj.createGenerator(opts))
     .map(generator => generator.createSchema())
-    .map(({ definitions }) => ({ ...definitions, '*': undefined }))
+    .map(({ definitions }) => ({ ...definitions, ...SCHEMAS_TO_SKIP  }))
     .forEach((definitions) => Object.assign(schemas, definitions));
   return transformSchema(schemas);
 };
