@@ -747,7 +747,7 @@ const assignCsvCellValue = (data, attribute, value) => {
 
   if (['TRUE', 'FALSE'].includes(data[attribute])) {
     // converts the "TRUE" or "FALSE" string to boolean
-    data[attribute] = eval(data[attribute].toLowerCase());
+    data[attribute] = data[attribute] === 'TRUE';
   }
 };
 
