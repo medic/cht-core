@@ -250,7 +250,7 @@ describe('accept_case_reports', () => {
       });
     });
 
-    it('adds place id from registration', () => {
+    it('adds place id from registration and returns truthy', () => {
       config.get.returns([{
         form: 'x',
         messages: [{
@@ -274,7 +274,8 @@ describe('accept_case_reports', () => {
         }
       };
 
-      return transition.onMatch({ doc }).then(() => {
+      return transition.onMatch({ doc }).then(changed => {
+        changed.should.equal(true);
         doc.fields.place_uuid.should.equal('abc');
         doc.tasks.length.should.equal(1);
         doc.tasks[0].messages.length.should.equal(1);
