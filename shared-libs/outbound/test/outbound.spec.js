@@ -464,6 +464,38 @@ describe('outbound shared library', () => {
         });
     });
 
+    it('should log debug request/response and mask auth password', () => {
+      const payload = {
+        some: 'data'
+      };
+
+      const conf = {
+        destination: {
+          auth: {
+            type: 'Basic',
+            username: 'admin',
+            password_key: 'test-config'
+          },
+          base_url: 'http://test',
+          path: '/foo'
+        }
+      };
+
+      sinon.stub(secureSettings, 'getCredentials').resolves('pass');
+      sinon.stub(request, 'post').resolves({ ok: true });
+      sinon.stub(logger, 'isDebugEnabled').returns(true);
+      sinon.stub(logger, 'debug');
+
+      return outbound.__get__('sendPayload')(payload, conf)
+        .then(() => {
+          assert.equal(logger.debug.callCount, 4);
+          assert.equal(logger.debug.args[0][0], 'About to send outbound request');
+          assert.include(logger.debug.args[1][0], '"password": "*****"');
+          assert.equal(logger.debug.args[2][0], 'result from outbound request');
+          assert.equal(logger.debug.args[3][0], JSON.stringify({ ok: true }, null, 2));
+        });
+    });
+
     it('should error if Muso SIH custom auth fails to return a 200', () => {
       const payload = {
         some: 'data'

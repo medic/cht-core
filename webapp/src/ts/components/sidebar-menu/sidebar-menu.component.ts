@@ -16,6 +16,7 @@ import { LocationService } from '@mm-services/location.service';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
+import { SessionCacheService } from '@mm-services/session-cache.service';
 
 import { filter } from 'rxjs/operators';
 import { Selectors } from '@mm-selectors/index';
@@ -41,7 +42,7 @@ import { Selectors } from '@mm-selectors/index';
 export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, OnDestroy {
   @Input() canLogOut: boolean = false;
   @ViewChild('sidebar') sidebar!: MatSidenav;
-  private globalActions: GlobalActions;
+  private readonly globalActions: GlobalActions;
   replicationStatus;
   moduleOptions: MenuOption[] = [];
   secondaryOptions: MenuOption[] = [];
@@ -52,7 +53,8 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
     protected locationService: LocationService,
     protected dbSyncService: DBSyncService,
     protected modalService: ModalService,
-    private router: Router,
+    private readonly router: Router,
+    private readonly sessionCacheService: SessionCacheService,
     protected readonly storageInfoService: StorageInfoService,
   ) {
     super(store, dbSyncService, modalService, storageInfoService);
@@ -81,6 +83,13 @@ export class SidebarMenuComponent extends BaseMenuComponent implements OnInit, O
       return;
     }
     super.replicate();
+  }
+
+  switchUser(): void {
+    this.sessionCacheService
+      .switchUser()
+      .then(() => this.close())
+      .catch(err => console.error('Failed to switch user', err));
   }
 
   private subscribeToRouter() {

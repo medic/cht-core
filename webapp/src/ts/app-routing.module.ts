@@ -13,8 +13,10 @@ import { routes as privacyPolicyRoutes } from '@mm-modules/privacy-policy/privac
 import { routes as tasksRoutes } from '@mm-modules/tasks/tasks.routes';
 import { routes as trainingRoutes } from '@mm-modules/trainings/trainings.routes';
 import { routes as testingRoutes } from '@mm-modules/testing/testing.routes';
+import { AccountSelectorComponent } from '@mm-components/account-selector/account-selector.component';
 
 const routes: Routes = [
+  { path: 'switch-user', component: AccountSelectorComponent },
   ...homeRoutes,
   ...aboutRoutes,
   ...confUserRoutes,

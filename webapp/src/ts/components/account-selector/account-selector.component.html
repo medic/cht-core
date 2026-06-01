@@ -1,0 +1,27 @@
+<div class="inner">
+  <div class="col-sm-12 page">
+    <h2>Switch user</h2>
+
+    <div *ngIf="accounts.length; else noAccounts">
+      <p>Select a cached account:</p>
+      <div class="list-group">
+        <button
+          *ngFor="let account of accounts"
+          type="button"
+          class="list-group-item list-group-item-action account-option"
+          (click)="selectAccount(account.username)"
+        >
+          {{ account.username }}
+        </button>
+      </div>
+    </div>
+
+    <ng-template #noAccounts>
+      <p>No cached accounts found. Add an account while online.</p>
+    </ng-template>
+
+    <button type="button" class="btn btn-primary add-account" (click)="addAccount()">
+      Add account
+    </button>
+  </div>
+</div>

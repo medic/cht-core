@@ -18,6 +18,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+import { SessionCacheService } from '@mm-services/session-cache.service';
 
 describe('SidebarMenuComponent', () => {
   let component: SidebarMenuComponent;
@@ -26,12 +27,16 @@ describe('SidebarMenuComponent', () => {
   let dbSyncService;
   let modalService;
   let authService;
+  let sessionCacheService: {
+    switchUser: sinon.SinonStub;
+  };
 
   beforeEach(async () => {
     locationService = { adminPath: '/admin/' };
     dbSyncService = { sync: sinon.stub() };
     modalService = { show: sinon.stub() };
     authService = { has: sinon.stub(), online: sinon.stub() };
+    sessionCacheService = { switchUser: sinon.stub().resolves() };
 
     await TestBed
       .configureTestingModule({
@@ -51,6 +56,7 @@ describe('SidebarMenuComponent', () => {
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: ModalService, useValue: modalService },
           { provide: AuthService, useValue: authService },
+          { provide: SessionCacheService, useValue: sessionCacheService },
         ],
       })
       .compileComponents();
@@ -181,5 +187,15 @@ describe('SidebarMenuComponent', () => {
 
     expect(modalService.show.calledOnce).to.be.true;
     expect(modalService.show.args[0][0]).to.deep.equal(FeedbackComponent);
+  });
+
+  it('should switch user', async () => {
+    const closeStub = sinon.stub(component, 'close');
+
+    component.switchUser();
+    await fixture.whenStable();
+
+    expect(sessionCacheService.switchUser.calledOnce).to.be.true;
+    expect(closeStub.calledOnce).to.be.true;
   });
 });
