@@ -17,6 +17,7 @@ import {
   isIdentifiable,
   isNonEmptyArray,
   isNormalizedParent,
+  isNotNull,
   isRecord,
   isString,
   NonEmptyArray,
@@ -46,6 +47,23 @@ describe('core lib', () => {
     ] as NonEmptyArray<number | string>[]).forEach(value => {
       it(`returns the last element of ${JSON.stringify(value)}`, () => {
         expect(getLastElement(value)).to.equal(value[value.length - 1]);
+      });
+    });
+  });
+
+  describe('isNotNull', () => {
+    ([
+      [null, false],
+      [undefined, false],
+      ['value', true],
+      [0, true],
+      ['', true],
+      [false, true],
+      [{}, true],
+      [[] as unknown[], true],
+    ] as [unknown, boolean][]).forEach(([value, expected]) => {
+      it(`evaluates ${JSON.stringify(value)}`, () => {
+        expect(isNotNull(value)).to.equal(expected);
       });
     });
   });
