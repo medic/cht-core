@@ -1,0 +1,15 @@
+<mm-tool-bar [title]="extensionTitle | translate" [accentColor]="accentColor" [class]="extensionType"/>
+
+<div class="inner">
+  <div class="inbox col-sm-12 page">
+
+    <div class="empty-selection" *ngIf="loading">
+      <div><div class="loader"></div></div>
+    </div>
+
+    <error-log *ngIf="!!errorStack && !loading" [errorStack]="errorStack" [errorFor]="'ui-extension'"></error-log>
+
+    <div id="ui-element-tab" #uiElementTab [hidden]="loading || !!errorStack"></div>
+
+  </div>
+</div>

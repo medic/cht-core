@@ -11,7 +11,7 @@ import { ContactsContentComponent } from '@mm-modules/contacts/contacts-content.
 import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '@mm-selectors/index';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -127,7 +127,7 @@ describe('Contacts content component', () => {
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: Router, useValue: router },
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
-          { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
+          { provide: CustomResourceService, useValue: { getImg: sinon.stub() } },
           { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
           { provide: ChangesService, useValue: changesService },
           { provide: ChangesService, useValue: changesService },

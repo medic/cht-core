@@ -12,7 +12,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
@@ -125,7 +125,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private setLanguageService:SetLanguageService,
     private sessionService:SessionService,
     private authService:AuthService,
-    private resourceIconsService:ResourceIconsService,
+    private readonly customResourceService:CustomResourceService,
     private changesService:ChangesService,
     private updateServiceWorker:UpdateServiceWorkerService,
     private locationService:LocationService,
@@ -580,7 +580,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private setAppTitle() {
-    this.resourceIconsService
+    this.customResourceService
       .getAppTitle()
       .then(title => {
         document.title = title;

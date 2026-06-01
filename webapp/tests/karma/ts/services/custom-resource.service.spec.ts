@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { DOC_IDS } from '@medic/constants';
 
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 
@@ -12,7 +12,7 @@ describe('ResourceIcons service', () => {
   let Changes;
 
   const getService = () => {
-    return TestBed.inject(ResourceIconsService);
+    return TestBed.inject(CustomResourceService);
   };
 
   beforeEach(() => {
@@ -475,5 +475,57 @@ describe('ResourceIcons service', () => {
 
       return Promise.all(promises);
     });
+  });
+
+  describe('getResource', () => {
+    it('should return resource attachment data', fakeAsync(() => {
+      const resources = {
+        resources: {
+          icon: 'icon.png',
+          logo: 'logo.svg'
+        },
+        _attachments: {
+          'icon.png': {
+            content_type: 'image/png',
+            data: 'base64data'
+          },
+          'logo.svg': {
+            content_type: 'image/svg+xml',
+            data: 'svgdata'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      const result = service.getResource('icon');
+
+      expect(result).to.deep.equal({
+        content_type: 'image/png',
+        data: 'base64data'
+      });
+    }));
+
+    it('should return null when resource does not exist', fakeAsync(() => {
+      const resources = {
+        resources: {
+          icon: 'icon.png'
+        },
+        _attachments: {
+          'icon.png': {
+            content_type: 'image/png',
+            data: 'base64data'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      const result = service.getResource('nonexistent');
+
+      expect(result).to.be.null;
+    }));
   });
 });

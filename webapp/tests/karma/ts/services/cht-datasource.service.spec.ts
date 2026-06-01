@@ -9,6 +9,8 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 
 describe('CHTScriptApiService service', () => {
   let service: CHTDatasourceService;
@@ -17,6 +19,8 @@ describe('CHTScriptApiService service', () => {
   let changesService;
   let dbService;
   let http;
+  let translateService;
+  let customResourceService;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
@@ -24,6 +28,8 @@ describe('CHTScriptApiService service', () => {
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     dbService = { get: sinon.stub().resolves({}) };
     http = { get: sinon.stub().returns(of([])) };
+    translateService = { instant: sinon.stub() };
+    customResourceService = { getResource: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -32,6 +38,8 @@ describe('CHTScriptApiService service', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: DbService, useValue: dbService },
         { provide: HttpClient, useValue: http },
+        { provide: TranslateService, useValue: translateService },
+        { provide: CustomResourceService, useValue: customResourceService },
       ]
     });
 
@@ -89,12 +97,16 @@ describe('CHTScriptApiService service', () => {
         'hasPermissions',
         'hasAnyPermission',
         'getExtensionLib',
+        'translate',
+        'getResource',
         'person',
         'analytics'
       ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
+      expect(result.v1.translate).to.be.a('function');
+      expect(result.v1.getResource).to.be.a('function');
       expect(result.v1.person).to.be.a('object');
       expect(result.v1.analytics).to.be.a('object');
     });
@@ -282,6 +294,55 @@ describe('CHTScriptApiService service', () => {
       expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
       expect(dbService.get.notCalled).to.be.true;
+    });
+  });
+
+  describe('v1.translate()', () => {
+    it('should call TranslateService.instant with key', async () => {
+      translateService.instant.returns('Translated Text');
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.translate('some.key');
+
+      expect(result).to.equal('Translated Text');
+      expect(translateService.instant.calledOnceWithExactly('some.key', undefined)).to.be.true;
+    });
+
+    it('should call TranslateService.instant with key and params', async () => {
+      translateService.instant.returns('Hello John');
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.translate('greeting', { name: 'John' });
+
+      expect(result).to.equal('Hello John');
+      expect(translateService.instant.calledOnceWithExactly('greeting', { name: 'John' })).to.be.true;
+    });
+  });
+
+  describe('v1.getResource()', () => {
+    it('should call CustomResourceService.getResource', async () => {
+      const resourceData = { content_type: 'image/png', data: 'base64data' };
+      customResourceService.getResource.returns(resourceData);
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.getResource('icon');
+
+      expect(result).to.deep.equal(resourceData);
+      expect(customResourceService.getResource.calledOnceWithExactly('icon')).to.be.true;
+    });
+
+    it('should return null when resource does not exist', async () => {
+      customResourceService.getResource.returns(null);
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.getResource('nonexistent');
+
+      expect(result).to.be.null;
+      expect(customResourceService.getResource.calledOnceWithExactly('nonexistent')).to.be.true;
     });
   });
 

@@ -7,6 +7,8 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 
 import { lastValueFrom } from 'rxjs';
 
@@ -25,7 +27,9 @@ export class CHTDatasourceService {
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private changesService: ChangesService,
-    private dbService: DbService
+    private readonly dbService: DbService,
+    private readonly translateService: TranslateService,
+    private readonly customResourceService: CustomResourceService
   ) { }
 
   isInitialized() {
@@ -145,6 +149,12 @@ export class CHTDatasourceService {
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];
+        },
+        translate: (key: string, interpolateParams?: Record<string, unknown>) => {
+          return this.translateService.instant(key, interpolateParams);
+        },
+        getResource: (name: string) => {
+          return this.customResourceService.getResource(name);
         },
         analytics: {
           getTargetDocs: () => ([]),

@@ -12,6 +12,8 @@ import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { DbService } from '@mm-services/db.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 
 describe('Auth Service', () => {
   let service:AuthService;
@@ -34,6 +36,8 @@ describe('Auth Service', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: DbService, useValue: { get: sinon.stub().resolves({}) } },
         { provide: HttpClient, useValue: http },
+        { provide: TranslateService, useValue: { instant: sinon.stub().returns('translated') } },
+        { provide: CustomResourceService, useValue: { getResource: sinon.stub().returns(null) } },
       ]
     });
 
