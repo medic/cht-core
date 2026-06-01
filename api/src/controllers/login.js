@@ -135,7 +135,7 @@ const sanitizeRequestedRedirect = (requested) => {
     return;
   }
   const parsed = new URL(resolved, 'resolve://');
-  const path = parsed.pathname + (parsed.hash || '');
+  const path = parsed.pathname + (parsed.search || '') + (parsed.hash || '');
   if (hasDoubleSlash(path)) {
     // double slash can be abused to redirect to another host
     // https://github.com/medic/cht-core/issues/9122

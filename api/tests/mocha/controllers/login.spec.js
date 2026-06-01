@@ -132,6 +132,9 @@ describe('login controller', () => {
       '/lg/_design/medic/_rewrite#fragment',
       '/lg/_design/medic/_rewrite#path/fragment',
       '/lg/_design/medic/_rewrite/long/path',
+      '/reports?search=malaria&sort=date',
+      '/contacts?type=person&facility=abc123',
+      '/reports?search=malaria&sort=date#selected',
     ].forEach(requested => {
       it(`Good URL "${requested}" should redirect unchanged`, () => {
         chai.expect(controller.__get__('getRedirectUrl')({}, requested)).to.equal(requested);
@@ -154,6 +157,14 @@ describe('login controller', () => {
       {
         given: 'http://wrong.com:666/lg/_design/medic/_rewrite/long/path',
         expected: '/lg/_design/medic/_rewrite/long/path'
+      },
+      {
+        given: 'http://test.com:1234/reports?search=malaria&sort=date',
+        expected: '/reports?search=malaria&sort=date'
+      },
+      {
+        given: 'http://test.com:1234/reports?search=malaria#selected',
+        expected: '/reports?search=malaria#selected'
       },
     ].forEach(({ given, expected }) => {
       it(`Absolute URL "${given}" should redirect as a relative url`, () => {
