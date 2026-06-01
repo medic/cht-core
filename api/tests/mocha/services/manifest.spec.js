@@ -9,11 +9,6 @@ const brandingService = require('../../../src/services/branding');
 const service = require('../../../src/services/manifest');
 const baseDir = path.join(__dirname, '..', '..', '..');
 
-const JSON_TEMPLATE = JSON.stringify({
-  name: '{{ branding.name }}',
-  icon: '{{ branding.icon }}'
-});
-
 describe('manifest service', () => {
 
   afterEach(() => {
@@ -29,16 +24,15 @@ describe('manifest service', () => {
     };
 
     const get = sinon.stub(brandingService, 'get').resolves(branding);
-    const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, JSON_TEMPLATE);
     const writeFile = sinon.stub(fs, 'writeFile').callsArgWith(2, null, null);
 
     await service.generate();
     chai.expect(get.callCount).to.equal(1);
-    chai.expect(readFile.callCount).to.equal(1);
-    chai.expect(readFile.args[0][0]).to.equal(baseDir + '/src/templates/manifest.json');
     chai.expect(writeFile.callCount).to.equal(1);
     chai.expect(writeFile.args[0][0]).to.equal(baseDir + '/build/static/webapp/manifest.json');
-    chai.expect(writeFile.args[0][1]).to.equal('{"name":"CHT","icon":"logo.png"}');
+    const manifest = JSON.parse(writeFile.args[0][1]);
+    chai.expect(manifest.name).to.equal('CHT');
+    chai.expect(manifest.icons[0].src).to.equal('/img/logo.png');
   });
 
   it('uses configured branding doc and extracts logo', async () => {
@@ -59,20 +53,35 @@ describe('manifest service', () => {
     };
 
     const get = sinon.stub(brandingService, 'get').resolves(branding);
-    const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, JSON_TEMPLATE);
     const writeFile = sinon.stub(fs, 'writeFile').callsArgWith(2, null, null);
 
     sinon.stub(Buffer, 'from').returns('base64xyz');
 
     await service.generate();
     chai.expect(get.callCount).to.equal(1);
-    chai.expect(readFile.callCount).to.equal(1);
-    chai.expect(readFile.args[0][0]).to.equal(baseDir + '/src/templates/manifest.json');
     chai.expect(writeFile.callCount).to.equal(2);
     chai.expect(writeFile.args[0][0]).to.equal(baseDir + '/build/static/webapp/manifest.json');
-    chai.expect(writeFile.args[0][1]).to.equal('{"name":"CHT","icon":"logo.png"}');
+    const manifest = JSON.parse(writeFile.args[0][1]);
+    chai.expect(manifest.name).to.equal('CHT');
+    chai.expect(manifest.icons[0].src).to.equal('/img/logo.png');
     chai.expect(writeFile.args[1][0]).to.equal(baseDir + '/build/static/webapp/img/logo.png');
     chai.expect(writeFile.args[1][1]).to.equal('base64xyz');
+  });
+
+  it('generates valid JSON when branding name contains special characters', async () => {
+
+    const branding = {
+      name: 'CHT "Community" Health\\Tool',
+      icon: 'icon.png',
+      doc: {}
+    };
+
+    sinon.stub(brandingService, 'get').resolves(branding);
+    const writeFile = sinon.stub(fs, 'writeFile').callsArgWith(2, null, null);
+
+    await service.generate();
+    const manifest = JSON.parse(writeFile.args[0][1]);
+    chai.expect(manifest.name).to.equal('CHT "Community" Health\\Tool');
   });
 
 });
