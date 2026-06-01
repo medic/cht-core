@@ -87,7 +87,7 @@ describe('ServerSidePurge', () => {
       return service.__get__('getRoles')().catch(err => {
         chai.expect(err).to.deep.equal({ some: 'err' });
         chai.expect(db.users.allDocs.callCount).to.equal(1);
-        chai.expect(db.users.allDocs.args[0]).to.deep.equal([{ include_docs: true }]);
+        chai.expect(db.users.allDocs.args[0]).to.deep.equal([{ include_docs: true, limit: 1000 }]);
       });
     });
 
@@ -118,6 +118,42 @@ describe('ServerSidePurge', () => {
         chai.expect(roles[JSON.stringify(['b', 'c'])]).to.deep.equal(['b', 'c']);
         chai.expect(roles[JSON.stringify(['a', 'c'])]).to.deep.equal(['a', 'c']);
         chai.expect(roles[JSON.stringify(['a', 'b', 'c'])]).to.deep.equal(['a', 'b', 'c']);
+      });
+    });
+
+    it('should paginate through users in batches', () => {
+      sinon.stub(roles, 'isOffline').returns(true);
+      sinon.stub(purgingUtils, 'getRoleHash').callsFake(roles => JSON.stringify(roles));
+
+      const batchSize = service.__get__('USERS_BATCH_SIZE');
+      const firstBatch = Array.from({ length: batchSize }, (_, i) => ({
+        id: `user${i}`,
+        doc: { roles: ['a', 'b'], name: `user${i}` },
+      }));
+      const secondBatch = [
+        { id: `user${batchSize}`, doc: { roles: ['c', 'd'], name: `user${batchSize}` }},
+      ];
+
+      db.users.allDocs
+        .onCall(0).resolves({ rows: firstBatch })
+        .onCall(1).resolves({ rows: secondBatch });
+
+      return service.__get__('getRoles')().then(result => {
+        chai.expect(db.users.allDocs.callCount).to.equal(2);
+        chai.expect(db.users.allDocs.args[0]).to.deep.equal([{
+          include_docs: true,
+          limit: batchSize,
+        }]);
+        chai.expect(db.users.allDocs.args[1]).to.deep.equal([{
+          include_docs: true,
+          limit: batchSize,
+          startkey: `user${batchSize - 1}`,
+          skip: 1,
+        }]);
+        chai.expect(Object.keys(result)).to.deep.equal([
+          JSON.stringify(['a', 'b']),
+          JSON.stringify(['c', 'd']),
+        ]);
       });
     });
   });

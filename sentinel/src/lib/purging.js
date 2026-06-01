@@ -62,21 +62,49 @@ const closePurgeDbs = () => {
   });
 };
 
+const USERS_BATCH_SIZE = 1000;
+
+const fetchUsersBatch = async (startKey) => {
+  const opts = {
+    include_docs: true,
+    limit: USERS_BATCH_SIZE,
+  };
+  if (startKey) {
+    opts.startkey = startKey;
+    opts.skip = 1;
+  }
+  return db.users.allDocs(opts);
+};
+
+const getOfflineRoles = (rows) => {
+  const result = [];
+  for (const { doc } of rows) {
+    const userRoles = doc?.roles;
+    if (Array.isArray(userRoles) && userRoles.length && roles.isOffline(userRoles)) {
+      result.push(serverSidePurgeUtils.sortedUniqueRoles(userRoles));
+    }
+  }
+  return result;
+};
+
 const getRoles = async () => {
   const dedupedByRoles = new Map();
   const rolesByHash = {};
 
-  const { rows } = await db.users.allDocs({ include_docs: true });
+  let startKey;
+  let hasMore = true;
 
-  for (const { doc } of rows) {
-    const userRoles = doc?.roles;
+  while (hasMore) {
+    const { rows } = await fetchUsersBatch(startKey);
+    hasMore = rows.length === USERS_BATCH_SIZE;
 
-    if (!Array.isArray(userRoles) || !userRoles.length || !roles.isOffline(userRoles)) {
-      continue;
+    if (rows.length) {
+      startKey = rows[rows.length - 1].id;
     }
 
-    const rolesList = serverSidePurgeUtils.sortedUniqueRoles(userRoles);
-    dedupedByRoles.set(JSON.stringify(rolesList), rolesList);
+    for (const rolesList of getOfflineRoles(rows)) {
+      dedupedByRoles.set(JSON.stringify(rolesList), rolesList);
+    }
   }
 
   for (const rolesList of dedupedByRoles.values()) {
