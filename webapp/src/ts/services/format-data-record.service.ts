@@ -9,6 +9,7 @@ import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
 import * as messages from '@medic/message-utils';
 import * as registrationUtils from '@medic/registration-utils';
+import { USER_BINARY_FILE_PREFIX, USER_FILE_PREFIX } from '@mm-services/enketo.service';
 
 @Injectable({
   providedIn: 'root'
@@ -461,14 +462,13 @@ export class FormatDataRecordService {
       return undefined;
     }
     const isImagePath = filePath => doc._attachments[filePath]?.content_type?.startsWith('image/');
-    const filePath = 'user-file-' + value;
+    const filePath = `${USER_FILE_PREFIX}${value}`;
     if (isImagePath(filePath)) {
       return filePath;
     }
-    // Fall back to the old style of naming image attachments
-    const legacyFilePath = 'user-file/' + label.split('.').slice(1).join('/');
-    if (isImagePath(legacyFilePath)) {
-      return legacyFilePath;
+    const binaryFilePath = `${USER_BINARY_FILE_PREFIX}${label.split('.').slice(1).join('/')}`;
+    if (isImagePath(binaryFilePath)) {
+      return binaryFilePath;
     }
     return undefined;
   }

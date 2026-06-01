@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>New Family With Attachments</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="en">
+          <text id="/data/family_with_attachments/name:label">
+            <value>Family Name</value>
+          </text>
+          <text id="/data/family_with_attachments/photo:label">
+            <value>Family Photo</value>
+          </text>
+          <text id="/data/contact/name:label">
+            <value>Primary Contact Name</value>
+          </text>
+          <text id="/data/contact/photo:label">
+            <value>Primary Contact Photo</value>
+          </text>
+          <text id="/data/repeat:label">
+            <value>Children</value>
+          </text>
+          <text id="/data/repeat/child/name:label">
+            <value>Child Name</value>
+          </text>
+          <text id="/data/repeat/child/photo:label">
+            <value>Child Photo</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="contact:family_with_attachments:create" version="2026-05-06" prefix="J1!contact:family_with_attachments:create!" delimiter="#">
+          <family_with_attachments>
+            <parent>PARENT</parent>
+            <type>contact</type>
+            <contact_type>family_with_attachments</contact_type>
+            <name/>
+            <photo/>
+            <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
+            <contact>NEW</contact>
+          </family_with_attachments>
+          <contact>
+            <parent>PARENT</parent>
+            <type>person</type>
+            <name/>
+            <photo/>
+            <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
+          </contact>
+          <repeat>
+            <child jr:template="">
+              <parent>PARENT</parent>
+              <type>person</type>
+              <name/>
+              <photo/>
+              <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
+            </child>
+          </repeat>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/family_with_attachments/parent" type="string"/>
+      <bind nodeset="/data/family_with_attachments/type" type="string"/>
+      <bind nodeset="/data/family_with_attachments/contact_type" type="string"/>
+      <bind nodeset="/data/family_with_attachments/name" type="string" required="true()"/>
+      <bind nodeset="/data/family_with_attachments/photo" type="binary"/>
+      <bind nodeset="/data/family_with_attachments/badge" type="binary" readonly="true()"/>
+      <bind nodeset="/data/family_with_attachments/contact" type="string"/>
+      <bind nodeset="/data/contact/parent" type="string"/>
+      <bind nodeset="/data/contact/type" type="string"/>
+      <bind nodeset="/data/contact/name" type="string" required="true()"/>
+      <bind nodeset="/data/contact/photo" type="binary"/>
+      <bind nodeset="/data/contact/badge" type="binary" readonly="true()"/>
+      <bind nodeset="/data/repeat/child/parent" type="string"/>
+      <bind nodeset="/data/repeat/child/type" type="string"/>
+      <bind nodeset="/data/repeat/child/name" type="string"/>
+      <bind nodeset="/data/repeat/child/photo" type="binary"/>
+      <bind nodeset="/data/repeat/child/badge" type="binary" readonly="true()"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/family_with_attachments">
+      <input ref="/data/family_with_attachments/name">
+        <label ref="jr:itext('/data/family_with_attachments/name:label')"/>
+      </input>
+      <upload ref="/data/family_with_attachments/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/family_with_attachments/photo:label')"/>
+      </upload>
+    </group>
+    <group ref="/data/contact">
+      <input ref="/data/contact/name">
+        <label ref="jr:itext('/data/contact/name:label')"/>
+      </input>
+      <upload ref="/data/contact/photo" mediatype="image/*">
+        <label ref="jr:itext('/data/contact/photo:label')"/>
+      </upload>
+    </group>
+    <group ref="/data/repeat">
+      <label ref="jr:itext('/data/repeat:label')"/>
+      <repeat nodeset="/data/repeat/child">
+        <input ref="/data/repeat/child/name">
+          <label ref="jr:itext('/data/repeat/child/name:label')"/>
+        </input>
+        <upload ref="/data/repeat/child/photo" mediatype="image/*">
+          <label ref="jr:itext('/data/repeat/child/photo:label')"/>
+        </upload>
+      </repeat>
+    </group>
+  </h:body>
+</h:html>

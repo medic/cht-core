@@ -19,6 +19,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { USER_FILE_PREFIX } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './reports-add.component.html',
@@ -190,7 +191,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   private async getAttachmentForElement(docId, $element) {
     const fileName = $element.data('loaded-file-name');
     if (fileName) {
-      const attachmentName = `user-file-${fileName}`;
+      const attachmentName = `${USER_FILE_PREFIX}${fileName}`;
       const attachment = await this.getAttachment(docId, attachmentName);
       if (attachment) {
         return attachment;
