@@ -362,7 +362,8 @@ export class EnketoService {
     return form;
   }
 
-  private xmlToDocs(doc, formXml, xmlVersion, record) {
+  private xmlToDocs(doc, form, record, isEdit = false) {
+    const { xml: formXml, xmlVersion } = form;
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
     const repeatPaths = this.enketoTranslationService.getRepeatPaths(formXml);
@@ -465,7 +466,7 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    const docsToStore = $record
+    const docsToStore = isEdit ? [] : $record
       .find('[db-doc=true]')
       .map((idx, element) => {
         const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
@@ -576,7 +577,7 @@ export class EnketoService {
     await this.prepareForSave(form);
     return this.ngZone.runOutsideAngular(async () => {
       const doc = this.create(formInternalId, contact);
-      return this._save(form, formDoc, doc);
+      return this._save(form, formDoc, doc, false);
     });
   }
 
@@ -584,13 +585,13 @@ export class EnketoService {
     await this.prepareForSave(form);
     return this.ngZone.runOutsideAngular(async () => {
       const doc = await this.update(docId);
-      return this._save(form, formDoc, doc);
+      return this._save(form, formDoc, doc, true);
     });
   }
 
-  private async _save(form, formDoc, doc) {
+  private async _save(form, formDoc, doc, isEdit = false) {
     const dataString = form.getDataStr({ irrelevant: false });
-    return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
+    return this.xmlToDocs(doc, { xml: formDoc.xml, xmlVersion: formDoc.doc.xmlVersion }, dataString, isEdit);
   }
 
   unload(form) {
