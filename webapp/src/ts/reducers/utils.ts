@@ -20,17 +20,21 @@ export class UniqueSortedList {
 
     let idx;
     if (typeof(this.sortBy) === 'function') {
-      // start at the end of the list?
-      let insertIndex = this.list.length;
+      // Perform a binary search to find the correct insertion index.
+      // This reduces complexity from O(n) to O(log n).
+      let low = 0;
+      let high = this.list.length;
 
-      // search to find where to insert this item
-      // TODO binary search more efficient here?  Maybe best to check first if
-      // item can go at end of list, and if not _then_ do binary search
-      while (insertIndex && this.sortBy(item, this.list[insertIndex - 1]) < 0) {
-        --insertIndex;
+      while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+        if (this.sortBy(item, this.list[mid]) < 0) {
+          high = mid;
+        } else {
+          low = mid + 1;
+        }
       }
 
-      idx = insertIndex;
+      idx = low;
     } else {
       idx = _sortedIndexBy(this.list, item, item => -item[this.sortBy]);
     }
