@@ -355,6 +355,76 @@ describe('Person API', () => {
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
       });
     });
+
+    describe('muted parent gate', () => {
+      const mutedClinic = utils.deepFreeze({
+        _id: 'fixture:muted-clinic-person-spec',
+        type: CONTACT_TYPES.CLINIC,
+        name: 'Muted Clinic for person.spec',
+        muted: '2025-01-01T00:00:00Z',
+        parent: { _id: place1._id, parent: { _id: place2._id } },
+      });
+      const gateUserPassword = 'passwordSUP3RS3CR37!';
+      const gateUser = utils.deepFreeze({
+        username: 'person-gate-user',
+        password: gateUserPassword,
+        place: place1._id,
+        contact: { _id: 'fixture:user:person-gate-user', name: 'Person Gate User' },
+        roles: ['national_admin'],
+      });
+
+      before(async () => {
+        await utils.saveDoc(mutedClinic);
+        await utils.updatePermissions(
+          ['national_admin'],
+          ['can_create_people'],
+          [],
+          { ignoreReload: true }
+        );
+        await utils.createUsers([gateUser]);
+      });
+
+      after(async () => {
+        await utils.deleteDoc(mutedClinic._id);
+        await utils.deleteUsers([gateUser]);
+        await utils.revertSettings(true);
+      });
+
+      it('rejects with 403 when parent is muted and role lacks can_create_contacts_under_muted_places', async () => {
+        const opts = {
+          ...postOptions,
+          body: {
+            name: 'should-be-blocked',
+            type: 'person',
+            parent: mutedClinic._id,
+          },
+          auth: { username: gateUser.username, password: gateUserPassword },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith(
+          '403 - {"code":403,"error":"Insufficient privileges to create contacts on muted places"}'
+        );
+      });
+
+      it('allows creation when role has can_create_contacts_under_muted_places', async () => {
+        await utils.updatePermissions(
+          ['national_admin'],
+          ['can_create_contacts_under_muted_places'],
+          [],
+          { ignoreReload: true }
+        );
+        const opts = {
+          ...postOptions,
+          body: {
+            name: 'should-be-allowed',
+            type: 'person',
+            parent: mutedClinic._id,
+          },
+          auth: { username: gateUser.username, password: gateUserPassword },
+        };
+        const personDoc = await utils.request(opts);
+        expect(personDoc).to.have.property('_id');
+      });
+    });
   });
 
   describe('PUT /api/v1/person/:uuid', async () => {

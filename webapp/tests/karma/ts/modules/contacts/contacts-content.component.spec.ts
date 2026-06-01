@@ -407,6 +407,29 @@ describe('Contacts content component', () => {
     });
   });
 
+  describe('updateFastActions parentContact forwarding', () => {
+    it('should forward the selected contact doc as parentContact', async () => {
+      const doc = { _id: 'clinic-1' };
+      (component as any).selectedContact = { doc, type: {} };
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+
+      await (component as any).updateFastActions();
+
+      expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.firstCall.args[0].parentContact).to.equal(doc);
+    });
+
+    it('should forward undefined when the selected contact has no doc', async () => {
+      (component as any).selectedContact = { _id: 'no-doc', type: {} };
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+
+      await (component as any).updateFastActions();
+
+      expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.firstCall.args[0].parentContact).to.equal(undefined);
+    });
+  });
+
   describe('collapsible contact summary cards', () => {
     let cardSummary;
 
