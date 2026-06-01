@@ -207,4 +207,29 @@ describe('contacts_by_freetext', () => {
       { key: ['name:बुद्ध élève'], value }
     ]);
   });
+
+  it('normalizes Devanagari numerals to Latin in emitted keys', () => {
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'Person १२३४५' };
+
+    const emitted = mapFn(doc, true);
+
+    const value = expectedValue({ typeIndex: 0, name: 'person १२३४५' });
+    expect(emitted).to.deep.equal([
+      { key: ['person'], value },
+      { key: ['12345'], value },
+      { key: ['name:person 12345'], value }
+    ]);
+  });
+
+  it('normalizes mixed Devanagari and Latin numerals in emitted keys', () => {
+    const doc = { type: CONTACT_TYPES.DISTRICT_HOSPITAL, patient_id: '१23४५' };
+
+    const emitted = mapFn(doc, true);
+
+    const value = expectedValue({ typeIndex: 0 });
+    expect(emitted).to.deep.equal([
+      { key: ['12345'], value },
+      { key: ['patient_id:12345'], value }
+    ]);
+  });
 });

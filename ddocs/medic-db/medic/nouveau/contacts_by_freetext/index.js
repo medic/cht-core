@@ -1,6 +1,12 @@
 function (doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
 
+  var normalizeNumerals = function(str) {
+    return str.replace(/[०-९]/g, function(d) {
+      return String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x0030);
+    });
+  };
+
   var indexMaybe = function(type, fieldName, value, opts) {
     if(String(value).length < 3) { // Too short
       return;
@@ -18,7 +24,7 @@ function (doc) {
     }
 
     if (typeof value === 'string') {
-      var lowerValue = value.toLowerCase();
+      var lowerValue = normalizeNumerals(value.toLowerCase());
       indexMaybe('text', 'default', lowerValue);
       indexMaybe('string', 'exact_match', lowerKey + ':' + lowerValue);
     } else if (typeof value === 'number') {
