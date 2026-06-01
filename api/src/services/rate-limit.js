@@ -26,15 +26,9 @@ const getKeys = (req) => {
   if (req.body?.user) {
     keys.push(req.body.user);
   }
-  if (req.body?.password) {
-    keys.push(req.body.password);
-  }
   const basicAuth = auth.basicAuthCredentials(req);
   if (basicAuth?.username) {
     keys.push(basicAuth.username);
-  }
-  if (basicAuth?.password) {
-    keys.push(basicAuth.password);
   }
   return keys;
 };
