@@ -417,7 +417,7 @@ describe('Reports Add Component', () => {
           expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
           expect(jqStub.calledWith('.file-preview')).to.be.true;
           expect(jqPreviewElement.empty.calledOnce).to.be.true;
-          expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+          expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}" alt="">`)).to.be.true;
         }));
       });
 
@@ -454,7 +454,7 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}" alt="">`)).to.be.true;
       }));
 
       it('loads form with non-image attachment', fakeAsync(async () => {
@@ -537,7 +537,7 @@ describe('Reports Add Component', () => {
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqStub.calledWith('.file-preview')).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}" alt="">`)).to.be.true;
       }));
     });
   });

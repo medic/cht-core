@@ -797,7 +797,7 @@ describe('ContactsEdit component', () => {
         expect(getAttachment.calledOnceWithExactly(doc._id, `user-file-${imageAttachmentName}`)).to.be.true;
         expect(fileReaderService.base64.calledOnceWithExactly(attachmentBlob)).to.be.true;
         expect(jqPreviewElement.empty.calledOnce).to.be.true;
-        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}">`)).to.be.true;
+        expect(jqPreviewElement.append.calledOnceWithExactly(`<img src="data:${base64}" alt="">`)).to.be.true;
       }));
 
       it('does not load attachment when the attachment is a non-image attachment', fakeAsync(async () => {

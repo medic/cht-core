@@ -83,7 +83,7 @@ describe('ResourceIcons service', () => {
       const actual = service.getImg('child', 'resources');
       const expected =
         '<span class="resource-icon" title="child" >' +
-        '<img src="data:image/png;base64,kiddlywinks" />' +
+        '<img src="data:image/png;base64,kiddlywinks" alt="" />' +
         '</span>';
       expect(actual).to.equal(expected);
     }));
@@ -108,7 +108,7 @@ describe('ResourceIcons service', () => {
 
       const expected =
         '<span class="header-logo" data-title="logo" >' +
-        '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" />' +
+        '<img src="data:image/svg+xml;base64,TguMzJsMi4xNT" alt="" />' +
         '</span>';
       expect(branding).to.equal(expected);
     }));
@@ -133,7 +133,7 @@ describe('ResourceIcons service', () => {
 
       const expected =
         '<span class="partner-image" title="partnerAbc" >' +
-        '<img src="data:image/png;base64,UHuMzJsMi4xNT" />' +
+        '<img src="data:image/png;base64,UHuMzJsMi4xNT" alt="" />' +
         '</span>';
       expect(partners).to.equal(expected);
     }));
