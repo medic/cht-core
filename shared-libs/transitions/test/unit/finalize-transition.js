@@ -24,7 +24,7 @@ describe('finalize transition', () => {
 
   it('save is called if transition results have changes (API branch manages rev)', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true, rev: '2' });
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
     const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
     const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();
@@ -51,7 +51,7 @@ describe('finalize transition', () => {
 
   it('should callback with save errors and clear invalid_rev (API branch)', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+    const saveDoc = sinon.stub(db.medic, 'put').rejects({ error: 'something' });
     const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
     const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();
@@ -77,7 +77,7 @@ describe('finalize transition', () => {
 
   it('sentinel branch saves doc then transitions without managing valid/invalid rev', done => {
     const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true, rev: '2' });
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
     const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
     const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
     sinon.stub(infodoc, 'saveTransitions').resolves();

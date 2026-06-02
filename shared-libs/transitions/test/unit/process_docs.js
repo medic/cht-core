@@ -99,7 +99,7 @@ describe('processDocs', () => {
     sinon.stub(infodoc, 'bulkGet').resolves(infoDocs);
     sinon.stub(infodoc, 'bulkUpdate').resolves();
     sinon.stub(transitions, 'applyTransition');
-    sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    sinon.stub(db.medic, 'put').resolves({ ok: true });
     sinon.stub(infodoc, 'saveTransitions').resolves();
     sinon.stub(infodoc, 'setInvalidRev').resolves();
     sinon.stub(infodoc, 'clearInvalidRev').resolves();
@@ -177,10 +177,10 @@ describe('processDocs', () => {
     sinon.stub(infodoc, 'bulkUpdate').resolves();
     sinon.stub(transitions, 'applyTransition');
     sinon.stub(db.medic, 'put')
-      .withArgs(sinon.match({ _id: '1' })).callsArgWith(1, null, { ok: true })
-      .withArgs(sinon.match({ _id: '2' })).callsArgWith(1, { error: 'error' })
-      .withArgs(sinon.match({ _id: '3' })).callsArgWith(1, null, { ok: true })
-      .withArgs(sinon.match({ _id: '4' })).callsArgWith(1, { error: 'error' });
+      .withArgs(sinon.match({ _id: '1' })).resolves({ ok: true })
+      .withArgs(sinon.match({ _id: '2' })).rejects({ error: 'error' })
+      .withArgs(sinon.match({ _id: '3' })).resolves({ ok: true })
+      .withArgs(sinon.match({ _id: '4' })).rejects({ error: 'error' });
     sinon.stub(infodoc, 'saveTransitions').resolves();
     sinon.stub(infodoc, 'setInvalidRev').resolves();
     sinon.stub(infodoc, 'clearInvalidRev').resolves();

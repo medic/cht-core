@@ -128,9 +128,10 @@ const processDocs = docs => {
 
             // doc was not changed by any transition, so we save the original doc
             change.doc = docs.find(doc => doc._id === change.id);
-            saveDoc(change, (err, result) => {
-              callback(null, err || result);
-            });
+            saveDoc(change).then(
+              result => callback(null, result),
+              err => callback(null, err)
+            );
           }, { manageInfoDocRev: true });
         });
         async.series(operations, (err, results) => {
@@ -254,70 +255,60 @@ const canRun = ({ key, change, transition }) => {
  * it then a change was made.
  */
 const finalize = ({ change, results, manageInfoDocRev = false }, callback) => {
-  logger.debug(`transition results: ${JSON.stringify(results)}`);
-
-  const changed = _.some(results, i => Boolean(i));
-  if (!changed) {
-    logger.debug(
-      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
-    );
-    // info.transitions is how we know if a doc has been processed by Sentinel before. Even if no transitions ran,
-    // we still want to save transitions, so we know it's been processed.
-    return Promise
-      .resolve()
-      .then(() => {
-        if (change.initialProcessing) {
-          return infodoc.saveTransitions(change);
-        }
-      })
-      .then(() => callback())
-      .catch(err => callback(err));
-  }
-  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
-
-  if (!manageInfoDocRev) {
-    // Sentinel (async) branch: save the document first, then record the transitions map. Sentinel does
-    // not manage the valid_rev/invalid_rev markers; it only reads them (see getConsistentInfoDoc) to
-    // avoid processing a doc that API is still writing.
-    return saveDoc(change, (err, result) => {
-      if (err) {
-        logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
-        return callback(err);
-      }
-      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-      return infodoc
-        .saveTransitions(change)
-        .then(() => callback(null, result))
-        .catch(saveErr => callback(saveErr));
-    });
-  }
-
-  // API (sync) branch: bracket the doc write with invalid_rev/valid_rev markers so a concurrent
-  // sentinel read can detect a mid-write infodoc and wait.
-  const invalidRev = change.doc._rev ?? null;
-  return infodoc
-    .setInvalidRev(change.id, invalidRev)
-    .then(() => new Promise((resolve, reject) => {
-      saveDoc(change, (err, result) => err ? reject(err) : resolve(result));
-    }))
-    .then(result => {
-      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-      return infodoc
-        .saveTransitions(change, result.rev)
-        .then(() => callback(null, result));
-    })
+  finalizeChange({ change, results, manageInfoDocRev })
+    .then(result => callback(null, result))
     .catch(err => {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
-      return infodoc
-        .clearInvalidRev(change.id)
-        .catch(clearErr => logger.error(`error clearing invalid_rev on doc ${change.id}: %o`, clearErr))
-        .then(() => callback(err));
+      callback(err);
     });
 };
 
-const saveDoc = (change, callback) => {
+const finalizeChange = async ({ change, results, manageInfoDocRev }) => {
+  logger.debug(`transition results: ${JSON.stringify(results)}`);
+
+  if (!_.some(results, Boolean)) {
+    logger.debug(`nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`);
+    // info.transitions is how we know Sentinel has processed a doc; record it even when nothing ran.
+    if (change.initialProcessing) {
+      await infodoc.saveTransitions(change);
+    }
+    return;
+  }
+
+  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
+  return manageInfoDocRev ? saveForApi(change) : saveForSentinel(change);
+};
+
+// Sentinel processing: save the doc, then record transitions. Sentinel never writes the
+// valid_rev/invalid_rev markers; it only reads them (see getConsistentInfoDoc) to skip docs API is
+// still writing.
+const saveForSentinel = async change => {
+  const result = await saveDoc(change);
+  logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+  await infodoc.saveTransitions(change);
+  return result;
+};
+
+// API processing: bracket the doc write with invalid_rev/valid_rev markers so a concurrent sentinel
+// read can detect a mid-write infodoc and wait. Roll the marker back on any failure after it's set.
+const saveForApi = async change => {
+  await infodoc.setInvalidRev(change.id, change.doc._rev ?? null);
+  try {
+    const result = await saveDoc(change);
+    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    await infodoc.saveTransitions(change, result.rev);
+    return result;
+  } catch (err) {
+    await infodoc
+      .clearInvalidRev(change.id)
+      .catch(clearErr => logger.error(`error clearing invalid_rev on doc ${change.id}: %o`, clearErr));
+    throw err;
+  }
+};
+
+const saveDoc = change => {
   lineage.minify(change.doc);
-  db.medic.put(change.doc, callback);
+  return db.medic.put(change.doc);
 };
 
 /*
