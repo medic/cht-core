@@ -40,18 +40,17 @@ const addError = (doc, error) => {
     return;
   }
   if (_.isString(error)) {
-    error = { code: 'invalid_report', message: error };
+    // Use the string as both code and message so analytics can identify it
+    error = { code: error, message: error };
   } else if (_.isObject(error)) {
     if (!error.code) {
       // set error code if missing
       error.code = 'invalid_report';
     }
     if (!error.message) {
-      // bail if error does not have a message
       return;
     }
   } else {
-    // error argument must be a string or object
     return;
   }
   // try to avoid duplicates
@@ -67,16 +66,16 @@ const addError = (doc, error) => {
   doc.errors.push(error);
 };
 
-const getReportsWithSameParentAndForm = (options={}) => {
+const getReportsWithSameParentAndForm = (options = {}) => {
   const formName = options.formName;
   if (!formName) {
     return Promise.reject('Missing required argument `formName` for match query.');
   }
 
   const parentId = options.doc &&
-                   options.doc.contact &&
-                   options.doc.contact.parent &&
-                   options.doc.contact.parent._id;
+    options.doc.contact &&
+    options.doc.contact.parent &&
+    options.doc.contact.parent._id;
   if (!parentId) {
     return Promise.reject('Missing required argument `parentId` for match query.');
   }
@@ -250,14 +249,14 @@ module.exports = {
       logger.error(`Outbound push failed: invalid cron expression "${exp}"`);
       return false;
     }
-    
+
     const currentTime = Date.now();
     const parsedCron = later.parse.cron(exp);
     const nextDueTime = later.schedule(parsedCron).next().getTime();
     const prevDueTime = later.schedule(parsedCron).prev().getTime();
 
-    return isWithinTimeBound(currentTime, nextDueTime, frame) 
-        || isWithinTimeBound(currentTime, prevDueTime, frame);
+    return isWithinTimeBound(currentTime, nextDueTime, frame)
+      || isWithinTimeBound(currentTime, prevDueTime, frame);
   },
 
   // given a report, returns whether it should be accepted as a valid form submission
@@ -268,8 +267,8 @@ module.exports = {
   isValidSubmission: doc => {
     const form = doc && module.exports.getForm(doc.form);
     return module.exports.isXFormReport(doc) || // xform submission
-           (form && form.public_form) || // json submission to public form
-           (form && module.exports.hasKnownSender(doc)); // json submission by known submitter
+      (form && form.public_form) || // json submission to public form
+      (form && module.exports.hasKnownSender(doc)); // json submission by known submitter
   },
   hasKnownSender: doc => {
     const contact = doc && doc.contact;
@@ -277,6 +276,6 @@ module.exports = {
       return false;
     }
     return (contact.phone) ||
-           (contact.parent && contact.parent.contact && contact.parent.contact.phone);
+      (contact.parent && contact.parent.contact && contact.parent.contact.phone);
   }
 };
