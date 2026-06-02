@@ -2,6 +2,7 @@ const _ = require('lodash/core');
 const moment = require('moment');
 
 const MINIMUM_SEARCH_TERM_LENGTH = 3;
+const phoneNumber = require('@medic/phone-number');
 
 const getKeysArray = (keys) => keys.map(key => [ key ]);
 
@@ -94,6 +95,20 @@ const freetextRequestParams = (word) => {
   return params;
 };
 
+const getNormalizedPhone = (word, settings) => {
+  if (!settings?.default_country_code) {
+    return null;
+  }
+  const normalized = phoneNumber.normalize(settings, word);
+  if (typeof normalized !== 'string') {
+    return null;
+  }
+  if (normalized === word) {
+    return null;
+  }
+  return normalized;
+};
+
 const freetextRequest = (filters, view) => {
   if (!filters.search) {
     return;
@@ -102,9 +117,20 @@ const freetextRequest = (filters, view) => {
     .trim()
     .toLowerCase()
     .split(/\s+/);
-  const requests = words.map((word) => {
-    const params = freetextRequestParams(word);
-    return params && { view, params, freetext: true };
+  const requests = words.flatMap((word) => {
+    const normalizedPhone = getNormalizedPhone(word, filters.settings);
+    const results = [];
+    const originalParams = freetextRequestParams(word);
+    if (originalParams) {
+      results.push({ view, params: originalParams, freetext: true });
+    }
+    if (normalizedPhone) {
+      const normalizedParams = freetextRequestParams(normalizedPhone);
+      if (normalizedParams) {
+        results.push({ view, params: normalizedParams, freetext: true });
+      } 
+    }
+    return results;
   });
   return _.compact(requests);
 };
