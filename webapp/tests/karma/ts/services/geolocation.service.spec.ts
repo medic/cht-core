@@ -294,6 +294,19 @@ describe('Geolocation service', () => {
       expect(error).to.deep.equal({ code: 'true', message: 'no' });
     }));
 
+    it('should update currentHandle and currentPromise when retry() is called', () => {
+      service.init();
+      const handleBefore = service.currentHandle;
+      const promiseBefore = service.currentPromise;
+
+      service.retry();
+
+      expect(service.currentHandle).to.not.equal(handleBefore);
+      expect(service.currentPromise).to.not.equal(promiseBefore);
+      expect(service.currentHandle).to.be.a('function');
+      expect(service.currentPromise).to.be.instanceOf(Promise);
+    });
+
     describe('android api', () => {
       const position = {
         latitude: 1,

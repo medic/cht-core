@@ -31,7 +31,13 @@ class GeolocationWidget extends Widget {
   }
 
   _startCapture() {
-    this.question.querySelector('.geolocation-capture-btn')?.remove();
+    [
+      '.geolocation-capture-btn',
+      '.geolocation-progress-bar',
+      '.geolocation-retry-btn',
+      '.geolocation-skip-btn',
+      '.geolocation-success-msg',
+    ].forEach(sel => this.question.querySelector(sel)?.remove());
 
     const bar = document.createElement('div');
     bar.className = 'geolocation-progress-bar';
@@ -40,6 +46,27 @@ class GeolocationWidget extends Widget {
     window.CHTCore.Geolocation.currentPromise.then(result => {
       if ('code' in result) {
         bar.classList.add('geolocation-progress-failure');
+
+        const retryBtn = document.createElement('button');
+        retryBtn.type = 'button';
+        retryBtn.className = 'geolocation-retry-btn';
+        retryBtn.addEventListener('click', () => {
+          window.CHTCore.Geolocation.retry();
+          this._startCapture();
+        });
+        this.question.appendChild(retryBtn);
+        window.CHTCore.Translate.get('geolocation.retry')
+          .then(text => { retryBtn.textContent = text; });
+
+        const skipBtn = document.createElement('button');
+        skipBtn.type = 'button';
+        skipBtn.className = 'geolocation-skip-btn';
+        this.question.appendChild(skipBtn);
+        window.CHTCore.Translate.get('geolocation.skip')
+          .then(text => { skipBtn.textContent = text; });
+
+        this.element.value = 'not_captured';
+        this.element.dispatchEvent(new Event('change'));
       } else {
         bar.classList.add('geolocation-progress-success');
 

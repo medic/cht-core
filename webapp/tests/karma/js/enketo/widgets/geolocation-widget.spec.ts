@@ -164,6 +164,69 @@ describe('Enketo: Geolocation Widget', () => {
         expect(changeHandler.callCount).to.equal(1);
       });
 
+      it('should show retry and skip buttons when GPS acquisition fails', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(container.querySelector('.geolocation-retry-btn')).to.not.be.null;
+        expect(container.querySelector('.geolocation-skip-btn')).to.not.be.null;
+      });
+
+      it('should set hidden input to "not_captured" and fire change event on failure', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const changeHandler = sinon.stub();
+        widget.element.addEventListener('change', changeHandler);
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(widget.element.value).to.equal('not_captured');
+        expect(changeHandler.callCount).to.equal(1);
+      });
+
+      it('should call retry() and return to loading state when retry button is clicked', async () => {
+        const failurePromise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: failurePromise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await failurePromise;
+
+        const retryStub = sinon.stub().callsFake(() => {
+          window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
+        });
+        window.CHTCore.Geolocation.retry = retryStub;
+
+        (container.querySelector('.geolocation-retry-btn') as HTMLElement).click();
+
+        expect(retryStub.callCount).to.equal(1);
+        expect(container.querySelector('.geolocation-progress-bar')).to.not.be.null;
+        expect(container.querySelector('.geolocation-retry-btn')).to.be.null;
+        expect(container.querySelector('.geolocation-skip-btn')).to.be.null;
+      });
+
       it('should add failure class to progress bar when GPS acquisition fails', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };

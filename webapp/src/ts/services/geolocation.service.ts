@@ -144,6 +144,10 @@ export class GeolocationService {
     return complete;
   }
 
+  retry() {
+    this.init();
+  }
+
   permissionRequestResolved () {
     this.startWatching();
   }
