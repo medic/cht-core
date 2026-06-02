@@ -9,7 +9,7 @@
     <div>{{ errorTranslationKey | translate}}</div>
   </div>
 
-  <div class="report-wrap" [hidden]="loadingContent || contentError">
+  <div class="report-wrap" [class.content-loading]="loadingContent || contentError">
     <div class="body">
       <mm-enketo formId="report-form" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>
