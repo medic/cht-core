@@ -13,6 +13,7 @@ const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
 const phoneNumberParser = require('@medic/phone-number');
+const { CONTACT_TYPES: { PERSON } } = require('@medic/constants');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
@@ -489,7 +490,7 @@ const addPatient = (options) => {
     patient.type = 'contact';
     patient.contact_type = options.params.contact_type;
   } else {
-    patient.type = 'person';
+    patient.type = PERSON;
   }
 
 
@@ -631,7 +632,7 @@ module.exports = {
                 `patient_id_field cannot be set to patient_id`
               );
             }
-            const typeId = params.contact_type || 'person';
+            const typeId = params.contact_type || PERSON;
             const contactType = contactTypesUtils.getTypeById(config.getAll(), typeId);
             if (!contactType) {
               throw new Error(

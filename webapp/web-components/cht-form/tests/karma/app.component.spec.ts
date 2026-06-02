@@ -4,6 +4,9 @@ import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 import { AppComponent } from '../../src/app.component';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
@@ -142,7 +145,7 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
-    component.contactType = 'person';
+    component.contactType = PERSON;
     tick();
     component.content = content;
     tick();
@@ -351,7 +354,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     component.user = user;
     component.contactSummary = contactSummary;
-    component.contactType = 'person';
+    component.contactType = PERSON;
     component.content = content;
     // Set the form ID again
     component.formId = formId;
@@ -529,7 +532,7 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
-    component.contactType = 'person';
+    component.contactType = PERSON;
     tick();
     component.content = content;
     tick();
@@ -563,7 +566,7 @@ describe('AppComponent', () => {
     expect(contactSaveService.save.args[0]).to.deep.equal([
       currentForm,
       null,
-      { type: 'person' },
+      { type: PERSON },
       null
     ]);
     expect(actualSubmittedDocs).to.deep.equal(expectedDocs);
@@ -707,7 +710,7 @@ describe('AppComponent', () => {
     tick();
     component.contactSummary = contactSummary;
     tick();
-    component.contactType = 'person';
+    component.contactType = PERSON;
     tick();
     component.content = content;
     tick();

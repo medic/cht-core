@@ -153,7 +153,7 @@ describe('Places API', () => {
             name: 'Paul',
             phone: '+254883720611',
             parent: { _id: place._id, parent: place.parent },
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
           });
           chai.expect(place).to.deep.include({
             name: 'CHP Area One',
@@ -182,7 +182,7 @@ describe('Places API', () => {
           chai.expect(contact).to.deep.include({
             name: 'OnlineUser',
             parent: { _id: 'fixture:online' },
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
           });
           chai.expect(place).to.deep.include({
             name: 'DS',

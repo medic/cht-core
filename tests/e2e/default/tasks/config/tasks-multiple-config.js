@@ -1,4 +1,5 @@
 const oneDay = 24 * 60 * 60 * 1000;
+const { CONTACT_TYPES } = require('@medic/constants');
 const isFormArraySubmittedInWindow = (reports, formArray, start, end, count) => {
   end = end || start + 10 * oneDay;
   let found = false;
@@ -22,7 +23,7 @@ module.exports = Array.from({ length: 67 }, (_, index) => ({
   icon: 'icon-person',
   title: `person_create_${index + 1}`,
   appliesTo: 'contacts',
-  appliesToType: ['person'],
+  appliesToType: [CONTACT_TYPES.PERSON],
   appliesIf: function () {
     return true;
   },

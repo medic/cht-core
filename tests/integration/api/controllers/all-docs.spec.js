@@ -487,13 +487,13 @@ describe('all_docs handler', () => {
         {
           // depth = 2
           _id: 'the_person',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         },
         {
           // depth = 3
           _id: 'the_patient',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: { _id: 'the_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
         },
         {

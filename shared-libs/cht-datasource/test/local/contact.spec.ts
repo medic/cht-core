@@ -11,6 +11,9 @@ import * as Nouveau from '../../src/local/libs/nouveau';
 import * as Qualifier from '../../src/qualifier';
 import { END_OF_ALPHABET_MARKER } from '../../src/libs/constants';
 import { InvalidArgumentError } from '../../src';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('local contact', () => {
   let localContext: LocalDataContext.LocalDataContext;
@@ -87,7 +90,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact by UUID', async () => {
-        const doc = { type: 'person', _id: 'uuid', _rev: '1' };
+        const doc = { type: PERSON, _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         isContact.returns(true);
 
@@ -149,7 +152,7 @@ describe('local contact', () => {
       });
 
       it('returns a contact with lineage for person type contact', async () => {
-        const contact = { type: 'person', _id: 'uuid', _rev: 'rev' };
+        const contact = { type: PERSON, _id: 'uuid', _rev: 'rev' };
         const mockFunction = sinon.stub().resolves(contact);
         mockFetchHydratedDoc.returns(mockFunction);
         isContact.returns(true);
@@ -208,7 +211,7 @@ describe('local contact', () => {
 
     describe('getUuidsPage', () => {
       const limit = 3;
-      const contactType = 'person';
+      const contactType = PERSON;
       const expectedResult = { cursor: 'bookmark', data: ['1', '2', '3'] };
       let queryViewByType: SinonStub;
       let queryViewFreetextByKey: SinonStub;

@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { CONTACT_TYPES } = require('@medic/constants');
 const today = moment().startOf('day');
 const now = Date.now();
 
@@ -315,7 +316,7 @@ const getSubsequentPregnancies = (allReports, refReport) => allReports.filter(
 
 const isActivePregnancy = (thisContact, allReports, report) => {
   if (
-    thisContact.type !== 'person' ||
+    thisContact.type !== CONTACT_TYPES.PERSON ||
     !isAlive(thisContact) ||
     !isPregnancyForm(report)
   ) {
@@ -347,7 +348,7 @@ const isActivePregnancy = (thisContact, allReports, report) => {
 const isPregnant = (allReports) => allReports.some((report) => isActivePregnancy(report));
 
 const isReadyForNewPregnancy = (thisContact, allReports) => {
-  if (thisContact.type !== 'person') {
+  if (thisContact.type !== CONTACT_TYPES.PERSON) {
     return false;
   }
 
@@ -393,7 +394,7 @@ const isReadyForNewPregnancy = (thisContact, allReports) => {
 };
 
 const isReadyForDelivery = (thisContact, allReports) => {
-  if (thisContact.type !== 'person') {
+  if (thisContact.type !== CONTACT_TYPES.PERSON) {
     return false;
   }
 

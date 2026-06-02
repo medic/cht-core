@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../src/config');
 const logger = require('@medic/logger');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const types = [
   { id: 'person', person: true },
@@ -53,7 +54,7 @@ describe('generate_patient_id_on_people transition', () => {
   describe('filter', () => {
 
     it('accepts person contact types', () => {
-      const doc = { type: 'person' };
+      const doc = { type: CONTACT_TYPES.PERSON };
       assert.equal(!!transition.filter({ doc }), true);
     });
 
@@ -63,7 +64,7 @@ describe('generate_patient_id_on_people transition', () => {
     });
 
     it('ignores persons that already have a patient_id', () => {
-      const doc = { type: 'person', patient_id: '12345' };
+      const doc = { type: CONTACT_TYPES.PERSON, patient_id: '12345' };
       assert.equal(!!transition.filter({ doc }), false);
     });
 
@@ -88,11 +89,11 @@ describe('generate_patient_id_on_people transition', () => {
 
   describe('onMatch', () => {
     it('should add patient_id to people', () => {
-      const doc = { type: 'contact', contact_type: 'person' };
+      const doc = { type: 'contact', contact_type: CONTACT_TYPES.PERSON };
       sinon.stub(transitionUtils, 'getUniqueId').resolves('the_unique_id');
       return transition.onMatch({ doc }).then(result => {
         assert.equal(result, true);
-        assert.deepEqual(doc, { type: 'contact', contact_type: 'person', patient_id: 'the_unique_id' });
+        assert.deepEqual(doc, { type: 'contact', contact_type: CONTACT_TYPES.PERSON, patient_id: 'the_unique_id' });
       });
     });
 

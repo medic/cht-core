@@ -6,6 +6,9 @@ import {
   validateCursor
 } from '../../../src/local/libs/core';
 import { InvalidArgumentError } from '../../../src';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('local core lib', () => {
   afterEach(() => sinon.restore());
@@ -78,8 +81,8 @@ describe('local core lib', () => {
     });
 
     it('should preserve additional qualifier properties', () => {
-      const result = normalizeFreetextQualifier({ freetext: 'Test', contactType: 'person' });
-      expect(result).to.deep.equal({ freetext: 'test', contactType: 'person' });
+      const result = normalizeFreetextQualifier({ freetext: 'Test', contactType: PERSON });
+      expect(result).to.deep.equal({ freetext: 'test', contactType: PERSON });
     });
 
     it('should handle already normalized values', () => {

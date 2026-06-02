@@ -103,7 +103,7 @@ describe('messageUtils', () => {
           },
         },
         patient: {
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: {
             type: CONTACT_TYPES.CLINIC,
             contact: {
@@ -548,7 +548,7 @@ describe('messageUtils', () => {
         const context = {
           contact: {
             type: 'contact',
-            contact_type: 'person',
+            contact_type: CONTACT_TYPES.PERSON,
             phone: '000000',
             linked_docs: {
               person: { phone: 'one' },
@@ -756,11 +756,11 @@ describe('messageUtils', () => {
         const doc = {
           from: '+111',
           contact: {
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               }
             }
@@ -781,11 +781,11 @@ describe('messageUtils', () => {
         const doc = {
           from: '+111',
           contact: {
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               }
             }
@@ -798,7 +798,7 @@ describe('messageUtils', () => {
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+333'
               }
             }
@@ -816,11 +816,11 @@ describe('messageUtils', () => {
         const doc = {
           from: '+111',
           contact: {
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: {
               type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               }
             }
@@ -835,7 +835,7 @@ describe('messageUtils', () => {
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: {
-                  type: 'person',
+                  type: CONTACT_TYPES.PERSON,
                   phone: '+333'
                 }
               }
@@ -854,11 +854,11 @@ describe('messageUtils', () => {
         const doc = {
           from: '+111',
           contact: {
-            type: 'person',
+            type: CONTACT_TYPES.PERSON,
             parent: {
               type: CONTACT_TYPES.DISTRICT_HOSPITAL,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               }
             }
@@ -875,7 +875,7 @@ describe('messageUtils', () => {
                 parent: {
                   type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
-                    type: 'person',
+                    type: CONTACT_TYPES.PERSON,
                     phone: '+333'
                   }
                 }
@@ -902,7 +902,7 @@ describe('messageUtils', () => {
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               },
               parent: {
@@ -910,7 +910,7 @@ describe('messageUtils', () => {
                 parent: {
                   type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
-                    type: 'person',
+                    type: CONTACT_TYPES.PERSON,
                     phone: '+333'
                   }
                 }
@@ -937,7 +937,7 @@ describe('messageUtils', () => {
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               },
               parent: {
@@ -945,7 +945,7 @@ describe('messageUtils', () => {
                 parent: {
                   type: CONTACT_TYPES.DISTRICT_HOSPITAL, //grandparent
                   contact: {
-                    type: 'person',
+                    type: CONTACT_TYPES.PERSON,
                     phone: '+333'
                   }
                 }
@@ -976,7 +976,7 @@ describe('messageUtils', () => {
                 parent: {
                   type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
-                    type: 'person',
+                    type: CONTACT_TYPES.PERSON,
                     phone: '+333'
                   }
                 }
@@ -1003,7 +1003,7 @@ describe('messageUtils', () => {
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 phone: '+222'
               },
               parent: {
@@ -1011,7 +1011,7 @@ describe('messageUtils', () => {
                 parent: {
                   type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
-                    type: 'person'
+                    type: CONTACT_TYPES.PERSON
                   }
                 }
               }
@@ -1041,14 +1041,14 @@ describe('messageUtils', () => {
             parent: {
               type: CONTACT_TYPES.CLINIC,
               contact: {
-                type: 'person'                
+                type: CONTACT_TYPES.PERSON                
               },
               parent: {
                 type: CONTACT_TYPES.HEALTH_CENTER,
                 parent: {
                   type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                   contact: {
-                    type: 'person'
+                    type: CONTACT_TYPES.PERSON
                   }
                 }
               }

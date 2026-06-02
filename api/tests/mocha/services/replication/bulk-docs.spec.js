@@ -2,6 +2,7 @@ const service = require('../../../../src/services/replication/bulk-docs');
 const db = require('../../../../src/db');
 const sinon = require('sinon');
 require('chai').should();
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const authorization = require('../../../../src/services/replication/authorization');
 const dataContext = require('../../../../src/services/data-context');
@@ -50,7 +51,7 @@ describe('Bulk Docs Service', function () {
     });
 
     it('writes chunked response', function () {
-      const docA = { _id: 'a', _rev: '1', type: 'person', parent: { _id: 'parent' } };
+      const docA = { _id: 'a', _rev: '1', type: CONTACT_TYPES.PERSON, parent: { _id: 'parent' } };
       const parent = { _id: 'parent', _rev: '1', contact: { _id: 'a' } };
       const docB = { _id: 'b', _rev: '1' };
       const docC = { _id: 'c', _rev: '1' };
@@ -134,7 +135,7 @@ describe('Bulk Docs Service', function () {
 
     it('retries update failures up to 3 times', function () {
       const generateParentDoc = () => ({ _id: 'parent', _rev: '1', contact: { _id: 'a' } });
-      const docA = { _id: 'a', _rev: '1', type: 'person', parent: { _id: 'parent' } };
+      const docA = { _id: 'a', _rev: '1', type: CONTACT_TYPES.PERSON, parent: { _id: 'parent' } };
       const parent = generateParentDoc();
       const docB = { _id: 'b', _rev: '1' };
       const docC = { _id: 'c', _rev: '1' };

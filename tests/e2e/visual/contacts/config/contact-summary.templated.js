@@ -49,33 +49,33 @@ const context = {
 
 const fields = [
   {
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     label: 'patient_id',
     value: thisContact.patient_id,
     width: 4,
   },
   {
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     label: 'contact.age',
     value: thisContact.date_of_birth,
     width: 4,
     filter: 'age',
   },
   {
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     label: 'contact.sex',
     value: `contact.sex.${thisContact.sex}`,
     translate: true,
     width: 4,
   },
   {
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     label: 'person.field.phone',
     value: thisContact.phone,
     width: 4,
   },
   {
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     label: 'contact.parent',
     value: thisLineage,
     filter: 'lineage',
@@ -111,7 +111,7 @@ const fields = [
 
 if (thisContact.short_name) {
   fields.unshift({
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     label: 'contact.short_name',
     value: thisContact.short_name,
     width: 4,
@@ -266,7 +266,7 @@ const cards = [
   },
   {
     label: 'contact.profile.immunizations',
-    appliesToType: 'person',
+    appliesToType: CONTACT_TYPES.PERSON,
     appliesIf: function() {
       return getAgeInMonths() < 144;
     },

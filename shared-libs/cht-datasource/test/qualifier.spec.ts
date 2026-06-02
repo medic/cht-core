@@ -19,6 +19,9 @@ import {
   isIdQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('qualifier', () => {
   describe('byId', () => {
@@ -83,7 +86,7 @@ describe('qualifier', () => {
 
   describe('byContactType', () => {
     it('builds a qualifier that identifies an entity by its contactType', () => {
-      expect(byContactType('person')).to.deep.equal({ contactType: 'person' });
+      expect(byContactType(PERSON)).to.deep.equal({ contactType: PERSON });
     });
 
     [
@@ -102,10 +105,10 @@ describe('qualifier', () => {
   describe('isContactTypeQualifier', () => {
     [
       [ null, false ],
-      [ 'person', false ],
+      [ PERSON, false ],
       [ { contactType: { } }, false ],
-      [ { contactType: 'person' }, true ],
-      [ { contactType: 'person', other: 'other' }, true ]
+      [ { contactType: PERSON }, true ],
+      [ { contactType: PERSON, other: 'other' }, true ]
     ].forEach(([ contactType, expected ]) => {
       it(`evaluates ${JSON.stringify(contactType)}`, () => {
         expect(isContactTypeQualifier(contactType)).to.equal(expected);
@@ -310,20 +313,20 @@ describe('qualifier', () => {
 
   describe('and', () => {
     it('combines two qualifiers', () => {
-      const combined = and(byUuid('u1'), byContactType('person'));
-      expect(combined).to.deep.equal({ uuid: 'u1', contactType: 'person' });
+      const combined = and(byUuid('u1'), byContactType(PERSON));
+      expect(combined).to.deep.equal({ uuid: 'u1', contactType: PERSON });
     });
 
     it('combines up to four qualifiers', () => {
       const combined = and(
         byUuid('u1'),
-        byContactType('person'),
+        byContactType(PERSON),
         byFreetext('value'),
         byReportingPeriod('2025-07')
       );
       expect(combined).to.deep.equal({
         uuid: 'u1',
-        contactType: 'person',
+        contactType: PERSON,
         freetext: 'value',
         reportingPeriod: '2025-07'
       });

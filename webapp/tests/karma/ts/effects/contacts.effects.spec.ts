@@ -20,6 +20,9 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -213,7 +216,7 @@ describe('Contacts effects', () => {
       contactViewModelGeneratorService.getContact.resolves({
         _id: 'contactid',
         model: 'contact model',
-        doc: { _id: 'contactid', type: 'person' },
+        doc: { _id: 'contactid', type: PERSON },
       });
       const settingSelected = sinon.stub(GlobalActions.prototype, 'settingSelected');
 
@@ -223,7 +226,7 @@ describe('Contacts effects', () => {
       expect(setSelected.args[0]).to.deep.equal([{
         _id: 'contactid',
         model: 'contact model',
-        doc: { _id: 'contactid', type: 'person' },
+        doc: { _id: 'contactid', type: PERSON },
       }]);
       expect(setLoadingShowContent.callCount).to.equal(0);
       expect(setLoadingSelectedContact.callCount).to.equal(0);

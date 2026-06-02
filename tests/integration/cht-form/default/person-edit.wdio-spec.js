@@ -2,6 +2,7 @@ const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const capitalize = word => word.charAt(0).toUpperCase() + word.slice(1);
 const excludeProps = [
@@ -14,7 +15,7 @@ describe('cht-form web component - Edit Person Form', () => {
 
   it('should edit a person', async () => {
     const initialPerson = {
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'Filippo',
       short_name: 'Fili',
       date_of_birth: '2000-09-20',
@@ -65,7 +66,7 @@ describe('cht-form web component - Edit Person Form', () => {
     await mockConfig.cancelForm();
 
     const updatedPerson = {
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'Oppilif',
       short_name: 'Ilif',
       date_of_birth: '2001-09-20',

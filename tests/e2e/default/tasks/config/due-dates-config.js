@@ -1,4 +1,5 @@
 const oneDay = 24 * 60 * 60 * 1000;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const returnsTrue = function () {
   return true;
@@ -13,7 +14,7 @@ const createTask = function(name, dueDays) {
     icon: 'icon-person',
     title: name,
     appliesTo: 'contacts',
-    appliesToType: ['person'],
+    appliesToType: [CONTACT_TYPES.PERSON],
     appliesIf: returnsTrue,
     resolvedIf: returnsFalse,
     actions: [{ type: 'report', form: name }],

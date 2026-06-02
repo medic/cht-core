@@ -2,37 +2,37 @@ const { assert, expect } = require('chai');
 const lineageFactory = require('../src');
 const memdownMedic = require('@medic/memdown');
 const cloneDeep = require('lodash/cloneDeep');
-const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 let db;
 
 const child_is_great_grandparent = {
   _id: 'child_is_great_grandparent',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: { _id: 'cigg_parent' },
   reported_date: 5
 };
 const cigg_parent = {
   _id: 'cigg_parent',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: { _id: 'cigg_grandparent' },
   reported_date: 5
 };
 const cigg_grandparent = {
   _id: 'cigg_grandparent',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: { _id: 'child_is_great_grandparent' },
   reported_date: 5
 };
 const child_is_parent = {
   _id: 'child_is_parent',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: { _id: 'child_is_parent' },
   reported_date: 5
 };
 const child_is_grandparent = {
   _id: 'child_is_grandparent',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: {
     _id: 'something_else',
     parent: { _id: 'child_is_grandparent' }
@@ -42,7 +42,7 @@ const child_is_grandparent = {
 const circular_areaId = 'circular_area';
 const circular_chw = {
   _id: 'circular_chw',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: { _id: circular_areaId },
   hydrated: true,
   reported_date: '5'
@@ -63,7 +63,7 @@ const circular_report = {
 };
 const person_with_circular_ids = {
   _id: 'circular_person',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: { _id: 'circular_person' },
   reported_date: '5',
 };
@@ -114,7 +114,7 @@ const one_parent = {
 const place_parentContact = {
   _id: 'place_parentContact',
   name: 'place_parentContact_name',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   phone: '+123',
   reported_date: '5'
 };
@@ -156,14 +156,14 @@ const place = {
 const report_parentContact = {
   _id: 'report_parentContact',
   name: 'report_parentContact_name',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   phone: '+123',
   reported_date: '5'
 };
 const report_grandparentContact = {
   _id: 'report_grandparentContact',
   name: 'report_grandparentContact_name',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   phone: '+456',
   reported_date: '5'
 };
@@ -182,7 +182,7 @@ const report_parent = {
 };
 const report_contact = {
   _id: 'report_contact',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   name: 'report_contact_name',
   parent: {
     _id: report_parent._id,
@@ -195,7 +195,7 @@ const report_contact = {
 const report_patient = {
   _id: 'report_patient',
   patient_id: '12345',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   name: 'patient_name',
   parent: {
     _id: report_parent._id,
@@ -413,7 +413,7 @@ const placeWithLinks = {
 const personWithLinks = {
   _id: 'personWithLinks',
   name: 'person_name',
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   parent: {
     _id: placeWithLinks._id,
     parent: {
@@ -1244,10 +1244,10 @@ describe('Lineage', function() {
             _id: report_with_circular_ids._id,
             patient: {
               _id: person_with_circular_ids._id,
-              type: 'person',
+              type: CONTACT_TYPES.PERSON,
               parent: {
                 _id: person_with_circular_ids._id,
-                type: 'person',
+                type: CONTACT_TYPES.PERSON,
                 parent: {
                   _id: person_with_circular_ids._id,
                   parent: undefined,

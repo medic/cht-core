@@ -336,7 +336,7 @@ describe('routing', () => {
     it('restricts _find', () => {
       const request = {
         method: 'POST',
-        body: { selector: { type: 'person' }, limit: 1 },
+        body: { selector: { type: CONTACT_TYPES.PERSON }, limit: 1 },
       };
 
       return Promise.all([
@@ -378,7 +378,7 @@ describe('routing', () => {
     it('restricts _explain', () => {
       const request = {
         method: 'POST',
-        body: { selector: { type: 'person' }, limit: 1 },
+        body: { selector: { type: CONTACT_TYPES.PERSON }, limit: 1 },
       };
 
       return Promise.all([

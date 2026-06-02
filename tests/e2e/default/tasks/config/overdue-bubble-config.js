@@ -1,4 +1,5 @@
 const oneDay = 24 * 60 * 60 * 1000;
+const { CONTACT_TYPES } = require('@medic/constants');
 const isFormArraySubmittedInWindow = (reports, formArray, start, end, count) => {
   end = end || start + 10 * oneDay;
   let found = false;
@@ -27,7 +28,7 @@ const createTask = function(name, dueDays) {
     icon: 'icon-person',
     title: name,
     appliesTo: 'contacts',
-    appliesToType: ['person'],
+    appliesToType: [CONTACT_TYPES.PERSON],
     appliesIf: returnsTrue,
     resolvedIf: function (contact) {
       if (dueDays > 0) {

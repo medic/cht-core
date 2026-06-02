@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const chtDatasource = require('@medic/cht-datasource');
 const logger = require('@medic/logger');
 const queryFreetext = require('../src/freetext-query').queryFreetext;
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('freetext-query', () => {
   'use strict';
@@ -57,11 +58,11 @@ describe('freetext-query', () => {
       { v1: { contact: { getUuidsByFreetext, getUuidsByTypeFreetext } } }
     );
 
-    const request = { params: { key: 'term', type: 'person' } };
+    const request = { params: { key: 'term', type: CONTACT_TYPES.PERSON } };
     const result = await queryFreetext({}, request, 'contacts');
 
     chai.expect(result).to.deep.equal([{ id: 'c3' }]);
-    chai.expect(getUuidsByTypeFreetext.calledWith('term', 'person')).to.equal(true);
+    chai.expect(getUuidsByTypeFreetext.calledWith('term', CONTACT_TYPES.PERSON)).to.equal(true);
     chai.expect(getUuidsByFreetext.called).to.equal(false);
   });
 

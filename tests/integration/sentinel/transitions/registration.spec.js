@@ -45,7 +45,7 @@ const contacts = [
     _id: 'person',
     name: 'Person',
     type: 'contact',
-    contact_type: 'person',
+    contact_type: CONTACT_TYPES.PERSON,
     patient_id: 'patient',
     parent: { _id: 'clinic', 
       parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
@@ -56,7 +56,7 @@ const contacts = [
     _id: 'supervisor',
     name: 'Supervisor',
     type: 'contact',
-    contact_type: 'person',
+    contact_type: CONTACT_TYPES.PERSON,
     patient_id: 'the_supervisor',
     parent: { _id: 'district_hospital' },
     phone: '+00000000',
@@ -66,7 +66,7 @@ const contacts = [
     _id: 'middle_man',
     name: 'Middle man',
     type: 'contact',
-    contact_type: 'person',
+    contact_type: CONTACT_TYPES.PERSON,
     patient_id: 'the_middle_man',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: '+11111111',
@@ -158,7 +158,7 @@ describe('registration', () => {
           parent: { _id: 'clinic', 
             parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           created_by: 'person',
           source_id: patientNameAndPhone._id,
         });
@@ -318,7 +318,7 @@ describe('registration', () => {
       parent: { _id: 'clinic', 
         parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
       name: patientName,
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       created_by: 'person',
       source_id: patientReport._id,
     });
@@ -888,7 +888,7 @@ describe('registration', () => {
           parent: { _id: 'clinic', 
             parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           created_by: 'person',
           source_id: justPatientName._id,
         });
@@ -898,7 +898,7 @@ describe('registration', () => {
           parent: { _id: 'clinic', 
             parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Venus',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           created_by: 'person',
           source_id: customPatientNameAndCustomShortcode._id,
         });
@@ -1282,9 +1282,8 @@ describe('registration', () => {
 
         chai.expect(patients.rows[0].doc).to.deep.include({
           name: 'Solaris',
-          type: 'person',
-          parent: { _id: 'clinic', 
-            parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          type: CONTACT_TYPES.PERSON,
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           created_by: 'supervisor',
           source_id: createPerson._id,
           patient_id: updatedDocs[0].patient_id,
@@ -2103,7 +2102,7 @@ describe('registration', () => {
           events: [{
             name: 'on_create',
             trigger: 'add_patient',
-            params: { contact_type: 'person', patient_name_field: 'the_patient_name' },
+            params: { contact_type: CONTACT_TYPES.PERSON, patient_name_field: 'the_patient_name' },
             bool_expr: ''
           }],
           messages: [{
@@ -2204,7 +2203,7 @@ describe('registration', () => {
         chai.expect(contacts.rows[1].doc).to.deep.include({
           name: 'Mentos',
           type: 'contact',
-          contact_type: 'person',
+          contact_type: CONTACT_TYPES.PERSON,
           patient_id: updatedDocs[1].patient_id,
           source_id: updatedDocs[1]._id,
           created_by: updatedDocs[1].contact._id,

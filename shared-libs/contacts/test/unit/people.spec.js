@@ -8,6 +8,7 @@ const dataContext = require('../../src/libs/data-context');
 const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
 const { Person, Qualifier } = require('@medic/cht-datasource');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('people controller', () => {
   let minifyLineage;
@@ -45,19 +46,19 @@ describe('people controller', () => {
 
     it('returns error if missing name property', () => {
       config.get.returns([{ id: 'person', person: true }]);
-      const actual = controller._validatePerson({ type: 'person' });
+      const actual = controller._validatePerson({ type: CONTACT_TYPES.PERSON });
       chai.expect(actual).to.equal('Person is missing a "name" property.');
     });
 
     it('returns error if name is an integer', () => {
       config.get.returns([{ id: 'person', person: true }]);
-      const actual = controller._validatePerson({ type: 'person', name: 1 });
+      const actual = controller._validatePerson({ type: CONTACT_TYPES.PERSON, name: 1 });
       chai.expect(actual).to.equal('Property "name" must be a string.');
     });
 
     it('returns error if name is an object', () => {
       config.get.returns([{ id: 'person', person: true }]);
-      const actual = controller._validatePerson({ type: 'person', name: {} });
+      const actual = controller._validatePerson({ type: CONTACT_TYPES.PERSON, name: {} });
       chai.expect(actual).to.equal('Property "name" must be a string.');
     });
 
@@ -83,9 +84,9 @@ describe('people controller', () => {
 
     it('succeeds and returns doc when person type.', () => {
       config.get.returns([{ id: 'person', person: true }]);
-      getWithLineage.resolves({type: 'person'});
+      getWithLineage.resolves({type: CONTACT_TYPES.PERSON});
       return controller._getPerson('x').then(doc => {
-        chai.expect(doc).to.deep.equal({ type: 'person' });
+        chai.expect(doc).to.deep.equal({ type: CONTACT_TYPES.PERSON });
       });
     });
 
@@ -95,7 +96,7 @@ describe('people controller', () => {
     it('creates and returns person when given new object', () => {
       sinon.stub(controller, 'createPerson').resolves({ id: 'new-id' });
       sinon.stub(controller, '_getPerson').resolves({ _id: 'new-id', name: 'Test' });
-      return controller.getOrCreatePerson({ name: 'Test', type: 'person' }).then(result => {
+      return controller.getOrCreatePerson({ name: 'Test', type: CONTACT_TYPES.PERSON }).then(result => {
         chai.expect(result._id).to.equal('new-id');
         chai.expect(controller.createPerson.callCount).to.equal(1);
         chai.expect(controller._getPerson.calledWith('new-id')).to.be.true;
@@ -119,8 +120,8 @@ describe('people controller', () => {
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(controller, '_validatePerson').returns();
       db.medic.post.resolves({ id: 'new-id' });
-      return controller.createPerson({ type: 'person', name: 'Test' }).then(() => {
-        chai.expect(db.medic.post.args[0][0].type).to.equal('person');
+      return controller.createPerson({ type: CONTACT_TYPES.PERSON, name: 'Test' }).then(() => {
+        chai.expect(db.medic.post.args[0][0].type).to.equal(CONTACT_TYPES.PERSON);
       });
     });
 

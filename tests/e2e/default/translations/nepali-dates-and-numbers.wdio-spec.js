@@ -2,6 +2,7 @@ const path = require('path');
 const bikramSambat = require('bikram-sambat');
 const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -177,7 +178,7 @@ describe('Bikram Sambat date display', () => {
     const contact = {
       _id: 'george_bush',
       name: 'George Bush',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       reported_date: moment(date).valueOf(),
       parent: { _id: 'hospital' },
       phone: '+40755456456',

@@ -3,6 +3,9 @@ import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import * as Contact from '../../src/remote/contact';
 import { expect } from 'chai';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('remote contact', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -25,7 +28,7 @@ describe('remote contact', () => {
 
     describe('get', () => {
       it('returns a contact by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: PERSON };
         getResourceInner.resolves(doc);
 
         const result = await Contact.v1.get(remoteContext)(identifier);
@@ -48,7 +51,7 @@ describe('remote contact', () => {
 
     describe('getWithLineage', () => {
       it('returns a contact with lineage by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: PERSON };
         getResourceInner.resolves(doc);
 
         const result = await Contact.v1.getWithLineage(remoteContext)(identifier);
@@ -72,7 +75,7 @@ describe('remote contact', () => {
     describe('getUuidsPage', () => {
       const limit = 3;
       const cursor = '1';
-      const contactType = 'person';
+      const contactType = PERSON;
       const freetext = 'contact';
       const qualifier = {
         contactType,
@@ -86,7 +89,7 @@ describe('remote contact', () => {
       };
 
       it('returns array of contact identifiers', async () => {
-        const doc = [{ type: 'person' }, { type: 'person' }];
+        const doc = [{ type: PERSON }, { type: PERSON }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 

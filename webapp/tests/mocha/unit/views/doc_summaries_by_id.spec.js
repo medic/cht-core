@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 const utils = require('./utils');
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const person = {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402',
@@ -8,7 +8,7 @@ const person = {
   parent: {
     _id: '1a1aac55-04d6-40dc-aae2-e67a75a1496d'
   },
-  type: 'person',
+  type: CONTACT_TYPES.PERSON,
   name: 'patient1',
   date_of_birth: '',
   phone: '',
@@ -243,7 +243,7 @@ describe('doc_summaries_by_id view', () => {
         _rev: '3-b99ee0615633d44f414362c8bf21454a',
         name: 'patient1',
         phone: '',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         contact_type: undefined,
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
         date_of_death: undefined,

@@ -4,6 +4,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Person Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -123,8 +124,7 @@ describe('Person Controller', () => {
     });
 
     describe('getAll', () => {
-      const personType = 'person';
-      const personTypeQualifier = Qualifier.byContactType(personType);
+      const personTypeQualifier = Qualifier.byContactType(CONTACT_TYPES.PERSON);
       const person = { name: 'John Doe' };
       const limit = 100;
       const cursor = null;
@@ -134,7 +134,7 @@ describe('Person Controller', () => {
         personGetPageByType.resolves(people);
         req = {
           query: {
-            type: personType,
+            type: CONTACT_TYPES.PERSON,
             cursor,
             limit,
           }
@@ -156,7 +156,7 @@ describe('Person Controller', () => {
       it('creates a person doc for valid input', async() => {
         const input = {
           name: 'test-user',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: 'p1',
           reported_date: 12312312
         };
@@ -183,7 +183,7 @@ describe('Person Controller', () => {
           _id: '123',
           rev: '1-rev',
           type: 'contact',
-          contact_type: 'person',
+          contact_type: CONTACT_TYPES.PERSON,
           parent: 'p1',
           reported_date: 12312312
         };

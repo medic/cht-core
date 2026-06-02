@@ -1,9 +1,11 @@
+const { CONTACT_TYPES } = require('@medic/constants');
+
 const errorTask = {
   name: 'task-error',
   icon: 'icon-person',
   title: 'task-error.title',
   appliesTo: 'contacts',
-  appliesToType: ['person'],
+  appliesToType: [CONTACT_TYPES.PERSON],
   appliesIf: (contact) => !!contact.foo.name,
   actions: [{ type: 'report', form: 'person_create_7' }],
   events: [

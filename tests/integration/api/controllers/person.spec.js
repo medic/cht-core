@@ -47,10 +47,9 @@ describe('Person API', () => {
     roles: ['chw']
   }));
   const allDocItems = [contact0, contact1, contact2, place0, place1, place2, patient];
-  const personType = 'person';
   const e2eTestUser = {
     '_id': 'e2e_contact_test_id',
-    'type': personType,
+    'type': CONTACT_TYPES.PERSON,
   };
   const onlineUserPlaceHierarchy = {
     parent: {
@@ -73,12 +72,12 @@ describe('Person API', () => {
     patient,
     e2eTestUser,
     {
-      type: personType,
+      type: CONTACT_TYPES.PERSON,
       ...userNoPerms.contact,
       ...onlineUserPlaceHierarchy
     },
     {
-      type: personType,
+      type: CONTACT_TYPES.PERSON,
       ...offlineUser.contact,
       ...offlineUserPlaceHierarchy
     }
@@ -160,7 +159,7 @@ describe('Person API', () => {
       const opts = {
         path: `${endpoint}`,
         qs: {
-          type: personType
+          type: CONTACT_TYPES.PERSON
         }
       };
       const responsePage = await utils.request(opts);
@@ -172,10 +171,10 @@ describe('Person API', () => {
     });
 
     it('returns a page of people when limit and cursor is passed and cursor can be reused', async () => {
-      const firstPage = await utils.request({ path: endpoint, qs: { type: personType, limit } });
+      const firstPage = await utils.request({ path: endpoint, qs: { type: CONTACT_TYPES.PERSON, limit } });
       const secondPage = await utils.request({
         path: endpoint,
-        qs: { type: personType, cursor: firstPage.cursor, limit }
+        qs: { type: CONTACT_TYPES.PERSON, cursor: firstPage.cursor, limit }
       });
 
       const allPeople = [...firstPage.data, ...secondPage.data];
@@ -217,7 +216,7 @@ describe('Person API', () => {
 
     it('throws 400 error when limit is invalid', async () => {
       const queryParams = {
-        type: personType,
+        type: CONTACT_TYPES.PERSON,
         limit: -1
       };
       const queryString = new URLSearchParams(queryParams).toString();
@@ -232,7 +231,7 @@ describe('Person API', () => {
 
     it('throws 400 error when cursor is invalid', async () => {
       const queryParams = {
-        type: personType,
+        type: CONTACT_TYPES.PERSON,
         cursor: '-1'
       };
       const queryString = new URLSearchParams(queryParams).toString();
@@ -257,7 +256,7 @@ describe('Person API', () => {
     it(`creates a person`, async () => {
       const personInput = {
         name: 'apoorva',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: place0._id,
         date_of_birth: '1996-06-09',
         phone: '+1234567890',
@@ -272,7 +271,7 @@ describe('Person API', () => {
       expect(personDoc).excluding([ '_rev', '_id' ]).to.deep.equal({
         ...personInput,
         type: 'contact',
-        contact_type: 'person',
+        contact_type: CONTACT_TYPES.PERSON,
         parent: { _id: place0._id, parent: place0.parent }
       });
     });
@@ -280,7 +279,7 @@ describe('Person API', () => {
     it(`creates a person with minimum data`, async () => {
       const personInput = {
         name: 'apoorva',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: place2._id
       };
 
@@ -289,7 +288,7 @@ describe('Person API', () => {
       expect(personDoc).excluding([ '_rev', 'reported_date', '_id' ]).to.deep.equal({
         ...personInput,
         type: 'contact',
-        contact_type: 'person',
+        contact_type: CONTACT_TYPES.PERSON,
         parent: { _id: place2._id }
       });
       expect(personDoc.reported_date).to.be.a('number');
@@ -312,7 +311,7 @@ describe('Person API', () => {
     it(`throws error for non-existent parent`, async () => {
       const personInput = {
         name: 'apoorva',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: 'invalid-id'
       };
       const expectedError = `400 - ${JSON.stringify({
@@ -326,7 +325,7 @@ describe('Person API', () => {
     it(`throws error for parent type not among allowed parents in settings.contact_types`, async () => {
       const personInput = {
         name: 'apoorva',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: contact0._id
       };
       const expectedError = `400 - ${JSON.stringify({
@@ -344,7 +343,7 @@ describe('Person API', () => {
       it(`throws error when user ${test}`, async () => {
         const personInput = {
           name: 'apoorva',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: place2._id
         };
         const opts = {

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@medic/cht-datasource": "file:../cht-datasource",
+    "@medic/constants": "file:../constants",
     "@medic/contact-types-utils": "file:../contact-types-utils",
     "@medic/contacts": "file:../contacts",
     "@medic/couch-request": "file:../couch-request",

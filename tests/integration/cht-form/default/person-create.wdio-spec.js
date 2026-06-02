@@ -1,6 +1,7 @@
 const mockConfig = require('../mock-config');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('cht-form web component - Create Person Form', () => {
 
@@ -29,7 +30,7 @@ describe('cht-form web component - Create Person Form', () => {
     expect(doc.role).to.equal('chw');
     expect(doc.external_id).to.equal('12345');
     expect(doc.notes).to.equal('Test notes - create new person');
-    expect(doc.type).to.equal('person');
+    expect(doc.type).to.equal(CONTACT_TYPES.PERSON);
   });
 
 });

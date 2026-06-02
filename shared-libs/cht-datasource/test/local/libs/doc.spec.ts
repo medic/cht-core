@@ -17,6 +17,9 @@ import {
 } from '../../../src/local/libs/doc';
 import { expect } from 'chai';
 import { Nullable } from '../../../src';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('local doc lib', () => {
   let dbGet: SinonStub;
@@ -308,7 +311,7 @@ describe('local doc lib', () => {
   describe('queryDocsByKey', () => {
     const limit = 100;
     const skip = 0;
-    const contactType = 'person';
+    const contactType = PERSON;
 
     it('returns docs on the basis of given key in pages', async () => {
       const doc0 = { _id: 'doc0' };
@@ -426,7 +429,7 @@ describe('local doc lib', () => {
   describe('queryDocIdsByKey', () => {
     const limit = 100;
     const skip = 0;
-    const contactType = 'person';
+    const contactType = PERSON;
 
     it('returns doc ids based on key in pages', async () => {
       const doc0 = { id: 'doc0' };
@@ -667,7 +670,7 @@ describe('local doc lib', () => {
   describe('createDoc', () => {
     const doc = {
       type: 'contact',
-      contact_type: 'person',
+      contact_type: PERSON,
       name: 'Medic User',
       parent: {
         _id: '2-id'
@@ -700,7 +703,7 @@ describe('local doc lib', () => {
       _id: '1-id',
       _rev: '2-rev',
       name: 'apoorva',
-      type: 'person'
+      type: PERSON
     };
     it('should update the doc and return the new rev', async () => {
       dbPut.resolves({ ok: true, rev: '3-rev' });

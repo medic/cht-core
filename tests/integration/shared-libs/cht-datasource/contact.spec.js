@@ -86,9 +86,8 @@ describe('cht-datasource Contact', () => {
   }));
   const allDocItems = [ contact0, contact1, contact2, place0, place1, place2, clinic1, clinic2, patient ];
   const dataContext = getRemoteDataContext({ getAll: () => ({}) }, utils.getOrigin());
-  const personType = 'person';
   const e2eTestUser = {
-    '_id': 'e2e_contact_test_id', 'type': personType,
+    '_id': 'e2e_contact_test_id', 'type': CONTACT_TYPES.PERSON,
   };
   const onlineUserPlaceHierarchy = {
     parent: {
@@ -103,9 +102,9 @@ describe('cht-datasource Contact', () => {
     }
   };
   const expectedPeople = [ contact0, contact1, contact2, patient, e2eTestUser, {
-    type: personType, ...userNoPerms.contact, ...onlineUserPlaceHierarchy
+    type: CONTACT_TYPES.PERSON, ...userNoPerms.contact, ...onlineUserPlaceHierarchy
   }, {
-    type: personType, ...offlineUser.contact, ...offlineUserPlaceHierarchy
+    type: CONTACT_TYPES.PERSON, ...offlineUser.contact, ...offlineUserPlaceHierarchy
   } ];
   const expectedPeopleIds = expectedPeople.map(person => person._id);
   const expectedPlaces = [ place0, clinic1, clinic2 ];
@@ -184,7 +183,7 @@ describe('cht-datasource Contact', () => {
       const emptyNouveauCursor = 'W10=';
 
       it('returns a page of people type contact ids for no limit and cursor passed', async () => {
-        const responsePage = await getUuidsPage(Qualifier.byContactType(personType));
+        const responsePage = await getUuidsPage(Qualifier.byContactType(CONTACT_TYPES.PERSON));
         const responsePeople = responsePage.data;
         const responseCursor = responsePage.cursor;
 
@@ -213,7 +212,7 @@ describe('cht-datasource Contact', () => {
 
       it('returns a page of people type contact ids and freetext for no limit and cursor passed', async () => {
         const responsePage = await getUuidsPage({
-          ...Qualifier.byContactType(personType), ...Qualifier.byFreetext(freetext),
+          ...Qualifier.byContactType(CONTACT_TYPES.PERSON), ...Qualifier.byFreetext(freetext),
         });
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
         const responsePeople = responsePage.data;
@@ -238,8 +237,12 @@ describe('cht-datasource Contact', () => {
 
       it('returns a page of people type contact ids' +
         ' when limit and cursor is passed and cursor can be reused', async () => {
-        const firstPage = await getUuidsPage(Qualifier.byContactType(personType), cursor, fourLimit);
-        const secondPage = await getUuidsPage(Qualifier.byContactType(personType), firstPage.cursor, fourLimit);
+        const firstPage = await getUuidsPage(Qualifier.byContactType(CONTACT_TYPES.PERSON), cursor, fourLimit);
+        const secondPage = await getUuidsPage(
+          Qualifier.byContactType(CONTACT_TYPES.PERSON), 
+          firstPage.cursor, 
+          fourLimit
+        );
 
         const allData = [ ...firstPage.data, ...secondPage.data ];
 
@@ -288,10 +291,10 @@ describe('cht-datasource Contact', () => {
         ' when limit and cursor is passed and cursor can be reused', async () => {
         const freetext = 'contact';
         const firstPage = await getUuidsPage({
-          ...Qualifier.byContactType(personType), ...Qualifier.byFreetext(freetext),
+          ...Qualifier.byContactType(CONTACT_TYPES.PERSON), ...Qualifier.byFreetext(freetext),
         }, cursor, twoLimit);
         const secondPage = await getUuidsPage({
-          ...Qualifier.byContactType(personType), ...Qualifier.byFreetext(freetext),
+          ...Qualifier.byContactType(CONTACT_TYPES.PERSON), ...Qualifier.byFreetext(freetext),
         }, firstPage.cursor, twoLimit);
         const expectedContactIds = [ contact0._id, contact1._id, contact2._id ];
 
@@ -389,7 +392,7 @@ describe('cht-datasource Contact', () => {
       it('fetches all data by iterating through generator', async () => {
         const docs = [];
 
-        const generator = Contact.v1.getUuids(dataContext)(Qualifier.byContactType(personType));
+        const generator = Contact.v1.getUuids(dataContext)(Qualifier.byContactType(CONTACT_TYPES.PERSON));
 
         for await (const doc of generator) {
           docs.push(doc);

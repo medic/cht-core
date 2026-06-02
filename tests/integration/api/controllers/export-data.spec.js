@@ -278,8 +278,8 @@ describe('Export Data V2.0', () => {
 
   describe('GET|POST /api/v2/export/contacts', () => {
     const contacts = [
-      { _id: 'john_id', name: 'john', patient_id: '12345', type: 'person', field: 'value' },
-      { _id: 'mary_id', name: 'mary', type: 'person', other_field: 'b' },
+      { _id: 'john_id', name: 'john', patient_id: '12345', type: CONTACT_TYPES.PERSON, field: 'value' },
+      { _id: 'mary_id', name: 'mary', type: CONTACT_TYPES.PERSON, other_field: 'b' },
       { _id: 'jen_id', name: 'jen', type: 'contact', contact_type: 'chw', patient_id: '123', other_field: 'value' },
       { _id: 'leslie_id',
         name: 'leslie', type: CONTACT_TYPES.DISTRICT_HOSPITAL, reported_date: 100 },
@@ -394,7 +394,7 @@ describe('Export Data V2.0', () => {
         body: {
           filters: {
             search: 'value',
-            types: { selected: ['person', 'city', 'district_hospital'] }
+            types: { selected: [CONTACT_TYPES.PERSON, 'city', 'district_hospital'] }
           }
         }
       });

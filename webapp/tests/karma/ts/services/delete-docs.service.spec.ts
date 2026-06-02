@@ -10,7 +10,10 @@ import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact } from '@medic/cht-datasource';
-import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
+
 
 describe('DeleteDocs service', () => {
 
@@ -76,7 +79,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: PERSON,
       phone: '+555',
       name: 'sally',
       parent: {
@@ -118,7 +121,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: PERSON,
       name: 'sally',
       parent: {
         _id: 'b'
@@ -247,7 +250,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: PERSON,
       name: 'sally',
       parent: {
         _id: 'b'
@@ -275,7 +278,7 @@ describe('DeleteDocs service', () => {
     };
     const person = {
       _id: 'a',
-      type: 'person',
+      type: PERSON,
       name: 'sally',
       parent: clinic
     };

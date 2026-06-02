@@ -535,7 +535,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
       },
       {
@@ -620,7 +620,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
       },
       {
@@ -705,7 +705,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_person',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } }
       },
       {
@@ -793,7 +793,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_person', // depth 2
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'existing_clinic', parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } } },
         patient_id: 'existing_person_id'
       },
@@ -824,7 +824,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_person2', // out of hierarchy
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'other2', parent: { _id: 'other1' } },
         patient_id: 'existing_person_id2'
       },

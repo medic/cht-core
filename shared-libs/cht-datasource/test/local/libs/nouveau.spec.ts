@@ -4,6 +4,9 @@ import { Doc } from '../../../src/libs/doc';
 import * as LocalDoc from '../../../src/local/libs/doc';
 import * as Qualifier from '../../../src/qualifier';
 import { queryByFreetext, useNouveauIndexes } from '../../../src/local/libs/nouveau';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('nouveau', () => {
   let dbFetch: SinonStub;
@@ -60,7 +63,7 @@ describe('nouveau', () => {
       it('should query with contact type and freetext qualifier', async () => {
         const qualifier = Qualifier.and(
           Qualifier.byFreetext(freetext),
-          Qualifier.byContactType('person')
+          Qualifier.byContactType(PERSON)
         );
         dbFetch.resolves(mockResponse);
         const body = {

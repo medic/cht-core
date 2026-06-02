@@ -6,7 +6,9 @@ import { GetSummariesService } from '@mm-services/get-summaries.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { DOC_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('GetSummaries service', () => {
   let service:GetSummariesService;
@@ -223,7 +225,7 @@ describe('GetSummaries service', () => {
             doc: {
               _id: 'a',
               _rev: '1',
-              type: 'person',
+              type: PERSON,
               name: 'james',
               phone: '+456',
               contact: {
@@ -264,7 +266,7 @@ describe('GetSummaries service', () => {
             _rev: '1',
             name: 'james',
             phone: '+456',
-            type: 'person',
+            type: PERSON,
             contact_type: undefined,
             contact: 'c',
             lineage: [],

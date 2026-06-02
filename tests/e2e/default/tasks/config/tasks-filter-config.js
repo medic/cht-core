@@ -1,9 +1,9 @@
 const oneDay = 24 * 60 * 60 * 1000;
-
+const { CONTACT_TYPES } = require('@medic/constants');
 const genTask = (dueDate) => ({
   icon: 'icon-healthcare',
   appliesTo: 'contacts',
-  appliesToType: ['person'],
+  appliesToType: [CONTACT_TYPES.PERSON],
   resolvedIf: function () {
     return false;
   },

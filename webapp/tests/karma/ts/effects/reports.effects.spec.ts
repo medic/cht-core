@@ -27,6 +27,8 @@ import { ServicesActions } from '@mm-actions/services';
 import { PerformanceService } from '@mm-services/performance.service';
 import { CONTACT_TYPES } from '@medic/constants';
 
+const { PERSON } = CONTACT_TYPES;
+
 describe('Reports effects', () => {
   let effects:ReportsEffects;
   let actions$;
@@ -711,7 +713,7 @@ describe('Reports effects', () => {
               external_id: '',
               notes: '',
               contact: {
-                type: 'person',
+                type: PERSON,
                 name: 'contact',
                 short_name: '',
                 date_of_birth: '1990-02-01',
@@ -752,7 +754,7 @@ describe('Reports effects', () => {
               _id: 'parent',
               _rev: 4
             },
-            type: 'person',
+            type: PERSON,
             name: 'contact',
             short_name: '',
             date_of_birth: '1990-02-01',

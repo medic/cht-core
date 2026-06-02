@@ -4,7 +4,7 @@ const db = require('../../../src/db');
 const logger = require('@medic/logger');
 const service = require('../../../src/services/export-data');
 const sinon = require('sinon');
-const { DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Export Data Service', () => {
 
@@ -273,7 +273,7 @@ describe('Export Data Service', () => {
       const contact1 = {
         _id: '1',
         name: 'gdawg',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: contact2._id }
       };
 
@@ -288,7 +288,7 @@ describe('Export Data Service', () => {
         {
           _id: '1',
           name: 'gdawg',
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           parent: contact2
         },
         {

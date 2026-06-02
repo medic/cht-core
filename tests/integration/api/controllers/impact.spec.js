@@ -24,7 +24,7 @@ describe('impact', () => {
         contacts: {
           count: 1,
           by_type: [
-            { type: 'person', count: 1 }
+            { type: CONTACT_TYPES.PERSON, count: 1 }
           ]
         },
         users: {
@@ -50,7 +50,7 @@ describe('impact', () => {
             { type: CONTACT_TYPES.CLINIC, count: 1 },
             { type: CONTACT_TYPES.DISTRICT_HOSPITAL, count: 1 },
             { type: CONTACT_TYPES.HEALTH_CENTER, count: 1 },
-            { type: 'person', count: 3 }
+            { type: CONTACT_TYPES.PERSON, count: 3 }
           ]
         },
         users: {
@@ -66,7 +66,7 @@ describe('impact', () => {
 
     it('all contact types are aggregated and returned', async () => {
       const places = [
-        placeFactory.place().build({ type: 'contact', contact_type: 'person' }),
+        placeFactory.place().build({ type: 'contact', contact_type: CONTACT_TYPES.PERSON }),
         placeFactory.place().build({ type: 'contact', contact_type: 'p10_province' }),
         placeFactory.place().build({ type: 'contact', contact_type: 'p20_district' })
       ];
@@ -83,7 +83,7 @@ describe('impact', () => {
           by_type: [
             { type: 'p10_province', count: 1 },
             { type: 'p20_district', count: 1 },
-            { type: 'person', count: 2 }
+            { type: CONTACT_TYPES.PERSON, count: 2 }
           ]
         },
         reports: {
@@ -108,7 +108,7 @@ describe('impact', () => {
         contacts: {
           count: 1,
           by_type: [
-            { type: 'person', count: 1 }
+            { type: CONTACT_TYPES.PERSON, count: 1 }
           ]
         },
         reports: {
@@ -136,7 +136,7 @@ describe('impact', () => {
         contacts: {
           count: 1,
           by_type: [
-            { type: 'person', count: 1 }
+            { type: CONTACT_TYPES.PERSON, count: 1 }
           ]
         },
         reports: {

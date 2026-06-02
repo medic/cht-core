@@ -119,7 +119,7 @@ describe('places controller', () => {
 
     it('returns error when doc is person', () => {
       examplePlace._id = 'xyz';
-      examplePlace.type = 'person';
+      examplePlace.type = CONTACT_TYPES.PERSON;
       return controller
         ._validatePlace(examplePlace)
         .then(() => chai.expect.fail('should fail'))
@@ -398,7 +398,7 @@ describe('places controller', () => {
         parent: 'ad06d137',
         contact: {
           name: 'Jim',
-          type: 'person'
+          type: CONTACT_TYPES.PERSON
         }
       };
 
@@ -406,7 +406,7 @@ describe('places controller', () => {
         _id: 'qwe',
         _rev: '1',
         name: 'Jim',
-        type: 'person'
+        type: CONTACT_TYPES.PERSON
       });
       db.medic.post.withArgs(
         sinon.match((doc) => !doc.contact)
@@ -460,7 +460,7 @@ describe('places controller', () => {
         name: 'HC',
         type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         contact: {
-          type: 'person'
+          type: CONTACT_TYPES.PERSON
         }
       };
       const post = db.medic.post;
@@ -722,7 +722,7 @@ describe('places controller', () => {
       return controller._preparePlaceContact({ name: 'test' }).then(({ exists, contact }) => {
         chai.expect(exists).to.equal(false);
         chai.expect(contact).to.have.property('type');
-        chai.expect(contact).property('type').equal('person');
+        chai.expect(contact).property('type').equal(CONTACT_TYPES.PERSON);
       });
     });
 

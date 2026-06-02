@@ -15,12 +15,14 @@ import {
   assertUuidQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
-import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('libs parameter-validators', () => {
   describe('assertTypeQualifier', () => {
     it('should not throw for valid contact type qualifier', () => {
-      const validQualifier: ContactTypeQualifier = { contactType: 'person' };
+      const validQualifier: ContactTypeQualifier = { contactType: PERSON };
       expect(() => assertTypeQualifier(validQualifier)).to.not.throw();
     });
 
@@ -167,7 +169,7 @@ describe('libs parameter-validators', () => {
 
   describe('isContactType', () => {
     it('should return true for a contact type qualifier', () => {
-      expect(isContactType({ contactType: 'person' } as ContactTypeQualifier)).to.be.true;
+      expect(isContactType({ contactType: PERSON } as ContactTypeQualifier)).to.be.true;
     });
 
     it('should return false for a freetext-only qualifier', () => {
@@ -181,18 +183,18 @@ describe('libs parameter-validators', () => {
     });
 
     it('should return false for a contact type-only qualifier', () => {
-      expect(isFreetextType({ contactType: 'person' } as ContactTypeQualifier)).to.be.false;
+      expect(isFreetextType({ contactType: PERSON } as ContactTypeQualifier)).to.be.false;
     });
   });
 
   describe('isContactTypeAndFreetextType', () => {
     it('should return true when qualifier has both contactType and freetext', () => {
-      const qualifier = { contactType: 'person', freetext: 'search' } as ContactTypeQualifier & FreetextQualifier;
+      const qualifier = { contactType: PERSON, freetext: 'search' } as ContactTypeQualifier & FreetextQualifier;
       expect(isContactTypeAndFreetextType(qualifier)).to.be.true;
     });
 
     it('should return false when qualifier has only contactType', () => {
-      expect(isContactTypeAndFreetextType({ contactType: 'person' } as ContactTypeQualifier)).to.be.false;
+      expect(isContactTypeAndFreetextType({ contactType: PERSON } as ContactTypeQualifier)).to.be.false;
     });
 
     it('should return false when qualifier has only freetext', () => {
@@ -244,7 +246,7 @@ describe('libs parameter-validators', () => {
   describe('assertPersonInput', () => {
     const personInput = {
       name: 'apoorva',
-      type: 'person',
+      type: PERSON,
       parent: 'p1',
     } as const;
 
@@ -272,7 +274,7 @@ describe('libs parameter-validators', () => {
     });
 
     it('throws error for input that is not a data object', () => {
-      expect(() => assertPersonInput('person')).to.throw(
+      expect(() => assertPersonInput(PERSON)).to.throw(
         InvalidArgumentError,
         'Not a valid JSON object value.'
       );

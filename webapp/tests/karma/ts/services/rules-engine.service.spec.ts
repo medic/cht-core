@@ -23,6 +23,9 @@ import { PipesService } from '@mm-services/pipes.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Target } from '@medic/cht-datasource';
 import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.component';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
@@ -358,11 +361,11 @@ describe('RulesEngineService', () => {
   describe('changes feeds', () => {
     const scenarios = [
       {
-        doc: { _id: 'person', type: 'person' },
+        doc: { _id: 'person', type: PERSON },
         expected: ['person'],
       },
       {
-        doc: { _id: 'contact', type: 'contact', contact_type: 'person' },
+        doc: { _id: 'contact', type: 'contact', contact_type: PERSON },
         expected: ['contact'],
       },
       {
@@ -483,10 +486,10 @@ describe('RulesEngineService', () => {
       const change = changesService.subscribe.args[0][0];
       await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p1' } }));
       expect(callback.callCount).to.equal(1);
-      await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+      await change.callback(changeFeedFormat({ _id: '2', type: PERSON, patient_id: 'p2' }));
       expect(callback.callCount).to.equal(2);
       tick(500);
-      await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+      await change.callback(changeFeedFormat({ _id: '3', type: PERSON, patient_id: 'p3' }));
       expect(callback.callCount).to.equal(3);
       tick(900);
       await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p3' }}));
@@ -605,10 +608,10 @@ describe('RulesEngineService', () => {
     const change = changesService.subscribe.args[0][0];
     await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p1' } }));
     const tasksPromise = service.fetchTaskDocsForAllContacts();
-    await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+    await change.callback(changeFeedFormat({ _id: '2', type: PERSON, patient_id: 'p2' }));
     tick(500);
     expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
-    await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+    await change.callback(changeFeedFormat({ _id: '3', type: PERSON, patient_id: 'p3' }));
     tick(900);
     expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
     await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p3' }}));
@@ -716,10 +719,10 @@ describe('RulesEngineService', () => {
     const change = changesService.subscribe.args[0][0];
     await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p1' } }));
     const tasksPromise = service.fetchTaskDocsFor(['a']);
-    await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+    await change.callback(changeFeedFormat({ _id: '2', type: PERSON, patient_id: 'p2' }));
     tick(500);
     expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
-    await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+    await change.callback(changeFeedFormat({ _id: '3', type: PERSON, patient_id: 'p3' }));
     tick(900);
     expect(rulesEngineCoreStubs.fetchTasksFor.called).to.be.false;
     await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p3' }}));
@@ -772,10 +775,10 @@ describe('RulesEngineService', () => {
     const change = changesService.subscribe.args[0][0];
     await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p1' } }));
     const targetsPromise = service.fetchTargets();
-    await change.callback(changeFeedFormat({ _id: '2', type: 'person', patient_id: 'p2' }));
+    await change.callback(changeFeedFormat({ _id: '2', type: PERSON, patient_id: 'p2' }));
     tick(500);
     expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
-    await change.callback(changeFeedFormat({ _id: '3', type: 'person', patient_id: 'p3' }));
+    await change.callback(changeFeedFormat({ _id: '3', type: PERSON, patient_id: 'p3' }));
     tick(900);
     expect(rulesEngineCoreStubs.fetchTargets.called).to.be.false;
     await change.callback(changeFeedFormat({ type: DOC_TYPES.DATA_RECORD, form: 'f', fields: { patient_id: 'p3' }}));

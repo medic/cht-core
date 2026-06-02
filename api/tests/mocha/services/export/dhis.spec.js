@@ -3,7 +3,7 @@ const path = require('path');
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
 const sinon = require('sinon');
-const { PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 const defaultSettings = require('../../../../../config/default/app_settings.json');
 const service = require('../../../../src/services/export/dhis');
@@ -464,7 +464,7 @@ describe('dhis export service', () => {
 const mockContact = (username, override) => Object.assign({
   _id: `${username}-guid`,
   type: 'contact',
-  contact_type: 'person',
+  contact_type: CONTACT_TYPES.PERSON,
   name: username,
   dhis: {
     orgUnit: `ou-${username}`,

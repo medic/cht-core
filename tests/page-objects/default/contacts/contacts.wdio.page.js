@@ -6,6 +6,7 @@ const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const mobileSearchPage = require('@page-objects/default-mobile/search/search.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const searchSelectors = {
   searchBox: () => $('.mm-search-bar-container input#freetext'),
@@ -243,7 +244,7 @@ const addPerson = async (
     waitForComplete = true
   } = {}
 ) => {
-  const type = 'person';
+  const type = CONTACT_TYPES.PERSON;
   await commonPage.clickFastActionFAB({ actionId: type });
   await commonEnketoPage.setInputValue('Full name', nameValue);
   await commonEnketoPage.setInputValue('Phone Number', phoneValue);

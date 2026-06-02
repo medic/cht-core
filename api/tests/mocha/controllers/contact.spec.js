@@ -4,6 +4,7 @@ const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const {expect} = require('chai');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Contact Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -48,7 +49,7 @@ describe('Contact Controller', () => {
       });
 
       it('returns a contact', async () => {
-        const contact = { name: 'John Doe', type: 'person' };
+        const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
         contactGet.resolves(contact);
 
         await controller.v1.get(req, res);
@@ -64,7 +65,7 @@ describe('Contact Controller', () => {
       });
 
       it('returns a contact with lineage when the query parameter is set to "true"', async () => {
-        const contact = { name: 'John Doe', type: 'person' };
+        const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
         contactGetWithLineage.resolves(contact);
         req.query.with_lineage = 'true';
 
@@ -81,7 +82,7 @@ describe('Contact Controller', () => {
       });
 
       it('returns a contact without lineage when the query parameter is set something else', async () => {
-        const contact = { name: 'John Doe', type: 'person' };
+        const contact = { name: 'John Doe', type: CONTACT_TYPES.PERSON };
         contactGet.resolves(contact);
         req.query.with_lineage = '1';
 
@@ -120,7 +121,7 @@ describe('Contact Controller', () => {
     describe('getUuids', () => {
       let qualifierByContactType;
       let qualifierByFreetext;
-      const contactType = 'person';
+      const contactType = CONTACT_TYPES.PERSON;
       const freetext = 'John';
       const contactTypeOnlyQualifier = { contactType };
       const freetextOnlyQualifier = { freetext };

@@ -2,6 +2,9 @@ import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('remote person', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -52,7 +55,7 @@ describe('remote person', () => {
 
     describe('get', () => {
       it('returns a person by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: PERSON };
         getResourceInner.resolves(doc);
 
         const result = await Person.v1.get(remoteContext)(identifier);
@@ -75,7 +78,7 @@ describe('remote person', () => {
 
     describe('getWithLineage', () => {
       it('returns a person with lineage by UUID', async () => {
-        const doc = { type: 'person' };
+        const doc = { type: PERSON };
         getResourceInner.resolves(doc);
 
         const result = await Person.v1.getWithLineage(remoteContext)(identifier);
@@ -99,16 +102,15 @@ describe('remote person', () => {
     describe('getPage', () => {
       const limit = 3;
       const cursor = '1';
-      const personType = 'person';
-      const personTypeQualifier = { contactType: personType };
+      const personTypeQualifier = { contactType: PERSON };
       const queryParam = {
         limit: limit.toString(),
-        type: personType,
+        type: PERSON,
         cursor,
       };
 
       it('returns people', async () => {
-        const doc = [{ type: 'person' }, { type: 'person' }];
+        const doc = [{ type: PERSON }, { type: PERSON }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
@@ -138,7 +140,7 @@ describe('remote person', () => {
         expect(result).to.equal(expectedResponse);
         expect(getResourcesInner.calledOnceWithExactly({
           limit: limit.toString(),
-          type: personType,
+          type: PERSON,
         })).to.be.true;
       });
     });
@@ -146,7 +148,7 @@ describe('remote person', () => {
     describe('createPerson', () => {
       it('creates a person for a valid input', async () => {
         const personInput = {
-          type: 'person',
+          type: PERSON,
           name: 'user-1',
           parent: 'p1'
         };
@@ -164,7 +166,7 @@ describe('remote person', () => {
     describe('updatePerson', () => {
       it('updates a person for a valid input', async () => {
         const personInput = {
-          type: 'person',
+          type: PERSON,
           name: 'user-1',
           parent: 'p1',
           _id: '1-id',

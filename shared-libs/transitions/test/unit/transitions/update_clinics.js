@@ -500,14 +500,14 @@ describe('update clinic', () => {
 
     const personDoc = {
       _id: 'person-id',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'A Person',
       phone: '+34567890123',
     };
 
     const personWithLineage = {
       _id: 'person-id',
-      type: 'person',
+      type: CONTACT_TYPES.PERSON,
       name: 'A Person',
       phone: '+34567890123',
       parent: { _id: 'parent-id' },

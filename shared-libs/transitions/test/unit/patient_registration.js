@@ -5,6 +5,7 @@ const rewire = require('rewire');
 const db = require('../../src/db');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
@@ -281,7 +282,7 @@ describe('patient registration', () => {
           _id: 'the-parent',
         },
         reported_date: 'now',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         patient_id: doc.patient_id,
         created_by: 'the-contact',
         source_id: 'docid',
@@ -526,7 +527,7 @@ describe('patient registration', () => {
           created_by: 'julie',
           parent: { _id: 'place' },
           reported_date: 1234,
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           patient_id: undefined,
           source_id: 'my-form',
         });
@@ -586,7 +587,7 @@ describe('patient registration', () => {
           created_by: 'julie',
           parent: { _id: 'place' },
           reported_date: 1234,
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           patient_id: undefined,
           source_id: 'my-form',
         });
@@ -644,7 +645,7 @@ describe('patient registration', () => {
           created_by: 'julie',
           parent: { _id: 'place' },
           reported_date: 1234,
-          type: 'person',
+          type: CONTACT_TYPES.PERSON,
           patient_id: 'unique',
           source_id: 'my-form',
         });

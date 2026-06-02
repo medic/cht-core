@@ -15,7 +15,7 @@ const userCtx = {
   name: 'user',
   contact_id: 'contact_id',
   facility_id: ['facility_id'],
-  contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
+  contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: CONTACT_TYPES.PERSON },
   facility: [{
     _id: 'facility_id',
     place_id: 'facility_shortcode',
@@ -28,7 +28,7 @@ const userCtxMultiFacility = {
   name: 'user',
   contact_id: 'contact_id',
   facility_id: ['facility1', 'facility2'],
-  contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: 'person' },
+  contact: { _id: 'contact_id', patient_id: 'contact_shortcode', name: 'contact', type: CONTACT_TYPES.PERSON },
   facility: [
     { _id: 'facility1', place_id: 'fac1', name: 'health center', type: CONTACT_TYPES.HEALTH_CENTER },
     { _id: 'facility2', place_id: 'fac2', name: 'health center', type: CONTACT_TYPES.HEALTH_CENTER }
@@ -954,8 +954,7 @@ describe('Authorization service', () => {
       const docsByReplicationKey = [
         { id: 'r1', fields: { key: 'place', submitter: 'p', type: DOC_TYPES.DATA_RECORD } },
         { id: 'task1', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
-
-        { id: 'r3', fields: { key: 'contact', type: 'person' } },
+        { id: 'r3', fields: { key: 'contact', type: CONTACT_TYPES.PERSON } },
         { id: 'task2', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
       ];
 
@@ -972,7 +971,7 @@ describe('Authorization service', () => {
         { id: 'task1', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'ts-r2', fields: { key: 'place', submitter: 'contact', type: DOC_TYPES.DATA_RECORD } },
         { id: 'ts-task3', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
-        { id: 'r3', fields: { key: 'contact', type: 'person' } },
+        { id: 'r3', fields: { key: 'contact', type: CONTACT_TYPES.PERSON } },
         { id: 'task2', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'ts-r5', fields: { key: 'place', type: CONTACT_TYPES.CLINIC } },
       ];
@@ -2701,23 +2700,23 @@ describe('Authorization service', () => {
 
     it('should return correct subject ids with contact docs', () => {
       const c1 = {
-        _id: 'c1', type: 'person',
+        _id: 'c1', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p1', parent: { _id: 'facility_id' } }, patient_id: '123456'
       };
       const c2 = {
-        _id: 'c2', type: 'person',
+        _id: 'c2', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p3', parent: { _id: 'p4' } }, place_id: 'place1'
       };
       const c3 = {
-        _id: 'c3', type: 'person',
+        _id: 'c3', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p1', parent: { _id: 'facility_id' } }
       };
       const c4 = {
-        _id: 'c4', type: 'person',
+        _id: 'c4', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p3', parent: { _id: 'p4' } }
       };
       const c5 = {
-        _id: 'c5', type: 'person',
+        _id: 'c5', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p2', parent: { _id: 'facility_id' }, place_id: 'place5' }
       };
       const docObjs = [
@@ -2914,35 +2913,37 @@ describe('Authorization service', () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
           {
-            id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } }
+            id: 'c1', 
+            doc: { _id: 'c1', type: CONTACT_TYPES.PERSON, 
+              parent: { _id: 'p1', parent: { _id: 'facility_id' } } }
           },
           {
             id: 'patient1doc',
             doc: {
-              _id: 'patient1doc', type: 'person', patient_id: 'patient1',
+              _id: 'patient1doc', type: CONTACT_TYPES.PERSON, patient_id: 'patient1',
               parent: { _id: 'p1', parent: { _id: 'facility_id' } }
             }
           },
           {
-            id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } },
+            id: 'c2', doc: { _id: 'c2', type: CONTACT_TYPES.PERSON, parent: { _id: 'p2', parent: { _id: 'p3' } } } },
           {
             id: 'patient2doc',
             doc: {
-              _id: 'patient2doc', type: 'person', patient_id: 'patient2',
+              _id: 'patient2doc', type: CONTACT_TYPES.PERSON, patient_id: 'patient2',
               parent: { _id: 'p2', parent: { _id: 'p3' } }
             }
           },
           {
             id: 'c3',
-            doc: { _id: 'c3', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } }
+            doc: { _id: 'c3', type: CONTACT_TYPES.PERSON, parent: { _id: 'p2', parent: { _id: 'p3' } } }
           },
           {
             id: 'patient3doc',
-            doc: { _id: 'patient3doc', type: 'person', parent: { _id: 'facility_id' } }
+            doc: { _id: 'patient3doc', type: CONTACT_TYPES.PERSON, parent: { _id: 'facility_id' } }
           },
           {
             id: 'patient4doc',
-            doc: { _id: 'patient4doc', type: 'person', parent: { _id: 'p3' } }
+            doc: { _id: 'patient4doc', type: CONTACT_TYPES.PERSON, parent: { _id: 'p3' } }
           },
         ]});
 
@@ -3074,22 +3075,24 @@ describe('Authorization service', () => {
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
-          { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
+          { id: 'c1', 
+            doc: { _id: 'c1', type: CONTACT_TYPES.PERSON, 
+              parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
             doc: {
               _id: 'patient1doc',
-              type: 'person',
+              type: CONTACT_TYPES.PERSON,
               patient_id: 'patient1',
               parent: { _id: 'p1', parent: { _id: 'facility_id' } }
             }
           },
-          { id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } },
+          { id: 'c2', doc: { _id: 'c2', type: CONTACT_TYPES.PERSON, parent: { _id: 'p2', parent: { _id: 'p3' } } } },
           {
             id: 'patient2doc',
             doc: {
               _id: 'patient2doc',
-              type: 'person',
+              type: CONTACT_TYPES.PERSON,
               patient_id: 'patient2',
               parent: { _id: 'p2', parent: { _id: 'p3' } }
             }
@@ -3195,7 +3198,9 @@ describe('Authorization service', () => {
       const docObjs = [
         { // allowed
           doc: {
-            _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } }, patient_id: 'contact1'
+            _id: 'c1', 
+            type: CONTACT_TYPES.PERSON, 
+            parent: { _id: 'p1', parent: { _id: 'facility_id' } }, patient_id: 'contact1'
           },
           viewResults: {
             contactsByDepth: [
@@ -3207,7 +3212,9 @@ describe('Authorization service', () => {
           },
         },
         { // denied
-          doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } }, patient_id: 'contact2' },
+          doc: { _id: 'c2', 
+            type: CONTACT_TYPES.PERSON, 
+            parent: { _id: 'p2', parent: { _id: 'p3' } }, patient_id: 'contact2' },
           viewResults: {
             contactsByDepth: [
               { key: ['c2'], value: { shortcode: 'contact2' } },
@@ -3243,19 +3250,21 @@ describe('Authorization service', () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
           {
-            id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } },
+            id: 'c1', doc: { _id: 'c1', 
+              type: CONTACT_TYPES.PERSON, 
+              parent: { _id: 'p1', parent: { _id: 'facility_id' } },
               patient_id: 'contact1' }
           },
           {
-            id: 'patient1doc', doc: { _id: 'patient1doc', type: 'person',
+            id: 'patient1doc', doc: { _id: 'patient1doc', type: CONTACT_TYPES.PERSON,
               patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } }
           },
           {
-            id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } },
+            id: 'c2', doc: { _id: 'c2', type: CONTACT_TYPES.PERSON, parent: { _id: 'p2', parent: { _id: 'p3' } },
               patient_id: 'contact2' }
           },
           {
-            id: 'patient2doc', doc: { _id: 'patient2doc', type: 'person',
+            id: 'patient2doc', doc: { _id: 'patient2doc', type: CONTACT_TYPES.PERSON,
               patient_id: 'patient2', parent: { _id: 'p2', parent: { _id: 'p3' } } }
           },
         ]});
@@ -3390,12 +3399,15 @@ describe('Authorization service', () => {
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
-          { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
+          { id: 'c1', 
+            doc: { _id: 'c1', 
+              type: CONTACT_TYPES.PERSON, 
+              parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
             doc: {
               _id: 'patient1doc',
-              type: 'person',
+              type: CONTACT_TYPES.PERSON,
               patient_id: 'patient1',
               parent: { _id: 'p1', parent: { _id: 'facility_id' } }
             }
@@ -3488,12 +3500,15 @@ describe('Authorization service', () => {
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
-          { id: 'c1', doc: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
+          { id: 'c1', 
+            doc: { _id: 'c1', 
+              type: CONTACT_TYPES.PERSON, 
+              parent: { _id: 'p1', parent: { _id: 'facility_id' } } } },
           {
             id: 'patient1doc',
             doc: {
               _id: 'patient1doc',
-              type: 'person',
+              type: CONTACT_TYPES.PERSON,
               patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } }
             }},
           { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
@@ -3589,11 +3604,11 @@ describe('Authorization service', () => {
 
     it('should assign correct subject depth with contact', () => {
       const c1 = {
-        _id: 'c1', type: 'person',
+        _id: 'c1', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p1', parent: { _id: 'facility_id' } }, patient_id: '123456'
       };
       const c2 = {
-        _id: 'c2', type: 'person',
+        _id: 'c2', type: CONTACT_TYPES.PERSON,
         parent: { _id: 'p3', parent: { _id: 'p4' } }, place_id: 'place1'
       };
       const docObjs = [
@@ -3684,7 +3699,7 @@ describe('Authorization service', () => {
     it('should assign correct subjectIds when replicating hierarchy primary contacts', async () => {
       const contact1 = {
         _id: 'contact_id',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'place_id', parent: { _id: 'facility_id' } },
         patient_id: '123456',
       };
@@ -3770,7 +3785,7 @@ describe('Authorization service', () => {
     it('should assign correct subjectIds when replicating out of hierarchy primary contacts', async () => {
       const contact1 = {
         _id: 'contact',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'place', parent: { _id: 'facility' } },
         patient_id: '123456',
       };
@@ -3855,7 +3870,7 @@ describe('Authorization service', () => {
     it('should assign correct subjectIds when replicating disallowed primary contacts', async () => {
       const contact1 = {
         _id: 'contact',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'place', parent: { _id: 'facility' } },
         patient_id: '123456',
       };
@@ -3939,7 +3954,7 @@ describe('Authorization service', () => {
     it('should assign correct subjectIds when replicating contacts with broken hierarchies', async () => {
       const contact1 = {
         _id: 'contact',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: { _id: 'place', parent: { _id: 'facility' } },
         patient_id: '123456',
       };

@@ -44,7 +44,7 @@ const contacts = [
   },
   {
     _id: 'chw1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
@@ -54,26 +54,26 @@ const contacts = [
   },
   {
     _id: 'chw2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: 'phone2',
     name: 'chw2',
   },
   {
     _id: 'chw3',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'district_hospital' },
     phone: 'phone3',
   },
   {
     _id: 'chw4',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: 'phone4',
   },
   {
     _id: 'chw5',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone5',
     linked_docs: {
@@ -82,13 +82,13 @@ const contacts = [
   },
   {
     _id: 'chw6',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone6',
   },
   {
     _id: 'chw7',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     parent: { _id: 'other_place' },
     phone: 'phone7',
   }

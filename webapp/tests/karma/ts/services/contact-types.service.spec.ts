@@ -15,7 +15,7 @@ describe('ContactTypes service', () => {
     CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
     CONTACT_TYPES.CLINIC,
-    'person'
+    CONTACT_TYPES.PERSON,
   ];
 
   beforeEach(() => {
@@ -207,7 +207,7 @@ describe('ContactTypes service', () => {
 
   describe('getTypeId', () => {
     it('should return the type id of the provided contact', () => {
-      expect(service.getTypeId({ type: 'person' })).to.equal('person');
+      expect(service.getTypeId({ type: CONTACT_TYPES.PERSON })).to.equal(CONTACT_TYPES.PERSON);
       expect(service.getTypeId({ type: CONTACT_TYPES.CLINIC })).to.equal(CONTACT_TYPES.CLINIC);
       expect(service.getTypeId({ type: 'contact', contact_type: 'something' })).to.equal('something');
     });
@@ -303,7 +303,7 @@ describe('ContactTypes service', () => {
 
     it('should return false when type is not a leaf place type', () => {
       const types = [ { id: 'clinic1' }, { id: 'clinic2' }, { id: 'clinic3' } ];
-      expect(service.isLeafPlaceType(types, 'person')).to.equal(false);
+      expect(service.isLeafPlaceType(types, CONTACT_TYPES.PERSON)).to.equal(false);
       expect(service.isLeafPlaceType(types, 'health_center')).to.equal(false);
     });
 

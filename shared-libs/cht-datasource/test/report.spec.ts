@@ -9,7 +9,9 @@ import * as Remote from '../src/remote';
 import * as Core from '../src/libs/core';
 import { fakeGenerator } from './utils';
 import * as Input from '../src/input';
-import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('report', () => {
   const dataContext = { } as DataContext;
@@ -80,7 +82,7 @@ describe('report', () => {
         _id: 'report',
         contact: {
           _id: 'contact_id',
-          type: 'person',
+          type: PERSON,
           parent: {
             _id: 'parent_id',
             type: CONTACT_TYPES.CLINIC

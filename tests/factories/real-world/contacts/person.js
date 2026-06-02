@@ -8,6 +8,7 @@ const approxDateOfBirthMethod = 'approx';
 const phoneNumberFormat = '+256414######';
 const memberEligibleWoman = 'member_eligible_woman';
 const memberChild = 'member_child';
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const isChw = (subtype) => subtype === 'chw';
 const isManager = (subtype) => subtype === 'manager';
@@ -41,7 +42,7 @@ const person = () => {
     .sequence('_id', uuid)
     .option('subtype', 'manager')
     .attr('parent', '')
-    .attr('type', 'person')
+    .attr('type', CONTACT_TYPES.PERSON)
     .attr('sex', ['subtype'], (subtype) => {
       if (subtype === memberEligibleWoman) {
         return 'female';

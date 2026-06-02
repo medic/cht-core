@@ -1,3 +1,4 @@
+const { CONTACT_TYPES } = require('@medic/constants');
 
 module.exports = [
   {
@@ -16,7 +17,7 @@ module.exports = [
       {
         type: 'contact',
         modifyContent: (content, { contact }) => {
-          content.type = 'person';
+          content.type = CONTACT_TYPES.PERSON;
           content.parent_id = contact._id;
         },
       }
@@ -26,7 +27,7 @@ module.exports = [
     name: 'edit_contact_task',
     title: 'Edit Person',
     appliesTo: 'contacts',
-    appliesToType: ['person'],
+    appliesToType: [CONTACT_TYPES.PERSON],
     resolvedIf: () => false,
     events: [{
       id: 'edit_contact_event_id',

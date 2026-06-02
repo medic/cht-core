@@ -7,6 +7,9 @@ import * as Qualifier from '../src/qualifier';
 import * as Contact from '../src/contact';
 import { expect } from 'chai';
 import * as Core from '../src/libs/core';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('contact', () => {
   const dataContext = { } as DataContext;
@@ -135,7 +138,7 @@ describe('contact', () => {
       const pageData = { data: contactIds, cursor };
       const limit = 3;
       const stringifiedLimit = '3';
-      const contactTypeQualifier = { contactType: 'person' } as const;
+      const contactTypeQualifier = { contactType: PERSON } as const;
       const freetextQualifier = { freetext: 'freetext' } as const;
       const qualifier = {
         ...contactTypeQualifier,
@@ -329,7 +332,7 @@ describe('contact', () => {
     });
 
     describe('getUuids', () => {
-      const contactTypeQualifier = { contactType: 'person' } as const;
+      const contactTypeQualifier = { contactType: PERSON } as const;
       const freetextQualifier = { freetext: 'freetext' } as const;
       const qualifier = {
         ...contactTypeQualifier,

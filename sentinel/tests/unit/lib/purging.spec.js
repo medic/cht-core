@@ -835,7 +835,7 @@ describe('ServerSidePurge', () => {
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: CONTACT_TYPES.HEALTH_CENTER, doc: { _id: 'first', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         { id: 'f1', key: CONTACT_TYPES.CLINIC, doc: { _id: 'f1', place_id: 's1', type: CONTACT_TYPES.CLINIC } },
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: CONTACT_TYPES.PERSON } },
         { id: 'f4', key: CONTACT_TYPES.CLINIC, doc: { _id: 'f4', place_id: 's4', type: CONTACT_TYPES.CLINIC }},
       ]});
 
@@ -953,7 +953,7 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
-          { _id: 'f2', type: 'person' },
+          { _id: 'f2', type: CONTACT_TYPES.PERSON },
           [
             { _id: 'f2-r1', type: DOC_TYPES.DATA_RECORD, form: 'a', patient_id: 'f2' },
             { _id: 'f2-r2', type: DOC_TYPES.DATA_RECORD, form: 'b', patient_id: 'f2' }
@@ -962,7 +962,7 @@ describe('ServerSidePurge', () => {
         ]);
         chai.expect(purgeFn.args[5]).to.shallowDeepEqual([
           { roles: roles.b },
-          { _id: 'f2', type: 'person' },
+          { _id: 'f2', type: CONTACT_TYPES.PERSON },
           [
             { _id: 'f2-r1', type: DOC_TYPES.DATA_RECORD, form: 'a', patient_id: 'f2' },
             { _id: 'f2-r2', type: DOC_TYPES.DATA_RECORD, form: 'b', patient_id: 'f2' }
@@ -997,11 +997,11 @@ describe('ServerSidePurge', () => {
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: 'first', doc: { _id: 'first', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         { id: 'f1', key: CONTACT_TYPES.CLINIC, doc: { _id: 'f1', type: CONTACT_TYPES.CLINIC, place_id: 's1' } },
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person', patient_id: 's2' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: CONTACT_TYPES.PERSON, patient_id: 's2' } },
       ]});
 
       db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person', patient_id: 's2' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: CONTACT_TYPES.PERSON, patient_id: 's2' } },
       ]});
 
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id || doc.place_id);
@@ -1068,7 +1068,7 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
-          { _id: 'f2', type: 'person', patient_id: 's2' },
+          { _id: 'f2', type: CONTACT_TYPES.PERSON, patient_id: 's2' },
           [{ _id: 'f2-r3', type: DOC_TYPES.DATA_RECORD, form: 'a', patient_id: 's2' }],
           [{ _id: 'f2-m1', type: DOC_TYPES.DATA_RECORD, contact: { _id: 'f2' } }]
         ]);
@@ -1094,11 +1094,11 @@ describe('ServerSidePurge', () => {
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         { id: 'f1', key: CONTACT_TYPES.CLINIC, doc: { _id: 'f1', type: CONTACT_TYPES.CLINIC, place_id: 's1' } },
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: CONTACT_TYPES.PERSON } },
       ]});
 
       db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: CONTACT_TYPES.PERSON } },
       ]});
 
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
@@ -1179,7 +1179,7 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
-          { _id: 'f2', type: 'person' },
+          { _id: 'f2', type: CONTACT_TYPES.PERSON },
           [],
           []
         ]);
@@ -1198,7 +1198,7 @@ describe('ServerSidePurge', () => {
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         { id: 'f1', key: CONTACT_TYPES.CLINIC, doc: { _id: 'f1', type: CONTACT_TYPES.CLINIC, place_id: 's1' } },
-        { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
+        { id: 'f2', key: 'person', doc: { _id: 'f2', type: CONTACT_TYPES.PERSON } },
       ]});
 
       db.queryMedic.onCall(1).resolves({ rows: [
@@ -1254,8 +1254,8 @@ describe('ServerSidePurge', () => {
         type: CONTACT_TYPES.CLINIC, place_id: 's1' }).returns(['f1-m1']);
       purgeFn.withArgs({ roles: roles.b }, { _id: 'f1', type: CONTACT_TYPES.CLINIC, place_id: 's1' })
         .returns(['f1-m1', 'f1-r1']);
-      purgeFn.withArgs({ roles: roles.a }, { _id: 'f2', type: 'person' }).returns(['f2-m1', 'f2-r1']);
-      purgeFn.withArgs({ roles: roles.b }, { _id: 'f2', type: 'person' }).returns(['f2-r1']);
+      purgeFn.withArgs({ roles: roles.a }, { _id: 'f2', type: CONTACT_TYPES.PERSON }).returns(['f2-m1', 'f2-r1']);
+      purgeFn.withArgs({ roles: roles.b }, { _id: 'f2', type: CONTACT_TYPES.PERSON }).returns(['f2-r1']);
 
       return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
         chai.expect(dbA.allDocs.callCount).to.equal(1);

@@ -12,6 +12,9 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { Selectors } from '@mm-selectors/index';
+import { CONTACT_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('Select2SearchService', () => {
   let service: Select2SearchService;
@@ -80,7 +83,7 @@ describe('Select2SearchService', () => {
 
   describe('init', () => {
     it('should set empty value when initial value is empty', async () => {
-      await service.init(selectEl, [ 'person' ], {initialValue: ''});
+      await service.init(selectEl, [ PERSON ], {initialValue: ''});
       expect(selectEl.select2.args[0][0].dir).to.equal('rtl');
       expect(selectEl.val.callCount).to.equal(3);
       expect(selectEl.val.args[0]).to.deep.equal([ ]);    // first time the component reads the current value
@@ -98,12 +101,12 @@ describe('Select2SearchService', () => {
         doc: {
           _id: 'aaa-222-333',
           _rev: '1-000123',
-          type: 'person',
+          type: PERSON,
           name: 'Charles C'
         },
       };
       lineageModelGeneratorService.contact.resolves(person);
-      await service.init(selectEl, [ 'person' ], { initialValue: 'aaa-222-333' });
+      await service.init(selectEl, [ PERSON ], { initialValue: 'aaa-222-333' });
       expect(selectEl.val.callCount).to.equal(2);
       expect(selectEl.val.args[0]).to.deep.equal([ 'aaa-222-333' ]); // set the value
       expect(selectEl.val.args[1]).to.deep.equal([ ]);               // read the value
@@ -120,7 +123,7 @@ describe('Select2SearchService', () => {
     it('should set the id value when a deleted reference is set and fixed label', async () => {
       selectEl.children.returns({ length: 0 });
       lineageModelGeneratorService.contact.rejects({ code: 404, error: 'not found' });
-      await service.init(selectEl, ['person'], {initialValue: 'aaa-222-333'});
+      await service.init(selectEl, [PERSON], {initialValue: 'aaa-222-333'});
       expect(selectEl.val.callCount).to.equal(2);
       expect(selectEl.val.args[0]).to.deep.equal([ 'aaa-222-333' ]);  // set the value
       expect(selectEl.val.args[1]).to.deep.equal([ ]);                // read the value
@@ -136,7 +139,7 @@ describe('Select2SearchService', () => {
     it('should set the filter by parent contact when app form is opened from contacts tab', fakeAsync(async () => {
       activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { id: 'A-123' } } } } };
 
-      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
+      await service.init(selectEl, [ PERSON ], { initialValue: '', filterByParent: true });
 
       const selectConfig = selectEl.select2.args[0][0];
       selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
@@ -145,7 +148,7 @@ describe('Select2SearchService', () => {
       expect(searchService.search.calledOnce).to.be.true;
       expect(searchService.search.args[0][0]).to.equal('contacts');
       expect(searchService.search.args[0][1]).to.deep.equal({
-        types: { selected: [ 'person' ] },
+        types: { selected: [ PERSON ] },
         search: 'Eric',
         parent: 'A-123'
       });
@@ -155,7 +158,7 @@ describe('Select2SearchService', () => {
     it('should set the filter by parent contact when contact form is opened from contacts tab', fakeAsync(async () => {
       activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { parent_id: 'A-456' } } } } };
 
-      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
+      await service.init(selectEl, [ PERSON ], { initialValue: '', filterByParent: true });
 
       const selectConfig = selectEl.select2.args[0][0];
       selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
@@ -164,7 +167,7 @@ describe('Select2SearchService', () => {
       expect(searchService.search.calledOnce).to.be.true;
       expect(searchService.search.args[0][0]).to.equal('contacts');
       expect(searchService.search.args[0][1]).to.deep.equal({
-        types: { selected: [ 'person' ] },
+        types: { selected: [ PERSON ] },
         search: 'Eric',
         parent: 'A-456'
       });
@@ -174,7 +177,7 @@ describe('Select2SearchService', () => {
     it('should not set the filter by parent contact when no contact ID', fakeAsync(async () => {
       activatedRoute.firstChild = { firstChild: { snapshot: { params: undefined } } };
 
-      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: true });
+      await service.init(selectEl, [ PERSON ], { initialValue: '', filterByParent: true });
 
       const selectConfig = selectEl.select2.args[0][0];
       selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
@@ -183,7 +186,7 @@ describe('Select2SearchService', () => {
       expect(searchService.search.calledOnce).to.be.true;
       expect(searchService.search.args[0][0]).to.equal('contacts');
       expect(searchService.search.args[0][1]).to.deep.equal({
-        types: { selected: [ 'person' ] },
+        types: { selected: [ PERSON ] },
         search: 'Eric',
         parent: undefined
       });
@@ -193,7 +196,7 @@ describe('Select2SearchService', () => {
     it('should not set the filter by parent contact when filterByParent turn off', fakeAsync(async () => {
       activatedRoute.firstChild = { firstChild: { firstChild: { snapshot: { params: { id: 'A-123' } } } } };
 
-      await service.init(selectEl, [ 'person' ], { initialValue: '', filterByParent: false });
+      await service.init(selectEl, [ PERSON ], { initialValue: '', filterByParent: false });
 
       const selectConfig = selectEl.select2.args[0][0];
       selectConfig.ajax.transport({ data: { q: 'Eric' } }, () => {}, () => {});
@@ -202,7 +205,7 @@ describe('Select2SearchService', () => {
       expect(searchService.search.calledOnce).to.be.true;
       expect(searchService.search.args[0][0]).to.equal('contacts');
       expect(searchService.search.args[0][1]).to.deep.equal({
-        types: { selected: [ 'person' ] },
+        types: { selected: [ PERSON ] },
         search: 'Eric',
       });
       expect(searchService.search.args[0][2]).to.deep.equal({ limit: 20, skip: 0, hydrateContactNames: true });

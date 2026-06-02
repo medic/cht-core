@@ -15,7 +15,7 @@ const docs = [
   },
   {
     _id: 'contact1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     patient_id: 'patient1',
     parent: { _id: 'clinic1' },
     reported_date: 100,

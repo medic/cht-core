@@ -4,7 +4,9 @@ import sinon from 'sinon';
 
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
+const { PERSON } = CONTACT_TYPES;
 
 describe('ContactChangeFilter service', () => {
 
@@ -64,7 +66,7 @@ describe('ContactChangeFilter service', () => {
     });
 
     it('returns true for new children', () => {
-      const change1 = { doc: { type: 'person', parent: { _id: '123'} } };
+      const change1 = { doc: { type: PERSON, parent: { _id: '123'} } };
       const change2 = { doc: { type: 'health_center', parent: { _id: '123'} } };
       const change3 = { doc: { type: CONTACT_TYPES.CLINIC, parent: { _id: '123'} } };
       const change4 = { doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL, parent: { _id: '123'} } };
@@ -77,7 +79,7 @@ describe('ContactChangeFilter service', () => {
     });
 
     it('returns true for previous children', () => {
-      const change1 = { doc: { _id: 'p1', type: 'person' } };
+      const change1 = { doc: { _id: 'p1', type: PERSON } };
       const change2 = { doc: { _id: 'o1', type: CONTACT_TYPES.DISTRICT_HOSPITAL } };
       const change3 = { doc: { _id: 'p2', type: CONTACT_TYPES.CLINIC } };
       const contact = {
@@ -371,7 +373,7 @@ describe('ContactChangeFilter service', () => {
     });
 
     it('returns true when change is a relevant child contact', () => {
-      const change = { id: 'child1', doc: { _id: 'child1', type: 'person', parent: { _id: 'contact1' } } };
+      const change = { id: 'child1', doc: { _id: 'child1', type: PERSON, parent: { _id: 'contact1' } } };
       const contact = { doc: { _id: 'contact1' } };
       expect(service.isRelevantChange(change, contact)).to.equal(true);
     });

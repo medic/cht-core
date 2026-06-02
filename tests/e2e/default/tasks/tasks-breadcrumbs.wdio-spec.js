@@ -50,7 +50,7 @@ describe('Tasks tab breadcrumbs', () => {
     contact: supervisorContact._id,
   });
 
-  const patient = personFactory.build({ name: 'patient1', type: 'person', parent: clinic });
+  const patient = personFactory.build({ name: 'patient1', type: CONTACT_TYPES.PERSON, parent: clinic });
   const patient2 = personFactory.build({ name: 'patient2', patient_id: 'patient2', parent: healthCenter1 });
   const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
 

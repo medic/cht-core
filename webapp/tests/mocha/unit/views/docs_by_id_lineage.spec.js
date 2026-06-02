@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 const utils = require('./utils');
 const map = utils.loadView('medic-db', 'medic-client', 'docs_by_id_lineage');
-const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('docs_by_id_lineage view', () => {
   beforeEach(() => {
@@ -103,7 +103,7 @@ describe('docs_by_id_lineage view', () => {
 
   describe('contacts lineage', () => {
     it('emits lineage for type `person`, `clinic`, `health_center` and `district_hospital`', () => {
-      const person = { _id: 'person', type: 'person' };
+      const person = { _id: 'person', type: CONTACT_TYPES.PERSON };
       const result = map(person, true);
       expect(result.length).to.equal(1);
       expect(result[0]).to.deep.equal({ key: [ 'person', 0 ], value: { _id: 'person' }});
@@ -137,7 +137,7 @@ describe('docs_by_id_lineage view', () => {
         }
       };
       for (let depth = 1; depth < 10; depth++) {
-        const doc = { _id: 'person', type: 'person', parent: {} };
+        const doc = { _id: 'person', type: CONTACT_TYPES.PERSON, parent: {} };
         let currentParent = doc.parent;
         for (let i = 1; i <= depth; i++) {
           currentParent._id = `parent${i}`;
@@ -155,7 +155,7 @@ describe('docs_by_id_lineage view', () => {
     it('does not emit lineage for empty parents', () => {
       const doc1 = {
         _id: 'contact1',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: {}
       };
       const result1 = map(doc1, true);
@@ -164,7 +164,7 @@ describe('docs_by_id_lineage view', () => {
 
       const doc2 = {
         _id: 'contact2',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: {
           _id: 'contact3',
           parent: {}
@@ -178,7 +178,7 @@ describe('docs_by_id_lineage view', () => {
 
       const doc3 = {
         _id: 'contact3',
-        type: 'person',
+        type: CONTACT_TYPES.PERSON,
         parent: {
           _id: 'contact4',
           parent: {

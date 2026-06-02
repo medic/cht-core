@@ -61,7 +61,7 @@ const contacts = [
   },
   {
     _id: 'supervisor1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'supervisor1',
     parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } },
     phone: '+40722111111',
@@ -75,21 +75,21 @@ const contacts = [
   },
   {
     _id: 'chw1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'chw1',
     parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
     phone: '+40722222222',
   },
   {
     _id: 'patient1',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient1',
     parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
     phone: '+40722333333',
   },
   {
     _id: 'patient2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient2',
     parent: { _id: 'clinic1', parent: { _id: 'hc1', parent: { _id: 'PARENT_PLACE' } } },
     phone: '+40722444444',
@@ -102,7 +102,7 @@ const contacts = [
   },
   {
     _id: 'supervisor2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'supervisor2',
     parent: { _id: 'DISTRICT_2' },
     phone: '+40722444444',
@@ -116,7 +116,7 @@ const contacts = [
   },
   {
     _id: 'chw2',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'chw2',
     parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } },
     phone: '+40722555555',
@@ -130,14 +130,14 @@ const contacts = [
   },
   {
     _id: 'patient3',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient3',
     parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
     phone: '+40722777777',
   },
   {
     _id: 'patient4',
-    type: 'person',
+    type: CONTACT_TYPES.PERSON,
     name: 'patient4',
     parent: { _id: 'clinic2', parent: { _id: 'hc2', parent: { _id: 'DISTRICT_2' } } },
     phone: '+40722777777',

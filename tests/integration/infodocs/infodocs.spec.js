@@ -3,6 +3,7 @@ const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v7;
 const moment = require('moment');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 //
 // NB: using sentinel processing to delay the reading of infodocs is not guaranteed to be successful
@@ -216,7 +217,7 @@ describe('infodocs', () => {
       };
       await utils.updateSettings(settings, { ignoreReload: 'sentinel' });
 
-      const doc = { _id: uuid(), type: 'person' };
+      const doc = { _id: uuid(), type: CONTACT_TYPES.PERSON };
       const { rev } = await utils.saveDoc(doc);
 
       const sentinelDate = await utils.getSentinelDate();

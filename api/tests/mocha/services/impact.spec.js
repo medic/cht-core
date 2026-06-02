@@ -2,6 +2,8 @@ const sinon = require('sinon');
 const chai = require('chai').use(require('chai-as-promised'));
 const db = require('../../../src/db');
 const service = require('../../../src/services/impact');
+const { CONTACT_TYPES } = require('@medic/constants');
+
 describe('impact service', () => {
   afterEach(() => sinon.restore());
 
@@ -13,7 +15,7 @@ describe('impact service', () => {
     medicQuery.withArgs('medic-client/contacts_by_type', sinon.match.object)
       .resolves({
         rows: contacts || [
-          { key: ['person'], value: 5 },
+          { key: [CONTACT_TYPES.PERSON], value: 5 },
           { key: ['clinic'], value: 2 }
         ]
       });
@@ -57,7 +59,7 @@ describe('impact service', () => {
     chai.expect(result.users).to.deep.equal({ count: 10 });
     chai.expect(result.contacts.count).to.equal(7);
     chai.expect(result.contacts.by_type).to.have.deep.members([
-      { type: 'person', count: 5 },
+      { type: CONTACT_TYPES.PERSON, count: 5 },
       { type: 'clinic', count: 2 }
     ]);
 

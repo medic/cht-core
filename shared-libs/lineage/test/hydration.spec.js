@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const lineageFactory = require('../src');
-const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Lineage', function() {
   let lineage;
@@ -67,7 +67,7 @@ describe('Lineage', function() {
   describe('fillContactsInDocs', function() {
     it('skips null docs in the array', function() {
       const docs = [null, { _id: 'doc1', contact: { _id: 'contact1' } }];
-      const contacts = [{ _id: 'contact1', type: 'person' }];
+      const contacts = [{ _id: 'contact1', type: CONTACT_TYPES.PERSON }];
 
       lineage.fillContactsInDocs(docs, contacts);
 
@@ -84,8 +84,8 @@ describe('Lineage', function() {
         { _id: 'doc4', contact: { _id: 'contactx' } }
       ];
       const contacts = [
-        { _id: 'contact1', type: 'person' },
-        { _id: 'contact2', type: 'person' }
+        { _id: 'contact1', type: CONTACT_TYPES.PERSON },
+        { _id: 'contact2', type: CONTACT_TYPES.PERSON }
       ];
 
       // when
@@ -117,7 +117,7 @@ describe('Lineage', function() {
       const fakeLineage = [
         { _id: 'b', type: CONTACT_TYPES.CLINIC },
         null,
-        { _id: 'd', type: 'person' },
+        { _id: 'd', type: CONTACT_TYPES.PERSON },
       ];
 
       // when
@@ -145,7 +145,8 @@ describe('Lineage', function() {
           }
         }
       };
-      const contactInLineage = { _id: 'contact', type: 'person', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const contactInLineage = { _id: 'contact', type: CONTACT_TYPES.PERSON, 
+        parent: { _id: 'b', parent: { _id: 'c' } } };
       const fakeLineage = [
         contactInLineage,
         null,
@@ -165,7 +166,7 @@ describe('Lineage', function() {
   describe('fetchHydratedDoc', function() {
     it('supports callback as second argument', function(done) {
       query.resolves({ rows: [] });
-      get.resolves({ _id: 'a', type: 'person' });
+      get.resolves({ _id: 'a', type: CONTACT_TYPES.PERSON });
 
       lineage.fetchHydratedDoc('a', function(err, result) {
         chai.expect(err).to.be.null;
