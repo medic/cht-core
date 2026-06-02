@@ -5,17 +5,19 @@ const pagination = require('../pagination');
 const TYPE_PREFIX = `replication-fail-`;
 const MAX_FAILURES = 50;
 const REPORTING_PERIOD_FORMAT = 'YYYY-MM';
+const DAILY_COUNT_KEY_FORMAT = 'YYYY-MM-DD';
 const UNKNOWN = 'unknown';
 const MAX_PERIODS = 60;
 
 const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const log = await getLog(userCtx.name);
+  const now = moment();
 
   // Counts are only set on userCtx as each phase of the request completes. When a count is missing
   // we record 'unknown' instead of omitting the key, so a stable shape on the failure entry tells you
   // (by which counters are 'unknown') how far the request progressed before failing.
   const failure = {
-    date: moment().valueOf(),
+    date: now.valueOf(),
     status_code: statusCode,
     duration: duration,
     request_id: requestId,
@@ -30,6 +32,10 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   if (log.failures.length > MAX_FAILURES) {
     log.failures = log.failures.slice(-MAX_FAILURES);
   }
+
+  const dayKey = now.format(DAILY_COUNT_KEY_FORMAT);
+  log.daily_counts = log.daily_counts || {};
+  log.daily_counts[dayKey] = (log.daily_counts[dayKey] || 0) + 1;
 
   return db.medicLogs.put(log);
 };
@@ -54,6 +60,7 @@ const getLog = async (userName) => {
         date: moment().valueOf(),
         total_failures: 0,
         failures: [],
+        daily_counts: {},
       };
     }
     throw err;
@@ -151,7 +158,14 @@ const get = async ({ user, reportingPeriod, cursor = 0, limit = pagination.DEFAU
   return getPageByRange({ reportingPeriod, skip: cursor, limit });
 };
 
+const getUsersWithFailuresCount = async (intervalDays) => {
+  const sinceKey = moment().subtract(intervalDays, 'days').format(DAILY_COUNT_KEY_FORMAT);
+  const result = await db.medicLogs.query('logs/replication_failures', { startkey: [sinceKey] });
+  return new Set(result.rows.map(row => row.key[1])).size;
+};
+
 module.exports = {
   capture: captureFailure,
   get,
+  getUsersWithFailuresCount,
 };
