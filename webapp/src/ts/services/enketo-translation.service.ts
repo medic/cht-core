@@ -35,16 +35,12 @@ export class EnketoTranslationService {
     path = path || '';
     const result = {};
     this.withElements(data).forEach((n:any) => {
-      const typeAttribute = n.attributes.getNamedItem('type');
       const updatedPath = path + '/' + n.nodeName;
       let value;
 
       const hasChildren = this.withElements(n.childNodes).length > 0;
       if (hasChildren) {
         value = this.nodesToJs(n.childNodes, repeatPaths, updatedPath);
-      } else if (typeAttribute && typeAttribute.value === 'binary') {
-        // this is attached to the doc instead of inlined
-        value = '';
       } else {
         value = n.textContent;
       }
@@ -91,7 +87,56 @@ export class EnketoTranslationService {
       return found;
     }
 
-    return elem.children(name);
+    // Match by node name in JS rather than passing `name` to the jQuery selector
+    // data keys can be `_attachments` names containing ':' / '/' (form-id-derived),
+    // which jQuery would reject as an invalid selector.
+    return elem.children().filter((_idx, child) => child.nodeName === name);
+  }
+
+  /**
+   * True for an attachment-reference value: the position-derived name stored for
+   * an inline-binary field after its blob is attached, e.g.
+   * `<formId>/<xpath>/<field>` (slash-delimited XML names, no `user-file-`
+   * prefix). Inline base64 never matches: it carries `+`/`=` and isn't a path.
+   */
+  isAttachmentRef(value): boolean {
+    // `:` appears in contact form ids (e.g. `contact:person:create`); base64
+    // never contains `:` so allowing it here doesn't widen the base64 overlap.
+    return typeof value === 'string' && /^[A-Za-z_][\w.:-]*(?:\/[A-Za-z_][\w.:-]*)+$/.test(value);
+  }
+
+  // For [type=binary] nodes the form's instance default / calculate / itext
+  // base64 is the source of truth. Skip the bind when the saved value is empty
+  // (keep the form default) or is an attachment reference (the real data lives
+  // in the attachment). Genuine inline base64 still binds.
+  private shouldSkipBinaryBind(elem, data): boolean {
+    const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
+    if (typeAttr !== 'binary') {
+      return false;
+    }
+    return [ null, undefined, '' ].includes(data) || this.isAttachmentRef(data);
+  }
+
+  private bindArrayToXml(elem, data) {
+    const parent = elem.parent();
+    elem.remove();
+
+    data.forEach((dataEntry) => {
+      const clone = elem.clone();
+      this.bindJsonToXml(clone, dataEntry);
+      parent.append(clone);
+    });
+  }
+
+  private bindObjectToXml(elem, data, childMatcher?) {
+    if (!elem.children().length) {
+      this.bindJsonToXml(elem, data._id);
+    }
+
+    Object.keys(data).forEach((key) => {
+      const current = this.findCurrentElement(elem, key, childMatcher);
+      this.bindJsonToXml(current, data[key]);
+    });
   }
 
   bindJsonToXml(elem, data, childMatcher?) {
@@ -100,32 +145,21 @@ export class EnketoTranslationService {
     elem.removeAttr('jr:template');
     elem.removeAttr('template');
 
+    if (this.shouldSkipBinaryBind(elem, data)) {
+      return;
+    }
+
     if (data === null || typeof data !== 'object') {
       elem.text(data);
       return;
     }
 
     if (Array.isArray(data)) {
-      const parent = elem.parent();
-      elem.remove();
-
-      data.forEach((dataEntry) => {
-        const clone = elem.clone();
-        this.bindJsonToXml(clone, dataEntry);
-        parent.append(clone);
-      });
+      this.bindArrayToXml(elem, data);
       return;
     }
 
-    if (!elem.children().length) {
-      this.bindJsonToXml(elem, data._id);
-    }
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-      const current = this.findCurrentElement(elem, key, childMatcher);
-      this.bindJsonToXml(current, value);
-    });
+    this.bindObjectToXml(elem, data, childMatcher);
   }
 
   getHiddenFieldList (model, dbDocFields:Array<any>) {
