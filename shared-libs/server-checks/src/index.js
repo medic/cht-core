@@ -25,6 +25,7 @@ const checkCouchDb = async (serverUrl) => {
   do {
     try {
       await checks.checkCouchDbVersion(serverUrl);
+      await checks.checkCouchDbFlavor(serverUrl);
       await checks.checkCouchDbNoAdminPartyMode(serverUrl);
       await checks.checkCouchDbCluster(serverUrl);
       await checks.checkCouchDbSystemDbs(serverUrl);

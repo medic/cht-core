@@ -163,4 +163,25 @@ describe('checks', () => {
 
   });
 
+  describe('checkCouchDbFlavor', () => {
+
+    it('CHT CouchDB', async () => {
+      sinon.stub(request, 'get').resolves({ version: '5.1.0' });
+      await service.checkCouchDbFlavor('http://admin:pass@localhost:5984/');
+      chai.expect(request.get.callCount).to.equal(1);
+      chai.expect(request.get.args[0][0].url).to.equal('http://admin:pass@localhost:5984/_node/_local/_config/cht/version');
+    });
+
+    it('non-CHT CouchDB', () => {
+      sinon.stub(request, 'get').rejects({ status: 404 });
+      return service.checkCouchDbFlavor('http://admin:pass@localhost:5984/')
+        .then(() => chai.assert.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err.toString()).to.include('incompatible with the version of CouchDB you are using');
+          chai.expect(request.get.callCount).to.equal(1);
+        });
+    });
+
+  });
+
 });

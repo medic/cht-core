@@ -30,6 +30,7 @@ describe('entry point', () => {
     sinon.stub(checks, 'checkNodeVersion').resolves();
     sinon.stub(checks, 'checkServerUrl').resolves();
     sinon.stub(checks, 'checkCouchDbVersion').resolves();
+    sinon.stub(checks, 'checkCouchDbFlavor').resolves();
     sinon.stub(checks, 'checkCouchDbNoAdminPartyMode').resolves();
     sinon.stub(checks, 'checkCouchDbCluster').resolves();
     sinon.stub(checks, 'checkCouchDbSystemDbs').resolves();
@@ -37,11 +38,13 @@ describe('entry point', () => {
     chai.expect(checks.checkNodeVersion.callCount).to.equal(1);
     chai.expect(checks.checkServerUrl.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbVersion.callCount).to.equal(1);
+    chai.expect(checks.checkCouchDbFlavor.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbNoAdminPartyMode.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbCluster.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbSystemDbs.callCount).to.equal(1);
     chai.expect(checks.checkServerUrl.args[0][0]).to.equal('http://admin:pass@localhost/medic');
     chai.expect(checks.checkCouchDbVersion.args[0][0]).to.equal('http://admin:pass@localhost/');
+    chai.expect(checks.checkCouchDbFlavor.args[0][0]).to.equal('http://admin:pass@localhost/');
     chai.expect(checks.checkCouchDbNoAdminPartyMode.args[0][0]).to.equal('http://admin:pass@localhost/');
     chai.expect(checks.checkCouchDbCluster.args[0][0]).to.equal('http://admin:pass@localhost/');
     chai.expect(checks.checkCouchDbSystemDbs.args[0][0]).to.equal('http://admin:pass@localhost/');
@@ -65,6 +68,7 @@ describe('entry point', () => {
     checkCouchDbVersion.throws(new Error('db not found'));
     checkCouchDbVersion.onCall(100).resolves();
     sinon.stub(checks, 'checkCouchDbNoAdminPartyMode').resolves();
+    sinon.stub(checks, 'checkCouchDbFlavor').resolves();
     sinon.stub(checks, 'checkCouchDbCluster').resolves();
     sinon.stub(checks, 'checkCouchDbSystemDbs').resolves();
 
@@ -75,6 +79,7 @@ describe('entry point', () => {
     chai.expect(checks.checkNodeVersion.callCount).to.equal(1);
     chai.expect(checks.checkServerUrl.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbVersion.callCount).to.equal(101);
+    chai.expect(checks.checkCouchDbFlavor.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbNoAdminPartyMode.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbCluster.callCount).to.equal(1);
     chai.expect(checks.checkCouchDbSystemDbs.callCount).to.equal(1);

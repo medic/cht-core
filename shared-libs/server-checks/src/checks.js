@@ -107,6 +107,19 @@ const checkCouchDbVersion = async (couchUrl) => {
   console.log(`CouchDB Version: ${version}`);
 };
 
+const checkCouchDbFlavor = async (couchUrl) => {
+  try {
+    const response = await request.get({ url: `${couchUrl}_node/_local/_config/cht/version`, json: true });
+    if (!response) {
+      throw new Error('Empty response');
+    }
+  } catch {
+    throw new Error('This version of the CHT API is incompatible with the version of CouchDB you are using. ' +
+                    'Please make sure you are using the official CHT CouchDB image. ' +
+                    'See: https://docs.communityhealthtoolkit.org/core/install/hosting/docker/#couchdb');
+  }
+};
+
 module.exports = {
   checkNodeVersion,
   checkServerUrl,
@@ -114,4 +127,5 @@ module.exports = {
   checkCouchDbNoAdminPartyMode,
   checkCouchDbCluster,
   checkCouchDbSystemDbs,
+  checkCouchDbFlavor,
 };
