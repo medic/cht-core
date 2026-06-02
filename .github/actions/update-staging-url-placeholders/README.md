@@ -38,9 +38,9 @@ jobs:
 ### After
 
 ```markdown
-* [Core](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-core.yml)
-* [CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb.yml)
-* [CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb-clustered.yml)
+* [Core](https://staging.app.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-core.yml)
+* [CouchDB Single](https://staging.app.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb.yml)
+* [CouchDB Cluster](https://staging.app.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb-clustered.yml)
 ```
 
 ## Development
