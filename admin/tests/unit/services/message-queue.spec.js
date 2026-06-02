@@ -9,6 +9,7 @@ describe('MessageQueue service', function() {
   let Languages;
   let utils;
   let query;
+  let GetSummaries;
   let translate;
   let clock;
 
@@ -16,6 +17,7 @@ describe('MessageQueue service', function() {
     Settings = sinon.stub();
     Languages = sinon.stub();
     query = sinon.stub();
+    GetSummaries = sinon.stub();
     translate = sinon.stub();
     translate.instant = sinon.stub();
     translate.storageKey = sinon.stub();
@@ -43,6 +45,7 @@ describe('MessageQueue service', function() {
       $provide.value('Settings', Settings);
       $provide.value('Languages', Languages);
       $provide.value('MessageQueueUtils', utils);
+      $provide.value('GetSummaries', GetSummaries);
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
     });
 
@@ -289,9 +292,9 @@ describe('MessageQueue service', function() {
         rows: [{ id: 'contact1', value: 'contact1', key: 'phone1' }]
       });
 
-      query.withArgs('medic/doc_summaries_by_id').resolves({
-        rows: [{ id: 'contact1', value: { name: 'James', phone: 'phone1' } }]
-      });
+      GetSummaries
+        .withArgs(['contact1'])
+        .resolves([{ _id: 'contact1', type: 'person', name: 'James', phone: 'phone1' }]);
 
       translate.instant.withArgs('task1').returns('task 1 translation');
 
@@ -303,17 +306,15 @@ describe('MessageQueue service', function() {
 
       return service.query('due').then(result => {
         chai.expect(result.total).to.equal(2);
-        chai.expect(query.callCount).to.equal(4);
+        chai.expect(query.callCount).to.equal(3);
 
         chai.expect(query.args[2]).to.deep.equal([
           'medic-client/contacts_by_phone',
           { keys: ['phone1', 'phone2'] }
         ]);
 
-        chai.expect(query.args[3]).to.deep.equal([
-          'medic/doc_summaries_by_id',
-          { keys: ['contact1'] }
-        ]);
+        chai.expect(GetSummaries.callCount).to.equal(1);
+        chai.expect(GetSummaries.args[0][0]).to.deep.equal(['contact1']);
 
         chai.expect(translate.instant.callCount).to.equal(1);
         chai.expect(translate.instant.args[0]).to.deep.equal([ 'task1', { group: 1 } ]);
@@ -412,17 +413,13 @@ describe('MessageQueue service', function() {
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [ { value: 'contact1', key: 'phone1' }, { value: 'contact2', key: 'phone2' } ] });
 
-      query
-        .withArgs('medic/doc_summaries_by_id')
-        .resolves({
-          rows: [
-            { value: { id: 'contact1', name: 'contact one', phone: 'phone1' } },
-            { value: { id: 'contact2', name: 'contact two', phone: 'phone2' } },
-          ]
-        });
+      GetSummaries.resolves([
+        { _id: 'contact1', type: 'person', name: 'contact one', phone: 'phone1' },
+        { _id: 'contact2', type: 'person', name: 'contact two', phone: 'phone2' },
+      ]);
 
       return service.query('due').then(result => {
-        chai.expect(query.callCount).to.equal(4);
+        chai.expect(query.callCount).to.equal(3);
         chai.expect(query.args[2]).to.deep.equal([
           'medic-client/contacts_by_phone', { keys: [ 'phone1', 'phone2' ]}
         ]);
@@ -590,13 +587,11 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient_id', value: 'recipient' }]});
-      query
-        .withArgs('medic/doc_summaries_by_id')
-        .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient' }}]});
+      GetSummaries.resolves([{ _id: 'recipient_id', type: 'person', phone: 'recipient' }]);
 
       return service.query('tab').then(result => {
         chai.expect(result.messages.length).to.equal(15);
-        chai.expect(query.callCount).to.equal(6);
+        chai.expect(query.callCount).to.equal(5);
         chai.expect(query.args[2]).to.deep.equal([
           'medic-client/contacts_by_reference',
           {
@@ -761,13 +756,11 @@ describe('MessageQueue service', function() {
           { key: 'recipient2', id: 'recipient2_id' },
           { key: 'recipient3', id: 'recipient3_id' }
         ]});
-      query
-        .withArgs('medic/doc_summaries_by_id')
-        .resolves({ rows: [
-          { key: 'recipient1_id', value: { phone: 'recipient1', name: 'recipient 1' }},
-          { key: 'recipient2_id', value: { phone: 'recipient2', name: 'recipient 2' }},
-          { key: 'recipient3_id', value: { phone: 'recipient3', name: 'recipient 3' }}
-        ]});
+      GetSummaries.resolves([
+        { _id: 'recipient1_id', type: 'person', phone: 'recipient1', name: 'recipient 1' },
+        { _id: 'recipient2_id', type: 'person', phone: 'recipient2', name: 'recipient 2' },
+        { _id: 'recipient3_id', type: 'person', phone: 'recipient3', name: 'recipient 3' },
+      ]);
 
       return service.query('tab').then((result) => {
         chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(13);
@@ -1079,9 +1072,9 @@ describe('MessageQueue service', function() {
       query
         .withArgs('medic-client/contacts_by_phone')
         .resolves({ rows: [{ key: 'recipient1', id: 'recipien_id' }]});
-      query
-        .withArgs('medic/doc_summaries_by_id')
-        .resolves({ rows: [{ key: 'recipient_id', value: { phone: 'recipient1', name: 'recipient' }}]});
+      GetSummaries.resolves([
+        { _id: 'recipien_id', type: 'person', phone: 'recipient1', name: 'recipient' },
+      ]);
 
       return service.query('tab').then((result) => {
         chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(4);

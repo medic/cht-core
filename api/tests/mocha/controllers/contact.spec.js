@@ -10,6 +10,7 @@ describe('Contact Controller', () => {
   const contactGet = sandbox.stub();
   const contactGetWithLineage = sandbox.stub();
   const contactGetUuidsPage = sandbox.stub();
+  const contactGetSummaries = sandbox.stub();
 
   let assertPermissions;
   let serverUtilsError;
@@ -22,6 +23,7 @@ describe('Contact Controller', () => {
     bind.withArgs(Contact.v1.get).returns(contactGet);
     bind.withArgs(Contact.v1.getWithLineage).returns(contactGetWithLineage);
     bind.withArgs(Contact.v1.getUuidsPage).returns(contactGetUuidsPage);
+    bind.withArgs(Contact.v1.getSummaries).returns(contactGetSummaries);
     controller = require('../../../src/controllers/contact');
   });
 
@@ -251,6 +253,25 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+    });
+
+    describe('getSummaries', () => {
+      it('returns summaries for the provided uuids', async () => {
+        const uuids = ['a', 'b'];
+        const summaries = [{ _id: 'a' }, { _id: 'b' }];
+        req = { body: { uuids } };
+        contactGetSummaries.resolves(summaries);
+
+        await controller.v1.getSummaries(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_contacts'] }
+        )).to.be.true;
+        expect(contactGetSummaries.calledOnceWithExactly(uuids)).to.be.true;
+        expect(res.json.calledOnceWithExactly(summaries)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
       });
     });
   });

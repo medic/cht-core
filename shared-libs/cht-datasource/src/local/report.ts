@@ -26,6 +26,7 @@ import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc }
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertReportInput } from '../libs/parameter-validators';
+import { summariseReport } from '../libs/summary';
 
 const FORM_DOC_ID_PREFIX = 'form:';
 
@@ -103,6 +104,24 @@ export namespace v1 {
       }
 
       return report;
+    };
+  };
+
+  /** @internal */
+  export const getSummaries = ({ medicDb }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    return async (uuids: string[]): Promise<Report.v1.ReportSummary[]> => {
+      if (!uuids.length) {
+        return [];
+      }
+      const docs = await getMedicDocsByIds(uuids);
+      const summaries: Report.v1.ReportSummary[] = [];
+      for (const doc of docs) {
+        if (isReport(doc)) {
+          summaries.push(summariseReport(doc));
+        }
+      }
+      return summaries;
     };
   };
 

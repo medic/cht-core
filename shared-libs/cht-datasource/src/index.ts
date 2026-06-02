@@ -44,6 +44,7 @@ export { DataContext } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export { InvalidArgumentError, ResourceNotFoundError } from './libs/error';
+export { summarise } from './libs/summary';
 export * as Contact from './contact';
 export * as Person from './person';
 export * as Place from './place';
@@ -88,6 +89,15 @@ export const getDatasource = (ctx: DataContext) => {
         chtPermissionsSettings?: Record<string, string[]>
       ) => ctx.bind(hasAnyPermission)(permissionsGroupList, userRoles, chtPermissionsSettings),
       contact: {
+        /**
+         * Returns summary records for the given contact UUIDs.
+         * @param uuids the UUIDs of the contacts to summarise
+         * @returns an array of contact summaries. UUIDs that do not identify an existing contact (or that the caller
+         * is not authorized to view) are silently omitted from the result.
+         * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+         */
+        getSummaries: (uuids: string[]) => ctx.bind(Contact.v1.getSummaries)(uuids),
+
         /**
          * Returns a contact by their UUID.
          * @param uuid the UUID of the contact to retrieve
@@ -364,6 +374,15 @@ export const getDatasource = (ctx: DataContext) => {
         ) => ctx.bind(Person.v1.update)(updated)
       },
       report: {
+        /**
+         * Returns summary records for the given report UUIDs.
+         * @param uuids the UUIDs of the reports to summarise
+         * @returns an array of report summaries. UUIDs that do not identify an existing report (or that the caller
+         * is not authorized to view) are silently omitted from the result.
+         * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+         */
+        getSummaries: (uuids: string[]) => ctx.bind(Report.v1.getSummaries)(uuids),
+
         /**
          * Returns a report by their UUID.
          * @param uuid the UUID of the report to retrieve

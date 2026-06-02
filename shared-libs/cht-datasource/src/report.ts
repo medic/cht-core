@@ -5,7 +5,13 @@ import * as Local from './local';
 import { FreetextQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import {
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertUuidQualifier,
+  assertUuids,
+} from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
@@ -31,6 +37,29 @@ export namespace v1 {
     readonly place?: Contact.v1.ContactWithLineage | NormalizedParent;
   }
 
+  /**
+   * A compact summary of a report record used in lists and search results.
+   */
+  export interface ReportSummary {
+    readonly _id: string;
+    readonly _rev: string;
+    readonly from?: string;
+    readonly phone?: string;
+    readonly form: string;
+    readonly read?: string[];
+    readonly valid: boolean;
+    readonly verified?: boolean;
+    readonly reported_date?: number;
+    readonly contact?: string;
+    readonly lineage: string[];
+    readonly subject: {
+      readonly name?: string;
+      readonly value?: string;
+      readonly type?: string;
+    };
+    readonly case_id?: string;
+  }
+
 
   /**
    * Returns a function for retrieving a report from the given data context.
@@ -53,6 +82,30 @@ export namespace v1 {
     ): Promise<Nullable<Report>> => {
       assertUuidQualifier(qualifier);
       return fn(qualifier);
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for retrieving summary records for the given report UUIDs from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving an array of report summaries
+   * @throws Error if a data context is not provided
+   */
+  export const getSummaries = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.getSummaries, Remote.Report.v1.getSummaries);
+
+    /**
+     * Returns summary records for the provided report UUIDs. Any UUIDs that do not identify an existing report
+     * (or that the caller is not authorized to view) are silently omitted from the result.
+     * @param uuids the UUIDs of the reports to summarise
+     * @returns an array of report summaries
+     * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+     */
+    const curriedFn = async (uuids: string[]): Promise<ReportSummary[]> => {
+      assertUuids(uuids);
+      return fn(uuids);
     };
     return curriedFn;
   };

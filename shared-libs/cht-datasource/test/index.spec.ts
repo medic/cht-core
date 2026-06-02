@@ -336,6 +336,7 @@ describe('CHT Script API - getDatasource', () => {
           [
             'getByUuid',
             'getByUuidWithLineage',
+            'getSummaries',
             'getUuidsByTypeFreetext',
             'getUuidsPageByTypeFreetext',
             'getUuidsPageByFreetext',
@@ -558,6 +559,7 @@ describe('CHT Script API - getDatasource', () => {
 
       it('contains expected keys', () => {
         expect(report).to.have.all.keys([
+          'getSummaries',
           'getUuidsByFreetext',
           'getUuidsPageByFreetext',
           'getByUuid',

@@ -140,6 +140,13 @@ export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is U
   }
 };
 
+/** @internal */
+export const assertUuids: (uuids: unknown) => asserts uuids is string[] = (uuids: unknown) => {
+  if (!Array.isArray(uuids) || uuids.some(uuid => typeof uuid !== 'string' || !uuid.length)) {
+    throw new InvalidArgumentError(`Invalid UUIDs [${JSON.stringify(uuids)}].`);
+  }
+};
+
 /** @ignore */
 export const isContactType = (value: ContactTypeQualifier | FreetextQualifier): value is ContactTypeQualifier => {
   return 'contactType' in value;
