@@ -238,18 +238,20 @@ export class TelemetryService {
         const dbNameParts = dbName.split(this.NAME_DIVIDER);
         if (dbNameParts.length >= 4) {
           const datePart = `${dbNameParts[1]}-${dbNameParts[2]}-${dbNameParts[3]}`;
-          
+
           // Don't submit today's telemetry records
           if (datePart === today.formatted) {
             continue;
           }
-          
+
+          let db;
           try {
-            const db = this.windowRef.PouchDB(dbName);
+            db = this.windowRef.PouchDB(dbName);
             await this.aggregate(db, dbName);
             await db.destroy();
           } catch (error) {
             console.error('Error when aggregating the telemetry records', error);
+            this.closeDataBase(db);
           }
         }
       }
@@ -304,7 +306,7 @@ export class TelemetryService {
    *                        aggregated if required
    * @memberof Telemetry
    */
-  record (key, value?) {
+  record(key, value?) {
     return this.ngZone.runOutsideAngular(() => this._record(key, value));
   }
 
