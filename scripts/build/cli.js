@@ -1,14 +1,13 @@
 const commands = require('./index');
+const { getCommand } = require('./get-command');
 
-const getCommand = () => {
-  const cmdKey = process.argv.length > 2 && process.argv[2];
-  const cmd = cmdKey && commands[cmdKey];
-  if (!cmd) {
-    throw new Error(`Unknown command: "${cmdKey}"`);
-  }
-  return cmd;
-};
+const SCRIPT_NAME = 'scripts/build/cli.js';
 
 (async () => {
-  await getCommand()();
+  try {
+    await getCommand({ commands, scriptName: SCRIPT_NAME })();
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
 })();
