@@ -379,8 +379,28 @@ const validatePasswordReset = (password) => {
   };
 };
 
-const validateSession = async (req) => {
+const loginWithFallback = async (req) => {
+  const originalUser = req.body.user;
   const sessionRes = await createSession(req);
+  if (sessionRes.status !== 401) {
+    return sessionRes;
+  }
+
+  const lowercasedUser = originalUser?.toLowerCase();
+  if (!lowercasedUser || lowercasedUser === originalUser) {
+    return sessionRes;
+  }
+
+  req.body.user = lowercasedUser;
+  const fallbackRes = await createSession(req);
+  if (fallbackRes.status !== 200) {
+    req.body.user = originalUser;
+  }
+  return fallbackRes;
+};
+
+const validateSession = async (req) => {
+  const sessionRes = await loginWithFallback(req);
   if (sessionRes.status !== 200) {
     const error = new Error('Not logged in');
     error.status = sessionRes.status;
