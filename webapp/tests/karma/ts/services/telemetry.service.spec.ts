@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { VersionService } from '@mm-services/version.service';
 
 describe('TelemetryService', () => {
   const NOW = new Date(2018, 10, 10, 12, 33).getTime(); // -> 2018-11-10T12:33:00
@@ -14,6 +15,7 @@ describe('TelemetryService', () => {
   let metaDb;
   let medicDb;
   let sessionService;
+  let versionService;
   let clock;
   let telemetryDb;
   let consoleErrorSpy;
@@ -100,6 +102,7 @@ describe('TelemetryService', () => {
       })
     };
     sessionService = { userCtx: sinon.stub().returns({ name: 'greg' }) };
+    versionService = { getServiceWorker: sinon.stub().resolves({ version: '4.1.0' }) };
     const mockDatabases = sinon.stub();
     const originalResolves = mockDatabases.resolves;
     mockDatabases.resolves = function(dbNames) {
@@ -121,6 +124,7 @@ describe('TelemetryService', () => {
       providers: [
         { provide: DbService, useValue: dbService },
         { provide: SessionService, useValue: sessionService },
+        { provide: VersionService, useValue: versionService },
         { provide: DOCUMENT, useValue: documentMock },
       ]
     });
@@ -283,6 +287,7 @@ describe('TelemetryService', () => {
       expect(aggregatedDocNov.metadata.user).to.equal('greg');
       expect(aggregatedDocNov.metadata.versions).to.deep.equal({
         app: '3.0.0',
+        serviceWorker: '4.1.0',
         forms: { anc_followup: '1-abc' },
         settings: 'somerandomrevision',
       });
@@ -307,6 +312,7 @@ describe('TelemetryService', () => {
       expect(aggregatedDocOct.metadata.user).to.equal('greg');
       expect(aggregatedDocOct.metadata.versions).to.deep.equal({
         app: '3.0.0',
+        serviceWorker: '4.1.0',
         forms: { anc_followup: '1-abc' },
         settings: 'somerandomrevision',
       });
@@ -433,6 +439,30 @@ describe('TelemetryService', () => {
       expect(telemetryDb.post.callCount).to.equal(5);       // 5th call
       expect(metaDb.put.calledTwice).to.be.true;            // Telemetry count is the same
 
+      expect(consoleErrorSpy.notCalled).to.be.true;
+    });
+
+    it('should include serviceWorker version in aggregated metadata', async () => {
+      windowMock.indexedDB.databases.resolves([
+        'telemetry-2018-11-09-greg',
+      ]);
+      setupDbMocks();
+      versionService.getServiceWorker.resolves({ version: '4.1.0' });
+      await service.record('test', 1);
+      const aggregatedDoc = metaDb.put.args[0][0];
+      expect(aggregatedDoc.metadata.versions.serviceWorker).to.equal('4.1.0');
+      expect(consoleErrorSpy.notCalled).to.be.true;
+    });
+
+    it('should set serviceWorker version to undefined when getServiceWorker rejects', async () => {
+      windowMock.indexedDB.databases.resolves([
+        'telemetry-2018-11-09-greg',
+      ]);
+      setupDbMocks();
+      versionService.getServiceWorker.rejects(new Error('SW not available'));
+      await service.record('test', 1);
+      const aggregatedDoc = metaDb.put.args[0][0];
+      expect(aggregatedDoc.metadata.versions.serviceWorker).to.be.undefined;
       expect(consoleErrorSpy.notCalled).to.be.true;
     });
   });

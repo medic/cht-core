@@ -17,7 +17,7 @@ import { ToolBarComponent } from '@mm-components/tool-bar/tool-bar.component';
 import { MatCard, MatCardHeader, MatCardTitle, MatCardContent, MatCardSubtitle } from '@angular/material/card';
 import { TranslateDirective, TranslatePipe } from '@ngx-translate/core';
 import { MatButton } from '@angular/material/button';
-import { DecimalPipe } from '@angular/common';
+import { NgIf, NgSwitch, NgSwitchCase, NgFor, DecimalPipe } from '@angular/common';
 import { PartnerImagePipe } from '@mm-pipes/resource-icon.pipe';
 import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
 
@@ -32,6 +32,10 @@ import { SimpleDateTimePipe } from '@mm-pipes/date.pipe';
     MatCardContent,
     MatButton,
     MatCardSubtitle,
+    NgIf,
+    NgSwitch,
+    NgSwitchCase,
+    NgFor,
     DecimalPipe,
     TranslatePipe,
     PartnerImagePipe,
@@ -49,6 +53,8 @@ export class AboutComponent implements OnInit, OnDestroy {
   androidDataUsage;
   androidDeviceInfo;
   version;
+  appVersion;
+  versionMismatch = false;
   localRev;
   remoteRev;
   dbInfo;
@@ -106,24 +112,50 @@ export class AboutComponent implements OnInit, OnDestroy {
       });
   }
 
-  private getVersionAndRevisions() {
-    this.versionService
-      .getLocal()
-      .then(({ version, rev }) => {
-        this.version = version;
-        this.localRev = rev;
-      })
-      .catch(error => {
-        console.error('Could not access local version', error);
-      });
+  private async getDeployVersion() {
+    try {
+      const { version, rev } = await this.versionService.getLocal();
+      this.version = version;
+      this.localRev = rev;
+    } catch (error) {
+      console.error('Could not access local version', error);
+      this.version = await this.translateService.get('app.version.unknown');
+    }
+  }
 
-    this.versionService
-      .getRemoteRev()
-      .catch(error => {
-        console.debug('Could not access remote ddoc rev', error);
-        return this.translateService.get('app.version.unknown');
-      })
-      .then(rev => this.remoteRev = rev);
+  private async getRemoteVersion() {
+    try {
+      this.remoteRev = await this.versionService.getRemoteRev();
+    } catch (error) {
+      console.debug('Could not access remote ddoc rev', error);
+      this.remoteRev = await this.translateService.get('app.version.unknown');
+    }
+  }
+
+  private async getServiceWorkerVersion() {
+    try {
+      const { version } = await this.versionService.getServiceWorker();
+      this.appVersion = version;
+    } catch (error) {
+      console.debug('Could not access service worker app version', error);
+    }
+  }
+
+  private async getVersionAndRevisions() {
+    this.appVersion = undefined;
+    await Promise.all([
+      this.getDeployVersion(),
+      this.getRemoteVersion(),
+      this.getServiceWorkerVersion(),
+    ]);
+    if (this.version && this.appVersion && this.version !== this.appVersion) {
+      this.versionMismatch = true;
+      const msg = `Version mismatch: deploy-info version (${this.version}) ` +
+        `and service worker version (${this.appVersion}) are different.`;
+      console.error(msg);
+    } else {
+      this.versionMismatch = false;
+    }
   }
 
   private refreshAndroidDataUsage() {

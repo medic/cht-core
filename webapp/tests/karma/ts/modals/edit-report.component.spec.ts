@@ -11,6 +11,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { VersionService } from '@mm-services/version.service';
 import { DOC_TYPES } from '@medic/constants';
 
 describe('EditReportComponent', () => {
@@ -44,6 +45,7 @@ describe('EditReportComponent', () => {
           { provide: UpdateFacilityService, useValue: updateFacilityService },
           { provide: MatDialogRef, useValue: matDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: {} },
+          { provide: VersionService, useValue: { getServiceWorker: sinon.stub().resolves({ version: '4.1.0' }) } },
         ]
       })
       .compileComponents()

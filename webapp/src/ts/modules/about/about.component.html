@@ -23,6 +23,11 @@
             <p test-id="about-version">{{version}}</p>
           </div>
 
+          <div *ngIf="versionMismatch">
+            <p test-id="about-app-version">{{appVersion}}</p>
+            <p class="alert alert-warning" translate>app.version.mismatch</p>
+          </div>
+
           <div>
             <label translate>debug.supported_browser</label>
             <div>

@@ -21,6 +21,7 @@ import { Selectors } from '@mm-selectors/index';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SessionService } from '@mm-services/session.service';
+import { VersionService } from '@mm-services/version.service';
 import { DbService } from '@mm-services/db.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -148,6 +149,7 @@ describe('Reports Component', () => {
           { provide: PerformanceService, useValue: performanceService },
           { provide: SessionService, useValue: sessionService },
           { provide: DbService, useValue: { get: sinon.stub().resolves() } },
+          { provide: VersionService, useValue: { getServiceWorker: sinon.stub().resolves({ version: '4.1.0' }) } },
           { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },

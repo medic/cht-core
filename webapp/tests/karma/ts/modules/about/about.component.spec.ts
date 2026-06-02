@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, discardPeriodicTasks, TestBed, waitForAsync } from '@angular/core/testing';
+import { NgIf } from '@angular/common';
 import { Router } from '@angular/router';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -29,6 +30,7 @@ describe('About Component', () => {
   let dbInfo;
   let router;
   let medicAndroid;
+  let consoleErrorMock;
   const originalMedicAndroid = window.medicmobile_android;
 
   beforeEach(waitForAsync(() => {
@@ -37,8 +39,9 @@ describe('About Component', () => {
     ];
 
     versionService = {
-      getLocal: sinon.stub().resolves('123'),
+      getLocal: sinon.stub().resolves({ version: '4.5.0', rev: '1' }),
       getRemoteRev: sinon.stub().resolves('456'),
+      getServiceWorker: sinon.stub().resolves({ version: '4.5.0' }),
     };
 
     dbInfo = sinon.stub().resolves('db-info');
@@ -53,6 +56,7 @@ describe('About Component', () => {
       getDataUsage: sinon.stub()
     };
     window.medicmobile_android = undefined;
+    consoleErrorMock = sinon.stub(console, 'error');
 
     return TestBed
       .configureTestingModule({
@@ -61,6 +65,7 @@ describe('About Component', () => {
           RouterTestingModule,
           MatCardModule,
           MatIcon,
+          NgIf,
           AboutComponent,
           ToolBarComponent,
           NavigationComponent,
@@ -105,6 +110,7 @@ describe('About Component', () => {
     sessionService.userCtx.returns('session info');
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.resolves({ version: '3.5.0' }); 
 
     component.ngOnInit();
     flush();
@@ -117,6 +123,7 @@ describe('About Component', () => {
     expect(component.remoteRev).to.equal('15');
     expect(component.androidDataUsage).to.be.undefined;
     expect(component.androidDeviceInfo).to.be.undefined;
+    expect(component.appVersion).to.equal('3.5.0');
   }));
 
   it('should initialize data when the device is android', fakeAsync(() => {
@@ -124,6 +131,7 @@ describe('About Component', () => {
     sessionService.userCtx.returns('session info');
     versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
     versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.resolves({ version: '3.5.0' }); 
     medicAndroid.getDataUsage.returns(JSON.stringify({
       system: { rx: 124, tx: 345 },
       app: { rx: 124, tx: 345 }
@@ -159,6 +167,7 @@ describe('About Component', () => {
       },
       software: { androidVersion: '9', osApiLevel: 28 }
     });
+    expect(component.appVersion).to.equal('3.5.0');
   }));
 
   it('should display partner logo if it exists', fakeAsync(() => {
@@ -189,7 +198,6 @@ describe('About Component', () => {
   }));
 
   it('should log non 404 errors when getting partners resource - #7100', fakeAsync(() => {
-    const consoleErrorMock = sinon.stub(console, 'error');
     resourceIconsService.getDocResources.rejects({ status: 403 });
 
     component.ngOnInit();
@@ -197,6 +205,78 @@ describe('About Component', () => {
 
     expect(consoleErrorMock.callCount).to.equal(1);
     expect(consoleErrorMock.args[0][0]).to.equal('Error fetching "partners" doc');
+  }));
+
+  it('should set appVersion from service worker deploy info', fakeAsync(() => {
+    versionService.getLocal.resolves({ version: '4.5.0', rev: '12' });
+    versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.resolves({ version: '4.5.0' });
+
+    component.ngOnInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.appVersion).to.equal('4.5.0');
+    expect(component.version).to.equal('4.5.0');
+    expect(component.versionMismatch).to.be.false;
+    expect(consoleErrorMock.notCalled).to.be.true;
+  }));
+
+  it('should handle failure to get service worker app version', fakeAsync(() => {
+    versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
+    versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.rejects(new Error('SW not available'));
+
+    component.ngOnInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.appVersion).to.be.undefined;
+  }));
+
+  it('should not set appVersion when service worker returns no version field', fakeAsync(() => {
+    versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
+    versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.resolves({});
+
+    component.ngOnInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.appVersion).to.be.undefined;
+  }));
+
+  it('should not set versionMismatch when versions are the same', fakeAsync(() => {
+    versionService.getLocal.resolves({ version: '4.5.0', rev: '12' });
+    versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.resolves({ version: '4.5.0' });
+
+    component.ngOnInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.version).to.equal('4.5.0');
+    expect(component.appVersion).to.equal('4.5.0');
+    expect(component.versionMismatch).to.be.false;
+    expect(consoleErrorMock.notCalled).to.be.true;
+  }));
+
+  it('should set versionMismatch and log error when versions differ', fakeAsync(() => {
+    versionService.getLocal.resolves({ version: '3.5.0', rev: '12' });
+    versionService.getRemoteRev.resolves('15');
+    versionService.getServiceWorker.resolves({ version: '4.5.0' });
+
+    component.ngOnInit();
+    flush();
+    discardPeriodicTasks();
+
+    expect(component.version).to.equal('3.5.0');
+    expect(component.appVersion).to.equal('4.5.0');
+    expect(component.versionMismatch).to.be.true;
+    expect(consoleErrorMock.calledOnce).to.be.true;
+    expect(consoleErrorMock.args[0][0]).to.include('Version mismatch');
+    expect(consoleErrorMock.args[0][0]).to.include('3.5.0');
+    expect(consoleErrorMock.args[0][0]).to.include('4.5.0');
   }));
 
   describe('secretDoor()', () => {
