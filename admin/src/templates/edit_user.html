@@ -8,7 +8,19 @@
   on-submit="editUser()"
 >
 
-  <form action="" method="POST">
+  <!-- Loading spinner -->
+  <div ng-if="loadingUserDetails" class="loading-status">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error screen -->
+  <div ng-if="!loadingUserDetails && errorLoadingUserDetails" class="error-message">
+    <p translate>admin.user.load.error</p>
+    <a ng-click="cancel()" translate>cancel</a>
+  </div>
+
+  <!-- Form: only shown when data loaded successfully -->
+  <form action="" method="POST" ng-if="!loadingUserDetails && !errorLoadingUserDetails">
 
     <div class="form-group required" ng-class="{'has-error': errors.username}">
       <label for="edit-username" translate>User Name</label>

@@ -176,14 +176,19 @@ angular
         .map((row) => row.doc);
     };
 
+    $scope.loadingUserDetails = true;
+    $scope.errorLoadingUserDetails = false;
     this.setupPromise = $q.all([determineEditUserModel(), datasourcePromise])
       .then(([model, datasource]) => {
         $scope.editUserModel = model;
+        $scope.loadingUserDetails = false;
         validateSkipPasswordPermission(datasource);
         populateFacilitynContact();
       })
       .catch(err => {
         $log.error('Error determining user model', err);
+        $scope.loadingUserDetails = false;
+        $scope.errorLoadingUserDetails = true;
       });
 
     const populateFacilitynContact = () => {
