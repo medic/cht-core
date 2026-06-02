@@ -3,7 +3,7 @@ const utils = require('@utils');
 const reportFactory = require('@factories/cht/reports/generic-report');
 const placeFactory = require('@factories/cht/contacts/place');
 const dataFactory = require('@factories/cht/generate');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('impact', () => {
 
@@ -66,9 +66,9 @@ describe('impact', () => {
 
     it('all contact types are aggregated and returned', async () => {
       const places = [
-        placeFactory.place().build({ type: 'contact', contact_type: 'person' }),
-        placeFactory.place().build({ type: 'contact', contact_type: 'p10_province' }),
-        placeFactory.place().build({ type: 'contact', contact_type: 'p20_district' })
+        placeFactory.place().build({ type: DOC_TYPES.CONTACT, contact_type: 'person' }),
+        placeFactory.place().build({ type: DOC_TYPES.CONTACT, contact_type: 'p10_province' }),
+        placeFactory.place().build({ type: DOC_TYPES.CONTACT, contact_type: 'p20_district' })
       ];
       await utils.saveDocs(places);
 

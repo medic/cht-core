@@ -11,7 +11,7 @@ import { LocalDataContext } from '../../src/local/libs/data-context';
 import * as LocalCore from '../../src/local/libs/core';
 import * as Input from '../../src/input';
 import { InvalidArgumentError, ResourceNotFoundError } from '../../src';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 describe('local person', () => {
   let localContext: LocalDataContext;
@@ -454,7 +454,7 @@ describe('local person', () => {
         expect(getReportedDateTimestamp.calledOnceWithExactly(input.reported_date)).to.be.true;
         expect(createDocInner.calledOnceWithExactly({
           ...input,
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: customPersonType.id,
           parent: minifiedParent,
           reported_date: reportedDate

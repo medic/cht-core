@@ -20,6 +20,7 @@ import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('Contacts effects', () => {
   let effects: ContactsEffects;
@@ -283,7 +284,7 @@ describe('Contacts effects', () => {
         contactTypesService.getTypeId.callsFake(contact => contact.contact_type || contact.type);
         contactViewModelGeneratorService.getContact.resolves({
           _id: 'contact',
-          doc: { _id: 'contact', type: 'contact', contact_type: 'hospital' },
+          doc: { _id: 'contact', type: DOC_TYPES.CONTACT, contact_type: 'hospital' },
         });
         contactViewModelGeneratorService.loadChildren.resolves([
           { type: { id: 'person' }, contacts: [{ _id: 'person1' }] },
@@ -295,7 +296,7 @@ describe('Contacts effects', () => {
 
         expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
         expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
-          { _id: 'contact', doc: { _id: 'contact', type: 'contact', contact_type: 'hospital' } },
+          { _id: 'contact', doc: { _id: 'contact', type: DOC_TYPES.CONTACT, contact_type: 'hospital' } },
           { getChildPlaces: true },
         ]);
         const receiveSelectedContactChildren:any = ContactsActions.prototype.receiveSelectedContactChildren;

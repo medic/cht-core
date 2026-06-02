@@ -5,6 +5,7 @@ const rewire = require('rewire');
 const db = require('../../src/db');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
+const { DOC_TYPES } = require('@medic/constants');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
@@ -495,7 +496,7 @@ describe('patient registration', () => {
         reported_date: 1234,
         contact: {
           _id: 'julie', name: 'Julie', phone: '+1234',
-          parent: { _id: 'place', type: 'contact', contact_type: 'place' }
+          parent: { _id: 'place', type: DOC_TYPES.CONTACT, contact_type: 'place' }
         }
       };
 

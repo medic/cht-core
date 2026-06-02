@@ -23,6 +23,7 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import events from 'enketo-core/src/js/event';
+import { DOC_TYPES } from '@medic/constants';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
@@ -252,7 +253,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     } else { // adding
       this.trackMetadata.action = 'add';
       this.contact = {
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: this.routeSnapshot.params?.type,
         parent: this.routeSnapshot.params?.parent_id || '',
       };

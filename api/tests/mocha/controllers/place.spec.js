@@ -4,6 +4,7 @@ const { Place, Qualifier} = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('Place Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -187,7 +188,7 @@ describe('Place Controller', () => {
           name: 'test-user',
           _id: '123',
           rev: '1-rev',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'place',
           parent: {
             _id: '1'

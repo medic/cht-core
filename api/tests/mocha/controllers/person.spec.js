@@ -4,6 +4,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('Person Controller', () => {
   const sandbox = sinon.createSandbox();
@@ -182,7 +183,7 @@ describe('Person Controller', () => {
           name: 'test-user',
           _id: '123',
           rev: '1-rev',
-          type: 'contact',
+          type: DOC_TYPES.CONTACT,
           contact_type: 'person',
           parent: 'p1',
           reported_date: 12312312

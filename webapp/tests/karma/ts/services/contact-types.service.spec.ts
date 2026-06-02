@@ -4,7 +4,7 @@ import { assert, expect } from 'chai';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES,  DOC_TYPES } from '@medic/constants';
 
 
 describe('ContactTypes service', () => {
@@ -114,7 +114,7 @@ describe('ContactTypes service', () => {
     });
 
     it('returns true for contact type', () => {
-      expect(service.includes({ type: 'contact' })).to.equal(true);
+      expect(service.includes({ type: DOC_TYPES.CONTACT })).to.equal(true);
     });
 
     it('returns false for random type', () => {
@@ -209,7 +209,7 @@ describe('ContactTypes service', () => {
     it('should return the type id of the provided contact', () => {
       expect(service.getTypeId({ type: 'person' })).to.equal('person');
       expect(service.getTypeId({ type: CONTACT_TYPES.CLINIC })).to.equal(CONTACT_TYPES.CLINIC);
-      expect(service.getTypeId({ type: 'contact', contact_type: 'something' })).to.equal('something');
+      expect(service.getTypeId({ type: DOC_TYPES.CONTACT, contact_type: 'something' })).to.equal('something');
     });
 
     it('should not crash when provided invalid inputs', () => {

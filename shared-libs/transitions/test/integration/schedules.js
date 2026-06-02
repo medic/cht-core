@@ -4,7 +4,7 @@ const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contact = {
   phone: '+1234',
@@ -308,7 +308,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: {
         parent: { contact: { phone: '+5551596' } },
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'patient',
         patient_id: '98765'
       },
@@ -380,7 +380,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '123' },
       patient: {
         _id: 'uuid',
-        type: 'contact',
+        type: DOC_TYPES.CONTACT,
         contact_type: 'some_patient',
         patient_id: '123',
       }
@@ -517,7 +517,8 @@ describe('functional schedules', () => {
       }]
     });
 
-    const patient = { muted: true, parent: { contact: { phone: '+5551596' } }, type: 'contact', contact_type: 'chp' };
+    const patient = { muted: true, parent: { contact: { phone: '+5551596' } }, 
+      type: DOC_TYPES.CONTACT, contact_type: 'chp' };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -577,7 +578,7 @@ describe('functional schedules', () => {
     const patient = {
       muted: false,
       parent: { contact: { phone: '+5551596' } },
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       contact_type: 'person',
       patient_id: '98765',
     };

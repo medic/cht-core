@@ -9,7 +9,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
@@ -92,7 +92,7 @@ describe('Contact form attachments', () => {
     return personFactory.build({
       name: contactName,
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       contact_type: 'person_with_attachments',
       photo: photoFieldValue,
       _attachments: {

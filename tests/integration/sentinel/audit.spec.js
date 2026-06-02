@@ -10,7 +10,7 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'district_hospital',
     place_id: 'the_district_hospital',
     reported_date: new Date().getTime()
@@ -18,7 +18,7 @@ const contacts = [
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'the_health_center',
     parent: { _id: 'district_hospital' },
@@ -27,7 +27,7 @@ const contacts = [
   {
     _id: 'clinic',
     name: 'Clinic',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
@@ -43,7 +43,7 @@ const contacts = [
   {
     _id: 'person',
     name: 'Person',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'person',
     patient_id: 'patient',
     parent: { _id: 'clinic', 

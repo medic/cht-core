@@ -43,7 +43,7 @@ describe('self_report transition', () => {
       const noFrom = { type: DOC_TYPES.DATA_RECORD, form: 'configured_form' };
       chai.expect(transition.filter({ doc: noFrom })).to.equal(false);
 
-      const notDataRecord = { type: 'contact', from: 'someone', form: 'configured_form' };
+      const notDataRecord = { type: DOC_TYPES.CONTACT, from: 'someone', form: 'configured_form' };
       chai.expect(transition.filter({ doc: notDataRecord })).to.equal(false);
 
       const notConfiguredForm = { type: DOC_TYPES.DATA_RECORD, from: 'someone', form: 'other_form' };

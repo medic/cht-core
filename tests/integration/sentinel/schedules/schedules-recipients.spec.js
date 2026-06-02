@@ -19,7 +19,7 @@ const VALID_PHONE='+18005550123';
 const contacts = [
   {
     _id: 'patient',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     name: 'Alice',
     phone: PATIENT_PHONE,
   },
@@ -33,7 +33,7 @@ const contacts = [
   },
   {
     _id: 'contact_no_phone',
-    type: 'contact'
+    type: DOC_TYPES.CONTACT
   },
   {
     _id: 'parent',

@@ -12,7 +12,7 @@ import { assertFieldsUnchanged, getReportedDateTimestamp, validateCursor } from 
 import * as Input from '../input';
 import { assertHasValidParentType, assertSameParentLineage, fetchHydratedDoc, minifyDoc } from './libs/lineage';
 import { assertPersonInput } from '../libs/parameter-validators';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
 
 const DEFAULT_PERSON_TYPE = {
   id: 'person',
@@ -29,7 +29,7 @@ const getTypeProperties = (settings: DataObject, input: Input.v1.PersonInput) =>
     throw new InvalidArgumentError(`[${input.type}] is not a valid person type.`);
   }
   return customType
-    ? { contact_type: input.type, type: 'contact' }
+    ? { contact_type: input.type, type: DOC_TYPES.CONTACT }
     : { type: input.type };
 };
 

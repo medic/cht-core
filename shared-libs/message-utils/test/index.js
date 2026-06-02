@@ -3,7 +3,7 @@ const moment = require('moment');
 const expect = require('chai').expect;
 const should = require('chai').should();
 const rewire = require('rewire');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
@@ -187,19 +187,19 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
             parent: {
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
               parent: {
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
@@ -219,19 +219,19 @@ describe('messageUtils', () => {
         phone: inlinePhone,
         contact: {
           parent: {
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: clinicPhone
             },
             parent: {
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: parentPhone
               },
               parent: {
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
                 contact: {
                   phone: grandparentPhone
@@ -415,7 +415,7 @@ describe('messageUtils', () => {
         const contextFlexible = {
           patient: {
             parent: {
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: CONTACT_TYPES.CLINIC,
               contact: {
                 phone: '111'
@@ -423,7 +423,7 @@ describe('messageUtils', () => {
             }
           },
           parent: {
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: CONTACT_TYPES.CLINIC,
             contact: {
               phone: '222'
@@ -456,10 +456,10 @@ describe('messageUtils', () => {
         };
         const contextFlexible = {
           place: {
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: CONTACT_TYPES.CLINIC,
             parent: {
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: CONTACT_TYPES.HEALTH_CENTER,
               contact: {
                 phone: '111'
@@ -467,7 +467,7 @@ describe('messageUtils', () => {
             }
           },
           parent: {
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: CONTACT_TYPES.HEALTH_CENTER,
             contact: {
               phone: '222'
@@ -547,21 +547,21 @@ describe('messageUtils', () => {
       it('should resolve link: tag 1st, contact type 2nd', () => {
         const context = {
           contact: {
-            type: 'contact',
+            type: DOC_TYPES.CONTACT,
             contact_type: 'person',
             phone: '000000',
             linked_docs: {
               person: { phone: 'one' },
             },
             parent: {
-              type: 'contact',
+              type: DOC_TYPES.CONTACT,
               contact_type: CONTACT_TYPES.CLINIC,
               contact: { phone: '111111' },
               linked_docs: {
                 clinic: { phone: 'two' },
               },
               parent: {
-                type: 'contact',
+                type: DOC_TYPES.CONTACT,
                 contact_type: CONTACT_TYPES.HEALTH_CENTER,
                 contact: { phone: '22222' },
                 linked_docs: {

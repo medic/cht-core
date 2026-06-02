@@ -41,7 +41,7 @@ describe('generate_shortcode_on_contacts', () => {
 
     const contact = {
       _id: uuid(),
-      type: 'contact',
+      type: DOC_TYPES.CONTACT,
       contact_type: 'something',
       reported_date: new Date().getTime(),
     };

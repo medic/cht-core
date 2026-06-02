@@ -13,14 +13,14 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     reported_date: reportedDate,
   },
   {
     _id: 'health_center',
     name: 'Health Center',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.HEALTH_CENTER,
     parent: { _id: 'district_hospital' },
     contact: { _id: 'supervisor1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
@@ -29,7 +29,7 @@ const contacts = [
   {
     _id: 'clinic1',
     name: 'clinic1',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: CONTACT_TYPES.CLINIC,
     place_id: 'the_clinic',
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
@@ -42,7 +42,7 @@ const contacts = [
   {
     _id: 'chw1',
     name: 'Chw1',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'person',
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: '111222',
@@ -52,7 +52,7 @@ const contacts = [
     _id: 'patient_1',
     patient_id: 'patient1',
     name: 'Patient1',
-    type: 'contact',
+    type: DOC_TYPES.CONTACT,
     contact_type: 'person',
     parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     reported_date: reportedDate,

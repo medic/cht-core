@@ -19,7 +19,8 @@ import {
 } from './libs/lineage';
 import { assertPlaceInput } from '../libs/parameter-validators';
 import * as LocalContact from './contact';
-import { CONTACT_TYPES } from '@medic/constants';
+import { CONTACT_TYPES, DOC_TYPES } from '@medic/constants';
+
 
 const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[], person?: boolean } | undefined> = {
   [CONTACT_TYPES.DISTRICT_HOSPITAL]: { id: CONTACT_TYPES.DISTRICT_HOSPITAL },
@@ -49,7 +50,7 @@ const getTypeProperties = (settings: DataObject, input: Input.v1.PlaceInput) => 
   getPlaceType(settings, input);
   const customType = contactTypeUtils.getTypeById(settings, input.type);
   return customType
-    ? { contact_type: input.type, type: 'contact' }
+    ? { contact_type: input.type, type: DOC_TYPES.CONTACT }
     : { type: input.type };
 };
 
