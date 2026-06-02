@@ -482,6 +482,30 @@
       }
     }
   }
+
+  // New general-purpose background color appearances for any question type (issue #9893)
+  // Unlike the existing color appearances, these work on all question types, not just summary notes
+  // Supported on both individual questions and group/section blocks
+  .or-appearance-background-red {
+    background-color: @enketo-background-red;
+    &.or-group { padding: 5px 0; }
+  }
+  .or-appearance-background-green {
+    background-color: @enketo-background-green;
+    &.or-group { padding: 5px 0; }
+  }
+  .or-appearance-background-blue {
+    background-color: @enketo-background-blue;
+    &.or-group { padding: 5px 0; }
+  }
+  .or-appearance-background-yellow {
+    background-color: @enketo-background-yellow;
+    &.or-group { padding: 5px 0; }
+  }
+  .or-appearance-background-lime {
+    background-color: @enketo-background-lime;
+    &.or-group { padding: 5px 0; }
+  }
 }
 
 @media (max-width: @media-mobile) {
@@ -510,3 +534,4 @@
     }
   }
 }
+
