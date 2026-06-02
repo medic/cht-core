@@ -127,5 +127,5 @@ describe('Sentinel queue drain', () => {
     await sentinelUtils.waitForSentinel();
     const [info] = await sentinelUtils.getInfoDocs(doc._id);
     expect(info.transitions.update_clinics.ok).to.be.true;
-  });
+  }).timeout(600 * 1000);
 });

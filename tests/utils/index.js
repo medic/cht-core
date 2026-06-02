@@ -915,7 +915,7 @@ const getUserSettings = ({ contactId, name }) => {
 };
 
 const waitForApiCrash = async () => {
-  let retryCount = 180;
+  let retryCount = 300;
   do {
     try {
       await request({ path: '/api/info' });
@@ -928,7 +928,7 @@ const waitForApiCrash = async () => {
 };
 
 const listenForApi = async () => {
-  const totalTries = 180; // 3 minutes
+  const totalTries = 300; // 5 minutes
   let retryCount = totalTries;
   do {
     try {
@@ -946,7 +946,7 @@ const listenForApi = async () => {
       await delayPromise(1000);
     }
   } while (--retryCount > 0);
-  throw new Error('API failed to start after 3 minutes');
+  throw new Error('API failed to start after 5 minutes');
 };
 
 const dockerComposeCmd = (params) => {

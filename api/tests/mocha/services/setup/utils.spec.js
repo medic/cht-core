@@ -21,8 +21,7 @@ const buildInfo = (version, namespace = 'medic', application = 'medic') => ({ ve
 const mockDb = (db) => {
   sinon.stub(db, 'allDocs');
   sinon.stub(db, 'bulkDocs');
-  sinon.stub(db, 'compact');
-  sinon.stub(db, 'viewCleanup');
+  sinon.stub(db, 'viewCleanup').resolves();
 };
 
 
@@ -158,7 +157,7 @@ describe('Setup utils', () => {
 
   describe('cleanup', () => {
     beforeEach(() => {
-      sinon.stub(db, 'nouveauCleanup').returns(new Promise(() => {}));
+      sinon.stub(db, 'nouveauCleanup').resolves();
       sinon.stub(logger, 'error');
       mockDb(db.medic);
       mockDb(db.sentinel);
@@ -167,14 +166,8 @@ describe('Setup utils', () => {
       mockDb(db.users);
     });
 
-    it('should start db compact and view cleanup for every database', () => {
+    it('should start view cleanup for every database', () => {
       utils.cleanup();
-
-      expect(db.medic.compact.callCount).to.equal(1);
-      expect(db.sentinel.compact.callCount).to.equal(1);
-      expect(db.medicLogs.compact.callCount).to.equal(1);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
-      expect(db.users.compact.callCount).to.equal(1);
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
@@ -185,29 +178,22 @@ describe('Setup utils', () => {
       expect(db.nouveauCleanup.callCount).to.equal(1);
     });
 
-    it('should catch compact errors and log them', async () => {
+    it('should catch view cleanup errors and log them', async () => {
       const error = { some: 'error' };
-      db.sentinel.compact.rejects(error);
+      db.sentinel.viewCleanup.rejects(error);
 
       utils.cleanup();
 
       await Promise.resolve();
       await Promise.resolve();
 
-      expect(db.medic.compact.callCount).to.equal(1);
-      // this should return an error, but the other compacts
-      // and viewCleanups whould be called.
-      expect(db.sentinel.compact.callCount).to.equal(1);
-      expect(db.medicLogs.compact.callCount).to.equal(1);
-      expect(db.medicUsersMeta.compact.callCount).to.equal(1);
-      expect(db.users.compact.callCount).to.equal(1);
-
       expect(db.medic.viewCleanup.callCount).to.equal(1);
-      expect(db.nouveauCleanup.callCount).to.equal(1);
       expect(db.sentinel.viewCleanup.callCount).to.equal(1);
       expect(db.medicLogs.viewCleanup.callCount).to.equal(1);
       expect(db.medicUsersMeta.viewCleanup.callCount).to.equal(1);
       expect(db.users.viewCleanup.callCount).to.equal(1);
+
+      expect(db.nouveauCleanup.callCount).to.equal(1);
 
       expect(logger.error.callCount).to.be.at.least(1);
       expect(logger.error.args[0][0]).to.include('Error while running cleanup');
@@ -220,6 +206,7 @@ describe('Setup utils', () => {
 
       utils.cleanup();
 
+      await Promise.resolve();
       await Promise.resolve();
 
       expect(db.nouveauCleanup.callCount).to.equal(1);
@@ -850,7 +837,6 @@ describe('Setup utils', () => {
       sinon.stub(db.users, 'allDocs').resolves({ rows: [] }); // no ddocs
 
       sinon.stub(db, 'saveDocs').resolves();
-
       await utils.unstageStagedDdocs();
 
       const allDocsArgs = [{ startkey: '_design/', endkey: '_design/\ufff0', include_docs: true }];
@@ -881,6 +867,7 @@ describe('Setup utils', () => {
       expect(db.saveDocs.args[3]).to.deep.equal([db.medicUsersMeta, []]);
       expect(db.saveDocs.args[4]).to.deep.equal([db.users, []]);
     });
+
 
     it('should throw an error when getting ddocs fails', async () => {
       clock.tick(2500);
