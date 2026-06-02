@@ -56,16 +56,18 @@ describe('Contacts More Menu Component', () => {
         fixture = TestBed.createComponent(ContactsMoreMenuComponent);
         component = fixture.componentInstance;
         store = TestBed.inject(MockStore);
-        fixture.detectChanges();
+        // NOTE: No fixture.detectChanges() here — each test controls when ngOnInit fires
       });
   });
 
   afterEach(() => {
     sinon.restore();
+    store.resetSelectors();
   });
 
   it('should call delete confirm from global actions', fakeAsync(() => {
     const deleteDocConfirmStub = sinon.stub(GlobalActions.prototype, 'deleteDocConfirm');
+    fixture.detectChanges(); // trigger ngOnInit
     store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
     store.refreshState();
 
@@ -78,11 +80,11 @@ describe('Contacts More Menu Component', () => {
 
   describe('displayEditOption', () => {
     it('should display edit option when user has all conditions okay', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.online.returns(true);
       userSettingsService.get.resolves({ facility_id: 'facility-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges(); // trigger ngOnInit with correct stubs
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -94,11 +96,11 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should display edit option when user is online and facility id is his contact id', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.online.returns(true);
       userSettingsService.get.resolves({ facility_id: 'contact-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -110,11 +112,11 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should display edit option when user is offline and facility id is not his contact id', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.online.returns(false);
       userSettingsService.get.resolves({ facility_id: 'facility-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -126,11 +128,11 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display edit option when is not detail page', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.online.returns(true);
       userSettingsService.get.resolves({ facility_id: 'facility-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -141,12 +143,12 @@ describe('Contacts More Menu Component', () => {
       expect(component.displayEditOption()).to.be.false;
     }));
 
-    it('should not display edit option when user does not have can_edit permission', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(false);
+    it('should not display edit option when user does not have can_update_contacts permission', fakeAsync(() => {
+      authService.has.withArgs('can_update_contacts').resolves(false);
       authService.online.returns(true);
       userSettingsService.get.resolves({ facility_id: 'facility-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -158,11 +160,11 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display edit option when content is loading', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.online.returns(true);
       userSettingsService.get.resolves({ facility_id: 'facility-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, true);
@@ -174,11 +176,11 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display edit option when user does not have all the conditions', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(false);
+      authService.has.withArgs('can_update_contacts').resolves(false);
       authService.online.returns(false);
       userSettingsService.get.resolves({ facility_id: 'contact-1' });
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, true);
@@ -192,10 +194,10 @@ describe('Contacts More Menu Component', () => {
 
   describe('displayDeleteOption', () => {
     it('should display delete option when user has all conditions okay', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.has.withArgs('can_delete_contacts').resolves(true);
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -207,10 +209,10 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display delete option when is not detail page', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.has.withArgs('can_delete_contacts').resolves(true);
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -222,10 +224,10 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display delete option when user does not have can_edit permission', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(false);
+      authService.has.withArgs('can_update_contacts').resolves(false);
       authService.has.withArgs('can_delete_contacts').resolves(true);
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -237,10 +239,10 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display delete option when user does not have can_delete_contacts permission', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.has.withArgs('can_delete_contacts').resolves(false);
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, false);
@@ -252,10 +254,10 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display delete option when content is loading', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(true);
+      authService.has.withArgs('can_update_contacts').resolves(true);
       authService.has.withArgs('can_delete_contacts').resolves(true);
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, true);
@@ -267,10 +269,10 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display delete option when user does not have all the conditions', fakeAsync(() => {
-      authService.has.withArgs('can_edit').resolves(false);
+      authService.has.withArgs('can_update_contacts').resolves(false);
       authService.has.withArgs('can_delete_contacts').resolves(false);
 
-      component.ngOnInit();
+      fixture.detectChanges();
 
       store.overrideSelector(Selectors.getSelectedContactDoc, { _id: 'contact-1' });
       store.overrideSelector(Selectors.getLoadingContent, true);
@@ -288,7 +290,7 @@ describe('Contacts More Menu Component', () => {
       authService.online.returns(true);
       responsiveService.isMobile.returns(false);
 
-      component.ngOnInit();
+      fixture.detectChanges();
       flush();
 
       expect(component.displayExportOption()).to.be.true;
@@ -299,7 +301,7 @@ describe('Contacts More Menu Component', () => {
       authService.online.returns(true);
       responsiveService.isMobile.returns(false);
 
-      component.ngOnInit();
+      fixture.detectChanges();
       flush();
 
       expect(component.displayExportOption()).to.be.false;
@@ -310,7 +312,7 @@ describe('Contacts More Menu Component', () => {
       authService.online.returns(false);
       responsiveService.isMobile.returns(false);
 
-      component.ngOnInit();
+      fixture.detectChanges();
       flush();
 
       expect(component.displayExportOption()).to.be.false;
@@ -321,7 +323,7 @@ describe('Contacts More Menu Component', () => {
       authService.online.returns(true);
       responsiveService.isMobile.returns(true);
 
-      component.ngOnInit();
+      fixture.detectChanges();
       flush();
 
       expect(component.displayExportOption()).to.be.false;

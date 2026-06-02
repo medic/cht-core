@@ -33,9 +33,33 @@ describe('Edit ', () => {
     contact: onlineUserContact
   });
 
+  // User without can_update_contacts permission
+  const restrictedUser = userFactory.build({
+    username: 'restricted_user',
+    place: healthCenter._id,
+    roles: ['chw'],
+    contact: personFactory.build({ parent: healthCenter })
+  });
+
   before(async () => {
     await utils.saveDocs([...places.values()]);
-    await utils.createUsers([offlineUser, onlineUser]);
+    await utils.createUsers([offlineUser, onlineUser, restrictedUser]);
+  });
+
+  afterEach(async () => {
+    // Dismiss any open overlays/modals/backdrops before the next test runs
+    await commonPage.hideModalOverlay();
+    // Navigate away to a clean state so no stale overlays remain
+    try {
+      await browser.keys('Escape');
+    } catch {
+      // ignore if no overlay to dismiss
+    }
+    try {
+      await commonPage.closeReloadModal(false);
+    } catch {
+      // ignore if no modal
+    }
   });
 
   it('should update a contact, delete the same contact then unassign primary contact from facility', async () => {
@@ -58,6 +82,27 @@ describe('Edit ', () => {
     await contactPage.selectLHSRowByText(healthCenter.name);
     await contactPage.waitForContactLoaded();
     expect(await contactPage.getAllRHSPeopleNames()).to.not.include.members([ CONTACT_UPDATED_NAME ]);
+
+    await commonPage.logout();
+  });
+
+  it('should not show edit option when user lacks can_update_contacts permission', async () => {
+    // Ensure no leftover overlays from previous test
+    await browser.execute(() => {
+      const backdrops = document.querySelectorAll('.cdk-overlay-backdrop');
+      backdrops.forEach(el => el.remove());
+    });
+
+    await loginPage.login(restrictedUser);
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToPeople();
+    await contactPage.selectLHSRowByText(healthCenter.name);
+    await contactPage.waitForContactLoaded();
+
+    await commonPage.openMoreOptionsMenu();
+
+    const isEditVisible = await commonPage.isMenuOptionVisible('edit');
+    expect(isEditVisible).to.be.false;
 
     await commonPage.logout();
   });

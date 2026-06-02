@@ -185,6 +185,11 @@
       "chw_supervisor",
       "chw"
     ],
+    "can_update_contacts": [
+      "program_officer",
+      "chw_supervisor",
+      "chw"
+    ],
     "can_update_users": [
       "program_officer"
     ],
