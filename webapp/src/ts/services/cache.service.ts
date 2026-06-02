@@ -65,8 +65,7 @@ export class CacheService {
       callbacks: []
     };
 
-    // T is erased here so heterogeneous entries can share `caches: CacheEntry[]`;
-    // the cast widens CacheEntry<T> to the default CacheEntry, it does not hide a bug.
+    // T is erased here so heterogeneous entries can share `caches: CacheEntry[]`
     this.caches.push(cache);
 
     return (callback: CacheCallback<T>) => {
