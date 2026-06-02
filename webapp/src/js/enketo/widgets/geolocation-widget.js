@@ -1,5 +1,7 @@
 'use strict';
 const Widget = require('enketo-core/src/js/widget').default;
+const $ = require('jquery');
+require('enketo-core/src/js/plugins');
 
 class GeolocationWidget extends Widget {
   static get selector() {
@@ -7,77 +9,68 @@ class GeolocationWidget extends Widget {
   }
 
   _init() {
+    const $question = $(this.question);
+
     if (this._isPermissionDenied()) {
-      const el = document.createElement('p');
-      el.className = 'geolocation-permission-denied';
-      this.question.appendChild(el);
+      const $el = $('<p class="geolocation-permission-denied">');
+      $question.append($el);
       return window.CHTCore.Translate.get('geolocation.permission.denied')
-        .then(text => { el.textContent = text; });
+        .then(text => $el.text(text));
     } else if (!this._isGeolocationAvailable()) {
-      const el = document.createElement('p');
-      el.className = 'geolocation-unavailable';
-      this.question.appendChild(el);
+      const $el = $('<p class="geolocation-unavailable">');
+      $question.append($el);
       return window.CHTCore.Translate.get('geolocation.unavailable')
-        .then(text => { el.textContent = text; });
+        .then(text => $el.text(text));
     } else {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'geolocation-capture-btn';
-      button.addEventListener('click', () => this._startCapture());
-      this.question.appendChild(button);
+      const $button = $('<button type="button" class="geolocation-capture-btn">');
+      $button.on('click', () => this._startCapture());
+      $question.append($button);
       return window.CHTCore.Translate.get('geolocation.capture')
-        .then(text => { button.textContent = text; });
+        .then(text => $button.text(text));
     }
   }
 
   _startCapture() {
-    [
+    const $question = $(this.question);
+    $question.find([
       '.geolocation-capture-btn',
       '.geolocation-progress-bar',
       '.geolocation-retry-btn',
       '.geolocation-skip-btn',
       '.geolocation-success-msg',
-    ].forEach(sel => this.question.querySelector(sel)?.remove());
+    ].join(',')).remove();
 
-    const bar = document.createElement('div');
-    bar.className = 'geolocation-progress-bar';
-    this.question.appendChild(bar);
+    const $bar = $('<div class="geolocation-progress-bar">');
+    $question.append($bar);
 
     window.CHTCore.Geolocation.currentPromise.then(result => {
       if ('code' in result) {
-        bar.classList.add('geolocation-progress-failure');
+        $bar.addClass('geolocation-progress-failure');
 
-        const retryBtn = document.createElement('button');
-        retryBtn.type = 'button';
-        retryBtn.className = 'geolocation-retry-btn';
-        retryBtn.addEventListener('click', () => {
+        const $retryBtn = $('<button type="button" class="geolocation-retry-btn">');
+        $retryBtn.on('click', () => {
           window.CHTCore.Geolocation.retry();
           this._startCapture();
         });
-        this.question.appendChild(retryBtn);
+        $question.append($retryBtn);
         window.CHTCore.Translate.get('geolocation.retry')
-          .then(text => { retryBtn.textContent = text; });
+          .then(text => $retryBtn.text(text));
 
-        const skipBtn = document.createElement('button');
-        skipBtn.type = 'button';
-        skipBtn.className = 'geolocation-skip-btn';
-        this.question.appendChild(skipBtn);
+        const $skipBtn = $('<button type="button" class="geolocation-skip-btn">');
+        $question.append($skipBtn);
         window.CHTCore.Translate.get('geolocation.skip')
-          .then(text => { skipBtn.textContent = text; });
+          .then(text => $skipBtn.text(text));
 
-        this.element.value = 'not_captured';
-        this.element.dispatchEvent(new Event('change'));
+        $(this.element).val('not_captured').trigger('change');
       } else {
-        bar.classList.add('geolocation-progress-success');
+        $bar.addClass('geolocation-progress-success');
 
-        const msg = document.createElement('p');
-        msg.className = 'geolocation-success-msg';
-        this.question.appendChild(msg);
+        const $msg = $('<p class="geolocation-success-msg">');
+        $question.append($msg);
         window.CHTCore.Translate.get('geolocation.success')
-          .then(text => { msg.textContent = text; });
+          .then(text => $msg.text(text));
 
-        this.element.value = 'captured';
-        this.element.dispatchEvent(new Event('change'));
+        $(this.element).val('captured').trigger('change');
       }
     });
   }

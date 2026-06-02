@@ -153,7 +153,7 @@ describe('Enketo: Geolocation Widget', () => {
         widget._init();
 
         const changeHandler = sinon.stub();
-        widget.element.addEventListener('change', changeHandler);
+        $(widget.element).on('change', changeHandler);
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
@@ -190,7 +190,7 @@ describe('Enketo: Geolocation Widget', () => {
         widget._init();
 
         const changeHandler = sinon.stub();
-        widget.element.addEventListener('change', changeHandler);
+        $(widget.element).on('change', changeHandler);
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
