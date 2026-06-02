@@ -39,6 +39,41 @@
       list-style: inside;
       padding-left: 2px;
     }
+
+    .or-form-guidance {
+      summary {
+        cursor: pointer;
+        color: @text-link-color;
+        font-style: italic;
+        padding: 0 0 5px 1px;
+        user-select: none;
+        list-style: none;
+
+        &::before {
+          content: '\25BA  ';
+          display: inline-block;
+          font-style: normal;
+          transition: transform 0.2s ease;
+        }
+
+        &::-webkit-details-marker {
+          display: none;
+        }
+      }
+
+      &[open] {
+        padding-left: 10px;
+        border-left: 2px solid @gray-light;
+        color: @gray-ultra-dark;
+        font-style: normal;
+        summary {
+          margin-left: -12px;
+        }
+        summary::before {
+          transform: rotate(90deg);
+        }
+      }
+    }
   }
 
   #form-title {
