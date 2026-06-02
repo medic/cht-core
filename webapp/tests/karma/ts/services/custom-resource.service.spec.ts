@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { DOC_IDS } from '@medic/constants';
 
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 
@@ -12,7 +12,7 @@ describe('ResourceIcons service', () => {
   let Changes;
 
   const getService = () => {
-    return TestBed.inject(ResourceIconsService);
+    return TestBed.inject(CustomResourceService);
   };
 
   beforeEach(() => {
@@ -475,5 +475,114 @@ describe('ResourceIcons service', () => {
 
       return Promise.all(promises);
     });
+  });
+
+  describe('getResource', () => {
+    it('should return resource attachment data', fakeAsync(() => {
+      const resources = {
+        resources: {
+          icon: 'icon.png',
+          logo: 'logo.svg'
+        },
+        _attachments: {
+          'icon.png': {
+            content_type: 'image/png',
+            data: 'base64data'
+          },
+          'logo.svg': {
+            content_type: 'image/svg+xml',
+            data: 'svgdata'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      const result = service.getResource('icon');
+
+      expect(result).to.deep.equal({
+        content_type: 'image/png',
+        data: 'base64data'
+      });
+    }));
+
+    it('should return null when resource does not exist', fakeAsync(() => {
+      const resources = {
+        resources: {
+          icon: 'icon.png'
+        },
+        _attachments: {
+          'icon.png': {
+            content_type: 'image/png',
+            data: 'base64data'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      const result = service.getResource('nonexistent');
+
+      expect(result).to.be.null;
+    }));
+  });
+
+  describe('getXml', () => {
+    const makeResources = (data: string) => ({
+      resources: { 'items.xml': 'items.xml' },
+      _attachments: { 'items.xml': { content_type: 'application/xml', data } }
+    });
+
+    it('should return a parsed XML Document', fakeAsync(() => {
+      const xmlStr = '<root><item><name>a</name></item></root>';
+      get.resolves(makeResources(btoa(xmlStr)));
+      const service = getService();
+      tick();
+
+      const result = service.getXml('items.xml');
+
+      expect(result).to.be.instanceof(Document);
+      expect(result!.querySelector('name')!.textContent).to.equal('a');
+    }));
+
+    it('should return null when resource does not exist', fakeAsync(() => {
+      get.resolves(makeResources(btoa('<root/>')));
+      const service = getService();
+      tick();
+
+      expect(service.getXml('missing.xml')).to.be.null;
+    }));
+
+    it('should return cached Document on second call', fakeAsync(() => {
+      get.resolves(makeResources(btoa('<root/>')));
+      const service = getService();
+      tick();
+
+      const first = service.getXml('items.xml');
+      const second = service.getXml('items.xml');
+
+      expect(first).to.equal(second);
+    }));
+
+    it('should clear xml cache when resources document updates', fakeAsync(() => {
+      get.resolves(makeResources(btoa('<root><item><name>v1</name></item></root>')));
+      const service = getService();
+      tick();
+      const changesCallback = Changes.args[0][0].callback;
+
+      const before = service.getXml('items.xml');
+
+      get.resolves(makeResources(btoa('<root><item><name>v2</name></item></root>')));
+      changesCallback({ id: DOC_IDS.RESOURCES });
+      tick();
+
+      const after = service.getXml('items.xml');
+
+      expect(before!.querySelector('name')!.textContent).to.equal('v1');
+      expect(after!.querySelector('name')!.textContent).to.equal('v2');
+      expect(before).to.not.equal(after);
+    }));
   });
 });

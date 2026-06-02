@@ -12,7 +12,7 @@ import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { Selectors } from '@mm-selectors/index';
 
@@ -25,7 +25,7 @@ describe('Header Component', () => {
   let storageInfoService;
   let settingsService;
   let headerTabsService;
-  let resourceIconsService;
+  let customResourceService;
   let changesService;
 
   beforeEach(waitForAsync(() => {
@@ -44,7 +44,7 @@ describe('Header Component', () => {
         { name: 'reports', defaultIcon: 'fa-list-alt', typeName: 'report' },
       ])
     };
-    resourceIconsService = {
+    customResourceService = {
       getAppTitle: sinon.stub().resolves('App Title'),
       getImg: sinon.stub().resolves(''),
     };
@@ -74,7 +74,7 @@ describe('Header Component', () => {
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: SettingsService, useValue: settingsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
-          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
         ]
       })

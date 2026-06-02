@@ -13,7 +13,7 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
@@ -66,7 +66,7 @@ describe('AppComponent', () => {
   let languageService;
   let sessionService;
   let authService;
-  let resourceIconsService;
+  let customResourceService;
   let changesService;
   let locationService;
   let xmlFormsService;
@@ -124,7 +124,7 @@ describe('AppComponent', () => {
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
-    resourceIconsService = { getAppTitle: sinon.stub().resolves() };
+    customResourceService = { getAppTitle: sinon.stub().resolves() };
     privacyPoliciesService = { hasAccepted: sinon.stub().resolves() };
     formatDateService = { init: sinon.stub() };
     wealthQuintilesWatcherService = { start: sinon.stub() };
@@ -221,7 +221,7 @@ describe('AppComponent', () => {
           { provide: SetLanguageService, useValue: setLanguageService },
           { provide: SessionService, useValue: sessionService },
           { provide: AuthService, useValue: authService },
-          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
           { provide: UpdateServiceWorkerService, useValue: updateServiceWorkerService },
           { provide: LocationService, useValue: locationService },
@@ -492,12 +492,12 @@ describe('AppComponent', () => {
   });
 
   it('should set app title', async () => {
-    resourceIconsService.getAppTitle.resolves('My App');
+    customResourceService.getAppTitle.resolves('My App');
 
     await getComponent();
     await Promise.resolve();
 
-    expect(resourceIconsService.getAppTitle.callCount).to.equal(1);
+    expect(customResourceService.getAppTitle.callCount).to.equal(1);
     expect(document.title).to.equal('My App');
   });
 

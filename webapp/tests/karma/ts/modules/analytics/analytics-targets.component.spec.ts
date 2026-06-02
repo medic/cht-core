@@ -19,7 +19,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { Selectors } from '@mm-selectors/index';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService as ResourceIconsService } from '@mm-services/custom-resource.service';
 import { CONTACT_TYPES } from '@medic/constants';
 
 describe('AnalyticsTargetsComponent', () => {
