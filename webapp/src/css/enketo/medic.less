@@ -2,6 +2,11 @@
 
 @input-height: 45px;
 
+@keyframes geolocation-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
 /**
  * Some of the widths set up in the enketo.css file assume the form is being
  * viewed full-screen.  These overrides are required when enketo is embedded in
@@ -278,6 +283,45 @@
     .android-app-launcher-actions {
       margin: 0;
       padding: 15px 20px;
+    }
+  }
+
+  .or-appearance-geolocation-capture {
+    .geolocation-capture-btn,
+    .geolocation-permission-denied,
+    .geolocation-unavailable {
+      display: block;
+      margin: 8px 0;
+    }
+
+    .geolocation-progress-bar {
+      height: 8px;
+      background-color: @gray-light;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+
+      &::after {
+        content: '';
+        display: block;
+        height: 100%;
+        width: 0;
+        background-color: @ok-color;
+        border-radius: 4px;
+        animation: geolocation-fill 30s linear forwards;
+      }
+
+      &.geolocation-progress-success::after {
+        animation: none;
+        width: 100%;
+        background-color: @ok-color;
+      }
+
+      &.geolocation-progress-failure::after {
+        animation: none;
+        width: 100%;
+        background-color: @error-color;
+      }
     }
   }
 

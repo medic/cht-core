@@ -85,5 +85,62 @@ describe('Enketo: Geolocation Widget', () => {
       expect(container.querySelector('.geolocation-permission-denied')).to.be.null;
       expect(container.querySelector('.geolocation-unavailable')).to.be.null;
     });
+
+    describe('_startCapture()', () => {
+      beforeEach(() => {
+        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+      });
+
+      it('should show progress bar and remove capture button on click', () => {
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        expect(container.querySelector('.geolocation-progress-bar')).to.not.be.null;
+        expect(container.querySelector('.geolocation-capture-btn')).to.be.null;
+      });
+
+      it('should add success class to progress bar when GPS is acquired', async () => {
+        const promise = Promise.resolve({
+          latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
+        });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const bar = container.querySelector('.geolocation-progress-bar')!;
+        expect(bar.classList.contains('geolocation-progress-success')).to.be.true;
+        expect(bar.classList.contains('geolocation-progress-failure')).to.be.false;
+      });
+
+      it('should add failure class to progress bar when GPS acquisition fails', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const bar = container.querySelector('.geolocation-progress-bar')!;
+        expect(bar.classList.contains('geolocation-progress-failure')).to.be.true;
+        expect(bar.classList.contains('geolocation-progress-success')).to.be.false;
+      });
+    });
   });
 });

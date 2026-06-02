@@ -23,10 +23,27 @@ class GeolocationWidget extends Widget {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'geolocation-capture-btn';
+      button.addEventListener('click', () => this._startCapture());
       this.question.appendChild(button);
       return window.CHTCore.Translate.get('geolocation.capture')
         .then(text => { button.textContent = text; });
     }
+  }
+
+  _startCapture() {
+    this.question.querySelector('.geolocation-capture-btn')?.remove();
+
+    const bar = document.createElement('div');
+    bar.className = 'geolocation-progress-bar';
+    this.question.appendChild(bar);
+
+    window.CHTCore.Geolocation.currentPromise.then(result => {
+      if ('code' in result) {
+        bar.classList.add('geolocation-progress-failure');
+      } else {
+        bar.classList.add('geolocation-progress-success');
+      }
+    });
   }
 
   _isGeolocationAvailable() {
