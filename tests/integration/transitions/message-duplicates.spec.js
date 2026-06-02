@@ -1,6 +1,7 @@
 const chai = require('chai');
 const { v7: uuid } = require('uuid');
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const apiUtils = require('./utils');
 
 const settings = {
@@ -85,7 +86,7 @@ describe('message duplicates', () => {
     return utils
       .updateSettings(settings, { ignoreReload: true })
       .then(() => postMessages(firstMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => sentinelUtils.waitForSentinel(ids).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
@@ -99,7 +100,7 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(secondMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => sentinelUtils.waitForSentinel(ids).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
@@ -113,7 +114,7 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(thirdMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => sentinelUtils.waitForSentinel(ids).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
@@ -155,7 +156,7 @@ describe('message duplicates', () => {
     return utils
       .updateSettings(settings, { ignoreReload: true })
       .then(() => postMessages(firstMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => sentinelUtils.waitForSentinel(ids).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           if (doc.tasks.length > 1) {
@@ -173,7 +174,7 @@ describe('message duplicates', () => {
         });
       })
       .then(() => postMessages(secondMessages))
-      .then(ids => utils.getDocs(ids))
+      .then(ids => sentinelUtils.waitForSentinel(ids).then(() => utils.getDocs(ids)))
       .then(docs => {
         docs.forEach(doc => {
           chai.expect(doc.tasks.length).to.equal(1);
