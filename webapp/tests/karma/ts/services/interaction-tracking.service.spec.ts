@@ -228,6 +228,37 @@ describe('InteractionTrackingService', () => {
       expect(metaDb.put.called).to.be.false;
       expect(windowMock.PouchDB.calledWith('interaction-2026-03-27-greg')).to.be.false;
     });
+
+    it('activates a session queued before init() resolved', async () => {
+      // Cold-start deep-link race: TasksComponent.ngOnInit fires
+      // startSession('tasks') before the setupPromise chain reaches init().
+      // The call should be queued and activated once init() completes so the
+      // first /tasks visit isn't dropped silently.
+      service.startSession('tasks');
+      expect((service as any).enabled).to.be.false;
+      expect((service as any).currentSession).to.be.null;
+      expect((service as any).pendingSession).to.equal('tasks');
+
+      await service.init();
+
+      expect((service as any).enabled).to.be.true;
+      expect((service as any).currentSession).to.equal('tasks');
+      expect((service as any).sessionStartedAt).to.be.a('number');
+      expect((service as any).pendingSession).to.be.null;
+    });
+
+    it('drops the pending session if endSession is called before init() resolves', async () => {
+      // User navigates away from /tasks before the service is ready; the
+      // queued session should not later auto-activate.
+      service.startSession('tasks');
+      await service.endSession();
+      expect((service as any).pendingSession).to.be.null;
+
+      await service.init();
+
+      expect((service as any).currentSession).to.be.null;
+      expect((service as any).pendingSession).to.be.null;
+    });
   });
 
   describe('record() — buffering', () => {

@@ -65,6 +65,9 @@ export class InteractionTrackingService {
   private currentSession: string | null = null;
   private sessionStartedAt: number | null = null;
   private lastEventKey: string | null = null;
+  // Set when `startSession` is called before `init()` resolves; activated as
+  // the real session once init() finishes
+  private pendingSession: string | null = null;
 
   private buffer: BufferedEvent[] = [];
   private currentDayKey: string | null = null;
@@ -116,6 +119,12 @@ export class InteractionTrackingService {
     this.currentDayKey = currentDay.formatted;
     this.persistedEventCount = await this.readPersistedCount(currentDay);
     this.enabled = true;
+
+    if (this.pendingSession) {
+      const session = this.pendingSession;
+      this.pendingSession = null;
+      this.startSession(session);
+    }
   }
 
   /**
@@ -124,6 +133,7 @@ export class InteractionTrackingService {
    */
   startSession(session: string): void {
     if (!this.enabled) {
+      this.pendingSession = session;
       return;
     }
     this.currentSession = session;
@@ -143,6 +153,7 @@ export class InteractionTrackingService {
     this.currentSession = null;
     this.sessionStartedAt = null;
     this.lastEventKey = null;
+    this.pendingSession = null;
     if (hadSession) {
       await this._persistBuffer();
     }
