@@ -3,7 +3,7 @@ const chai = require('chai').use(require('chai-as-promised'));
 const expect = chai.expect;
 const rewire = require('rewire');
 
-const db = require('../../../src/db');
+const db = require('../../../../src/db');
 const environment = require('@medic/environment');
 
 let purgedDocsCache;
@@ -20,7 +20,7 @@ describe('Purged docs cache', () => {
     };
     sinon.stub(db, 'get').returns(purgedDbObj);
     sinon.stub(environment, 'db').value('medic');
-    purgedDocsCache = rewire('../../../src/services/purged-docs-cache');
+    purgedDocsCache = rewire('../../../../src/services/replication/purged-docs-cache');
     setTimeoutPromiseStub = sinon.stub().resolves();
     purgedDocsCache.__set__('setTimeoutPromise', setTimeoutPromiseStub);
   });

@@ -1,7 +1,7 @@
-module.exports.map = function(doc) {
+function(doc) {
   if (doc.type === 'task') {
-    const isTerminalState = ['Cancelled', 'Completed', 'Failed'].includes(doc.state);
-    const owner = (doc.owner || '_unassigned');
+    var isTerminalState = ['Cancelled', 'Completed', 'Failed'].indexOf(doc.state) >= 0;
+    var owner = (doc.owner || '_unassigned');
 
     if (!isTerminalState) {
       emit('owner-' + owner);
@@ -13,4 +13,4 @@ module.exports.map = function(doc) {
 
     emit(['owner', 'all', owner], { state: doc.state });
   }
-};
+}

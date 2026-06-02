@@ -1,10 +1,10 @@
-const service = require('../../../src/services/bulk-docs');
-const db = require('../../../src/db');
+const service = require('../../../../src/services/replication/bulk-docs');
+const db = require('../../../../src/db');
 const sinon = require('sinon');
 require('chai').should();
 
-const authorization = require('../../../src/services/authorization');
-const dataContext = require('../../../src/services/data-context');
+const authorization = require('../../../../src/services/replication/authorization');
+const dataContext = require('../../../../src/services/data-context');
 
 const testDocs = [
   { _id: 'a' },

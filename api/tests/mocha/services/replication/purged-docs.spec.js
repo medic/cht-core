@@ -3,13 +3,13 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const { PREFIXES } = require('@medic/constants');
 
-const db = require('../../../src/db');
-const dbWatcher = require('../../../src/services/db-watcher');
-const purgedDocsCache = require('../../../src/services/purged-docs-cache');
+const db = require('../../../../src/db');
+const dbWatcher = require('../../../../src/services/db-watcher');
+const purgedDocsCache = require('../../../../src/services/replication/purged-docs-cache');
 const environment = require('@medic/environment');
 const purgingUtils = require('@medic/purging-utils');
-const config = require('../../../src/config');
-const configWatcher = require('../../../src/services/config-watcher');
+const config = require('../../../../src/config');
+const configWatcher = require('../../../../src/services/config-watcher');
 const _ = require('lodash');
 
 let service;
@@ -20,7 +20,7 @@ describe('Purged Docs service', () => {
     sinon.stub(dbWatcher, 'medic');
     sinon.stub(dbWatcher, 'sentinel');
     sinon.stub(dbWatcher, 'users');
-    service = rewire('../../../src/services/purged-docs');
+    service = rewire('../../../../src/services/replication/purged-docs');
   });
 
   afterEach(() => {

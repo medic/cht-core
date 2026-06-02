@@ -1,10 +1,10 @@
-const db = require('../../../src/db');
+const db = require('../../../../src/db');
 const sinon = require('sinon');
-const config = require('../../../src/config');
-const auth = require('../../../src/auth');
+const config = require('../../../../src/config');
+const auth = require('../../../../src/auth');
 const viewMapUtils = require('@medic/view-map-utils');
 const rewire = require('rewire');
-const service = rewire('../../../src/services/authorization');
+const service = rewire('../../../../src/services/replication/authorization');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 
@@ -974,7 +974,7 @@ describe('Authorization service', () => {
         { id: 'ts-task3', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
         { id: 'r3', fields: { key: 'contact', type: 'person' } },
         { id: 'task2', fields: { key: PREFIXES.COUCH_USER + 'user', type: 'task' } },
-        { id: 'ts-r5', fields: { key: 'place', type: 'clinic' } },
+        { id: 'ts-r5', fields: { key: 'place', type: CONTACT_TYPES.CLINIC } },
       ];
 
       const ctx = { userCtx: { name: 'user' } };
@@ -3094,9 +3094,9 @@ describe('Authorization service', () => {
               parent: { _id: 'p2', parent: { _id: 'p3' } }
             }
           },
-          { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
+          { id: 'p1', doc: { _id: 'p1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'facility_id' } } },
           { id: 'facility_id', doc: { _id: 'facility_id', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
-          { id: 'p2', doc: { _id: 'p2', type: 'clinic', parent: { _id: 'p3' } } },
+          { id: 'p2', doc: { _id: 'p2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'p3' } } },
           { id: 'p3', doc: { _id: 'p3', type: CONTACT_TYPES.DISTRICT_HOSPITAL } },
         ]});
 

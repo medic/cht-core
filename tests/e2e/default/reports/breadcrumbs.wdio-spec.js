@@ -1,5 +1,5 @@
 const moment = require('moment');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 
 const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
@@ -14,7 +14,7 @@ const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Reports tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
 

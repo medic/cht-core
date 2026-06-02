@@ -84,7 +84,7 @@ const createDataWithFixedData = ({ healthCenter, user, nbrClinics = 10, nbrPerso
   const clinics = Array
     .from({ length: nbrClinics })
     .map((_, idx) => placeFactory.place().build({
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
       name: `clinic_${idx}`,
     }));
@@ -119,7 +119,7 @@ const createClinic = (healthCenter) => {
   });
 
   const clinic = placeFactory.place().build({
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     parent: { _id: healthCenter._id, parent: healthCenter.parent },
     name: `${personName} Family`,
     last_name: lastName,
@@ -236,7 +236,7 @@ const createHierarchy = ({ name, user = false, nbrClinics = 50, nbrPersons = 10,
   user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: contact });
 
   const places = [...hierarchy.values()].map(place => {
-    if (place.type === 'clinic') {
+    if (place.type === CONTACT_TYPES.CLINIC) {
       place.name = `${name} ${place.type}`;
     }
     return place;

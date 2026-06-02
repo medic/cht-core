@@ -526,7 +526,7 @@ describe('Contacts component', () => {
       expect(changesService.subscribe.callCount).to.equal(1);
       const changesFilter = changesService.subscribe.args[0][0].filter;
       expect(!!changesFilter({ doc: { type: 'person' } })).to.equal(true);
-      expect(!!changesFilter({ doc: { type: 'clinic' } })).to.equal(true);
+      expect(!!changesFilter({ doc: { type: CONTACT_TYPES.CLINIC } })).to.equal(true);
       expect(!!changesFilter({ doc: { type: 'health_center' } })).to.equal(true);
       expect(!!changesFilter({ doc: { type: CONTACT_TYPES.DISTRICT_HOSPITAL } })).to.equal(true);
     });

@@ -7,7 +7,7 @@ const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
 const dataContext = require('../../src/data-context');
 const { Contact } = require('@medic/cht-datasource');
-const { DOC_TYPES } = require('@medic/constants');
+const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
 
 chai.use(chaiExclude);
 
@@ -485,7 +485,7 @@ describe('functional transitions', () => {
         phone: 'phone1',
         name: 'Merkel',
         type: 'person',
-        parent: { _id: 'clinic', type: 'clinic', name: 'Clinic' },
+        parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC, name: 'Clinic' },
         reported_date: new Date().valueOf()
       };
       const contact3 = {

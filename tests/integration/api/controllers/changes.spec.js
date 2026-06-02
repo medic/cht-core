@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const constants = require('@constants');
 const { DOC_IDS, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 const { expect } = require('chai');
@@ -80,7 +80,7 @@ const users = [
     password: password,
     place: {
       _id: 'fixture:chwville',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Chwville',
       parent: 'fixture:chw-bossville',
       place_id: 'shortcode:chwville',

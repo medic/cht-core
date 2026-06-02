@@ -59,7 +59,7 @@ describe('update clinic', () => {
     const contact = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Clinic',
       place_id: '1000',
       contact: {
@@ -136,7 +136,7 @@ describe('update clinic', () => {
     const contact = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Clinic',
       place_id: '1000',
       contact: {
@@ -185,7 +185,7 @@ describe('update clinic', () => {
     const clinic = {
       _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
       _rev: '6-e447d8801d7bed36614af92449586851',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       name: 'Clinic',
       contact: {
         _id: 'z',
@@ -537,7 +537,7 @@ describe('update clinic', () => {
     };
 
     const contact = {
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact_type: 'soemthing',
       name: 'Clinic',
       place_id: '1000',

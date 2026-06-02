@@ -1,5 +1,5 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 
 const parent = {
   _id: 'clinic1',
@@ -22,7 +22,7 @@ const ephemeral_dob = {
 
 
 module.exports = new Factory()
-  .sequence('_id', uuid.v4)
+  .sequence('_id', uuid)
   .attr('parent', parent)
   .attr('type', 'person')
   .attr('name', 'Mary Smith')

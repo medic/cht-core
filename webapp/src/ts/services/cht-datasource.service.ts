@@ -44,11 +44,11 @@ export class CHTDatasourceService {
   }
 
   private async createDataContext() {
+    const settingsService = { getAll: () => this.settings };
     if (this.sessionService.isOnlineOnly(this.userCtx)) {
-      return getRemoteDataContext();
+      return getRemoteDataContext(settingsService);
     }
 
-    const settingsService = { getAll: () => this.settings };
     const sourceDatabases = { medic: await this.dbService.get() };
     return getLocalDataContext(settingsService, sourceDatabases);
   }
@@ -88,10 +88,6 @@ export class CHTDatasourceService {
       filter: change => change.id === DOC_IDS.SETTINGS,
       callback: () => this.getSettings()
     });
-  }
-
-  private getChtPermissionsFromSettings(chtSettings) {
-    return chtSettings?.permissions || this.settings?.permissions;
   }
 
   private getRolesFromUser(user) {
@@ -141,13 +137,11 @@ export class CHTDatasourceService {
         ...dataSource.v1,
         hasPermissions: (permissions, user?, chtSettings?) => {
           const userRoles = this.getRolesFromUser(user);
-          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return dataSource.v1.hasPermissions(permissions, userRoles, chtPermissionsSettings);
+          return dataSource.v1.hasPermissions(permissions, userRoles, chtSettings?.permissions);
         },
         hasAnyPermission: (permissionsGroupList, user?, chtSettings?) => {
           const userRoles = this.getRolesFromUser(user);
-          const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
-          return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+          return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, chtSettings?.permissions);
         },
         getExtensionLib: (id) => {
           return this.extensionLibs[id];
