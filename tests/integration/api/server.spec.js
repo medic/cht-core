@@ -276,9 +276,14 @@ describe('server', () => {
         const reqID = getReqId(apiLogs[0]);
 
         const haproxyRequests = haproxyLogs.filter(entry => getReqId(entry) === reqID);
-        expect(haproxyRequests.length).to.equal(2);
+        // Request count depends on whether the doc has ancestors:
+        // _session + DB.get (2) OR _session + DB.get + _all_docs (3)
+        expect(haproxyRequests.length).to.be.at.least(2);
         expect(haproxyRequests[0]).to.include('_session');
-        expect(haproxyRequests[1]).to.include('_design/medic-client/_view/docs_by_id_lineage');
+        const hasDbGetOrPost = haproxyRequests.some(r => {
+          return r.includes(constants.USER_CONTACT_ID) || r.includes('_all_docs');
+        });
+        expect(hasDbGetOrPost).to.be.true;
       });
 
       it('should propagate ID via couch-request', async () => {

@@ -46,58 +46,74 @@ const getContactIds = (contacts) => {
   return _.uniq(ids);
 };
 
-module.exports = function(Promise, DB) {
-  const fillParentsInDocs = function(doc, lineage) {
-    if (!doc || !lineage.length) {
-      return doc;
+const assembleLineage = function(doc, parentIds, ancestors) {
+  const docsMap = new Map();
+  ancestors.forEach(function(a) {
+    if (a?._id) {
+      docsMap.set(a._id, a);
     }
+  });
 
-    // Parent hierarchy starts at the contact for data_records
-    let currentParent;
-    if (utils.isReport(doc)) {
-      currentParent = doc.contact = lineage.shift() || doc.contact;
-    } else {
-      // It's a contact
-      currentParent = doc;
-    }
+  const result = [doc];
+  parentIds.forEach(function(parentId) {
+    result.push(docsMap.get(parentId) || undefined);
+  });
+  return result;
+};
 
-    const parentIds = extractParentIds(currentParent.parent);
-    lineage.forEach(function(l, i) {
-      currentParent.parent = l ? deepCopy(l) : { _id: parentIds[i] };
-      currentParent = currentParent.parent;
-    });
-
+const fillParentsInDocs = function(doc, lineage) {
+  if (!doc || !lineage.length) {
     return doc;
-  };
+  }
 
-  const fillContactsInDocs = function(docs, contacts) {
-    if (!contacts || !contacts.length) {
+  // Parent hierarchy starts at the contact for data_records
+  let currentParent;
+  if (utils.isReport(doc)) {
+    currentParent = doc.contact = lineage.shift() || doc.contact;
+  } else {
+    // It's a contact
+    currentParent = doc;
+  }
+
+  const parentIds = extractParentIds(currentParent.parent);
+  lineage.forEach(function(l, i) {
+    currentParent.parent = l ? deepCopy(l) : { _id: parentIds[i] };
+    currentParent = currentParent.parent;
+  });
+
+  return doc;
+};
+
+const fillContactsInDocs = function(docs, contacts) {
+  if (!contacts || !contacts.length) {
+    return;
+  }
+
+  docs.forEach(function(doc) {
+    if (!doc) {
+      return;
+    }
+    const id = utils.getId(doc.contact);
+    const contactDoc = getContactById(contacts, id);
+    if (contactDoc) {
+      doc.contact = deepCopy(contactDoc);
+    }
+
+    if (!utils.validLinkedDocs(doc)) {
       return;
     }
 
-    docs.forEach(function(doc) {
-      if (!doc) {
-        return;
-      }
-      const id = utils.getId(doc.contact);
+    Object.keys(doc.linked_docs).forEach(key => {
+      const id = utils.getId(doc.linked_docs[key]);
       const contactDoc = getContactById(contacts, id);
       if (contactDoc) {
-        doc.contact = deepCopy(contactDoc);
+        doc.linked_docs[key] = deepCopy(contactDoc);
       }
-
-      if (!utils.validLinkedDocs(doc)) {
-        return;
-      }
-
-      Object.keys(doc.linked_docs).forEach(key => {
-        const id = utils.getId(doc.linked_docs[key]);
-        const contactDoc = getContactById(contacts, id);
-        if (contactDoc) {
-          doc.linked_docs[key] = deepCopy(contactDoc);
-        }
-      });
     });
-  };
+  });
+};
+
+module.exports = function(Promise, DB) {
 
   const fetchContacts = function(lineage) {
     const contactIds = getContactIds(lineage);
@@ -229,16 +245,22 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
+    return DB.get(id)
+      .then(function(doc) {
+        const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
+        const parentIds = extractParentIds(startParent);
+        if (!parentIds.length) {
+          return [doc];
+        }
+        return fetchDocs(parentIds).then(function(ancestors) {
+          return assembleLineage(doc, parentIds, ancestors);
         });
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return [];
+        }
+        throw err;
       });
   };
 
@@ -256,6 +278,23 @@ module.exports = function(Promise, DB) {
     });
   };
 
+  const hydrateLineage = (lineage, contactsPromise) => {
+    let patientLineage;
+    let placeLineage;
+    return fetchSubjectLineage(lineage[0])
+      .then((lineages = {}) => {
+        patientLineage = lineages.patientLineage;
+        placeLineage = lineages.placeLineage;
+        return contactsPromise || fetchContacts(lineage.concat(patientLineage, placeLineage));
+      })
+      .then(function(contacts) {
+        fillContactsInDocs(lineage, contacts);
+        fillContactsInDocs(patientLineage, contacts);
+        fillContactsInDocs(placeLineage, contacts);
+        return mergeLineagesIntoDoc(lineage, contacts, patientLineage, placeLineage);
+      });
+  };
+
   const fetchDoc = function(id) {
     return DB.get(id)
       .catch(function(err) {
@@ -267,9 +306,6 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
-    let lineage;
-    let patientLineage;
-    let placeLineage;
     if (typeof options === 'function') {
       callback = options;
       options = {};
@@ -280,33 +316,18 @@ module.exports = function(Promise, DB) {
     });
 
     return fetchLineageById(id)
-      .then(function(result) {
-        lineage = result;
-
-        if (lineage.length === 0) {
-          if (options.throwWhenMissingLineage) {
-            const err = new Error(`Document not found: ${id}`);
-            err.code = 404;
-            throw err;
-          } else {
-            // Not a doc that has lineage, just do a normal fetch.
-            return fetchDoc(id);
-          }
+      .then(function(lineage) {
+        if (lineage.length > 0) {
+          return hydrateLineage(lineage);
         }
 
-        return fetchSubjectLineage(lineage[0])
-          .then((lineages = {}) => {
-            patientLineage = lineages.patientLineage;
-            placeLineage = lineages.placeLineage;
+        if (options.throwWhenMissingLineage) {
+          const err = new Error(`Document not found: ${id}`);
+          err.code = 404;
+          throw err;
+        }
 
-            return fetchContacts(lineage.concat(patientLineage, placeLineage));
-          })
-          .then(function(contacts) {
-            fillContactsInDocs(lineage, contacts);
-            fillContactsInDocs(patientLineage, contacts);
-            fillContactsInDocs(placeLineage, contacts);
-            return mergeLineagesIntoDoc(lineage, contacts, patientLineage, placeLineage);
-          });
+        return fetchDoc(id);
       })
       .then(function(result) {
         if (callback) {
@@ -322,6 +343,7 @@ module.exports = function(Promise, DB) {
         }
       });
   };
+
 
   // for data_records, include the first-level contact.
   const collectParentIds = function(docs) {
