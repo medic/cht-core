@@ -2,7 +2,7 @@
   class="more-options-menu-container"
   *ngIf="(displayExportOption() || displayDeleteOption() || displayEditOption())">
 
-  <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu" [dir]="direction">
+  <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" [attr.aria-label]="'actions.menu' | translate" [dir]="direction">
     <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
   </button>
 
