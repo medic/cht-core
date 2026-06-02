@@ -8,8 +8,6 @@ const REPORTING_PERIOD_FORMAT = 'YYYY-MM';
 const DAILY_COUNT_KEY_FORMAT = 'YYYY-MM-DD';
 const UNKNOWN = 'unknown';
 const MAX_PERIODS = 60;
-const ROLLING_WINDOW_DAYS = 30;
-const RECENT_PERIODS_FOR_USER_COUNT = 2;
 
 const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const log = await getLog(userCtx.name);
@@ -160,43 +158,10 @@ const get = async ({ user, reportingPeriod, cursor = 0, limit = pagination.DEFAU
   return getPageByRange({ reportingPeriod, skip: cursor, limit });
 };
 
-const getRecentReportingPeriodsRange = () => {
-  const now = moment();
-  const earliest = now.clone().subtract(RECENT_PERIODS_FOR_USER_COUNT - 1, 'month').format(REPORTING_PERIOD_FORMAT);
-  const latest = now.format(REPORTING_PERIOD_FORMAT);
-  return {
-    startkey: `${TYPE_PREFIX}${earliest}-`,
-    endkey: `${TYPE_PREFIX}${latest}-\ufff0`,
-  };
-};
-
-const sumDailyCountsSince = (dailyCounts, sinceKey) => {
-  if (!dailyCounts) {
-    return 0;
-  }
-  let sum = 0;
-  for (const [day, count] of Object.entries(dailyCounts)) {
-    if (day >= sinceKey) {
-      sum += count;
-    }
-  }
-  return sum;
-};
-
-const getUsersWithFailuresCount = async () => {
-  const result = await db.medicLogs.allDocs({
-    ...getRecentReportingPeriodsRange(),
-    include_docs: true,
-  });
-
-  const sinceKey = moment().subtract(ROLLING_WINDOW_DAYS, 'days').format(DAILY_COUNT_KEY_FORMAT);
-  const users = new Set();
-  for (const row of result.rows) {
-    if (row.doc && sumDailyCountsSince(row.doc.daily_counts, sinceKey) > 0) {
-      users.add(row.doc.user);
-    }
-  }
-  return users.size;
+const getUsersWithFailuresCount = async (intervalDays) => {
+  const sinceKey = moment().subtract(intervalDays, 'days').format(DAILY_COUNT_KEY_FORMAT);
+  const result = await db.medicLogs.query('logs/replication_failures', { startkey: [sinceKey] });
+  return new Set(result.rows.map(row => row.key[1])).size;
 };
 
 module.exports = {

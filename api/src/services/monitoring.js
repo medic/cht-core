@@ -348,9 +348,9 @@ const getReplicationLimitLog = () => {
     });
 };
 
-const getReplicationFailuresUserCount = () => {
+const getReplicationFailuresUserCount = (intervalDays) => {
   return replicationFailureLog
-    .getUsersWithFailuresCount()
+    .getUsersWithFailuresCount(intervalDays)
     .catch(err => {
       logger.error('Error fetching replication failures user count: %o', err);
       return -1;
@@ -438,7 +438,7 @@ const jsonV2 = (connectedUserInterval) => {
       jsonV1(connectedUserInterval),
       getWeeklyOutgoingMessageStatusCounts(),
       getLastHundredStatusUpdatesCounts(),
-      getReplicationFailuresUserCount(),
+      getReplicationFailuresUserCount(connectedUserInterval),
     ])
     .then(([jsonV1, weeklyOutgoingMessageStatus, lastHundredCounts, replicationFailuresUserCount]) => {
       jsonV1.messaging.outgoing = {

@@ -9,6 +9,7 @@ describe('Replication Failure Log Service', () => {
     sinon.stub(db.medicLogs, 'allDocs');
     sinon.stub(db.medicLogs, 'get');
     sinon.stub(db.medicLogs, 'put');
+    sinon.stub(db.medicLogs, 'query');
   });
 
   afterEach(() => {
@@ -266,106 +267,64 @@ describe('Replication Failure Log Service', () => {
   });
 
   describe('getUsersWithFailuresCount', () => {
-    const docRow = (id, user, daily_counts) => ({
-      id,
-      doc: { _id: id, user, daily_counts },
-    });
+    const row = (day, user, count) => ({ key: [day, user], value: count });
 
-    it('should count distinct users with any daily_count entry in the rolling 30-day window', async () => {
-      // Today: 2026-04-15. Window since: 2026-03-16 inclusive.
+    it('should query the view with a windowed startkey and return distinct users', async () => {
+      // Today: 2026-04-15. Interval: 7 days. Since: 2026-04-08.
       sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({
+      db.medicLogs.query.resolves({
         rows: [
-          docRow('replication-fail-2026-03-alice', 'alice', { '2026-03-20': 3 }),
-          docRow('replication-fail-2026-04-alice', 'alice', { '2026-04-01': 1 }),
-          docRow('replication-fail-2026-04-bob', 'bob', { '2026-04-14': 5 }),
-          docRow('replication-fail-2026-03-clare', 'clare', { '2026-03-25': 2 }),
+          row('2026-04-10', 'alice', 1),
+          row('2026-04-12', 'alice', 3),
+          row('2026-04-14', 'bob', 2),
+          row('2026-04-09', 'clare', 1),
         ],
       });
 
-      const result = await replicationFailureLog.getUsersWithFailuresCount();
+      const result = await replicationFailureLog.getUsersWithFailuresCount(7);
 
-      expect(db.medicLogs.allDocs.callCount).to.equal(1);
-      expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-        startkey: 'replication-fail-2026-03-',
-        endkey: 'replication-fail-2026-04-\ufff0',
-        include_docs: true,
-      });
-      // alice has docs in both months but is counted once.
+      expect(db.medicLogs.query.callCount).to.equal(1);
+      expect(db.medicLogs.query.args[0]).to.deep.equal([
+        'logs/replication_failures',
+        { startkey: ['2026-04-08'] },
+      ]);
+      // alice appears twice but is counted once.
       expect(result).to.equal(3);
     });
 
-    it('should exclude users whose only daily_counts are older than 30 days', async () => {
-      // Today: 2026-04-15. Window since: 2026-03-16. 2026-03-15 is outside.
+    it('should honour the interval argument', async () => {
       sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({
-        rows: [
-          docRow('replication-fail-2026-03-stale', 'stale', { '2026-03-15': 10 }),
-          docRow('replication-fail-2026-04-fresh', 'fresh', { '2026-04-10': 1 }),
-        ],
-      });
+      db.medicLogs.query.resolves({ rows: [] });
 
-      const result = await replicationFailureLog.getUsersWithFailuresCount();
+      await replicationFailureLog.getUsersWithFailuresCount(30);
 
-      expect(result).to.equal(1);
+      expect(db.medicLogs.query.args[0][1]).to.deep.equal({ startkey: ['2026-03-16'] });
     });
 
-    it('should include the window boundary day', async () => {
+    it('should return 0 when the view returns no rows', async () => {
       sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({
-        rows: [
-          docRow('replication-fail-2026-03-boundary', 'boundary', { '2026-03-16': 1 }),
-        ],
-      });
+      db.medicLogs.query.resolves({ rows: [] });
 
-      const result = await replicationFailureLog.getUsersWithFailuresCount();
-
-      expect(result).to.equal(1);
-    });
-
-    it('should ignore docs that have no daily_counts field', async () => {
-      // Failure-log docs predating the daily_counts rollout must not be miscounted.
-      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({
-        rows: [
-          { id: 'replication-fail-2026-04-old', doc: { _id: 'replication-fail-2026-04-old', user: 'old' } },
-          docRow('replication-fail-2026-04-new', 'new', { '2026-04-10': 1 }),
-        ],
-      });
-
-      const result = await replicationFailureLog.getUsersWithFailuresCount();
-
-      expect(result).to.equal(1);
-    });
-
-    it('should return 0 when no users have failures in the window', async () => {
-      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({ rows: [] });
-
-      const result = await replicationFailureLog.getUsersWithFailuresCount();
+      const result = await replicationFailureLog.getUsersWithFailuresCount(7);
 
       expect(result).to.equal(0);
     });
 
-    it('should span across a year boundary when fetching docs', async () => {
+    it('should span across a year boundary', async () => {
       sinon.useFakeTimers(new Date('2026-01-05T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({ rows: [] });
+      db.medicLogs.query.resolves({ rows: [] });
 
-      await replicationFailureLog.getUsersWithFailuresCount();
+      await replicationFailureLog.getUsersWithFailuresCount(30);
 
-      expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-        startkey: 'replication-fail-2025-12-',
-        endkey: 'replication-fail-2026-01-\ufff0',
-        include_docs: true,
-      });
+      expect(db.medicLogs.query.args[0][1]).to.deep.equal({ startkey: ['2025-12-06'] });
     });
 
     it('should propagate db errors', async () => {
       sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.rejects({ status: 500, message: 'db error' });
+      db.medicLogs.query.rejects({ status: 500, message: 'db error' });
 
       try {
-        await replicationFailureLog.getUsersWithFailuresCount();
+        await replicationFailureLog.getUsersWithFailuresCount(7);
         expect.fail('should have thrown');
       } catch (err) {
         expect(err).to.deep.equal({ status: 500, message: 'db error' });

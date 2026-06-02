@@ -127,8 +127,10 @@ const DEFAULT_CONNECTED_USER_INTERVAL = 7;
  *         count:
  *           type: number
  *           description: >
- *             Number of distinct users that had at least one replication failure in the last
- *             30 days.
+ *             Number of distinct users that had at least one replication failure in the
+ *             reporting window. The window defaults to 7 days but can be changed via the
+ *             `connected_user_interval` query parameter (the same parameter that drives
+ *             `connected_users.count`).
  *     MonitoringConnectedUsers:
  *       type: object
  *       properties:
@@ -251,7 +253,9 @@ module.exports = {
    *         schema:
    *           type: number
    *           default: 7
-   *         description: The number of days to use when counting connected users
+   *         description: >
+   *           The number of days to use when counting connected users and users with replication
+   *           failures.
    *     responses:
    *       '200':
    *         description: Monitoring metrics

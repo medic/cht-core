@@ -298,11 +298,11 @@ describe('monitoring', () => {
       assertIndeterminateFields(result);
     });
 
-    it('should count distinct users with replication failures in the rolling 30-day window', async () => {
+    it('should count distinct users with replication failures in the configured window', async () => {
       const today = moment();
-      const recent = today.clone().subtract(5, 'days');
-      const onBoundary = today.clone().subtract(30, 'days');
-      const tooOld = today.clone().subtract(60, 'days');
+      const recent = today.clone().subtract(2, 'days');
+      const onBoundary = today.clone().subtract(7, 'days');
+      const tooOld = today.clone().subtract(14, 'days');
       const failureDoc = (period, user, daily_counts) => ({
         _id: `replication-fail-${period}-${user}`,
         user,
@@ -324,9 +324,11 @@ describe('monitoring', () => {
 
       await utils.logsDb.bulkDocs(seedDocs);
 
-      const result = await utils.request({ path: '/api/v2/monitoring' });
+      const defaultWindow = await utils.request({ path: '/api/v2/monitoring' });
+      chai.expect(defaultWindow.replication_failure).to.deep.equal({ count: 3 });
 
-      chai.expect(result.replication_failure).to.deep.equal({ count: 3 });
+      const widerWindow = await utils.request({ path: '/api/v2/monitoring?connected_user_interval=30' });
+      chai.expect(widerWindow.replication_failure).to.deep.equal({ count: 4 });
     });
   });
 });
