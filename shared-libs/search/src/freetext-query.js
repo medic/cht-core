@@ -21,28 +21,58 @@ const queryFreetext = async (dataContext, request, type) => {
     return await iterateGenerator(generator);
   } catch (error) {
     logger.error('Error while querying freetext: ', error);
-    // NOTE: added this exception clause to return an empty list
-    // because the previous implementation was doing so
-    // if an exception was raised here then, wherever search lib
-    // is being called the exception needs ot be handled which can be done later on
     return [];
   }
 };
 
 const getGeneratorByType = (datasource, request, type) => {
   if (type === 'reports') {
-    return datasource.v1.report.getUuidsByFreetext(request.params.key);
+    return datasource.v1.report.getUuidsByFreetext({ freetext: request.params.key });
   }
 
   if (type === 'contacts') {
     return request.params.type
-      ? datasource.v1.contact.getUuidsByTypeFreetext(request.params.key, request.params.type)
-      : datasource.v1.contact.getUuidsByFreetext(request.params.key);
+      ? datasource.v1.contact.getUuidsByTypeFreetext({ freetext: request.params.key }, request.params.type)
+      : datasource.v1.contact.getUuidsByFreetext({ freetext: request.params.key });
   }
 
   return null;
 };
 
+const getPageByType = async (datasource, request, type, pageOptions) => {
+  const filter = { freetext: request.params.key };
+  const { cursor, limit } = pageOptions;
+
+  if (type === 'reports') {
+    return datasource.v1.report.getUuidsPageByFreetext(filter, cursor, limit);
+  }
+
+  if (type === 'contacts') {
+    return request.params.type
+      ? datasource.v1.contact.getUuidsPageByTypeFreetext(filter, request.params.type, cursor, limit)
+      : datasource.v1.contact.getUuidsPageByFreetext(filter, cursor, limit);
+  }
+
+  return null;
+};
+
+const queryFreetextPaginated = async (dataContext, request, type, options) => {
+  try {
+    const datasource = chtDatasource.getDatasource(dataContext);
+    const limit = options.limit;
+    const cursor = options.skip?.toString() ?? null;
+    const pageOptions = { cursor, limit };
+
+    const page = await getPageByType(datasource, request, type, pageOptions);
+
+    return page?.data?.map(id => ({ id })) ?? [];
+  } catch (error) {
+    logger.error('Error while paginating freetext: ', error);
+    return [];
+  }
+};
+
 module.exports = {
-  queryFreetext
+  queryFreetext,
+  queryFreetextPaginated
 };

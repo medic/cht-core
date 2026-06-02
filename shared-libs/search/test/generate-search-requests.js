@@ -210,6 +210,7 @@ describe('GenerateSearchRequests service', () => {
       view: 'contacts_by_type_freetext',
       union: false,
       freetext: true,
+      ordered: true,
       params: {
         type: 'person',
         key: 'someth'

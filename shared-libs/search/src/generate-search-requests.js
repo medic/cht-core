@@ -104,7 +104,7 @@ const freetextRequest = (filters, view) => {
     .split(/\s+/);
   const requests = words.map((word) => {
     const params = freetextRequestParams(word);
-    return params && { view, params, freetext: true };
+    return params && { view, params, freetext: true, ordered: true };
   });
   return _.compact(requests);
 };
@@ -203,7 +203,8 @@ const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   const result = {
     view: 'contacts_by_type_freetext',
     union: typeRequests.params.keys.length > 1,
-    freetext: true
+    freetext: true,
+    ordered: true
   };
 
   if (result.union) {

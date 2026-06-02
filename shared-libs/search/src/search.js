@@ -8,7 +8,7 @@ const _ = require('lodash/core');
 _.flatten = require('lodash/flatten');
 _.intersection = require('lodash/intersection');
 const GenerateSearchRequests = require('./generate-search-requests');
-const { queryFreetext } = require('./freetext-query');
+const { queryFreetext, queryFreetextPaginated } = require('./freetext-query');
 
 module.exports = function(DB, dataContext) {
   // Get the subset of rows, in appropriate order, according to options.
@@ -89,7 +89,14 @@ module.exports = function(DB, dataContext) {
       });
   };
 
-  const queryViewPaginated = function(request, options) {
+  const queryViewPaginated = function(request, options, type) {
+    if (request.freetext) {
+      return Promise.all(
+        denormalizeUnionRequest(request)
+          .map(req => queryFreetextPaginated(dataContext, req, type, options))
+      ).then(data => data.flat());
+    }
+
     request.params = request.params || {};
     request.params.limit = options.limit;
     request.params.skip = options.skip;
@@ -103,7 +110,7 @@ module.exports = function(DB, dataContext) {
   const getRows = function(type, requests, options, cacheQueryResults) {
     if (requests.length === 1 && requests[0].ordered) {
       // 1 ordered view - let the db do the pagination for us
-      return queryViewPaginated(requests[0], options);
+      return queryViewPaginated(requests[0], options, type);
     }
     // multiple requests - have to manually paginate
     let queryResultsCache;
