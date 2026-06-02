@@ -127,8 +127,8 @@ const DEFAULT_CONNECTED_USER_INTERVAL = 7;
  *         count:
  *           type: number
  *           description: >
- *             Number of distinct users that had at least one replication failure in the current
- *             or previous calendar month.
+ *             Number of distinct users that had at least one replication failure in the last
+ *             30 days.
  *     MonitoringConnectedUsers:
  *       type: object
  *       properties:

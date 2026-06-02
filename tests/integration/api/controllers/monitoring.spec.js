@@ -298,25 +298,28 @@ describe('monitoring', () => {
       assertIndeterminateFields(result);
     });
 
-    it('should count distinct users with replication failures in the last 2 calendar months', async () => {
-      const currentPeriod = moment().format('YYYY-MM');
-      const previousPeriod = moment().subtract(1, 'month').format('YYYY-MM');
-      const olderPeriod = moment().subtract(2, 'month').format('YYYY-MM');
-      const failureDoc = (period, user) => ({
+    it('should count distinct users with replication failures in the rolling 30-day window', async () => {
+      const today = moment();
+      const recent = today.clone().subtract(5, 'days');
+      const onBoundary = today.clone().subtract(30, 'days');
+      const tooOld = today.clone().subtract(60, 'days');
+      const failureDoc = (period, user, daily_counts) => ({
         _id: `replication-fail-${period}-${user}`,
         user,
-        date: Date.now(),
-        total_failures: 1,
-        failures: [{ date: Date.now(), status_code: 500, duration: 100, request_id: 'seed' }],
+        date: today.valueOf(),
+        total_failures: Object.values(daily_counts).reduce((a, b) => a + b, 0),
+        failures: [],
+        daily_counts,
       });
-      // alice appears in both windowed months and must only be counted once.
-      // dan is outside the 2-month window and must be excluded.
+      const dayKey = (m) => m.format('YYYY-MM-DD');
+      const periodKey = (m) => m.format('YYYY-MM');
+
       const seedDocs = [
-        failureDoc(currentPeriod, 'alice'),
-        failureDoc(currentPeriod, 'bob'),
-        failureDoc(previousPeriod, 'alice'),
-        failureDoc(previousPeriod, 'clare'),
-        failureDoc(olderPeriod, 'dan'),
+        failureDoc(periodKey(today), 'alice', { [dayKey(recent)]: 3 }),
+        failureDoc(periodKey(onBoundary), 'alice', { [dayKey(onBoundary)]: 2 }),
+        failureDoc(periodKey(recent), 'bob', { [dayKey(recent)]: 1 }),
+        failureDoc(periodKey(onBoundary), 'clare', { [dayKey(onBoundary)]: 2 }),
+        failureDoc(periodKey(tooOld), 'dan', { [dayKey(tooOld)]: 99 }),
       ];
 
       await utils.logsDb.bulkDocs(seedDocs);

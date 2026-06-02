@@ -162,6 +162,46 @@ describe('replication failure logging @docker', () => {
       });
     });
 
+    it('should initialise daily_counts with today\'s bucket on a fresh failure', async () => {
+      await requestDocsExpectingError('mathil');
+
+      const log = await getUserFailureLog('mathil');
+      const today = moment().format('YYYY-MM-DD');
+      expect(log.daily_counts).to.deep.equal({ [today]: 1 });
+    });
+
+    it('should increment the same-day bucket across multiple failures', async () => {
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('mathil');
+      await requestDocsExpectingError('mathil');
+
+      const log = await getUserFailureLog('mathil');
+      const today = moment().format('YYYY-MM-DD');
+      expect(log.daily_counts).to.deep.equal({ [today]: 3 });
+      expect(log.total_failures).to.equal(3);
+    });
+
+    it('should preserve buckets from previous days when capturing a new failure', async () => {
+      // Seed a real log doc with historical buckets so we can verify the merge, not just the create.
+      await requestDocsExpectingError('mathil');
+      const logId = getFailureLogId('mathil');
+      const seeded = await utils.logsDb.get(logId);
+      const yesterday = moment().subtract(1, 'day').format('YYYY-MM-DD');
+      const twoDaysAgo = moment().subtract(2, 'days').format('YYYY-MM-DD');
+      seeded.daily_counts = { [twoDaysAgo]: 4, [yesterday]: 2 };
+      await utils.logsDb.put(seeded);
+
+      await requestDocsExpectingError('mathil');
+
+      const log = await getUserFailureLog('mathil');
+      const today = moment().format('YYYY-MM-DD');
+      expect(log.daily_counts).to.deep.equal({
+        [twoDaysAgo]: 4,
+        [yesterday]: 2,
+        [today]: 1,
+      });
+    });
+
     it('should cap stored failures at 50 and track total count', async () => {
       // Create an initial failure to get a real log doc
       await requestDocsExpectingError('mathil');

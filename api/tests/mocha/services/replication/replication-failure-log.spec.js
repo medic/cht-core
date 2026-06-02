@@ -266,14 +266,20 @@ describe('Replication Failure Log Service', () => {
   });
 
   describe('getUsersWithFailuresCount', () => {
-    it('should return the number of distinct users in the current + previous calendar months', async () => {
+    const docRow = (id, user, daily_counts) => ({
+      id,
+      doc: { _id: id, user, daily_counts },
+    });
+
+    it('should count distinct users with any daily_count entry in the rolling 30-day window', async () => {
+      // Today: 2026-04-15. Window since: 2026-03-16 inclusive.
       sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
       db.medicLogs.allDocs.resolves({
         rows: [
-          { id: 'replication-fail-2026-03-alice' },
-          { id: 'replication-fail-2026-03-bob' },
-          { id: 'replication-fail-2026-04-alice' },
-          { id: 'replication-fail-2026-04-clare' },
+          docRow('replication-fail-2026-03-alice', 'alice', { '2026-03-20': 3 }),
+          docRow('replication-fail-2026-04-alice', 'alice', { '2026-04-01': 1 }),
+          docRow('replication-fail-2026-04-bob', 'bob', { '2026-04-14': 5 }),
+          docRow('replication-fail-2026-03-clare', 'clare', { '2026-03-25': 2 }),
         ],
       });
 
@@ -283,9 +289,53 @@ describe('Replication Failure Log Service', () => {
       expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
         startkey: 'replication-fail-2026-03-',
         endkey: 'replication-fail-2026-04-\ufff0',
+        include_docs: true,
       });
       // alice has docs in both months but is counted once.
       expect(result).to.equal(3);
+    });
+
+    it('should exclude users whose only daily_counts are older than 30 days', async () => {
+      // Today: 2026-04-15. Window since: 2026-03-16. 2026-03-15 is outside.
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({
+        rows: [
+          docRow('replication-fail-2026-03-stale', 'stale', { '2026-03-15': 10 }),
+          docRow('replication-fail-2026-04-fresh', 'fresh', { '2026-04-10': 1 }),
+        ],
+      });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(result).to.equal(1);
+    });
+
+    it('should include the window boundary day', async () => {
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({
+        rows: [
+          docRow('replication-fail-2026-03-boundary', 'boundary', { '2026-03-16': 1 }),
+        ],
+      });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(result).to.equal(1);
+    });
+
+    it('should ignore docs that have no daily_counts field', async () => {
+      // Failure-log docs predating the daily_counts rollout must not be miscounted.
+      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+      db.medicLogs.allDocs.resolves({
+        rows: [
+          { id: 'replication-fail-2026-04-old', doc: { _id: 'replication-fail-2026-04-old', user: 'old' } },
+          docRow('replication-fail-2026-04-new', 'new', { '2026-04-10': 1 }),
+        ],
+      });
+
+      const result = await replicationFailureLog.getUsersWithFailuresCount();
+
+      expect(result).to.equal(1);
     });
 
     it('should return 0 when no users have failures in the window', async () => {
@@ -297,22 +347,7 @@ describe('Replication Failure Log Service', () => {
       expect(result).to.equal(0);
     });
 
-    it('should handle usernames that contain dashes', async () => {
-      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.allDocs.resolves({
-        rows: [
-          { id: 'replication-fail-2026-03-sir-bob' },
-          { id: 'replication-fail-2026-04-sir-bob' },
-          { id: 'replication-fail-2026-04-mary-jane' },
-        ],
-      });
-
-      const result = await replicationFailureLog.getUsersWithFailuresCount();
-
-      expect(result).to.equal(2);
-    });
-
-    it('should span across a year boundary', async () => {
+    it('should span across a year boundary when fetching docs', async () => {
       sinon.useFakeTimers(new Date('2026-01-05T12:00:00Z').valueOf());
       db.medicLogs.allDocs.resolves({ rows: [] });
 
@@ -321,6 +356,7 @@ describe('Replication Failure Log Service', () => {
       expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
         startkey: 'replication-fail-2025-12-',
         endkey: 'replication-fail-2026-01-\ufff0',
+        include_docs: true,
       });
     });
 
@@ -370,6 +406,7 @@ describe('Replication Failure Log Service', () => {
           unpurged_docs_count: 1200,
           roles: ['chw'],
         }],
+        daily_counts: { '2026-04-15': 1 },
       });
     });
 
@@ -542,6 +579,64 @@ describe('Replication Failure Log Service', () => {
           unpurged_docs_count: 'unknown',
           roles: ['chw'],
         }],
+        daily_counts: { '2026-04-15': 1 },
+      });
+    });
+
+    describe('daily_counts', () => {
+      it('should increment the bucket for the current day when a doc exists with no buckets', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        // Failure-log docs predating the daily_counts rollout lack the field — we add it lazily.
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 5,
+          failures: [],
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].daily_counts).to.deep.equal({ '2026-04-15': 1 });
+      });
+
+      it('should increment an existing same-day bucket', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 7,
+          failures: [],
+          daily_counts: { '2026-04-15': 7 },
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].daily_counts).to.deep.equal({ '2026-04-15': 8 });
+      });
+
+      it('should add a new bucket on a new day while preserving prior days', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 4,
+          failures: [],
+          daily_counts: { '2026-04-13': 2, '2026-04-14': 2 },
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].daily_counts).to.deep.equal({
+          '2026-04-13': 2,
+          '2026-04-14': 2,
+          '2026-04-15': 1,
+        });
       });
     });
   });
