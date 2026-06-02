@@ -42,6 +42,15 @@ class GeolocationWidget extends Widget {
         bar.classList.add('geolocation-progress-failure');
       } else {
         bar.classList.add('geolocation-progress-success');
+
+        const msg = document.createElement('p');
+        msg.className = 'geolocation-success-msg';
+        this.question.appendChild(msg);
+        window.CHTCore.Translate.get('geolocation.success')
+          .then(text => { msg.textContent = text; });
+
+        this.element.value = 'captured';
+        this.element.dispatchEvent(new Event('change'));
       }
     });
   }

@@ -124,6 +124,46 @@ describe('Enketo: Geolocation Widget', () => {
         expect(bar.classList.contains('geolocation-progress-failure')).to.be.false;
       });
 
+      it('should show success message when GPS is acquired', async () => {
+        const promise = Promise.resolve({
+          latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
+        });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(container.querySelector('.geolocation-success-msg')).to.not.be.null;
+      });
+
+      it('should set hidden input to "captured" and fire change event on success', async () => {
+        const promise = Promise.resolve({
+          latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
+        });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const changeHandler = sinon.stub();
+        widget.element.addEventListener('change', changeHandler);
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(widget.element.value).to.equal('captured');
+        expect(changeHandler.callCount).to.equal(1);
+      });
+
       it('should add failure class to progress bar when GPS acquisition fails', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
