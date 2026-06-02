@@ -376,7 +376,7 @@ export class FormService {
 
     try {
       const siblings = await this.contactsService.getSiblings(doc);
-      return this.deduplicateService.getDuplicates(doc, contactType, siblings, duplicateCheck);
+      return await this.deduplicateService.getDuplicates(doc, contactType, siblings, duplicateCheck);
     } finally {
       perfTracking?.stop({
         name: ['enketo', 'contacts', contactType, 'duplicate_check'].join(':')

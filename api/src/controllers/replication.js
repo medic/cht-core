@@ -1,4 +1,4 @@
-const replication = require('../services/replication');
+const replication = require('../services/replication/replication');
 const serverUtils = require('../server-utils');
 
 module.exports = {

@@ -1,7 +1,7 @@
 const chai = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { DOC_TYPES } = require('@medic/constants');
 
 const contacts = [

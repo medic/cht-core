@@ -30,7 +30,7 @@ export class DeduplicateService {
     return DEFAULT_CONTACT_DUPLICATE_EXPRESSION;
   }
 
-  getDuplicates(
+  async getDuplicates(
     current: Contact.v1.Contact,
     contactType: string,
     siblings: Array<Contact.v1.Contact>,
@@ -39,9 +39,10 @@ export class DeduplicateService {
     // Remove the currently edited doc from the sibling list
     const _siblings: Contact.v1.Contact[] = siblings.filter(({ _id }) => _id !== current._id);
 
+    const utils = await this.xmlFormsContextUtilsService.get();
     const parsed = this.parseProvider.parse(this.extractExpression(duplicateCheck));
     const duplicates = _siblings
-      .filter((existing) => parsed(this.xmlFormsContextUtilsService, { current, existing }))
+      .filter((existing) => parsed(utils, { current, existing }))
       .sort((a: Contact.v1.Contact, b: Contact.v1.Contact) => {
         // Desc order - reverse order by switching props
         return new Date(b.reported_date ?? 0).getTime() - new Date(a.reported_date ?? 0).getTime();

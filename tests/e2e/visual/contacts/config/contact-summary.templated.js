@@ -1,5 +1,6 @@
 const moment = require('moment');
 const extras = require('./contact-summary-extras');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const {
   today,
@@ -92,7 +93,7 @@ const fields = [
     width: 4,
   },
   {
-    appliesToType: 'clinic',
+    appliesToType: CONTACT_TYPES.CLINIC,
     label: 'Last Visited',
     value: '36 days ago',
     width: 4,

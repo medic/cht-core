@@ -8,7 +8,7 @@ const contacts = [
   {
     _id: 'district_hospital',
     name: 'District hospital',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     place_id: 'district_shortcode',
     contact: { _id: 'chw3' },
     parent: {},
@@ -20,7 +20,7 @@ const contacts = [
     },
   },
   {
-    _id: CONTACT_TYPES.HEALTH_CENTER,
+    _id: 'health_center',
     name: 'Health Center',
     type: CONTACT_TYPES.HEALTH_CENTER,
     place_id: 'health_center_shortcode',
@@ -31,9 +31,9 @@ const contacts = [
   {
     _id: 'clinic1',
     name: 'Clinic',
-    type: 'clinic',
+    type: CONTACT_TYPES.CLINIC,
     place_id: 'clinic_shortcode',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: { _id: 'chw1' },
     linked_docs: {
       some_tag4: { _id: 'chw4' },
@@ -45,7 +45,7 @@ const contacts = [
   {
     _id: 'chw1',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone1',
     name: 'chw1',
     linked_docs: {
@@ -55,7 +55,7 @@ const contacts = [
   {
     _id: 'chw2',
     type: 'person',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: 'phone2',
     name: 'chw2',
   },
@@ -68,13 +68,13 @@ const contacts = [
   {
     _id: 'chw4',
     type: 'person',
-    parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } },
+    parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     phone: 'phone4',
   },
   {
     _id: 'chw5',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone5',
     linked_docs: {
       sibling: 'chw6',
@@ -83,7 +83,7 @@ const contacts = [
   {
     _id: 'chw6',
     type: 'person',
-    parent: { _id: 'clinic1', parent: { _id: CONTACT_TYPES.HEALTH_CENTER, parent: { _id: 'district_hospital' } } },
+    parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
     phone: 'phone6',
   },
   {

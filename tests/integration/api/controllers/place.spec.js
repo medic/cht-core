@@ -13,7 +13,7 @@ describe('Place API', () => {
   const place1 = utils.deepFreeze({ ...placeMap.get(CONTACT_TYPES.HEALTH_CENTER), contact: { _id: contact1._id } });
   const place2 = utils.deepFreeze({ ...placeMap.get('district_hospital'), contact: { _id: contact2._id } });
   const place0 = utils.deepFreeze({
-    ...placeMap.get('clinic'),
+    ...placeMap.get(CONTACT_TYPES.CLINIC),
     contact: { _id: contact0._id },
     parent: {
       _id: place1._id,
@@ -22,7 +22,7 @@ describe('Place API', () => {
       }
     },
   });
-  const placeType = 'clinic';
+  const placeType = CONTACT_TYPES.CLINIC;
   const clinic1 = utils.deepFreeze(placeFactory.place().build({
     name: 'clinic1',
     parent: {
@@ -281,7 +281,7 @@ describe('Place API', () => {
 
     it('creates place for valid input', async () => {
       const input = {
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         name: 'place-1',
         parent: place1._id,
         contact: contact0._id,
@@ -302,13 +302,13 @@ describe('Place API', () => {
           parent: { _id: place1.parent._id }
         },
         type: 'contact',
-        contact_type: 'clinic',
+        contact_type: CONTACT_TYPES.CLINIC,
       });
     });
 
     it('creates place with minimum data', async () => {
       const input = {
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'place-1',
       };
 
@@ -317,7 +317,7 @@ describe('Place API', () => {
       expect(placeDoc).excluding(['_id', '_rev', 'reported_date']).to.deep.equal({
         ...input,
         type: 'contact',
-        contact_type: 'district_hospital',
+        contact_type: CONTACT_TYPES.DISTRICT_HOSPITAL,
       });
       expect(placeDoc.reported_date).to.be.a('number');
     });
@@ -337,7 +337,7 @@ describe('Place API', () => {
 
     it(`throws error for non-existent parent`, async () => {
       const body = {
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         name: 'place-1',
         parent: 'invalid-id'
       };
@@ -351,7 +351,7 @@ describe('Place API', () => {
 
     it(`throws error for non-existent contact`, async () => {
       const body = {
-        type: 'district_hospital',
+        type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         name: 'place-1',
         contact: 'invalid-id'
       };
@@ -385,7 +385,7 @@ describe('Place API', () => {
         const opts = {
           ...postOptions,
           body: {
-            type: 'district_hospital',
+            type: CONTACT_TYPES.DISTRICT_HOSPITAL,
             name: 'place-1',
           },
           auth: { username: user.username, password: user.password },
@@ -412,7 +412,7 @@ describe('Place API', () => {
             _id: place2._id
           }
         },
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         contact: { _id: contact0._id },
         reported_date: 1770397800,
         phone: '1234567890'

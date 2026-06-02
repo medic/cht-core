@@ -16,6 +16,7 @@ import { ReportingPeriod } from '@mm-modules/analytics/analytics-sidebar-filter.
 import { Qualifier, Target } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { fakeGenerator } from '../../utils';
+import { CONTACT_TYPES } from '@medic/constants';
 
 const { byContactIds, byContactId, byReportingPeriod } = Qualifier;
 
@@ -122,8 +123,8 @@ describe('TargetAggregatesService', () => {
     it('should return true when user has more than one facility assigned', async () => {
       authService.has.resolves(true);
       userSettingsService.getUserFacilities.resolves([
-        { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
-        { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+        { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
+        { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
       ]);
 
       const result = await service.isEnabled();

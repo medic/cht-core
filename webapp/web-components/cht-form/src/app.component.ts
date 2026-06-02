@@ -9,6 +9,7 @@ import { NgIf, DOCUMENT } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 const DEFAULT_FORM_ID = 'cht-form-id';
 
@@ -22,8 +23,8 @@ export class AppComponent {
   private readonly DEFAULT_USER = { contact_id: 'default_user', language: 'en' } as const;
 
   private readonly HARDCODED_TYPES = [
-    'district_hospital',
-    'health_center',
+    CONTACT_TYPES.DISTRICT_HOSPITAL,
+    CONTACT_TYPES.HEALTH_CENTER,
     'clinic',
     'person'
   ];

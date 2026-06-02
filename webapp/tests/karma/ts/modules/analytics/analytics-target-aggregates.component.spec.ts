@@ -14,6 +14,7 @@ import { TargetAggregatesActions } from '@mm-actions/target-aggregates';
 import { PerformanceService } from '@mm-services/performance.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GlobalActions } from '@mm-actions/global';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Analytics Target Aggregates Component', () => {
   let component: AnalyticsTargetAggregatesComponent;
@@ -45,8 +46,8 @@ describe('Analytics Target Aggregates Component', () => {
       getUserFacilities: sinon
         .stub()
         .resolves([
-          { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-          { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+          { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
+          { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
         ])
     };
     stopPerformanceTrackStub = sinon.stub();
@@ -116,8 +117,8 @@ describe('Analytics Target Aggregates Component', () => {
   it('should set correct loading and error when TargetAggregates fails', fakeAsync(() => {
     sinon.reset();
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'id_1', type: 'district_hospital' },
-      { _id: 'id_2', type: 'district_hospital' },
+      { _id: 'id_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
+      { _id: 'id_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
     ]);
     targetAggregatesService.isEnabled.rejects({ some: 'err' });
     const consoleErrorMock = sinon.stub(console, 'error');
@@ -138,8 +139,8 @@ describe('Analytics Target Aggregates Component', () => {
   it('should set aggregates disabled', fakeAsync(() => {
     sinon.reset();
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-      { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
+      { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
     ]);
     targetAggregatesService.isEnabled.resolves(false);
     component.ngOnInit();
@@ -147,7 +148,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
-      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
       reportingPeriod: ReportingPeriod.CURRENT
     }]]);
 
@@ -164,8 +165,8 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-      { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
+      { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
     ]);
     component.ngOnInit();
     flush();
@@ -173,7 +174,7 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
     expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
-      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
       reportingPeriod: 'current'
     }]]);
     expect(component.enabled).to.be.true;
@@ -196,8 +197,8 @@ describe('Analytics Target Aggregates Component', () => {
   it('should set different aggregates when updateAggregateTargets is called with a new facility', fakeAsync(() => {
     sinon.reset();
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
     ]);
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
@@ -207,7 +208,7 @@ describe('Analytics Target Aggregates Component', () => {
     expect(targetAggregatesService.isEnabled.callCount).to.equal(1);
     expect(performanceService.track.calledOnce).to.be.true;
     expect(globalActions.setSidebarFilter.args).to.deep.equal([[{
-      facility: { _id: 'facility_1', name: 'some-facility-1', type: 'district_hospital' },
+      facility: { _id: 'facility_1', name: 'some-facility-1', type: CONTACT_TYPES.DISTRICT_HOSPITAL },
       reportingPeriod: 'current'
     }]]);
 
@@ -235,7 +236,7 @@ describe('Analytics Target Aggregates Component', () => {
 
     // Fetch aggregates for user's second facility
     component.getTargetAggregates(
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
       ReportingPeriod.CURRENT
     );
     flush();
@@ -265,7 +266,7 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
     ]);
 
     component.ngOnInit();
@@ -281,8 +282,8 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.isEnabled.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: 'July' }]);
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-      { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
+      { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
     ]);
 
     component.ngOnInit();
@@ -307,8 +308,8 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.isPreviousPeriod.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: REPORTING_MONTH }]);
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-      { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
+      { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
     ]);
     component.ngOnInit();
     flush();
@@ -389,8 +390,8 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.isPreviousPeriod.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: REPORTING_MONTH }]);
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
-      { _id: 'facility_2', type: 'district_hospital', name: 'some-facility-2' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
+      { _id: 'facility_2', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-2' },
     ]);
     component.ngOnInit();
     flush();
@@ -419,7 +420,7 @@ describe('Analytics Target Aggregates Component', () => {
     targetAggregatesService.isPreviousPeriod.resolves(true);
     targetAggregatesService.getAggregates.resolves([{ title: 'aggregate-1', reportingMonth: REPORTING_MONTH }]);
     userSettingsService.getUserFacilities.resolves([
-      { _id: 'facility_1', type: 'district_hospital', name: 'some-facility-1' },
+      { _id: 'facility_1', type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'some-facility-1' },
     ]);
     component.ngOnInit();
     flush();

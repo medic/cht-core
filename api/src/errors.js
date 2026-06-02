@@ -20,8 +20,16 @@ class PermissionError extends Error {
   }
 }
 
+class AuthenticationError extends Error {
+  constructor(message, ...args) {
+    super(message, ...args);
+    this.code = 401;
+  }
+}
+
 module.exports = {
   PublicError,
   NotFoundError,
   PermissionError,
+  AuthenticationError,
 };

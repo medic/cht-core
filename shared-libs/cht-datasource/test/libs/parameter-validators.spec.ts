@@ -15,7 +15,7 @@ import {
   assertUuidQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
-import { DOC_TYPES } from '@medic/constants';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('libs parameter-validators', () => {
   describe('assertTypeQualifier', () => {
@@ -347,7 +347,7 @@ describe('libs parameter-validators', () => {
   describe('assertPlaceInput', () => {
     const placeInput = {
       name: 'h1',
-      type: 'district_hospital'
+      type: CONTACT_TYPES.DISTRICT_HOSPITAL
     } as const;
 
     [

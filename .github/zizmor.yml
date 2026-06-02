@@ -1,0 +1,48 @@
+# zizmor configuration for cht-core
+# https://docs.zizmor.sh/configuration/
+#
+# Only suppress findings that are verified low-risk and cannot be remediated
+# without breaking functionality. All other findings must be fixed in code.
+#
+# To add a new suppression, document the reason and the risk acceptance date.
+
+rules:
+  template-injection:
+    ignore:
+      # release-notes.yml passes workflow_dispatch inputs through env: vars.
+      # The shell command uses "$MILESTONE" (quoted) and $SKIP_COMMIT_CHECKS
+      # (a constrained `choice` input: '' or '--skip-commit-validation' only).
+      # workflow_dispatch is only triggerable by org members with Actions write
+      # access — not accessible to external actors. Risk accepted: 2026-04-11.
+      - .github/workflows/release-notes.yml
+
+  cache-poisoning:
+    ignore:
+      # release-helm-charts.yml only triggers on `push: tags: v*` — exclusively
+      # maintainers who can push version tags. No external actor can trigger this
+      # workflow, so cache poisoning via a forked PR is not possible.
+      # Risk accepted: 2026-04-11.
+      - .github/workflows/release-helm-charts.yml
+
+
+  credential-persistence:
+    ignore:
+      # build.yml checkout steps use persist-credentials: false on all steps
+      # that need credentials. Some jobs run local composite actions
+      # (./.github/actions/*) after checkout which require the token to remain
+      # available for the duration of the job. Risk accepted: 2026-04-11.
+      - .github/workflows/build.yml
+
+  secrets-outside-env:
+    ignore:
+      # publish-generated-docs uses personal_token (PAT) not GITHUB_TOKEN, and
+      # only runs on non-PR events with an additional master-branch guard on the
+      # deploy step. Risk accepted: 2026-04-22.
+      - .github/workflows/build.yml
+
+  dependabot-cooldown:
+    config:
+      # Weekly updates (7 days) match our existing npm Dependabot schedule and
+      # are sufficient — all Dependabot PRs go through normal code review before
+      # merging. Risk accepted: 2026-04-11.
+      days: 7

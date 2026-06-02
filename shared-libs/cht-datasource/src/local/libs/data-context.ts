@@ -1,18 +1,13 @@
 import { Doc } from '../../libs/doc';
-import { AbstractDataContext, DataObject, hasField, isRecord } from '../../libs/core';
-import { DataContext } from '../../libs/data-context';
+import { AbstractDataContext, hasField, isRecord } from '../../libs/core';
+import { assertSettingsService, DataContext, SettingsService } from '../../libs/data-context';
+
+export type { SettingsService } from '../../libs/data-context';
 
 /**
  * {@link PouchDB.Database}s to be used as the local data source.
  */
 export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
-
-/**
- * Service providing access to the app settings. These settings must be guaranteed to remain current for as long as the
- * service is used. Settings data returned from future calls to service methods should reflect the current state of the
- * system's settings at the time and not just the state of the settings when the service was first created.
- */
-export type SettingsService = Readonly<{ getAll: () => DataObject }>;
 
 /** @internal */
 export class LocalDataContext extends AbstractDataContext {
@@ -21,15 +16,9 @@ export class LocalDataContext extends AbstractDataContext {
     readonly medicDb: PouchDB.Database<Doc>,
     readonly settings: SettingsService,
   ) {
-    super();
+    super(settings);
   }
 }
-
-const assertSettingsService: (settings: unknown) => asserts settings is SettingsService = (settings: unknown) => {
-  if (!isRecord(settings) || !hasField(settings, { name: 'getAll', type: 'function' })) {
-    throw new Error(`Invalid settings service [${JSON.stringify(settings)}].`);
-  }
-};
 
 const assertSourceDatabases: (sourceDatabases: unknown) => asserts sourceDatabases is SourceDatabases =
   (sourceDatabases: unknown) => {

@@ -96,14 +96,14 @@ export class XmlFormsService {
       });
   }
 
-  private evaluateExpression(expression, contact:{ doc, summary }, user: { doc, summary }) {
+  private evaluateExpression(expression, utils, contact:{ doc, summary }, user: { doc, summary }) {
     const context = {
       contact: contact.doc,
       summary: contact.summary,
       user: user.doc,
       userSummary: user.summary,
     };
-    return this.parseProvider.parse(expression)(this.xmlFormsContextUtilsService, context);
+    return this.parseProvider.parse(expression)(utils, context);
   }
 
   private filterAll(forms, options) {
@@ -152,14 +152,16 @@ export class XmlFormsService {
     });
   }
 
-  private checkFormExpression(form, user, userContactSummary, options?) {
+  private async checkFormExpression(form, user, userContactSummary, options?) {
     if (!form.context?.expression) {
       return true;
     }
 
+    const utils = await this.xmlFormsContextUtilsService.get();
     try {
       return this.evaluateExpression(
         form.context.expression,
+        utils,
         { doc: options?.doc, summary: options?.contactSummary },
         { doc: user, summary: userContactSummary },
       );
