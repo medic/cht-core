@@ -32,6 +32,7 @@
     require( './widgets/dynamic-url' ),
     require( './widgets/draw' ),
     require( './widgets/hidden-group' ),
+    require( './widgets/geolocation-widget' ),
   ];
 
   module.exports = widgets;
