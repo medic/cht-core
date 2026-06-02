@@ -8,6 +8,7 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -45,6 +46,7 @@ describe('ContactsEdit component', () => {
   let chtDatasourceService;
   let getContact;
   let fileReaderService;
+  let geolocationService;
   const loadContactSummary = sinon.stub();
 
   beforeEach(() => {
@@ -63,6 +65,7 @@ describe('ContactsEdit component', () => {
       })
     };
     fileReaderService = { base64: sinon.stub() };
+    geolocationService = { init: sinon.stub() };
     router = { navigate: sinon.stub() };
     routeSnapshot = { params: {}, queryParams: {} };
     route = {
@@ -117,6 +120,7 @@ describe('ContactsEdit component', () => {
         { provide: TelemetryService, useValue: telemetryService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
         { provide: FileReaderService, useValue: fileReaderService },
+        { provide: GeolocationService, useValue: geolocationService },
         { provide: HttpClient, useValue: {} },
       ],
     });
@@ -1256,6 +1260,39 @@ describe('ContactsEdit component', () => {
         true
       ]);
       expect(telemetryService.record.notCalled).to.be.true;
+    });
+  });
+
+  describe('geolocation widget detection', () => {
+    const setupRenderWithHtml = (html: string) => {
+      routeSnapshot.params = { type: CONTACT_TYPES.DISTRICT_HOSPITAL };
+      contactTypesService.getChildren.resolves([{ id: CONTACT_TYPES.DISTRICT_HOSPITAL }]);
+      contactTypesService.get.resolves({
+        create_form: 'district_create_form_id',
+        create_key: 'district_create_key',
+      });
+      dbGet.resolves({ _id: 'district_create_form_id', the: 'form' });
+      const formHtml = document.createElement('div');
+      formHtml.innerHTML = html;
+      formService.render.resolves({ view: { html: formHtml } });
+    };
+
+    it('should call geolocationService.init() when form contains geolocation widget', async () => {
+      setupRenderWithHtml('<div class="or-appearance-geolocation-capture"><input /></div>');
+
+      await createComponent();
+      await fixture.whenStable();
+
+      expect(geolocationService.init.callCount).to.equal(1);
+    });
+
+    it('should not call geolocationService.init() when form does not contain geolocation widget', async () => {
+      setupRenderWithHtml('<div class="some-other-widget"><input /></div>');
+
+      await createComponent();
+      await fixture.whenStable();
+
+      expect(geolocationService.init.callCount).to.equal(0);
     });
   });
 });

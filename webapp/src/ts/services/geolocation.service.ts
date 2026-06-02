@@ -18,6 +18,9 @@ export class GeolocationService {
   private watcher;
   private timeout;
 
+  currentHandle;
+  currentPromise;
+
   constructor(
     private telemetryService:TelemetryService,
   ) {}
@@ -115,6 +118,7 @@ export class GeolocationService {
     this.geoError = null;
     this.watcher = null;
     this.defer();
+    this.currentPromise = this.deferred.promise;
 
     if (this.getAndroidPermission()) {
       this.startWatching();
@@ -135,6 +139,7 @@ export class GeolocationService {
     };
 
     complete.cancel = this.stopWatching.bind(this);
+    this.currentHandle = complete;
 
     return complete;
   }

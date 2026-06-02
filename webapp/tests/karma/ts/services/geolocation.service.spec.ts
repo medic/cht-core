@@ -43,6 +43,20 @@ describe('Geolocation service', () => {
   });
 
   describe('Geolocation', () => {
+    it('should store currentHandle after init()', () => {
+      const handle = service.init();
+      expect(service.currentHandle).to.equal(handle);
+    });
+
+    it('should store a pending currentPromise after init()', async () => {
+      service.init();
+      expect(service.currentPromise).to.be.instanceOf(Promise);
+      let resolved = false;
+      service.currentPromise.then(() => { resolved = true; });
+      await Promise.resolve();
+      expect(resolved).to.be.false;
+    });
+
     it('correctly returns a successful geo result', () => {
       const position = {
         latitude: 1,

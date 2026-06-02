@@ -22,6 +22,7 @@ import { DuplicateCheck } from '@mm-services/deduplicate.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 import events from 'enketo-core/src/js/event';
 
 @Component({
@@ -43,6 +44,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly ngZone: NgZone,
     private readonly fileReaderService: FileReaderService,
+    private readonly geolocationService: GeolocationService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
@@ -334,6 +336,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     formContext.valuechangeListener = this.resetFormError.bind(this);
     formContext.titleKey = titleKey;
     const formInstance = await this.formService.render(formContext);
+
+    if (formInstance?.view?.html?.querySelector?.('.or-appearance-geolocation-capture')) {
+      this.geolocationService.init();
+    }
 
     this.trackMetadata.form = formId;
     this.trackRender?.stop({
