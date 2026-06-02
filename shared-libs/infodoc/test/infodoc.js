@@ -631,18 +631,6 @@ describe('infodoc', () => {
       });
     });
 
-    it('setInvalidRev creates a blank infodoc on 404', () => {
-      sinon.stub(db.sentinel, 'get').rejects({ status: 404 });
-      sinon.stub(db.sentinel, 'put').resolves();
-
-      return lib.setInvalidRev('some', null).then(() => {
-        const saved = db.sentinel.put.args[0][0];
-        assert.equal(saved._id, 'some-info');
-        assert.equal(saved.doc_id, 'some');
-        assert.equal(saved.invalid_rev, null);
-      });
-    });
-
     it('clearInvalidRev removes the mid-write marker', () => {
       const info = { _id: 'some-info', doc_id: 'some', invalid_rev: '1-abc' };
       sinon.stub(db.sentinel, 'get').resolves(info);

@@ -131,7 +131,7 @@ const processDocs = docs => {
             saveDoc(change, (err, result) => {
               callback(null, err || result);
             });
-          });
+          }, { manageInfoDocRev: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -253,7 +253,7 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, results }, callback) => {
+const finalize = ({ change, results, manageInfoDocRev = false }, callback) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
   const changed = _.some(results, i => Boolean(i));
@@ -275,6 +275,25 @@ const finalize = ({ change, results }, callback) => {
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
+  if (!manageInfoDocRev) {
+    // Sentinel (async) branch: save the document first, then record the transitions map. Sentinel does
+    // not manage the valid_rev/invalid_rev markers; it only reads them (see getConsistentInfoDoc) to
+    // avoid processing a doc that API is still writing.
+    return saveDoc(change, (err, result) => {
+      if (err) {
+        logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
+        return callback(err);
+      }
+      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+      return infodoc
+        .saveTransitions(change)
+        .then(() => callback(null, result))
+        .catch(saveErr => callback(saveErr));
+    });
+  }
+
+  // API (sync) branch: bracket the doc write with invalid_rev/valid_rev markers so a concurrent
+  // sentinel read can detect a mid-write infodoc and wait.
   const invalidRev = change.doc._rev ?? null;
   return infodoc
     .setInvalidRev(change.id, invalidRev)
@@ -359,7 +378,7 @@ const applyTransition = ({ key, change, transition, force }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = (change, callback) => {
+const applyTransitions = (change, callback, { manageInfoDocRev = false } = {}) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -377,7 +396,7 @@ const applyTransitions = (change, callback) => {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) => finalize({ change, results }, callback));
+  async.series(operations, (err, results) => finalize({ change, results, manageInfoDocRev }, callback));
 };
 
 const availableTransitions = () => {

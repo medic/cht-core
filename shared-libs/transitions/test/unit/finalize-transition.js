@@ -22,7 +22,7 @@ describe('finalize transition', () => {
     );
   });
 
-  it('save is called if transition results have changes', done => {
+  it('save is called if transition results have changes (API branch manages rev)', done => {
     const doc = { _rev: '1' };
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true, rev: '2' });
     const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
@@ -32,6 +32,7 @@ describe('finalize transition', () => {
       {
         change: { id: 'abc', doc: doc },
         results: [null, null, true],
+        manageInfoDocRev: true,
       },
       (err, result) => {
         assert.equal(saveDoc.callCount, 1);
@@ -48,7 +49,7 @@ describe('finalize transition', () => {
     );
   });
 
-  it('should callback with save errors', done => {
+  it('should callback with save errors and clear invalid_rev (API branch)', done => {
     const doc = { _rev: '1' };
     const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
     const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
@@ -58,6 +59,7 @@ describe('finalize transition', () => {
       {
         change: { id: 'abc', doc: doc },
         results: [null, null, true],
+        manageInfoDocRev: true,
       },
       (err, result) => {
         assert.deepEqual(err, { error: 'something' });
@@ -68,6 +70,31 @@ describe('finalize transition', () => {
         assert.equal(infodoc.saveTransitions.callCount, 0);
         assert.equal(clearInvalidRev.callCount, 1);
         assert.deepEqual(clearInvalidRev.args[0], ['abc']);
+        done();
+      }
+    );
+  });
+
+  it('sentinel branch saves doc then transitions without managing valid/invalid rev', done => {
+    const doc = { _rev: '1' };
+    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true, rev: '2' });
+    const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
+    const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
+    sinon.stub(infodoc, 'saveTransitions').resolves();
+    transitions.finalize(
+      {
+        change: { id: 'abc', doc: doc },
+        results: [null, null, true],
+      },
+      (err, result) => {
+        assert(!err);
+        assert.deepEqual(result, { ok: true, rev: '2' });
+        assert.equal(saveDoc.callCount, 1);
+        assert.equal(infodoc.saveTransitions.callCount, 1);
+        // saveTransitions called without a validRev, so no rev management
+        assert.equal(infodoc.saveTransitions.args[0][1], undefined);
+        assert.equal(setInvalidRev.callCount, 0);
+        assert.equal(clearInvalidRev.callCount, 0);
         done();
       }
     );

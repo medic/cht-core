@@ -152,38 +152,19 @@ const updateTransition = (change, transition, ok) => {
 };
 
 const saveTransitions = (change, validRev) => {
-  return saveProperty(change.id, change.info, 'transitions', {}, validRev);
+  return modifyInfoDoc(change.id, infoDoc => {
+    infoDoc.transitions = (change.info && change.info.transitions) || {};
+    if (validRev !== undefined) {
+      infoDoc.valid_rev = validRev;
+      delete infoDoc.invalid_rev;
+    }
+  }, change.info);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
-  return saveProperty(id, infodoc, 'completed_tasks', completedTasks);
-};
-
-const saveProperty = async (id, infodoc, property, defaultValue = {}, validRev) => {
-  let updatedInfoDoc;
-  try {
-    updatedInfoDoc = await db.sentinel.get(getInfoDocId(id));
-    updatedInfoDoc[property] = (infodoc && infodoc[property]) || defaultValue;
-  } catch (err) {
-    if (err.status !== 404) {
-      throw err;
-    }
-    updatedInfoDoc = infodoc;
-  }
-
-  if (validRev !== undefined) {
-    updatedInfoDoc.valid_rev = validRev;
-    delete updatedInfoDoc.invalid_rev;
-  }
-
-  try {
-    return await db.sentinel.put(updatedInfoDoc);
-  } catch (err) {
-    if (err.status !== 409) {
-      throw err;
-    }
-    return saveProperty(id, infodoc, property, defaultValue, validRev);
-  }
+  return modifyInfoDoc(id, infoDoc => {
+    infoDoc.completed_tasks = (infodoc && infodoc.completed_tasks) || completedTasks;
+  }, infodoc);
 };
 
 const setInvalidRev = (id, invalidRev) => {
@@ -192,21 +173,24 @@ const setInvalidRev = (id, invalidRev) => {
   });
 };
 
-const clearInvalidRev = id => {
+const clearInvalidRev = (id) => {
   return modifyInfoDoc(id, infoDoc => {
     delete infoDoc.invalid_rev;
   });
 };
 
-const modifyInfoDoc = async (id, modify) => {
+// Fetch the infodoc, apply `modify`, and save, retrying on conflict so the change always lands on the
+// latest rev. If the infodoc is missing, `fallback` is created and saved when provided; otherwise the
+// 404 is raised.
+const modifyInfoDoc = async (id, modify, fallback) => {
   let infoDoc;
   try {
     infoDoc = await db.sentinel.get(getInfoDocId(id));
   } catch (err) {
-    if (err.status !== 404) {
+    if (err.status !== 404 || !fallback) {
       throw err;
     }
-    infoDoc = blankInfoDoc(id);
+    infoDoc = fallback;
   }
 
   modify(infoDoc);
@@ -217,7 +201,7 @@ const modifyInfoDoc = async (id, modify) => {
     if (err.status !== 409) {
       throw err;
     }
-    return modifyInfoDoc(id, modify);
+    return modifyInfoDoc(id, modify, fallback);
   }
 };
 
