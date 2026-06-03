@@ -73,7 +73,11 @@ describe('UI Extensions tab', () => {
       await closeReloadModal();
     });
 
-    after(commonPage.logout);
+    after(async () => {
+      // Wait for hamburger menu to fully close before logging out
+      await browser.pause(500);
+      await commonPage.logout();
+    });
 
     afterEach(async () => {
       await destroyTelemetryDb();
