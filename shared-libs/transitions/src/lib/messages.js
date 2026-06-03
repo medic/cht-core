@@ -141,7 +141,7 @@ module.exports = {
     } else {
       reply = errors[0].message || errors[0];
     }
-    module.exports.addMessage(doc, { message: reply });
+    module.exports.addMessage(doc, { message: reply }, 'reporting_unit', {}, true);
   },
   addError: function(doc, error, context) {
     if (_.isString(error)) {

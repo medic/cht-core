@@ -36,7 +36,7 @@ module.exports = {
     const recipient = config && config.recipient || 'from';
     // A "message" ends up being a doc.task, which is something that is sent to
     // the caller via SMS
-    messages.addMessage(doc, message, recipient, context);
+    messages.addMessage(doc, message, recipient, context, true);
     // An "error" ends up being a doc.error, which is something that is shown
     // on the screen when you view the error. We need both
     messages.addError(doc, {
@@ -51,7 +51,7 @@ module.exports = {
       return;
     }
 
-    messages.addMessage(doc, config, config.recipient, context);
+    messages.addMessage(doc, config, config.recipient, context, true);
   },
 
   addRegistrationNotFoundError: (doc, reportConfig) => {
