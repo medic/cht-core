@@ -10,7 +10,6 @@ function(doc) {
     }
 
     if (type === 'string' && stringValue.length > maxLength) {
-      // string fields are not tokenized
       return;
     }
     index(type, fieldName, value, opts);

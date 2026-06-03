@@ -22,8 +22,6 @@ function(doc) {
     }
     // ensure we index strings, not booleans or other types
     value = value.toString();
-
-    // ensure we don't index large strings
     if (value.length > maxLength) {
       return;
     }

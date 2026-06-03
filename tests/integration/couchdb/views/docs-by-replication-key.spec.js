@@ -3,7 +3,7 @@ const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
 const { CONTACT_TYPES, DOC_TYPES, PREFIXES } = require('@medic/constants');
 
-describe(' docs_by_replication_key', () => {
+describe('docs_by_replication_key', () => {
   let docByPlaceIds;
   let docByPlaceIds_unassigned;
 
