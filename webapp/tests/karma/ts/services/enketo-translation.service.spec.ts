@@ -909,6 +909,33 @@ describe('EnketoTranslation service', () => {
         service.bindJsonToXml(element, { upload: 'photo.jpg-1700000000000' });
         assert.equal(element.find('upload').text(), 'photo.jpg-1700000000000');
       });
+
+      it('stashes attachment ref as data-attachment-ref sidecar when bind is skipped', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: 'form/photo', name: 'Alice' });
+        assert.equal(element.find('photo').attr('data-attachment-ref'), 'form/photo');
+        // text untouched, so the display widget still renders the form default
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('does not stash a sidecar when saved value is empty', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: '', name: 'Alice' });
+        assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
+      });
+
+      it('does not stash a sidecar when saved value is null', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: null, name: 'Alice' });
+        assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
+      });
+
+      it('does not stash a sidecar when value is genuine base64 (binds normally)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: 'INJECTED_BASE64_DATA', name: 'Alice' });
+        assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
+        assert.equal(element.find('photo').text(), 'INJECTED_BASE64_DATA');
+      });
     });
 
     describe('isAttachmentRef', () => {

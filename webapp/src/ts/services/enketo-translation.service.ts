@@ -146,6 +146,10 @@ export class EnketoTranslationService {
     elem.removeAttr('template');
 
     if (this.shouldSkipBinaryBind(elem, data)) {
+      // Stash the skipped reference so an untouched field can be restored on save.
+      if (this.isAttachmentRef(data)) {
+        elem.attr('data-attachment-ref', data);
+      }
       return;
     }
 
