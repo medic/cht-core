@@ -7,6 +7,10 @@ module.exports = {
     fallback: {
       path: false,
       fs: false,
+      os: false,
+      zlib: false,
+      http: false,
+      https: false,
     }
   }
 };

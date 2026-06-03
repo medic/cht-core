@@ -1,0 +1,43 @@
+@import (reference) "../../../../../css/variables.less";
+@import "../../../../../css/base-modal.less";
+
+.modal {
+  .modal-dialog {
+    max-width: 60rem;
+    width: 90%;
+    margin: 12rem auto;
+    max-height: calc(100vh - 14rem);
+    overflow-y: auto;
+  }
+  .modal-body {
+    .form-control.tiny {
+      max-width: 6rem;
+    }
+    .form-control.small {
+      max-width: 12rem;
+    }
+    .form-group {
+      margin-bottom: 0.9375rem;
+      label {
+        font-weight: bold;
+        margin-bottom: 0.3125rem;
+        display: block;
+      }
+      &.required label::after {
+        content: ' *';
+      }
+      &.has-error {
+        .form-control {
+          border-color: @red;
+        }
+        .help-block {
+          color: lighten(@red, 10%);
+        }
+        .help-block.error {
+          color: @red;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}

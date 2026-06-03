@@ -1,0 +1,39 @@
+<div>
+  <div
+    class="modal fade"
+    [class.in]="visible"
+    [style.display]="visible ? 'block' : 'none'"
+    role="dialog"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" (click)="cancel()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">{{ 'bulkdelete.confirm.title' | translate }}</h4>
+        </div>
+
+        <div class="modal-body">
+          <p>{{ 'confirm.delete' | translate }}</p>
+        </div>
+
+        <div class="modal-footer">
+          @if (responseStatus.state === 'error') {
+            <p class="alert alert-danger" role="alert">{{ responseStatus.msg! | translate }}</p>
+          }
+          <button type="button" class="btn btn-link" (click)="cancel()" [disabled]="loadingModalState">
+            {{ 'Cancel' | translate }}
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="loadingModalState">
+            {{ loadingModalState ? ('Deleting' | translate) : ('bulkdelete.confirm.action' | translate) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (visible) {
+    <div class="modal-backdrop fade in"></div>
+  }
+</div>

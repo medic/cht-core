@@ -15,17 +15,19 @@ import { routes as exportRoutes } from '@admin-tool-modules/export/export.routes
 import { routes as backupRoutes } from '@admin-tool-modules/backup/backup.routes';
 
 import { AppRoutingModule } from '../../../src/ts/app-routing.module';
-import { DisplayComponent } from '@admin-tool-modules/display/display.component';
 import { UsersComponent } from '@admin-tool-modules/users/users.component';
-import { AuthorizationComponent } from '@admin-tool-modules/authorization/authorization.component';
+import { 
+  AuthorizationHeaderComponent 
+} from '@admin-tool-modules/authorization/authorization-header/authorization-header.component';
 import { SmsComponent } from '@admin-tool-modules/sms/sms.component';
-import { FormsComponent } from '@admin-tool-modules/forms/forms.component';
+import { AppFormsComponent } from '@admin-tool-modules/forms/app-forms/app-forms.component';
 import { TargetsComponent } from '@admin-tool-modules/targets/targets.component';
 import { ImagesComponent } from '@admin-tool-modules/images/images.component';
 import { MessageQueueComponent } from '@admin-tool-modules/message-queue/message-queue.component';
 import { UpgradeComponent } from '@admin-tool-modules/upgrade/upgrade.component';
 import { ExportComponent } from '@admin-tool-modules/export/export.component';
 import { BackupComponent } from '@admin-tool-modules/backup/backup.component';
+import { DisplayHeaderComponent } from '@admin-tool-modules/display/display-header/display-header.component';
 
 describe('AppRoutingModule', () => {
   beforeEach(() => {
@@ -40,10 +42,10 @@ describe('AppRoutingModule', () => {
   });
 
   describe('route definitions', () => {
-    it('display routes should point to /display with DisplayComponent', () => {
+    it('display routes should point to /display with DisplayHeaderComponent', () => {
       expect(displayRoutes).to.have.length(1);
       expect(displayRoutes[0].path).to.equal('display');
-      expect(displayRoutes[0].component).to.equal(DisplayComponent);
+      expect(displayRoutes[0].component).to.equal(DisplayHeaderComponent);
     });
 
     it('users routes should point to /users with UsersComponent', () => {
@@ -55,7 +57,7 @@ describe('AppRoutingModule', () => {
     it('authorization routes should point to /authorization with AuthorizationComponent', () => {
       expect(authorizationRoutes).to.have.length(1);
       expect(authorizationRoutes[0].path).to.equal('authorization');
-      expect(authorizationRoutes[0].component).to.equal(AuthorizationComponent);
+      expect(authorizationRoutes[0].component).to.equal(AuthorizationHeaderComponent);
     });
 
     it('sms routes should point to /sms with SmsComponent', () => {
@@ -67,7 +69,7 @@ describe('AppRoutingModule', () => {
     it('forms routes should point to /forms with FormsComponent', () => {
       expect(formsRoutes).to.have.length(1);
       expect(formsRoutes[0].path).to.equal('forms');
-      expect(formsRoutes[0].component).to.equal(FormsComponent);
+      expect(formsRoutes[0].component).to.equal(AppFormsComponent);
     });
 
     it('targets routes should point to /targets with TargetsComponent', () => {

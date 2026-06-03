@@ -1,0 +1,62 @@
+@import 'variables';
+
+.selection-heading {
+  font-weight: bold;
+  padding: 0.5rem 0;
+  border-bottom: 0.125rem solid @gray-light;
+  color: @gray-dark;
+}
+
+.selection {
+  padding: 0.625rem 0;
+  border-bottom: 0.0625rem solid @gray-light;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  .delete {
+    visibility: hidden;
+    text-align: right;
+  }
+
+  &:hover {
+    background-color: @gray-ultra-lighter;
+
+    .delete {
+      visibility: visible;
+    }
+  }
+
+  &.inactive {
+    color: @inactive-color;
+    cursor: default;
+
+    &:hover {
+      background-color: transparent;
+
+      .delete {
+        visibility: hidden;
+      }
+    }
+  }
+}
+
+.empty-state {
+  padding: 2.5rem 0;
+  color: @inactive-color;
+}
+
+legend {
+  font-size: @font-large;
+  font-weight: bold;
+  margin-bottom: 0.9375rem;
+  border-bottom: 0.0625rem solid @gray-light;
+  padding-bottom: 0.3125rem;
+}
+
+.btn-toolbar {
+  margin-bottom: 1.25rem;
+
+  .btn {
+    margin-right: 0.3125rem;
+  }
+}

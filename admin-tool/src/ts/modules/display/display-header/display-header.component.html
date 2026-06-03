@@ -1,0 +1,17 @@
+<nav aria-label="Display Navigation">
+  <ul class="nav nav-tabs custom-tabs">
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/date-time">{{ 'admin.display.datetime' | translate }}</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/languages">{{ 'Languages' | translate }}</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/translations">{{ 'Translations' | translate }}</a>
+    </li>
+    <li class="nav-item" routerLinkActive="active">
+      <a routerLink="/display/privacy-policies">{{ 'display.privacy.policies.title' | translate }}</a>
+    </li>
+  </ul>
+</nav>
+<router-outlet></router-outlet>

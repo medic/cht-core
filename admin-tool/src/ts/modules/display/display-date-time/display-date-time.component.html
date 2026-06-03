@@ -1,0 +1,57 @@
+<form class="custom-form">
+  <div class="form-group">
+    <label id="date-format-label" class="date-label">{{ 'Date display format' | translate }}</label>
+    <div class="dropdown dropdown-date">
+      <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-labelledby="date-format-label">
+        {{ dateFormatSelection }} <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        @for (date of standardDateFormats; track $index) {
+          <li>
+            <button (click)="onDateFormatSelected(date)">{{ date }}</button>
+          </li>
+        }
+      </ul>
+    </div>
+    <div class="help-block"></div>
+    <p class="help-block">
+      <a href="http://momentjs.com/docs/#/displaying/format/" target="_blank" rel="noopener">{{ 'configuration.date.format.help' | translate }}</a>
+      . <span>{{ 'For example' | translate }}</span> {{ dateFormatExample }}
+    </p>
+
+    <label id="datetime-format-label" class="date-label second-label">{{ 'Datetime display format' | translate }}</label>
+    <div class="dropdown dropdown-datetime">
+      <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-labelledby="datetime-format-label">
+        {{ dateTimeFormatSelection }} <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        @for (date of standardDatetimeFormats; track $index) {
+          <li>
+            <button (click)="onDateTimeFormatSelected(date)">{{ date }}</button>
+          </li>
+        }
+      </ul>
+    </div>
+    <div class="help-block"></div>
+    <p class="help-block">
+      <a href="http://momentjs.com/docs/#/displaying/format/" target="_blank" rel="noopener">{{ 'configuration.date.format.help' | translate }}</a>
+      . <span>{{ 'For example' | translate }}</span> {{ dateTimeFormatExample }}
+    </p>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        class="btn btn-default button-submit"
+        (click)="setSettingsDate()"
+        [disabled]="responseStatus.state === 'loading'">
+        {{ 'Submit' | translate }}
+      </button>
+
+      @if (responseStatus.state === 'loading') {
+        <div class="loader inline"></div>
+      } @else if (responseStatus.state) {
+        <span [class]="responseStatus.state!">{{ responseStatus.msg! | translate }}</span>
+      }
+    </div>
+  </div>
+</form>

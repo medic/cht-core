@@ -1,37 +1,37 @@
 <div class="navigation">
   <ul>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/display">Display</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/display">{{ 'admin.display' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/users">Users</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/users">{{ 'Users' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/authorization">Authorization</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/authorization">{{ 'configuration.authorization' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/sms">SMS</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/sms">{{ 'configuration.sms' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/forms">Forms</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/forms">{{ 'Forms' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/targets">Targets</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/targets">{{ 'analytics.targets' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/images">Images</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/images">{{ 'images' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/message-queue">Message Queue</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_view_outgoing_messages'">
+      <a routerLink="/message-queue">{{ 'admin.message.queue' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/upgrade">Upgrade</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_upgrade'">
+      <a routerLink="/upgrade">{{ 'instance.upgrade' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/export">Export</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_export_all'">
+      <a routerLink="/export">{{ 'import.export' | translate }}</a>
     </li>
-    <li routerLinkActive="active-nav">
-      <a routerLink="/backup">Backup</a>
+    <li routerLinkActive="active-nav" [mmAuth]="'can_configure'">
+      <a routerLink="/backup">{{ 'settings.backuprestore' | translate }}</a>
     </li>
   </ul>
 </div>

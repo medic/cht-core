@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
-import { FormsComponent } from './forms.component';
+import { AppFormsComponent } from './app-forms/app-forms.component';
+
 
 export const routes: Routes = [
   {
     path: 'forms',
-    component: FormsComponent,
+    component: AppFormsComponent,
   },
 ];

@@ -1,0 +1,44 @@
+@import (reference) "variables.less";
+
+/**
+ * Base modal styles shared across all modal components in the admin tool.
+ * Provides the common structural and visual foundation for modals —
+ * header, body, footer, backdrop and button layout.
+ * Each component imports this file and adds its own specific overrides on top.
+ */
+.modal {
+  &.in {
+    opacity: 1;
+  }
+  .modal-header {
+    border-bottom: 0.0625rem solid @gray-light;
+    .modal-title {
+      font-size: @font-large;
+      font-weight: bold;
+    }
+    .close {
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+  }
+  .modal-body {
+    padding: 1.25rem;
+  }
+  .modal-footer {
+    border-top: 0.0625rem solid @gray-light;
+    text-align: right;
+    .alert-danger {
+      text-align: left;
+    }
+    .btn {
+      margin-left: 0.3125rem;
+    }
+    .btn-link {
+      text-decoration: none;
+      text-transform: capitalize;
+    }
+  }
+}
+.modal-backdrop {
+  opacity: 0.5;
+}

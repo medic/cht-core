@@ -1,0 +1,48 @@
+<div>
+  @if (loadingPageStatus) {
+    <div class="loader"></div>
+  } @else {
+    <div class="tab-content container-fluid">
+      <div class="form-group">
+        @for (permission of permissions; track permission.key) {
+          <div class="row">
+            <div class="col-xs-4">
+              <strong>{{ permission.key }}</strong>
+              @let description = ('permission.description.' + permission.key) | translate;
+              @if (description !== 'permission.description.' + permission.key) {
+                <p>{{ description }}</p>
+              }
+            </div>
+            <div class="col-xs-8">
+              @for (role of permission.roles; track role.key) {
+                <div class="checkbox">
+                  <label>
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="role.enabled"
+                      [name]="permission.key + '_' + role.key" />
+                    <span>{{ role.name | translate }}</span>
+                  </label>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          (click)="setPermissions()"
+          [disabled]="responseStatus.state === 'loading'">
+          <span>{{ 'Submit' | translate }}</span>
+        </button>
+        @if (responseStatus.state === 'loading') {
+          <div class="loader inline"></div>
+        } @else if (responseStatus.state === 'error') {
+          <p class="error">{{ responseStatus.msg! | translate }}</p>
+        }
+      </div>
+    </div>
+  }
+</div>

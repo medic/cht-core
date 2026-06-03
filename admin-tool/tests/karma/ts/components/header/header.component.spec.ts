@@ -1,7 +1,14 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { expect } from 'chai';
+import { of } from 'rxjs';
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { HeaderComponent } from '@admin-tool-components/header/header.component';
+
+const TRANSLATIONS = {
+  'admin.app.name': 'Community Health Toolkits Admin',
+  'Log Out': 'Log Out',
+};
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
@@ -10,13 +17,20 @@ describe('HeaderComponent', () => {
   beforeEach(waitForAsync(() => {
     return TestBed
       .configureTestingModule({
-        imports: [HeaderComponent],
+        imports: [
+          HeaderComponent,
+          TranslateModule.forRoot({
+            loader: { provide: TranslateLoader, useValue: { getTranslation: () => of(TRANSLATIONS) } },
+          }),
+        ],
       })
       .compileComponents()
       .then(() => {
+        TestBed.inject(TranslateService).use('en');
         fixture = TestBed.createComponent(HeaderComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+        return fixture.whenStable();
       });
   }));
 
@@ -39,7 +53,7 @@ describe('HeaderComponent', () => {
   it('should render a logout link', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const links = compiled.querySelectorAll('a');
-    const logoutLink = Array.from(links).find(a => a.textContent!.trim().toLowerCase().includes('logout'));
+    const logoutLink = Array.from(links).find(a => a.textContent!.trim().toLowerCase().includes('log'));
     expect(logoutLink).to.exist;
   });
 
