@@ -63,7 +63,7 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
   private registerErrorListener(extensionId: string) {
     this.errorListener = (event: ErrorEvent | PromiseRejectionEvent) => {
       const error = event instanceof PromiseRejectionEvent ? event.reason : event.error ?? event.message;
-      console.error(`Error in UI extension: "${extensionId}"`, error);
+      console.error(`Error on page with UI extension: "${extensionId}"`, error);
     };
     globalThis.addEventListener('error', this.errorListener);
     globalThis.addEventListener('unhandledrejection', this.errorListener);

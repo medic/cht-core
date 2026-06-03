@@ -241,7 +241,7 @@ describe('UiExtensionsTabComponent', () => {
       listener({ error, message: error.message });
 
       expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
-        `Error in UI extension: "${EXTENSION_ID}"`,
+        `Error on page with UI extension: "${EXTENSION_ID}"`,
         error
       );
     }));
@@ -260,7 +260,7 @@ describe('UiExtensionsTabComponent', () => {
       listener(event);
 
       expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
-        `Error in UI extension: "${EXTENSION_ID}"`,
+        `Error on page with UI extension: "${EXTENSION_ID}"`,
         reason
       );
     }));
@@ -274,7 +274,7 @@ describe('UiExtensionsTabComponent', () => {
       listener({ error: undefined, message: 'plain message' });
 
       expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
-        `Error in UI extension: "${EXTENSION_ID}"`,
+        `Error on page with UI extension: "${EXTENSION_ID}"`,
         'plain message'
       );
     }));
@@ -308,7 +308,7 @@ describe('UiExtensionsTabComponent', () => {
       newListener({ error, message: error.message });
 
       expect(consoleErrorMock).to.have.been.calledOnceWithExactly(
-        `Error in UI extension: "${otherId}"`,
+        `Error on page with UI extension: "${otherId}"`,
         error
       );
     }));

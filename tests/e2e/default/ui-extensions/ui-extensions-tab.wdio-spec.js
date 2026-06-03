@@ -3,7 +3,7 @@ const path = require('path');
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const { hamburguerMenuItemByOption, closeReloadModal } = require('@page-objects/default/common/common.wdio.page');
+const { hamburgerMenuItemByOption, closeReloadModal } = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
@@ -70,7 +70,6 @@ describe('UI Extensions tab', () => {
   ].forEach(([userType, user]) => describe(`Logged in as an ${userType} user`, () => {
     before(async () => {
       await loginPage.login(user);
-      await commonPage.goToPeople();
       await closeReloadModal();
     });
 
@@ -84,9 +83,9 @@ describe('UI Extensions tab', () => {
       const HEADER_TAB_ID = 'ui-extension-header-tab-tab';
 
       it('renders the extension as a tab in the header', async () => {
-        const [tabLabel] = await commonPage.getAllButtonLabelsNames();
+        const [,tabLabel] = await commonPage.getAllButtonLabelsNames();
         expect(tabLabel).to.equal('Minimal');
-        const [tabIcon] = await commonPage.getAllButtonFaIconClasses();
+        const [,tabIcon] = await commonPage.getAllButtonFaIconClasses();
         expect(tabIcon).to.equal('fa-question-circle');
 
         const headerTab = await $(`#${HEADER_TAB_ID}`);
@@ -102,7 +101,8 @@ describe('UI Extensions tab', () => {
         expect(await customElement.getText()).to.equal('Hello world');
 
         const telemetries = await getTelemetry(`ui-extension:header-tab:render`, user.username);
-        expect(telemetries).to.have.lengthOf(2);
+        // Rendered twice because this is the first tab (weight 0) and is loaded when the user logs in
+        expect(telemetries).to.have.lengthOf(1);
       });
     });
 
@@ -110,7 +110,7 @@ describe('UI Extensions tab', () => {
       it('renders the extension as a link in the sidebar menu', async () => {
         await commonPage.openHamburgerMenu();
         // Translated title
-        const menuOption = await hamburguerMenuItemByOption('Installation checks');
+        const menuOption = await hamburgerMenuItemByOption('Installation checks');
         await menuOption.waitForDisplayed();
         // Icon from resources
         const resourceIcon = await (await menuOption.parentElement()).$('.nav-icon .resource-icon');
@@ -118,7 +118,7 @@ describe('UI Extensions tab', () => {
       });
 
       it('renders the extension content when navigating to the tab', async () => {
-        const menuOption = await hamburguerMenuItemByOption('Installation checks');
+        const menuOption = await hamburgerMenuItemByOption('Installation checks');
         await menuOption.click();
         await commonPage.waitForPageLoaded();
 
@@ -155,7 +155,7 @@ describe('UI Extensions tab', () => {
       await closeReloadModal();
 
       await commonPage.openHamburgerMenu();
-      const menuOption = await hamburguerMenuItemByOption('With Error');
+      const menuOption = await hamburgerMenuItemByOption('With Error');
       const matIcon = await (await menuOption.parentElement()).$('mat-icon');
       expect(await matIcon.getAttribute('class')).to.contain('fa-ban');
       await menuOption.click();
