@@ -544,17 +544,28 @@ export class EnketoService {
       return reference;
     };
 
+    // The object to read existing field values from for a given node: the main
+    // doc's fields at the record root, or the matching sub-doc otherwise.
+    const getOwnerFields = (node) => node === $record[0]
+      ? doc.fields
+      : subDocById.get(node._couchId);
+
+    // Keep the value only when it is already an attachment reference.
+    const asAttachmentRef = (value) => this.enketoTranslationService.isAttachmentRef(value)
+      ? value
+      : undefined;
+
     // Recover an untouched field's prior reference from its owner doc's existing
     // fields; naming-scheme independent, unlike the position-derived name.
     const recoverEmptyBinaryReference = (elem) => {
       const segments: string[] = [];
       for (let node = elem; node && node !== recordDoc; node = node.parentNode) {
-        const ownerFields = node === $record[0] ? doc.fields : subDocById.get(node._couchId);
-        if (ownerFields) {
-          const value = _get(ownerFields, segments);
-          return this.enketoTranslationService.isAttachmentRef(value) ? value : undefined;
+        const ownerFields = getOwnerFields(node);
+        if (!ownerFields) {
+          segments.unshift(node.nodeName);
+          continue;
         }
-        segments.unshift(node.nodeName);
+        return asAttachmentRef(_get(ownerFields, segments));
       }
     };
 
