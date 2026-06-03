@@ -42,7 +42,7 @@ describe('finalize transition', () => {
         assert.equal(setInvalidRev.callCount, 1);
         assert.deepEqual(setInvalidRev.args[0], ['abc', '1']);
         assert.equal(infodoc.saveTransitions.callCount, 1);
-        assert.deepEqual(infodoc.saveTransitions.args[0][1], '2');
+        assert.strictEqual(infodoc.saveTransitions.args[0][1], true);
         assert.equal(clearInvalidRev.callCount, 0);
         done();
       }
@@ -91,7 +91,7 @@ describe('finalize transition', () => {
         assert.deepEqual(result, { ok: true, rev: '2' });
         assert.equal(saveDoc.callCount, 1);
         assert.equal(infodoc.saveTransitions.callCount, 1);
-        // saveTransitions called without a validRev, so no rev management
+        // saveTransitions called without the clearInvalid flag, so the marker is left untouched
         assert.equal(infodoc.saveTransitions.args[0][1], undefined);
         assert.equal(setInvalidRev.callCount, 0);
         assert.equal(clearInvalidRev.callCount, 0);

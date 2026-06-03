@@ -279,9 +279,8 @@ const finalizeChange = async ({ change, results, manageInfoDocRev }) => {
   return manageInfoDocRev ? saveForApi(change) : saveForSentinel(change);
 };
 
-// Sentinel processing: save the doc, then record transitions. Sentinel never writes the
-// valid_rev/invalid_rev markers; it only reads them (see getConsistentInfoDoc) to skip docs API is
-// still writing.
+// Sentinel processing: save the doc, then record transitions. Sentinel never writes the invalid_rev
+// marker; it only reads it (see getConsistentInfoDoc) to skip docs API is still writing.
 const saveForSentinel = async change => {
   const result = await saveDoc(change);
   logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
@@ -289,14 +288,15 @@ const saveForSentinel = async change => {
   return result;
 };
 
-// API processing: bracket the doc write with invalid_rev/valid_rev markers so a concurrent sentinel
-// read can detect a mid-write infodoc and wait. Roll the marker back on any failure after it's set.
+// API processing: mark the infodoc mid-write (invalid_rev) around the doc write so a concurrent
+// sentinel read detects it and waits. The marker is cleared as part of the transitions write on
+// success, or rolled back on any failure after it's set.
 const saveForApi = async change => {
   await infodoc.setInvalidRev(change.id, change.doc._rev ?? null);
   try {
     const result = await saveDoc(change);
     logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    await infodoc.saveTransitions(change, result.rev);
+    await infodoc.saveTransitions(change, true);
     return result;
   } catch (err) {
     await infodoc

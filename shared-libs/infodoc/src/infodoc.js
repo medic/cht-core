@@ -151,11 +151,11 @@ const updateTransition = (change, transition, ok) => {
   };
 };
 
-const saveTransitions = (change, validRev) => {
+const saveTransitions = (change, clearInvalid = false) => {
   return modifyInfoDoc(change.id, infoDoc => {
     infoDoc.transitions = (change.info && change.info.transitions) || {};
-    if (validRev !== undefined) {
-      infoDoc.valid_rev = validRev;
+    // Clear the mid-write marker in the same write that commits the transitions (API branch only).
+    if (clearInvalid) {
       delete infoDoc.invalid_rev;
     }
   }, change.info);

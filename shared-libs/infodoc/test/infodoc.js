@@ -605,15 +605,14 @@ describe('infodoc', () => {
       });
     });
 
-    it('should record validRev and clear invalid_rev when given', () => {
+    it('clears invalid_rev when clearInvalid is set', () => {
       const info = { _id: 'some-info', doc_id: 'some', invalid_rev: '1-abc' };
       const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return lib.saveTransitions(change, '2-def').then(() => {
+      return lib.saveTransitions(change, true).then(() => {
         const saved = db.sentinel.put.args[0][0];
-        assert.equal(saved.valid_rev, '2-def');
         assert.isUndefined(saved.invalid_rev);
       });
     });
