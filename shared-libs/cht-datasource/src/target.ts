@@ -118,7 +118,7 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 100.
      * @returns a page of targets for the provided specification
-     * @throws InvalidArrgumentError if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */

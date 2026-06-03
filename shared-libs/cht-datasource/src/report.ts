@@ -201,7 +201,7 @@ export namespace v1 {
       qualifier: UuidQualifier
     ): Promise<Nullable<ReportWithLineage>> => {
       assertUuidQualifier(qualifier);
-      return await fn(qualifier);
+      return fn(qualifier);
     };
     return curriedFnWithLineage;
   };

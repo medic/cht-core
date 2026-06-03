@@ -140,7 +140,7 @@ const generateTsSchemas = () => {
     .map(path => ({ ...TSJ_OPTIONS, path }))
     .map(opts => tsj.createGenerator(opts))
     .map(generator => generator.createSchema())
-    .map(({ definitions }) => ({ ...definitions, ...SCHEMAS_TO_SKIP  }))
+    .map(({ definitions }) => ({ ...definitions, ...SCHEMAS_TO_SKIP }))
     .forEach((definitions) => Object.assign(schemas, definitions));
   return transformSchema(schemas);
 };

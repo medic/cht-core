@@ -100,7 +100,7 @@ export namespace v1 {
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of contact identifiers for the provided specification
-     * @throws InvalidArrgumentError if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
      * @throws InvalidArgumentError if the provided `limit` value is `<=0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
@@ -173,7 +173,7 @@ export namespace v1 {
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of contact identifiers for the provided specifications
      * @throws InvalidArgumentError if either `freetext` or `type` is not provided
-     * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
+     * @throws InvalidArgumentError if the `freetext` is empty or if the `type` is invalid for a contact
      * @throws InvalidArgumentError if the provided limit is `<= 0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
@@ -192,7 +192,7 @@ export namespace v1 {
      * @param limit the maximum number of identifiers to return. Default is 10000.
      * @returns a page of contact identifiers for the provided specifications
      * @throws InvalidArgumentError if `type` is not provided
-     * @throws InvalidArgumentError if the `type is invalid for a contact
+     * @throws InvalidArgumentError if the `type` is invalid for a contact
      * @throws InvalidArgumentError if the provided limit is `<= 0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
@@ -226,7 +226,7 @@ export namespace v1 {
      * @param type the type of contact identifiers to return
      * @returns a generator for fetching all the contact identifiers matching the given `freetext` and `type`.
      * @throws InvalidArgumentError if either `freetext` or `type` is not provided
-     * @throws InvalidArgumentError if the `freetext` is empty or if the `type is invalid for a contact
+     * @throws InvalidArgumentError if the `freetext` is empty or if the `type` is invalid for a contact
      */
     getUuidsByTypeFreetext: (freetext: string, type: string) => AsyncGenerator<string, null>;
 
@@ -235,7 +235,7 @@ export namespace v1 {
      * @param type the type of contact identifiers to return
      * @returns a generator for fetching all the contact identifiers matching the given `type`.
      * @throws InvalidArgumentError if `type` is not provided
-     * @throws InvalidArgumentError if the `type is invalid for a contact
+     * @throws InvalidArgumentError if the `type` is invalid for a contact
      */
     getUuidsByType: (type: string) => AsyncGenerator<string, null>;
 

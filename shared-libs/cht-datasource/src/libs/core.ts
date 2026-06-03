@@ -39,7 +39,7 @@ export const getLastElement = <T>(array: NonEmptyArray<T>): T => array[array.len
  */
 export type DataValue = DataPrimitive | DataArray | DataObject;
 /**
- * A privative value.
+ * A primitive value.
  */
 export type DataPrimitive = string | number | boolean | Date | null | undefined;
 
