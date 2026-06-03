@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
+    <h:head>
+        <h:title>inline-binary-report</h:title>
+
+        <model>
+            <instance>
+                <inline-binary-report id="inline-binary-report">
+                    <patient_name/>
+                    <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
+                    <meta>
+                        <instanceID/>
+                    </meta>
+                </inline-binary-report>
+            </instance>
+
+            <bind nodeset="/inline-binary-report/patient_name" type="string" required="true()"/>
+            <bind nodeset="/inline-binary-report/badge" type="string" readonly="true()"/>
+            <bind nodeset="/inline-binary-report/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+        </model>
+    </h:head>
+
+    <h:body>
+        <input ref="/inline-binary-report/patient_name">
+            <label>Patient Name</label>
+        </input>
+        <input ref="/inline-binary-report/badge" appearance="display-base64-image">
+            <label>Badge</label>
+        </input>
+    </h:body>
+</h:html>

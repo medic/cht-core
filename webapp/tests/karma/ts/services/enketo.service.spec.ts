@@ -1185,6 +1185,126 @@ describe('Enketo service', () => {
       expect(actual.fields.my_file).to.equal('');
     });
 
+    it('restores an inline-binary field from the data-attachment-ref sidecar on edit', async () => {
+      // Loaded fields omit `my_file`, so only the sidecar can drive the restore.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name>'
+          + '<my_file type="binary" data-attachment-ref="my-form/my_file"></my_file>'
+          + '</my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary' },
+        _attachments: { 'user-file-my-form/my_file': { stub: true, content_type: 'image/png' } },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('my-form/my_file');
+      expect(actual._attachments['user-file-my-form/my_file']).to.exist;
+    });
+
+    it('restores an inline-binary field from owner doc fields when no sidecar is present', async () => {
+      // No sidecar on the node; the reference is recovered from the loaded fields.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary', my_file: 'my-form/my_file' },
+        _attachments: { 'user-file-my-form/my_file': { stub: true, content_type: 'image/png' } },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('my-form/my_file');
+      expect(actual._attachments['user-file-my-form/my_file']).to.exist;
+    });
+
+    it('leaves an empty inline-binary field empty on edit when no attachment exists', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary', my_file: '' },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('');
+    });
+
+    it('attaches the replacement and ignores the sidecar when an edited binary field is re-entered', async () => {
+      // Fresh base64 alongside a stale sidecar: the non-empty text must win.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name>'
+          + '<my_file type="binary" data-attachment-ref="my-form/my_file">NEW_BASE64</my_file>'
+          + '</my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary', my_file: 'my-form/my_file' },
+        _attachments: { 'user-file-my-form/my_file': { stub: true, content_type: 'image/png' } },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(1);
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my-form/my_file');
+      expect(AddAttachment.args[0][2]).to.equal('NEW_BASE64');
+      expect(actual.fields.my_file).to.equal('my-form/my_file');
+    });
+
+    it('restores an unchanged sub-doc binary field from its sidecar on edit', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Sally</name>'
+          + '<doc1 db-doc="true">'
+          + '<type>data_record</type><form>thing_1</form>'
+          + '<photo1 type="binary" data-attachment-ref="thing_1/doc1/photo1"></photo1>'
+          + '</doc1>'
+          + '</my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Sally' },
+      });
+
+      const actual = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      // actual[0] = main doc, actual[1] = doc1 sub-doc
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual[1].photo1).to.equal('thing_1/doc1/photo1');
+    });
+
     it('reports with an empty saved binary field re-attach under the same xpath-derived name', async () => {
       // Pre-existing report has `my_file: ""` plus an attachment under
       // `user-file-<form>/<rest>`. On edit the form default re-supplies fresh
