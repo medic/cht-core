@@ -28,6 +28,23 @@ describe('reports_by_freetext', () => {
       reported_date: 1,
       fields: { patient_name: 'fxtlongreport', image: longValue },
     },
+    {
+      // A null field value must be skipped without breaking indexing; the report stays findable
+      _id: 'fxt_report_null_field',
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'F',
+      reported_date: 1,
+      fields: { patient_name: 'fxtnullfield', note: null },
+    },
+    {
+      // A null contact._id must be skipped without breaking indexing; the report stays findable
+      _id: 'fxt_report_null_contact',
+      type: DOC_TYPES.DATA_RECORD,
+      form: 'F',
+      reported_date: 1,
+      fields: { patient_name: 'fxtnullcontact' },
+      contact: { _id: null },
+    },
   ];
 
   const queryFreetext = async (q) => {
@@ -67,5 +84,17 @@ describe('reports_by_freetext', () => {
   it('should not break the tokenized default index with an over-length field', async () => {
     const result = await queryFreetext(`${longMarker}*`);
     expect(result).to.include('fxt_report_long_field');
+  });
+
+  it('should still index a report that has a null field value', async () => {
+    expect(ids).to.include('fxt_report_null_field');
+    const byField = await queryFreetext('fxtnullfield*');
+    expect(byField).to.include('fxt_report_null_field');
+  });
+
+  it('should still index a report whose contact._id is null', async () => {
+    expect(ids).to.include('fxt_report_null_contact');
+    const byField = await queryFreetext('fxtnullcontact*');
+    expect(byField).to.include('fxt_report_null_contact');
   });
 });

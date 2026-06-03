@@ -17,7 +17,7 @@ function(doc) {
   const maxLength = 1000;
 
   const indexMaybe = (fieldName, value) => {
-    if (value === undefined) {
+    if (value === undefined || value === null) {
       return;
     }
     // ensure we index strings, not booleans or other types

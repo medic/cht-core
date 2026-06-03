@@ -32,6 +32,19 @@ describe('contacts_by_freetext', () => {
       name: 'fxtlongfield',
       note: longValue,
     },
+    {
+      // type=contact with a null contact_type must not break indexing; the contact stays findable
+      _id: 'fxt_contact_null_type',
+      type: 'contact',
+      contact_type: null,
+      name: 'fxtnulltype',
+    },
+    {
+      // type=contact with no contact_type property must not break indexing; the contact stays findable
+      _id: 'fxt_contact_no_type',
+      type: 'contact',
+      name: 'fxtnotype',
+    },
   ];
 
   const queryFreetext = async (q) => {
@@ -76,5 +89,17 @@ describe('contacts_by_freetext', () => {
   it('should not break the tokenized default index with an over-length field', async () => {
     const result = await queryFreetext(`${longMarker}*`);
     expect(result).to.include('fxt_contact_long_field');
+  });
+
+  it('should still index a type=contact doc whose contact_type is null', async () => {
+    expect(ids).to.include('fxt_contact_null_type');
+    const byName = await queryFreetext('fxtnulltype*');
+    expect(byName).to.include('fxt_contact_null_type');
+  });
+
+  it('should still index a type=contact doc that has no contact_type property', async () => {
+    expect(ids).to.include('fxt_contact_no_type');
+    const byName = await queryFreetext('fxtnotype*');
+    expect(byName).to.include('fxt_contact_no_type');
   });
 });

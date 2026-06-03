@@ -16,6 +16,11 @@ function (doc) {
   };
 
   const indexString = function(fieldName, value, opts) {
+    if (value === undefined || value === null) {
+      return;
+    }
+
+    value = value.toString();
     if (value.length > maxLength) {
       return;
     }
