@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<h:html xmlns:h="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/2002/xforms">
+  <h:head>
+    <h:title>Geolocation Test</h:title>
+    <model>
+      <instance>
+        <data id="geolocation_test">
+          <geo_capture/>
+          <meta><instanceID/></meta>
+        </data>
+      </instance>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/geo_capture" appearance="geolocation-capture">
+      <label>Capture GPS Location</label>
+    </input>
+  </h:body>
+</h:html>
