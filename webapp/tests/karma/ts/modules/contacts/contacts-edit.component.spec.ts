@@ -992,9 +992,10 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: null, type: CONTACT_TYPES.CLINIC }, 
-        { form, xmlVersion: undefined, duplicateCheck: undefined }, 
-        false
+        { docId: null, type: CONTACT_TYPES.CLINIC },
+        { form, xmlVersion: undefined, duplicateCheck: undefined },
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
@@ -1036,9 +1037,10 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: 'the_person', type: 'person',  },
-        { form, xmlVersion: undefined, duplicateCheck: undefined }, 
-        false
+        { docId: 'the_person', type: 'person' },
+        { form, xmlVersion: undefined, duplicateCheck: undefined },
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
@@ -1093,9 +1095,10 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(formService.saveContact.callCount).to.equal(1);
       expect(formService.saveContact.args[0]).to.deep.equal([
-        { docId: 'the_patient', type: 'patient' }, 
+        { docId: 'the_patient', type: 'patient' },
         { form, xmlVersion: undefined, duplicateCheck: undefined },
-        false
+        false,
+        undefined,
       ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
@@ -1207,7 +1210,8 @@ describe('ContactsEdit component', () => {
       expect(formService.saveContact.args[0]).to.deep.equal([
         { docId: null, type: CONTACT_TYPES.CLINIC },
         { form, xmlVersion: undefined, duplicateCheck: undefined },
-        true
+        true,
+        undefined,
       ]);
       expect(telemetryService.record.calledOnceWithExactly(
         'enketo:contacts:clinic:duplicates_acknowledged'
@@ -1257,7 +1261,8 @@ describe('ContactsEdit component', () => {
       expect(formService.saveContact.args[0]).to.deep.equal([
         { docId: null, type: CONTACT_TYPES.CLINIC },
         { form, xmlVersion: undefined, duplicateCheck: undefined },
-        true
+        true,
+        undefined,
       ]);
       expect(telemetryService.record.notCalled).to.be.true;
     });

@@ -458,9 +458,10 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
         return this.formService
           .saveContact(
-            { docId, type: this.enketoContact.type }, 
-            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck}, 
-            this.duplicatesAcknowledged
+            { docId, type: this.enketoContact.type },
+            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck },
+            this.duplicatesAcknowledged,
+            this.geolocationService?.currentHandle,
           )
           .then((result) => {
             console.debug('saved contact', result);

@@ -394,7 +394,8 @@ export class FormService {
       xmlVersion: string | undefined;
       duplicateCheck?: DuplicateCheck
     },
-    duplicatesAcknowledged: boolean,
+    duplicatesAcknowledged: boolean = false,
+    geoHandle?,
   ) {
     const { docId, type } = contactInfo;
     const { form, xmlVersion, duplicateCheck } = formInfo;
@@ -417,8 +418,9 @@ export class FormService {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
     }
 
+    const docsWithGeo = await this.saveGeo(geoHandle, preparedDocs.preparedDocs);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
-    const bulkDocsResult = await this.dbService.get().bulkDocs(preparedDocs.preparedDocs);
+    const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
 
     if (failureMessage) {

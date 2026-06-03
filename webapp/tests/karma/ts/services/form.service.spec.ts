@@ -1765,6 +1765,69 @@ describe('Form service', () => {
       expect(performanceService.track.notCalled).to.be.true;
       expect(performanceTracking.stop.notCalled).to.be.true;
     });
+
+    it('saves geolocation data into a contact doc', async () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const type = 'some-contact-type';
+      const geoData = {
+        latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
+      };
+      const geoHandle = sinon.stub().resolves(geoData);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact({ docId: undefined, type }, { form }, false, geoHandle);
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs.length, 1);
+      assert.deepEqual(savedDocs[0].geolocation, geoData);
+      assert.equal(savedDocs[0].geolocation_log.length, 1);
+      assert.isAbove(savedDocs[0].geolocation_log[0].timestamp, 0);
+      assert.deepEqual(savedDocs[0].geolocation_log[0].recording, geoData);
+    });
+
+    it('does not add geolocation fields when no geoHandle is provided', async () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const type = 'some-contact-type';
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact({ docId: undefined, type }, { form });
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs.length, 1);
+      assert.notProperty(savedDocs[0], 'geolocation');
+      assert.notProperty(savedDocs[0], 'geolocation_log');
+    });
+
+    it('saves a geolocation error into a contact doc', async () => {
+      const form = { getDataStr: () => '<data></data>' };
+      const type = 'some-contact-type';
+      const geoError = { code: -2, message: 'Geolocation timeout exceeded' };
+      const geoHandle = sinon.stub().rejects(geoError);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'some-contact-type' }
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact({ docId: undefined, type }, { form }, false, geoHandle);
+
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.equal(savedDocs.length, 1);
+      assert.deepEqual(savedDocs[0].geolocation, geoError);
+      assert.equal(savedDocs[0].geolocation_log.length, 1);
+      assert.deepEqual(savedDocs[0].geolocation_log[0].recording, geoError);
+    });
   });
 
   describe('load contact summary', () => {
