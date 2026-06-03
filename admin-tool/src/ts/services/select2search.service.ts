@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { CHTDatasourceService } from '@admin-tool-services/cht-datasource.service';
+import { DbService } from '@admin-tool-services/db.service';
 import { ContactTypesService } from '@admin-tool-services/contact-types.service';
 
 const PAGE_SIZE = 20;
-
 export interface Select2Doc {
   id: string;
   text: string;
+  doc?: any;
 }
 
 export interface Select2Options {
@@ -15,133 +15,67 @@ export interface Select2Options {
 }
 
 /**
- * Initialises a Select2 dropdown backed by the CHT datasource.
+ * Initialises a Select2 dropdown backed by the local PouchDB database.
  *
- * Two modes are supported:
- *  - place: searches all configured place types via datasource.v1.place.getPageByType
- *  - person: searches all configured person types via datasource.v1.person.getPageByType
+ * Queries the medic-offline-freetext/contacts_by_type_freetext view for
+ * term-based search, matching the original AngularJS Select2Search behaviour.
  *
- * The datasource facade methods (getPageByType, getByUuid) accept plain strings —
- * they wrap Qualifier internally. Do NOT pass Qualifier objects here.
- *
- * Select2 and jQuery are loaded globally via angular.json scripts.
+ * Results display name, phone, and parent lineage in gray — matching format.sender() output.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class Select2SearchService {
   constructor(
-    private chtDatasourceService: CHTDatasourceService,
+    private db: DbService,
     private contactTypesService: ContactTypesService,
   ) {}
 
   /**
    * Initialises a place (facility) Select2 on the given native element.
-   * Searches all configured place contact types, paged via the CHT datasource.
-   * @param el the native <select> element to enhance
-   * @param options optional initial value
    */
   async initPlaceSelect(
     el: HTMLSelectElement,
     options: Select2Options = {},
   ): Promise<void> {
-    const chtApi = await this.chtDatasourceService.get();
     const placeTypes = await this.contactTypesService.getPlaceTypes();
     const typeIds = placeTypes.map((t) => t.id);
 
-    const search = async (
-      term: string,
-      page: number,
-    ): Promise<Select2Doc[]> => {
-      const results: Select2Doc[] = [];
-      const cursor = page > 1 ? String((page - 1) * PAGE_SIZE) : null;
-
-      for (const typeId of typeIds) {
-        const response = await chtApi.v1.place.getPageByType(
-          typeId,
-          cursor,
-          PAGE_SIZE,
-        );
-        const docs: any[] = response?.data ?? [];
-        const filtered = term
-          ? docs.filter((d) => d.name?.toLowerCase().includes(term.toLowerCase()),)
-          : docs;
-        filtered.forEach((doc) => results.push({ id: doc._id, text: doc.name }),);
-      }
-
-      return results;
-    };
-
-    this.initSelect2(el, search, { multiple: true });
+    this.initSelect2(el, (term) => this.searchByTypes(typeIds, term), { multiple: true });
 
     if (options.initialValue) {
-      await this.preselectById(el, options.initialValue, (id) => chtApi.v1.place.getByUuid(id),);
+      await this.preselectById(el, options.initialValue);
     }
   }
 
   /**
    * Initialises a person (associated contact) Select2 on the given native element.
-   * Searches all configured person contact types, paged via the CHT datasource.
-   * @param el the native <select> element to enhance
-   * @param options optional initial value
    */
   async initPersonSelect(
     el: HTMLSelectElement,
     options: Select2Options = {},
   ): Promise<void> {
-    const chtApi = await this.chtDatasourceService.get();
     const personTypes = await this.contactTypesService.getPersonTypes();
     const typeIds = personTypes.map((t) => t.id);
 
-    const search = async (
-      term: string,
-      page: number,
-    ): Promise<Select2Doc[]> => {
-      const results: Select2Doc[] = [];
-      const cursor = page > 1 ? String((page - 1) * PAGE_SIZE) : null;
-
-      for (const typeId of typeIds) {
-        const response = await chtApi.v1.person.getPageByType(
-          typeId,
-          cursor,
-          PAGE_SIZE,
-        );
-        const docs: any[] = response?.data ?? [];
-        const filtered = term
-          ? docs.filter((d) => d.name?.toLowerCase().includes(term.toLowerCase()),)
-          : docs;
-        filtered.forEach((doc) => results.push({ id: doc._id, text: doc.name }),);
-      }
-
-      return results;
-    };
-
-    this.initSelect2(el, search, { multiple: false });
+    this.initSelect2(el, (term) => this.searchByTypes(typeIds, term), { multiple: false });
 
     if (options.initialValue) {
-      await this.preselectById(el, options.initialValue, (id) => chtApi.v1.person.getByUuid(id),);
+      await this.preselectById(el, options.initialValue);
     }
   }
 
   /**
-   * Validates that the given contact is a descendant of one of the given place UUIDs
-   * by walking up the contact's parent chain via the CHT datasource.
-   * @param contactId the UUID of the contact to validate
-   * @param placeIds the UUIDs of the selected facilities
-   * @returns true if the contact belongs to one of the places, or if validation cannot be determined
+   * Validates that the given contact is a descendant of one of the given place UUIDs.
    */
-  async isContactInPlace(
-    contactId: string,
-    placeIds: string[],
-  ): Promise<boolean> {
+  async isContactInPlace(contactId: string, placeIds: string[]): Promise<boolean> {
     if (!contactId || !placeIds?.length) {
       return true;
     }
 
     try {
-      const chtApi = await this.chtDatasourceService.get();
-      const contact = await chtApi.v1.contact.getByUuid(contactId);
-      return this.checkParent(contact?.parent, placeIds);
+      const doc = await this.db.get().get(contactId);
+      return this.checkParent(doc?.parent, placeIds);
     } catch (err) {
       console.error('Error validating contact hierarchy', err);
       return true;
@@ -149,9 +83,72 @@ export class Select2SearchService {
   }
 
   /**
-   * Recursively walks the parent chain of a contact document to find
-   * whether any ancestor matches one of the given place IDs.
+   * Searches contacts using the medic-offline-freetext/contacts_by_type_freetext view.
+   * Keys are [typeId, term] so CouchDB does the filtering server-side.
    */
+  private async searchByTypes(typeIds: string[], term: string): Promise<Select2Doc[]> {
+    if (!typeIds.length) {
+      return [];
+    }
+
+    const results: Select2Doc[] = [];
+    const seen = new Set<string>();
+
+    for (const typeId of typeIds) {
+      try {
+        const response = await this.db.get().query('medic-offline-freetext/contacts_by_type_freetext', {
+          startkey: [typeId, term.toLowerCase()],
+          endkey: [typeId, term.toLowerCase() + '\ufff0'],
+          include_docs: true,
+          reduce: false,
+          limit: PAGE_SIZE,
+        });
+
+        const rows: any[] = response?.rows ?? [];
+
+        for (const row of rows) {
+          const doc = row.doc;
+          if (!doc || seen.has(doc._id)) {
+            continue;
+          }
+          seen.add(doc._id);
+
+          const lineage = await this.buildLineage(doc.parent);
+
+          results.push({
+            id: doc._id,
+            text: doc.name,
+            doc: { ...doc, _lineage: lineage },
+          });
+        }
+      } catch (err) {
+        console.error(`Error querying contacts_by_type_freetext for type ${typeId}`, err);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Recursively walks the parent chain and returns an array of parent names.
+   */
+  private async buildLineage(parent: any): Promise<string[]> {
+    if (!parent?._id) {
+      return [];
+    }
+
+    try {
+      const doc = await this.db.get().get(parent._id);
+      if (!doc?.name) {
+        return [];
+      }
+      const ancestors = await this.buildLineage(doc.parent);
+      return [doc.name, ...ancestors];
+    } catch {
+      return [];
+    }
+  }
+
   private checkParent(parent: any, placeIds: string[]): boolean {
     if (!parent) {
       return false;
@@ -163,11 +160,11 @@ export class Select2SearchService {
   }
 
   /**
-   * Wires up the Select2 plugin on the given element with an async search transport.
+   * Wires up the Select2 plugin with custom templateResult for rich display.
    */
   private initSelect2(
     el: HTMLSelectElement,
-    search: (term: string, page: number) => Promise<Select2Doc[]>,
+    search: (term: string) => Promise<Select2Doc[]>,
     options: { multiple: boolean },
   ): void {
     $(el).select2({
@@ -176,16 +173,17 @@ export class Select2SearchService {
       placeholder: '',
       multiple: options.multiple,
       minimumInputLength: 3,
+      templateResult: (item: any) => this.renderResult(item),
+      templateSelection: (item: any) => item.doc?.name ?? item.text ?? '',
       ajax: {
         delay: 300,
         transport: (params: any, success: any, failure: any) => {
           const term = params.data?.q ?? '';
-          const page = params.data?.page ?? 1;
-          search(term, page)
+          search(term)
             .then((results) => success({
               results,
               pagination: { more: results.length === PAGE_SIZE },
-            }),)
+            }))
             .catch(failure);
         },
       },
@@ -193,16 +191,47 @@ export class Select2SearchService {
   }
 
   /**
-   * Pre-selects a document by UUID using the provided fetcher function,
-   * then appends it as a selected option in the Select2 element.
+   * Renders a Select2 result row matching the original format.sender() output:
+   * name + phone + parent name in gray lineage block.
    */
-  private async preselectById(
-    el: HTMLSelectElement,
-    uuid: string,
-    fetcher: (id: string) => Promise<any>,
-  ): Promise<void> {
+  private renderResult(item: any): any {
+    if (!item.doc) {
+      return $('<span>' + (item.text || '&nbsp;') + '</span>');
+    }
+
+    const doc = item.doc;
+    const parts: string[] = [];
+
+    if (doc.name) {
+      parts.push('<span class="name">' + this.escape(doc.name) + '</span>');
+    }
+    if (doc.phone) {
+      parts.push('<span>' + this.escape(doc.phone) + '</span>');
+    }
+    if (doc._lineage?.length) {
+      const items = doc._lineage
+        .map((name: string) => '<li>' + this.escape(name) + '</li>')
+        .join('');
+      parts.push('<div class="position"><ol class="horizontal lineage">' + items + '</ol></div>');
+    }
+
+    return $('<span class="sender">' + parts.join('') + '</span>');
+  }
+
+  private escape(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /**
+   * Pre-selects a document by UUID, fetching it from PouchDB.
+   */
+  private async preselectById(el: HTMLSelectElement, uuid: string): Promise<void> {
     try {
-      const doc = await fetcher(uuid);
+      const doc = await this.db.get().get(uuid);
       if (doc) {
         const $el = $(el);
         if (!$el.find(`option[value="${doc._id}"]`).length) {

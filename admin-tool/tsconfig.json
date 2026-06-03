@@ -20,6 +20,7 @@
       "../node_modules/@types",
       "./src/types"
     ],
+    "types": ["node", "jquery"],
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@admin-tool-components/*": ["src/ts/components/*"],

@@ -25,6 +25,7 @@ import { SessionService } from '@admin-tool-services/session.service';
 import { DbService } from '@admin-tool-services/db.service';
 import { AppRouteGuardProvider } from '@admin-tool-providers/app-route.guard.provider';
 import { TranslationLoaderProvider } from '@admin-tool-providers/translation-loader.provider';
+import { FreetextDesignDocService } from '@admin-tool-services/freetext-design-doc.service';
 
 export class MissingTranslationHandlerLog implements MissingTranslationHandler {
   handle = (params: MissingTranslationHandlerParams) => params.key;
@@ -42,6 +43,8 @@ const initLanguage = (translate: TranslateService) => () => {
   translate.setDefaultLang('en');
   return translate.use('en');
 };
+
+const initFreetextDesignDoc = (service: FreetextDesignDocService) => () => service.ensureDesignDoc();
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -75,6 +78,12 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       useFactory: initLanguage,
       deps: [TranslateService],
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initFreetextDesignDoc,
+      deps: [FreetextDesignDocService],
       multi: true,
     },
   ],
