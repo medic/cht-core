@@ -2615,12 +2615,14 @@ describe('registration', () => {
           testMessage1,
           testPhone,
           expectedContext,
+          true,
         ]);
         addMessage.args[1].should.deep.equal([
           testDoc,
           testMessage2,
           testPhone,
           expectedContext,
+          true,
         ]);
 
         utils.getRegistrations.callCount.should.equal(2);
@@ -2681,12 +2683,14 @@ describe('registration', () => {
           testMessage1,
           testPhone,
           expectedContext,
+          true,
         ]);
         messages.addMessage.args[1].should.deep.equal([
           testDoc,
           testMessage2,
           testPhone,
           expectedContext,
+          true,
         ]);
         utils.getRegistrations.callCount.should.equal(2);
         utils.getRegistrations.args[0].should.deep.equal([{ id: undefined }]);
@@ -2749,12 +2753,14 @@ describe('registration', () => {
           testMessage1,
           testPhone,
           expectedContext,
+          true,
         ]);
         messages.addMessage.args[1].should.deep.equal([
           testDoc,
           testMessage2,
           testPhone,
           expectedContext,
+          true,
         ]);
 
         utils.getRegistrations.callCount.should.equal(2);

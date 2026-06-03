@@ -130,7 +130,8 @@ describe('unit transition utils', () => {
           translation_key: 'success'
         },
         undefined,
-        {}
+        {},
+        true
       ]);
 
       assert.hasAllKeys(doc, ['_id', 'from', 'tasks']);
@@ -160,6 +161,7 @@ describe('unit transition utils', () => {
         },
         'some_recipient',
         context,
+        true
       ]);
 
       assert.hasAllKeys(doc, ['_id', 'from', 'tasks']);
