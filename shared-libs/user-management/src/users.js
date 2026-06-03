@@ -140,11 +140,17 @@ const getUsers = async (facilityId, contactId) => {
   return usersForContactId.filter(user => forceArray(user.facility_id).includes(facilityId));
 };
 
-const getUsersAndSettings = async ({ facilityId, contactId } = {}) => {
-  if (!facilityId && !contactId) {
+const getUsersAndSettings = async ({ facilityId, contactId, oidcUsername } = {}) => {
+  if (!facilityId && !contactId && !oidcUsername) {
     return Promise.all([getAllUsers(), getAllUserSettings()]);
   }
-  const users = await getUsers(facilityId, contactId);
+  let users;
+  if (oidcUsername) {
+    users = await queryDocs(db.users, 'users/users_by_field', ['oidc_username', oidcUsername]);
+  } else {
+    users = await getUsers(facilityId, contactId);
+  }
+  
   const ids = users.map(({ _id }) => _id);
   const settings = await getSettingsByIds(ids);
   return [users, settings];
