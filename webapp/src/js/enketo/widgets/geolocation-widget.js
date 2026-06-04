@@ -9,6 +9,7 @@ class GeolocationWidget extends Widget {
   }
 
   _init() {
+    $(this.element).hide();
     const $question = $(this.question);
 
     if (this._isPermissionDenied()) {
@@ -22,7 +23,7 @@ class GeolocationWidget extends Widget {
       return window.CHTCore.Translate.get('geolocation.unavailable')
         .then(text => $el.text(text));
     } else {
-      const $button = $('<button type="button" class="geolocation-capture-btn">');
+      const $button = $('<button type="button" class="btn btn-primary geolocation-capture-btn">');
       $button.on('click', () => this._startCapture());
       $question.append($button);
       return window.CHTCore.Translate.get('geolocation.capture')
@@ -47,7 +48,7 @@ class GeolocationWidget extends Widget {
       if ('code' in result) {
         $bar.addClass('geolocation-progress-failure');
 
-        const $retryBtn = $('<button type="button" class="geolocation-retry-btn">');
+        const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">');
         $retryBtn.on('click', () => {
           window.CHTCore.Geolocation.retry();
           this._startCapture();
@@ -56,7 +57,7 @@ class GeolocationWidget extends Widget {
         window.CHTCore.Translate.get('geolocation.retry')
           .then(text => $retryBtn.text(text));
 
-        const $skipBtn = $('<button type="button" class="geolocation-skip-btn">');
+        const $skipBtn = $('<button type="button" class="btn btn-default geolocation-skip-btn">');
         $question.append($skipBtn);
         window.CHTCore.Translate.get('geolocation.skip')
           .then(text => $skipBtn.text(text));
