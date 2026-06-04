@@ -1,7 +1,6 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
-const { DOC_TYPES } = require('@medic/constants');
 
 describe('reports_by_freetext', () => {
   let ids;
@@ -15,7 +14,7 @@ describe('reports_by_freetext', () => {
     {
       // Field value within the length limit is indexed for exact match.
       _id: 'fxt_report_short_field',
-      type: DOC_TYPES.DATA_RECORD,
+      type: 'data_record',
       form: 'F',
       reported_date: 1,
       fields: { patient_name: 'fxtpatientname' },
@@ -23,7 +22,7 @@ describe('reports_by_freetext', () => {
     {
       // Field value over the length limit is skipped for exact match, but the report is still indexed
       _id: 'fxt_report_long_field',
-      type: DOC_TYPES.DATA_RECORD,
+      type: 'data_record',
       form: 'F',
       reported_date: 1,
       fields: { patient_name: 'fxtlongreport', image: longValue },
@@ -31,7 +30,7 @@ describe('reports_by_freetext', () => {
     {
       // A null field value must be skipped without breaking indexing; the report stays findable
       _id: 'fxt_report_null_field',
-      type: DOC_TYPES.DATA_RECORD,
+      type: 'data_record',
       form: 'F',
       reported_date: 1,
       fields: { patient_name: 'fxtnullfield', note: null },
@@ -39,7 +38,7 @@ describe('reports_by_freetext', () => {
     {
       // A null contact._id must be skipped without breaking indexing; the report stays findable
       _id: 'fxt_report_null_contact',
-      type: DOC_TYPES.DATA_RECORD,
+      type: 'data_record',
       form: 'F',
       reported_date: 1,
       fields: { patient_name: 'fxtnullcontact' },
