@@ -23,6 +23,21 @@ const cleanupArchiveDb = async () => {
   await archiveDb.bulkDocs(tombstones, { new_edits: true });
 };
 
+const cleanupArchiveJobs = async () => {
+  const result = await utils.sentinelDb.allDocs({
+    startkey: constants.PREFIXES?.ARCHIVE_JOB,
+    endkey: `${constants.PREFIXES?.ARCHIVE_JOB}\ufff0`,
+  });
+  if (!result.rows.length) {
+    return;
+  }
+  await utils.sentinelDb.bulkDocs(result.rows.map(row => ({
+    _id: row.id,
+    _rev: row.value.rev,
+    _deleted: true,
+  })));
+};
+
 // allDocs wrapper that returns only rows for docs that are present (live) — drops both
 // missing rows (`error: 'not_found'`) and deleted tombstone rows (`value.deleted: true`).
 const liveRows = async (db, opts = {}) => {
@@ -117,16 +132,17 @@ describe('sentinel processes archive jobs', () => {
   });
 
   after(async () => {
+    await cleanupArchiveJobs();
     await cleanupArchiveDb();
   });
 
   beforeEach(async () => {
-    await utils.toggleSentinelTransitions();
     await sentinelUtils.skipToSeq();
   });
 
   afterEach(async () => {
     await utils.revertSettings(true);
+    await cleanupArchiveJobs();
   });
 
   it('moves archivable docs to the archive db and purges them from medic', async function () {
@@ -217,14 +233,13 @@ describe('sentinel processes archive jobs', () => {
     await sentinelUtils.skipToSeq();
     await utils.toggleSentinelTransitions();
 
-    // First run: one batch lands, deadline fires
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
     await firstRunDone.promise;
 
     const partial = await utils.sentinelDb.get(jobId);
-    expect(partial.cursor ).to.be.greaterThan(0);
-    expect(partial.cursor ).to.be.lessThan(COUNT);
+    expect(partial.cursor).to.be.greaterThan(0);
+    expect(partial.cursor).to.be.lessThan(COUNT);
 
     const partiallyArchived = await liveRows(archiveDb, { keys: ids });
     expect(partiallyArchived).to.have.lengthOf(partial.cursor);
