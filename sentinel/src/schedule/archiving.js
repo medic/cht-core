@@ -8,17 +8,19 @@ const scheduling = require('../lib/scheduling');
 later.date.localTime();
 let archiveTimeout;
 
+const DURATION_PATTERN = /^(\d+)\s+(\w+)$/;
+
 // Parses a "<number> <unit>" string (e.g. "4 hours", "30 minutes") into milliseconds.
 // Returns null if the input is missing, malformed, or resolves to a non-positive duration.
 const parseDuration = (text) => {
   if (typeof text !== 'string') {
     return null;
   }
-  const match = text.trim().match(/^(\d+)\s+(\w+)$/);
+  const match = DURATION_PATTERN.exec(text.trim());
   if (!match) {
     return null;
   }
-  const ms = moment.duration(parseInt(match[1], 10), match[2]).asMilliseconds();
+  const ms = moment.duration(Number.parseInt(match[1], 10), match[2]).asMilliseconds();
   return ms > 0 ? ms : null;
 };
 
@@ -31,7 +33,7 @@ module.exports = {
       return Promise.resolve();
     }
 
-    const duration = parseDuration(archiveConfig && archiveConfig.duration);
+    const duration = parseDuration(archiveConfig?.duration);
 
     if (archiveTimeout) {
       clearTimeout(archiveTimeout);

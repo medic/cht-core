@@ -1,4 +1,4 @@
-const readline = require('readline');
+const readline = require('node:readline');
 const { v7: uuid } = require('uuid');
 const logger = require('@medic/logger');
 const archivingUtils = require('@medic/archiving-utils');
@@ -51,6 +51,14 @@ const persistJob = async (jobs, ids) => {
   jobs.push({ id: doc._id, count: doc.total });
 };
 
+const flushIfFull = async (jobs, buffer) => {
+  if (buffer.length < MAX_IDS_PER_JOB) {
+    return buffer;
+  }
+  await persistJob(jobs, buffer);
+  return [];
+};
+
 const processPayload = async (req) => {
   const jobs = [];
   let buffer = [];
@@ -62,10 +70,7 @@ const processPayload = async (req) => {
       continue;
     }
     buffer.push(id);
-    if (buffer.length >= MAX_IDS_PER_JOB) {
-      await persistJob(jobs, buffer);
-      buffer = [];
-    }
+    buffer = await flushIfFull(jobs, buffer);
   }
 
   await persistJob(jobs, buffer);

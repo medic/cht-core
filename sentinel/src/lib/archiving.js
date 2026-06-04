@@ -129,6 +129,16 @@ const processJob = async (job, deadline) => {
   }
 };
 
+const processQueue = async (deadline) => {
+  while (Date.now() < deadline) {
+    const job = await fetchNextJob();
+    if (!job) {
+      break;
+    }
+    await processJob(job, deadline);
+  }
+};
+
 const archive = async ({ duration } = {}) => {
   if (currentlyArchiving) {
     return;
@@ -138,13 +148,7 @@ const archive = async ({ duration } = {}) => {
   const deadline = duration ? Date.now() + duration : Infinity;
 
   try {
-    while (Date.now() < deadline) {
-      const job = await fetchNextJob();
-      if (!job) {
-        break;
-      }
-      await processJob(job, deadline);
-    }
+    await processQueue(deadline);
   } catch (err) {
     logger.error('Error while running archive: %o', err);
   } finally {
