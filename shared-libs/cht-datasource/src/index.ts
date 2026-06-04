@@ -60,6 +60,16 @@ export * as Target from './target';
  */
 export const getDatasource = (ctx: DataContext) => {
   assertDataContext(ctx);
+
+  const collectUuids = async (qualifier: Qualifier.ContactGetUuidsQualifier): Promise<string[]> => {
+    const generator = ctx.bind(Contact.v1.getUuids)(qualifier);
+    const ids: string[] = [];
+    for await (const id of generator) {
+      ids.push(id);
+    }
+    return ids;
+  };
+
   return {
     v1: {
       /**
@@ -232,14 +242,7 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns all matching contact identifiers
          * @throws InvalidArgumentError if `phone` is not a non-empty string
          */
-        collectUuidsByPhone: async (phone: string): Promise<string[]> => {
-          const generator = ctx.bind(Contact.v1.getUuids)(Qualifier.byPhone(phone));
-          const ids: string[] = [];
-          for await (const id of generator) {
-            ids.push(id);
-          }
-          return ids;
-        },
+        collectUuidsByPhone: (phone: string): Promise<string[]> => collectUuids(Qualifier.byPhone(phone)),
 
         /**
          * Bulk variant of {@link collectUuidsByPhone}. Returns all contact identifiers whose `phone`
@@ -251,14 +254,9 @@ export const getDatasource = (ctx: DataContext) => {
          * @returns all matching contact identifiers
          * @throws InvalidArgumentError if `phones` is not a non-empty array of non-empty strings
          */
-        collectUuidsByPhones: async (phones: [string, ...string[]]): Promise<string[]> => {
-          const generator = ctx.bind(Contact.v1.getUuids)(Qualifier.byPhones(phones));
-          const ids: string[] = [];
-          for await (const id of generator) {
-            ids.push(id);
-          }
-          return ids;
-        },
+        collectUuidsByPhones: (
+          phones: [string, ...string[]]
+        ): Promise<string[]> => collectUuids(Qualifier.byPhones(phones)),
       },
       place: {
         /**

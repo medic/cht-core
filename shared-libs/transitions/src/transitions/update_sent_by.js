@@ -30,7 +30,7 @@ module.exports = {
     return getContactUuids(Qualifier.byPhone(doc.from), null, 1)
       .then(page => page.data.length && getContact(Qualifier.byUuid(page.data[0])))
       .then(contact => {
-        const sentBy = contact && contact.name;
+        const sentBy = contact?.name;
 
         if (sentBy) {
           doc.sent_by = sentBy;

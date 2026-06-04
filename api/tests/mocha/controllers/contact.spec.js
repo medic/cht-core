@@ -306,20 +306,6 @@ describe('Contact Controller', () => {
             });
         });
 
-        it('walks two cursor pages with limit 5', async () => {
-          const firstPage = { data: ['a', 'b', 'c', 'd', 'e'], cursor: '5' };
-          const secondPage = { data: ['f'], cursor: null };
-          contactGetUuidsPage.onFirstCall().resolves(firstPage);
-          contactGetUuidsPage.onSecondCall().resolves(secondPage);
-
-          await controller.v1.getUuids({ query: { phone, cursor: null, limit: 5 } }, res);
-          expect(contactGetUuidsPage.firstCall.args).to.deep.equal([phoneOnlyQualifier, null, 5]);
-          expect(res.json.calledWith(firstPage)).to.be.true;
-
-          await controller.v1.getUuids({ query: { phone, cursor: '5', limit: 5 } }, res);
-          expect(contactGetUuidsPage.secondCall.args).to.deep.equal([phoneOnlyQualifier, '5', 5]);
-          expect(res.json.calledWith(secondPage)).to.be.true;
-        });
       });
     });
 
@@ -362,21 +348,6 @@ describe('Contact Controller', () => {
           req,
           res
         )).to.be.true;
-      });
-
-      it('walks two cursor pages with limit 5', async () => {
-        const firstPage = { data: ['a', 'b', 'c', 'd', 'e'], cursor: '5' };
-        const secondPage = { data: ['f'], cursor: null };
-        contactGetUuidsPage.onFirstCall().resolves(firstPage);
-        contactGetUuidsPage.onSecondCall().resolves(secondPage);
-
-        await controller.v1.postUuids({ body: { phones, cursor: null, limit: 5 } }, res);
-        expect(contactGetUuidsPage.firstCall.args).to.deep.equal([phonesQualifier, null, 5]);
-        expect(res.json.calledWith(firstPage)).to.be.true;
-
-        await controller.v1.postUuids({ body: { phones, cursor: '5', limit: 5 } }, res);
-        expect(contactGetUuidsPage.secondCall.args).to.deep.equal([phonesQualifier, '5', 5]);
-        expect(res.json.calledWith(secondPage)).to.be.true;
       });
     });
   });

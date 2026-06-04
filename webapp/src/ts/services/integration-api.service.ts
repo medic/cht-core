@@ -37,7 +37,7 @@ export class IntegrationApiService {
     private mrdtService:MRDTService,
     private settingsService:SettingsService,
     private androidApiService:AndroidApiService,
-    private chtDatasourceService:CHTDatasourceService,
+    private readonly chtDatasourceService:CHTDatasourceService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;

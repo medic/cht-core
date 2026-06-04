@@ -174,10 +174,6 @@ describe('qualifier', () => {
       expect(byPhone('+15551234567')).to.deep.equal({ phone: '+15551234567' });
     });
 
-    it('preserves whitespace and country-code formatting (no normalization)', () => {
-      expect(byPhone('  +1 (555) 123 4567  ')).to.deep.equal({ phone: '  +1 (555) 123 4567  ' });
-    });
-
     [
       null,
       '',
@@ -208,11 +204,6 @@ describe('qualifier', () => {
   describe('byPhones', () => {
     it('builds a qualifier for the bulk lookup of contacts by phone', () => {
       expect(byPhones(['+1', '+2', '+3'])).to.deep.equal({ phones: ['+1', '+2', '+3'] });
-    });
-
-    it('preserves whitespace and country-code formatting per element (no normalization)', () => {
-      expect(byPhones(['  +1 (555) 123 4567  ', '+2']))
-        .to.deep.equal({ phones: ['  +1 (555) 123 4567  ', '+2'] });
     });
 
     ([

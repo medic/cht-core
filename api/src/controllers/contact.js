@@ -7,6 +7,30 @@ const getContact = ctx.bind(Contact.v1.get);
 const getContactWithLineage = ctx.bind(Contact.v1.getWithLineage);
 const getContactIds = ctx.bind(Contact.v1.getUuidsPage);
 
+const isPresent = (value) => value !== undefined && value !== null && value !== '';
+
+/**
+ * Validates mutually-exclusive qualifier params shared by the GET (query) and POST (body) UUID
+ * endpoints. Throws a 400 if none are present, or if multiple non-combinable params are mixed.
+ * Returns the names of the present params on success.
+ */
+const validateQualifierParams = (source = {}, { params, combinable = [], label }) => {
+  const present = params.filter(name => isPresent(source[name]));
+
+  if (!present.length) {
+    throw { status: 400, message: `At least one of ${label} params ${params.join(', ')} is required` };
+  }
+  if (present.length > 1 && !present.every(name => combinable.includes(name))) {
+    const suffix = combinable.length ? ` (only ${combinable.join(' and ')} may be combined)` : '';
+    const capitalized = label.charAt(0).toUpperCase() + label.slice(1);
+    throw {
+      status: 400,
+      message: `${capitalized} params ${present.join(', ')} are mutually exclusive${suffix}`,
+    };
+  }
+  return present;
+};
+
 /**
  * @openapi
  * tags:
@@ -130,29 +154,12 @@ module.exports = {
 
       // Qualifier params are mutually exclusive by default. `type` and `freetext` are the only
       // pair that may be combined (backed by the contacts_by_type_freetext view). When a new
-      // qualifier is added, extend QUALIFIER_PARAMS — exclusivity is automatic.
-      const QUALIFIER_PARAMS = ['type', 'freetext', 'phone'];
-      const COMBINABLE = ['type', 'freetext'];
-      const present = QUALIFIER_PARAMS.filter(name => req.query[name]);
-
-      if (!present.length) {
-        return serverUtils.error(
-          { status: 400, message: `At least one of query params ${QUALIFIER_PARAMS.join(', ')} is required` },
-          req,
-          res
-        );
-      }
-      if (present.length > 1 && !present.every(name => COMBINABLE.includes(name))) {
-        return serverUtils.error(
-          {
-            status: 400,
-            message: `Query params ${present.join(', ')} are mutually exclusive `
-              + `(only ${COMBINABLE.join(' and ')} may be combined)`,
-          },
-          req,
-          res
-        );
-      }
+      // qualifier is added, extend params — exclusivity is automatic.
+      validateQualifierParams(req.query, {
+        params: ['type', 'freetext', 'phone'],
+        combinable: ['type', 'freetext'],
+        label: 'query',
+      });
 
       const qualifier = {};
       if (req.query.phone) {
@@ -230,28 +237,8 @@ module.exports = {
 
       // POST body mirrors the GET query-param shape, with array values where the qualifier accepts
       // many. Mutual-exclusivity rules match the GET path: list the multi-value params here and
-      // mirror COMBINABLE.
-      const QUALIFIER_PARAMS = ['phones'];
-      const COMBINABLE = [];
-      const present = QUALIFIER_PARAMS.filter(name => req.body && req.body[name] !== undefined);
-
-      if (!present.length) {
-        return serverUtils.error(
-          { status: 400, message: `At least one of body params ${QUALIFIER_PARAMS.join(', ')} is required` },
-          req,
-          res
-        );
-      }
-      if (present.length > 1 && !present.every(name => COMBINABLE.includes(name))) {
-        return serverUtils.error(
-          {
-            status: 400,
-            message: `Body params ${present.join(', ')} are mutually exclusive`,
-          },
-          req,
-          res
-        );
-      }
+      // mirror combinable.
+      validateQualifierParams(req.body, { params: ['phones'], combinable: [], label: 'body' });
 
       const qualifier = {};
       if (req.body.phones) {

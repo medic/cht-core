@@ -31,38 +31,37 @@ export namespace v1 {
     with_lineage: 'true',
   });
 
+  // Maps a (non-phones) qualifier to its GET query params. `phone` is mutually exclusive; `type`
+  // and `freetext` may combine.
+  const toQualifierParams = (qualifier: ContactGetUuidsQualifier): Record<string, string> => {
+    if (isPhoneQualifier(qualifier)) {
+      return { phone: qualifier.phone };
+    }
+    const params: Record<string, string> = {};
+    if (isFreetextType(qualifier)) {
+      params.freetext = qualifier.freetext;
+    }
+    if (isContactType(qualifier)) {
+      params.type = qualifier.contactType;
+    }
+    return params;
+  };
+
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
     qualifier: ContactGetUuidsQualifier,
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
-    // Bulk qualifiers go over POST so the array can sit in a JSON body — avoids URL-length limits
-    // and the ambiguity of repeated/comma-encoded query params.
+    const cursorParam: Record<string, string> = cursor ? { cursor } : {};
     if (isPhonesQualifier(qualifier)) {
-      return postContactUuids(remoteContext)({
-        phones: qualifier.phones,
-        limit,
-        ...(cursor ? { cursor } : {}),
-      });
+      return postContactUuids(remoteContext)({ phones: qualifier.phones, limit, ...cursorParam });
     }
-
-    const phoneParams: Record<string, string> = isPhoneQualifier(qualifier)
-      ? { phone: qualifier.phone }
-      : {};
-    const freetextParams: Record<string, string> = isFreetextType(qualifier)
-      ? { freetext: qualifier.freetext }
-      : {};
-    const typeParams: Record<string, string> = isContactType(qualifier)
-      ? { type: qualifier.contactType }
-      : {};
 
     const queryParams = {
       limit: limit.toString(),
-      ...(cursor ? { cursor } : {}),
-      ...typeParams,
-      ...freetextParams,
-      ...phoneParams,
+      ...cursorParam,
+      ...toQualifierParams(qualifier),
     };
     return getContactUuids(remoteContext)(queryParams);
   };
