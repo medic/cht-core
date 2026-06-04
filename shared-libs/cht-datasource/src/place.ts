@@ -168,7 +168,7 @@ export namespace v1 {
      * hydrated (e.g. for a {@link PlaceWithLineage}), the lineage will be properly dehydrated before being stored.
      * @returns the updated place with the new `_rev` value
      * @throws InvalidArgumentError if `_id` is not provided
-     * @throws ResourceNotFoundError if `_id does not identify an existing place contact
+     * @throws ResourceNotFoundError if `_id` does not identify an existing place contact
      * @throws InvalidArgumentError if `_rev` is not provided or does not match the place's current `_rev` value
      * @throws InvalidArgumentError if `name` is not provided
      * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact
@@ -255,7 +255,7 @@ export namespace v1 {
      * stored.
      * @returns the updated place with the new `_rev` value
      * @throws InvalidArgumentError if `_id` is not provided
-     * @throws ResourceNotFoundError if `_id does not identify an existing place contact
+     * @throws ResourceNotFoundError if `_id` does not identify an existing place contact
      * @throws InvalidArgumentError if `_rev` is not provided or does not match the place's current `_rev` value
      * @throws InvalidArgumentError if `name` is not provided
      * @throws InvalidArgumentError if the provided `contact` is not the identifier of a valid person contact

@@ -33,8 +33,8 @@ export * as Report from './report';
 export * as Target from './target';
 
 /**
- *  The CHT datasource API. Provides access to the CHT data model through versioned
- *  sub-APIs (e.g. `v1.person`, `v1.place`). Get an instance via {@link getDatasource}.
+ * The CHT datasource API. Provides access to the CHT data model through versioned
+ * sub-APIs (e.g. `v1.person`, `v1.place`). Get an instance via {@link getDatasource}.
  */
 export interface Datasource {
   v1: {
