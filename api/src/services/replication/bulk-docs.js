@@ -1,9 +1,9 @@
-const dataContext = require('./data-context');
+const dataContext = require('../data-context');
 const authorization = require('./authorization');
 const _ = require('lodash');
 const logger = require('@medic/logger');
-const db = require('../db');
 const { STANDARD_HTTP_HEADERS } = require('@medic/constants');
+const db = require('../../db');
 
 const utils = require('@medic/bulk-docs-utils')({
   Promise: Promise,

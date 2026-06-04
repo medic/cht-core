@@ -87,10 +87,6 @@ describe('monitoring', () => {
   beforeEach(async () => {
     await sentinelUtils.waitForSentinel();
     await utils.waitForIndexes();
-    // the v1 test was flaking, returning different values for the nouveau index counts.
-    // the v2 test, which calls the exactly same code, never failed!
-    // assuming that calling this endpoint actually does some calculating, call it before the test
-    await getExpectedNouveauIndexes('medic-test');
   });
 
   afterEach(() => utils.revertDb([], true));
@@ -102,7 +98,13 @@ describe('monitoring', () => {
       const usersMetaInfo = await getInfo('medic-test-users-meta');
       const usersInfo = await getInfo('_users');
 
-      const result = await utils.request({ path: '/api/v1/monitoring' });
+      const [result, medicNouveau, sentinelNouveau, usersMetaNouveau, usersNouveau] = await Promise.all([
+        utils.request({ path: '/api/v1/monitoring' }),
+        getExpectedNouveauIndexes('medic-test'),
+        getExpectedNouveauIndexes('medic-test-sentinel'),
+        getExpectedNouveauIndexes('medic-test-users-meta'),
+        getExpectedNouveauIndexes('_users'),
+      ]);
 
       chai.expect(result).excludingEvery(INDETERMINATE_FIELDS).to.deep.equal({
         version: {
@@ -116,7 +118,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test'),
+            nouveau_indexes: medicNouveau,
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -124,7 +126,7 @@ describe('monitoring', () => {
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-sentinel'),
+            nouveau_indexes: sentinelNouveau,
           },
           usersmeta: {
             name: 'medic-test-users-meta',
@@ -132,7 +134,7 @@ describe('monitoring', () => {
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-users-meta'),
+            nouveau_indexes: usersMetaNouveau,
           },
           users: {
             name: '_users',
@@ -140,7 +142,7 @@ describe('monitoring', () => {
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('_users'),
-            nouveau_indexes: await getExpectedNouveauIndexes('_users'),
+            nouveau_indexes: usersNouveau
           },
         },
         sentinel: {
@@ -185,7 +187,14 @@ describe('monitoring', () => {
       const usersMetaInfo = await getInfo('medic-test-users-meta');
       const usersInfo = await getInfo('_users');
 
-      const result = await utils.request({ path: '/api/v2/monitoring' });
+      const [result, medicNouveau, sentinelNouveau, usersMetaNouveau, usersNouveau] = await Promise.all([
+        utils.request({ path: '/api/v2/monitoring' }),
+        getExpectedNouveauIndexes('medic-test'),
+        getExpectedNouveauIndexes('medic-test-sentinel'),
+        getExpectedNouveauIndexes('medic-test-users-meta'),
+        getExpectedNouveauIndexes('_users'),
+      ]);
+
       chai.expect(result).excludingEvery(INDETERMINATE_FIELDS).to.deep.equal({
         version: {
           app: await getAppVersion(),
@@ -198,7 +207,7 @@ describe('monitoring', () => {
             doc_count: medicInfo.doc_count,
             doc_del_count: medicInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test'),
+            nouveau_indexes: medicNouveau,
           },
           sentinel: {
             name: 'medic-test-sentinel',
@@ -206,7 +215,7 @@ describe('monitoring', () => {
             doc_count: sentinelInfo.doc_count,
             doc_del_count: sentinelInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-sentinel'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-sentinel'),
+            nouveau_indexes: sentinelNouveau,
           },
           usersmeta: {
             name: 'medic-test-users-meta',
@@ -214,7 +223,7 @@ describe('monitoring', () => {
             doc_count: usersMetaInfo.doc_count,
             doc_del_count: usersMetaInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('medic-test-users-meta'),
-            nouveau_indexes: await getExpectedNouveauIndexes('medic-test-users-meta'),
+            nouveau_indexes: usersMetaNouveau,
           },
           users: {
             name: '_users',
@@ -222,7 +231,7 @@ describe('monitoring', () => {
             doc_count: usersInfo.doc_count,
             doc_del_count: usersInfo.doc_del_count,
             view_indexes: getExpectedViewIndexes('_users'),
-            nouveau_indexes: await getExpectedNouveauIndexes('_users'),
+            nouveau_indexes: usersNouveau,
           },
         },
         sentinel: {

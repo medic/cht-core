@@ -1,9 +1,12 @@
 const sinon = require('sinon');
+const { expect } = require('chai');
 require('chai').should();
 const middleware = require('../../../src/middleware/authorization');
 const auth = require('../../../src/auth');
 const serverUtils = require('../../../src/server-utils');
 const { HTTP_HEADERS } = require('@medic/constants');
+const replicationFailureLog = require('../../../src/services/replication/replication-failure-log');
+const logger = require('@medic/logger');
 
 let proxy;
 let next;
@@ -319,6 +322,98 @@ describe('Authorization middleware', () => {
       middleware.setAuthorized(testReq, testRes, next);
       testReq.authorized.should.equal(true);
       next.callCount.should.equal(1);
+    });
+  });
+
+  describe('captureReplicationFailures', () => {
+    let closeHandler;
+
+    beforeEach(() => {
+      sinon.stub(replicationFailureLog, 'capture');
+      sinon.stub(logger, 'error');
+      testRes.on = sinon.stub().callsFake((event, handler) => {
+        if (event === 'close') {
+          closeHandler = handler;
+        }
+      });
+    });
+
+    it('should attach close listener for offline users and call next', () => {
+      testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
+      auth.isOnlineOnly.returns(false);
+
+      middleware.captureReplicationFailures(testReq, testRes, next);
+
+      expect(next.callCount).to.equal(1);
+      expect(testRes.on.callCount).to.equal(1);
+      expect(testRes.on.args[0][0]).to.equal('close');
+    });
+
+    it('should not capture when request succeeds', () => {
+      testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
+      auth.isOnlineOnly.returns(false);
+      testRes.writableFinished = true;
+      testRes.statusCode = 200;
+
+      middleware.captureReplicationFailures(testReq, testRes, next);
+      closeHandler();
+
+      expect(replicationFailureLog.capture.callCount).to.equal(0);
+    });
+
+    it('should capture with actual status code when response completes with error', () => {
+      testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
+      testReq.id = 'req-123';
+      auth.isOnlineOnly.returns(false);
+      testRes.writableFinished = true;
+      testRes.statusCode = 500;
+      replicationFailureLog.capture.resolves();
+
+      middleware.captureReplicationFailures(testReq, testRes, next);
+      closeHandler();
+
+      expect(replicationFailureLog.capture.callCount).to.equal(1);
+      const args = replicationFailureLog.capture.args[0];
+      expect(args[0]).to.equal(testReq.userCtx);
+      expect(args[1]).to.equal('req-123');
+      expect(args[2]).to.equal(500);
+      expect(args[3]).to.be.a('number');
+    });
+
+    it('should capture with status code 0 when client cancels', () => {
+      testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
+      testReq.id = 'req-456';
+      auth.isOnlineOnly.returns(false);
+      testRes.writableFinished = false;
+      testRes.statusCode = 200;
+      replicationFailureLog.capture.resolves();
+
+      middleware.captureReplicationFailures(testReq, testRes, next);
+      closeHandler();
+
+      expect(replicationFailureLog.capture.callCount).to.equal(1);
+      const args = replicationFailureLog.capture.args[0];
+      expect(args[2]).to.equal(0);
+    });
+
+    it('should log error when capture fails', async () => {
+      testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
+      testReq.id = 'req-789';
+      auth.isOnlineOnly.returns(false);
+      testRes.writableFinished = true;
+      testRes.statusCode = 500;
+      const captureError = new Error('db write failed');
+      replicationFailureLog.capture.rejects(captureError);
+
+      middleware.captureReplicationFailures(testReq, testRes, next);
+      closeHandler();
+
+      // Wait for the promise rejection to be handled
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(logger.error.callCount).to.equal(1);
+      expect(logger.error.args[0][0]).to.equal('Failed to persist replication failure log: %o');
+      expect(logger.error.args[0][1]).to.equal(captureError);
     });
   });
 

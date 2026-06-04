@@ -149,6 +149,24 @@ describe('docs_by_replication_key', () => {
       user: PREFIXES.COUCH_USER + 'username',
       owner: 'testuser',
     },
+    {
+      // a null contact._id must not break indexing; the report still replicates by its patient subject
+      _id: 'report_with_null_submitter',
+      reported_date: 1,
+      form: 'V',
+      type: DOC_TYPES.DATA_RECORD,
+      patient_id: 'testpatient',
+      contact: { _id: null },
+    },
+    {
+      // a contact with no _id must not break indexing; the report still replicates by its patient subject
+      _id: 'report_with_no_submitter_id',
+      reported_date: 1,
+      form: 'V',
+      type: DOC_TYPES.DATA_RECORD,
+      patient_id: 'testpatient',
+      contact: {},
+    },
   ];
 
   const documentsToIgnore = [
@@ -382,6 +400,14 @@ describe('docs_by_replication_key', () => {
     it('should return target docs', () => {
       expect(docByPlaceIds).to.include('target_created_by_user');
       expect(docByPlaceIds).to.not.include('target_created_by_other_user');
+    });
+
+    it('should still index a report whose contact._id is null', () => {
+      expect(docByPlaceIds).to.include('report_with_null_submitter');
+    });
+
+    it('should still index a report whose contact has no _id', () => {
+      expect(docByPlaceIds).to.include('report_with_no_submitter_id');
     });
   });
 
