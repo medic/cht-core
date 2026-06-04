@@ -32,7 +32,7 @@ export class UserContactSummaryService {
   ) {
     this.store.select(Selectors.getForms).subscribe(forms => this.forms = forms);
 
-    this.cache = this.cacheService.register({
+    this.cache = this.cacheService.register<Record<string, unknown>>({
       get: async (callback:Function) => {
         try {
           const summary = await this.loadSummary();
