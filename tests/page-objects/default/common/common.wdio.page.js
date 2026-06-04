@@ -56,7 +56,7 @@ const fabSelectors = {
 const hamburgerMenuItemSelector = 'mat-sidenav-content';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
-const hamburguerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
+const hamburgerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
@@ -120,12 +120,12 @@ const accessReviewOption = async () => {
 
 const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
   await openHamburgerMenu();
-  await hamburguerMenuItemByOption(menuOption).waitForDisplayed({ reverse });
+  await hamburgerMenuItemByOption(menuOption).waitForDisplayed({ reverse });
   await generateScreenshot(pageName, screenshotName);
   if (reverse) {
     await closeHamburgerMenu();
   } else {
-    await hamburguerMenuItemByOption(menuOption).click();
+    await hamburgerMenuItemByOption(menuOption).click();
   }
 };
 
@@ -609,6 +609,7 @@ module.exports = {
   getJsonErrorText,
   openHamburgerMenu,
   closeHamburgerMenu,
+  hamburgerMenuItemByOption,
   openMoreOptionsMenu,
   accessEditOption,
   accessDeleteOption,

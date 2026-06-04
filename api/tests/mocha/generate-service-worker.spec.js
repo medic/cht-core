@@ -115,8 +115,8 @@ describe('generate service worker', () => {
         ],
         '/extension-libs': '["bar.js"]',
         '/extension-libs/bar.js': 'barcode',
-        '/ui-extension': '[{"id":"offline-ext","roles":' +
-          '["chw"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
+        '/ui-extension': '[{"id":"offline-ext","roles":["chw"]},' +
+          '{"id":"online-ext","roles":["nurse"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
         '/ui-extension/offline-ext': 'my-script',
         '/ui-extension/no-roles-ext': 'other extension script'
       },

@@ -52,7 +52,7 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
-import { PREFIXES } from '@medic/constants';
+import { DOC_IDS, PREFIXES } from '@medic/constants';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
@@ -653,6 +653,47 @@ describe('AppComponent', () => {
       expect(sessionService.init.callCount).to.equal(1);
       changesListener['user-context'].callback();
       expect(sessionService.init.callCount).to.equal(2);
+    });
+
+    it('ddoc change listener should filter design docs, service worker meta, settings and ui-extensions', async () => {
+      await getComponent();
+
+      const filter = changesListener.ddoc.filter;
+      expect(filter).to.be.a('function');
+
+      expect(filter({ id: '_design/medic' })).to.equal(true);
+      expect(filter({ id: '_design/medic-client' })).to.equal(true);
+      expect(filter({ id: DOC_IDS.SERVICE_WORKER_META })).to.equal(true);
+      expect(filter({ id: DOC_IDS.SETTINGS })).to.equal(true);
+      expect(filter({ id: 'ui-extension:foo' })).to.equal(true);
+      expect(filter({ id: 'ui-extension:' })).to.equal(true);
+      expect(filter({ id: 'something-else' })).to.equal(false);
+      expect(filter({ id: 'not-ui-extension:foo' })).to.equal(false);
+      expect(filter({ id: '_design/medic-not' })).to.equal(false);
+    });
+
+    it('ddoc change listener callback should trigger service worker update for service worker meta', async () => {
+      await getComponent();
+      sinon.resetHistory();
+
+      changesListener.ddoc.callback({ id: DOC_IDS.SERVICE_WORKER_META });
+
+      expect(updateServiceWorkerService.update.callCount).to.equal(1);
+      const callback = updateServiceWorkerService.update.args[0][0];
+      callback();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
+    });
+
+    it('ddoc change listener callback should show update ready for ui-extension changes', async () => {
+      await getComponent();
+      sinon.resetHistory();
+
+      changesListener.ddoc.callback({ id: 'ui-extension:my-extension' });
+
+      expect(updateServiceWorkerService.update.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
     });
 
     it('sync-status change listener callback should do nothing if sync in progress', async () => {

@@ -43,7 +43,7 @@ export class CHTDatasourceService {
   private async init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    await Promise.all([this.getSettings(), this.loadScripts()]);
+    await Promise.all([this.getSettings(), this.loadScripts(), this.customResourceService.init()]);
     this.dataContext = await this.createDataContext();
   }
 
