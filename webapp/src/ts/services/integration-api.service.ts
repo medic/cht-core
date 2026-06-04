@@ -40,7 +40,7 @@ export class IntegrationApiService {
     private settingsService:SettingsService,
     private androidApiService:AndroidApiService,
     private readonly interactionTrackingService:InteractionTrackingService,
-    private geolocationService:GeolocationService,
+    private readonly geolocationService:GeolocationService,
   ) {
     this.DB = dbService;
     this.AndroidAppLauncher = androidAppLauncherService;
@@ -52,7 +52,7 @@ export class IntegrationApiService {
     this.AndroidApi = androidApiService;
     this.Translate = translateService;
     this.InteractionTracking = interactionTrackingService;
-    this.Geolocation = geolocationService;
+    this.Geolocation = this.geolocationService;
   }
 
   get(service) {

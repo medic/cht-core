@@ -1,3 +1,4 @@
+/* global window */
 const mockConfig = require('../mock-config');
 
 const GEO_SUCCESS = {

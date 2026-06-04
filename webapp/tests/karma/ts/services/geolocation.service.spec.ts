@@ -52,7 +52,9 @@ describe('Geolocation service', () => {
       service.init();
       expect(service.currentPromise).to.be.instanceOf(Promise);
       let resolved = false;
-      service.currentPromise.then(() => { resolved = true; });
+      void service.currentPromise.then(() => {
+        resolved = true;
+      });
       await Promise.resolve();
       expect(resolved).to.be.false;
     });

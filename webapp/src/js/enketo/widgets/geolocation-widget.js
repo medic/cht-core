@@ -1,3 +1,4 @@
+/* global globalThis */
 'use strict';
 const Widget = require('enketo-core/src/js/widget').default;
 const $ = require('jquery');
@@ -15,19 +16,19 @@ class GeolocationWidget extends Widget {
     if (this._isPermissionDenied()) {
       const $el = $('<p class="geolocation-permission-denied">');
       $question.append($el);
-      return window.CHTCore.Translate.get('geolocation.permission.denied')
+      return globalThis.CHTCore.Translate.get('geolocation.permission.denied')
         .then(text => $el.text(text));
-    } else if (!this._isGeolocationAvailable()) {
-      const $el = $('<p class="geolocation-unavailable">');
-      $question.append($el);
-      return window.CHTCore.Translate.get('geolocation.unavailable')
-        .then(text => $el.text(text));
-    } else {
+    } else if (this._isGeolocationAvailable()) {
       const $button = $('<button type="button" class="btn btn-primary geolocation-capture-btn">');
       $button.on('click', () => this._startCapture());
       $question.append($button);
-      return window.CHTCore.Translate.get('geolocation.capture')
+      return globalThis.CHTCore.Translate.get('geolocation.capture')
         .then(text => $button.text(text));
+    } else {
+      const $el = $('<p class="geolocation-unavailable">');
+      $question.append($el);
+      return globalThis.CHTCore.Translate.get('geolocation.unavailable')
+        .then(text => $el.text(text));
     }
   }
 
@@ -44,22 +45,22 @@ class GeolocationWidget extends Widget {
     const $bar = $('<div class="geolocation-progress-bar">');
     $question.append($bar);
 
-    window.CHTCore.Geolocation.currentPromise.then(result => {
+    globalThis.CHTCore.Geolocation.currentPromise.then(result => {
       if ('code' in result) {
         $bar.addClass('geolocation-progress-failure');
 
         const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">');
         $retryBtn.on('click', () => {
-          window.CHTCore.Geolocation.retry();
+          globalThis.CHTCore.Geolocation.retry();
           this._startCapture();
         });
         $question.append($retryBtn);
-        window.CHTCore.Translate.get('geolocation.retry')
+        globalThis.CHTCore.Translate.get('geolocation.retry')
           .then(text => $retryBtn.text(text));
 
         const $skipBtn = $('<button type="button" class="btn btn-default geolocation-skip-btn">');
         $question.append($skipBtn);
-        window.CHTCore.Translate.get('geolocation.skip')
+        globalThis.CHTCore.Translate.get('geolocation.skip')
           .then(text => $skipBtn.text(text));
 
         $(this.element).val('not_captured').trigger('change');
@@ -68,7 +69,7 @@ class GeolocationWidget extends Widget {
 
         const $msg = $('<p class="geolocation-success-msg">');
         $question.append($msg);
-        window.CHTCore.Translate.get('geolocation.success')
+        globalThis.CHTCore.Translate.get('geolocation.success')
           .then(text => $msg.text(text));
 
         $(this.element).val('captured').trigger('change');
@@ -77,16 +78,18 @@ class GeolocationWidget extends Widget {
   }
 
   _isGeolocationAvailable() {
-    return !!window.navigator.geolocation;
+    return !!globalThis.navigator.geolocation;
   }
 
   _isPermissionDenied() {
     try {
-      if (!window.medicmobile_android || typeof window.medicmobile_android.getLocationPermissions !== 'function') {
+      const android = globalThis.medicmobile_android;
+      if (!android || typeof android.getLocationPermissions !== 'function') {
         return false;
       }
-      return !window.medicmobile_android.getLocationPermissions();
+      return !android.getLocationPermissions();
     } catch (err) {
+      console.error('Error checking location permissions', err);
       return false;
     }
   }
