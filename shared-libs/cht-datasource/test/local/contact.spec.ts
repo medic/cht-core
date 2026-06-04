@@ -273,6 +273,24 @@ describe('local contact', () => {
         useNouveauIndexes = sinon.stub(Nouveau, 'useNouveauIndexes');
       });
 
+      // getUuidsPage dispatches to exactly one of these mutually-exclusive query backends (or none, on
+      // error). A test names the backend(s) it expects to run; this asserts every other backend was not
+      // called. Adding a new qualifier means registering its backend here once — not adding a notCalled
+      // line to every other test. Stubs are read lazily since beforeEach reassigns them per test.
+      const queryBackends = (): SinonStub[] => [
+        queryViewByType,
+        queryViewByPhone,
+        queryViewByPhones,
+        queryViewFreetextByKey,
+        queryViewFreetextByRange,
+        queryViewTypeFreetextByKey,
+        queryViewTypeFreetextByRange,
+        queryNouveauFreetext,
+      ];
+      const expectOnlyBackendsCalled = (...called: SinonStub[]) => queryBackends()
+        .filter(stub => !called.includes(stub))
+        .forEach(stub => expect(stub.notCalled, 'unexpected query backend called').to.be.true);
+
       describe('contact type qualifier', () => {
         beforeEach(() => {
           useNouveauIndexes.resolves(false);
@@ -290,11 +308,7 @@ describe('local contact', () => {
 
             expect(res).to.deep.equal(expectedResult);
             expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
-            expect(queryNouveauFreetext.notCalled).to.be.true;
-            expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expectOnlyBackendsCalled(queryViewByType);
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
             expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
             expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
@@ -315,11 +329,7 @@ describe('local contact', () => {
             .to.be.rejectedWith(InvalidArgumentError, `Invalid contact type [${contactType}].`);
 
           expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
-          expect(queryNouveauFreetext.notCalled).to.be.true;
-          expect(queryViewFreetextByKey.notCalled).to.be.true;
-          expect(queryViewFreetextByRange.notCalled).to.be.true;
-          expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-          expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+          expectOnlyBackendsCalled();
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
           expect(fetchAndFilterIdsInner.notCalled).to.be.true;
@@ -336,165 +346,84 @@ describe('local contact', () => {
             );
 
           expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
-          expect(queryNouveauFreetext.notCalled).to.be.true;
-          expect(queryViewFreetextByKey.notCalled).to.be.true;
-          expect(queryViewFreetextByRange.notCalled).to.be.true;
-          expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-          expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+          expectOnlyBackendsCalled();
           expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
           expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
           expect(fetchAndFilterIdsInner.notCalled).to.be.true;
         });
       });
 
-      describe('phone qualifier', () => {
-        beforeEach(() => {
-          useNouveauIndexes.resolves(false);
-          fetchAndFilterIdsInner.resolves(expectedResult);
-        });
-
-        ([
-          [null, 0],
-          ['2', 2]
-        ] as [string | null, number][]).forEach(([cursor, skip]) => {
-          it(`queries contacts_by_phone with the phone as key with cursor [${cursor}]`, async () => {
-            const phone = '+15551234567';
-            const qualifier = Qualifier.byPhone(phone);
-
-            const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
-
-            expect(res).to.deep.equal(expectedResult);
-            expect(getContactTypeIds.notCalled).to.be.true;
-            expect(queryNouveauFreetext.notCalled).to.be.true;
-            expect(queryViewByType.notCalled).to.be.true;
-            expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
-            expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
-            expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
-            expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
-
-            const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
-            pageFn(limit, skip);
-
-            expect(queryViewByPhone.calledWithExactly(phone, limit, skip)).to.be.true;
+      // The single-phone and bulk-phones qualifiers exercise the same paging path; only the qualifier
+      // and the view query they dispatch to differ.
+      ([
+        {
+          label: 'phone qualifier',
+          makeQualifier: () => Qualifier.byPhone('+15551234567'),
+          verifyViewCall: (skip: number) => {
+            expect(queryViewByPhone.calledWithExactly('+15551234567', limit, skip)).to.be.true;
+          },
+        },
+        {
+          label: 'phones qualifier (bulk)',
+          makeQualifier: () => Qualifier.byPhones(['+15551234567', '+15559999999', '+44123456']),
+          // Single call to the bulk view query — not N calls to the single-key one
+          verifyViewCall: (skip: number) => {
+            expect(queryViewByPhones.calledOnceWithExactly(
+              ['+15551234567', '+15559999999', '+44123456'], limit, skip
+            )).to.be.true;
+          },
+        },
+      ]).forEach(({ label, makeQualifier, verifyViewCall }) => {
+        describe(label, () => {
+          beforeEach(() => {
+            useNouveauIndexes.resolves(false);
+            fetchAndFilterIdsInner.resolves(expectedResult);
           });
-        });
 
-        it('passes the phone through to the view as-is (no normalization)', async () => {
-          const phone = '  +1 (555) 123 4567  ';
-          const qualifier = Qualifier.byPhone(phone);
-
-          await Contact.v1.getUuidsPage(localContext)(qualifier, null, limit);
-
-          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
-          pageFn(limit, 0);
-
-          expect(queryViewByPhone.calledWithExactly(phone, limit, 0)).to.be.true;
-        });
-
-        it('walks two cursor pages with the same phone', async () => {
-          const phone = '+15551234567';
-          const qualifier = Qualifier.byPhone(phone);
-          const smallLimit = 5;
-          const firstPage = { cursor: '5', data: ['a', 'b', 'c', 'd', 'e'] };
-          const secondPage = { cursor: null, data: ['f', 'g'] };
-          fetchAndFilterIdsInner.onFirstCall().resolves(firstPage);
-          fetchAndFilterIdsInner.onSecondCall().resolves(secondPage);
-
-          const page1 = await Contact.v1.getUuidsPage(localContext)(qualifier, null, smallLimit);
-          expect(page1).to.deep.equal(firstPage);
-          expect(fetchAndFilterIdsInner.firstCall.args).to.deep.equal([smallLimit, 0]);
-
-          const page2 = await Contact.v1.getUuidsPage(localContext)(qualifier, page1.cursor, smallLimit);
-          expect(page2).to.deep.equal(secondPage);
-          expect(fetchAndFilterIdsInner.secondCall.args).to.deep.equal([smallLimit, 5]);
-        });
-
-        it('throws for invalid cursor', async () => {
-          const qualifier = Qualifier.byPhone('+15551234567');
-          const cursor = 'not a number';
-
-          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
-            .to.be.rejectedWith(
-              InvalidArgumentError,
-              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
-            );
-        });
-      });
-
-      describe('phones qualifier (bulk)', () => {
-        beforeEach(() => {
-          useNouveauIndexes.resolves(false);
-          fetchAndFilterIdsInner.resolves(expectedResult);
-        });
-
-        ([
-          [null, 0],
-          ['2', 2]
-        ] as [string | null, number][]).forEach(([cursor, skip]) => {
-          it(`queries contacts_by_phone with keys: [...] in a single round trip [cursor=${cursor}]`,
-            async () => {
-              const phones: [string, ...string[]] = ['+15551234567', '+15559999999', '+44123456'];
-              const qualifier = Qualifier.byPhones(phones);
-
-              const res = await Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit);
+          ([
+            [null, 0],
+            ['2', 2]
+          ] as [string | null, number][]).forEach(([cursor, skip]) => {
+            it(`queries the contacts_by_phone view in a single round trip [cursor=${cursor}]`, async () => {
+              const res = await Contact.v1.getUuidsPage(localContext)(makeQualifier(), cursor, limit);
 
               expect(res).to.deep.equal(expectedResult);
-              expect(queryViewByPhone.notCalled).to.be.true;
-              expect(queryViewByType.notCalled).to.be.true;
-              expect(queryNouveauFreetext.notCalled).to.be.true;
               expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
               expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
 
               const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
               pageFn(limit, skip);
 
-              // Single call to the bulk view query — not N calls to the single-key one
-              expect(queryViewByPhones.calledOnceWithExactly(phones, limit, skip)).to.be.true;
+              verifyViewCall(skip);
             });
-        });
+          });
 
-        it('passes phone values through to the view as-is (no normalization per element)', async () => {
-          const phones: [string, ...string[]] = ['  +1 (555) 123 4567  ', '+2'];
-          const qualifier = Qualifier.byPhones(phones);
+          it('walks two cursor pages with the same qualifier', async () => {
+            const smallLimit = 5;
+            const firstPage = { cursor: '5', data: ['a', 'b', 'c', 'd', 'e'] };
+            const secondPage = { cursor: null, data: ['f', 'g'] };
+            fetchAndFilterIdsInner.onFirstCall().resolves(firstPage);
+            fetchAndFilterIdsInner.onSecondCall().resolves(secondPage);
 
-          await Contact.v1.getUuidsPage(localContext)(qualifier, null, limit);
+            const page1 = await Contact.v1.getUuidsPage(localContext)(makeQualifier(), null, smallLimit);
+            expect(page1).to.deep.equal(firstPage);
+            expect(fetchAndFilterIdsInner.firstCall.args).to.deep.equal([smallLimit, 0]);
 
-          const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
-          pageFn(limit, 0);
+            const page2 = await Contact.v1.getUuidsPage(localContext)(makeQualifier(), page1.cursor, smallLimit);
+            expect(page2).to.deep.equal(secondPage);
+            expect(fetchAndFilterIdsInner.secondCall.args).to.deep.equal([smallLimit, 5]);
+          });
 
-          expect(queryViewByPhones.calledOnceWithExactly(phones, limit, 0)).to.be.true;
-        });
+          it('throws for invalid cursor', async () => {
+            const cursor = 'not a number';
 
-        it('walks two cursor pages with the same phones array', async () => {
-          const phones: [string, ...string[]] = ['+1', '+2'];
-          const qualifier = Qualifier.byPhones(phones);
-          const smallLimit = 5;
-          const firstPage = { cursor: '5', data: ['a', 'b', 'c', 'd', 'e'] };
-          const secondPage = { cursor: null, data: ['f', 'g'] };
-          fetchAndFilterIdsInner.onFirstCall().resolves(firstPage);
-          fetchAndFilterIdsInner.onSecondCall().resolves(secondPage);
-
-          const page1 = await Contact.v1.getUuidsPage(localContext)(qualifier, null, smallLimit);
-          expect(page1).to.deep.equal(firstPage);
-          expect(fetchAndFilterIdsInner.firstCall.args).to.deep.equal([smallLimit, 0]);
-
-          const page2 = await Contact.v1.getUuidsPage(localContext)(qualifier, page1.cursor, smallLimit);
-          expect(page2).to.deep.equal(secondPage);
-          expect(fetchAndFilterIdsInner.secondCall.args).to.deep.equal([smallLimit, 5]);
-        });
-
-        it('throws for invalid cursor', async () => {
-          const qualifier = Qualifier.byPhones(['+1']);
-          const cursor = 'not a number';
-
-          await expect(Contact.v1.getUuidsPage(localContext)(qualifier, cursor, limit))
-            .to.be.rejectedWith(
-              InvalidArgumentError,
-              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
-            );
+            await expect(Contact.v1.getUuidsPage(localContext)(makeQualifier(), cursor, limit))
+              .to.be.rejectedWith(
+                InvalidArgumentError,
+                `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+              );
+          });
         });
       });
 
@@ -520,11 +449,7 @@ describe('local contact', () => {
               expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
               expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
               expect(getContactTypeIds.notCalled).to.be.true;
-              expect(queryViewByType.notCalled).to.be.true;
-              expect(queryViewFreetextByKey.notCalled).to.be.true;
-              expect(queryViewFreetextByRange.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+              expectOnlyBackendsCalled(queryNouveauFreetext);
               expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
               expect(fetchAndFilterIdsInner.notCalled).to.be.true;
             });
@@ -544,11 +469,7 @@ describe('local contact', () => {
               limit
             )).to.be.true;
             expect(getContactTypeIds.notCalled).to.be.true;
-            expect(queryViewByType.notCalled).to.be.true;
-            expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expectOnlyBackendsCalled(queryNouveauFreetext);
             expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
             expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
@@ -566,11 +487,7 @@ describe('local contact', () => {
             expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
             expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, null, limit)).to.be.true;
-            expect(queryViewByType.notCalled).to.be.true;
-            expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expectOnlyBackendsCalled(queryNouveauFreetext);
             expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
             expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
@@ -587,12 +504,7 @@ describe('local contact', () => {
 
             expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-            expect(queryNouveauFreetext.notCalled).to.be.true;
-            expect(queryViewByType.notCalled).to.be.true;
-            expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expectOnlyBackendsCalled();
             expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
             expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });
@@ -617,11 +529,7 @@ describe('local contact', () => {
               expect(res).to.deep.equal(expectedResult);
               expect(getContactTypeIds.notCalled).to.be.true;
               expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-              expect(queryNouveauFreetext.notCalled).to.be.true;
-              expect(queryViewFreetextByRange.notCalled).to.be.true;
-              expect(queryViewByType.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+              expectOnlyBackendsCalled(queryViewFreetextByKey);
               expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
               expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
               expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
@@ -641,11 +549,7 @@ describe('local contact', () => {
               expect(res).to.deep.equal(expectedResult);
               expect(getContactTypeIds.notCalled).to.be.true;
               expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-              expect(queryNouveauFreetext.notCalled).to.be.true;
-              expect(queryViewFreetextByKey.notCalled).to.be.true;
-              expect(queryViewByType.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+              expectOnlyBackendsCalled(queryViewFreetextByRange);
               expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
               expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
               expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
@@ -673,11 +577,7 @@ describe('local contact', () => {
               expect(res).to.deep.equal(expectedResult);
               expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
               expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-              expect(queryNouveauFreetext.notCalled).to.be.true;
-              expect(queryViewByType.notCalled).to.be.true;
-              expect(queryViewFreetextByKey.notCalled).to.be.true;
-              expect(queryViewFreetextByRange.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+              expectOnlyBackendsCalled(queryViewTypeFreetextByKey);
               expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
               expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
               expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
@@ -702,11 +602,7 @@ describe('local contact', () => {
               expect(res).to.deep.equal(expectedResult);
               expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
               expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-              expect(queryNouveauFreetext.notCalled).to.be.true;
-              expect(queryViewByType.notCalled).to.be.true;
-              expect(queryViewFreetextByKey.notCalled).to.be.true;
-              expect(queryViewFreetextByRange.notCalled).to.be.true;
-              expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
+              expectOnlyBackendsCalled(queryViewTypeFreetextByRange);
               expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
               expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
               expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
@@ -732,11 +628,7 @@ describe('local contact', () => {
             expect(res).to.deep.equal(expectedResult);
             expect(getContactTypeIds.notCalled).to.be.true;
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-            expect(queryNouveauFreetext.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewByType.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expectOnlyBackendsCalled(queryViewFreetextByKey);
             expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
             expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
             expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, 0)).to.be.true;
@@ -759,12 +651,7 @@ describe('local contact', () => {
 
             expect(getContactTypeIds.notCalled).to.be.true;
             expect(useNouveauIndexes.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-            expect(queryNouveauFreetext.notCalled).to.be.true;
-            expect(queryViewByType.notCalled).to.be.true;
-            expect(queryViewFreetextByKey.notCalled).to.be.true;
-            expect(queryViewFreetextByRange.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByKey.notCalled).to.be.true;
-            expect(queryViewTypeFreetextByRange.notCalled).to.be.true;
+            expectOnlyBackendsCalled();
             expect(fetchAndFilterIdsOuter.notCalled).to.be.true;
             expect(fetchAndFilterIdsInner.notCalled).to.be.true;
           });

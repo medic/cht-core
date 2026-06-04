@@ -10,8 +10,8 @@ const getContactIds = ctx.bind(Contact.v1.getUuidsPage);
 const isPresent = (value) => value !== undefined && value !== null && value !== '';
 
 /**
- * Validates mutually-exclusive qualifier params shared by the GET (query) and POST (body) UUID
- * endpoints. Throws a 400 if none are present, or if multiple non-combinable params are mixed.
+ * Validates mutually-exclusive qualifier params endpoints. 
+ * Throws a 400 if none are present, or if multiple non-combinable params are mixed.
  * Returns the names of the present params on success.
  */
 const validateQualifierParams = (source = {}, { params, combinable = [], label }) => {
@@ -152,9 +152,6 @@ module.exports = {
     getUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
 
-      // Qualifier params are mutually exclusive by default. `type` and `freetext` are the only
-      // pair that may be combined (backed by the contacts_by_type_freetext view). When a new
-      // qualifier is added, extend params — exclusivity is automatic.
       validateQualifierParams(req.query, {
         params: ['type', 'freetext', 'phone'],
         combinable: ['type', 'freetext'],
@@ -182,10 +179,7 @@ module.exports = {
      *     summary: Get contact UUIDs (bulk variant)
      *     operationId: v1ContactUuidPost
      *     description: >
-     *       Bulk variant of the GET endpoint. Accepts array-valued qualifiers in a JSON body — used
-     *       when the array would not fit safely in a query string. The only multi-value qualifier
-     *       currently accepted is `phones`. Returns the same paginated `{ data, cursor }` shape as
-     *       the GET endpoint.
+     *       Bulk variant of the GET endpoint. Accepts array-valued qualifiers in a JSON body.
      *     tags: [Contact]
      *     x-since: 4.21.0
      *     x-permissions:
@@ -202,8 +196,7 @@ module.exports = {
      *                 items:
      *                   type: string
      *                 description: >
-     *                   Phone numbers to match exactly against the contact's `phone` field. Passed
-     *                   as-is — no normalization. One CouchDB round trip regardless of array size.
+     *                   Phone numbers to match exactly against the contact's `phone` field.
      *               cursor:
      *                 type: string
      *                 nullable: true
@@ -235,9 +228,6 @@ module.exports = {
     postUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
 
-      // POST body mirrors the GET query-param shape, with array values where the qualifier accepts
-      // many. Mutual-exclusivity rules match the GET path: list the multi-value params here and
-      // mirror combinable.
       validateQualifierParams(req.body, { params: ['phones'], combinable: [], label: 'body' });
 
       const qualifier = {};

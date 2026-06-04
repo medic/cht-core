@@ -128,8 +128,8 @@ export const queryDocIdsByKey = (
 ): Promise<string[]> => queryDocIds(db, view, { include_docs: false, reduce: false, key, limit, skip });
 
 /**
- * Bulk variant of {@link queryDocIdsByKey}. Returns IDs of all docs whose emitted view key is in the
- * provided list — one CouchDB round trip regardless of how many keys are passed.
+ * Bulk variant of {@link queryDocIdsByKey}. 
+ * Returns IDs of all docs whose emitted view key is in the provided list.
  * @internal
  */
 export const queryDocIdsByKeys = (

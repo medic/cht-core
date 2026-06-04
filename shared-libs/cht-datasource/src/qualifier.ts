@@ -145,9 +145,7 @@ export const isKeyedFreetextQualifier = (qualifier: FreetextQualifier): boolean 
 };
 
 /**
- * A qualifier that identifies entities based on a phone number. The value is matched against the
- * `phone` field of the contact as-is — no normalization (whitespace, country code, etc.) is
- * performed by the qualifier; matching parity with the underlying view is the caller's responsibility.
+ * A qualifier that identifies entities based on a phone number.
  */
 export type PhoneQualifier = Readonly<{ phone: string }>;
 
@@ -174,9 +172,7 @@ export const isPhoneQualifier = (qualifier: unknown): qualifier is PhoneQualifie
 };
 
 /**
- * Bulk variant of {@link PhoneQualifier} — identifies contacts whose `phone` field matches any value
- * in the provided list. Use this when looking up many phones in a single call to avoid N round trips.
- * Values are matched as-is — no normalization.
+ * Bulk variant of {@link PhoneQualifier}
  */
 export type PhonesQualifier = Readonly<{ phones: [string, ...string[]] }>;
 
@@ -207,9 +203,7 @@ export const isPhonesQualifier = (qualifier: unknown): qualifier is PhonesQualif
 
 /**
  * The set of qualifier shapes accepted by `Contact.v1.getUuidsPage` / `Contact.v1.getUuids` for
- * filtering contacts. Extend this union (and {@link isContactGetUuidsQualifier}) when adding a new
- * filtering dimension; call sites that accept any of them should reference this alias rather than
- * spelling out the member types.
+ * filtering contacts.
  */
 export type ContactGetUuidsQualifier =
   | ContactTypeQualifier

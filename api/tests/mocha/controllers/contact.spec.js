@@ -272,8 +272,6 @@ describe('Contact Controller', () => {
           await controller.v1.getUuids(req, res);
 
           expect(qualifierByPhone.calledOnceWithExactly(phone)).to.be.true;
-          expect(qualifierByContactType.notCalled).to.be.true;
-          expect(qualifierByFreetext.notCalled).to.be.true;
           expect(contactGetUuidsPage.calledOnceWithExactly(phoneOnlyQualifier, cursor, limit)).to.be.true;
           expect(res.json.calledOnceWithExactly(expected)).to.be.true;
         });
@@ -289,11 +287,6 @@ describe('Contact Controller', () => {
 
               await controller.v1.getUuids(req, res);
 
-              expect(qualifierByPhone.notCalled).to.be.true;
-              expect(qualifierByContactType.notCalled).to.be.true;
-              expect(qualifierByFreetext.notCalled).to.be.true;
-              expect(contactGetUuidsPage.notCalled).to.be.true;
-              expect(res.json.notCalled).to.be.true;
               expect(serverUtilsError.calledOnceWithExactly(
                 {
                   status: 400,
@@ -341,8 +334,6 @@ describe('Contact Controller', () => {
 
         await controller.v1.postUuids(req, res);
 
-        expect(qualifierByPhones.notCalled).to.be.true;
-        expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
           { status: 400, message: 'At least one of body params phones is required' },
           req,

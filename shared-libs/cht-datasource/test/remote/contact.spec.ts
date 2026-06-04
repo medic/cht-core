@@ -158,70 +158,60 @@ describe('remote contact', () => {
         })).to.be.true;
       });
 
-      describe('phone qualifier', () => {
-        const phone = '+15551234567';
-        const phoneQualifier = { phone };
-
-        it('passes the phone as a query param to the existing endpoint', async () => {
-          const expectedResponse = { data: ['a'], cursor };
-          getResourcesInner.resolves(expectedResponse);
-
-          const result = await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, cursor, limit);
-
-          expect(result).to.equal(expectedResponse);
-          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
-          expect(getResourcesInner.calledOnceWithExactly({
+      // The single-phone qualifier dispatches a GET (phone as query param); the bulk-phones qualifier
+      // POSTs the array in the body. Both share the same request/response and cursor handling.
+      const phone = '+15551234567';
+      const phones: [string, ...string[]] = ['+15551234567', '+15559999999'];
+      ([
+        {
+          label: 'phone qualifier',
+          qualifier: { phone },
+          // GET: query params, limit serialized to string
+          callStub: () => getResourcesInner,
+          verifyDispatch: () => {
+            expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+          },
+          params: (withCursor: boolean) => ({
             limit: limit.toString(),
-            cursor,
+            ...(withCursor ? { cursor } : {}),
             phone,
-          })).to.be.true;
-        });
-
-        it('omits cursor param when cursor is null', async () => {
-          const expectedResponse = { data: [], cursor: null };
-          getResourcesInner.resolves(expectedResponse);
-
-          await Contact.v1.getUuidsPage(remoteContext)(phoneQualifier, null, limit);
-
-          expect(getResourcesInner.calledOnceWithExactly({
-            limit: limit.toString(),
-            phone,
-          })).to.be.true;
-        });
-
-      });
-
-      describe('phones qualifier (bulk)', () => {
-        const phones: [string, ...string[]] = ['+15551234567', '+15559999999'];
-        const phonesQualifier = { phones };
-
-        it('POSTs to the same path with phones in the JSON body', async () => {
-          const expectedResponse = { data: ['a', 'b'], cursor };
-          postResourceInnermost.resolves(expectedResponse);
-
-          const result = await Contact.v1.getUuidsPage(remoteContext)(phonesQualifier, cursor, limit);
-
-          expect(result).to.equal(expectedResponse);
-          expect(postResourceOuter.calledOnceWithExactly('api/v1/contact/uuid')).to.be.true;
-          expect(postResourceMiddle.calledOnceWithExactly(remoteContext)).to.be.true;
-          expect(postResourceInnermost.calledOnceWithExactly({
+          }),
+        },
+        {
+          label: 'phones qualifier (bulk)',
+          qualifier: { phones },
+          // POST: array in the body, limit kept numeric, three-layer postResource chain
+          callStub: () => postResourceInnermost,
+          verifyDispatch: () => {
+            expect(postResourceOuter.calledOnceWithExactly('api/v1/contact/uuid')).to.be.true;
+            expect(postResourceMiddle.calledOnceWithExactly(remoteContext)).to.be.true;
+          },
+          params: (withCursor: boolean) => ({
             phones,
             limit,
-            cursor,
-          })).to.be.true;
-          // GET endpoint not touched
-          expect(getResourcesInner.notCalled).to.be.true;
-        });
+            ...(withCursor ? { cursor } : {}),
+          }),
+        },
+      ]).forEach(({ label, qualifier, callStub, verifyDispatch, params }) => {
+        describe(label, () => {
+          it('dispatches the request with the qualifier and returns the response', async () => {
+            const expectedResponse = { data: ['a'], cursor };
+            callStub().resolves(expectedResponse);
 
-        it('omits cursor from the body when cursor is null', async () => {
-          postResourceInnermost.resolves({ data: [], cursor: null });
+            const result = await Contact.v1.getUuidsPage(remoteContext)(qualifier, cursor, limit);
 
-          await Contact.v1.getUuidsPage(remoteContext)(phonesQualifier, null, limit);
+            expect(result).to.equal(expectedResponse);
+            verifyDispatch();
+            expect(callStub().calledOnceWithExactly(params(true))).to.be.true;
+          });
 
-          expect(postResourceInnermost.calledOnceWithExactly({
-            phones,
-            limit,
-          })).to.be.true;
+          it('omits cursor when cursor is null', async () => {
+            callStub().resolves({ data: [], cursor: null });
+
+            await Contact.v1.getUuidsPage(remoteContext)(qualifier, null, limit);
+
+            expect(callStub().calledOnceWithExactly(params(false))).to.be.true;
+          });
         });
       });
     });

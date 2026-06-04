@@ -10,9 +10,6 @@ export namespace v1 {
 
   const getContactUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/contact/uuid');
 
-  // POSTed to the same path for the bulk variant; body carries the array-valued qualifier(s) and
-  // pagination. Used when the qualifier shape can't fit a single GET (multi-value lookups).
-  // `postResource(path)` is called per-invocation (not at module load) so test stubs can intercept.
   const postContactUuids = (
     remoteContext: RemoteDataContext
   ) => postResource('api/v1/contact/uuid')(remoteContext);
@@ -31,8 +28,6 @@ export namespace v1 {
     with_lineage: 'true',
   });
 
-  // Maps a (non-phones) qualifier to its GET query params. `phone` is mutually exclusive; `type`
-  // and `freetext` may combine.
   const toQualifierParams = (qualifier: ContactGetUuidsQualifier): Record<string, string> => {
     if (isPhoneQualifier(qualifier)) {
       return { phone: qualifier.phone };

@@ -222,7 +222,7 @@ export const getDatasource = (ctx: DataContext) => {
 
         /**
          * Returns a generator for fetching all the contact identifiers whose `phone` field exactly
-         * matches the given phone number. The value is matched as-is — no normalization is performed.
+         * matches the given phone number.
          * @param phone the phone number to match
          * @returns a generator for fetching all matching contact identifiers
          * @throws InvalidArgumentError if `phone` is not a non-empty string
@@ -235,9 +235,7 @@ export const getDatasource = (ctx: DataContext) => {
 
         /**
          * Returns all contact identifiers whose `phone` field exactly matches the given phone number,
-         * collected into a single array. Equivalent to draining {@link getUuidsByPhone} but returns a
-         * `Promise<string[]>` for callers that can't consume an `AsyncGenerator` (e.g. bundles that
-         * don't support `for await`).
+         * collected into a single array. 
          * @param phone the phone number to match
          * @returns all matching contact identifiers
          * @throws InvalidArgumentError if `phone` is not a non-empty string
@@ -247,9 +245,6 @@ export const getDatasource = (ctx: DataContext) => {
         /**
          * Bulk variant of {@link collectUuidsByPhone}. Returns all contact identifiers whose `phone`
          * field matches *any* of the given phone numbers, in a single round trip — the qualifier
-         * dispatches to one CouchDB view query (local) or one POST (remote), regardless of array
-         * size. Use this instead of `Promise.all` over `collectUuidsByPhone` when looking up many
-         * phones, to avoid the N-round-trip regression.
          * @param phones the phone numbers to match. Values are passed as-is — no normalization.
          * @returns all matching contact identifiers
          * @throws InvalidArgumentError if `phones` is not a non-empty array of non-empty strings
