@@ -303,13 +303,13 @@ describe('monitoring', () => {
       const recent = today.clone().subtract(2, 'days');
       const onBoundary = today.clone().subtract(7, 'days');
       const tooOld = today.clone().subtract(14, 'days');
-      const failureDoc = (period, user, daily_counts) => ({
+      const failureDoc = (period, user, dailyFailures) => ({
         _id: `replication-fail-${period}-${user}`,
         user,
         date: today.valueOf(),
-        total_failures: Object.values(daily_counts).reduce((a, b) => a + b, 0),
+        total_failures: Object.values(dailyFailures).reduce((a, b) => a + b, 0),
         failures: [],
-        daily_counts,
+        daily_failures: dailyFailures,
       });
       const dayKey = (m) => m.format('YYYY-MM-DD');
       const periodKey = (m) => m.format('YYYY-MM');

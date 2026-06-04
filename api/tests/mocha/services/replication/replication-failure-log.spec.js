@@ -19,7 +19,13 @@ describe('Replication Failure Log Service', () => {
   describe('get', () => {
     describe('with user and reportingPeriod', () => {
       it('should fetch the specific doc with cursor=null', async () => {
-        const doc = { _id: 'replication-fail-2026-04-bob', user: 'bob', failures: [{}] };
+        const doc = {
+          _id: 'replication-fail-2026-04-bob',
+          user: 'bob',
+          total_failures: 1,
+          failures: [{ date: 1, status_code: 500, duration: 10, request_id: 'r-1' }],
+          daily_failures: { '2026-04-15': 1 },
+        };
         db.medicLogs.get.resolves(doc);
 
         const result = await replicationFailureLog.get({ user: 'bob', reportingPeriod: '2026-04' });
@@ -112,7 +118,13 @@ describe('Replication Failure Log Service', () => {
       ));
 
       it('should bulk-fetch the user\'s candidate keys and return the matched docs', async () => {
-        const bobApril = { _id: 'replication-fail-2026-04-bob', user: 'bob', failures: [{}] };
+        const bobApril = {
+          _id: 'replication-fail-2026-04-bob',
+          user: 'bob',
+          total_failures: 1,
+          failures: [{ date: 1, status_code: 500, duration: 10, request_id: 'r-1' }],
+          daily_failures: { '2026-04-15': 1 },
+        };
         db.medicLogs.allDocs.resolves({ rows: rowsFor('bob', new Map([[bobApril._id, bobApril]])) });
 
         const result = await replicationFailureLog.get({ user: 'bob' });
@@ -365,11 +377,11 @@ describe('Replication Failure Log Service', () => {
           unpurged_docs_count: 1200,
           roles: ['chw'],
         }],
-        daily_counts: { '2026-04-15': 1 },
+        daily_failures: { '2026-04-15': 1 },
       });
     });
 
-    it('should record `unknown` for counts not set on userCtx', async () => {
+    it('should record null for counts not set on userCtx', async () => {
       db.medicLogs.get.rejects({ status: 404 });
       db.medicLogs.put.resolves();
 
@@ -378,12 +390,12 @@ describe('Replication Failure Log Service', () => {
       await replicationFailureLog.capture(userCtx, 'req-early', 500, 50);
 
       const saved = db.medicLogs.put.args[0][0];
-      expect(saved.failures[0].subjects_count).to.equal('unknown');
-      expect(saved.failures[0].docs_count).to.equal('unknown');
-      expect(saved.failures[0].unpurged_docs_count).to.equal('unknown');
+      expect(saved.failures[0].subjects_count).to.be.null;
+      expect(saved.failures[0].docs_count).to.be.null;
+      expect(saved.failures[0].unpurged_docs_count).to.be.null;
     });
 
-    it('should mix numeric counters with `unknown` based on how far the request progressed', async () => {
+    it('should mix numeric counters with null based on how far the request progressed', async () => {
       db.medicLogs.get.rejects({ status: 404 });
       db.medicLogs.put.resolves();
 
@@ -399,7 +411,7 @@ describe('Replication Failure Log Service', () => {
       const saved = db.medicLogs.put.args[0][0];
       expect(saved.failures[0].subjects_count).to.equal(6);
       expect(saved.failures[0].docs_count).to.equal(1234);
-      expect(saved.failures[0].unpurged_docs_count).to.equal('unknown');
+      expect(saved.failures[0].unpurged_docs_count).to.be.null;
     });
 
     it('should append to an existing log', async () => {
@@ -412,6 +424,7 @@ describe('Replication Failure Log Service', () => {
           { date: 1000, status_code: 500, duration: 100, request_id: 'old-1' },
           { date: 2000, status_code: 500, duration: 200, request_id: 'old-2' },
         ],
+        daily_failures: { '1970-01-01': 2 },
       };
       db.medicLogs.get.resolves(existingLog);
       db.medicLogs.put.resolves();
@@ -444,6 +457,7 @@ describe('Replication Failure Log Service', () => {
         user: 'bob',
         total_failures: 50,
         failures: oldFailures.map(f => ({ ...f })),
+        daily_failures: { '1970-01-01': 50 },
       };
       db.medicLogs.get.resolves(existingLog);
       db.medicLogs.put.resolves();
@@ -476,6 +490,7 @@ describe('Replication Failure Log Service', () => {
         user: 'bob',
         total_failures: 10,
         failures: oldFailures.map(f => ({ ...f })),
+        daily_failures: { '1970-01-01': 10 },
       };
       db.medicLogs.get.resolves(existingLog);
       db.medicLogs.put.resolves();
@@ -533,31 +548,68 @@ describe('Replication Failure Log Service', () => {
           status_code: 402,
           duration: 200,
           request_id: 'req-123',
-          subjects_count: 'unknown',
-          docs_count: 'unknown',
-          unpurged_docs_count: 'unknown',
+          subjects_count: null,
+          docs_count: null,
+          unpurged_docs_count: null,
           roles: ['chw'],
         }],
-        daily_counts: { '2026-04-15': 1 },
+        daily_failures: { '2026-04-15': 1 },
       });
     });
 
-    describe('daily_counts', () => {
-      it('should increment the bucket for the current day when a doc exists with no buckets', async () => {
+    describe('defensive lazy-init of mutable fields', () => {
+      it('should lazily initialise daily_failures if it has been stripped', async () => {
         sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-        // Failure-log docs predating the daily_counts rollout lack the field — we add it lazily.
+        const priorFailures = Array.from({ length: 5 }, (_, i) => ({
+          date: i * 1000, status_code: 500, duration: 100, request_id: `old-${i}`,
+        }));
         db.medicLogs.get.resolves({
           _id: 'replication-fail-2026-04-bob',
           _rev: '1-abc',
           user: 'bob',
           total_failures: 5,
-          failures: [],
+          failures: priorFailures,
         });
         db.medicLogs.put.resolves();
 
         await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
 
-        expect(db.medicLogs.put.args[0][0].daily_counts).to.deep.equal({ '2026-04-15': 1 });
+        expect(db.medicLogs.put.args[0][0].daily_failures).to.deep.equal({ '2026-04-15': 1 });
+      });
+
+      it('should lazily initialise failures if it has been stripped', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          total_failures: 5,
+          daily_failures: { '2026-04-10': 2, '2026-04-12': 3 },
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        const saved = db.medicLogs.put.args[0][0];
+        expect(saved.failures).to.have.lengthOf(1);
+        expect(saved.failures[0]).to.deep.include({ status_code: 500, duration: 100, request_id: 'req' });
+        expect(saved.total_failures).to.equal(6);
+      });
+
+      it('should lazily initialise total_failures if it has been stripped', async () => {
+        sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
+        db.medicLogs.get.resolves({
+          _id: 'replication-fail-2026-04-bob',
+          _rev: '1-abc',
+          user: 'bob',
+          failures: [],
+          daily_failures: {},
+        });
+        db.medicLogs.put.resolves();
+
+        await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
+
+        expect(db.medicLogs.put.args[0][0].total_failures).to.equal(1);
       });
 
       it('should increment an existing same-day bucket', async () => {
@@ -568,13 +620,13 @@ describe('Replication Failure Log Service', () => {
           user: 'bob',
           total_failures: 7,
           failures: [],
-          daily_counts: { '2026-04-15': 7 },
+          daily_failures: { '2026-04-15': 7 },
         });
         db.medicLogs.put.resolves();
 
         await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
 
-        expect(db.medicLogs.put.args[0][0].daily_counts).to.deep.equal({ '2026-04-15': 8 });
+        expect(db.medicLogs.put.args[0][0].daily_failures).to.deep.equal({ '2026-04-15': 8 });
       });
 
       it('should add a new bucket on a new day while preserving prior days', async () => {
@@ -585,13 +637,13 @@ describe('Replication Failure Log Service', () => {
           user: 'bob',
           total_failures: 4,
           failures: [],
-          daily_counts: { '2026-04-13': 2, '2026-04-14': 2 },
+          daily_failures: { '2026-04-13': 2, '2026-04-14': 2 },
         });
         db.medicLogs.put.resolves();
 
         await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
 
-        expect(db.medicLogs.put.args[0][0].daily_counts).to.deep.equal({
+        expect(db.medicLogs.put.args[0][0].daily_failures).to.deep.equal({
           '2026-04-13': 2,
           '2026-04-14': 2,
           '2026-04-15': 1,

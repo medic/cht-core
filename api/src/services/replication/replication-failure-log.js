@@ -6,7 +6,7 @@ const TYPE_PREFIX = `replication-fail-`;
 const MAX_FAILURES = 50;
 const REPORTING_PERIOD_FORMAT = 'YYYY-MM';
 const DAILY_COUNT_KEY_FORMAT = 'YYYY-MM-DD';
-const UNKNOWN = 'unknown';
+const UNKNOWN = null;
 const MAX_PERIODS = 60;
 
 const captureFailure = async (userCtx, requestId, statusCode, duration) => {
@@ -14,8 +14,8 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const now = moment();
 
   // Counts are only set on userCtx as each phase of the request completes. When a count is missing
-  // we record 'unknown' instead of omitting the key, so a stable shape on the failure entry tells you
-  // (by which counters are 'unknown') how far the request progressed before failing.
+  // we record null instead of omitting the key, so a stable shape on the failure entry tells you
+  // (by which counters are null) how far the request progressed before failing.
   const failure = {
     date: now.valueOf(),
     status_code: statusCode,
@@ -27,15 +27,17 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
     unpurged_docs_count: userCtx.unpurgedDocsCount ?? UNKNOWN,
   };
 
+  log.failures = log.failures || [];
+  log.daily_failures = log.daily_failures || {};
+
   log.failures.push(failure);
-  log.total_failures++;
+  log.total_failures = (log.total_failures || 0) + 1;
   if (log.failures.length > MAX_FAILURES) {
     log.failures = log.failures.slice(-MAX_FAILURES);
   }
 
   const dayKey = now.format(DAILY_COUNT_KEY_FORMAT);
-  log.daily_counts = log.daily_counts || {};
-  log.daily_counts[dayKey] = (log.daily_counts[dayKey] || 0) + 1;
+  log.daily_failures[dayKey] = (log.daily_failures[dayKey] || 0) + 1;
 
   return db.medicLogs.put(log);
 };
@@ -60,7 +62,7 @@ const getLog = async (userName) => {
         date: moment().valueOf(),
         total_failures: 0,
         failures: [],
-        daily_counts: {},
+        daily_failures: {},
       };
     }
     throw err;
