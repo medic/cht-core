@@ -949,6 +949,10 @@ const listenForApi = async () => {
   throw new Error('API failed to start after 3 minutes');
 };
 
+const NGINX_PORT_HINT =
+  'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT ' +
+  'and NGINX_HTTPS_PORT (see tests/constants.js for HTTPS).';
+
 const waitForNginxContainerRunning = async () => {
   if (!isDocker()) {
     return;
@@ -956,39 +960,44 @@ const waitForNginxContainerRunning = async () => {
   const containerName = getContainerName('nginx');
   const maxTries = 30;
   for (let i = 0; i < maxTries; i++) {
-    let status;
+    let state;
     try {
-      status = await runCommand(
-        `docker inspect -f '{{.State.Status}}' ${containerName}`,
+      const rawState = await runCommand(
+        `docker inspect -f '{{json .State}}' ${containerName}`,
         { verbose: false }
       );
-    } catch {
+      state = JSON.parse(rawState);
+    } catch (err) {
       throw new Error(
-        `Expected nginx container "${containerName}" was not found after docker compose up. ` +
-        'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT ' +
-        'and NGINX_HTTPS_PORT (see tests/constants.js for HTTPS).'
+        `Expected nginx container "${containerName}" was not found after docker compose up ` +
+        `(${err.message}). ${NGINX_PORT_HINT}`
       );
     }
 
-    const trimmedStatus = status.trim();
-
-    if (trimmedStatus === 'exited' || trimmedStatus === 'dead') {
+    // A failed port bind leaves the container in `created` state (never exited/dead) with the
+    // real reason in `State.Error`, so check it explicitly to fail fast on the issue #9491 case.
+    if (state.Error) {
       throw new Error(
-        `nginx container "${containerName}" failed to start (status: ${trimmedStatus}). ` +
-        'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT ' +
-        'and NGINX_HTTPS_PORT (see tests/constants.js for HTTPS).'
+        `nginx container "${containerName}" failed to start: ${state.Error} ` +
+        `(exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
       );
     }
 
-    if (trimmedStatus === 'running') {
+    if (state.Status === 'exited' || state.Status === 'dead') {
+      throw new Error(
+        `nginx container "${containerName}" failed to start ` +
+        `(status: ${state.Status}, exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    if (state.Status === 'running') {
       return;
     }
 
     await delayPromise(1000);
   }
   throw new Error(
-    `nginx container "${containerName}" did not become running within ${maxTries} tries. ` +
-    'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT and NGINX_HTTPS_PORT.'
+    `nginx container "${containerName}" did not become running within ${maxTries} tries. ${NGINX_PORT_HINT}`
   );
 };
 
