@@ -25,13 +25,6 @@ describe('UI Extension service', () => {
   });
 
   describe('getScript', () => {
-    it('handles undefined doc', async () => {
-      dbGet.resolves(undefined);
-      const actual = await service.getScript('test');
-      expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
-    });
-
     it('handles 404', async () => {
       dbGet.rejects({ status: 404 });
       const actual = await service.getScript('test');
@@ -50,8 +43,28 @@ describe('UI Extension service', () => {
       }
     });
 
+    it('returns null when the doc is not a ui-extension', async () => {
+      dbGet.resolves({
+        type: 'something-else',
+        _attachments: {
+          'extension.js': { data: 'my-script' }
+        }
+      });
+      const actual = await service.getScript('test');
+      expect(actual).to.be.null;
+      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+    });
+
+    it('returns null when the doc has no extension.js attachment', async () => {
+      dbGet.resolves({ type: 'ui-extension' });
+      const actual = await service.getScript('test');
+      expect(actual).to.be.null;
+      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+    });
+
     it('returns attachment data', async () => {
       dbGet.resolves({
+        type: 'ui-extension',
         _attachments: {
           'extension.js': { data: 'my-script' }
         }
@@ -71,6 +84,7 @@ describe('UI Extension service', () => {
               _id: 'ui-extension:my-ext',
               _rev: '1-something',
               _attachments: {},
+              type: 'ui-extension',
               name: 'My Extension',
               version: '1.0'
             }
@@ -78,6 +92,7 @@ describe('UI Extension service', () => {
           {
             doc: {
               _id: 'ui-extension:another-ext',
+              type: 'ui-extension',
             }
           }
         ]
@@ -91,6 +106,40 @@ describe('UI Extension service', () => {
           version: '1.0'
         },
         { id: 'another-ext' }
+      ]);
+      expect(allDocs).to.have.been.calledOnceWithExactly({
+        startkey: 'ui-extension:',
+        endkey: `ui-extension:\ufff0`,
+        include_docs: true,
+      });
+    });
+
+    it('filters out docs that are not ui-extensions', async () => {
+      allDocs.resolves({
+        rows: [
+          {
+            doc: {
+              _id: 'ui-extension:my-ext',
+              type: 'ui-extension',
+              name: 'My Extension',
+            }
+          },
+          {
+            doc: {
+              _id: 'ui-extension:not-an-ext',
+              type: 'something-else',
+              name: 'Not An Extension',
+            }
+          }
+        ]
+      });
+
+      const actual = await service.getAllProperties();
+      expect(actual).to.deep.equal([
+        {
+          id: 'my-ext',
+          name: 'My Extension',
+        }
       ]);
       expect(allDocs).to.have.been.calledOnceWithExactly({
         startkey: 'ui-extension:',

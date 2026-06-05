@@ -1,16 +1,17 @@
 const db = require('../db');
 
-const PREFIX = 'ui-extension:';
+const TYPE = 'ui-extension';
+const PREFIX = `${TYPE}:`;
 
-const getExtensionDoc = (name) => {
-  return db.medic.get(`${PREFIX}${name}`, { attachments: true })
-    .catch(err => {
-      if (err.status === 404) {
-        return;
-      }
-      throw err;
-    });
-};
+const getExtensionDoc = (name) => db.medic
+  .get(`${PREFIX}${name}`, { attachments: true })
+  .then(doc => doc.type === TYPE ? doc : null)
+  .catch(err => {
+    if (err.status === 404) {
+      return;
+    }
+    throw err;
+  });
 
 module.exports = {
   isExtensionChange: ({ id }) => id.startsWith(PREFIX),
@@ -34,16 +35,19 @@ module.exports = {
       include_docs: true,
     });
     
-    return result.rows.map(row => {
-      const doc = row.doc;
-      const id = doc._id.replace(PREFIX, '');
+    return result.rows
+      .map(({ doc }) => doc)
+      .filter(({ type }) => type === TYPE)
+      .map(doc => {
+        const id = doc._id.replace(PREFIX, '');
 
-      const properties = { id };
-      // Do not include CouchDB specific fields (starting with '_')
-      Object.keys(doc)
-        .filter(key => !key.startsWith('_'))
-        .forEach((key) => properties[key] = doc[key]);
-      return properties;
-    });
+        const properties = { id };
+        // Do not include CouchDB specific fields (starting with '_')
+        Object.keys(doc)
+          .filter(key => !key.startsWith('_'))
+          .filter(key => key !== 'type')
+          .forEach((key) => properties[key] = doc[key]);
+        return properties;
+      });
   }
 };
