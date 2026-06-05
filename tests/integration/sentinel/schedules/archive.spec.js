@@ -117,9 +117,9 @@ describe('sentinel processes archive jobs', () => {
     );
     if (skipTransitions) {
       await utils.toggleSentinelTransitions();
-      await sentinelUtils.skipToSeq();
       // sometimes there's an ongoing process that creates info docs.
       await utils.delayPromise(3000);
+      await sentinelUtils.skipToSeq();
     }
 
     await utils.runSentinelTasks();
@@ -178,6 +178,7 @@ describe('sentinel processes archive jobs', () => {
 
   it('processes a multi-batch payload, archiving thousands of docs', async function () {
     this.timeout(180000);
+    await utils.toggleSentinelTransitions();
 
     // Larger than BATCH_SIZE (1000) so the archive loop has to take more than one batch
     // and persist the cursor between them.
