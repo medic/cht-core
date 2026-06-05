@@ -33,8 +33,8 @@ describe('UiExtensionsService', () => {
   describe('init()', () => {
     it('should load extension properties only on first call', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab' },
-        { id: 'ext-2', type: 'tab' },
+        { id: 'ext-1', extension_type: 'tab' },
+        { id: 'ext-2', extension_type: 'tab' },
       ];
       http.get.returns(of(extensions));
 
@@ -70,8 +70,8 @@ describe('UiExtensionsService', () => {
   describe('role filtering', () => {
     it('should keep extensions with no roles configured', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab' },
-        { id: 'ext-2', type: 'tab', roles: [] },
+        { id: 'ext-1', extension_type: 'tab' },
+        { id: 'ext-2', extension_type: 'tab', roles: [] },
       ];
       http.get.returns(of(extensions));
 
@@ -82,7 +82,7 @@ describe('UiExtensionsService', () => {
 
     it('should keep extensions where user has at least one matching role', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab', roles: ['chw', 'nurse'] },
+        { id: 'ext-1', extension_type: 'tab', roles: ['chw', 'nurse'] },
       ];
       http.get.returns(of(extensions));
       sessionService.hasRole.withArgs('chw').returns(false);
@@ -95,7 +95,7 @@ describe('UiExtensionsService', () => {
 
     it('should remove extensions where user has no matching role', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab', roles: ['chw', 'nurse'] },
+        { id: 'ext-1', extension_type: 'tab', roles: ['chw', 'nurse'] },
       ];
       http.get.returns(of(extensions));
       sessionService.hasRole.returns(false);
@@ -107,9 +107,9 @@ describe('UiExtensionsService', () => {
 
     it('should correctly mix allowed and filtered extensions', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab' },
-        { id: 'ext-2', type: 'tab', roles: ['chw'] },
-        { id: 'ext-3', type: 'tab', roles: ['admin'] },
+        { id: 'ext-1', extension_type: 'tab' },
+        { id: 'ext-2', extension_type: 'tab', roles: ['chw'] },
+        { id: 'ext-3', extension_type: 'tab', roles: ['admin'] },
       ];
       http.get.returns(of(extensions));
       sessionService.hasRole.withArgs('chw').returns(true);
@@ -125,9 +125,9 @@ describe('UiExtensionsService', () => {
   describe('getPropertiesByType()', () => {
     it('should return all extensions with the given type', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab' },
-        { id: 'ext-2', type: 'tab' },
-        { id: 'ext-3', type: 'banner' },
+        { id: 'ext-1', extension_type: 'tab' },
+        { id: 'ext-2', extension_type: 'tab' },
+        { id: 'ext-3', extension_type: 'banner' },
       ];
       http.get.returns(of(extensions));
 
@@ -138,7 +138,7 @@ describe('UiExtensionsService', () => {
     });
 
     it('should return empty array when no extensions match type', async () => {
-      const extensions = [{ id: 'ext-1', type: 'banner' }];
+      const extensions = [{ id: 'ext-1', extension_type: 'banner' }];
       http.get.returns(of(extensions));
 
       const result = await service.getPropertiesByType('tab');
@@ -148,8 +148,8 @@ describe('UiExtensionsService', () => {
 
     it('should sort weighted extensions before unweighted ones', async () => {
       const extensions = [
-        { id: 'ext-a', type: 'tab' },
-        { id: 'ext-b', type: 'tab', weight: 5 },
+        { id: 'ext-a', extension_type: 'tab' },
+        { id: 'ext-b', extension_type: 'tab', weight: 5 },
       ];
       http.get.returns(of(extensions));
 
@@ -160,9 +160,9 @@ describe('UiExtensionsService', () => {
 
     it('should sort weighted extensions ascending by weight', async () => {
       const extensions = [
-        { id: 'ext-a', type: 'tab', weight: 10 },
-        { id: 'ext-b', type: 'tab', weight: 1 },
-        { id: 'ext-c', type: 'tab', weight: 5 },
+        { id: 'ext-a', extension_type: 'tab', weight: 10 },
+        { id: 'ext-b', extension_type: 'tab', weight: 1 },
+        { id: 'ext-c', extension_type: 'tab', weight: 5 },
       ];
       http.get.returns(of(extensions));
 
@@ -173,9 +173,9 @@ describe('UiExtensionsService', () => {
 
     it('should sort unweighted extensions alphabetically by id', async () => {
       const extensions = [
-        { id: 'ext-c', type: 'tab' },
-        { id: 'ext-a', type: 'tab' },
-        { id: 'ext-b', type: 'tab' },
+        { id: 'ext-c', extension_type: 'tab' },
+        { id: 'ext-a', extension_type: 'tab' },
+        { id: 'ext-b', extension_type: 'tab' },
       ];
       http.get.returns(of(extensions));
 
@@ -186,10 +186,10 @@ describe('UiExtensionsService', () => {
 
     it('should sort weighted before unweighted, each group sorted internally', async () => {
       const extensions = [
-        { id: 'ext-c', type: 'tab' },
-        { id: 'ext-d', type: 'tab', weight: 10 },
-        { id: 'ext-a', type: 'tab' },
-        { id: 'ext-e', type: 'tab', weight: 1 },
+        { id: 'ext-c', extension_type: 'tab' },
+        { id: 'ext-d', extension_type: 'tab', weight: 10 },
+        { id: 'ext-a', extension_type: 'tab' },
+        { id: 'ext-e', extension_type: 'tab', weight: 1 },
       ];
       http.get.returns(of(extensions));
 
@@ -202,18 +202,18 @@ describe('UiExtensionsService', () => {
   describe('getProperties()', () => {
     it('should return properties for given id', async () => {
       const extensions = [
-        { id: 'ext-1', type: 'tab', title: 'My Tab' },
-        { id: 'ext-2', type: 'banner' },
+        { id: 'ext-1', extension_type: 'tab', title: 'My Tab' },
+        { id: 'ext-2', extension_type: 'banner' },
       ];
       http.get.returns(of(extensions));
 
       const result = await service.getProperties('ext-1');
 
-      expect(result).to.deep.equal({ id: 'ext-1', type: 'tab', title: 'My Tab' });
+      expect(result).to.deep.equal({ id: 'ext-1', extension_type: 'tab', title: 'My Tab' });
     });
 
     it('should throw for unknown id', async () => {
-      http.get.returns(of([{ id: 'ext-1', type: 'tab' }]));
+      http.get.returns(of([{ id: 'ext-1', extension_type: 'tab' }]));
 
       await expect(service.getProperties('unknown-id')).to.be.rejectedWith(
         'UI Extension with id [unknown-id] not found.'
@@ -223,7 +223,7 @@ describe('UiExtensionsService', () => {
 
   describe('getExtension()', () => {
     it('should load and return extension with Element and cache it', async () => {
-      const extensions = [{ id: 'ext-1', type: 'tab' }];
+      const extensions = [{ id: 'ext-1', extension_type: 'tab' }];
       http.get.onCall(0).returns(of(extensions));
       http.get.onCall(1).returns(of(
         'module.exports = class HelloWorldComponent extends HTMLElement {}'
@@ -232,7 +232,7 @@ describe('UiExtensionsService', () => {
       const result = await service.getExtension('ext-1');
 
       expect(result).to.not.be.undefined;
-      expect(result.properties).to.deep.equal({ id: 'ext-1', type: 'tab' });
+      expect(result.properties).to.deep.equal({ id: 'ext-1', extension_type: 'tab' });
       expect(result.Element.prototype).to.be.an.instanceof(HTMLElement);
       expect(http.get.callCount).to.equal(2);
       expect(http.get.args[1][0]).to.equal('/ui-extension/ext-1');
@@ -253,7 +253,7 @@ describe('UiExtensionsService', () => {
     });
 
     it('should throw when extension script fails to load', async () => {
-      const extensions = [{ id: 'ext-1', type: 'tab' }];
+      const extensions = [{ id: 'ext-1', extension_type: 'tab' }];
       http.get.onCall(0).returns(of(extensions));
       http.get.onCall(1).returns(throwError(() => new Error('Script load failed')));
 
@@ -261,7 +261,7 @@ describe('UiExtensionsService', () => {
     });
 
     it('should throw when script does not export an HTMLElement subclass', async () => {
-      const extensions = [{ id: 'ext-1', type: 'tab' }];
+      const extensions = [{ id: 'ext-1', extension_type: 'tab' }];
       http.get.onCall(0).returns(of(extensions));
       http.get.onCall(1).returns(of(
         'module.exports = function myComponent() { return "hello"; }'

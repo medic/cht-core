@@ -6,7 +6,7 @@ import { SessionService } from '@mm-services/session.service';
 
 interface UiExtensionProperties {
   readonly id: string;
-  readonly type: string;
+  readonly extension_type: string;
   readonly roles?: string[];
   readonly icon?: string;
   readonly resource_icon?: string;
@@ -72,7 +72,7 @@ export class UiExtensionsService {
   async getPropertiesByType(type: string): Promise<UiExtensionProperties[]> {
     await this.init();
     return this.extensionProperties
-      .filter(extension => extension.type === type)
+      .filter(extension => extension.extension_type === type)
       .sort((a, b) => {
         if (a.weight !== undefined && b.weight !== undefined) {
           return a.weight - b.weight;

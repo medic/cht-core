@@ -17,7 +17,7 @@ export class UiExtensionsTabRouteGuardProvider implements CanActivate {
     const id = route.params['id'];
     try {
       const properties = await this.uiExtensionsService.getProperties(id);
-      return ALLOWED_TYPES.has(properties.type);
+      return ALLOWED_TYPES.has(properties.extension_type);
     } catch {
       return false;
     }

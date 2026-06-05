@@ -28,21 +28,21 @@ describe('UiExtensionsTabRouteGuardProvider', () => {
   afterEach(() => sinon.restore());
 
   it('should activate for header_tab type', async () => {
-    uiExtensionsService.getProperties.resolves({ id: 'ext-1', type: 'header_tab' });
+    uiExtensionsService.getProperties.resolves({ id: 'ext-1', extension_type: 'header_tab' });
     const result = await guard.canActivate(getRoute('ext-1'));
     expect(result).to.be.true;
     expect(uiExtensionsService.getProperties).to.have.been.calledOnceWithExactly('ext-1');
   });
 
   it('should activate for sidebar_tab type', async () => {
-    uiExtensionsService.getProperties.resolves({ id: 'ext-2', type: 'sidebar_tab' });
+    uiExtensionsService.getProperties.resolves({ id: 'ext-2', extension_type: 'sidebar_tab' });
     const result = await guard.canActivate(getRoute('ext-2'));
     expect(result).to.be.true;
     expect(uiExtensionsService.getProperties).to.have.been.calledOnceWithExactly('ext-2');
   });
 
   it('should not activate for unknown type', async () => {
-    uiExtensionsService.getProperties.resolves({ id: 'ext-3', type: 'other_type' });
+    uiExtensionsService.getProperties.resolves({ id: 'ext-3', extension_type: 'other_type' });
     const result = await guard.canActivate(getRoute('ext-3'));
     expect(result).to.be.false;
     expect(uiExtensionsService.getProperties).to.have.been.calledOnceWithExactly('ext-3');

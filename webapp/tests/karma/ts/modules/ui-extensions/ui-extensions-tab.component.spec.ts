@@ -45,7 +45,7 @@ describe('UiExtensionsTabComponent', () => {
         properties: {
           id: EXTENSION_ID,
           title: EXTENSION_TITLE,
-          type: 'header_tab',
+          extension_type: 'header_tab',
           config: MOCK_CONFIG
         },
         Element: MOCK_ELEMENT,
@@ -113,7 +113,7 @@ describe('UiExtensionsTabComponent', () => {
       properties: {
         id: EXTENSION_ID,
         title: EXTENSION_TITLE,
-        type: 'header_tab',
+        extension_type: 'header_tab',
         config: MOCK_CONFIG,
         accent_color: '#FF5733',
       },
@@ -172,7 +172,7 @@ describe('UiExtensionsTabComponent', () => {
       properties: {
         id: otherId,
         title: otherTitle,
-        type: 'sidebar_tab',
+        extension_type: 'sidebar_tab',
         config: { other: true },
       },
       Element: OtherElement,
@@ -287,7 +287,7 @@ describe('UiExtensionsTabComponent', () => {
 
       const otherId = 'other-extension';
       uiExtensionsService.getExtension.resolves({
-        properties: { id: otherId, title: 'Other', type: 'header_tab' },
+        properties: { id: otherId, title: 'Other', extension_type: 'header_tab' },
         Element: class extends HTMLElement {},
       });
       routeParams$.next({ id: otherId });

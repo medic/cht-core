@@ -90,11 +90,11 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
     const trackRender = this.performanceService.track();
     try {
       const {
-        properties: { title, config, accent_color, type },
+        properties: { title, config, accent_color, extension_type },
         Element
       } = await this.uiExtensionsService.getExtension(extensionId);
       this.extensionTitle = title ?? '';
-      this.extensionType = type;
+      this.extensionType = extension_type;
       this.accentColor = accent_color;
       if (!customElements.get(elementName)) {
         customElements.define(elementName, Element);
