@@ -93,7 +93,7 @@ describe('TasksSidebarFilterComponent', () => {
 
     component.resetFilters();
 
-    expect(clearFiltersStub.calledOnce).to.be.true;
+    expect(clearFiltersStub.calledOnceWithExactly('search')).to.be.true;
     expect(searchEmitSpy.calledOnce).to.be.true;
     expect(telemetryService.record.calledTwice).to.be.true;
     expect(telemetryService.record.args[0][0]).to.equal('tasks:filter:apply');
