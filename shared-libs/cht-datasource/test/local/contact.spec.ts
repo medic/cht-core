@@ -150,7 +150,7 @@ describe('local contact', () => {
       });
 
       it('returns empty array when given no uuids', async () => {
-        const result = await Contact.v1.getSummaries(localContext)([]);
+        const result = await Contact.v1.getSummaries(localContext)({ uuids: [] });
 
         expect(result).to.deep.equal([]);
         expect(getDocsByIdsInner.notCalled).to.be.true;
@@ -170,7 +170,7 @@ describe('local contact', () => {
         isContact.withArgs(settings, contactDoc).returns(true);
         isContact.withArgs(settings, reportDoc).returns(false);
 
-        const result = await Contact.v1.getSummaries(localContext)(['a', 'b', 'missing']);
+        const result = await Contact.v1.getSummaries(localContext)({ uuids: ['a', 'b', 'missing'] });
 
         expect(result).to.deep.equal([{
           _id: 'a',

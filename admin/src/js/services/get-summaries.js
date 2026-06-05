@@ -9,16 +9,18 @@ angular.module('inboxServices').factory('GetSummaries',
     'use strict';
     'ngInject';
 
-    return ids => {
+    const getSummaries = (bindFn, ids) => {
       if (!ids || !ids.length) {
         return $q.resolve([]);
       }
       return DataContext.then(dataContext => {
-        const getContactSummaries = dataContext.bind(cht.Contact.v1.getSummaries);
-        const getReportSummaries = dataContext.bind(cht.Report.v1.getSummaries);
-        return $q.all([getContactSummaries(ids), getReportSummaries(ids)]);
-      }).then(([contactSummaries, reportSummaries]) => {
-        return [...contactSummaries, ...reportSummaries];
+        const fn = dataContext.bind(bindFn);
+        return fn(cht.Qualifier.byUuids(ids));
       });
+    };
+
+    return {
+      getContacts: ids => getSummaries(cht.Contact.v1.getSummaries, ids),
+      getReports: ids => getSummaries(cht.Report.v1.getSummaries, ids),
     };
   });

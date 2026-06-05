@@ -92,11 +92,11 @@ export const getDatasource = (ctx: DataContext) => {
         /**
          * Returns summary records for the given contact UUIDs.
          * @param uuids the UUIDs of the contacts to summarise
-         * @returns an array of contact summaries. UUIDs that do not identify an existing contact (or that the caller
-         * is not authorized to view) are silently omitted from the result.
+         * @returns an array of contact summaries. UUIDs that do not identify an existing contact are silently
+         * omitted from the result.
          * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
          */
-        getSummaries: (uuids: string[]) => ctx.bind(Contact.v1.getSummaries)(uuids),
+        getSummaries: (uuids: string[]) => ctx.bind(Contact.v1.getSummaries)(Qualifier.byUuids(uuids)),
 
         /**
          * Returns a contact by their UUID.
@@ -377,11 +377,11 @@ export const getDatasource = (ctx: DataContext) => {
         /**
          * Returns summary records for the given report UUIDs.
          * @param uuids the UUIDs of the reports to summarise
-         * @returns an array of report summaries. UUIDs that do not identify an existing report (or that the caller
-         * is not authorized to view) are silently omitted from the result.
+         * @returns an array of report summaries. UUIDs that do not identify an existing report are silently
+         * omitted from the result.
          * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
          */
-        getSummaries: (uuids: string[]) => ctx.bind(Report.v1.getSummaries)(uuids),
+        getSummaries: (uuids: string[]) => ctx.bind(Report.v1.getSummaries)(Qualifier.byUuids(uuids)),
 
         /**
          * Returns a report by their UUID.

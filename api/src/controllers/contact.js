@@ -177,7 +177,7 @@ module.exports = {
      */
     getSummaries: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      const summaries = await getContactSummaries(req.body?.uuids);
+      const summaries = await getContactSummaries(Qualifier.byUuids(req.body?.uuids));
       return res.json(summaries);
     }),
   },

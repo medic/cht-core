@@ -57,6 +57,38 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
+ * A qualifier that identifies entities by their UUIDs.
+ */
+export type UuidsQualifier = Readonly<{ uuids: string[] }>;
+
+/**
+ * Returns `true` if the given qualifier is a {@link UuidsQualifier}, otherwise `false`. An empty array of UUIDs is
+ * considered valid.
+ * @param qualifier the qualifier to check
+ * @returns `true` if the given qualifier is a {@link UuidsQualifier}, otherwise `false`
+ */
+export const isUuidsQualifier = (qualifier: unknown): qualifier is UuidsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'uuids', type: 'object' })
+    && Array.isArray(qualifier.uuids)
+    && qualifier.uuids.every(uuid => isString(uuid) && uuid.length > 0);
+};
+
+/**
+ * Builds a qualifier that identifies entities by their UUIDs.
+ * @param uuids the UUIDs of the entities
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the UUIDs are not an array of non-empty strings
+ */
+export const byUuids = (uuids: string[]): UuidsQualifier => {
+  const qualifier = { uuids };
+  if (!isUuidsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid UUIDs [${JSON.stringify(uuids)}].`);
+  }
+  return qualifier;
+};
+
+/**
  * A qualifier that identifies contacts based on type.
  */
 export type ContactTypeQualifier = Readonly<{ contactType: string }>;

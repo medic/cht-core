@@ -143,6 +143,7 @@ describe('report', () => {
 
     describe('getSummaries', () => {
       const uuids = ['report-1', 'report-2'];
+      const qualifier = { uuids };
       const summaries = [{ _id: 'report-1' }, { _id: 'report-2' }] as Report.v1.ReportSummary[];
       let getSummariesFn: SinonStub;
 
@@ -151,17 +152,17 @@ describe('report', () => {
         adapt.returns(getSummariesFn);
       });
 
-      it('retrieves summaries for the given uuids from the data context', async () => {
+      it('retrieves summaries for the given qualifier from the data context', async () => {
         getSummariesFn.resolves(summaries);
 
-        const result = await Report.v1.getSummaries(dataContext)(uuids);
+        const result = await Report.v1.getSummaries(dataContext)(qualifier);
 
         expect(result).to.equal(summaries);
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getSummaries, Remote.Report.v1.getSummaries)
         ).to.be.true;
-        expect(getSummariesFn.calledOnceWithExactly(uuids)).to.be.true;
+        expect(getSummariesFn.calledOnceWithExactly(qualifier)).to.be.true;
       });
 
       it('throws an error if the data context is invalid', () => {
@@ -176,11 +177,12 @@ describe('report', () => {
         null,
         undefined,
         'not-an-array',
-        [1, 2],
-        ['valid', ''],
+        { uuids: 'not-an-array' },
+        { uuids: [1, 2] },
+        { uuids: ['valid', ''] },
       ] as unknown[]).forEach((invalid) => {
-        it(`throws an error for invalid input ${JSON.stringify(invalid)}`, async () => {
-          await expect(Report.v1.getSummaries(dataContext)(invalid as string[]))
+        it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, async () => {
+          await expect(Report.v1.getSummaries(dataContext)(invalid as never))
             .to.be.rejectedWith(`Invalid UUIDs [${JSON.stringify(invalid)}].`);
 
           expect(getSummariesFn.notCalled).to.be.true;

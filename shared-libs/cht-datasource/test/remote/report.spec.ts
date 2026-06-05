@@ -156,7 +156,7 @@ describe('remote report', () => {
 
     describe('getSummaries', () => {
       it('returns empty array when given no uuids', async () => {
-        const result = await Report.v1.getSummaries(remoteContext)([]);
+        const result = await Report.v1.getSummaries(remoteContext)({ uuids: [] });
 
         expect(result).to.deep.equal([]);
         expect(postSummaryResourceOuter.notCalled).to.be.true;
@@ -167,7 +167,7 @@ describe('remote report', () => {
         const summaries = [{ _id: 'a' }, { _id: 'b' }];
         postSummaryResourceInner.resolves(summaries);
 
-        const result = await Report.v1.getSummaries(remoteContext)(['a', 'b']);
+        const result = await Report.v1.getSummaries(remoteContext)({ uuids: ['a', 'b'] });
 
         expect(result).to.equal(summaries);
         expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;

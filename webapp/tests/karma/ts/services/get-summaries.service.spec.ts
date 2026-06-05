@@ -31,34 +31,58 @@ describe('GetSummaries service', () => {
     sinon.restore();
   });
 
-  it('returns empty array when given no ids', async () => {
-    const actual = await service.get();
-    expect(actual).to.deep.equal([]);
-    expect(getContactSummaries.notCalled).to.be.true;
-    expect(getReportSummaries.notCalled).to.be.true;
+  describe('getContacts', () => {
+    it('returns empty array when given no ids', async () => {
+      const actual = await service.getContacts();
+      expect(actual).to.deep.equal([]);
+      expect(getContactSummaries.notCalled).to.be.true;
+      expect(getReportSummaries.notCalled).to.be.true;
+    });
+
+    it('returns empty array when given empty array', async () => {
+      const actual = await service.getContacts([]);
+      expect(actual).to.deep.equal([]);
+      expect(getContactSummaries.notCalled).to.be.true;
+      expect(getReportSummaries.notCalled).to.be.true;
+    });
+
+    it('only loads contact summaries from the datasource', async () => {
+      const contactSummaries = [{ _id: 'a', name: 'james' }];
+      getContactSummaries.resolves(contactSummaries);
+
+      const actual = await service.getContacts(['a', 'b']);
+
+      expect(getContactSummaries.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
+      expect(getReportSummaries.notCalled).to.be.true;
+      expect(actual).to.deep.equal(contactSummaries);
+    });
   });
 
-  it('returns empty array when given empty array', async () => {
-    const actual = await service.get([]);
-    expect(actual).to.deep.equal([]);
-    expect(getContactSummaries.notCalled).to.be.true;
-    expect(getReportSummaries.notCalled).to.be.true;
-  });
+  describe('getReports', () => {
+    it('returns empty array when given no ids', async () => {
+      const actual = await service.getReports();
+      expect(actual).to.deep.equal([]);
+      expect(getContactSummaries.notCalled).to.be.true;
+      expect(getReportSummaries.notCalled).to.be.true;
+    });
 
-  it('merges contact and report summaries from the datasource', async () => {
-    const contactSummaries = [{ _id: 'a', name: 'james' }];
-    const reportSummaries = [{ _id: 'b', form: 'delivery' }];
-    getContactSummaries.resolves(contactSummaries);
-    getReportSummaries.resolves(reportSummaries);
+    it('returns empty array when given empty array', async () => {
+      const actual = await service.getReports([]);
+      expect(actual).to.deep.equal([]);
+      expect(getContactSummaries.notCalled).to.be.true;
+      expect(getReportSummaries.notCalled).to.be.true;
+    });
 
-    const actual = await service.get(['a', 'b']);
+    it('only loads report summaries from the datasource', async () => {
+      const reportSummaries = [{ _id: 'b', form: 'delivery' }];
+      getReportSummaries.resolves(reportSummaries);
 
-    expect(getContactSummaries.calledOnceWithExactly(['a', 'b'])).to.be.true;
-    expect(getReportSummaries.calledOnceWithExactly(['a', 'b'])).to.be.true;
-    expect(actual).to.deep.equal([
-      { _id: 'a', name: 'james' },
-      { _id: 'b', form: 'delivery' },
-    ]);
+      const actual = await service.getReports(['a', 'b']);
+
+      expect(getReportSummaries.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
+      expect(getContactSummaries.notCalled).to.be.true;
+      expect(actual).to.deep.equal(reportSummaries);
+    });
   });
 
   describe('getByDocs', () => {

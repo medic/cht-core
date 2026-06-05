@@ -194,7 +194,7 @@ describe('Report Controller Tests', () => {
           req,
           { isOnline: true, hasAll: ['can_view_reports'] }
         )).to.be.true;
-        expect(reportGetSummaries.calledOnceWithExactly(uuids)).to.be.true;
+        expect(reportGetSummaries.calledOnceWithExactly({ uuids })).to.be.true;
         expect(res.json.calledOnceWithExactly(summaries)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });

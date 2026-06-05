@@ -377,6 +377,22 @@ describe('CHT Script API - getDatasource', () => {
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
       });
 
+      it('getSummaries', async () => {
+        const expectedSummaries = [{ _id: 'a' }, { _id: 'b' }];
+        const contactGetSummaries = sinon.stub().resolves(expectedSummaries);
+        dataContextBind.returns(contactGetSummaries);
+        const uuids = ['a', 'b'];
+        const qualifier = { uuids };
+        const byUuids = sinon.stub(Qualifier, 'byUuids').returns(qualifier);
+
+        const returnedSummaries = await contact.getSummaries(uuids);
+
+        expect(returnedSummaries).to.equal(expectedSummaries);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getSummaries)).to.be.true;
+        expect(contactGetSummaries.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuids.calledOnceWithExactly(uuids)).to.be.true;
+      });
+
       it('getUuidsPageByTypeFreetext uses default cursor and limit', async () => {
         const expectedContactIds: Page<Contact.v1.Contact> = {data: [], cursor: null};
         const contactGetIdsPage = sinon.stub().resolves(expectedContactIds);
@@ -597,6 +613,22 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getWithLineage)).to.be.true;
         expect(reportGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getSummaries', async () => {
+        const expectedSummaries = [{ _id: 'a' }, { _id: 'b' }];
+        const reportGetSummaries = sinon.stub().resolves(expectedSummaries);
+        dataContextBind.returns(reportGetSummaries);
+        const uuids = ['a', 'b'];
+        const qualifier = { uuids };
+        const byUuids = sinon.stub(Qualifier, 'byUuids').returns(qualifier);
+
+        const returnedSummaries = await report.getSummaries(uuids);
+
+        expect(returnedSummaries).to.equal(expectedSummaries);
+        expect(dataContextBind.calledOnceWithExactly(Report.v1.getSummaries)).to.be.true;
+        expect(reportGetSummaries.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuids.calledOnceWithExactly(uuids)).to.be.true;
       });
 
       it('getUuidsPageByFreetext', async () => {

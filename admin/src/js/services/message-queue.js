@@ -100,7 +100,7 @@ angular.module('services').factory('MessageQueue',
             return row.id;
           });
 
-          return GetSummaries(ids);
+          return GetSummaries.getContacts(ids);
         })
         .then(function(summaries) {
           messages.forEach(function(message) {

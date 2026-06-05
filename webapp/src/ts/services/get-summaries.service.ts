@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Contact, Report, summarise } from '@medic/cht-datasource';
+import { Contact, Qualifier, Report, summarise } from '@medic/cht-datasource';
 
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
@@ -7,26 +7,30 @@ import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
   providedIn: 'root'
 })
 export class GetSummariesService {
-  private readonly getContactSummaries;
-  private readonly getReportSummaries;
+  private readonly getContactSummaries: ReturnType<typeof Contact.v1.getSummaries>;
+  private readonly getReportSummaries: ReturnType<typeof Report.v1.getSummaries>;
 
   constructor(
-    private readonly chtDatasourceService: CHTDatasourceService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
-    this.getContactSummaries = this.chtDatasourceService.bind(Contact.v1.getSummaries);
-    this.getReportSummaries = this.chtDatasourceService.bind(Report.v1.getSummaries);
+    this.getContactSummaries = chtDatasourceService.bind(Contact.v1.getSummaries);
+    this.getReportSummaries = chtDatasourceService.bind(Report.v1.getSummaries);
   }
 
-  async get(ids?) {
+  async getContacts(ids?) {
     if (!ids?.length) {
       return [];
     }
 
-    const [contactSummaries, reportSummaries] = await Promise.all([
-      this.getContactSummaries(ids),
-      this.getReportSummaries(ids),
-    ]);
-    return [...contactSummaries, ...reportSummaries];
+    return this.getContactSummaries(Qualifier.byUuids(ids));
+  }
+
+  async getReports(ids?) {
+    if (!ids?.length) {
+      return [];
+    }
+
+    return this.getReportSummaries(Qualifier.byUuids(ids));
   }
 
   getByDocs(docs) {

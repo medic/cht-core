@@ -1,5 +1,5 @@
 import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
-import { FreetextQualifier, UuidQualifier } from '../qualifier';
+import { FreetextQualifier, UuidQualifier, UuidsQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
 
@@ -33,7 +33,7 @@ export namespace v1 {
   /** @internal */
   export const getSummaries = (
     remoteContext: RemoteDataContext
-  ) => (uuids: string[]): Promise<Report.v1.ReportSummary[]> => {
+  ) => ({ uuids }: UuidsQualifier): Promise<Report.v1.ReportSummary[]> => {
     if (!uuids.length) {
       return Promise.resolve([]);
     }

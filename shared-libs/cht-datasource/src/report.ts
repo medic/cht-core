@@ -2,7 +2,7 @@ import { DataObject, getPagedGenerator, isIdentifiable, isRecord, NormalizedPare
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import * as Local from './local';
-import { FreetextQualifier, UuidQualifier } from './qualifier';
+import { FreetextQualifier, UuidQualifier, UuidsQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
@@ -10,7 +10,7 @@ import {
   assertFreetextQualifier,
   assertLimit,
   assertUuidQualifier,
-  assertUuids,
+  assertUuidsQualifier,
 } from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
@@ -38,7 +38,7 @@ export namespace v1 {
   }
 
   /**
-   * A compact summary of a report record used in lists and search results.
+   * A compact summary of a report record.
    */
   export interface ReportSummary {
     readonly _id: string;
@@ -97,15 +97,15 @@ export namespace v1 {
     const fn = adapt(context, Local.Report.v1.getSummaries, Remote.Report.v1.getSummaries);
 
     /**
-     * Returns summary records for the provided report UUIDs. Any UUIDs that do not identify an existing report
-     * (or that the caller is not authorized to view) are silently omitted from the result.
-     * @param uuids the UUIDs of the reports to summarise
+     * Returns summary records for the reports identified by the given qualifier. Any UUIDs that do not identify an
+     * existing report are silently omitted from the result.
+     * @param qualifier the UUIDs of the reports to summarise
      * @returns an array of report summaries
-     * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty UUID strings
      */
-    const curriedFn = async (uuids: string[]): Promise<ReportSummary[]> => {
-      assertUuids(uuids);
-      return fn(uuids);
+    const curriedFn = async (qualifier: UuidsQualifier): Promise<ReportSummary[]> => {
+      assertUuidsQualifier(qualifier);
+      return fn(qualifier);
     };
     return curriedFn;
   };

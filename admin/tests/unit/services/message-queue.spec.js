@@ -45,7 +45,7 @@ describe('MessageQueue service', function() {
       $provide.value('Settings', Settings);
       $provide.value('Languages', Languages);
       $provide.value('MessageQueueUtils', utils);
-      $provide.value('GetSummaries', GetSummaries);
+      $provide.value('GetSummaries', { getContacts: GetSummaries });
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
     });
 

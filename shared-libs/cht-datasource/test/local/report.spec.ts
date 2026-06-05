@@ -116,7 +116,7 @@ describe('local report', () => {
       });
 
       it('returns empty array when given no uuids', async () => {
-        const result = await Report.v1.getSummaries(localContext)([]);
+        const result = await Report.v1.getSummaries(localContext)({ uuids: [] });
 
         expect(result).to.deep.equal([]);
         expect(getDocsByIdsInner.notCalled).to.be.true;
@@ -135,7 +135,7 @@ describe('local report', () => {
         const contactDoc = { _id: 'b', _rev: '2', type: 'person', name: 'james' };
         getDocsByIdsInner.resolves([reportDoc, contactDoc, null]);
 
-        const result = await Report.v1.getSummaries(localContext)(['a', 'b', 'missing']);
+        const result = await Report.v1.getSummaries(localContext)({ uuids: ['a', 'b', 'missing'] });
 
         expect(result).to.deep.equal([{
           _id: 'a',

@@ -269,7 +269,7 @@ describe('Contact Controller', () => {
           req,
           { isOnline: true, hasAll: ['can_view_contacts'] }
         )).to.be.true;
-        expect(contactGetSummaries.calledOnceWithExactly(uuids)).to.be.true;
+        expect(contactGetSummaries.calledOnceWithExactly({ uuids })).to.be.true;
         expect(res.json.calledOnceWithExactly(summaries)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });

@@ -6,7 +6,8 @@ import {
   byFreetext,
   byReportingPeriod,
   byUsername,
-  byUuid, FreetextQualifier,
+  byUuid,
+  byUuids, FreetextQualifier,
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
@@ -15,6 +16,7 @@ import {
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
+  isUuidsQualifier,
   byId,
   isIdQualifier
 } from '../src/qualifier';
@@ -77,6 +79,47 @@ describe('qualifier', () => {
     ].forEach(([ identifier, expected ]) => {
       it(`evaluates ${JSON.stringify(identifier)}`, () => {
         expect(isUuidQualifier(identifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byUuids', () => {
+    [
+      [],
+      ['uuid'],
+      ['uuid-1', 'uuid-2'],
+    ].forEach(uuids => {
+      it(`builds a qualifier that identifies entities by their UUIDs for ${JSON.stringify(uuids)}`, () => {
+        expect(byUuids(uuids)).to.deep.equal({ uuids });
+      });
+    });
+
+    [
+      null,
+      'abc',
+      [''],
+      ['uuid', ''],
+    ].forEach(uuids => {
+      it(`throws an error for ${JSON.stringify(uuids)}`, () => {
+        expect(() => byUuids(uuids as string[])).to.throw(`Invalid UUIDs [${JSON.stringify(uuids)}].`);
+      });
+    });
+  });
+
+  describe('isUuidsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'uuid', false ],
+      [ { uuids: '' }, false ],
+      [ { uuids: { } }, false ],
+      [ { uuids: ['uuid', ''] }, false ],
+      [ { uuids: [null, 'uuid'] }, false ],
+      [ { uuids: [] }, true ],
+      [ { uuids: ['uuid'] }, true ],
+      [ { uuids: ['uuid-1', 'uuid-2'] }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isUuidsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

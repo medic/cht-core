@@ -6,7 +6,8 @@ import {
   isContactTypeQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
-  UuidQualifier
+  UuidQualifier,
+  UuidsQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
 import { DataObject, Nullable, Page } from '../libs/core';
@@ -105,18 +106,14 @@ export namespace v1 {
   /** @internal */
   export const getSummaries = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
-    return async (uuids: string[]): Promise<Contact.v1.ContactSummary[]> => {
+    return async ({ uuids }: UuidsQualifier): Promise<Contact.v1.ContactSummary[]> => {
       if (!uuids.length) {
         return [];
       }
       const docs = await getMedicDocsByIds(uuids);
-      const summaries: Contact.v1.ContactSummary[] = [];
-      for (const doc of docs) {
-        if (isContact(settings, doc)) {
-          summaries.push(summariseContact(doc));
-        }
-      }
-      return summaries;
+      return docs
+        .filter(doc => isContact(settings, doc))
+        .map(summariseContact);
     };
   };
 

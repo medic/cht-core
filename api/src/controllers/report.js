@@ -129,7 +129,7 @@ module.exports = {
      *       Returns compact summary records for the reports identified by the provided UUIDs. UUIDs that do not
      *       identify an existing report are silently omitted from the result.
      *     tags: [Report]
-     *     x-since: 4.18.0
+     *     x-since: 5.3.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
      *     requestBody:
@@ -162,7 +162,7 @@ module.exports = {
      */
     getSummaries: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const summaries = await getReportSummaries(req.body?.uuids);
+      const summaries = await getReportSummaries(Qualifier.byUuids(req.body?.uuids));
       return res.json(summaries);
     }),
 

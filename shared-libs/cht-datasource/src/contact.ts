@@ -6,7 +6,8 @@ import {
 import {
   ContactTypeQualifier,
   FreetextQualifier,
-  UuidQualifier
+  UuidQualifier,
+  UuidsQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { LocalDataContext } from './local/libs/data-context';
@@ -19,7 +20,7 @@ import {
   assertCursor,
   assertLimit,
   assertUuidQualifier,
-  assertUuids,
+  assertUuidsQualifier,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
 
@@ -43,7 +44,7 @@ export namespace v1 {
   }
 
   /**
-   * A compact summary of a contact record used in lists and search results.
+   * A compact summary of a contact record.
    */
   export interface ContactSummary {
     readonly _id: string;
@@ -106,15 +107,15 @@ export namespace v1 {
     const fn = adapt(context, Local.Contact.v1.getSummaries, Remote.Contact.v1.getSummaries);
 
     /**
-     * Returns summary records for the provided contact UUIDs. Any UUIDs that do not identify an existing contact
-     * (or that the caller is not authorized to view) are silently omitted from the result.
-     * @param uuids the UUIDs of the contacts to summarise
+     * Returns summary records for the contacts identified by the given qualifier. Any UUIDs that do not identify an
+     * existing contact are silently omitted from the result.
+     * @param qualifier the UUIDs of the contacts to summarise
      * @returns an array of contact summaries
-     * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty UUID strings
      */
-    const curriedFn = async (uuids: string[]): Promise<ContactSummary[]> => {
-      assertUuids(uuids);
-      return fn(uuids);
+    const curriedFn = async (qualifier: UuidsQualifier): Promise<ContactSummary[]> => {
+      assertUuidsQualifier(qualifier);
+      return fn(qualifier);
     };
     return curriedFn;
   };
