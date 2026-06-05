@@ -36,41 +36,58 @@ class GeolocationWidget extends Widget {
     const $question = $(this.question);
     $question.find([
       '.geolocation-capture-btn',
-      '.geolocation-progress-bar',
+      '.geolocation-status',
       '.geolocation-retry-btn',
       '.geolocation-skip-btn',
-      '.geolocation-success-msg',
     ].join(',')).remove();
 
+    const $status = $('<div class="geolocation-status">');
+    const $progressRow = $('<div class="geolocation-progress-row">');
+    const $progressLabel = $('<span class="geolocation-progress-label">');
     const $bar = $('<div class="geolocation-progress-bar">');
-    $question.append($bar);
+    $progressRow.append($progressLabel, $bar);
+    $status.append($progressRow);
+    $question.append($status);
+
+    globalThis.CHTCore.Translate.get('geolocation.progress')
+      .then(text => $progressLabel.text(text));
 
     globalThis.CHTCore.Geolocation.currentPromise.then(result => {
       if ('code' in result) {
         $bar.addClass('geolocation-progress-failure');
+
+        const $resultRow = $('<div class="geolocation-result-row">');
+        const $resultLabel = $('<span class="geolocation-result-label">');
+        const $resultText = $('<span class="geolocation-failure-msg">');
+        $resultRow.append($resultLabel, $resultText);
+        $status.append($resultRow);
 
         const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">');
         $retryBtn.on('click', () => {
           globalThis.CHTCore.Geolocation.retry();
           this._startCapture();
         });
-        $question.append($retryBtn);
-        globalThis.CHTCore.Translate.get('geolocation.retry')
-          .then(text => $retryBtn.text(text));
 
         const $skipBtn = $('<button type="button" class="btn btn-default geolocation-skip-btn">');
-        $question.append($skipBtn);
-        globalThis.CHTCore.Translate.get('geolocation.skip')
-          .then(text => $skipBtn.text(text));
+        $status.append($retryBtn, $skipBtn);
+
+        globalThis.CHTCore.Translate.get('geolocation.result.label').then(text => $resultLabel.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.failure').then(text => $resultText.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.retry').then(text => $retryBtn.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.skip').then(text => $skipBtn.text(text));
 
         $(this.element).val('not_captured').trigger('change');
       } else {
         $bar.addClass('geolocation-progress-success');
 
+        const $resultRow = $('<div class="geolocation-result-row">');
+        const $resultLabel = $('<span class="geolocation-result-label">');
         const $msg = $('<p class="geolocation-success-msg">');
-        $question.append($msg);
-        globalThis.CHTCore.Translate.get('geolocation.success')
-          .then(text => $msg.text(text));
+        $resultRow.append($resultLabel, $msg);
+        $status.append($resultRow);
+
+        globalThis.CHTCore.Translate.get('geolocation.result.label').then(text => $resultLabel.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.success').then(text => $msg.text(text));
 
         $(this.element).val('captured').trigger('change');
       }
