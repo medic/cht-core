@@ -11,10 +11,11 @@ describe('UI Extension', () => {
       await utils.saveDocs([
         {
           _id: 'ui-extension:integration-test-ext',
+          type: 'ui-extension',
           name: 'Integration Test Extension',
           version: '1.0'
         },
-        { _id: 'ui-extension:another-ext' }
+        { _id: 'ui-extension:another-ext', type: 'ui-extension' }
       ]);
       
       const response = await utils.request({ path: '/ui-extension' });
@@ -41,6 +42,7 @@ describe('UI Extension', () => {
       const scriptContent = 'console.log("integration-test-ext");';
       await utils.saveDoc({
         _id: 'ui-extension:integration-test-ext-script',
+        type: 'ui-extension',
         _attachments: {
           'extension.js': {
             content_type: 'application/javascript',

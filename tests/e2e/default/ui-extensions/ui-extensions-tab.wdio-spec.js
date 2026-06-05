@@ -71,7 +71,7 @@ describe('UI Extensions tab', () => {
   ].forEach(([userType, user]) => describe(`Logged in as an ${userType} user`, () => {
     before(async () => {
       await loginPage.login(user);
-      await closeReloadModal();
+      await closeReloadModal(true);
     });
 
     after(async () => {
