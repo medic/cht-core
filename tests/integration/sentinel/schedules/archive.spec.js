@@ -110,17 +110,11 @@ describe('sentinel processes archive jobs', () => {
     }
   };
 
-  const runArchiving = async (skipTransitions) => {
+  const runArchiving = async () => {
     await utils.updateSettings(
       { archive: { text_expression: 'every 1 seconds' } },
       { ignoreReload: true }
     );
-    if (skipTransitions) {
-      await utils.toggleSentinelTransitions();
-      // sometimes there's an ongoing process that creates info docs.
-      await utils.delayPromise(3000);
-      await sentinelUtils.skipToSeq();
-    }
 
     await utils.runSentinelTasks();
     await sentinelUtils.waitForArchiveCompletion();
@@ -194,6 +188,10 @@ describe('sentinel processes archive jobs', () => {
     await utils.saveDocs(bulkDocs);
     const ids = bulkDocs.map(d => d._id);
 
+    // sometimes there's an ongoing process that creates info docs.
+    await utils.delayPromise(3000);
+    await sentinelUtils.skipToSeq();
+
     const { jobs } = await postCsv(ids.join('\n'));
     expect(jobs).to.have.lengthOf(1);
     expect(jobs[0].count).to.equal(COUNT);
@@ -233,8 +231,8 @@ describe('sentinel processes archive jobs', () => {
       { archive: { text_expression: 'every 1 seconds', duration: '50 milliseconds' } },
       { ignoreReload: 'sentinel' }
     );
-    await sentinelUtils.skipToSeq();
     await utils.toggleSentinelTransitions();
+    await sentinelUtils.skipToSeq();
 
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
