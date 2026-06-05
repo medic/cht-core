@@ -1,5 +1,5 @@
 {
-  "type": "header_tab",
+  "extension_type": "header_tab",
   "title": "Minimal",
   "weight": 1.5
 }

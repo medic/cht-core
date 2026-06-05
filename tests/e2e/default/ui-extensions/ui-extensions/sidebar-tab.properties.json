@@ -1,5 +1,5 @@
 {
-  "type": "sidebar_tab",
+  "extension_type": "sidebar_tab",
   "title": "api.startup.checks",
   "resource_icon": "icon-nurse",
   "accent_color": "#9BBE6F"

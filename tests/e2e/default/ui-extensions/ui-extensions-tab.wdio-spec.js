@@ -16,8 +16,9 @@ const buildExtensionDoc = (id) => {
   const properties = JSON.parse(fs.readFileSync(path.join(EXTENSIONS_DIR, `${id}.properties.json`), 'utf8'));
   const script = fs.readFileSync(path.join(EXTENSIONS_DIR, `${id}.js`), 'utf8');
   return {
-    _id: `ui-extension:${id}`,
     ...properties,
+    _id: `ui-extension:${id}`,
+    type: 'ui-extension',
     _attachments: {
       'extension.js': {
         content_type: 'application/javascript',
