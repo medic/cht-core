@@ -166,7 +166,7 @@ describe('Setup utils', () => {
       mockDb(db.users);
     });
 
-    it('should start view cleanup for every database', () => {
+    it('should start view and nouveau cleanup for every database', () => {
       utils.cleanup();
 
       expect(db.medic.viewCleanup.callCount).to.equal(1);
