@@ -197,7 +197,7 @@ describe('sentinel processes archive jobs', () => {
     expect(jobs).to.have.lengthOf(1);
     expect(jobs[0].count).to.equal(COUNT);
 
-    await utils.delayPromise(10000); // wait for all the docs to be processed by api
+    await utils.delayPromise(15000); // wait for all the docs to be processed by api
 
     await runArchiving(true);
 
