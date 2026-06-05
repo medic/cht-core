@@ -162,15 +162,28 @@ describe('remote contact', () => {
       // POSTs the array in the body. Both share the same request/response and cursor handling.
       const phone = '+15551234567';
       const phones: [string, ...string[]] = ['+15551234567', '+15559999999'];
+      const shortcodes: [string, ...string[]] = ['12345', '67890'];
+      const externalRefs: [string, ...string[]] = ['RC-1', 'RC-2'];
+      const getQualifierDispatch = {
+        // GET: query params, limit serialized to string
+        callStub: () => getResourcesInner,
+        verifyDispatch: () => {
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+        },
+      };
+      const postQualifierDispatch = {
+        // POST: array in the body, limit kept numeric, three-layer postResource chain
+        callStub: () => postResourceInnermost,
+        verifyDispatch: () => {
+          expect(postResourceOuter.calledOnceWithExactly('api/v1/contact/uuid')).to.be.true;
+          expect(postResourceMiddle.calledOnceWithExactly(remoteContext)).to.be.true;
+        },
+      };
       ([
         {
           label: 'phone qualifier',
           qualifier: { phone },
-          // GET: query params, limit serialized to string
-          callStub: () => getResourcesInner,
-          verifyDispatch: () => {
-            expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
-          },
+          ...getQualifierDispatch,
           params: (withCursor: boolean) => ({
             limit: limit.toString(),
             ...(withCursor ? { cursor } : {}),
@@ -178,16 +191,51 @@ describe('remote contact', () => {
           }),
         },
         {
+          label: 'shortcode qualifier',
+          qualifier: { shortcode: '12345' },
+          ...getQualifierDispatch,
+          params: (withCursor: boolean) => ({
+            limit: limit.toString(),
+            ...(withCursor ? { cursor } : {}),
+            shortcode: '12345',
+          }),
+        },
+        {
+          label: 'external ref qualifier',
+          qualifier: { externalRef: 'RC-1' },
+          ...getQualifierDispatch,
+          params: (withCursor: boolean) => ({
+            limit: limit.toString(),
+            ...(withCursor ? { cursor } : {}),
+            external_ref: 'RC-1',
+          }),
+        },
+        {
           label: 'phones qualifier (bulk)',
           qualifier: { phones },
-          // POST: array in the body, limit kept numeric, three-layer postResource chain
-          callStub: () => postResourceInnermost,
-          verifyDispatch: () => {
-            expect(postResourceOuter.calledOnceWithExactly('api/v1/contact/uuid')).to.be.true;
-            expect(postResourceMiddle.calledOnceWithExactly(remoteContext)).to.be.true;
-          },
+          ...postQualifierDispatch,
           params: (withCursor: boolean) => ({
             phones,
+            limit,
+            ...(withCursor ? { cursor } : {}),
+          }),
+        },
+        {
+          label: 'shortcodes qualifier (bulk)',
+          qualifier: { shortcodes },
+          ...postQualifierDispatch,
+          params: (withCursor: boolean) => ({
+            shortcodes,
+            limit,
+            ...(withCursor ? { cursor } : {}),
+          }),
+        },
+        {
+          label: 'external refs qualifier (bulk)',
+          qualifier: { externalRefs },
+          ...postQualifierDispatch,
+          params: (withCursor: boolean) => ({
+            external_refs: externalRefs,
             limit,
             ...(withCursor ? { cursor } : {}),
           }),

@@ -3,7 +3,7 @@ const _ = require('lodash/core');
 angular.module('inboxServices').factory('GetSubjectSummaries',
   function(
     $q,
-    DB,
+    DataContext,
     GetSummaries,
     LineageModelGenerator
   ) {
@@ -11,17 +11,16 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     'use strict';
     'ngInject';
 
-    const findSubjectId = function(response, id) {
-      const parent = _.find(response.rows, function(row) {
-        return id && row.key[1] === id.toString() || false;
-      });
-      return (parent && parent.id) || null;
+    const datasourcePromise = DataContext.then(dataContext => dataContext.getDatasource());
+
+    const findSubjectId = function(shortcodeUuidMap, id) {
+      return (id && shortcodeUuidMap.get(id.toString())) || null;
     };
 
-    const replaceReferencesWithIds = function(summaries, response) {
+    const replaceReferencesWithIds = function(summaries, shortcodeUuidMap) {
       summaries.forEach(function(summary) {
         if (summary.subject.type === 'reference' && summary.subject.value) {
-          const id = findSubjectId(response, summary.subject.value);
+          const id = findSubjectId(shortcodeUuidMap, summary.subject.value);
           if (id) {
             summary.subject = {
               value: id,
@@ -102,14 +101,18 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
 
       const uniqReferences = [...new Set(references)];
 
-      uniqReferences.forEach(function(reference, key) {
-        uniqReferences[key] = ['shortcode', reference];
-      });
-
-      return DB()
-        .query('medic-client/contacts_by_reference', { keys: uniqReferences })
-        .then(function(response) {
-          return replaceReferencesWithIds(summaries, response);
+      return datasourcePromise
+        .then(function(datasource) {
+          return $q.all(uniqReferences.map(function(reference) {
+            return datasource.v1.contact
+              .collectUuidsByShortcode(reference.toString())
+              .then(function(uuids) {
+                return [reference.toString(), uuids[0]];
+              });
+          }));
+        })
+        .then(function(entries) {
+          return replaceReferencesWithIds(summaries, new Map(entries));
         });
     };
 

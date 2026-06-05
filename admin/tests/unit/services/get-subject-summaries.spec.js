@@ -3,7 +3,7 @@ describe('GetSubjectSummaries service', () => {
   'use strict';
 
   let service;
-  let query;
+  let collectUuidsByShortcode;
   let GetSummaries;
   let LineageModelGenerator;
 
@@ -15,17 +15,19 @@ describe('GetSubjectSummaries service', () => {
   ];
 
   beforeEach(() => {
-    query = sinon.stub();
+    collectUuidsByShortcode = sinon.stub().resolves([]);
     GetSummaries = sinon.stub();
     LineageModelGenerator = {
       reportSubjects: sinon.stub().returns(
         Promise.resolve([{ _id: 'lid', doc: doc, lineage: lineage }])
       )
     };
+    const datasource = { v1: { contact: { collectUuidsByShortcode } } };
+    const DataContext = Promise.resolve({ getDatasource: () => datasource });
     module('adminApp');
     module($provide => {
-      $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('DataContext', DataContext);
       $provide.value('GetSummaries', GetSummaries);
       $provide.value('LineageModelGenerator', LineageModelGenerator);
     });
@@ -33,7 +35,7 @@ describe('GetSubjectSummaries service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(query);
+    sinon.restore();
   });
 
   it('returns empty array when given no summaries', () => {
@@ -49,7 +51,7 @@ describe('GetSubjectSummaries service', () => {
 
     return service(given).then(actual => {
       chai.expect(actual).to.deep.equal(given);
-      chai.expect(query.callCount).to.equal(0);
+      chai.expect(collectUuidsByShortcode.callCount).to.equal(0);
       chai.expect(GetSummaries.callCount).to.equal(0);
     });
   });
@@ -60,7 +62,6 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', subject: { type: 'id', value: 'a' } }
     ];
 
-    query.returns(Promise.resolve({ rows: [] }));
     GetSummaries.returns(Promise.resolve([]));
     return service(given).then(actual => {
       chai.expect(actual).to.deep.equal(given);
@@ -74,12 +75,8 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', subject: { type: 'reference', value: '11111' } }
     ];
 
-    const contactReferences = [
-      { id: 'a', key: ['shortcode', '12345'] },
-      { id: 'b', key: ['shortcode', '67890'] }
-    ];
-
-    query.returns(Promise.resolve({ rows: contactReferences }));
+    collectUuidsByShortcode.withArgs('12345').resolves(['a']);
+    collectUuidsByShortcode.withArgs('67890').resolves(['b']);
     GetSummaries.returns(Promise.resolve([]));
 
     return service(given).then(actual => {
@@ -110,7 +107,10 @@ describe('GetSubjectSummaries service', () => {
         validSubject: false
       });
 
-      chai.expect(query.callCount).to.equal(1);
+      chai.expect(collectUuidsByShortcode.callCount).to.equal(3);
+      chai.expect(collectUuidsByShortcode.calledWithExactly('12345')).to.be.true;
+      chai.expect(collectUuidsByShortcode.calledWithExactly('67890')).to.be.true;
+      chai.expect(collectUuidsByShortcode.calledWithExactly('11111')).to.be.true;
       chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
@@ -157,7 +157,7 @@ describe('GetSubjectSummaries service', () => {
         },
         validSubject: false
       });
-      chai.expect(query.callCount).to.equal(0);
+      chai.expect(collectUuidsByShortcode.callCount).to.equal(0);
       chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
@@ -176,7 +176,7 @@ describe('GetSubjectSummaries service', () => {
         },
         validSubject: true
       });
-      chai.expect(query.callCount).to.equal(0);
+      chai.expect(collectUuidsByShortcode.callCount).to.equal(0);
       chai.expect(GetSummaries.callCount).to.equal(0);
     });
   });
@@ -189,18 +189,14 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', subject: { type: 'reference', value: '11111' } },
     ];
 
-    const contactReferences = [
-      { key: ['shortcode', '12345'], id: 'a' },
-      { key: ['shortcode', '56789'], id: 'b' },
-      { key: ['shortcode', '00000'], id: 'c' }
-    ];
-
     const summaries = [
       { _id: 'a', name: 'tom' },
       { _id: 'b', name: 'helen' }
     ];
 
-    query.returns(Promise.resolve({ rows: contactReferences }));
+    collectUuidsByShortcode.withArgs('12345').resolves(['a']);
+    collectUuidsByShortcode.withArgs('56789').resolves(['b']);
+    collectUuidsByShortcode.withArgs('00000').resolves(['c']);
     GetSummaries.returns(Promise.resolve(summaries));
 
     return service(given).then(actual => {
@@ -242,7 +238,11 @@ describe('GetSubjectSummaries service', () => {
         validSubject: false
       });
 
-      chai.expect(query.callCount).to.equal(1);
+      chai.expect(collectUuidsByShortcode.callCount).to.equal(4);
+      chai.expect(collectUuidsByShortcode.calledWithExactly('12345')).to.be.true;
+      chai.expect(collectUuidsByShortcode.calledWithExactly('56789')).to.be.true;
+      chai.expect(collectUuidsByShortcode.calledWithExactly('00000')).to.be.true;
+      chai.expect(collectUuidsByShortcode.calledWithExactly('11111')).to.be.true;
       chai.expect(GetSummaries.callCount).to.equal(1);
     });
 
@@ -273,7 +273,7 @@ describe('GetSubjectSummaries service', () => {
         validSubject: true
       });
 
-      chai.expect(query.callCount).to.equal(0);
+      chai.expect(collectUuidsByShortcode.callCount).to.equal(0);
       chai.expect(GetSummaries.callCount).to.equal(0);
     });
   });
@@ -285,7 +285,6 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', contact: 'c', subject: { type: 'id', value: null } }
     ];
 
-    query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
       chai.expect(actual[0]).to.deep.equal({
         form: 'a',
@@ -324,15 +323,11 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', subject: { type: 'reference', value: '12345' } },
     ];
 
-    const contactReferences = [
-      { key: ['shortcode', '12345'], id: 'lid' },
-    ];
-
     const summaries = [
       { _id: 'lid', name: 'tom' },
     ];
 
-    query.returns(Promise.resolve({ rows: contactReferences }));
+    collectUuidsByShortcode.withArgs('12345').resolves(['lid']);
     GetSummaries.returns(Promise.resolve(summaries));
 
     return service(given, true).then(actual => {
@@ -348,7 +343,7 @@ describe('GetSubjectSummaries service', () => {
         validSubject: true
       });
 
-      chai.expect(query.callCount).to.equal(1);
+      chai.expect(collectUuidsByShortcode.calledOnceWithExactly('12345')).to.be.true;
       chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });
@@ -358,15 +353,11 @@ describe('GetSubjectSummaries service', () => {
       { form: 'a', subject: { type: 'reference', value: '12345' } },
     ];
 
-    const contactReferences = [
-      { key: ['shortcode', '12345'], id: 'lid' },
-    ];
-
     const summaries = [
       { _id: 'lid', name: 'tom' },
     ];
 
-    query.returns(Promise.resolve({ rows: contactReferences }));
+    collectUuidsByShortcode.withArgs('12345').resolves(['lid']);
     GetSummaries.returns(Promise.resolve(summaries));
 
     return service(given).then(actual => {
@@ -382,7 +373,7 @@ describe('GetSubjectSummaries service', () => {
         validSubject: true
       });
 
-      chai.expect(query.callCount).to.equal(1);
+      chai.expect(collectUuidsByShortcode.calledOnceWithExactly('12345')).to.be.true;
       chai.expect(GetSummaries.callCount).to.equal(1);
     });
   });

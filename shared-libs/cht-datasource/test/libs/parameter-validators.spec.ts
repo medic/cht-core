@@ -137,7 +137,7 @@ describe('libs parameter-validators', () => {
 
       expect(() => assertContactGetUuidsQualifier(invalidQualifier)).to.throw(
         InvalidArgumentError,
-        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, freetext, or phone qualifier.'
+        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, freetext, phone, shortcode, or external ref qualifier.'
       );
     });
 

@@ -3,20 +3,28 @@ import {
   byContactType,
   byContactId,
   byContactIds,
+  byExternalRef,
+  byExternalRefs,
   byFreetext,
   byPhone,
   byPhones,
   byReportingPeriod,
+  byShortcode,
+  byShortcodes,
   byUsername,
   byUuid, FreetextQualifier,
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
+  isExternalRefQualifier,
+  isExternalRefsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isPhoneQualifier,
   isPhonesQualifier,
   isReportingPeriodQualifier,
+  isShortcodeQualifier,
+  isShortcodesQualifier,
   isUsernameQualifier,
   isUuidQualifier,
   byId,
@@ -236,6 +244,156 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isPhonesQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byShortcode', () => {
+    it('builds a qualifier for searching contacts by shortcode', () => {
+      expect(byShortcode('12345')).to.deep.equal({ shortcode: '12345' });
+    });
+
+    [
+      null,
+      '',
+      { },
+      123,
+    ].forEach(shortcode => {
+      it(`throws an error for ${JSON.stringify(shortcode)}`, () => {
+        expect(() => byShortcode(shortcode as string)).to.throw(`Invalid shortcode [${JSON.stringify(shortcode)}].`);
+      });
+    });
+  });
+
+  describe('isShortcodeQualifier', () => {
+    [
+      [ null, false ],
+      [ '12345', false ],
+      [ { shortcode: { } }, false ],
+      [ { shortcode: '12345' }, true ],
+      [ { shortcode: '12345', other: 'other' }, true ],
+      [ { shortcode: '' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isShortcodeQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byShortcodes', () => {
+    it('builds a qualifier for the bulk lookup of contacts by shortcode', () => {
+      expect(byShortcodes(['1', '2', '3'])).to.deep.equal({ shortcodes: ['1', '2', '3'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'not-an-array',
+      [],
+      [''],
+      ['valid', ''],
+      ['valid', null],
+      ['valid', 123],
+    ] as unknown as [string, ...string[]][]).forEach(shortcodes => {
+      it(`throws an error for ${JSON.stringify(shortcodes)}`, () => {
+        expect(() => byShortcodes(shortcodes)).to.throw(`Invalid shortcodes [${JSON.stringify(shortcodes)}].`);
+      });
+    });
+  });
+
+  describe('isShortcodesQualifier', () => {
+    [
+      [ null, false ],
+      [ ['1'], false ],                           // bare array, not a qualifier
+      [ { shortcodes: '1' }, false ],             // string not array
+      [ { shortcodes: [] }, false ],              // empty array
+      [ { shortcodes: ['1', ''] }, false ],       // empty element
+      [ { shortcodes: ['1', null] }, false ],     // non-string element
+      [ { shortcodes: ['1'] }, true ],
+      [ { shortcodes: ['1', '2', '3'] }, true ],
+      [ { shortcodes: ['1'], other: 'other' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isShortcodesQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byExternalRef', () => {
+    it('builds a qualifier for searching contacts by external ref', () => {
+      expect(byExternalRef('rc-1')).to.deep.equal({ externalRef: 'RC-1' });
+    });
+
+    it('upper-cases the external ref to match the underlying view', () => {
+      expect(byExternalRef('abc')).to.deep.equal({ externalRef: 'ABC' });
+    });
+
+    [
+      null,
+      '',
+      { },
+      123,
+    ].forEach(ref => {
+      it(`throws an error for ${JSON.stringify(ref)}`, () => {
+        expect(() => byExternalRef(ref as string)).to.throw(`Invalid external ref [${JSON.stringify(ref)}].`);
+      });
+    });
+  });
+
+  describe('isExternalRefQualifier', () => {
+    [
+      [ null, false ],
+      [ 'rc-1', false ],
+      [ { externalRef: { } }, false ],
+      [ { externalRef: 'RC-1' }, true ],
+      [ { externalRef: 'RC-1', other: 'other' }, true ],
+      [ { externalRef: '' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isExternalRefQualifier(qualifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byExternalRefs', () => {
+    it('builds a qualifier for the bulk lookup of contacts by external ref', () => {
+      expect(byExternalRefs(['rc-1', 'rc-2'])).to.deep.equal({ externalRefs: ['RC-1', 'RC-2'] });
+    });
+
+    it('upper-cases every external ref', () => {
+      expect(byExternalRefs(['a', 'b', 'c'])).to.deep.equal({ externalRefs: ['A', 'B', 'C'] });
+    });
+
+    ([
+      null,
+      undefined,
+      'not-an-array',
+      [],
+      [''],
+      ['valid', ''],
+      ['valid', null],
+      ['valid', 123],
+    ] as unknown as [string, ...string[]][]).forEach(externalRefs => {
+      it(`throws an error for ${JSON.stringify(externalRefs)}`, () => {
+        expect(() => byExternalRefs(externalRefs)).to.throw(`Invalid external refs [${JSON.stringify(externalRefs)}].`);
+      });
+    });
+  });
+
+  describe('isExternalRefsQualifier', () => {
+    [
+      [ null, false ],
+      [ ['RC-1'], false ],                          // bare array, not a qualifier
+      [ { externalRefs: 'RC-1' }, false ],          // string not array
+      [ { externalRefs: [] }, false ],              // empty array
+      [ { externalRefs: ['RC-1', ''] }, false ],    // empty element
+      [ { externalRefs: ['RC-1', null] }, false ],  // non-string element
+      [ { externalRefs: ['RC-1'] }, true ],
+      [ { externalRefs: ['RC-1', 'RC-2'] }, true ],
+      [ { externalRefs: ['RC-1'], other: 'other' }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isExternalRefsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

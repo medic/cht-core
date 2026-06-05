@@ -345,6 +345,12 @@ describe('CHT Script API - getDatasource', () => {
             'getUuidsByPhone',
             'collectUuidsByPhone',
             'collectUuidsByPhones',
+            'getUuidsByShortcode',
+            'collectUuidsByShortcode',
+            'collectUuidsByShortcodes',
+            'getUuidsByExternalRef',
+            'collectUuidsByExternalRef',
+            'collectUuidsByExternalRefs',
           ]
         );
       });
@@ -598,6 +604,100 @@ describe('CHT Script API - getDatasource', () => {
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
         expect(contactGetIds.calledOnceWithExactly(phonesQualifier)).to.be.true;
         expect(byPhones.calledOnceWithExactly(phones)).to.be.true;
+      });
+
+      it('getUuidsByShortcode', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetIds);
+        const shortcode = '12345';
+        const shortcodeQualifier = { shortcode };
+        const byShortcode = sinon.stub(Qualifier, 'byShortcode').returns(shortcodeQualifier);
+
+        const res = contact.getUuidsByShortcode(shortcode);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(shortcodeQualifier)).to.be.true;
+        expect(byShortcode.calledOnceWithExactly(shortcode)).to.be.true;
+      });
+
+      it('collectUuidsByShortcode collects all matching uuids into an array', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const shortcode = '12345';
+        const shortcodeQualifier = { shortcode };
+        const byShortcode = sinon.stub(Qualifier, 'byShortcode').returns(shortcodeQualifier);
+
+        const res = await contact.collectUuidsByShortcode(shortcode);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(shortcodeQualifier)).to.be.true;
+        expect(byShortcode.calledOnceWithExactly(shortcode)).to.be.true;
+      });
+
+      it('collectUuidsByShortcodes collects matching uuids across all input shortcodes', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const shortcodes: [string, ...string[]] = ['1', '2', '3'];
+        const shortcodesQualifier = { shortcodes };
+        const byShortcodes = sinon.stub(Qualifier, 'byShortcodes').returns(shortcodesQualifier);
+
+        const res = await contact.collectUuidsByShortcodes(shortcodes);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(shortcodesQualifier)).to.be.true;
+        expect(byShortcodes.calledOnceWithExactly(shortcodes)).to.be.true;
+      });
+
+      it('getUuidsByExternalRef', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const contactGetIds = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetIds);
+        const externalRef = 'RC-1';
+        const externalRefQualifier = { externalRef };
+        const byExternalRef = sinon.stub(Qualifier, 'byExternalRef').returns(externalRefQualifier);
+
+        const res = contact.getUuidsByExternalRef(externalRef);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(externalRefQualifier)).to.be.true;
+        expect(byExternalRef.calledOnceWithExactly(externalRef)).to.be.true;
+      });
+
+      it('collectUuidsByExternalRef collects all matching uuids into an array', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const externalRef = 'RC-1';
+        const externalRefQualifier = { externalRef };
+        const byExternalRef = sinon.stub(Qualifier, 'byExternalRef').returns(externalRefQualifier);
+
+        const res = await contact.collectUuidsByExternalRef(externalRef);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(externalRefQualifier)).to.be.true;
+        expect(byExternalRef.calledOnceWithExactly(externalRef)).to.be.true;
+      });
+
+      it('collectUuidsByExternalRefs collects matching uuids across all input refs', async () => {
+        const contactGetIds = sinon.stub().returns(fakeGenerator(['uuid-1', 'uuid-2', 'uuid-3']));
+        dataContextBind.returns(contactGetIds);
+        const externalRefs: [string, ...string[]] = ['RC-1', 'RC-2', 'RC-3'];
+        const externalRefsQualifier = { externalRefs };
+        const byExternalRefs = sinon.stub(Qualifier, 'byExternalRefs').returns(externalRefsQualifier);
+
+        const res = await contact.collectUuidsByExternalRefs(externalRefs);
+
+        expect(res).to.deep.equal(['uuid-1', 'uuid-2', 'uuid-3']);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getUuids)).to.be.true;
+        expect(contactGetIds.calledOnceWithExactly(externalRefsQualifier)).to.be.true;
+        expect(byExternalRefs.calledOnceWithExactly(externalRefs)).to.be.true;
       });
     });
 

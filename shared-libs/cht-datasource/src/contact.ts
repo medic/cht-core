@@ -94,7 +94,11 @@ export namespace v1 {
      * - a {@link ContactTypeQualifier} to filter by contact type,
      * - a {@link FreetextQualifier} to filter by freetext search,
      * - a {@link ContactTypeQualifier} combined with a {@link FreetextQualifier},
-     * - a {@link PhoneQualifier} to filter contacts whose `phone` field matches the given value exactly.
+     * - a {@link PhoneQualifier} / {@link PhonesQualifier} to filter contacts whose `phone` field matches exactly,
+     * - a {@link ShortcodeQualifier} / {@link ShortcodesQualifier} to filter contacts by shortcode
+     *   (`patient_id` / `place_id`),
+     * - an {@link ExternalRefQualifier} / {@link ExternalRefsQualifier} to filter contacts by external
+     *   reference code (`rc_code`).
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of identifiers to return. Default is 10000.

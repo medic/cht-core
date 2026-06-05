@@ -1,5 +1,14 @@
 import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
-import { ContactGetUuidsQualifier, isPhoneQualifier, isPhonesQualifier, UuidQualifier } from '../qualifier';
+import {
+  ContactGetUuidsQualifier,
+  isExternalRefQualifier,
+  isExternalRefsQualifier,
+  isPhoneQualifier,
+  isPhonesQualifier,
+  isShortcodeQualifier,
+  isShortcodesQualifier,
+  UuidQualifier
+} from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Contact from '../contact';
 import { isContactType, isFreetextType } from '../libs/parameter-validators';
@@ -32,6 +41,12 @@ export namespace v1 {
     if (isPhoneQualifier(qualifier)) {
       return { phone: qualifier.phone };
     }
+    if (isShortcodeQualifier(qualifier)) {
+      return { shortcode: qualifier.shortcode };
+    }
+    if (isExternalRefQualifier(qualifier)) {
+      return { external_ref: qualifier.externalRef };
+    }
     const params: Record<string, string> = {};
     if (isFreetextType(qualifier)) {
       params.freetext = qualifier.freetext;
@@ -51,6 +66,12 @@ export namespace v1 {
     const cursorParam: Record<string, string> = cursor ? { cursor } : {};
     if (isPhonesQualifier(qualifier)) {
       return postContactUuids(remoteContext)({ phones: qualifier.phones, limit, ...cursorParam });
+    }
+    if (isShortcodesQualifier(qualifier)) {
+      return postContactUuids(remoteContext)({ shortcodes: qualifier.shortcodes, limit, ...cursorParam });
+    }
+    if (isExternalRefsQualifier(qualifier)) {
+      return postContactUuids(remoteContext)({ external_refs: qualifier.externalRefs, limit, ...cursorParam });
     }
 
     const queryParams = {

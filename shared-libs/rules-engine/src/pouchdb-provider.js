@@ -8,6 +8,7 @@
 const moment = require('moment');
 const registrationUtils = require('@medic/registration-utils');
 const uniqBy = require('lodash/uniqBy');
+const { getDatasource, getLocalDataContext } = require('@medic/cht-datasource');
 
 const RULES_STATE_DOCID = '_local/rulesStateStore';
 const MAX_QUERY_KEYS = 500;
@@ -53,11 +54,16 @@ const medicPouchProvider = db => {
     },
 
     contactsBySubjectId: async (subjectIds) => {
-      const keys = subjectIds.map(key => ['shortcode', key]);
-      const results = await db.query('medic-client/contacts_by_reference', { keys, include_docs: true });
+      // Settings are only consulted for contact-type lookups; shortcode lookups don't read them.
+      const datasource = getDatasource(getLocalDataContext({ getAll: () => ({}) }, { medic: db }));
+      const resolved = await Promise.all(subjectIds.map(async (subjectId) => {
+        const uuids = subjectId ? await datasource.v1.contact.collectUuidsByShortcode(subjectId) : [];
+        return { subjectId, uuids };
+      }));
 
-      const shortcodeIds = results.rows.map(result => result.doc._id);
-      const idsThatArentShortcodes = subjectIds.filter(id => !results.rows.map(row => row.key[1]).includes(id));
+      const shortcodeIds = resolved.flatMap(result => result.uuids);
+      // Values that don't resolve to a shortcode are passed through unchanged (they may already be uuids).
+      const idsThatArentShortcodes = resolved.filter(result => !result.uuids.length).map(result => result.subjectId);
 
       return [...shortcodeIds, ...idsThatArentShortcodes];
     },

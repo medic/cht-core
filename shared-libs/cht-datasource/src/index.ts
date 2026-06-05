@@ -252,6 +252,76 @@ export const getDatasource = (ctx: DataContext) => {
         collectUuidsByPhones: (
           phones: [string, ...string[]]
         ): Promise<string[]> => collectUuids(Qualifier.byPhones(phones)),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers whose shortcode (`patient_id` or
+         * `place_id`) exactly matches the given value.
+         * @param shortcode the shortcode to match
+         * @returns a generator for fetching all matching contact identifiers
+         * @throws InvalidArgumentError if `shortcode` is not a non-empty string
+         */
+        getUuidsByShortcode: (
+          shortcode: string,
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.byShortcode(shortcode)
+        ),
+
+        /**
+         * Returns all contact identifiers whose shortcode exactly matches the given value, collected
+         * into a single array.
+         * @param shortcode the shortcode to match
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `shortcode` is not a non-empty string
+         */
+        collectUuidsByShortcode: (
+          shortcode: string
+        ): Promise<string[]> => collectUuids(Qualifier.byShortcode(shortcode)),
+
+        /**
+         * Bulk variant of {@link collectUuidsByShortcode}. Returns all contact identifiers whose shortcode
+         * matches *any* of the given values, in a single round trip.
+         * @param shortcodes the shortcodes to match. Values are passed as-is — no normalization.
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `shortcodes` is not a non-empty array of non-empty strings
+         */
+        collectUuidsByShortcodes: (
+          shortcodes: [string, ...string[]]
+        ): Promise<string[]> => collectUuids(Qualifier.byShortcodes(shortcodes)),
+
+        /**
+         * Returns a generator for fetching all the contact identifiers whose external reference code
+         * (`rc_code`) matches the given value. The value is upper-cased to match the underlying view.
+         * @param externalRef the external reference to match
+         * @returns a generator for fetching all matching contact identifiers
+         * @throws InvalidArgumentError if `externalRef` is not a non-empty string
+         */
+        getUuidsByExternalRef: (
+          externalRef: string,
+        ) => ctx.bind(Contact.v1.getUuids)(
+          Qualifier.byExternalRef(externalRef)
+        ),
+
+        /**
+         * Returns all contact identifiers whose external reference code matches the given value,
+         * collected into a single array. The value is upper-cased to match the underlying view.
+         * @param externalRef the external reference to match
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `externalRef` is not a non-empty string
+         */
+        collectUuidsByExternalRef: (
+          externalRef: string
+        ): Promise<string[]> => collectUuids(Qualifier.byExternalRef(externalRef)),
+
+        /**
+         * Bulk variant of {@link collectUuidsByExternalRef}. Returns all contact identifiers whose external
+         * reference matches *any* of the given values, in a single round trip. Each value is upper-cased.
+         * @param externalRefs the external references to match
+         * @returns all matching contact identifiers
+         * @throws InvalidArgumentError if `externalRefs` is not a non-empty array of non-empty strings
+         */
+        collectUuidsByExternalRefs: (
+          externalRefs: [string, ...string[]]
+        ): Promise<string[]> => collectUuids(Qualifier.byExternalRefs(externalRefs)),
       },
       place: {
         /**

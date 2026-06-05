@@ -213,6 +213,8 @@ describe('local contact', () => {
       let queryViewByType: SinonStub;
       let queryViewByPhone: SinonStub;
       let queryViewByPhones: SinonStub;
+      let queryViewByReference: SinonStub;
+      let queryViewByReferences: SinonStub;
       let queryViewFreetextByKey: SinonStub;
       let queryViewFreetextByRange: SinonStub;
       let queryViewTypeFreetextByKey: SinonStub;
@@ -229,6 +231,8 @@ describe('local contact', () => {
         queryViewByType = sinon.stub();
         queryViewByPhone = sinon.stub();
         queryViewByPhones = sinon.stub();
+        queryViewByReference = sinon.stub();
+        queryViewByReferences = sinon.stub();
         queryViewFreetextByKey = sinon.stub();
         queryViewTypeFreetextByKey = sinon.stub();
         const queryDocIdsByKeyStub = sinon.stub(LocalDoc, 'queryDocIdsByKey');
@@ -239,15 +243,22 @@ describe('local contact', () => {
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_phone')
           .returns(queryViewByPhone);
         queryDocIdsByKeyStub
+          .withArgs(localContext.medicDb, 'medic-client/contacts_by_reference')
+          .returns(queryViewByReference);
+        queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_freetext')
           .returns(queryViewFreetextByKey);
         queryDocIdsByKeyStub
           .withArgs(localContext.medicDb, 'medic-offline-freetext/contacts_by_type_freetext')
           .returns(queryViewTypeFreetextByKey);
 
-        sinon.stub(LocalDoc, 'queryDocIdsByKeys')
+        const queryDocIdsByKeysStub = sinon.stub(LocalDoc, 'queryDocIdsByKeys');
+        queryDocIdsByKeysStub
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_phone')
           .returns(queryViewByPhones);
+        queryDocIdsByKeysStub
+          .withArgs(localContext.medicDb, 'medic-client/contacts_by_reference')
+          .returns(queryViewByReferences);
 
         queryViewFreetextByRange = sinon.stub();
         queryViewTypeFreetextByRange = sinon.stub();
@@ -281,6 +292,8 @@ describe('local contact', () => {
         queryViewByType,
         queryViewByPhone,
         queryViewByPhones,
+        queryViewByReference,
+        queryViewByReferences,
         queryViewFreetextByKey,
         queryViewFreetextByRange,
         queryViewTypeFreetextByKey,
@@ -413,6 +426,81 @@ describe('local contact', () => {
             const page2 = await Contact.v1.getUuidsPage(localContext)(makeQualifier(), page1.cursor, smallLimit);
             expect(page2).to.deep.equal(secondPage);
             expect(fetchAndFilterIdsInner.secondCall.args).to.deep.equal([smallLimit, 5]);
+          });
+
+          it('throws for invalid cursor', async () => {
+            const cursor = 'not a number';
+
+            await expect(Contact.v1.getUuidsPage(localContext)(makeQualifier(), cursor, limit))
+              .to.be.rejectedWith(
+                InvalidArgumentError,
+                `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+              );
+          });
+        });
+      });
+
+      // The shortcode/external-ref qualifiers (single and bulk) all dispatch to the contacts_by_reference
+      // view through the same paging path; only the qualifier, key prefix and view query differ. The
+      // external-ref qualifiers upper-case their input in the builder before it reaches the view.
+      ([
+        {
+          label: 'shortcode qualifier',
+          makeQualifier: () => Qualifier.byShortcode('12345'),
+          verifyViewCall: (skip: number) => {
+            expect(queryViewByReference.calledWithExactly(['shortcode', '12345'], limit, skip)).to.be.true;
+          },
+        },
+        {
+          label: 'shortcodes qualifier (bulk)',
+          makeQualifier: () => Qualifier.byShortcodes(['1', '2', '3']),
+          verifyViewCall: (skip: number) => {
+            expect(queryViewByReferences.calledOnceWithExactly(
+              [['shortcode', '1'], ['shortcode', '2'], ['shortcode', '3']], limit, skip
+            )).to.be.true;
+          },
+        },
+        {
+          label: 'external ref qualifier',
+          makeQualifier: () => Qualifier.byExternalRef('rc-1'),
+          // builder upper-cases 'rc-1' -> 'RC-1'
+          verifyViewCall: (skip: number) => {
+            expect(queryViewByReference.calledWithExactly(['external', 'RC-1'], limit, skip)).to.be.true;
+          },
+        },
+        {
+          label: 'external refs qualifier (bulk)',
+          makeQualifier: () => Qualifier.byExternalRefs(['rc-1', 'rc-2']),
+          verifyViewCall: (skip: number) => {
+            expect(queryViewByReferences.calledOnceWithExactly(
+              [['external', 'RC-1'], ['external', 'RC-2']], limit, skip
+            )).to.be.true;
+          },
+        },
+      ]).forEach(({ label, makeQualifier, verifyViewCall }) => {
+        describe(label, () => {
+          beforeEach(() => {
+            useNouveauIndexes.resolves(false);
+            fetchAndFilterIdsInner.resolves(expectedResult);
+          });
+
+          ([
+            [null, 0],
+            ['2', 2]
+          ] as [string | null, number][]).forEach(([cursor, skip]) => {
+            it(`queries the contacts_by_reference view in a single round trip [cursor=${cursor}]`, async () => {
+              const res = await Contact.v1.getUuidsPage(localContext)(makeQualifier(), cursor, limit);
+
+              expect(res).to.deep.equal(expectedResult);
+              expect(fetchAndFilterIdsOuter.calledOnce).to.be.true;
+              expect(fetchAndFilterIdsOuter.args[0][1]).to.equal(limit);
+              expect(fetchAndFilterIdsInner.calledOnceWithExactly(limit, skip)).to.be.true;
+
+              const pageFn = fetchAndFilterIdsOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+              pageFn(limit, skip);
+
+              verifyViewCall(skip);
+            });
           });
 
           it('throws for invalid cursor', async () => {

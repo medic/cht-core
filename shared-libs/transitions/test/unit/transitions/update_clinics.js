@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const { Contact, Person, Qualifier } = require('@medic/cht-datasource');
-const db = require('../../../src/db');
 const config = require('../../../src/config');
 const dataContext = require('../../../src/data-context');
 const utils = require('../../../src/lib/utils');
@@ -11,6 +10,7 @@ const phone = '+34567890123';
 let transition;
 let getContactWithLineage;
 let getContactUuidsPage;
+let getContact;
 
 describe('update clinic', () => {
   beforeEach(() => {
@@ -23,8 +23,10 @@ describe('update clinic', () => {
     dataContext.init({ bind: sinon.stub() });
     getContactWithLineage = sinon.stub();
     getContactUuidsPage = sinon.stub().resolves({ data: [], cursor: null });
+    getContact = sinon.stub();
     const bind = sinon.stub().returns(getContactWithLineage);
     bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+    bind.withArgs(Contact.v1.get).returns(getContact);
     dataContext.init({ bind });
   });
 
@@ -122,7 +124,7 @@ describe('update clinic', () => {
       refid: '1000',
       content_type: 'xml'
     };
-    sinon.stub(db.medic, 'query').resolves({ rows: [] });
+    getContactUuidsPage.withArgs(Qualifier.byExternalRef('1000'), null, 1).resolves({ data: [], cursor: null });
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(!changed);
       assert(!doc.contact);
@@ -170,8 +172,10 @@ describe('update clinic', () => {
     };
 
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
-    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
-    getContactWithLineage.returns(Promise.resolve(contact));
+    getContactUuidsPage
+      .withArgs(Qualifier.byExternalRef('1000'), null, 1)
+      .resolves({ data: [contact._id], cursor: null });
+    getContact.withArgs(Qualifier.byUuid(contact._id)).resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);
@@ -222,11 +226,14 @@ describe('update clinic', () => {
       phone: '+12345',
     };
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
-    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: clinic }] });
+    getContactUuidsPage
+      .withArgs(Qualifier.byExternalRef('1000'), null, 1)
+      .resolves({ data: [clinic._id], cursor: null });
+    getContact.withArgs(Qualifier.byUuid(clinic._id)).resolves(clinic);
     const getPersonWithLineage = sinon
       .stub()
       .resolves(contact);
-    dataContext.bind.returns(getPersonWithLineage);
+    dataContext.bind.withArgs(Person.v1.getWithLineage).returns(getPersonWithLineage);
 
     const changed = await transition.onMatch({ doc: doc });
 
@@ -234,26 +241,23 @@ describe('update clinic', () => {
     assert(doc.contact);
     assert.equal(doc.contact._rev, '2');
     assert.equal(doc.contact.name, 'zenith');
-    assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
+    assert.equal(dataContext.bind.withArgs(Person.v1.getWithLineage).callCount, 1);
     assert.isTrue(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('z')));
   });
 
   /*
-   * Since the facilities index uses strings for the reference value we need to
-   * always query with strings too.
+   * The external ref qualifier requires a string refid and does not silently
+   * coerce other types, so a numeric refid is rejected.
    */
-  it('refid field is cast to a string in view query', () => {
+  it('refid field must be a string for the external ref query', () => {
     const change = {
       doc: {
         refid: 123,
         type: DOC_TYPES.DATA_RECORD,
       },
     };
-    const view = sinon.stub(db.medic, 'query').resolves({ rows: [] });
-    return transition.onMatch(change).then(() => {
-      assert.equal(view.args[0][1].key[0], 'external');
-      assert.equal(view.args[0][1].key[1], '123');
-    });
+    assert.throws(() => transition.onMatch(change), 'Invalid external ref [123].');
+    assert.isFalse(getContactUuidsPage.called);
   });
 
   it('from field is cast to string in view query', () => {
@@ -485,7 +489,10 @@ describe('update clinic', () => {
 
     // config has no contact_types matching 'unknown_type', so getContactType returns undefined
     config.getAll.returns({ contact_types: [{ id: 'clinic' }] });
-    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: result }] });
+    getContactUuidsPage
+      .withArgs(Qualifier.byExternalRef('1000'), null, 1)
+      .resolves({ data: [result._id], cursor: null });
+    getContact.withArgs(Qualifier.byUuid(result._id)).resolves(result);
 
     return transition.onMatch({ doc }).then(changed => {
       // no contact found (getContactByRefid returned undefined), and it's xml so no error
@@ -518,9 +525,12 @@ describe('update clinic', () => {
 
     // contact_types includes a person type with person: true
     config.getAll.returns({ contact_types: [{ id: 'person', person: true }] });
-    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: personDoc }] });
+    getContactUuidsPage
+      .withArgs(Qualifier.byExternalRef('1000'), null, 1)
+      .resolves({ data: [personDoc._id], cursor: null });
+    getContact.withArgs(Qualifier.byUuid(personDoc._id)).resolves(personDoc);
     const getPersonWithLineage = sinon.stub().resolves(personWithLineage);
-    dataContext.bind.returns(getPersonWithLineage);
+    dataContext.bind.withArgs(Person.v1.getWithLineage).returns(getPersonWithLineage);
 
     const changed = await transition.onMatch({ doc });
 
@@ -528,7 +538,7 @@ describe('update clinic', () => {
     assert(doc.contact);
     assert.equal(doc.contact._id, 'person-id');
     assert.equal(doc.contact.name, 'A Person');
-    assert.isTrue(dataContext.bind.calledOnceWithExactly(Person.v1.getWithLineage));
+    assert.equal(dataContext.bind.withArgs(Person.v1.getWithLineage).callCount, 1);
     assert.isTrue(getPersonWithLineage.calledOnceWithExactly(Qualifier.byUuid('person-id')));
   });
 
@@ -567,8 +577,10 @@ describe('update clinic', () => {
     };
 
     config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
-    sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
-    getContactWithLineage.resolves(contact);
+    getContactUuidsPage
+      .withArgs(Qualifier.byExternalRef('1000'), null, 1)
+      .resolves({ data: ['some-uuid'], cursor: null });
+    getContact.withArgs(Qualifier.byUuid('some-uuid')).resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
       assert(changed);
       assert(doc.contact);

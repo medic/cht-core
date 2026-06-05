@@ -202,6 +202,123 @@ export const isPhonesQualifier = (qualifier: unknown): qualifier is PhonesQualif
 };
 
 /**
+ * A qualifier that identifies contacts by a shortcode (e.g. a `patient_id` or `place_id`).
+ */
+export type ShortcodeQualifier = Readonly<{ shortcode: string }>;
+
+/**
+ * Builds a qualifier for finding contacts by their shortcode (`patient_id` or `place_id`).
+ * @param shortcode the shortcode to search for. Passed as-is to the underlying view.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the shortcode is not a non-empty string
+ */
+export const byShortcode = (shortcode: string): ShortcodeQualifier => {
+  if (!isString(shortcode) || shortcode.length === 0) {
+    throw new InvalidArgumentError(`Invalid shortcode [${JSON.stringify(shortcode)}].`);
+  }
+  return { shortcode };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link ShortcodeQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ */
+export const isShortcodeQualifier = (qualifier: unknown): qualifier is ShortcodeQualifier => {
+  return isRecord(qualifier) && hasField(qualifier, { name: 'shortcode', type: 'string' });
+};
+
+/**
+ * Bulk variant of {@link ShortcodeQualifier}
+ */
+export type ShortcodesQualifier = Readonly<{ shortcodes: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding contacts whose shortcode matches any of the given values.
+ * @param shortcodes the shortcodes to search for. Passed as-is to the underlying view.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if `shortcodes` is not a non-empty array of non-empty strings
+ */
+export const byShortcodes = (shortcodes: [string, ...string[]]): ShortcodesQualifier => {
+  if (!Array.isArray(shortcodes) || shortcodes.length === 0 || !shortcodes.every(s => isString(s) && s.length > 0)) {
+    throw new InvalidArgumentError(`Invalid shortcodes [${JSON.stringify(shortcodes)}].`);
+  }
+  return { shortcodes };
+};
+
+/**
+ * Returns `true` if the given qualifier is a {@link ShortcodesQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ */
+export const isShortcodesQualifier = (qualifier: unknown): qualifier is ShortcodesQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'shortcodes', type: 'object' })
+    && Array.isArray(qualifier.shortcodes)
+    && qualifier.shortcodes.length > 0
+    && qualifier.shortcodes.every(s => typeof s === 'string' && s.length > 0);
+};
+
+/**
+ * A qualifier that identifies contacts by an external reference code (`rc_code`). The reference is
+ * upper-cased to match the value emitted by the underlying view.
+ */
+export type ExternalRefQualifier = Readonly<{ externalRef: string }>;
+
+/**
+ * Builds a qualifier for finding contacts by their external reference code (`rc_code`).
+ * @param externalRef the reference to search for. Upper-cased to match the underlying view.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the reference is not a non-empty string
+ */
+export const byExternalRef = (externalRef: string): ExternalRefQualifier => {
+  if (!isString(externalRef) || externalRef.length === 0) {
+    throw new InvalidArgumentError(`Invalid external ref [${JSON.stringify(externalRef)}].`);
+  }
+  return { externalRef: externalRef.toUpperCase() };
+};
+
+/**
+ * Returns `true` if the given qualifier is an {@link ExternalRefQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ */
+export const isExternalRefQualifier = (qualifier: unknown): qualifier is ExternalRefQualifier => {
+  return isRecord(qualifier) && hasField(qualifier, { name: 'externalRef', type: 'string' });
+};
+
+/**
+ * Bulk variant of {@link ExternalRefQualifier}
+ */
+export type ExternalRefsQualifier = Readonly<{ externalRefs: [string, ...string[]] }>;
+
+/**
+ * Builds a qualifier for finding contacts whose external reference matches any of the given values.
+ * @param externalRefs the references to search for. Each is upper-cased to match the underlying view.
+ * @returns the qualifier
+ * @throws InvalidArgumentError if `externalRefs` is not a non-empty array of non-empty strings
+ */
+export const byExternalRefs = (externalRefs: [string, ...string[]]): ExternalRefsQualifier => {
+  if (
+    !Array.isArray(externalRefs)
+    || externalRefs.length === 0
+    || !externalRefs.every(r => isString(r) && r.length > 0)
+  ) {
+    throw new InvalidArgumentError(`Invalid external refs [${JSON.stringify(externalRefs)}].`);
+  }
+  return { externalRefs: externalRefs.map(r => r.toUpperCase()) as [string, ...string[]] };
+};
+
+/**
+ * Returns `true` if the given qualifier is an {@link ExternalRefsQualifier}, otherwise `false`.
+ * @param qualifier the qualifier to check
+ */
+export const isExternalRefsQualifier = (qualifier: unknown): qualifier is ExternalRefsQualifier => {
+  return isRecord(qualifier)
+    && hasField(qualifier, { name: 'externalRefs', type: 'object' })
+    && Array.isArray(qualifier.externalRefs)
+    && qualifier.externalRefs.length > 0
+    && qualifier.externalRefs.every(r => typeof r === 'string' && r.length > 0);
+};
+
+/**
  * The set of qualifier shapes accepted by `Contact.v1.getUuidsPage` / `Contact.v1.getUuids` for
  * filtering contacts.
  */
@@ -209,7 +326,11 @@ export type ContactGetUuidsQualifier =
   | ContactTypeQualifier
   | FreetextQualifier
   | PhoneQualifier
-  | PhonesQualifier;
+  | PhonesQualifier
+  | ShortcodeQualifier
+  | ShortcodesQualifier
+  | ExternalRefQualifier
+  | ExternalRefsQualifier;
 
 /**
  * Returns `true` if the given qualifier is any member of {@link ContactGetUuidsQualifier}.
@@ -219,7 +340,11 @@ export const isContactGetUuidsQualifier = (qualifier: unknown): qualifier is Con
   return isContactTypeQualifier(qualifier)
     || isFreetextQualifier(qualifier)
     || isPhoneQualifier(qualifier)
-    || isPhonesQualifier(qualifier);
+    || isPhonesQualifier(qualifier)
+    || isShortcodeQualifier(qualifier)
+    || isShortcodesQualifier(qualifier)
+    || isExternalRefQualifier(qualifier)
+    || isExternalRefsQualifier(qualifier);
 };
 
 /**

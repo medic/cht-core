@@ -49,17 +49,23 @@ angular.module('services').factory('MessageQueue',
       return summary && summary.value;
     };
 
-    const findIdByKey = (contactsByReference, key) => {
-      const row = contactsByReference.rows.find((row) => row.key[1] === key);
-      return row && row.id;
+    // Builds a Map of shortcode -> contact uuid by looking up each shortcode through cht-datasource.
+    const buildShortcodeUuidMap = (datasource, shortcodes) => {
+      return Promise
+        .all(shortcodes.map((shortcode) => {
+          return datasource.v1.contact
+            .collectUuidsByShortcode(shortcode)
+            .then((uuids) => [shortcode, uuids[0]]);
+        }))
+        .then((entries) => new Map(entries));
     };
 
-    const findPatientUuid = (contactsByReference, message) => {
-      return findIdByKey(contactsByReference, message.context.patient_id) || message.context.patient_uuid;
+    const findPatientUuid = (shortcodeUuidMap, message) => {
+      return shortcodeUuidMap.get(message.context.patient_id) || message.context.patient_uuid;
     };
 
-    const findPlaceUuid = (contactsByReference, message) => {
-      return findIdByKey(contactsByReference, message.context.place_id) || message.context.place_uuid;
+    const findPlaceUuid = (shortcodeUuidMap, message) => {
+      return shortcodeUuidMap.get(message.context.place_id) || message.context.place_uuid;
     };
 
     const findRegistrations = (registrations, message, shortcodeField) => {
@@ -128,19 +134,17 @@ angular.module('services').factory('MessageQueue',
         return Promise.resolve(messages);
       }
 
-      const referenceKeys = shortcodes.map((shortcode) => [ 'shortcode', shortcode ]);
-
-      return $q
-        .all([
-          DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
+      return datasourcePromise
+        .then((datasource) => $q.all([
+          buildShortcodeUuidMap(datasource, shortcodes),
           DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
-        ])
-        .then(([contactsByReference, registrations]) => {
+        ]))
+        .then(([shortcodeUuidMap, registrations]) => {
           registrations = getValidRegistrations(registrations, settings);
 
           messages.forEach((message) => {
-            message.context.patient_uuid = findPatientUuid(contactsByReference, message);
-            message.context.place_uuid = findPlaceUuid(contactsByReference, message);
+            message.context.patient_uuid = findPatientUuid(shortcodeUuidMap, message);
+            message.context.place_uuid = findPlaceUuid(shortcodeUuidMap, message);
             message.context.registrations = findRegistrations(registrations, message, 'patient_id');
             message.context.placeRegistrations = findRegistrations(registrations, message, 'place_id');
           });

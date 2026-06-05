@@ -249,7 +249,10 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'At least one of query params type, freetext, phone is required' },
+          {
+            status: 400,
+            message: 'At least one of query params type, freetext, phone, shortcode, external_ref is required',
+          },
           req,
           res
         )).to.be.true;
@@ -300,6 +303,50 @@ describe('Contact Controller', () => {
         });
 
       });
+
+      // The shortcode and external_ref query params build their respective qualifiers and are mutually
+      // exclusive with every other qualifier (only type + freetext may be combined).
+      [
+        { param: 'shortcode', value: '12345', builder: 'byShortcode' },
+        { param: 'external_ref', value: 'RC-1', builder: 'byExternalRef' },
+      ].forEach(({ param, value, builder }) => {
+        describe(`${param} query param`, () => {
+          const builtQualifier = { [param]: value };
+          let qualifierBuilder;
+
+          beforeEach(() => {
+            qualifierBuilder = sinon.stub(Qualifier, builder).returns(builtQualifier);
+          });
+
+          it(`builds a ${param} qualifier when it is the only qualifier`, async () => {
+            req = { query: { [param]: value, cursor, limit } };
+            const expected = { data: ['uuid-1'], cursor: 'next' };
+            contactGetUuidsPage.resolves(expected);
+
+            await controller.v1.getUuids(req, res);
+
+            expect(qualifierBuilder.calledOnceWithExactly(value)).to.be.true;
+            expect(contactGetUuidsPage.calledOnceWithExactly(builtQualifier, cursor, limit)).to.be.true;
+            expect(res.json.calledOnceWithExactly(expected)).to.be.true;
+          });
+
+          it(`returns 400 when ${param} is combined with type`, async () => {
+            req = { query: { type: contactType, [param]: value, cursor, limit } };
+
+            await controller.v1.getUuids(req, res);
+
+            expect(serverUtilsError.calledOnceWithExactly(
+              {
+                status: 400,
+                message: `Query params type, ${param} are mutually exclusive `
+                  + '(only type and freetext may be combined)',
+              },
+              req,
+              res
+            )).to.be.true;
+          });
+        });
+      });
     });
 
     describe('postUuids (bulk)', () => {
@@ -335,7 +382,39 @@ describe('Contact Controller', () => {
         await controller.v1.postUuids(req, res);
 
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'At least one of body params phones is required' },
+          { status: 400, message: 'At least one of body params phones, shortcodes, external_refs is required' },
+          req,
+          res
+        )).to.be.true;
+      });
+
+      // The shortcodes and external_refs body params build their respective bulk qualifiers.
+      [
+        { param: 'shortcodes', values: ['12345', '67890'], builder: 'byShortcodes' },
+        { param: 'external_refs', values: ['RC-1', 'RC-2'], builder: 'byExternalRefs' },
+      ].forEach(({ param, values, builder }) => {
+        it(`builds a ${param} qualifier from the JSON body`, async () => {
+          const builtQualifier = { [param]: values };
+          const qualifierBuilder = sinon.stub(Qualifier, builder).returns(builtQualifier);
+          req = { body: { [param]: values, cursor, limit } };
+          const expected = { data: ['uuid-1', 'uuid-2'], cursor: 'next' };
+          contactGetUuidsPage.resolves(expected);
+
+          await controller.v1.postUuids(req, res);
+
+          expect(qualifierBuilder.calledOnceWithExactly(values)).to.be.true;
+          expect(contactGetUuidsPage.calledOnceWithExactly(builtQualifier, cursor, limit)).to.be.true;
+          expect(res.json.calledOnceWithExactly(expected)).to.be.true;
+        });
+      });
+
+      it('returns 400 when multiple bulk qualifiers are combined', async () => {
+        req = { body: { phones: ['+1'], shortcodes: ['12345'], cursor, limit } };
+
+        await controller.v1.postUuids(req, res);
+
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 400, message: 'Body params phones, shortcodes are mutually exclusive' },
           req,
           res
         )).to.be.true;

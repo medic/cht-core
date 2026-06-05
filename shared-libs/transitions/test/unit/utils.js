@@ -3,8 +3,13 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
+const dataContext = require('../../src/data-context');
 const registrationUtils = require('@medic/registration-utils');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
+
+let getContactUuidsPage;
+let getContact;
 
 describe('utils', () => {
   beforeEach(() => {
@@ -14,6 +19,12 @@ describe('utils', () => {
       getTranslations: sinon.stub()
     });
     sinon.stub(db.medic, 'query');
+    getContactUuidsPage = sinon.stub().resolves({ data: [], cursor: null });
+    getContact = sinon.stub().resolves();
+    const bind = sinon.stub();
+    bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+    bind.withArgs(Contact.v1.get).returns(getContact);
+    dataContext.init({ bind });
   });
 
   afterEach(() => {
@@ -68,33 +79,28 @@ describe('utils', () => {
     it('returns the ID for the given short code', () => {
       const expected = 'abc123';
       const given = '55998';
-      const patients = [ { id: expected } ];
-      const query = db.medic.query.resolves({ rows: patients });
+      getContactUuidsPage.resolves({ data: [expected], cursor: null });
       return utils.getContactUuid(given).then((actual) => {
         assert.equal(actual, expected);
-        assert.equal(query.callCount, 1);
-        assert.equal(query.args[0][0], 'medic-client/contacts_by_reference');
-        assert.equal(query.args[0][1].key[0], 'shortcode');
-        assert.equal(query.args[0][1].key[1], given);
-        assert.equal(query.args[0][1].include_docs, false);
+        assert.equal(getContactUuidsPage.callCount, 1);
+        assert.deepEqual(getContactUuidsPage.args[0][0], Qualifier.byShortcode(given));
+        assert.equal(getContact.callCount, 0);
       });
     });
 
     it('returns empty when no patient found', () => {
       const given = '55998';
-      const patients = [ ];
-      const query = db.medic.query.resolves({ rows: patients });
+      getContactUuidsPage.resolves({ data: [], cursor: null });
       return utils.getContactUuid(given).then((actual) => {
-        assert.equal(actual, null);
-        assert.equal(query.callCount, 1);
+        assert.isUndefined(actual);
+        assert.equal(getContactUuidsPage.callCount, 1);
       });
     });
 
     it('returns empty when no shortcode given', () => {
-      const query = db.medic.query;
       return utils.getContactUuid(null).then((actual) => {
-        assert.equal(actual, null);
-        assert.equal(query.callCount, 0);
+        assert.isUndefined(actual);
+        assert.equal(getContactUuidsPage.callCount, 0);
       });
     });
 
@@ -105,33 +111,31 @@ describe('utils', () => {
     it('returns the patient for the given short code', () => {
       const expected = 'abc123';
       const given = '55998';
-      const patients = [ { id: expected, doc: { _id: expected, name: 'jim', patient_id: given } } ];
-      const query = db.medic.query.resolves({ rows: patients });
+      getContactUuidsPage.resolves({ data: [expected], cursor: null });
+      getContact.resolves({ _id: expected, name: 'jim', patient_id: given });
       return utils.getContact(given).then(actual => {
         assert.equal(actual.name, 'jim');
-        assert.equal(query.callCount, 1);
-        assert.equal(query.args[0][0], 'medic-client/contacts_by_reference');
-        assert.equal(query.args[0][1].key[0], 'shortcode');
-        assert.equal(query.args[0][1].key[1], given);
-        assert.equal(query.args[0][1].include_docs, true);
+        assert.equal(getContactUuidsPage.callCount, 1);
+        assert.deepEqual(getContactUuidsPage.args[0][0], Qualifier.byShortcode(given));
+        assert.equal(getContact.callCount, 1);
+        assert.deepEqual(getContact.args[0][0], Qualifier.byUuid(expected));
       });
     });
 
     it('returns empty when no patient found', () => {
       const given = '55998';
-      const patients = [ ];
-      const query = db.medic.query.resolves({ rows: patients });
+      getContactUuidsPage.resolves({ data: [], cursor: null });
       return utils.getContact(given).then(actual => {
-        assert.equal(actual, null);
-        assert.equal(query.callCount, 1);
+        assert.isUndefined(actual);
+        assert.equal(getContactUuidsPage.callCount, 1);
+        assert.equal(getContact.callCount, 0);
       });
     });
 
     it('returns empty when no shortcode given', () => {
-      const query = db.medic.query;
       return utils.getContact(null).then(actual => {
-        assert.equal(actual, null);
-        assert.equal(query.callCount, 0);
+        assert.isUndefined(actual);
+        assert.equal(getContactUuidsPage.callCount, 0);
       });
     });
   });

@@ -12,6 +12,7 @@ describe('MessageQueue service', function() {
   let translate;
   let clock;
   let collectUuidsByPhones;
+  let collectUuidsByShortcode;
   let DataContext;
 
   beforeEach(() => {
@@ -37,7 +38,8 @@ describe('MessageQueue service', function() {
       }
     };
     collectUuidsByPhones = sinon.stub().resolves([]);
-    const datasource = { v1: { contact: { collectUuidsByPhones } } };
+    collectUuidsByShortcode = sinon.stub().resolves([]);
+    const datasource = { v1: { contact: { collectUuidsByPhones, collectUuidsByShortcode } } };
     DataContext = Promise.resolve({ getDatasource: () => datasource });
 
 
@@ -556,17 +558,11 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
-      query
-        .withArgs('medic-client/contacts_by_reference')
-        .resolves({
-          rows: [
-            { key: ['shortcode', '1111'], id: 'patient1' },
-            { key: ['shortcode', '2222'], id: 'patient2' },
-            { key: ['shortcode', 'place1111'], id: 'place1' },
-            { key: ['shortcode', 'place2222'], id: 'place2' },
-            { key: ['shortcode', 'place3333'], id: 'place3' },
-          ],
-        });
+      collectUuidsByShortcode.withArgs('1111').resolves(['patient1']);
+      collectUuidsByShortcode.withArgs('2222').resolves(['patient2']);
+      collectUuidsByShortcode.withArgs('place1111').resolves(['place1']);
+      collectUuidsByShortcode.withArgs('place2222').resolves(['place2']);
+      collectUuidsByShortcode.withArgs('place3333').resolves(['place3']);
 
       query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
 
@@ -591,18 +587,15 @@ describe('MessageQueue service', function() {
 
       return service.query('tab').then(result => {
         chai.expect(result.messages.length).to.equal(15);
-        chai.expect(query.callCount).to.equal(5);
+        chai.expect(query.callCount).to.equal(4);
+
+        const shortcodes = ['1111', '2222', '3333', 'place1111', 'place2222', 'place3333', 'place4444'];
+        chai.expect(collectUuidsByShortcode.callCount).to.equal(shortcodes.length);
+        shortcodes.forEach((shortcode) => {
+          chai.expect(collectUuidsByShortcode.calledWithExactly(shortcode)).to.be.true;
+        });
+
         chai.expect(query.args[2]).to.deep.equal([
-          'medic-client/contacts_by_reference',
-          {
-            keys: [
-              ['shortcode', '1111'], ['shortcode', '2222'], ['shortcode', '3333'],
-              ['shortcode', 'place1111'], ['shortcode', 'place2222'], ['shortcode', 'place3333'],
-              ['shortcode', 'place4444'],
-            ],
-          },
-        ]);
-        chai.expect(query.args[3]).to.deep.equal([
           'medic-client/registered_patients',
           {
             keys: ['1111', '2222', '3333', 'place1111', 'place2222', 'place3333', 'place4444'],
@@ -698,17 +691,11 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
-      query
-        .withArgs('medic-client/contacts_by_reference')
-        .resolves({
-          rows: [
-            { key: ['shortcode', '1111'], id: 'patient1' },
-            { key: ['shortcode', '2222'], id: 'patient2' },
-            { key: ['shortcode', '3333'], id: 'patient3' },
-            { key: ['shortcode', 'place1111'], id: 'place1' },
-            { key: ['shortcode', 'place2222'], id: 'place2' },
-          ]
-        });
+      collectUuidsByShortcode.withArgs('1111').resolves(['patient1']);
+      collectUuidsByShortcode.withArgs('2222').resolves(['patient2']);
+      collectUuidsByShortcode.withArgs('3333').resolves(['patient3']);
+      collectUuidsByShortcode.withArgs('place1111').resolves(['place1']);
+      collectUuidsByShortcode.withArgs('place2222').resolves(['place2']);
 
       query.withArgs('medic-client/registered_patients').resolves({ rows: [
         { key: '1111', doc: { type: 'valid', patient_id: '1111' } },
@@ -923,6 +910,12 @@ describe('MessageQueue service', function() {
           'recipient1', 'recipient2', 'recipient3'
         ])).to.be.true;
 
+        const shortcodes = ['1111', '2222', '3333', 'place1111', 'place2222'];
+        chai.expect(collectUuidsByShortcode.callCount).to.equal(shortcodes.length);
+        shortcodes.forEach((shortcode) => {
+          chai.expect(collectUuidsByShortcode.calledWithExactly(shortcode)).to.be.true;
+        });
+
         chai.expect(result.messages).to.deep.equal([
           {
             record: { id: 'report_id1', reportedDate: 100 },
@@ -1031,12 +1024,8 @@ describe('MessageQueue service', function() {
         .withArgs('medic-admin/message_queue', sinon.match({ reduce: false }))
         .resolves({ rows: messages });
 
-      query
-        .withArgs('medic-client/contacts_by_reference')
-        .resolves({ rows: [
-          { key: ['shortcode', '1111'], id: 'patient1' },
-          { key: ['shortcode', '2222'], id: 'patient2' }
-        ] });
+      collectUuidsByShortcode.withArgs('1111').resolves(['patient1']);
+      collectUuidsByShortcode.withArgs('2222').resolves(['patient2']);
 
       query.withArgs('medic-client/registered_patients').resolves({ rows: [
         { key: '1111', doc: { type: 'valid', patient_id: '1111' } },

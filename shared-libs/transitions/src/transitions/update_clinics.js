@@ -16,20 +16,15 @@ const getConfig = () => config.get(NAME) || [];
 const getConfiguredForm = (form) => getConfig().find(item => item && item.form === form);
 
 const getContactByRefid = doc => {
-  const params = {
-    key: ['external', doc.refid],
-    include_docs: true,
-    limit: 1,
-  };
-
-  return db.medic
-    .query('medic-client/contacts_by_reference', params)
-    .then(data => {
-      if (!data.rows.length) {
+  const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
+  const getContact = dataContext.bind(Contact.v1.get);
+  return getContactUuids(Qualifier.byExternalRef(doc.refid), null, 1)
+    .then(page => page.data.length && getContact(Qualifier.byUuid(page.data[0])))
+    .then(result => {
+      if (!result) {
         return;
       }
 
-      const result = data.rows[0].doc;
       const contactType = contactTypesUtils.getContactType(config.getAll(), result);
       // not a contact
       if (!contactType) {

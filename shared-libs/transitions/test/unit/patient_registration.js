@@ -5,6 +5,8 @@ const rewire = require('rewire');
 const db = require('../../src/db');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
+const dataContext = require('../../src/data-context');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
@@ -21,8 +23,13 @@ const getMessage = (doc, idx) => {
 describe('patient registration', () => {
   let transitionUtils;
   let transition;
+  let getContactUuidsPage;
 
   beforeEach(() => {
+    getContactUuidsPage = sinon.stub().resolves({ data: [], cursor: null });
+    const bind = sinon.stub();
+    bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+    dataContext.init({ bind });
     config.init({
       getAll: sinon.stub().returns({}),
       get: sinon.stub().returns([
@@ -550,8 +557,6 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'getUniqueId');
 
-      sinon.stub(db.medic, 'query');
-
       config.getAll.returns({
         contact_types: [
           { id: 'place' },
@@ -559,11 +564,9 @@ describe('patient registration', () => {
         ]
       });
 
-      db.medic.query
-        .withArgs('medic-client/contacts_by_reference')
-        .resolves({
-          rows: [{ key: ['shortcode', 'not_unique'], id: 'some_patient' }]
-        });
+      getContactUuidsPage
+        .withArgs(Qualifier.byShortcode('not_unique'), null, 1)
+        .resolves({ data: ['some_patient'], cursor: null });
 
       sinon.stub(db.medic, 'post').resolves();
 
@@ -576,9 +579,8 @@ describe('patient registration', () => {
         assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
-        assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'not_unique'] });
+        assert.equal(getContactUuidsPage.callCount, 1);
+        assert.deepEqual(getContactUuidsPage.args[0][0], Qualifier.byShortcode('not_unique'));
 
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {
@@ -617,12 +619,9 @@ describe('patient registration', () => {
         ]
       });
 
-      sinon.stub(db.medic, 'query');
-      db.medic.query
-        .withArgs('medic-client/contacts_by_reference')
-        .resolves({
-          rows: []
-        });
+      getContactUuidsPage
+        .withArgs(Qualifier.byShortcode('unique'), null, 1)
+        .resolves({ data: [], cursor: null });
 
       sinon.stub(db.medic, 'post').resolves();
 
@@ -634,9 +633,8 @@ describe('patient registration', () => {
         assert.equal(utils.getContactUuid.callCount, 1);
         assert.equal(transitionUtils.getUniqueId.callCount, 0);
 
-        assert.equal(db.medic.query.callCount, 1);
-        assert.deepEqual(db.medic.query.args[0][0], 'medic-client/contacts_by_reference');
-        assert.deepEqual(db.medic.query.args[0][1], { key: ['shortcode', 'unique'] });
+        assert.equal(getContactUuidsPage.callCount, 1);
+        assert.deepEqual(getContactUuidsPage.args[0][0], Qualifier.byShortcode('unique'));
 
         assert.equal(db.medic.post.callCount, 1);
         assert.deepEqual(db.medic.post.args[0][0], {

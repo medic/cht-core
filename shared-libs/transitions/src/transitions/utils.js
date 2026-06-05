@@ -6,6 +6,7 @@ const idGenerator = require('../lib/ids').generator(db);
 const config = require('../config');
 const validation = require('@medic/validation');
 const logger = require('@medic/logger');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
 
 validation.init({ db, translate: utils.translate, settings: config.getAll(), logger, dataContext });
 
@@ -58,10 +59,10 @@ module.exports = {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');
   },
   isIdUnique: (id) => {
-    return db.medic
-      .query('medic-client/contacts_by_reference', { key: ['shortcode', id] })
-      .then(results => !(results && results.rows && results.rows.length));
-  },  
+    const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
+    return getContactUuids(Qualifier.byShortcode(id), null, 1)
+      .then(page => !page.data.length);
+  },
   addUniqueId: (doc) => {
     return idGenerator.next().value.then(patientId => {
       doc.patient_id = patientId;

@@ -95,9 +95,9 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one qualifier param (`type`, `freetext`, or `phone`) must be provided. Qualifier
-     *       params are mutually exclusive — the only combination allowed is `type` + `freetext`
-     *       (backed by a dedicated view). Any other combination returns 400.
+     *       At least one qualifier param (`type`, `freetext`, `phone`, `shortcode`, or `external_ref`) must
+     *       be provided. Qualifier params are mutually exclusive — the only combination allowed is
+     *       `type` + `freetext` (backed by a dedicated view). Any other combination returns 400.
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
@@ -124,6 +124,20 @@ module.exports = {
      *         description: >
      *           A phone number to match exactly against the contact's `phone` field. Passed as-is — no
      *           normalization is performed. Mutually exclusive with `type` / `freetext`.
+     *       - in: query
+     *         name: shortcode
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A shortcode (`patient_id` or `place_id`) to match exactly. Mutually exclusive with
+     *           `type` / `freetext`.
+     *       - in: query
+     *         name: external_ref
+     *         schema:
+     *           type: string
+     *         description: >
+     *           An external reference code (`rc_code`) to match. Upper-cased before lookup to match the
+     *           underlying view. Mutually exclusive with `type` / `freetext`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -153,7 +167,7 @@ module.exports = {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
 
       validateQualifierParams(req.query, {
-        params: ['type', 'freetext', 'phone'],
+        params: ['type', 'freetext', 'phone', 'shortcode', 'external_ref'],
         combinable: ['type', 'freetext'],
         label: 'query',
       });
@@ -161,6 +175,12 @@ module.exports = {
       const qualifier = {};
       if (req.query.phone) {
         Object.assign(qualifier, Qualifier.byPhone(req.query.phone));
+      }
+      if (req.query.shortcode) {
+        Object.assign(qualifier, Qualifier.byShortcode(req.query.shortcode));
+      }
+      if (req.query.external_ref) {
+        Object.assign(qualifier, Qualifier.byExternalRef(req.query.external_ref));
       }
       if (req.query.freetext) {
         Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
@@ -197,12 +217,25 @@ module.exports = {
      *                   type: string
      *                 description: >
      *                   Phone numbers to match exactly against the contact's `phone` field.
+     *               shortcodes:
+     *                 type: array
+     *                 items:
+     *                   type: string
+     *                 description: >
+     *                   Shortcodes (`patient_id` / `place_id`) to match exactly.
+     *               external_refs:
+     *                 type: array
+     *                 items:
+     *                   type: string
+     *                 description: >
+     *                   External reference codes (`rc_code`) to match. Each is upper-cased before lookup.
      *               cursor:
      *                 type: string
      *                 nullable: true
      *               limit:
      *                 type: integer
-     *             required: [phones]
+     *             description: >
+     *               Exactly one of `phones`, `shortcodes`, or `external_refs` must be provided.
      *     responses:
      *       '200':
      *         description: A page of contact UUIDs
@@ -228,11 +261,21 @@ module.exports = {
     postUuids: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
 
-      validateQualifierParams(req.body, { params: ['phones'], combinable: [], label: 'body' });
+      validateQualifierParams(req.body, {
+        params: ['phones', 'shortcodes', 'external_refs'],
+        combinable: [],
+        label: 'body',
+      });
 
       const qualifier = {};
       if (req.body.phones) {
         Object.assign(qualifier, Qualifier.byPhones(req.body.phones));
+      }
+      if (req.body.shortcodes) {
+        Object.assign(qualifier, Qualifier.byShortcodes(req.body.shortcodes));
+      }
+      if (req.body.external_refs) {
+        Object.assign(qualifier, Qualifier.byExternalRefs(req.body.external_refs));
       }
       const docs = await getContactIds(qualifier, req.body.cursor, req.body.limit);
       return res.json(docs);

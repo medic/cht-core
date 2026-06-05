@@ -131,7 +131,7 @@ export const assertContactGetUuidsQualifier: (
   if (!isContactGetUuidsQualifier(qualifier)) {
     throw new InvalidArgumentError(
       `Invalid qualifier [${JSON.stringify(qualifier)}]. `
-      + 'Must be a contact type, freetext, or phone qualifier.'
+      + 'Must be a contact type, freetext, phone, shortcode, or external ref qualifier.'
     );
   }
 };

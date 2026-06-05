@@ -1,7 +1,7 @@
 import * as _ from 'lodash-es';
 import {Injectable} from '@angular/core';
 
-import { DbService } from '@mm-services/db.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { GetSummariesService } from '@mm-services/get-summaries.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
@@ -10,23 +10,20 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 })
 export class GetSubjectSummariesService {
   constructor(
-    private dbService:DbService,
+    private chtDatasourceService:CHTDatasourceService,
     private getSummariesService:GetSummariesService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
   ) {
   }
 
-  private findSubjectId(response, id) {
-    const parent = _.find(response.rows, (row) => {
-      return id && row.key[1] === id.toString() || false;
-    });
-    return (parent && parent.id) || null;
+  private findSubjectId(shortcodeUuidMap, id) {
+    return (id && shortcodeUuidMap.get(id.toString())) || null;
   }
 
-  private replaceReferencesWithIds(summaries, response) {
+  private replaceReferencesWithIds(summaries, shortcodeUuidMap) {
     summaries.forEach((summary) => {
       if (summary.subject.type === 'reference' && summary.subject.value) {
-        const id = this.findSubjectId(response, summary.subject.value);
+        const id = this.findSubjectId(shortcodeUuidMap, summary.subject.value);
         if (id) {
           summary.subject = {
             value: id,
@@ -110,14 +107,15 @@ export class GetSubjectSummariesService {
 
     const uniqueReferences = [...new Set(references)];
 
-    uniqueReferences.forEach((reference, key) => {
-      uniqueReferences[key] = ['shortcode', reference];
-    });
-
-    return this.dbService.get()
-      .query('medic-client/contacts_by_reference', { keys: uniqueReferences })
-      .then((response) => {
-        return this.replaceReferencesWithIds(summaries, response);
+    return this.chtDatasourceService
+      .get()
+      .then((datasource) => Promise.all(uniqueReferences.map((reference: any) => {
+        return datasource.v1.contact
+          .collectUuidsByShortcode(reference.toString())
+          .then((uuids) => [reference.toString(), uuids[0]]);
+      })))
+      .then((entries) => {
+        return this.replaceReferencesWithIds(summaries, new Map(entries as [string, string][]));
       });
   }
 

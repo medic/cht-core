@@ -5,10 +5,14 @@ import {
   ContactTypeQualifier,
   FreetextQualifier,
   isContactTypeQualifier,
+  isExternalRefQualifier,
+  isExternalRefsQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   isPhoneQualifier,
   isPhonesQualifier,
+  isShortcodeQualifier,
+  isShortcodesQualifier,
   UuidQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
@@ -110,6 +114,8 @@ export namespace v1 {
     const queryViewByType = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_type');
     const queryViewByPhone = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_phone');
     const queryViewByPhones = queryDocIdsByKeys(medicDb, 'medic-client/contacts_by_phone');
+    const queryViewByReference = queryDocIdsByKey(medicDb, 'medic-client/contacts_by_reference');
+    const queryViewByReferences = queryDocIdsByKeys(medicDb, 'medic-client/contacts_by_reference');
     const getOfflineFreetextQueryPageFn = getOfflineFreetextQueryFn(medicDb);
     const promisedUseNouveau = useNouveauIndexes(medicDb);
 
@@ -127,6 +133,34 @@ export namespace v1 {
       if (isPhonesQualifier(qualifier)) {
         const skip = validateCursor(cursor);
         const getPageFn = (limit: number, skip: number) => queryViewByPhones(qualifier.phones, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
+      if (isShortcodeQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const key = ['shortcode', qualifier.shortcode];
+        const getPageFn = (limit: number, skip: number) => queryViewByReference(key, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
+      if (isShortcodesQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const keys = qualifier.shortcodes.map(shortcode => ['shortcode', shortcode]);
+        const getPageFn = (limit: number, skip: number) => queryViewByReferences(keys, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
+      if (isExternalRefQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const key = ['external', qualifier.externalRef];
+        const getPageFn = (limit: number, skip: number) => queryViewByReference(key, limit, skip);
+        return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
+      }
+
+      if (isExternalRefsQualifier(qualifier)) {
+        const skip = validateCursor(cursor);
+        const keys = qualifier.externalRefs.map(externalRef => ['external', externalRef]);
+        const getPageFn = (limit: number, skip: number) => queryViewByReferences(keys, limit, skip);
         return await fetchAndFilterIds(getPageFn, limit)(limit, skip);
       }
 

@@ -5,11 +5,23 @@ const taskUtils = require('@medic/task-utils');
 const logger = require('@medic/logger');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
+const dataContext = require('../../../src/data-context');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
+
+let getContactUuidsPage;
+let getContact;
+
 describe('utils util', () => {
 
   beforeEach(() => {
     config.init({ getAll: sinon.stub(), });
     sinon.stub(db.medic, 'query');
+    getContactUuidsPage = sinon.stub().resolves({ data: [], cursor: null });
+    getContact = sinon.stub().resolves();
+    const bind = sinon.stub();
+    bind.withArgs(Contact.v1.getUuidsPage).returns(getContactUuidsPage);
+    bind.withArgs(Contact.v1.get).returns(getContact);
+    dataContext.init({ bind });
   });
 
   afterEach(() => {
@@ -498,55 +510,43 @@ describe('utils util', () => {
   describe('getContact', () => {
     it('should log a warning when more than one contact document for shortcode', () => {
       sinon.stub(logger, 'warn');
-      db.medic.query.resolves({
-        rows: [
-          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
-          { id: 'contact2', doc: { _id: 'contact2', name: 'Bob' } },
-        ]
-      });
+      getContactUuidsPage.resolves({ data: ['contact1', 'contact2'], cursor: null });
+      getContact.withArgs(Qualifier.byUuid('contact1')).resolves({ _id: 'contact1', name: 'Alice' });
 
       return utils.getContact('shortcode123').then(result => {
         result.should.deep.equal({ _id: 'contact1', name: 'Alice' });
+        getContactUuidsPage.args[0][0].should.deep.equal(Qualifier.byShortcode('shortcode123'));
         logger.warn.callCount.should.equal(1);
         logger.warn.args[0][0].should.equal('More than one contact document for shortcode shortcode123');
       });
     });
 
     it('should return the contact doc', () => {
-      db.medic.query.resolves({
-        rows: [
-          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
-        ]
-      });
+      getContactUuidsPage.resolves({ data: ['contact1'], cursor: null });
+      getContact.withArgs(Qualifier.byUuid('contact1')).resolves({ _id: 'contact1', name: 'Alice' });
 
       return utils.getContact('shortcode123').then(result => {
         result.should.deep.equal({ _id: 'contact1', name: 'Alice' });
+        getContactUuidsPage.args[0][0].should.deep.equal(Qualifier.byShortcode('shortcode123'));
       });
     });
 
     it('should return contact id', () => {
-      db.medic.query.resolves({
-        rows: [
-          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
-        ]
-      });
+      getContactUuidsPage.resolves({ data: ['contact1'], cursor: null });
 
       return utils.getContactUuid('shortcode123').then(result => {
         result.should.equal('contact1');
+        getContactUuidsPage.args[0][0].should.deep.equal(Qualifier.byShortcode('shortcode123'));
       });
     });
 
     it('should log warning and return first contact id when multiple matches via getContactUuid', () => {
       sinon.stub(logger, 'warn');
-      db.medic.query.resolves({
-        rows: [
-          { id: 'contact1', doc: { _id: 'contact1', name: 'Alice' } },
-          { id: 'contact2', doc: { _id: 'contact2', name: 'Bob' } },
-        ]
-      });
+      getContactUuidsPage.resolves({ data: ['contact1', 'contact2'], cursor: null });
 
       return utils.getContactUuid('myshortcode').then(result => {
         result.should.equal('contact1');
+        getContactUuidsPage.args[0][0].should.deep.equal(Qualifier.byShortcode('myshortcode'));
         logger.warn.callCount.should.equal(1);
         logger.warn.args[0][0].should.equal('More than one contact document for shortcode myshortcode');
       });

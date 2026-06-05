@@ -10,6 +10,8 @@ const db = require('../db');
 const config = require('../config');
 const logger = require('@medic/logger');
 const { DOC_TYPES } = require('@medic/constants');
+const { Contact, Qualifier } = require('@medic/cht-datasource');
+const dataContext = require('../data-context');
 
 /*
  * Get desired locale
@@ -112,21 +114,22 @@ const getContact = (shortCodeId, includeDocs) => {
   if (!shortCodeId) {
     return Promise.resolve();
   }
-  const viewOpts = {
-    key: ['shortcode', shortCodeId],
-    include_docs: includeDocs,
-  };
-  return db.medic.query('medic-client/contacts_by_reference', viewOpts).then(results => {
-    if (!results.rows.length) {
+  const getContactUuids = dataContext.bind(Contact.v1.getUuidsPage);
+  return getContactUuids(Qualifier.byShortcode(shortCodeId), null, 100).then(page => {
+    if (!page.data.length) {
       return;
     }
 
-    if (results.rows.length > 1) {
+    if (page.data.length > 1) {
       logger.warn(`More than one contact document for shortcode ${shortCodeId}`);
     }
 
-    const contact = results.rows[0];
-    return includeDocs ? contact.doc : contact.id;
+    const uuid = page.data[0];
+    if (!includeDocs) {
+      return uuid;
+    }
+
+    return dataContext.bind(Contact.v1.get)(Qualifier.byUuid(uuid));
   });
 };
 
