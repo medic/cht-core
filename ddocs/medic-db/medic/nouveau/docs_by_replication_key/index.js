@@ -14,13 +14,17 @@ function(doc) {
 
   const indexableFields = ['key', 'type', 'subject'];
   const isTruthy = (value) => value === true || value === 'true';
+  const maxLength = 1000;
 
   const indexMaybe = (fieldName, value) => {
-    if (value === undefined) {
+    if (value === undefined || value === null) {
       return;
     }
     // ensure we index strings, not booleans or other types
     value = value.toString();
+    if (value.length > maxLength) {
+      return;
+    }
 
     if (indexableFields.includes(fieldName)) {
       index('string', fieldName, value, { store: true });

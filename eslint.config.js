@@ -612,7 +612,7 @@ module.exports = defineConfig([
       }],
 
       ['jsdoc/check-tag-names']: ['error', {
-        definedTags: ['typeParam'],
+        definedTags: ['typeParam', 'packageDocumentation'],
       }],
     },
   },
