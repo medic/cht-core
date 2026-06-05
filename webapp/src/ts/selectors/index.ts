@@ -58,8 +58,9 @@ const filterTasksBySearch = (tasks: TaskWithLineage[], normalizedSearch: string)
   }
 
   // Build one Fuse index over all remaining candidates to avoid per-task overhead.
+  // Normalize the indexed text too, so fuzzy matching is diacritic-insensitive like the substring pass.
   const entries = remainingWithCandidates.flatMap(
-    ({ candidates }, idx) => candidates.map(candidate => ({ candidate, idx }))
+    ({ candidates }, idx) => candidates.map(candidate => ({ candidate: normalizeText(candidate), idx }))
   );
   const fuse = new Fuse(entries, { ...FUSE_OPTIONS, keys: ['candidate'] });
   const fuzzyMatchIndices = new Set(fuse.search(normalizedSearch).map(r => r.item.idx));

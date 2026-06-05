@@ -701,6 +701,59 @@ describe('Selectors', () => {
         expect(result).to.deep.equal([tasksState.tasksList[0]]);
       });
 
+      it('should fuzzy-match contact names with minor typos', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'ANC Visit',
+              contact: { name: 'Alice Johnson' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['c1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['c2']
+            },
+          ],
+        };
+
+        // 'jonson' is not a substring of any candidate, so this exercises the Fuse fuzzy pass.
+        const globalState = { filters: { search: 'jonson' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should fuzzy-match diacritic names ignoring accents', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Élodie Laurent' },
+              lineage: ['Village Alpha'],
+              lineageIds: ['c1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Smith' },
+              lineage: ['Village Beta'],
+              lineageIds: ['c2']
+            },
+          ],
+        };
+
+        // 'elodei' transposes letters AND drops the accent, so it only matches once the Fuse
+        // index normalizes its candidates - this guards the diacritic-insensitive fuzzy path.
+        const globalState = { filters: { search: 'elodei' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
       it('should return all tasks when search is empty', () => {
         const tasksState = {
           tasksList: [

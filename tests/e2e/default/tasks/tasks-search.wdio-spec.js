@@ -63,10 +63,6 @@ describe('Tasks Free Text Search', () => {
     await loginPage.login(chw);
   });
 
-  after(async () => {
-    await utils.deleteUsers([chw]);
-  });
-
   beforeEach(async () => {
     await commonPage.goToTasks();
     await browser.waitUntil(async () => (await tasksPage.getTasks()).length > 0);
@@ -146,9 +142,6 @@ describe('Tasks Free Text Search', () => {
 
     await searchPage.clearSearch();
     await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
-
-    const restoredTasks = await tasksPage.getTasks();
-    expect(restoredTasks.length).to.equal(totalCount);
   });
 
   it('should combine search with sidebar filters', async () => {
