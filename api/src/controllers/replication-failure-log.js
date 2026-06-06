@@ -81,32 +81,30 @@ module.exports = {
    *                               items:
    *                                 type: string
    *                             subjects_count:
-   *                               oneOf:
-   *                                 - type: number
-   *                                 - type: string
-   *                                   enum: [unknown]
+   *                               type: [number, "null"]
    *                               description: >
-   *                                 Number of subjects the user had access to at the time of the failure. The
-   *                                 string `unknown` if the request failed before the authorization context
-   *                                 was computed.
+   *                                 Number of subjects the user had access to at the time of the failure.
+   *                                 `null` if the request failed before the authorization context was computed.
    *                             docs_count:
-   *                               oneOf:
-   *                                 - type: number
-   *                                 - type: string
-   *                                   enum: [unknown]
+   *                               type: [number, "null"]
    *                               description: >
-   *                                 Total number of docs the user has access to (before purge filtering). The
-   *                                 string `unknown` if the request failed before the doc list was filtered.
+   *                                 Total number of docs the user has access to (before purge filtering).
+   *                                 `null` if the request failed before the doc list was filtered.
    *                             unpurged_docs_count:
-   *                               oneOf:
-   *                                 - type: number
-   *                                 - type: string
-   *                                   enum: [unknown]
+   *                               type: [number, "null"]
    *                               description: >
    *                                 Number of docs after purge filtering — i.e. what the client was about to
-   *                                 receive. The string `unknown` if the request failed before the purge step.
-   *                                 Reading these three counters together tells you how far the request
-   *                                 progressed before failing.
+   *                                 receive. `null` if the request failed before the purge step. Reading these
+   *                                 three counters together tells you how far the request progressed before
+   *                                 failing.
+   *                       daily_failures:
+   *                         type: object
+   *                         description: >
+   *                           Per-day failure counts for the reporting period, keyed by date in YYYY-MM-DD
+   *                           format. Unlike `failures`, this is not capped and retains a count for every day
+   *                           the user had at least one failure.
+   *                         additionalProperties:
+   *                           type: number
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    */
