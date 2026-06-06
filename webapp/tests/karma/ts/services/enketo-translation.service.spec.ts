@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { assert } from 'chai';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 const serialize = (element) => {
   if (element.nodeType !== Node.ELEMENT_NODE) {
@@ -522,7 +523,7 @@ describe('EnketoTranslation service', () => {
           name: 'Davesville',
           external_id: 'THING',
           notes: 'Some notes',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         },
       };
 
@@ -559,7 +560,7 @@ describe('EnketoTranslation service', () => {
           },
           external_id: 'THING',
           notes: 'Some notes',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         },
       };
 
@@ -600,7 +601,7 @@ describe('EnketoTranslation service', () => {
           },
           external_id: 'THING',
           notes: 'Some notes',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         },
       };
 
@@ -641,7 +642,7 @@ describe('EnketoTranslation service', () => {
           },
           external_id: 'THING',
           notes: 'Some notes',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         },
       };
 
@@ -827,7 +828,7 @@ describe('EnketoTranslation service', () => {
           name: 'Davesville',
           external_id: 'THING',
           notes: 'Some notes',
-          type: 'district_hospital',
+          type: CONTACT_TYPES.DISTRICT_HOSPITAL,
         },
       };
 

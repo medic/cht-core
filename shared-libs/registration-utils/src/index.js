@@ -1,4 +1,5 @@
 const uniq = require('lodash/uniq');
+const { DOC_TYPES } = require('@medic/constants');
 
 const formCodeMatches = (conf, form) => {
   return (new RegExp('^[^a-z]*' + conf + '[^a-z]*$', 'i')).test(form);
@@ -12,7 +13,7 @@ exports.isValidRegistration = (doc, settings) => {
       (doc.errors && doc.errors.length) ||
       !settings ||
       !settings.registrations ||
-      doc.type !== 'data_record' ||
+      doc.type !== DOC_TYPES.DATA_RECORD ||
       !doc.form) {
     return false;
   }
@@ -53,7 +54,7 @@ exports.getSubjectIds = (doc) => {
     return subjectIds;
   }
 
-  if (doc.type === 'data_record') {
+  if (doc.type === DOC_TYPES.DATA_RECORD) {
     REPORT_SUBJECT_PROPERTIES.forEach(prop => {
       if (doc[prop]) {
         subjectIds.push(doc[prop]);

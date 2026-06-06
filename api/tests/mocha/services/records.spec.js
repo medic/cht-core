@@ -3,6 +3,7 @@ const chai = require('chai');
 const definitions = require('../../form-definitions');
 const config = require('../../../src/config');
 const sinon = require('sinon');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('records service', () => {
 
@@ -44,7 +45,7 @@ describe('records service', () => {
       from: '+123',
       unwanted: ';-- DROP TABLE users'
     });
-    chai.expect(actual.type).to.equal('data_record');
+    chai.expect(actual.type).to.equal(DOC_TYPES.DATA_RECORD);
     chai.expect(actual.from).to.equal('+123');
     chai.expect(actual.errors.length).to.equal(0);
     chai.expect(actual.sms_message.type).to.equal('sms_message');
@@ -103,7 +104,7 @@ describe('records service', () => {
       }
     });
 
-    chai.expect(actual.type).to.equal('data_record');
+    chai.expect(actual.type).to.equal(DOC_TYPES.DATA_RECORD);
     chai.expect(actual.from).to.equal('+123');
     chai.expect(actual.sms_message.form).to.equal('YYYY');
     chai.expect(actual.sms_message.from).to.equal('+123');

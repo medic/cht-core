@@ -21,6 +21,7 @@ const template = require('../../../src/services/template');
 const serverUtils = require('../../../src/server-utils');
 const sso = require('../../../src/services/sso-login');
 const logger = require('@medic/logger');
+const { PREFIXES } = require('@medic/constants');
 
 let controller;
 
@@ -300,6 +301,40 @@ describe('login controller', () => {
         chai.expect(ssoLogin.isSsoLoginEnabled.calledOnceWithExactly()).to.be.true;
       });
     });
+
+    it('sets defaultDir to rtl when the default locale is RTL', () => {
+      req.locale = 'ar';
+      sinon.stub(translations, 'getEnabledLocales').resolves([
+        { code: 'en', name: 'English', rtl: false },
+        { code: 'ar', name: 'عربي', rtl: true },
+      ]);
+      sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
+      const send = sinon.stub(res, 'send');
+      sinon.stub(res, 'setHeader');
+      sinon.stub(fs.promises, 'readFile').resolves('{{ defaultDir }}');
+      sinon.stub(config, 'getTranslations').returns({});
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('rtl');
+      });
+    });
+
+    it('sets defaultDir to ltr when the default locale is not RTL', () => {
+      req.locale = 'en';
+      sinon.stub(translations, 'getEnabledLocales').resolves([
+        { code: 'en', name: 'English', rtl: false },
+        { code: 'fr', name: 'French', rtl: false },
+      ]);
+      sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
+      const send = sinon.stub(res, 'send');
+      sinon.stub(res, 'setHeader');
+      sinon.stub(fs.promises, 'readFile').resolves('{{ defaultDir }}');
+      sinon.stub(config, 'getTranslations').returns({});
+
+      return controller.get(req, res).then(() => {
+        chai.expect(send.args[0][0]).to.equal('ltr');
+      });
+    });
   });
 
   describe('passwordReset', () => {
@@ -384,8 +419,8 @@ describe('login controller', () => {
       };
       sinon.stub(users, 'getUserDoc').resolves(userDoc);
       sinon.stub(users, 'updateUser').resolves({
-        user: { id: 'org.couchdb.user:sharon' },
-        'user-settings': { id: 'org.couchdb.user:sharon' }
+        user: { id: PREFIXES.COUCH_USER + 'sharon' },
+        'user-settings': { id: PREFIXES.COUCH_USER + 'sharon' }
       });
       sinon.stub(request, 'get').resolves({
         status: 200,

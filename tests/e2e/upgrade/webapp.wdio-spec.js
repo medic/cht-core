@@ -9,11 +9,12 @@ const constants = require('@constants');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Webapp after upgrade', () => {
   const district = placeFactory.place().build({
     _id: 'parent',
-    type: 'district_hospital',
+    type: CONTACT_TYPES.DISTRICT_HOSPITAL,
     name: 'DC',
   });
 

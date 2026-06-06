@@ -12,6 +12,7 @@ import { FormatDateService } from '@mm-services/format-date.service';
 import { LanguageService } from '@mm-services/language.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('FormatDataRecord service', () => {
   let Settings;
@@ -452,7 +453,7 @@ describe('FormatDataRecord service', () => {
       const registration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 11', age: '22' },
       };
@@ -528,7 +529,7 @@ describe('FormatDataRecord service', () => {
       const registration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 21', population: '5000' },
       };
@@ -605,7 +606,7 @@ describe('FormatDataRecord service', () => {
       const placeRegistration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 21', population: '5000' },
       };
@@ -613,7 +614,7 @@ describe('FormatDataRecord service', () => {
       const patientRegistration = {
         _id: 'reg',
         form: 'reg',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         fields: { registered_at: 'mar 11', age: '22' },
       };

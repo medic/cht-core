@@ -73,10 +73,10 @@ describe('Tasks', () => {
     const task = await tasksPage.getTaskByContactAndForm(patient.name, taskConfig[0].name);
     await task.click();
     await tasksPage.waitForTaskContentLoaded('Home Visit');
-    const taskElement = await tasksPage.getOpenTaskElement();
+    const initialTaskCount = await tasksPage.getTaskListCount();
     await genericForm.submitForm();
 
-    await taskElement.waitForDisplayed({ reverse: true });
+    await tasksPage.waitForTaskListCountChange(initialTaskCount);
     await commonPage.sync();
     expect(await tasksPage.getTasks()).to.have.length(2);
   });

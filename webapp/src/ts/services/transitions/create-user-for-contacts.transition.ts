@@ -6,6 +6,7 @@ import { CreateUserForContactsService } from '@mm-services/create-user-for-conta
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -56,7 +57,7 @@ export class CreateUserForContactsTransition extends Transition {
     if (!docs) {
       return false;
     }
-    return !!docs.filter(doc => doc?.type === 'data_record').length;
+    return !!docs.filter(doc => doc?.type === DOC_TYPES.DATA_RECORD).length;
   }
 
   /**
@@ -156,7 +157,7 @@ export class CreateUserForContactsTransition extends Transition {
 
   private getReportDocsForContact(docs: Doc[], originalContactId: string) {
     return docs.filter(doc => {
-      if (doc.type !== 'data_record') {
+      if (doc.type !== DOC_TYPES.DATA_RECORD) {
         return false;
       }
       return (<ReportDoc>doc).contact?._id === originalContactId;

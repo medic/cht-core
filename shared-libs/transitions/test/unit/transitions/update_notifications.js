@@ -4,6 +4,7 @@ const utils = require('../../../src/lib/utils');
 const mutingUtils = require('../../../src/lib/muting_utils');
 const logger = require('@medic/logger');
 const config = require('../../../src/config');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('update_notifications', () => {
   let transition;
@@ -81,7 +82,7 @@ describe('update_notifications', () => {
         doc: {
           form: 'x',
           fields: { patient_id: 'x' },
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
         },
         info: {}
       }), false);
@@ -93,7 +94,7 @@ describe('update_notifications', () => {
         doc: {
           form: 'x',
           fields: { patient_id: 'x' },
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
         },
         info: {}
       }), true);
@@ -104,7 +105,7 @@ describe('update_notifications', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
         },
         info: {}
       }), true);
@@ -115,7 +116,7 @@ describe('update_notifications', () => {
       assert.equal(transition.filter({
         doc: {
           form: 'x',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: { patient_id: '' },
         },
         info: {}
@@ -132,7 +133,7 @@ describe('update_notifications', () => {
       const change = {
         doc: {
           form: 'z',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
         },
       };
       return transition.onMatch(change).then(changed => {
@@ -145,7 +146,7 @@ describe('update_notifications', () => {
       const change = {
         doc: {
           form: 'on',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: { patient_id: 'x' },
         },
       };
@@ -159,7 +160,7 @@ describe('update_notifications', () => {
       const change = {
         doc: {
           form: 'off',
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           fields: { patient_id: 'x' },
           patient: { _id: 'id', patient_id: 'x' },
         },
@@ -174,7 +175,7 @@ describe('update_notifications', () => {
     it('patient not found adds error and response', () => {
       const doc = {
         form: 'on',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'x' },
         contact: { phone: 'x' },
       };
@@ -220,7 +221,7 @@ describe('update_notifications', () => {
     it('validation failure adds error and response', () => {
       const doc = {
         form: 'on',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { place_id: 'x' },
         contact: { phone: 'x' },
         place: { _id: 'place' },
@@ -276,7 +277,7 @@ describe('update_notifications', () => {
     it('mute responds correctly', () => {
       const doc = {
         form: 'off',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: '123' },
         contact: {
           phone: '+1234',
@@ -325,7 +326,7 @@ describe('update_notifications', () => {
     it('mute responds correctly when using translation keys', () => {
       const doc = {
         form: 'off',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: '123' },
         contact: {
           phone: '+1234',
@@ -363,7 +364,7 @@ describe('update_notifications', () => {
     it('unmute responds correctly', () => {
       const doc = {
         form: 'on',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: '123' },
         contact: {
           phone: '+1234',
@@ -407,7 +408,7 @@ describe('update_notifications', () => {
     it('does not update contacts/registrations when already muted', () => {
       const doc = {
         form: 'off',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: '123' },
         contact: {
           phone: '+1234',
@@ -445,7 +446,7 @@ describe('update_notifications', () => {
     it('does not update contacts/registrations when already unmuted', () => {
       const doc = {
         form: 'on',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: '123' },
         contact: {
           phone: '+1234',
@@ -488,7 +489,7 @@ describe('update_notifications', () => {
 
       const doc = {
         form: 'off',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { place_id: '123' },
         contact: {
           phone: '+1234',
@@ -520,7 +521,7 @@ describe('update_notifications', () => {
 
       const doc = {
         form: 'on',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { place_id: '123' },
         contact: {
           phone: '+1234',

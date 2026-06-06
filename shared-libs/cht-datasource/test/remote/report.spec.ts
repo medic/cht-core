@@ -2,6 +2,7 @@ import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
 import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
+import { DOC_TYPES } from '@medic/constants';
 
 describe('remote report', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -52,7 +53,7 @@ describe('remote report', () => {
 
     describe('get', () => {
       it('returns a report by UUID', async () => {
-        const doc = { type: 'data_record', form: 'yes' };
+        const doc = { type: DOC_TYPES.DATA_RECORD, form: 'yes' };
         getResourceInner.resolves(doc);
 
         const result = await Report.v1.get(remoteContext)(identifier);
@@ -76,7 +77,7 @@ describe('remote report', () => {
     describe('getWithLineage', () => {
       it('returns a report with lineage by UUID', async () => {
         const doc = {
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           form: 'yes',
           lineage: ['parent1', 'parent2']
         };
@@ -114,7 +115,7 @@ describe('remote report', () => {
       };
 
       it('returns an array of report identifiers', async () => {
-        const doc = [{ type: 'data_record', form: 'yes' }, { type: 'data_record', form: 'yes' }];
+        const doc = [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }, { type: DOC_TYPES.DATA_RECORD, form: 'yes' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 

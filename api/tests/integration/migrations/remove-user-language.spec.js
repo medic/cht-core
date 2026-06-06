@@ -1,11 +1,12 @@
 const utils = require('./utils');
+const { PREFIXES } = require('@medic/constants');
 
 describe('remove-user-language migration', function() {
 
   it('cleans up users with language field', function() {
     const initialUsers = [
       {
-        _id: 'org.couchdb.user:withlang',
+        _id: PREFIXES.COUCH_USER + 'withlang',
         name: 'withlang',
         type: 'user-settings',
         known: true,
@@ -15,7 +16,7 @@ describe('remove-user-language migration', function() {
         phone: '123456789'
       },
       {
-        _id: 'org.couchdb.user:nolang',
+        _id: PREFIXES.COUCH_USER + 'nolang',
         name: 'nolang',
         type: 'user-settings',
         known: true,
@@ -26,7 +27,7 @@ describe('remove-user-language migration', function() {
     ];
     const updatedUsers = [
       {
-        _id: 'org.couchdb.user:withlang',
+        _id: PREFIXES.COUCH_USER + 'withlang',
         name: 'withlang',
         type: 'user-settings',
         known: true,
@@ -35,7 +36,7 @@ describe('remove-user-language migration', function() {
         phone: '123456789'
       },
       {
-        _id: 'org.couchdb.user:nolang',
+        _id: PREFIXES.COUCH_USER + 'nolang',
         name: 'nolang',
         type: 'user-settings',
         known: true,

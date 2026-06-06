@@ -3,14 +3,14 @@ const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
 const chaiExclude = require('chai-exclude');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES, DOC_TYPES } = require('@medic/constants');
 chai.use(chaiExclude);
 
 const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hospital'
 };
 
@@ -101,7 +101,7 @@ describe('bulk-get handler', () => {
   it('does not filter online users', () => {
     const docs = [
       { _id: 'ICanBeAnything'},
-      { _id: 'NEW_PLACE', parent: {}, type: 'district_hospital', name: 'NEW PLACE' }
+      { _id: 'NEW_PLACE', parent: {}, type: CONTACT_TYPES.DISTRICT_HOSPITAL, name: 'NEW PLACE' }
     ];
 
     return utils
@@ -112,7 +112,7 @@ describe('bulk-get handler', () => {
             { id: 'ICanBeAnything', rev: results[0].rev },
             { id: 'NEW_PLACE' },
             { id: 'PARENT_PLACE' },
-            { id: 'org.couchdb.user:offline' }
+            { id: PREFIXES.COUCH_USER + 'offline' }
           ]
         };
 
@@ -137,18 +137,22 @@ describe('bulk-get handler', () => {
         });
 
         chai.expect(result.results[3]).to.deep.nested.include({
-          id: 'org.couchdb.user:offline',
-          'docs[0].ok._id': 'org.couchdb.user:offline'
+          id: PREFIXES.COUCH_USER + 'offline',
+          'docs[0].ok._id': PREFIXES.COUCH_USER + 'offline'
         });
       });
   });
 
   it('filters offline users results', () => {
     const docs = [
-      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      { _id: 'allowed_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'allowed_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'denied_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'denied_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
     ];
 
     return utils
@@ -186,25 +190,25 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:online',
+        user: PREFIXES.COUCH_USER + 'online',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'allowed_target',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:offline',
       },
       {
         _id: 'denied_target',
         type: 'target',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
         owner: 'fixture:user:online',
       },
     ];
@@ -253,10 +257,10 @@ describe('bulk-get handler', () => {
 
   it('filters offline users based on requested rev', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'd1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'd2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      { _id: 'a1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'd1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'd2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
     ];
 
     const revs = {};
@@ -302,7 +306,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'a1',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Allowed Contact 1',
                 _rev: revs.a1[0]
@@ -313,7 +317,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'a1',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Allowed Contact 1',
                 _rev: revs.a1[1]
@@ -324,7 +328,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'a2',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Allowed Contact 2',
                 _rev: revs.a2[0]
@@ -335,7 +339,7 @@ describe('bulk-get handler', () => {
             docs: [{
               ok: {
                 _id: 'd2',
-                type: 'clinic',
+                type: CONTACT_TYPES.CLINIC,
                 parent: { _id: 'fixture:offline' },
                 name: 'Previously denied Contact 2',
                 _rev: revs.d2[1]
@@ -347,8 +351,8 @@ describe('bulk-get handler', () => {
 
   it('uses correct request parameters', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
+      { _id: 'a1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' }
     ];
 
     offlineRequestOptions.body = { docs: [{ id: 'a1' }, { id: 'a2' }] };
@@ -404,9 +408,9 @@ describe('bulk-get handler', () => {
 
   it('does not return bodies of couchDB delete stubs', () => {
     const docs = [
-      { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'a3', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
+      { _id: 'a1', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'a2', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'a3', type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' }
     ];
 
     return utils
@@ -432,10 +436,14 @@ describe('bulk-get handler', () => {
 
   it('filters offline users results when db name is not medic', () => {
     const docs = [
-      { _id: 'allowed_contact_1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
-      { _id: 'allowed_contact_2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
-      { _id: 'denied_contact_1', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
-      { _id: 'denied_contact_2', type: 'clinic', parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
+      { _id: 'allowed_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
+      { _id: 'allowed_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
+      { _id: 'denied_contact_1', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 1' },
+      { _id: 'denied_contact_2', 
+        type: CONTACT_TYPES.CLINIC, parent: { _id: 'fixture:online' }, name: 'Denied Contact 2' },
     ];
 
     return utils
@@ -469,7 +477,7 @@ describe('bulk-get handler', () => {
   });
 
   it('restricts calls with irregular urls which match couchdb endpoint', () => {
-    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: 'data_record', form: 'a' };
+    const doc = { _id: 'denied_report', contact: { _id: 'fixture:online'}, type: DOC_TYPES.DATA_RECORD, form: 'a' };
     offlineRequestOptions.body = { docs: [{ _id: 'denied_report' }] };
 
     return utils
@@ -515,12 +523,12 @@ describe('bulk-get handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -532,14 +540,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person', needs_signoff: true },
         contact: {
@@ -550,12 +558,12 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
@@ -600,12 +608,12 @@ describe('bulk-get handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -617,14 +625,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person', needs_signoff: true },
         contact: {
@@ -635,12 +643,12 @@ describe('bulk-get handler', () => {
       {
         _id: 'allowed_task',
         type: 'task',
-        user: 'org.couchdb.user:offline',
+        user: PREFIXES.COUCH_USER + 'offline',
       },
       {
         _id: 'denied_task',
         type: 'task',
-        user: 'org.couchdb.user:other',
+        user: PREFIXES.COUCH_USER + 'other',
       },
       {
         _id: 'allowed_target',
@@ -685,12 +693,12 @@ describe('bulk-get handler', () => {
     const existentDocs = [
       {
         _id: 'existing_clinic',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -702,14 +710,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'denied_report_about_existing_person',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'allowed_report_about_existing_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'existing_person' },
         form: 'form',
         contact: {
@@ -719,7 +727,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'allowed_report_about_existing_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'existing_person', needs_signoff: true },
         form: 'form',
         contact: {
@@ -772,13 +780,13 @@ describe('bulk-get handler', () => {
     const existingDocs = [
       {
         _id: 'existing_clinic', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'existing_person' }
       },
       {
         _id: 'report_about_existing_clinic',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { place_id: 'existing_clinic' },
         contact: { _id: 'nevermind' },
@@ -791,14 +799,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_person1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person_id' },
         contact: { _id: 'nevermind' },
       },
       {
         _id: 'report_about_existing_person2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_uuid: 'existing_person' },
         contact: { _id: 'nevermind' },
@@ -810,7 +818,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'existing_clinic2', // depth 1
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         parent: { _id: 'fixture:offline', parent: { _id: 'PARENT_PLACE' } },
         contact: { _id: 'existing_person2' }
       },
@@ -822,7 +830,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'report_about_existing_person2_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         fields: { patient_id: 'existing_person_id2' },
         contact: { _id: 'nevermind' },
@@ -914,14 +922,14 @@ describe('bulk-get handler', () => {
     const docs = [
       {
         _id: 'insensitive_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:offline'},
         patient_id: 'fixture:offline'
       },
       {
         _id: 'insensitive_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:offline'},
         patient_id: 'fixture:offline',
@@ -929,7 +937,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'insensitive_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         patient_id: 'fixture:offline',
@@ -937,14 +945,14 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'insensitive_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: false, patient_id: 'shortcode:user:offline', },
       },
       {
         _id: 'sensitive_report_1',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         patient_id: 'fixture:user:offline',
@@ -952,7 +960,7 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'sensitive_report_2',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         patient_id: 'shortcode:user:offline',
@@ -960,21 +968,21 @@ describe('bulk-get handler', () => {
       },
       {
         _id: 'sensitive_report_3',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: true, place_id: 'shortcode:offline', },
       },
       {
         _id: 'sensitive_report_4',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: true, patient_id: 'shortcode:user:offline', },
       },
       {
         _id: 'sensitive_report_5',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'a',
         contact: { _id: 'fixture:online'},
         fields: { private: true, patient_uuid: 'fixture:user:offline', },

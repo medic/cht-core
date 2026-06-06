@@ -2,7 +2,7 @@ const sinon = require('sinon');
 require('chai').use(require('chai-as-promised'));
 const rewire = require('rewire');
 const { expect } = require('chai');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const utils = require('../../../src/js/bootstrapper/utils');
 
 let initialReplication = rewire('../../../src/js/bootstrapper/initial-replication');
@@ -33,7 +33,7 @@ describe('Initial replication', () => {
           rows: [
             { id: '_design/medic-client', error: 'missing' },
             { id: DOC_IDS.SETTINGS },
-            { id: 'org.couchdb.user:Nivea' },
+            { id: PREFIXES.COUCH_USER + 'Nivea' },
           ]
         }),
       };
@@ -42,7 +42,7 @@ describe('Initial replication', () => {
       expect(await initialReplication.isReplicationNeeded(localDb, userCtx)).to.equal(true);
 
       expect(localDb.allDocs.args).to.deep.equal([[
-        { keys: ['_design/medic-client', DOC_IDS.SETTINGS, 'org.couchdb.user:Nivea'] },
+        { keys: ['_design/medic-client', DOC_IDS.SETTINGS, PREFIXES.COUCH_USER + 'Nivea'] },
       ]]);
     });
 

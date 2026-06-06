@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../../src/config');
 const messages = require('../../../src/lib/messages');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('default responses', () => {
   let transition;
@@ -27,7 +28,7 @@ describe('default responses', () => {
   it('when doc has no errors do nothing', () => {
     assert.equal(transition.filter({
       doc: {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         errors: []
       }
     }), false);
@@ -36,7 +37,7 @@ describe('default responses', () => {
   it('when doc has no from property do nothing', () => {
     assert.equal(transition.filter({
       doc: {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         errors: ['foo']
       }
     }), false);
@@ -46,7 +47,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         from: '+222',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         errors: ['foo']
       },
       info: {}
@@ -58,7 +59,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         from: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
@@ -69,7 +70,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         from: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
@@ -81,7 +82,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         from: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
@@ -92,7 +93,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         from: 'x',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
@@ -104,7 +105,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         from: '+222',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       }
     }), false);
   });
@@ -113,7 +114,7 @@ describe('default responses', () => {
     assert.equal(transition.filter({
       doc: {
         kujua_message: true,
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
       }
     }), false);
   });
@@ -121,7 +122,7 @@ describe('default responses', () => {
   it('when doc has no errors the message is not empty', () => {
     assert.equal(transition._isMessageEmpty({
       from: '+222',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: []
     }), false);
   });
@@ -129,7 +130,7 @@ describe('default responses', () => {
   it('when doc has no errors, form is not found returns false', () => {
     assert.equal(transition._isFormNotFound({
       from: '+222',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: []
     }), false);
   });
@@ -162,7 +163,7 @@ describe('default responses', () => {
     const doc = {
       form: null,
       from: '+23',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: []
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -177,7 +178,7 @@ describe('default responses', () => {
     const messageFn = sinon.spy(messages, 'addMessage');
     const doc = {
       from: '+23',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: []
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -198,7 +199,7 @@ describe('default responses', () => {
     const doc = {
       form: 'V',
       from: '+23',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: []
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -212,7 +213,7 @@ describe('default responses', () => {
     const messageFn = sinon.spy(messages, 'addMessage');
     const doc = {
       from: '+23',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: [ { code: 'sys.form_not_found' } ]
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -228,7 +229,7 @@ describe('default responses', () => {
     const messageFn = sinon.spy(messages, 'addMessage');
     const doc = {
       from: '+444',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: [ { code: 'sys.form_not_found' } ]
     };
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -244,7 +245,7 @@ describe('default responses', () => {
     const messageFn = sinon.spy(messages, 'addMessage');
     const doc = {
       from: '+23',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       errors: [ { code: 'sys.empty' } ]
     };
     return transition.onMatch({ doc: doc }).then(changed => {

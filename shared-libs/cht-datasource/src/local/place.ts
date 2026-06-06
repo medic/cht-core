@@ -19,12 +19,13 @@ import {
 } from './libs/lineage';
 import { assertPlaceInput } from '../libs/parameter-validators';
 import * as LocalContact from './contact';
+import { CONTACT_TYPES } from '@medic/constants';
 
 const DEFAULT_PLACE_TYPES_DICT: Record<string, { id: string, parents?: string[], person?: boolean } | undefined> = {
-  district_hospital: { id: 'district_hospital' },
+  [CONTACT_TYPES.DISTRICT_HOSPITAL]: { id: CONTACT_TYPES.DISTRICT_HOSPITAL },
   health_center: {
     id: 'health_center',
-    parents: ['district_hospital'],
+    parents: [CONTACT_TYPES.DISTRICT_HOSPITAL],
   },
   clinic: {
     id: 'clinic',

@@ -12,9 +12,9 @@ describe('ContactTypes service', () => {
   let Settings;
 
   const HARDCODED_TYPES = [
-    'district_hospital',
+    CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
-    'clinic',
+    CONTACT_TYPES.CLINIC,
     'person'
   ];
 
@@ -208,7 +208,7 @@ describe('ContactTypes service', () => {
   describe('getTypeId', () => {
     it('should return the type id of the provided contact', () => {
       expect(service.getTypeId({ type: 'person' })).to.equal('person');
-      expect(service.getTypeId({ type: 'clinic' })).to.equal('clinic');
+      expect(service.getTypeId({ type: CONTACT_TYPES.CLINIC })).to.equal(CONTACT_TYPES.CLINIC);
       expect(service.getTypeId({ type: 'contact', contact_type: 'something' })).to.equal('something');
     });
 

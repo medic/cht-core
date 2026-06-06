@@ -3,6 +3,7 @@ const chai = require('chai');
 
 const service = require('../../../src/services/extension-libs');
 const db = require('../../../src/db');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Extension Libs service', () => {
 
@@ -26,7 +27,7 @@ describe('Extension Libs service', () => {
     });
 
     it('true if extension lib doc', () => {
-      const actual = service.isLibChange({ id: 'extension-libs' });
+      const actual = service.isLibChange({ id: DOC_IDS.EXTENSION_LIBS });
       chai.expect(actual).to.be.true;
     });
 
@@ -54,21 +55,21 @@ describe('Extension Libs service', () => {
     });
 
     it('handles empty doc', async () => {
-      dbGet.resolves({ _id: 'extension-libs' });
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('handles no attachments', async () => {
-      dbGet.resolves({ _id: 'extension-libs', _attachments: {} });
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS, _attachments: {} });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('maps attachments', async () => {
-      dbGet.resolves({ _id: 'extension-libs', _attachments: {
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS, _attachments: {
         'first': { data: 'abc', content_type: 'json' },
         'second': { data: 'def', content_type: 'javascript' }
       } });
@@ -77,7 +78,7 @@ describe('Extension Libs service', () => {
       chai.expect(actual[0]).to.deep.equal({ name: 'first', data: 'abc', contentType: 'json' });
       chai.expect(actual[1]).to.deep.equal({ name: 'second', data: 'def', contentType: 'javascript' });
       chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbGet.args[0][0]).to.equal('extension-libs');
+      chai.expect(dbGet.args[0][0]).to.equal(DOC_IDS.EXTENSION_LIBS);
       chai.expect(dbGet.args[0][1]).to.deep.equal({ attachments: true });
     });
 
@@ -86,7 +87,7 @@ describe('Extension Libs service', () => {
   describe('get', () => {
 
     it('handles undefined param', async () => {
-      dbGet.resolves({ _id: 'extension-libs', _attachments: {
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS, _attachments: {
         first: { data: 'abc', content_type: 'json' },
         second: { data: 'def', content_type: 'javascript' }
       } });
@@ -114,21 +115,21 @@ describe('Extension Libs service', () => {
     });
 
     it('handles empty doc', async () => {
-      dbGet.resolves({ _id: 'extension-libs' });
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('handles unknown attachment name', async () => {
-      dbGet.resolves({ _id: 'extension-libs', _attachments: { first: { data: 'first' } } });
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS, _attachments: { first: { data: 'first' } } });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('returns attachment', async () => {
-      dbGet.resolves({ _id: 'extension-libs', _attachments: {
+      dbGet.resolves({ _id: DOC_IDS.EXTENSION_LIBS, _attachments: {
         first: { data: 'abc', content_type: 'json' },
         second: { data: 'def', content_type: 'javascript' }
       } });
@@ -136,7 +137,7 @@ describe('Extension Libs service', () => {
       chai.expect(actual.data).to.equal('def');
       chai.expect(actual.contentType).to.equal('javascript');
       chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbGet.args[0][0]).to.equal('extension-libs');
+      chai.expect(dbGet.args[0][0]).to.equal(DOC_IDS.EXTENSION_LIBS);
       chai.expect(dbGet.args[0][1]).to.deep.equal({ attachments: true });
     });
 

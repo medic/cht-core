@@ -4,6 +4,7 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
+const { DOC_IDS } = require('@medic/constants');
 
 describe('Submit Z-Score form', () => {
   const charts = [
@@ -72,7 +73,7 @@ describe('Submit Z-Score form', () => {
 
   before(async () => {
     const chartsDoc = {
-      _id: 'zscore-charts',
+      _id: DOC_IDS.ZSCORE_CHARTS,
       charts: charts
     };
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/z-score`));

@@ -1194,7 +1194,7 @@ describe('DBSync service', () => {
     });
 
     it('does replicate reports', () => {
-      const actual = filterFunction({ _id: '1', type: 'data_record' });
+      const actual = filterFunction({ _id: '1', type: DOC_TYPES.DATA_RECORD });
       expect(actual).to.equal(true);
     });
 

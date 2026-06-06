@@ -492,6 +492,50 @@ describe('Android App Launcher Widget', () => {
         .to.equal('green');
     });
 
+    it('should set output field as space-delimited string when target is not a repeat', async () => {
+      const $launchAppBtn = $html.find('.android-app-launcher-actions .launch-app');
+      window.CHTCore.AndroidAppLauncher.launchAndroidApp.resolves({
+        first_name: 'Jack',
+        my_colors: ['blue', 'red', 'green'],
+        my_group: {
+          my_scores: [10, 20, 30]
+        }
+      });
+
+      const appSettings = createFields({
+        '/main/app/action': 'org.example.action.VIEW'
+      });
+      const $outputs = createGroup(
+        'or-appearance-android-app-outputs',
+        '/main/app/outputs',
+        {
+          '/main/app/outputs/first_name': '',
+          '/main/app/outputs/my_colors': '',
+          '/main/app/outputs/my_scores': ''
+        }
+      );
+      const $myGroup = createGroup(
+        'or-appearance-android-app-object',
+        '/main/app/outputs/my_group',
+        {
+          '/main/app/outputs/my_group/my_scores': '',
+        }
+      );
+      $outputs.append($myGroup);
+
+      $widget
+        .append(appSettings)
+        .append($outputs);
+
+      $launchAppBtn.click();
+      await Promise.resolve();
+
+      expect(window.CHTCore.AndroidAppLauncher.launchAndroidApp.callCount).to.equal(1);
+      expect($widget.find('input[name="/main/app/outputs/first_name"]').val()).to.equal('Jack');
+      expect($widget.find('input[name="/main/app/outputs/my_colors"]').val()).to.equal('blue red green');
+      expect($widget.find('input[name="/main/app/outputs/my_group/my_scores"]').val()).to.equal('10 20 30');
+    });
+
     it('should set outputs with array of objects', async () => {
       const $launchAppBtn = $html.find('.android-app-launcher-actions .launch-app');
       window.CHTCore.AndroidAppLauncher.launchAndroidApp.resolves({

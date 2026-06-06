@@ -7,7 +7,7 @@ const logger = require('@medic/logger');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 const settingsService = require('./settings');
 const translations = require('../translations');
 const generateXform = require('./generate-xform');
@@ -169,7 +169,7 @@ const listen = () => {
       return handleSettingsChange();
     }
 
-    if (change.id.startsWith('messages-')) {
+    if (change.id.startsWith(PREFIXES.TRANSLATIONS)) {
       return handleTranslationsChange();
     }
 

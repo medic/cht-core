@@ -1,4 +1,4 @@
-const { v4: uuid } = require('uuid');
+const { v7: uuid } = require('uuid');
 const path = require('path');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -9,11 +9,11 @@ const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const chtConfUtils = require('@utils/cht-conf');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const { CONTACT_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('Tasks tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.get('clinic');
+  const clinic = places.get(CONTACT_TYPES.CLINIC);
   const healthCenter1 = places.get(CONTACT_TYPES.HEALTH_CENTER);
   const districtHospital = places.get('district_hospital');
   const healthCenter2 = placeFactory.place().build({
@@ -55,7 +55,7 @@ describe('Tasks tab breadcrumbs', () => {
   const contactWithManyPlaces = personFactory.build({ parent: healthCenter1 });
 
   const userWithManyPlaces = {
-    _id: 'org.couchdb.user:offline_many_facilities',
+    _id: PREFIXES.COUCH_USER + 'offline_many_facilities',
     language: 'en',
     known: true,
     type: 'user-settings',

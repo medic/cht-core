@@ -28,7 +28,7 @@ describe('Test utils', () => {
       sinon.stub(utils.db, 'allDocs').resolves({rows: [
         {id: '_design/cats', doc: {_id: '_design/cats'}},
         {id: DOC_IDS.SERVICE_WORKER_META, doc: {_id: DOC_IDS.SERVICE_WORKER_META}},
-        {id: 'migration-log', doc: {_id: 'migration-log'}},
+        {id: DOC_IDS.MIGRATION_LOG, doc: {_id: DOC_IDS.MIGRATION_LOG}},
         {id: 'resources', doc: {_id: 'resources'}},
         {id: DOC_IDS.BRANDING, doc: {_id: DOC_IDS.BRANDING}},
         {id: DOC_IDS.PARTNERS, doc: {_id: DOC_IDS.PARTNERS}},

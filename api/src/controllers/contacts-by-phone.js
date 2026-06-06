@@ -14,6 +14,92 @@ const getPhoneNumber = (req) => {
 };
 
 module.exports = {
+  /**
+   * @openapi
+   * /api/v1/contacts-by-phone:
+   *   get:
+   *     summary: Find contacts by phone number
+   *     operationId: v1ContactsByPhoneGet
+   *     description: >
+   *       Accepts a phone number and returns fully hydrated contacts that match. If multiple
+   *       contacts are found, all are returned. Returns 404 when no matches are found.
+   *     tags: [Contact]
+   *     x-since: 3.10.0
+   *     parameters:
+   *       - in: query
+   *         name: phone
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: A URL-encoded string representing a phone number.
+   *     responses:
+   *       '200':
+   *         description: Matching contacts found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 ok:
+   *                   type: boolean
+   *                 docs:
+   *                   type: array
+   *                   description: Fully hydrated matching contacts.
+   *                   items:
+   *                     type: object
+   *                     additionalProperties: true
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   *       '404':
+   *         $ref: '#/components/responses/NotFound'
+   *   post:
+   *     summary: Find contacts by phone number (POST)
+   *     operationId: v1ContactsByPhonePost
+   *     description: >
+   *       Accepts a phone number and returns fully hydrated contacts that match. If multiple
+   *       contacts are found, all are returned. Returns 404 when no matches are found.
+   *     tags: [Contact]
+   *     x-since: 3.10.0
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [phone]
+   *             properties:
+   *               phone:
+   *                 type: string
+   *                 description: A string representing a phone number.
+   *     responses:
+   *       '200':
+   *         description: Matching contacts found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 ok:
+   *                   type: boolean
+   *                 docs:
+   *                   type: array
+   *                   description: Fully hydrated matching contacts.
+   *                   items:
+   *                     type: object
+   *                     additionalProperties: true
+   *       '400':
+   *         $ref: '#/components/responses/BadRequest'
+   *       '401':
+   *         $ref: '#/components/responses/Unauthorized'
+   *       '403':
+   *         $ref: '#/components/responses/Forbidden'
+   *       '404':
+   *         $ref: '#/components/responses/NotFound'
+   */
   request: (req, res) => {
     const phone = getPhoneNumber(req);
     if (!phone) {

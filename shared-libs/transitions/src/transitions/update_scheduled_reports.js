@@ -4,6 +4,7 @@ const logger = require('@medic/logger');
 const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const NAME = 'update_scheduled_reports';
+const { DOC_TYPES } = require('@medic/constants');
 
 const getLeafPlaceTypeIds = () => {
   const types = config.get('contact_types') || [];
@@ -33,7 +34,7 @@ module.exports = {
     return Boolean(
       doc &&
       doc.form &&
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       (doc.errors ? doc.errors.length === 0 : true) &&
       module.exports._isFormScheduled(doc) &&
       !transitionUtils.hasRun(info, NAME)

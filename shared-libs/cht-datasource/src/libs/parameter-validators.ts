@@ -17,6 +17,7 @@ import {
 } from './core';
 import * as Input from '../input';
 import { ISO_8601_DATE_PATTERN } from './constants';
+import { DOC_TYPES } from '@medic/constants';
 
 /** @internal */
 export const assertTypeQualifier: (qualifier: unknown) => asserts qualifier is ContactTypeQualifier = (
@@ -90,7 +91,7 @@ export function assertReportInput(data: unknown): asserts data is Input.v1.Repor
   assertHasRequiredField(data, { name: 'contact', type: 'string' }, InvalidArgumentError);
   assertDoesNotHaveField(data, '_id', InvalidArgumentError);
   assertDoesNotHaveField(data, '_rev', InvalidArgumentError);
-  if (data.type && data.type !== 'data_record') {
+  if (data.type && data.type !== DOC_TYPES.DATA_RECORD) {
     throw new InvalidArgumentError('Report type must be "data_record".');
   }
 }

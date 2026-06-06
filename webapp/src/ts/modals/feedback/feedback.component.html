@@ -11,7 +11,11 @@
   <form action="" method="POST">
     <div class="form-group" [class.has-error]="errors.message">
       <textarea [(ngModel)]="model.message" class="form-control" name="message" placeholder="{{ 'Bug description' | translate }}"></textarea>
-      <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
+
+      @if (errors.message) {
+        <span class="help-block">{{ errors.message }}</span>
+      }
+
     </div>
   </form>
 </mm-modal-layout>

@@ -1,5 +1,8 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
+const { HTTP_HEADERS } = require('@medic/constants');
+const logger = require('@medic/logger');
+const replicationFailureLog = require('../services/replication/replication-failure-log');
 
 const FIREWALL_ERROR = {
   code: 403,
@@ -23,7 +26,7 @@ module.exports = {
       .getUserCtx(req)
       .then(userCtx => {
         req.userCtx = userCtx;
-        req.replicationId = req.headers['medic-replication-id'];
+        req.replicationId = req.headers[HTTP_HEADERS.MEDIC_REPLICATION_ID];
       })
       .catch(err => {
         req.authErr = err;
@@ -94,5 +97,19 @@ module.exports = {
     }
 
     return getUserSettings(req).then(next);
+  },
+
+  captureReplicationFailures: (req, res, next) => {
+    const start = Date.now();
+    res.on('close', () => {
+      if (!res.writableFinished || res.statusCode >= 400) {
+        const duration = Date.now() - start;
+        const statusCode = res.writableFinished ? res.statusCode : 0;
+        replicationFailureLog
+          .capture(req.userCtx, req.id, statusCode, duration)
+          .catch(err => logger.error('Failed to persist replication failure log: %o', err));
+      }
+    });
+    next();
   }
 };

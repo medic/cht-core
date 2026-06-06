@@ -4,7 +4,7 @@ import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
 import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
 import * as moment from 'moment';
-import { DOC_IDS } from '@medic/constants';
+import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
 import { AuthService } from '@mm-services/auth.service';
 import { SessionService } from '@mm-services/session.service';
@@ -235,7 +235,7 @@ export class RulesEngineService implements OnDestroy {
   }
 
   private isReport(doc) {
-    return doc.type === 'data_record' && !!doc.form;
+    return doc.type === DOC_TYPES.DATA_RECORD && !!doc.form;
   }
 
   private dirtyContactCallback(change) {

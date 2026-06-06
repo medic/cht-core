@@ -2,7 +2,8 @@ const { expect } = require('chai');
 
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
+const { DOC_TYPES } = require('@medic/constants');
 
 // Mock server code, consider moving this elsewhere?
 const express = require('express');
@@ -41,7 +42,7 @@ const stopMockApp = () => {
 
 const makeReport = () => ({
   _id: uuid(),
-  type: 'data_record',
+  type: DOC_TYPES.DATA_RECORD,
   form: 'test'
 });
 

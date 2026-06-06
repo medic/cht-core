@@ -9,6 +9,7 @@ const messageUtils = require('@medic/message-utils');
 const db = require('../db');
 const config = require('../config');
 const logger = require('@medic/logger');
+const { DOC_TYPES } = require('@medic/constants');
 
 /*
  * Get desired locale
@@ -236,7 +237,7 @@ module.exports = {
 
   getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
 
-  isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
+  isXFormReport: doc => doc && doc.type === DOC_TYPES.DATA_RECORD && doc.content_type === 'xml',
 
   /**
    * Validates if a cron expression is valid and is active within an offset timeframe at the current time.

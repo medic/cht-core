@@ -2,6 +2,7 @@ const logger = require('@medic/logger');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
+const { HTTP_HEADERS } = require('@medic/constants');
 
 const { UNIT_TEST_ENV } = process.env;
 
@@ -66,8 +67,8 @@ if (UNIT_TEST_ENV) {
 
   const fetchFn = (url, opts) => {
     // Adding audit flags (haproxy) Service and user that made the request initially.
-    opts.headers.set('X-Medic-Service', service);
-    opts.headers.set('X-Medic-User', service);
+    opts.headers.set(HTTP_HEADERS.MEDIC_SERVICE, service);
+    opts.headers.set(HTTP_HEADERS.MEDIC_USER, service);
     return PouchDB.fetch(url, opts).then(response => {
       void audit.fetchCallback(url, opts, response);
       return response;

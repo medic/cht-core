@@ -2,6 +2,8 @@ describe('Languages service', function() {
 
   'use strict';
 
+  const { PREFIXES } = require('@medic/constants');
+
   let service;
   let allDocs;
 
@@ -32,8 +34,8 @@ describe('Languages service', function() {
     service().then(function(result) {
       chai.expect(allDocs.callCount).to.equal(1);
       chai.expect(allDocs.args[0][0]).to.deep.equal({
-        start_key: 'messages-',
-        end_key: 'messages-\ufff0',
+        start_key: PREFIXES.TRANSLATIONS,
+        end_key: PREFIXES.TRANSLATIONS + '\ufff0',
         include_docs: true
       });
       chai.expect(result).to.deep.equal([

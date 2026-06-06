@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const constants = require('@constants');
-const { DOC_IDS, CONTACT_TYPES } = require('@medic/constants');
+const { DOC_IDS, CONTACT_TYPES, HTTP_HEADERS } = require('@medic/constants');
 const moment = require('moment');
 const semver = require('semver');
 
@@ -9,7 +9,7 @@ const password = 'passwordSUP3RS3CR37!';
 
 const parentPlace = {
   _id: 'PARENT_PLACE',
-  type: 'district_hospital',
+  type: CONTACT_TYPES.DISTRICT_HOSPITAL,
   name: 'Big Parent Hostpital',
 };
 
@@ -144,7 +144,7 @@ describe('routing', () => {
             .catch(err => err)
             .then(result => {
               expect(result.status).to.equal(401);
-              expect(result.headers.get('logout-authorization')).to.equal('CHT-Core API');
+              expect(result.headers.get(HTTP_HEADERS.LOGOUT_AUTHORIZATION)).to.equal('CHT-Core API');
               expect(result.body.error).to.equal('unauthorized');
             });
         });
@@ -186,12 +186,16 @@ describe('routing', () => {
         const { BRANCH, TAG } = process.env;
         const isBranchBuild = BRANCH && !TAG;
 
+        // for tags, build_info.version is the tag (semver-valid).
+        // for branches, build_info.version is the escaped branch name: when that itself is
+        // valid semver (e.g. feature-release branches like 5.1.2-FR-foo) the api returns it,
+        // otherwise it falls back to build_info.build (which always carries the build number).
+        const branchVersion = semver.valid(ddoc.build_info.version) || ddoc.build_info.build;
         const deployInfo = {
           ...ddoc.deploy_info,
           ...ddoc.build_info,
-          version: isBranchBuild ? ddoc.build_info.build : ddoc.build_info.version
+          version: isBranchBuild ? branchVersion : ddoc.build_info.version
         };
-        // for historical reasons, for a branch the version in the ddoc is the branch name.
         expect(deployInfoOnline).to.deep.equal(deployInfo);
         expect(deployInfoOffline).to.deep.equal(deployInfo);
       });

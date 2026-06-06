@@ -89,7 +89,7 @@ module.exports = {
    */
   notLoggedIn: (req, res, showPrompt) => {
     if (!res.headersSent) {
-      res.setHeader('logout-authorization', 'CHT-Core API');
+      res.setHeader(HTTP_HEADERS.LOGOUT_AUTHORIZATION, 'CHT-Core API');
     }
 
     if (showPrompt) {

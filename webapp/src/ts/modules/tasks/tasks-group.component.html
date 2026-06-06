@@ -1,15 +1,15 @@
-<div class="content-pane right-pane" id="tasks-group">
-  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent">
+<div id="tasks-group">
+  <div class="empty-selection" *ngIf="loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && contentError">
+  <div class="empty-selection" *ngIf="!loadingContent && contentError">
     <div>{{ errorTranslationKey | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content" *ngIf="!loadingContent && !contentError && tasks.length">
+  <div *ngIf="!loadingContent && !contentError && tasks.length">
     <div class="material">
       <div>
         <div class="card">
@@ -38,5 +38,4 @@
       <div class="padding"></div>
     </div>
   </div>
-
 </div>

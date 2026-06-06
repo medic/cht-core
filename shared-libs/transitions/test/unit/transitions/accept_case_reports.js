@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const messagesMod = require('../../../src/lib/messages');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('accept_case_reports', () => {
   let transition;
@@ -40,14 +41,14 @@ describe('accept_case_reports', () => {
         .filter({
           doc: {
             form: 'x',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             reported_date: 1,
           },
           info: {}
         })
         .should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
-      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: DOC_TYPES.DATA_RECORD, reported_date: 1 }]);
     });
     it('returns true', () => {
       config.get.returns([{ form: 'x' }, { form: 'z' }]);
@@ -56,14 +57,14 @@ describe('accept_case_reports', () => {
         .filter({
           doc: {
             form: 'x',
-            type: 'data_record',
+            type: DOC_TYPES.DATA_RECORD,
             reported_date: 1,
           },
           info: {}
         })
         .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(1);
-      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
+      utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: DOC_TYPES.DATA_RECORD, reported_date: 1 }]);
     });
   });
 

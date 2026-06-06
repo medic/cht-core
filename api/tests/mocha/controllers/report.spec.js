@@ -4,6 +4,7 @@ const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
 const { Report, Qualifier} = require('@medic/cht-datasource');
 const {expect} = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('Report Controller Tests', () => {
   const sandbox = sinon.createSandbox();
@@ -52,7 +53,7 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report', async () => {
-        const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
+        const report = { name: 'John Doe\'s Report', type: DOC_TYPES.DATA_RECORD, form: 'yes' };
         reportGet.resolves(report);
 
         await controller.v1.get(req, res);
@@ -67,7 +68,7 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report with lineage when the query parameter is set to "true"', async () => {
-        const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
+        const report = { name: 'John Doe\'s Report', type: DOC_TYPES.DATA_RECORD, form: 'yes' };
         reportGetWithLineage.resolves(report);
         req.query.with_lineage = 'true';
 
@@ -84,7 +85,7 @@ describe('Report Controller Tests', () => {
       });
 
       it('returns a report without lineage when the query parameter is set something else', async () => {
-        const report = { name: 'John Doe\'s Report', type: 'data_record', form: 'yes' };
+        const report = { name: 'John Doe\'s Report', type: DOC_TYPES.DATA_RECORD, form: 'yes' };
         reportGet.resolves(report);
         req.query.with_lineage = '1';
 
@@ -121,7 +122,7 @@ describe('Report Controller Tests', () => {
     describe('getUuids', () => {
       const freetext = 'report';
       const freetexQualifier = Qualifier.byFreetext(freetext);
-      const report = { name: 'Nice report', type: 'data_record', form: 'yes' };
+      const report = { name: 'Nice report', type: DOC_TYPES.DATA_RECORD, form: 'yes' };
       const limit = 100;
       const cursor = null;
       const reports = Array.from({ length: 3 }, () => ({ ...report }));

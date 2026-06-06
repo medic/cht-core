@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html dir="{{ defaultDir }}">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#323232">
@@ -40,7 +40,7 @@
       </form>
       <div id="locale" class="wrapper">
         <% locales.forEach(function(locale) { %>
-          <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
+          <a href="#" name="{{ locale.key }}" class="locale"<% if (locale.rtl) { %> data-rtl="true"<% } %>>{{ locale.label }}</a>
         <% }); %>
       </div>
       <% if(hasPrivacyPolicy) { %>

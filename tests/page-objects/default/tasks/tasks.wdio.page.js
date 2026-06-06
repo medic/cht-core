@@ -4,7 +4,7 @@ const chtConfUtils = require('@utils/cht-conf');
 
 const TASK_LIST_SELECTOR = '#tasks-list';
 const TASK_FORM_SELECTOR = '#task-report';
-const TASKS_GROUP_SELECTOR = '#tasks-group .item-content';
+const TASKS_GROUP_SELECTOR = '#tasks-group .material';
 const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
@@ -19,7 +19,7 @@ const sidebarFilterSelectors = {
   placeAccordionBody: () => $('#place-filter-accordion mat-panel-description'),
 };
 
-const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"`);
+const getTaskById = (emissionId) => $(`${TASK_LIST_SELECTOR} li[data-record-id="${emissionId}"]`);
 const getTasks = async (timeout = 10000) => {
   let tasks;
   await browser.waitUntil(async () => {
@@ -82,9 +82,16 @@ const waitForTaskContentLoaded = async (name) => {
   }, { timeout: 2000 });
 };
 
-const getOpenTaskElement = async () => {
-  const emissionId = (await browser.getUrl()).split('/').slice(-1)[0];
-  return getTaskById(emissionId);
+const getTaskListCount = async () => {
+  const tasks = await $$(`${TASK_LIST_SELECTOR} li.content-row`);
+  return tasks.length;
+};
+
+const waitForTaskListCountChange = async (initialCount) => {
+  await browser.waitUntil(
+    async () => (await getTaskListCount()) !== initialCount,
+    { timeout: 10000, timeoutMsg: `Task list count did not change from ${initialCount}.` }
+  );
 };
 
 const waitForTasksGroupLoaded = async () => {
@@ -174,7 +181,8 @@ module.exports = {
   waitForTaskContentLoaded,
   getTaskInfo,
   getTasksListInfos,
-  getOpenTaskElement,
+  getTaskListCount,
+  waitForTaskListCountChange,
   waitForTasksGroupLoaded,
   getTasksInGroup,
   noSelectedTask,

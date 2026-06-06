@@ -30,6 +30,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { SearchTelemetryService } from '@mm-services/search-telemetry.service';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -275,7 +276,7 @@ describe('Contacts content component', () => {
     beforeEach(() => {
       selectedContact.doc = {
         _id: 'districtsdistrict',
-        type: 'clinic',
+        type: CONTACT_TYPES.CLINIC,
         contact: { _id: 'mario' },
         children: { persons: [ ] }
       };
@@ -362,4 +363,123 @@ describe('Contacts content component', () => {
       expect(!!component.summaryErrorStack).to.be.false;
     });
   });
+  describe('Quick page switches / Null safety', () => {
+    it('should not crash if selectedContact is null when updating fast actions', async () => {
+      (component as any).selectedContact = null;
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      await (component as any).updateFastActions();
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+
+    it('should not crash if selectedContact.doc is missing when processing contact deletion', () => {
+      (component as any).selectedContact = { _id: 'some_id' }; // No .doc property
+      contactChangeFilterService.matchContact.returns(true);
+      contactChangeFilterService.isDeleted.returns(true);
+
+      const changesCallback = changesService.subscribe.args[0][0].callback;
+      changesCallback({ doc: { _id: 'some_id' } });
+
+      expect(router.navigate.notCalled).to.be.true;
+    });
+
+    it('should not update contact types if selectedContact is missing', () => {
+      (component as any).selectedContact = null;
+      contactTypesService.getChildren.resetHistory();
+
+      // Trigger the internal update method
+      (component as any).updateContactTypes(null, []);
+
+      expect(contactTypesService.getChildren.notCalled).to.be.true;
+    });
+
+    it('should not update fast actions from forms subscription if selectedContact is missing', () => {
+      (component as any).selectedContact = null;
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      (component as any).updateReportForms(null, []);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+
+    it('should not update fast actions from forms subscription if selectedContact.doc is missing', () => {
+      (component as any).selectedContact = { _id: 'some_id' }; // No .doc
+      fastActionButtonService.getContactRightSideActions.resetHistory();
+      (component as any).updateReportForms(null, []);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+    });
+  });
+
+  describe('collapsible contact summary cards', () => {
+    let cardSummary;
+
+    beforeEach(() => {
+      cardSummary = {
+        cards: [
+          { label: 'test-card', fields: [{ label: 'field1', value: 'val1' }] }
+        ]
+      };
+      store.overrideSelector(Selectors.getSelectedContact, {
+        ...selectedContact,
+        summary: cardSummary
+      });
+      store.refreshState();
+      fixture.detectChanges();
+    });
+
+    it('should default to expanded when collapsed is undefined', () => {
+      const compiled = fixture.nativeElement;
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('should start collapsed when collapsed: true is set in config', () => {
+      cardSummary.cards[0].collapsed = true;
+      store.overrideSelector(Selectors.getSelectedContact, {
+        ...selectedContact,
+        summary: cardSummary
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.not.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('should toggle collapsed state when header is clicked', () => {
+      const compiled = fixture.nativeElement;
+      const header = compiled.querySelector('.action-header');
+
+      // click to collapse
+      header.click();
+      fixture.detectChanges();
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.not.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('false');
+
+      // click to expand
+      header.click();
+      fixture.detectChanges();
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.exist;
+      expect(compiled.querySelector('.action-header').getAttribute('aria-expanded')).to.equal('true');
+    });
+
+    it('should reset collapsed state when selected contact changes', () => {
+      const compiled = fixture.nativeElement;
+      const header = compiled.querySelector('.card.compact-card .action-header');
+
+      // collapse the card
+      header.click();
+      fixture.detectChanges();
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.not.exist;
+
+      // change selected contact - new object resets state
+      store.overrideSelector(Selectors.getSelectedContact, {
+        ...selectedContact,
+        _id: 'new-contact',
+        summary: cardSummary
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(compiled.querySelector('.card.compact-card .row.flex.grid')).to.exist;
+    });
+  }); 
 });

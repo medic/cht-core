@@ -8,7 +8,7 @@
   const purger = require('./purger');
   const initialReplicationLib = require('./initial-replication');
   const offlineDdocs = require('./offline-ddocs');
-  const { USER_ROLES } = require('@medic/constants');
+  const { USER_ROLES, HTTP_HEADERS } = require('@medic/constants');
 
   const ONLINE_ROLE = USER_ROLES.ONLINE;
 
@@ -54,7 +54,7 @@
 
   const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
     return localDb.id().then(id => {
-      POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
+      POUCHDB_OPTIONS.remote_headers[HTTP_HEADERS.MEDIC_REPLICATION_ID] = id;
     });
   };
 

@@ -5,6 +5,8 @@ const validation = require('../src/validation');
 const logger = require('@medic/logger');
 const { Qualifier, Report } = require('@medic/cht-datasource');
 
+moment.suppressDeprecationWarnings = true;
+
 let clock;
 let db;
 let config;

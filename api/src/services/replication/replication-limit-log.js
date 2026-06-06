@@ -1,5 +1,5 @@
 const moment = require('moment');
-const db = require('../db');
+const db = require('../../db');
 const logger = require('@medic/logger');
 const DOC_IDS_WARN_LIMIT = 10000;
 

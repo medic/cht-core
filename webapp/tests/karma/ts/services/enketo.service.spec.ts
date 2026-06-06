@@ -16,6 +16,8 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { WebappEnketoFormContext } from '@mm-services/form.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
+import { DOC_TYPES } from '@medic/constants';
+import events from 'enketo-core/src/js/event';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -469,6 +471,7 @@ describe('Enketo service', () => {
       sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
       form.relevant = { update: sinon.stub() };
+      const dispatchEventStub = sinon.stub(form.view.html, 'dispatchEvent');
       return service
         .completeNewReport('V', form, {}, { _id: '123', phone: '555' })
         .then(() => expect.fail('expected to reject'))
@@ -479,6 +482,7 @@ describe('Enketo service', () => {
           expect(inputNonRelevant.dataset.relevant).to.equal('false');
           // @ts-ignore
           expect(inputNoDataset.dataset).to.be.undefined;
+          expect(dispatchEventStub).to.not.have.been.called;
         });
     });
 
@@ -486,6 +490,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
+      const dispatchEventStub = sinon.stub(form.view.html, 'dispatchEvent');
       return service
         .completeNewReport('V', form, { doc: { } }, { _id: '123', phone: '555' })
         .then(actual => {
@@ -504,6 +509,7 @@ describe('Enketo service', () => {
           expect(AddAttachment.callCount).to.equal(0);
           expect(removeAttachment.callCount).to.equal(1);
           expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
+          expect(dispatchEventStub).to.have.been.calledOnceWithExactly(events.BeforeSave());
         });
     });
 
@@ -1041,6 +1047,7 @@ describe('Enketo service', () => {
       sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
       form.relevant = { update: sinon.stub() };
+      const dispatchEventStub = sinon.stub(form.view.html, 'dispatchEvent');
       return service
         .completeExistingReport(form, { doc: { } }, 'docId')
         .then(() => expect.fail('expected to reject'))
@@ -1051,6 +1058,7 @@ describe('Enketo service', () => {
           expect(inputNonRelevant.dataset.relevant).to.equal('false');
           // @ts-ignore
           expect(inputNoDataset.dataset).to.be.undefined;
+          expect(dispatchEventStub).to.not.have.been.called;
         });
     });
 
@@ -1065,9 +1073,10 @@ describe('Enketo service', () => {
         fields: { name: 'Silly' },
         content: '<doc><name>Silly</name></doc>',
         content_type: 'xml',
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
       });
+      const dispatchEventStub = sinon.stub(form.view.html, 'dispatchEvent');
 
       return service
         .completeExistingReport(form, { doc: { } }, '6')
@@ -1089,6 +1098,7 @@ describe('Enketo service', () => {
           expect(AddAttachment.callCount).to.equal(0);
           expect(removeAttachment.callCount).to.equal(1);
           expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
+          expect(dispatchEventStub).to.have.been.calledOnceWithExactly(events.BeforeSave());
         });
     });
   });

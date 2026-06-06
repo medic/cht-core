@@ -18,6 +18,28 @@ const MEDIA_SRC_ATTR = ' data-media-src="';
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
 const MODEL_STYLESHEET = path.join(__dirname, '../enketo-transformer/xsl/openrosa2xmlmodel.xsl');
 const XSLTPROC_CMD = 'xsltproc';
+// `--nonet` prevents libxml2 from fetching external resources (DTDs, entities,
+// stylesheets) over the network, removing one of the channels through which an
+// XXE payload could exfiltrate data. It is a defence in depth on top of the
+// DOCTYPE/ENTITY rejection performed in `assertNoExternalEntities`.
+const XSLTPROC_FLAGS = ['--nonet'];
+
+const DOCTYPE_REGEX = /<!DOCTYPE\b/i;
+const ENTITY_DECL_REGEX = /<!ENTITY\b/i;
+
+// Reject XForms that declare a DOCTYPE or an external entity. CHT XForms have
+// no legitimate need for either, and accepting them allows admin-uploaded
+// forms to exfiltrate files from the api container via xsltproc (XXE / CWE-611,
+// see #10209).
+const assertNoExternalEntities = formXml => {
+  const xml = String(formXml);
+  if (DOCTYPE_REGEX.test(xml) || ENTITY_DECL_REGEX.test(xml)) {
+    throw new Error(
+      'Form XML must not declare a DOCTYPE or external entities. ' +
+      'See https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing'
+    );
+  }
+};
 
 const processErrorHandler = (xsltproc, err, reject) => {
   xsltproc.stdin.end();
@@ -34,7 +56,13 @@ const processErrorHandler = (xsltproc, err, reject) => {
 
 const transform = (formXml, stylesheet) => {
   return new Promise((resolve, reject) => {
-    const xsltproc = childProcess.spawn(XSLTPROC_CMD, [ stylesheet, '-' ]);
+    try {
+      assertNoExternalEntities(formXml);
+    } catch (err) {
+      logger.error(err.message);
+      return reject(err);
+    }
+    const xsltproc = childProcess.spawn(XSLTPROC_CMD, [ ...XSLTPROC_FLAGS, stylesheet, '-' ]);
     let stdout = '';
     let stderr = '';
     xsltproc.stdout.on('data', data => stdout += data);

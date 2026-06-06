@@ -20,6 +20,7 @@ const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
 const PARENT_FIELD_NOT_PROVIDED = 'parent_field_not_provided';
 const PARENT_INVALID = 'parent_invalid';
+const { DOC_TYPES } = require('@medic/constants');
 
 const findFirstDefinedValue = (doc, fields) => {
   const definedField = fields.find(field => doc.fields[field] !== undefined && doc.fields[field] !== null);
@@ -693,7 +694,7 @@ module.exports = {
   },
   filter: ({ doc, info }) => {
     return Boolean(
-      doc.type === 'data_record' &&
+      doc.type === DOC_TYPES.DATA_RECORD &&
       getRegistrationConfig(getConfig(), doc.form) &&
       !transitionUtils.hasRun(info, NAME) &&
       utils.isValidSubmission(doc) // requires either an xform, a known submitter or public form for SMS

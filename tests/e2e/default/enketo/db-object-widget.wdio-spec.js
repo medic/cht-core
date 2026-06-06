@@ -72,11 +72,11 @@ describe('DB Object Widget', () => {
             name: offlineUser.contact.name,
             sex: offlineUser.contact.sex
           },
-          user_contact: {
-            _id: offlineUser.contact._id,
-            name: offlineUser.contact.name,
-            sex: offlineUser.contact.sex
-          },
+        },
+        user_contact: {
+          _id: offlineUser.contact._id,
+          name: offlineUser.contact.name,
+          sex: offlineUser.contact.sex
         },
         people: {
           user_contact: {

@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import * as registrationUtils from '@medic/registration-utils';
+import { DOC_TYPES } from '@medic/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class ContactChangeFilterService {
   }
 
   private isReport(change) {
-    return !!change.doc.form && change.doc.type === 'data_record';
+    return !!change.doc.form && change.doc.type === DOC_TYPES.DATA_RECORD;
   }
 
   private matchReportSubject(report, contact) {

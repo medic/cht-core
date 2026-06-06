@@ -1,10 +1,11 @@
 const { buildViewMapFn } = require('./utils');
 const medicOfflineFreetext = require('../../../../src/js/bootstrapper/offline-ddocs/medic-offline-freetext');
 const { expect } = require('chai');
+const { DOC_TYPES } = require('@medic/constants');
 
 const createReport = (data = {}) => {
   return {
-    type: 'data_record',
+    type: DOC_TYPES.DATA_RECORD,
     form: 'test',
     reported_date: 1466466049001,
     ...data,

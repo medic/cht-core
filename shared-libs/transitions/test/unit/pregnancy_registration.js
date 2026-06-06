@@ -7,6 +7,7 @@ const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const db = require('../../src/db');
 const logger = require('@medic/logger');
+const { DOC_TYPES } = require('@medic/constants');
 
 let transitionUtils;
 let transition;
@@ -121,43 +122,43 @@ describe('pregnancy registration with weeks since LMP', () => {
   });
 
   it('filter fails with no clinic phone and private form', () => {
-    const doc = { form: 'p', type: 'data_record' };
+    const doc = { form: 'p', type: DOC_TYPES.DATA_RECORD };
     sinon.stub(utils, 'getForm').returns({ public_form: false });
     assert(!transition.filter({ doc, info: {} }));
   });
 
   it('filter does not fail if doc has errors', () => {
-    const doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ], contact: { phone: '+123' } };
+    const doc = { form: 'p', type: DOC_TYPES.DATA_RECORD, errors: [ 'some error ' ], contact: { phone: '+123' } };
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     assert(transition.filter({ doc, info: {} }));
   });
 
   it('filter fails if form is unknown', () => {
-    const doc = { form: 'x', type: 'data_record', contact: { phone: '+123' }};
+    const doc = { form: 'x', type: DOC_TYPES.DATA_RECORD, contact: { phone: '+123' }};
     assert(!transition.filter({ doc }));
   });
 
   it('filter succeeds with no clinic phone if public form', () => {
-    const doc = { form: 'p', type: 'data_record'};
+    const doc = { form: 'p', type: DOC_TYPES.DATA_RECORD};
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     assert(transition.filter({ doc, info: {} }));
   });
 
   it('filter succeeds with populated doc', () => {
-    const doc = { form: 'p', type: 'data_record', contact: { phone: '+123' }};
+    const doc = { form: 'p', type: DOC_TYPES.DATA_RECORD, contact: { phone: '+123' }};
     sinon.stub(utils, 'getForm').returns({});
     assert(transition.filter({ doc, info: {} }));
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0', () => {
-    const doc = { fields: { lmp: 0 }, type: 'data_record' };
+    const doc = { fields: { lmp: 0 }, type: DOC_TYPES.DATA_RECORD };
     transition.setExpectedBirthDate(doc);
     assert.equal(doc.lmp_date, null);
     assert.equal(doc.expected_date, null);
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10', () => {
-    const doc = { fields: { lmp: '10', type: 'data_record'} };
+    const doc = { fields: { lmp: '10', type: DOC_TYPES.DATA_RECORD} };
     const start = moment().startOf('day');
 
     transition.setExpectedBirthDate(doc);
@@ -169,7 +170,7 @@ describe('pregnancy registration with weeks since LMP', () => {
 
   it('setExpectedBirthDate sets lmp_date and expected_date correctly when doc has reported_date', () => {
     const reported_date = moment().subtract(1, 'week');
-    const doc = { fields: { lmp: '5', type: 'data_record' }, reported_date: reported_date.valueOf() };
+    const doc = { fields: { lmp: '5', type: DOC_TYPES.DATA_RECORD }, reported_date: reported_date.valueOf() };
 
     transition.setExpectedBirthDate(doc);
 
@@ -187,7 +188,7 @@ describe('pregnancy registration with weeks since LMP', () => {
 
     const doc = {
       form: 'p',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: 'abc',
         lmp: 5
@@ -208,7 +209,7 @@ describe('pregnancy registration with weeks since LMP', () => {
 
     const doc = {
       form: 'ep',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_id: '12345',
         lmp: 5
@@ -227,7 +228,7 @@ describe('pregnancy registration with weeks since LMP', () => {
 
     const doc = {
       form: 'ep',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_id: '12345',
         lmp: 5
@@ -255,7 +256,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     const doc = {
       _id: 'doc_id',
       form: 'p',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: { _id: 'contact', parent: { _id: 'parent' } },
       fields: {
         patient_name: 'abc',
@@ -291,7 +292,7 @@ describe('pregnancy registration with weeks since LMP', () => {
 
     const doc = {
       form: 'p',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: 'abc',
         lmp: 5
@@ -313,7 +314,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     const doc = {
       form: 'p',
       from: '+12345',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: '',
         lmp: 5
@@ -333,7 +334,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     const doc = {
       form: 'p',
       from: '+1234',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: '',
         lmp: 5
@@ -351,7 +352,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     const doc = {
       form: 'p',
       from: '+1234',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: 'hi',
         lmp: 45
@@ -369,7 +370,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     const doc = {
       form: 'p',
       from: '+123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: '',
         lmp: 45
@@ -386,7 +387,7 @@ describe('pregnancy registration with weeks since LMP', () => {
   it('mismatched form returns false', done => {
     const doc = {
       form: 'x',
-      type: 'data_record'
+      type: DOC_TYPES.DATA_RECORD
     };
     transition.onMatch({ doc: doc })
       .then(() => {
@@ -402,7 +403,7 @@ describe('pregnancy registration with weeks since LMP', () => {
     const doc = {
       form: 'p',
       from: '+123',
-      type: 'data_record'
+      type: DOC_TYPES.DATA_RECORD
     };
     return transition.onMatch({ doc: doc }).then(function(changed) {
       assert.equal(changed, true);
@@ -514,7 +515,7 @@ describe('pregnancy registration with exact LMP date', () => {
         lmp_date: eightWeeksAgo.valueOf()
       },
       reported_date: today.valueOf(),
-      type: 'data_record'
+      type: DOC_TYPES.DATA_RECORD
     };
 
     transition.setExpectedBirthDate(doc);
@@ -529,7 +530,7 @@ describe('pregnancy registration with exact LMP date', () => {
 
     const doc = {
       form: 'l',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       reported_date: today.valueOf(),
       fields: {
         lmp_date: eightWeeksAgo.valueOf(),
@@ -549,7 +550,7 @@ describe('pregnancy registration with exact LMP date', () => {
     const doc = {
       form: 'l',
       from: '+1234',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: 'hi',
         lmp_date: 'x'
@@ -571,7 +572,7 @@ describe('pregnancy registration with exact LMP date', () => {
     const doc = {
       form: 'l',
       from: '+123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: '',
         lmp_date: null
@@ -596,7 +597,7 @@ describe('pregnancy registration with exact LMP date', () => {
 
     const doc = {
       form: 'l',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         patient_name: 'abc',
         lmp_date: eightWeeksAgo.clone().add({day: 1}).valueOf()
@@ -617,7 +618,7 @@ describe('pregnancy registration with exact LMP date', () => {
 
     const doc = {
       form: 'l',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       fields: {
         lmp_date: today.clone().subtract({weeks: 40, day: 1}).valueOf(),
         patient_name: 'abc'

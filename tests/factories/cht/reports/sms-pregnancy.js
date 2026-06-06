@@ -1,19 +1,20 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const person = require('../contacts/person');
+const { DOC_TYPES } = require('@medic/constants');
 
 const message = () => {
   return new Factory()
     .attr('to', '+64275555556')
     .attr('message', 'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016')
-    .sequence('uuid', uuid.v4);
+    .sequence('uuid', uuid);
 };
 
 const smsTask = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
+    .sequence('_id', uuid)
     .attr('messages', [message().build()])
-    .attr('gateway_ref', uuid.v4)
+    .attr('gateway_ref', uuid)
     .attr('state', 'pending')
     .attr('state_history', [
       {
@@ -29,7 +30,7 @@ const smsScheduledTask = () => {
     .attr('group', 2)
     .attr('type', 'ANC Reminders LMP')
     .attr('messages', [message().build()])
-    .attr('gateway_ref', uuid.v4)
+    .attr('gateway_ref', uuid)
     .attr('state', 'scheduled')
     .attr('state_history', [
       {
@@ -82,8 +83,8 @@ const sms_message = {
 
 const pregnancy = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
-    .attr('type', 'data_record')
+    .sequence('_id', uuid)
+    .attr('type', DOC_TYPES.DATA_RECORD)
     .attr('from', '+64275555556')
     .attr('form', 'P')
     .attr('tasks', [smsTask().build()])

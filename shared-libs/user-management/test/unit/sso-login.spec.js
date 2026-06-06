@@ -5,6 +5,7 @@ const config = require('../../src/libs/config');
 const service = require('../../src/sso-login');
 const passwords = require('../../src/libs/passwords');
 const db = require('../../src/libs/db');
+const { PREFIXES } = require('@medic/constants');
 
 describe('SSO Login service', () => {
   const GENERATED_PASSWORD = 'generatedPassword';
@@ -172,12 +173,12 @@ describe('SSO Login service', () => {
     it('should return error message when duplicate oidc user exists', async () => {
       const data = { oidc_username: 'test' };
       const user = {
-        _id: 'org.couchdb.user:test',
+        _id: PREFIXES.COUCH_USER + 'test',
         oidc_username: 'test'
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
       db.users.query.resolves({ rows: [
-        { doc: { _id: 'org.couchdb.user:test' } },
+        { doc: { _id: PREFIXES.COUCH_USER + 'test' } },
         { doc: { _id: 'duplicate-user' } }
       ] });
 
@@ -189,7 +190,7 @@ describe('SSO Login service', () => {
       });
       expect(data).to.deep.equal({ oidc_username: 'test' });
       expect(user).to.deep.equal({
-        _id: 'org.couchdb.user:test',
+        _id: PREFIXES.COUCH_USER + 'test',
         oidc_username: 'test'
       });
       expect(config.get.calledOnceWithExactly('oidc_provider')).to.be.true;
@@ -203,18 +204,18 @@ describe('SSO Login service', () => {
     it('should not return error message when oidc user is valid', async () => {
       const data = { oidc_username: 'test' };
       const user = {
-        _id: 'org.couchdb.user:test',
+        _id: PREFIXES.COUCH_USER + 'test',
         oidc_username: 'test',
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
-      db.users.query.resolves({ rows: [{ doc: { _id: 'org.couchdb.user:test' } }] });
+      db.users.query.resolves({ rows: [{ doc: { _id: PREFIXES.COUCH_USER + 'test' } }] });
 
       const result = await service.validateSsoLoginUpdate(data, user);
 
       expect(result).to.equal(undefined);
       expect(data).to.deep.equal({ oidc_username: 'test' });
       expect(user).to.deep.equal({
-        _id: 'org.couchdb.user:test',
+        _id: PREFIXES.COUCH_USER + 'test',
         oidc_username: 'test',
         password_change_required: false,
         password: GENERATED_PASSWORD,
@@ -230,21 +231,21 @@ describe('SSO Login service', () => {
     it('should allow disabling token_login at the same time oidc_login is enabled', async () => {
       const data = { oidc_username: 'test', token_login: false };
       const user = {
-        _id: 'org.couchdb.user:test',
+        _id: PREFIXES.COUCH_USER + 'test',
         oidc_username: 'test',
         token_login: {
           active: true
         },
       };
       config.get.returns({ 'oidc_provider': { 'client_id': 'testClientId' } });
-      db.users.query.resolves({ rows: [{ doc: { _id: 'org.couchdb.user:test' } }] });
+      db.users.query.resolves({ rows: [{ doc: { _id: PREFIXES.COUCH_USER + 'test' } }] });
 
       const result = await service.validateSsoLoginUpdate(data, user);
 
       expect(result).to.equal(undefined);
       expect(data).to.deep.equal({ oidc_username: 'test', token_login: false });
       expect(user).to.deep.equal({
-        _id: 'org.couchdb.user:test',
+        _id: PREFIXES.COUCH_USER + 'test',
         oidc_username: 'test',
         password_change_required: false,
         password: GENERATED_PASSWORD,

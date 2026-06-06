@@ -3,6 +3,7 @@ const assert = require('chai').assert;
 const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('conditional alerts', () => {
   let transition;
@@ -27,12 +28,12 @@ describe('conditional alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'STCK',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), false);
     assert.equal(utils.isValidSubmission.callCount, 1);
-    assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: 'data_record' }]);
+    assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: DOC_TYPES.DATA_RECORD }]);
   });
 
   it('when document type matches pass filter', () => {
@@ -41,12 +42,12 @@ describe('conditional alerts', () => {
     assert.equal(transition.filter({
       doc: {
         form: 'STCK',
-        type: 'data_record'
+        type: DOC_TYPES.DATA_RECORD
       },
       info: {}
     }), true);
     assert.equal(utils.isValidSubmission.callCount, 1);
-    assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: 'data_record' }]);
+    assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: DOC_TYPES.DATA_RECORD }]);
   });
 
   it('when no alerts are registered do nothing', () => {

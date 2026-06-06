@@ -8,7 +8,7 @@ import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { DOC_IDS } from '@medic/constants';
+import { DOC_IDS, PREFIXES } from '@medic/constants';
 
 const PRIVACY_POLICIES_DOC_ID = DOC_IDS.PRIVACY_POLICIES;
 
@@ -51,7 +51,7 @@ describe('PrivacyPoliciesService', () => {
     it('should return false/true when no privacy polices doc', async () => {
       languageService.get.resolves('en');
       localDb.get.rejects({ status: 404 });
-      userSettingsService.get.resolves({ _id: 'org.couchdb.user:user', known: true });
+      userSettingsService.get.resolves({ _id: PREFIXES.COUCH_USER + 'user', known: true });
 
       const result = await service.hasAccepted();
 
@@ -93,7 +93,7 @@ describe('PrivacyPoliciesService', () => {
         },
       };
       localDb.get.resolves(privacyPoliciesDoc);
-      userSettingsService.get.resolves({ _id: 'org.couchdb.user:user', known: true });
+      userSettingsService.get.resolves({ _id: PREFIXES.COUCH_USER + 'user', known: true });
 
       const result = await service.hasAccepted();
 
@@ -118,7 +118,7 @@ describe('PrivacyPoliciesService', () => {
         },
       };
       localDb.get.resolves(privacyPoliciesDoc);
-      userSettingsService.get.resolves({ _id: 'org.couchdb.user:user', known: true });
+      userSettingsService.get.resolves({ _id: PREFIXES.COUCH_USER + 'user', known: true });
 
       const result = await service.hasAccepted();
 
@@ -139,7 +139,7 @@ describe('PrivacyPoliciesService', () => {
         },
       };
       localDb.get.resolves(privacyPoliciesDoc);
-      userSettingsService.get.resolves({ _id: 'org.couchdb.user:user', known: true });
+      userSettingsService.get.resolves({ _id: PREFIXES.COUCH_USER + 'user', known: true });
 
       const result = await service.hasAccepted();
 
@@ -160,7 +160,7 @@ describe('PrivacyPoliciesService', () => {
         },
       };
       localDb.get.resolves(privacyPoliciesDoc);
-      userSettingsService.get.resolves({ _id: 'org.couchdb.user:user', known: true });
+      userSettingsService.get.resolves({ _id: PREFIXES.COUCH_USER + 'user', known: true });
 
       const result = await service.hasAccepted();
 
@@ -182,7 +182,7 @@ describe('PrivacyPoliciesService', () => {
       };
       localDb.get.resolves(privacyPoliciesDoc);
       userSettingsService.get.resolves({
-        _id: 'org.couchdb.user:user',
+        _id: PREFIXES.COUCH_USER + 'user',
         known: true,
         privacy_policy_acceptance_log: [
           { language: 'en', digest: 'digest1' },
@@ -212,7 +212,7 @@ describe('PrivacyPoliciesService', () => {
       };
       localDb.get.resolves(privacyPoliciesDoc);
       userSettingsService.get.resolves({
-        _id: 'org.couchdb.user:user',
+        _id: PREFIXES.COUCH_USER + 'user',
         known: true,
         privacy_policy_acceptance_log: [
           { language: 'en', digest: 'digest1' },

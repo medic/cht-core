@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const db = require('../../../src/db');
 const serverUtils = require('../../../src/server-utils');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 
 const controller =  require('../../../src/controllers/changes');
 let req;
@@ -28,7 +28,7 @@ describe('Changes controller', () => {
       changes: [
         { id: DOC_IDS.SERVICE_WORKER_META },
         { id: '_design/medic-client', },
-        { id: 'org.couchdb.user:user', },
+        { id: PREFIXES.COUCH_USER + 'user', },
         { id: DOC_IDS.SETTINGS },
       ],
     });
@@ -37,13 +37,13 @@ describe('Changes controller', () => {
       '_design/medic-client',
       DOC_IDS.SERVICE_WORKER_META,
       DOC_IDS.SETTINGS,
-      'org.couchdb.user:user',
+      PREFIXES.COUCH_USER + 'user',
     ] }]]);
     expect(res.json.args).to.deep.equal([[{
       changes: [
         { id: DOC_IDS.SERVICE_WORKER_META },
         { id: '_design/medic-client', },
-        { id: 'org.couchdb.user:user', },
+        { id: PREFIXES.COUCH_USER + 'user', },
         { id: DOC_IDS.SETTINGS },
       ],
     }]]);

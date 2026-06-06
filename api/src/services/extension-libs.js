@@ -1,6 +1,7 @@
 const db = require('../db');
 
-const DOC_ID = 'extension-libs';
+const { DOC_IDS } = require('@medic/constants');
+const DOC_ID = DOC_IDS.EXTENSION_LIBS;
 
 const getLibsDoc = () => {
   return db.medic.get(DOC_ID, { attachments: true })

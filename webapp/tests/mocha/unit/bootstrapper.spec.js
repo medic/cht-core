@@ -13,6 +13,7 @@ const purger = require('../../../src/js/bootstrapper/purger');
 const utils = require('../../../src/js/bootstrapper/utils');
 const initialReplication = require('../../../src/js/bootstrapper/initial-replication');
 const offlineDdocs = require('../../../src/js/bootstrapper/offline-ddocs');
+const { HTTP_HEADERS } = require('@medic/constants');
 
 let originalDocument;
 let originalWindow;
@@ -155,7 +156,7 @@ describe('bootstrapper', () => {
       remote: { skip_setup: true },
       remote_headers: {
         'Accept': 'application/json',
-        'medic-replication-id': 'some-randomn-uuid'
+        [HTTP_HEADERS.MEDIC_REPLICATION_ID]: 'some-randomn-uuid'
       }
     });
     assert.equal(utils.setOptions.callCount, 1);

@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const chai = require('chai');
 const utils = require('../src/index');
+const { DOC_TYPES } = require('@medic/constants');
 
 describe('registrationUtils', () => {
 
@@ -15,7 +16,7 @@ describe('registrationUtils', () => {
 
     it('should return false when doc has errors', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         content_type: 'xml',
         errors: []
@@ -27,7 +28,7 @@ describe('registrationUtils', () => {
 
     it('should return false when no config', () => {
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         content_type: 'xml',
         errors: []
@@ -50,7 +51,7 @@ describe('registrationUtils', () => {
       ];
 
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         content_type: 'xml',
         errors: []
@@ -64,7 +65,7 @@ describe('registrationUtils', () => {
       config.forms = { form2: {}, form5: {} };
 
       let invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         content_type: 'xml',
         contact: true
       };
@@ -80,7 +81,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
       invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form5',
         contact: true
       };
@@ -88,7 +89,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
       invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form3',
         contact: true
       };
@@ -96,28 +97,28 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
       invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form2',
       };
       // non-public configured sms form with unknown sender
       chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
       invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: '!!!~~~~////',
       };
       // no alphanumeric sequence found in form field
       chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
       invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: '!!!!something~~~~form2',
       };
       // invalid form field
       chai.expect(utils.isValidRegistration(invalidDoc, config)).to.equal(false);
 
       invalidDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: '!!form4~~something',
         content_type: 'xml'
       };
@@ -128,7 +129,7 @@ describe('registrationUtils', () => {
     it('should return false when form does not have configured registrations', () => {
       config.registrations = [{ form: 'form1' }];
       const doc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form',
         content_type: 'xml',
         errors: []
@@ -144,7 +145,7 @@ describe('registrationUtils', () => {
       config.forms = { form2: {}, form3: { public_form: true }, FORM5: { } };
 
       let validDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form1',
         content_type: 'xml',
       };
@@ -152,7 +153,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
 
       validDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form2',
         contact: true
       };
@@ -163,7 +164,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(false);
 
       validDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form3',
         contact: true
       };
@@ -174,7 +175,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
 
       validDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'FORM5',
         contact: true
       };
@@ -182,7 +183,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
 
       validDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: 'form4',
         content_type: 'xml'
       };
@@ -190,7 +191,7 @@ describe('registrationUtils', () => {
       chai.expect(utils.isValidRegistration(validDoc, config)).to.equal(true);
 
       validDoc = {
-        type: 'data_record',
+        type: DOC_TYPES.DATA_RECORD,
         form: '!!form4~~',
         content_type: 'xml'
       };
@@ -237,16 +238,18 @@ describe('registrationUtils', () => {
     });
     describe('report', () => {
       it('should return correct values', () => {
-        chai.expect(utils.getSubjectIds({ type: 'data_record' })).to.have.members([]);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', _id: 'a' })).to.have.members([]);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', patient_id: 'b' })).to.have.members(['b']);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', place_id: 'c' })).to.have.members(['c']);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', patient_uuid: 'd' })).to.have.members(['d']);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', place_uuid: 'e' })).to.have.members(['e']);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', fields: { patient_uuid: 'f' } })).to.have.members(['f']);
-        chai.expect(utils.getSubjectIds({ type: 'data_record', fields: { place_uuid: 'g' } })).to.have.members(['g']);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD })).to.have.members([]);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, _id: 'a' })).to.have.members([]);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, patient_id: 'b' })).to.have.members(['b']);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, place_id: 'c' })).to.have.members(['c']);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, patient_uuid: 'd' })).to.have.members(['d']);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, place_uuid: 'e' })).to.have.members(['e']);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, 
+          fields: { patient_uuid: 'f' } })).to.have.members(['f']);
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, 
+          fields: { place_uuid: 'g' } })).to.have.members(['g']);
         chai.expect(utils.getSubjectIds({
-          type: 'data_record',
+          type: DOC_TYPES.DATA_RECORD,
           patient_id: 'a',
           place_id: 'b',
           patient_uuid: 'c',
@@ -260,7 +263,7 @@ describe('registrationUtils', () => {
         })).to.have.members(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']);
       });
       it('dedupes the ids', () => {
-        chai.expect(utils.getSubjectIds({ type: 'data_record', patient_id: 'a', fields: { patient_id: 'a' } }))
+        chai.expect(utils.getSubjectIds({ type: DOC_TYPES.DATA_RECORD, patient_id: 'a', fields: { patient_id: 'a' } }))
           .to.have.members(['a']);
       });
     });

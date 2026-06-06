@@ -10,6 +10,7 @@ import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact } from '@medic/cht-datasource';
+import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
 
 describe('DeleteDocs service', () => {
 
@@ -67,7 +68,7 @@ describe('DeleteDocs service', () => {
   it('throws if silent errors in bulkDocs', () => {
     const clinic = {
       _id: 'b',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact: {
         name: 'sally',
         phone: '+555'
@@ -109,7 +110,7 @@ describe('DeleteDocs service', () => {
   it('does not allow deleting child and parent that will conflict', () => {
     const clinic = {
       _id: 'b',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact: {
         _id: 'a',
         name: 'sally'
@@ -142,12 +143,12 @@ describe('DeleteDocs service', () => {
     const record = {
       _id: 'xyz',
       _rev: '123',
-      type: 'data_record'
+      type: DOC_TYPES.DATA_RECORD
     };
     const expected = {
       _id: 'xyz',
       _rev: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       _deleted: true
     };
     return service.delete(record).then(function() {
@@ -164,23 +165,23 @@ describe('DeleteDocs service', () => {
     const record1 = {
       _id: 'xyz',
       _rev: '123',
-      type: 'data_record'
+      type: DOC_TYPES.DATA_RECORD
     };
     const record2 = {
       _id: 'abc',
       _rev: '456',
-      type: 'data_record'
+      type: DOC_TYPES.DATA_RECORD
     };
     const expected1 = {
       _id: 'xyz',
       _rev: '123',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       _deleted: true
     };
     const expected2 = {
       _id: 'abc',
       _rev: '456',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       _deleted: true
     };
     return service.delete([ record1, record2 ]).then(() => {
@@ -238,7 +239,7 @@ describe('DeleteDocs service', () => {
   it('does not modify the given array - #2417', () => {
     const clinic = {
       _id: 'b',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact: {
         _id: 'a',
         name: 'sally'
@@ -267,7 +268,7 @@ describe('DeleteDocs service', () => {
   it('minifies lineage for circular referenced report #4076', () => {
     const clinic = {
       _id: 'b',
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
       contact: {
         _id: 'a',
       }
@@ -282,7 +283,7 @@ describe('DeleteDocs service', () => {
 
     const report = {
       _id: 'c',
-      type: 'data_record',
+      type: DOC_TYPES.DATA_RECORD,
       contact: person
     };
 
