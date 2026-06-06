@@ -25,7 +25,7 @@
         <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'last_visited_date'" (click)="applySort('last_visited_date')">{{'contacts.results.sort.date.last.visited' | translate}}</a>
       </li>
       <li *ngIf="taskCountExtras" role="presentation">
-        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'task_count'" (click)="applySort('task_count')">{{'contacts.results.sort.task.count' | translate}}</a>
+        <a role="menuitem" tabindex="-1" [class.selected]="sortDirection === 'task_count'" (click)="applySort('task_count')"><span>{{'contacts.results.sort.task.count' | translate}}</span></a>
       </li>
     </ul>
   </span>
