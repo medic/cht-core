@@ -154,7 +154,7 @@ const updateTransition = (change, transition, ok) => {
 const saveTransitions = (change, clearInvalid = false) => {
   return modifyInfoDoc(change.id, infoDoc => {
     infoDoc.transitions = (change.info && change.info.transitions) || {};
-    // Clear the mid-write marker in the same write that commits the transitions (API branch only).
+    // If there is a mid-write flag set, clear it now to mark the infoDoc valid again
     if (clearInvalid) {
       delete infoDoc.invalid_rev;
     }
@@ -179,19 +179,23 @@ const clearInvalidRev = (id) => {
   });
 };
 
-// Fetch the infodoc, apply `modify`, and save, retrying on conflict so the change always lands on the
-// latest rev. If the infodoc is missing, `fallback` is created and saved when provided; otherwise the
-// 404 is raised.
-const modifyInfoDoc = async (id, modify, fallback) => {
-  let infoDoc;
+// Fetch the infodoc. If it is missing, return `fallback` (to be created) when provided;
+// otherwise the 404 is raised.
+const fetchInfoDoc = async (id, fallback) => {
   try {
-    infoDoc = await db.sentinel.get(getInfoDocId(id));
+    return await db.sentinel.get(getInfoDocId(id));
   } catch (err) {
     if (err.status !== 404 || !fallback) {
       throw err;
     }
-    infoDoc = fallback;
+    return fallback;
   }
+};
+
+// Fetch the infodoc, apply `modify`, and save, retrying on conflict so the change always lands on the
+// latest rev.
+const modifyInfoDoc = async (id, modify, fallback) => {
+  const infoDoc = await fetchInfoDoc(id, fallback);
 
   modify(infoDoc);
 

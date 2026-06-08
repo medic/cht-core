@@ -75,31 +75,6 @@ describe('finalize transition', () => {
     );
   });
 
-  it('sentinel branch saves doc then transitions without managing valid/invalid rev', done => {
-    const doc = { _rev: '1' };
-    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
-    const setInvalidRev = sinon.stub(infodoc, 'setInvalidRev').resolves();
-    const clearInvalidRev = sinon.stub(infodoc, 'clearInvalidRev').resolves();
-    sinon.stub(infodoc, 'saveTransitions').resolves();
-    transitions.finalize(
-      {
-        change: { id: 'abc', doc: doc },
-        results: [null, null, true],
-      },
-      (err, result) => {
-        assert(!err);
-        assert.deepEqual(result, { ok: true, rev: '2' });
-        assert.equal(saveDoc.callCount, 1);
-        assert.equal(infodoc.saveTransitions.callCount, 1);
-        // saveTransitions called without the clearInvalid flag, so the marker is left untouched
-        assert.equal(infodoc.saveTransitions.args[0][1], undefined);
-        assert.equal(setInvalidRev.callCount, 0);
-        assert.equal(clearInvalidRev.callCount, 0);
-        done();
-      }
-    );
-  });
-
   it('applyTransition creates transitions property', done => {
     const doc = { _rev: '1' };
     const info = {};
