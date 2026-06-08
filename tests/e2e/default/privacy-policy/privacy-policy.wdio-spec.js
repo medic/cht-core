@@ -5,7 +5,7 @@ const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy
 const userFactory = require('@factories/cht/users/users');
 const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
 const placeFactory = require('@factories/cht/contacts/place');
-const { PREFIXES } = require('@medic/constants');
+const { PREFIXES, CONTACT_TYPES } = require('@medic/constants');
 
 describe('Privacy policy', () => {
   const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
@@ -18,7 +18,7 @@ describe('Privacy policy', () => {
     userFactory.build({ username: 'onlineuser', roles: ['program_officer']})
   ];
 
-  const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+  const parent = placeFactory.place().build({ _id: 'dist1', type: CONTACT_TYPES.DISTRICT_HOSPITAL });
 
   users.forEach((user) => {
     describe(`for an ${user.isOffline ? 'offline':'online'} user`, () => {

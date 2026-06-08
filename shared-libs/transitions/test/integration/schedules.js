@@ -4,6 +4,7 @@ const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 const contact = {
   phone: '+1234',
@@ -636,7 +637,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const place = { muted: true, parent: { contact: { phone: '+5551596' } }, type: 'clinic' };
+    const place = { muted: true, parent: { contact: { phone: '+5551596' } }, type: CONTACT_TYPES.CLINIC };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',
@@ -694,7 +695,7 @@ describe('functional schedules', () => {
       }]
     });
 
-    const place = { muted: false, parent: { contact: { phone: '+5551596' } }, type: 'clinic' };
+    const place = { muted: false, parent: { contact: { phone: '+5551596' } }, type: CONTACT_TYPES.CLINIC };
     const doc = {
       reported_date: moment().toISOString(),
       form: 'PATR',

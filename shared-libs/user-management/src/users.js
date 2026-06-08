@@ -13,7 +13,7 @@ const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
 const passwords = require('./libs/passwords');
-const { Person, Place, Qualifier, Contact } = require('@medic/cht-datasource');
+const { Person, Place, Qualifier, Contact, getDatasource } = require('@medic/cht-datasource');
 const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const { USER_ROLES, PREFIXES } = require('@medic/constants');
 
@@ -478,7 +478,8 @@ const isPasswordChangeRequired = (user, data, fullAccess) => {
   }
 
   const userRoles = data.roles || user?.roles;
-  return !roles.hasAllPermissions(userRoles, ['can_skip_password_change']);
+  const chtDatasource = getDatasource(dataContext);
+  return !chtDatasource.v1.hasPermissions(['can_skip_password_change'], userRoles);
 };
 
 const getUserUpdates = (user, data, fullAccess = false) => {
@@ -635,7 +636,8 @@ const validateAllowedMultipleFacilities = (data, user) => {
   }
 
   const userRoles = data.roles || user?.roles;
-  if (!userRoles || !roles.hasAllPermissions(userRoles, ['can_have_multiple_places'])) {
+  const chtDatasource = getDatasource(dataContext);
+  if (!userRoles || !chtDatasource.v1.hasPermissions(['can_have_multiple_places'], userRoles)) {
     throw error400(
       'This user cannot have multiple places',
       'field is required',

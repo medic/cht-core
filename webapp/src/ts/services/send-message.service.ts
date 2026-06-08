@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { filter as _filter, flattenDeep as _flattenDeep, groupBy as _groupBy, uniqBy as _uniqBy } from 'lodash-es';
 import { Dictionary } from 'lodash';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import * as taskUtils from '@medic/task-utils';
 import * as phoneNumber from '@medic/phone-number';
 import { Store } from '@ngrx/store';
@@ -45,7 +45,7 @@ export class SendMessageService {
       kujua_message: true,
       type: DOC_TYPES.DATA_RECORD,
       sent_by: (user && user.name) || 'unknown',
-      _id: uuidv4()
+      _id: uuid()
     };
   }
 
@@ -160,7 +160,7 @@ export class SendMessageService {
           to: phoneNumber.normalize(settings, recipient.phone) || recipient.phone,
           contact: this.extractLineageService.extract(recipient.contact),
           message: message,
-          uuid: uuidv4(),
+          uuid: uuid(),
         },
       ],
     };

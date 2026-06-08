@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
-const { PREFIXES, DOC_TYPES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('docs_by_replication_key', () => {
   let docByPlaceIds;
@@ -43,7 +43,7 @@ describe('docs_by_replication_key', () => {
     {
       _id: 'testuserplace',
       reported_date: 1,
-      type: 'clinic',
+      type: CONTACT_TYPES.CLINIC,
     },
     {
       _id: 'test_kujua_message',
@@ -148,6 +148,24 @@ describe('docs_by_replication_key', () => {
       type: 'target',
       user: PREFIXES.COUCH_USER + 'username',
       owner: 'testuser',
+    },
+    {
+      // a null contact._id must not break indexing; the report still replicates by its patient subject
+      _id: 'report_with_null_submitter',
+      reported_date: 1,
+      form: 'V',
+      type: DOC_TYPES.DATA_RECORD,
+      patient_id: 'testpatient',
+      contact: { _id: null },
+    },
+    {
+      // a contact with no _id must not break indexing; the report still replicates by its patient subject
+      _id: 'report_with_no_submitter_id',
+      reported_date: 1,
+      form: 'V',
+      type: DOC_TYPES.DATA_RECORD,
+      patient_id: 'testpatient',
+      contact: {},
     },
   ];
 
@@ -382,6 +400,14 @@ describe('docs_by_replication_key', () => {
     it('should return target docs', () => {
       expect(docByPlaceIds).to.include('target_created_by_user');
       expect(docByPlaceIds).to.not.include('target_created_by_other_user');
+    });
+
+    it('should still index a report whose contact._id is null', () => {
+      expect(docByPlaceIds).to.include('report_with_null_submitter');
+    });
+
+    it('should still index a report whose contact has no _id', () => {
+      expect(docByPlaceIds).to.include('report_with_no_submitter_id');
     });
   });
 

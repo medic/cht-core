@@ -115,7 +115,7 @@ describe('messages', () => {
         parent: {
           parent: {
             parent: {
-              type: 'district_hospital',
+              type: CONTACT_TYPES.DISTRICT_HOSPITAL,
               contact: {
                 name: 'Kristen'
               }
