@@ -151,12 +151,12 @@ const updateTransition = (change, transition, ok) => {
   };
 };
 
-const saveTransitions = (change, clearInvalid = false) => {
+const saveTransitions = (change, clearStarted = false) => {
   return modifyInfoDoc(change.id, infoDoc => {
     infoDoc.transitions = (change.info && change.info.transitions) || {};
-    // If there is a mid-write flag set, clear it now to mark the infoDoc valid again
-    if (clearInvalid) {
-      delete infoDoc.invalid_rev;
+    // Clear the in-progress marker in the same write that commits the transitions (API branch only)
+    if (clearStarted) {
+      delete infoDoc.transitions_started;
     }
   }, change.info);
 };
@@ -167,15 +167,18 @@ const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
   }, infodoc);
 };
 
-const setInvalidRev = (id, invalidRev) => {
+// Mark the infodoc as having transitions in progress (API is running transitions and writing the doc).
+// Stored as a timestamp so stale markers from a crashed write are diagnosable; the locking logic only
+// checks presence/absence of the field.
+const markTransitionsStarted = (id) => {
   return modifyInfoDoc(id, infoDoc => {
-    infoDoc.invalid_rev = invalidRev;
+    infoDoc.transitions_started = new Date().toISOString();
   });
 };
 
-const clearInvalidRev = (id) => {
+const clearTransitionsStarted = (id) => {
   return modifyInfoDoc(id, infoDoc => {
-    delete infoDoc.invalid_rev;
+    delete infoDoc.transitions_started;
   });
 };
 
@@ -311,8 +314,8 @@ module.exports = {
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
   saveCompletedTasks: saveCompletedTasks,
-  setInvalidRev: setInvalidRev,
-  clearInvalidRev: clearInvalidRev,
+  markTransitionsStarted: markTransitionsStarted,
+  clearTransitionsStarted: clearTransitionsStarted,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
   // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup

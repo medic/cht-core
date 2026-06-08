@@ -605,38 +605,40 @@ describe('infodoc', () => {
       });
     });
 
-    it('clears invalid_rev when clearInvalid is set', () => {
-      const info = { _id: 'some-info', doc_id: 'some', invalid_rev: '1-abc' };
+    it('clears transitions_started when clearStarted is set', () => {
+      const info = { _id: 'some-info', doc_id: 'some', transitions_started: '2026-01-01T00:00:00.000Z' };
       const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
       return lib.saveTransitions(change, true).then(() => {
         const saved = db.sentinel.put.args[0][0];
-        assert.isUndefined(saved.invalid_rev);
+        assert.isUndefined(saved.transitions_started);
       });
     });
   });
 
-  describe('setInvalidRev / clearInvalidRev', () => {
-    it('setInvalidRev marks the infodoc mid-write', () => {
+  describe('markTransitionsStarted / clearTransitionsStarted', () => {
+    it('markTransitionsStarted marks the infodoc mid-write with a timestamp', () => {
       const info = { _id: 'some-info', doc_id: 'some' };
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return lib.setInvalidRev('some', '1-abc').then(() => {
+      return lib.markTransitionsStarted('some').then(() => {
         assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
-        assert.equal(db.sentinel.put.args[0][0].invalid_rev, '1-abc');
+        const saved = db.sentinel.put.args[0][0];
+        assert.isString(saved.transitions_started);
+        assert.isNotNaN(Date.parse(saved.transitions_started));
       });
     });
 
-    it('clearInvalidRev removes the mid-write marker', () => {
-      const info = { _id: 'some-info', doc_id: 'some', invalid_rev: '1-abc' };
+    it('clearTransitionsStarted removes the mid-write marker', () => {
+      const info = { _id: 'some-info', doc_id: 'some', transitions_started: '2026-01-01T00:00:00.000Z' };
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return lib.clearInvalidRev('some').then(() => {
-        assert.isUndefined(db.sentinel.put.args[0][0].invalid_rev);
+      return lib.clearTransitionsStarted('some').then(() => {
+        assert.isUndefined(db.sentinel.put.args[0][0].transitions_started);
       });
     });
 
@@ -647,7 +649,7 @@ describe('infodoc', () => {
       put.onCall(0).rejects({ status: 409 });
       put.onCall(1).resolves();
 
-      return lib.setInvalidRev('some', '1-abc').then(() => {
+      return lib.markTransitionsStarted('some').then(() => {
         assert.equal(db.sentinel.put.callCount, 2);
       });
     });
@@ -656,7 +658,7 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'get').resolves({ _id: 'some-info', doc_id: 'some' });
       sinon.stub(db.sentinel, 'put').rejects({ status: 500 });
 
-      return lib.setInvalidRev('some', '1-abc')
+      return lib.markTransitionsStarted('some')
         .then(() => assert.fail('should have thrown'))
         .catch(err => assert.equal(err.status, 500));
     });

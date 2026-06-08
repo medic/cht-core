@@ -101,8 +101,8 @@ describe('processDocs', () => {
     sinon.stub(transitions, 'applyTransition');
     sinon.stub(db.medic, 'put').resolves({ ok: true });
     sinon.stub(infodoc, 'saveTransitions').resolves();
-    sinon.stub(infodoc, 'setInvalidRev').resolves();
-    sinon.stub(infodoc, 'clearInvalidRev').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -150,8 +150,8 @@ describe('processDocs', () => {
 
       chai.expect(infodoc.saveTransitions.callCount).to.equal(3);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
-      chai.expect(infodoc.setInvalidRev.callCount).to.equal(1);
-      chai.expect(infodoc.setInvalidRev.calledWith('1')).to.equal(true);
+      chai.expect(infodoc.markTransitionsStarted.callCount).to.equal(1);
+      chai.expect(infodoc.markTransitionsStarted.calledWith('1')).to.equal(true);
     });
   });
 
@@ -182,8 +182,8 @@ describe('processDocs', () => {
       .withArgs(sinon.match({ _id: '3' })).resolves({ ok: true })
       .withArgs(sinon.match({ _id: '4' })).rejects({ error: 'error' });
     sinon.stub(infodoc, 'saveTransitions').resolves();
-    sinon.stub(infodoc, 'setInvalidRev').resolves();
-    sinon.stub(infodoc, 'clearInvalidRev').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
     // first doc is updated by at least one transition
     transitions.applyTransition
@@ -237,9 +237,9 @@ describe('processDocs', () => {
 
       chai.expect(infodoc.saveTransitions.callCount).to.equal(3);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
-      chai.expect(infodoc.setInvalidRev.callCount).to.equal(2);
-      chai.expect(infodoc.clearInvalidRev.callCount).to.equal(1);
-      chai.expect(infodoc.clearInvalidRev.calledWith('2')).to.equal(true);
+      chai.expect(infodoc.markTransitionsStarted.callCount).to.equal(2);
+      chai.expect(infodoc.clearTransitionsStarted.callCount).to.equal(1);
+      chai.expect(infodoc.clearTransitionsStarted.calledWith('2')).to.equal(true);
     });
   });
 });

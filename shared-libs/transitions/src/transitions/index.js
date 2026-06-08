@@ -48,7 +48,7 @@ let loadErrors = false;
 const MAX_INFODOC_WAIT = 5;
 const INFODOC_WAIT_INTERVAL = 100;
 
-const isInfoDocMidWrite = infoDoc => infoDoc && infoDoc.invalid_rev !== undefined;
+const isInfoDocMidWrite = infoDoc => infoDoc && infoDoc.transitions_started !== undefined;
 
 const getConsistentInfoDoc = (change, retriesLeft) => {
   return infodoc.get(change).then(infoDoc => {
@@ -282,8 +282,8 @@ const finalizeChange = async ({ change, results, manageInfoDocRev }) => {
   return manageInfoDocRev ? saveForApi(change) : saveForSentinel(change);
 };
 
-// Sentinel processing: save the doc, then record transitions. Sentinel never writes the invalid_rev
-// marker; it only reads it (see getConsistentInfoDoc) to skip docs API is still writing.
+// Sentinel processing: save the doc, then record transitions. Sentinel never writes the
+// transitions_started marker; it only reads it (see getConsistentInfoDoc) to skip docs API is writing.
 const saveForSentinel = async change => {
   const result = await saveDoc(change);
   logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
@@ -291,11 +291,11 @@ const saveForSentinel = async change => {
   return result;
 };
 
-// API processing: mark the infodoc mid-write (invalid_rev) around the doc write so a concurrent
+// API processing: mark the infodoc mid-write (transitions_started) around the doc write so a concurrent
 // sentinel read detects it and waits. The marker is cleared as part of the transitions write on
 // success, or rolled back on any failure after it's set.
 const saveForApi = async change => {
-  await infodoc.setInvalidRev(change.id, change.doc._rev ?? null);
+  await infodoc.markTransitionsStarted(change.id);
   try {
     const result = await saveDoc(change);
     logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
@@ -303,8 +303,8 @@ const saveForApi = async change => {
     return result;
   } catch (err) {
     await infodoc
-      .clearInvalidRev(change.id)
-      .catch(clearErr => logger.error(`error clearing invalid_rev on doc ${change.id}: %o`, clearErr));
+      .clearTransitionsStarted(change.id)
+      .catch(clearErr => logger.error(`error clearing transitions_started on doc ${change.id}: %o`, clearErr));
     throw err;
   }
 };
