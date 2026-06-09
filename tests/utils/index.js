@@ -1702,6 +1702,9 @@ const updateContainerNames = (project = PROJECT_NAME) => {
 };
 
 const getContainerName = (service, project = PROJECT_NAME) => {
+  if (service.includes('nouveau')) {
+    service = 'nouveau'; // naming here is inconsistent between container and repository.
+  }
   return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
 };
 
