@@ -53,6 +53,7 @@ import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
 import { DOC_IDS, PREFIXES } from '@medic/constants';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { UiExtensionsService } from '@mm-services/ui-extensions.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
@@ -89,6 +90,7 @@ describe('AppComponent', () => {
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
+  let interactionTrackingService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -194,6 +196,7 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -261,6 +264,7 @@ describe('AppComponent', () => {
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
+          { provide: InteractionTrackingService, useValue: interactionTrackingService },
           { provide: UiExtensionsService, useValue: uiExtensionsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
         ]
@@ -298,6 +302,8 @@ describe('AppComponent', () => {
     expect(countMessageService.init.callCount).to.equal(1);
     // init feedback service
     expect(feedbackService.init.callCount).to.equal(1);
+    // init interaction tracking service
+    expect(interactionTrackingService.init.callCount).to.equal(1);
     // check privacy policy
     expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
     // init rules engine
@@ -525,6 +531,36 @@ describe('AppComponent', () => {
     expect(modalService.show.callCount).to.equal(1);
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
+
+  describe('visibilitychange', () => {
+    let originalHiddenDescriptor;
+
+    beforeEach(() => {
+      originalHiddenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+    });
+
+    afterEach(() => {
+      if (originalHiddenDescriptor) {
+        Object.defineProperty(Document.prototype, 'hidden', originalHiddenDescriptor);
+      }
+    });
+
+    const setHidden = (hidden: boolean) => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
+    };
+
+    it('persists the interaction buffer on every visibilitychange', async () => {
+      await getComponent();
+      setHidden(true);
+      window.dispatchEvent(new Event('visibilitychange'));
+      setHidden(false);
+      window.dispatchEvent(new Event('visibilitychange'));
+
+      // On hide the buffer flushes; on show persistBuffer is still called so
+      // the service detects a day rollover and aggregates yesterday's DB.
+      expect(interactionTrackingService.persistBuffer.callCount).to.equal(2);
+    });
+  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {

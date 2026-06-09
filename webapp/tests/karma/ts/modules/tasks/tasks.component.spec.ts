@@ -24,6 +24,7 @@ import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -36,6 +37,7 @@ describe('TasksComponent', () => {
   let store;
   let lineageModelGeneratorService;
   let telemetryService;
+  let interactionTrackingService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
@@ -54,6 +56,7 @@ describe('TasksComponent', () => {
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
     telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -79,6 +82,7 @@ describe('TasksComponent', () => {
         { provide: SessionService, useValue: { isOnlineOnly: sinon.stub().returns(false) } },
         { provide: DbService, useValue: { get: sinon.stub().resolves() } },
         { provide: TelemetryService, useValue: telemetryService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
       ],
     });
 
@@ -250,14 +254,12 @@ describe('TasksComponent', () => {
     const changesFeed = changesService.subscribe.args[0][0];
     expect(!!changesFeed.filter({})).to.be.false;
     expect(changesFeed.filter({ id: 'person', doc: { _id: 'person', type: 'person' }})).to.be.true;
-
-    expect(changesFeed.filter({ id: 'clinic', 
-      doc: { _id: 'clinic', type: CONTACT_TYPES.CLINIC }})).to.be.true;
-    expect(changesFeed.filter({ id: 'report', doc: { _id: 'report', 
+    expect(changesFeed.filter({ id: 'clinic', doc: { _id: 'clinic', type: CONTACT_TYPES.CLINIC }})).to.be.true;
+    expect(changesFeed.filter({ id: 'report', doc: { _id: 'report',
       type: DOC_TYPES.DATA_RECORD, form: 'form' }})).to.be.true;
     expect(changesFeed.filter({ id: 'task', doc: { _id: 'task', type: 'task' }})).to.be.true;
 
-    expect(changesFeed.filter({ id: 'foo', doc: { _id: 'a', 
+    expect(changesFeed.filter({ id: 'foo', doc: { _id: 'a',
       type: DOC_TYPES.DATA_RECORD, form: undefined }})).to.be.false;
   });
 
@@ -334,6 +336,32 @@ describe('TasksComponent', () => {
     expect(stopPerformanceTrackStub.args[1][0]).to.deep.equal({ name: 'tasks:refresh', recordApdex: true });
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
+
+  describe('interaction tracking', () => {
+    it('opens a tasks session on init and records task_list:open and task_list:loaded', async () => {
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+
+      expect(interactionTrackingService.startSession.args).to.deep.equal([['tasks']]);
+      const actions = interactionTrackingService.record.args.map(a => a[0]);
+      expect(actions).to.include.members(['task_list:open', 'task_list:loaded']);
+    });
+
+    it('records task_list:leave and ends the session on destroy', async () => {
+      await getComponent();
+      sinon.stub(TasksActions.prototype, 'clearTaskList');
+      sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+      sinon.stub(TasksActions.prototype, 'clearTaskGroup');
+      interactionTrackingService.record.resetHistory();
+
+      component.ngOnDestroy();
+
+      expect(interactionTrackingService.record.args).to.deep.include(['task_list:leave']);
+      expect(interactionTrackingService.endSession.callCount).to.equal(1);
+    });
+  });
 
   describe('listTrackBy', () => {
     it('should return task id', () => {
