@@ -19,7 +19,7 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     depends_on:
-      - couchdb-nouveau
+      - nouveau
     networks:
       cht-net:
 
@@ -42,7 +42,7 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     depends_on:
-      - couchdb-nouveau
+      - nouveau
     networks:
       cht-net:
 
@@ -65,11 +65,11 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     depends_on:
-      - couchdb-nouveau
+      - nouveau
     networks:
       cht-net:
 
-  couchdb-nouveau:
+  nouveau:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
       - ${DB1_DATA:-./srv1}/nouveau:/data/nouveau

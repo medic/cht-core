@@ -13,7 +13,7 @@ services:
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
     restart: always
     depends_on:
-      - couchdb-nouveau
+      - nouveau
     logging:
       driver: "local"
       options:
@@ -22,7 +22,7 @@ services:
     networks:
       cht-net:
 
-  couchdb-nouveau:
+  nouveau:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
       - ${COUCHDB_DATA:-./srv}/nouveau:/data/nouveau
