@@ -13,7 +13,7 @@ services:
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-info}"
     restart: always
     depends_on:
-      - nouveau
+      - couchdb-nouveau
     logging:
       driver: "local"
       options:
