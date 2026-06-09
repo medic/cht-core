@@ -32,9 +32,8 @@ class GeolocationWidget extends Widget {
     $button.on('click', () => this._startCapture());
     $question.append($button);
 
-    const contextEl = this.question
-      .closest('.or-group, .or-group-data')
-      ?.querySelector('.or-appearance-geolocation-context');
+    const geoGroup = this.question.closest('.or-group, .or-group-data');
+    const contextEl = geoGroup && geoGroup.querySelector('.or-appearance-geolocation-context'); // NOSONAR
     if (contextEl && !contextEl.querySelector('input[type="radio"]:checked')) {
       $button.prop('disabled', true);
       $(contextEl).one('change', 'input[type="radio"]', () => $button.prop('disabled', false));
@@ -45,9 +44,8 @@ class GeolocationWidget extends Widget {
   }
 
   _startCapture() {
-    const contextEl = this.question
-      .closest('.or-group, .or-group-data')
-      ?.querySelector('.or-appearance-geolocation-context');
+    const geoGroup = this.question.closest('.or-group, .or-group-data');
+    const contextEl = geoGroup && geoGroup.querySelector('.or-appearance-geolocation-context'); // NOSONAR
     if (contextEl) {
       $(contextEl).hide();
     }
