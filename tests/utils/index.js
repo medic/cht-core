@@ -779,8 +779,21 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
 
   await deleteMetaDbs();
   await deleteCredentials();
+  await clearReplicationFailureLogs();
 
   await setUserContactDoc();
+};
+
+const clearReplicationFailureLogs = async () => {
+  const result = await logsDb.allDocs({
+    startkey: 'replication-fail-',
+    endkey: 'replication-fail-\ufff0',
+  });
+  if (!result.rows.length) {
+    return;
+  }
+  const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await logsDb.bulkDocs(docs);
 };
 
 const getOrigin = () => `${constants.BASE_URL}`;
@@ -947,6 +960,58 @@ const listenForApi = async () => {
     }
   } while (--retryCount > 0);
   throw new Error('API failed to start after 3 minutes');
+};
+
+const NGINX_PORT_HINT =
+  'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT ' +
+  'and NGINX_HTTPS_PORT (see tests/constants.js for HTTPS).';
+
+const waitForNginxContainerRunning = async () => {
+  if (!isDocker()) {
+    return;
+  }
+  const containerName = getContainerName('nginx');
+  const maxTries = 30;
+  for (let i = 0; i < maxTries; i++) {
+    let state;
+    try {
+      const rawState = await runCommand(
+        `docker inspect -f '{{json .State}}' ${containerName}`,
+        { verbose: false }
+      );
+      state = JSON.parse(rawState);
+    } catch (err) {
+      throw new Error(
+        `Expected nginx container "${containerName}" was not found after docker compose up ` +
+        `(${err.message}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    // A failed port bind leaves the container in `created` state (never exited/dead) with the
+    // real reason in `State.Error`, so check it explicitly to fail fast on the issue #9491 case.
+    if (state.Error) {
+      throw new Error(
+        `nginx container "${containerName}" failed to start: ${state.Error} ` +
+        `(exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    if (state.Status === 'exited' || state.Status === 'dead') {
+      throw new Error(
+        `nginx container "${containerName}" failed to start ` +
+        `(status: ${state.Status}, exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    if (state.Status === 'running') {
+      return;
+    }
+
+    await delayPromise(1000);
+  }
+  throw new Error(
+    `nginx container "${containerName}" did not become running within ${maxTries} tries. ${NGINX_PORT_HINT}`
+  );
 };
 
 const dockerComposeCmd = (params) => {
@@ -1296,6 +1361,7 @@ const startServices = async () => {
   env.COUCHDB_NOUVEAU_DATA = makeTempDir('ci-nouveaudata');
 
   await dockerComposeCmd('up -d');
+  await waitForNginxContainerRunning();
   const services = await dockerComposeCmd('ps -q');
   if (!services.length) {
     throw new Error('Errors when starting services');
@@ -1813,6 +1879,7 @@ module.exports = {
   updateSettings,
   revertSettings,
   revertDb,
+  clearReplicationFailureLogs,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,

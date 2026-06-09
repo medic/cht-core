@@ -18,7 +18,7 @@
     "jquery": "3.7.1",
     "ng-redux": "^4.4.5",
     "redux": "^4.2.1",
-    "select2": "^4.0.13"
+    "select2": "^4.1.0"
   },
   "resolutions": {
     "**/jquery": "3.7.1"
