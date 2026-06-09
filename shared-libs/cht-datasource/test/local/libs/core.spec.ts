@@ -99,7 +99,7 @@ describe('local core lib', () => {
 
     it('should normalize mixed Devanagari and Latin numerals', () => {
       const result = normalizeFreetextQualifier({ freetext: '१23२३' });
-      expect(result).to.deep.equal({ freetext: '12345' });
+      expect(result).to.deep.equal({ freetext: '12323' });
     });
 
     it('should normalize Devanagari numerals in a text context', () => {
