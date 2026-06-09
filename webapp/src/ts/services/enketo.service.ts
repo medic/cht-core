@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
-import { get as _get } from 'lodash-es';
 import * as FileManager from '../../js/enketo/file-manager.js';
 import events from 'enketo-core/src/js/event';
 
@@ -546,44 +545,22 @@ export class EnketoService {
       return reference;
     };
 
-    // The object to read existing field values from for a given node: the main
-    // doc's fields at the record root, or the matching sub-doc otherwise.
-    const getOwnerFields = (node) => node === $record[0]
-      ? doc.fields
-      : subDocById.get(node._couchId);
-
-    // Keep the value only when it is already an attachment reference.
-    const asAttachmentRef = (value) => this.enketoTranslationService.isAttachmentRef(value)
-      ? value
-      : undefined;
-
-    // Recover an untouched field's prior reference from its owner doc's existing
-    // fields; naming-scheme independent, unlike the position-derived name.
-    const recoverEmptyBinaryReference = (elem) => {
-      const segments: string[] = [];
-      for (let node = elem; node && node !== recordDoc; node = node.parentNode) {
-        const ownerFields = getOwnerFields(node);
-        if (!ownerFields) {
-          segments.unshift(node.nodeName);
-          continue;
-        }
-        return asAttachmentRef(_get(ownerFields, segments));
-      }
-    };
-
     $record
       .find('[type=binary]')
       .each((idx, element) => {
         const $element = $(element);
+        // Reference stashed during prepopulation for an untouched field (see
+        // bindJsonToXml); it rides through Enketo's model merge as a data-*
+        // attribute, so an unedited field still carries it here on save.
         const sidecar = $element.attr('data-attachment-ref');
         $element.removeAttr('data-attachment-ref');
 
         const file = $element.text();
         if (!file) {
-          // An untouched field loads empty on edit; restore its prior reference.
-          const previous = sidecar || recoverEmptyBinaryReference(element);
-          if (previous) {
-            $element.text(previous);
+          // An untouched field loads empty on edit (its base64 lives only in the
+          // attachment); restore its reference so the field keeps pointing at it.
+          if (sidecar) {
+            $element.text(sidecar);
           }
           return;
         }
