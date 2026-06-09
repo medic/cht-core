@@ -22,6 +22,13 @@ class GeolocationWidget extends Widget {
       const $button = $('<button type="button" class="btn btn-primary geolocation-capture-btn">');
       $button.on('click', () => this._startCapture());
       $question.append($button);
+
+      const contextEl = this.question.closest('.or-group, .or-group-data')?.querySelector('.or-appearance-geolocation-context');
+      if (contextEl && !contextEl.querySelector('input[type="radio"]:checked')) {
+        $button.prop('disabled', true);
+        $(contextEl).one('change', 'input[type="radio"]', () => $button.prop('disabled', false));
+      }
+
       return globalThis.CHTCore.Translate.get('geolocation.capture')
         .then(text => $button.text(text));
     } else {
@@ -33,6 +40,11 @@ class GeolocationWidget extends Widget {
   }
 
   _startCapture() {
+    const contextEl = this.question.closest('.or-group, .or-group-data')?.querySelector('.or-appearance-geolocation-context');
+    if (contextEl) {
+      $(contextEl).hide();
+    }
+
     const $question = $(this.question);
     $question.find([
       '.geolocation-capture-btn',
