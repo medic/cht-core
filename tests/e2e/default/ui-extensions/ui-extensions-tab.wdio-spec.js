@@ -1,33 +1,16 @@
-const fs = require('fs');
 const path = require('path');
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
+const { buildExtensionDoc } = require('@page-objects/default/ui-extensions/ui-extensions.wdio.page');
 const { hamburgerMenuItemByOption, closeReloadModal } = require('@page-objects/default/common/common.wdio.page');
 const chtDbUtils = require('@utils/cht-db');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
-const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const EXTENSIONS_DIR = path.join(__dirname, 'ui-extensions');
-
-const buildExtensionDoc = (id) => {
-  const properties = JSON.parse(fs.readFileSync(path.join(EXTENSIONS_DIR, `${id}.properties.json`), 'utf8'));
-  const script = fs.readFileSync(path.join(EXTENSIONS_DIR, `${id}.js`), 'utf8');
-  return {
-    ...properties,
-    _id: `${PREFIXES.UI_EXTENSION}${id}`,
-    type: DOC_TYPES.UI_EXTENSION,
-    _attachments: {
-      'extension.js': {
-        content_type: 'application/javascript',
-        data: Buffer.from(script).toString('base64'),
-      },
-    },
-  };
-};
 
 describe('UI Extensions tab', () => {
   const places = placeFactory.generateHierarchy();
@@ -51,9 +34,9 @@ describe('UI Extensions tab', () => {
 
   before(async () => {
     await utils.saveDocs([
-      buildExtensionDoc('header-tab'),
-      buildExtensionDoc('sidebar-tab'),
-      buildExtensionDoc('error'),
+      buildExtensionDoc(EXTENSIONS_DIR, 'header-tab'),
+      buildExtensionDoc(EXTENSIONS_DIR, 'sidebar-tab'),
+      buildExtensionDoc(EXTENSIONS_DIR, 'error'),
       ...places.values(),
       supervisorPerson
     ]);
