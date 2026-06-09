@@ -9,7 +9,7 @@
 <div class="inner">
   <div class="inbox page">
 
-    <div id="tasks-list" class="inbox-items left-pane"
+    <div #taskListContainer id="tasks-list" class="inbox-items left-pane"
       [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
       <ul *ngIf="!errorStack && hasTasks">
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"

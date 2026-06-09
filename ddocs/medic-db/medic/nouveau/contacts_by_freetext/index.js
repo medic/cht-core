@@ -1,5 +1,7 @@
 function (doc) {
   var skip = ['_id', '_rev', 'type', 'refid', 'geolocation'];
+  const maxLength = 1000;
+  const minLength = 3;
 
   var normalizeNumerals = function(str) {
     return str.replace(/[०-९]/g, function(d) {
@@ -8,11 +10,28 @@ function (doc) {
   };
 
   var indexMaybe = function(type, fieldName, value, opts) {
-    if(String(value).length < 3) { // Too short
+    var stringValue = String(value);
+    if (stringValue.length < minLength) { // Too short
       return;
+    }
+
+    if (type === 'string') {
+      return indexString(fieldName, stringValue, opts);
     }
     index(type, fieldName, value, opts);
   };
+
+  const indexString = function(fieldName, value, opts) {
+    if (value === undefined || value === null) {
+      return;
+    }
+
+    value = value.toString();
+    if (value.length > maxLength) {
+      return;
+    }
+    index('string', fieldName, value, opts);
+  }
 
   var indexField = function(key, value) {
     if (!key || !value) {
@@ -57,12 +76,12 @@ function (doc) {
     return;
   }
 
-  index('string', 'contact_type', contactType);
+  indexString('contact_type', contactType);
 
   var dead = !!doc.date_of_death;
   var muted = !!doc.muted;
   var order = dead + ' ' + muted + ' ' + contactTypeIndex + ' ' + (doc.name && doc.name.toLowerCase());
-  index('string', 'sort_order', order, { store: true });
+  indexString('sort_order', order, { store: true });
 
   Object.keys(doc).forEach(function(key) {
     indexField(key, doc[key]);

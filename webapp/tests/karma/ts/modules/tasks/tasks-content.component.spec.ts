@@ -19,6 +19,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 
 describe('TasksContentComponent', () => {
@@ -41,6 +42,7 @@ describe('TasksContentComponent', () => {
   let component: TasksContentComponent;
   let fixture: ComponentFixture<TasksContentComponent>;
   let chtDatasourceService;
+  let interactionTrackingService;
   
   beforeEach(() => {
     stopPerformanceTrackStub = sinon.stub();
@@ -57,6 +59,7 @@ describe('TasksContentComponent', () => {
     chtDatasourceService = {
       bind: sinon.stub().withArgs(Contact.v1.get).returns(getContact)
     };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -79,6 +82,7 @@ describe('TasksContentComponent', () => {
         { provide: Router, useValue: router },
         { provide: TasksForContactService, useValue: tasksForContactService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
         { provide: HttpClient, useValue: {} },
       ],
     });
@@ -159,6 +163,24 @@ describe('TasksContentComponent', () => {
     expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
   });
 
+  it('records task:open with the raw title key as ref and list index as detail', async () => {
+    tasks = [{
+      _id: '123',
+      title: 'Home visit for Diana',
+      titleKey: 'tasks.home_visit.title',
+      actions: [{ type: 'report', form: 'pregnancy_visit', content: {} }],
+    }];
+
+    await compileComponent();
+
+    const taskOpenCalls = interactionTrackingService.record.getCalls()
+      .filter(call => call.args[0] === 'task:open');
+    expect(taskOpenCalls).to.have.length(1);
+    const [, ref, detail] = taskOpenCalls[0].args;
+    expect(ref).to.equal('tasks.home_visit.title');
+    expect(detail).to.equal('0');
+  });
+
   it('successful hydration', async () => {
     tasks = [{
       _id: '123',
@@ -185,6 +207,7 @@ describe('TasksContentComponent', () => {
       something: 'nothing',
       task_id: '123',
     });
+    expect(interactionTrackingService.record.args).to.deep.include(['task:form_open', 'A']);
   });
 
   it('successful hydration with existent action content', async () => {
@@ -419,6 +442,7 @@ describe('TasksContentComponent', () => {
       expect(component.contentError).to.equal(false);
       expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(0);
+      expect(interactionTrackingService.record.args).to.deep.include(['task:back']);
     });
 
     it('should set cancel callback correctly when skipping details', async () => {
@@ -743,15 +767,23 @@ describe('TasksContentComponent', () => {
         name: 'enketo:tasks:the form id:add:save',
         recordApdex: true,
       });
+
+      expect(interactionTrackingService.record.args).to.deep.include.members([
+        ['task:form_save', 'the form id'],
+        ['task:complete', 'the form id'],
+      ]);
     });
   });
 
   describe('navigationCancel', () => {
-    it('should call navigation cancel', () => {
+    it('should call navigation cancel', async () => {
+      await compileComponent();
       const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      component.formId = 'the form id';
       component.navigationCancel();
       expect(navigationCancel.callCount).to.equal(1);
       expect(navigationCancel.args[0]).to.deep.equal([]);
+      expect(interactionTrackingService.record.args).to.deep.include(['task:cancel', 'the form id']);
     });
   });
 
