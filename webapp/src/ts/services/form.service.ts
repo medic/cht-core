@@ -261,11 +261,13 @@ export class FormService {
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
-    const geoGroup = formHtml?.querySelector('.or-appearance-geolocation-capture')?.closest('.or-group, .or-group-data');
+    const captureEl = formHtml?.querySelector('.or-appearance-geolocation-capture');
+    const geoGroup = captureEl?.closest('.or-group, .or-group-data');
     if (!geoGroup) {
       return undefined;
     }
-    const checkedRadio = geoGroup.querySelector('.or-appearance-geolocation-context input[type="radio"]:checked') as HTMLInputElement;
+    const checkedRadio = geoGroup
+      .querySelector('.or-appearance-geolocation-context input[type="radio"]:checked') as HTMLInputElement;
     if (checkedRadio) {
       return checkedRadio.value || undefined;
     }

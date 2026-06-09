@@ -85,7 +85,7 @@ describe('Geolocation widget - contact save pipeline', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
     await $('.or-appearance-geolocation-context').waitForDisplayed();
-    await commonEnketoPage.selectRadioButton('Where are you capturing GPS location?', "At the beneficiary's home");
+    await commonEnketoPage.selectRadioButton('Where are you capturing GPS location?', 'At the beneficiary\'s home');
 
     await $('.geolocation-capture-btn').waitForDisplayed();
     await $('.geolocation-capture-btn').click();

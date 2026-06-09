@@ -98,12 +98,13 @@ describe('Enketo: Geolocation Widget', () => {
 
     describe('context question', () => {
       const buildHtmlWithContext = (contextAlreadyAnswered = false) => {
+        const checked = contextAlreadyAnswered ? 'checked' : '';
         document.body.insertAdjacentHTML('afterbegin', `
           <div id="geolocation-widget-test">
             <section class="or-group-data or-appearance-field-list">
               <fieldset class="question or-appearance-geolocation-context">
                 <div class="option-wrapper">
-                  <label><input type="radio" name="/data/geo_context" value="home" ${contextAlreadyAnswered ? 'checked' : ''}></label>
+                  <label><input type="radio" name="/data/geo_context" value="home" ${checked}></label>
                   <label><input type="radio" name="/data/geo_context" value="workplace"></label>
                 </div>
               </fieldset>
@@ -134,7 +135,9 @@ describe('Enketo: Geolocation Widget', () => {
         const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLButtonElement;
         expect(btn.disabled).to.be.true;
 
-        const radio = document.querySelector('#geolocation-widget-test input[type="radio"][value="home"]') as HTMLInputElement;
+        const radio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="home"]'
+        ) as HTMLInputElement;
         radio.checked = true;
         $(radio).trigger('change');
 
@@ -159,7 +162,9 @@ describe('Enketo: Geolocation Widget', () => {
         widget._isGeolocationAvailable = () => true;
         widget._init();
 
-        const contextEl = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-context') as HTMLElement;
+        const contextEl = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-context'
+        ) as HTMLElement;
         expect(contextEl.style.display).not.to.equal('none');
 
         (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
@@ -178,7 +183,9 @@ describe('Enketo: Geolocation Widget', () => {
         (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
         await promise;
 
-        const contextEl = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-context') as HTMLElement;
+        const contextEl = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-context'
+        ) as HTMLElement;
         expect(contextEl.style.display).to.equal('none');
       });
     });
