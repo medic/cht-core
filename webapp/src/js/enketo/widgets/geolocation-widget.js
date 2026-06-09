@@ -18,27 +18,29 @@ class GeolocationWidget extends Widget {
       $question.append($el);
       return globalThis.CHTCore.Translate.get('geolocation.permission.denied')
         .then(text => $el.text(text));
-    } else if (this._isGeolocationAvailable()) {
-      const $button = $('<button type="button" class="btn btn-default geolocation-capture-btn">');
-      $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($button);
-      $button.on('click', () => this._startCapture());
-      $question.append($button);
+    }
 
-      const geoGroup = this.question.closest('.or-group, .or-group-data');
-      const contextEl = geoGroup && geoGroup.querySelector('.or-appearance-geolocation-context');
-      if (contextEl && !contextEl.querySelector('input[type="radio"]:checked')) {
-        $button.prop('disabled', true);
-        $(contextEl).one('change', 'input[type="radio"]', () => $button.prop('disabled', false));
-      }
-
-      return globalThis.CHTCore.Translate.get('geolocation.capture')
-        .then(text => $button.append($('<span class="geolocation-btn-label">').text(text)));
-    } else {
+    if (!this._isGeolocationAvailable()) {
       const $el = $('<p class="geolocation-unavailable">');
       $question.append($el);
       return globalThis.CHTCore.Translate.get('geolocation.unavailable')
         .then(text => $el.text(text));
     }
+
+    const $button = $('<button type="button" class="btn btn-default geolocation-capture-btn">');
+    $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($button);
+    $button.on('click', () => this._startCapture());
+    $question.append($button);
+
+    const geoGroup = this.question.closest('.or-group, .or-group-data');
+    const contextEl = geoGroup && geoGroup.querySelector('.or-appearance-geolocation-context');
+    if (contextEl && !contextEl.querySelector('input[type="radio"]:checked')) {
+      $button.prop('disabled', true);
+      $(contextEl).one('change', 'input[type="radio"]', () => $button.prop('disabled', false));
+    }
+
+    return globalThis.CHTCore.Translate.get('geolocation.capture')
+      .then(text => $button.append($('<span class="geolocation-btn-label">').text(text)));
   }
 
   _startCapture() {
