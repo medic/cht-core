@@ -57,4 +57,25 @@ describe('cht-form web component - Geolocation Widget', () => {
     expect(await $('.geolocation-skip-btn').isExisting()).to.be.true;
     expect(await $('.geolocation-success-msg').isExisting()).to.be.false;
   });
+
+  it('should show context question when form loads', async () => {
+    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+
+    await $('.or-appearance-geolocation-context').waitForDisplayed();
+    expect(await $('.or-appearance-geolocation-context').isDisplayed()).to.be.true;
+  });
+
+  it('should keep context question visible after GPS capture fails', async () => {
+    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+
+    await browser.execute((geoFailure) => {
+      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoFailure), retry: () => {} };
+    }, GEO_FAILURE);
+
+    await $('.geolocation-capture-btn').waitForExist();
+    await $('.geolocation-capture-btn').click();
+    await $('.geolocation-retry-btn').waitForExist();
+
+    expect(await $('.or-appearance-geolocation-context').isDisplayed()).to.be.true;
+  });
 });

@@ -6,6 +6,7 @@
       <instance>
         <data id="geolocation_test">
           <geo_capture/>
+          <geo_context/>
           <meta><instanceID/></meta>
         </data>
       </instance>
@@ -15,5 +16,11 @@
     <input ref="/data/geo_capture" appearance="geolocation-capture">
       <label>Capture GPS Location</label>
     </input>
+    <select1 ref="/data/geo_context" appearance="geolocation-context">
+      <label>Where are you capturing GPS location?</label>
+      <item><label>At the beneficiary's home</label><value>home</value></item>
+      <item><label>At the beneficiary's workplace</label><value>workplace</value></item>
+      <item><label>Other</label><value>other</value></item>
+    </select1>
   </h:body>
 </h:html>
