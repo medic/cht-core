@@ -69,7 +69,7 @@ services:
     networks:
       cht-net:
 
-  nouveau:
+  couchdb-nouveau:
     image: {{{ repo }}}/cht-couchdb-nouveau:{{ tag }}
     volumes:
       - ${DB1_DATA:-./srv1}/nouveau:/data/nouveau
