@@ -9,6 +9,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const personFactory = require('@factories/cht/contacts/person');
 const { getTelemetry, destroyTelemetryDb } = require('@utils/telemetry');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 const EXTENSIONS_DIR = path.join(__dirname, 'ui-extensions');
 
@@ -17,8 +18,8 @@ const buildExtensionDoc = (id) => {
   const script = fs.readFileSync(path.join(EXTENSIONS_DIR, `${id}.js`), 'utf8');
   return {
     ...properties,
-    _id: `ui-extension:${id}`,
-    type: 'ui-extension',
+    _id: `${PREFIXES.UI_EXTENSION}${id}`,
+    type: DOC_TYPES.UI_EXTENSION,
     _attachments: {
       'extension.js': {
         content_type: 'application/javascript',

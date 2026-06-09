@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const utils = require('@utils');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 describe('UI Extension', () => {
   after(async () => {
@@ -10,12 +11,12 @@ describe('UI Extension', () => {
     it('returns 200 with list of extensions', async () => {
       await utils.saveDocs([
         {
-          _id: 'ui-extension:integration-test-ext',
-          type: 'ui-extension',
+          _id: `${PREFIXES.UI_EXTENSION}integration-test-ext`,
+          type: DOC_TYPES.UI_EXTENSION,
           name: 'Integration Test Extension',
           version: '1.0'
         },
-        { _id: 'ui-extension:another-ext', type: 'ui-extension' }
+        { _id: `${PREFIXES.UI_EXTENSION}another-ext`, type: DOC_TYPES.UI_EXTENSION }
       ]);
       
       const response = await utils.request({ path: '/ui-extension' });
@@ -41,8 +42,8 @@ describe('UI Extension', () => {
     it('returns 200 and script data for known extension', async () => {
       const scriptContent = 'console.log("integration-test-ext");';
       await utils.saveDoc({
-        _id: 'ui-extension:integration-test-ext-script',
-        type: 'ui-extension',
+        _id: `${PREFIXES.UI_EXTENSION}}integration-test-ext-script`,
+        type: DOC_TYPES.UI_EXTENSION,
         _attachments: {
           'extension.js': {
             content_type: 'application/javascript',

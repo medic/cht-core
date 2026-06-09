@@ -1,7 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
-const { DOC_IDS } = require('@medic/constants');
+const { DOC_IDS, PREFIXES } = require('@medic/constants');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
@@ -332,8 +332,10 @@ describe('Configuration', () => {
       it('generates service worker when a ui-extension doc change is detected', () => {
         uiExtensionService.isExtensionChange.returns(true);
         generateServiceWorker.run.resolves();
-        return dbWatcher.medic.args[0][0]({ id: 'ui-extension:my-ext' }).then(() => {
-          chai.expect(uiExtensionService.isExtensionChange.calledWith({ id: 'ui-extension:my-ext' })).to.be.true;
+        return dbWatcher.medic.args[0][0]({ id: `${PREFIXES.UI_EXTENSION}my-ext` }).then(() => {
+          chai.expect(
+            uiExtensionService.isExtensionChange.calledWith({ id: `${PREFIXES.UI_EXTENSION}my-ext` })
+          ).to.be.true;
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
         });
       });

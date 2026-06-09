@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const service = require('../../../src/services/ui-extension');
 const db = require('../../../src/db');
+const { PREFIXES, DOC_TYPES } = require('@medic/constants');
 
 describe('UI Extension service', () => {
   let dbGet;
@@ -20,7 +21,7 @@ describe('UI Extension service', () => {
     });
 
     it('returns true for a ui-extension doc', () => {
-      expect(service.isExtensionChange({ id: 'ui-extension:my-ext' })).to.be.true;
+      expect(service.isExtensionChange({ id: `${PREFIXES.UI_EXTENSION}my-ext` })).to.be.true;
     });
   });
 
@@ -29,7 +30,7 @@ describe('UI Extension service', () => {
       dbGet.rejects({ status: 404 });
       const actual = await service.getScript('test');
       expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, { attachments: true });
     });
 
     it('throws anything else', async () => {
@@ -39,7 +40,7 @@ describe('UI Extension service', () => {
         expect.fail('should have thrown');
       } catch (e) {
         expect(e.status).to.equal(500);
-        expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+        expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, { attachments: true });
       }
     });
 
@@ -52,26 +53,26 @@ describe('UI Extension service', () => {
       });
       const actual = await service.getScript('test');
       expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, { attachments: true });
     });
 
     it('returns null when the doc has no extension.js attachment', async () => {
-      dbGet.resolves({ type: 'ui-extension' });
+      dbGet.resolves({ type: DOC_TYPES.UI_EXTENSION });
       const actual = await service.getScript('test');
       expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, { attachments: true });
     });
 
     it('returns attachment data', async () => {
       dbGet.resolves({
-        type: 'ui-extension',
+        type: DOC_TYPES.UI_EXTENSION,
         _attachments: {
           'extension.js': { data: 'my-script' }
         }
       });
       const actual = await service.getScript('test');
       expect(actual.data).to.equal('my-script');
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', { attachments: true });
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, { attachments: true });
     });
   });
 
@@ -80,7 +81,7 @@ describe('UI Extension service', () => {
       dbGet.rejects({ status: 404 });
       const actual = await service.getScriptDigest('test');
       expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, {});
     });
 
     it('throws anything else', async () => {
@@ -90,7 +91,7 @@ describe('UI Extension service', () => {
         expect.fail('should have thrown');
       } catch (e) {
         expect(e.status).to.equal(500);
-        expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+        expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, {});
       }
     });
 
@@ -103,26 +104,26 @@ describe('UI Extension service', () => {
       });
       const actual = await service.getScriptDigest('test');
       expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, {});
     });
 
     it('returns null when the doc has no extension.js attachment', async () => {
-      dbGet.resolves({ type: 'ui-extension' });
+      dbGet.resolves({ type: DOC_TYPES.UI_EXTENSION });
       const actual = await service.getScriptDigest('test');
       expect(actual).to.be.null;
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, {});
     });
 
     it('returns the attachment digest without downloading the attachment', async () => {
       dbGet.resolves({
-        type: 'ui-extension',
+        type: DOC_TYPES.UI_EXTENSION,
         _attachments: {
           'extension.js': { digest: 'md5-abc', stub: true }
         }
       });
       const actual = await service.getScriptDigest('test');
       expect(actual).to.equal('md5-abc');
-      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+      expect(dbGet).to.have.been.calledOnceWithExactly(`${PREFIXES.UI_EXTENSION}test`, {});
     });
   });
 
@@ -132,18 +133,18 @@ describe('UI Extension service', () => {
         rows: [
           {
             doc: {
-              _id: 'ui-extension:my-ext',
+              _id: `${PREFIXES.UI_EXTENSION}my-ext`,
               _rev: '1-something',
               _attachments: {},
-              type: 'ui-extension',
+              type: DOC_TYPES.UI_EXTENSION,
               name: 'My Extension',
               version: '1.0'
             }
           },
           {
             doc: {
-              _id: 'ui-extension:another-ext',
-              type: 'ui-extension',
+              _id: `${PREFIXES.UI_EXTENSION}another-ext`,
+              type: DOC_TYPES.UI_EXTENSION,
             }
           }
         ]
@@ -159,8 +160,8 @@ describe('UI Extension service', () => {
         { id: 'another-ext' }
       ]);
       expect(allDocs).to.have.been.calledOnceWithExactly({
-        startkey: 'ui-extension:',
-        endkey: `ui-extension:\ufff0`,
+        startkey: PREFIXES.UI_EXTENSION,
+        endkey: `${PREFIXES.UI_EXTENSION}\ufff0`,
         include_docs: true,
       });
     });
@@ -170,14 +171,14 @@ describe('UI Extension service', () => {
         rows: [
           {
             doc: {
-              _id: 'ui-extension:my-ext',
-              type: 'ui-extension',
+              _id: `${PREFIXES.UI_EXTENSION}my-ext`,
+              type: DOC_TYPES.UI_EXTENSION,
               name: 'My Extension',
             }
           },
           {
             doc: {
-              _id: 'ui-extension:not-an-ext',
+              _id: `${PREFIXES.UI_EXTENSION}not-an-ext`,
               type: 'something-else',
               name: 'Not An Extension',
             }
@@ -193,8 +194,8 @@ describe('UI Extension service', () => {
         }
       ]);
       expect(allDocs).to.have.been.calledOnceWithExactly({
-        startkey: 'ui-extension:',
-        endkey: `ui-extension:\ufff0`,
+        startkey: PREFIXES.UI_EXTENSION,
+        endkey: `${PREFIXES.UI_EXTENSION}\ufff0`,
         include_docs: true,
       });
     });
@@ -205,8 +206,8 @@ describe('UI Extension service', () => {
       const actual = await service.getAllProperties();
       expect(actual).to.be.empty;
       expect(allDocs).to.have.been.calledOnceWithExactly({
-        startkey: 'ui-extension:',
-        endkey: `ui-extension:\ufff0`,
+        startkey: PREFIXES.UI_EXTENSION,
+        endkey: `${PREFIXES.UI_EXTENSION}\ufff0`,
         include_docs: true,
       });
     });

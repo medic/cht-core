@@ -1,14 +1,12 @@
 const db = require('../db');
 
-const TYPE = 'ui-extension';
-const PREFIX = `${TYPE}:`;
+const { DOC_TYPES, PREFIXES } = require('@medic/constants');
 
-const getExtensionDoc = (name) => db.medic
-  .get(`${PREFIX}${name}`, { attachments: true })
-  .then(doc => doc.type === TYPE ? doc : null)
 const ATTACHMENT_NAME = 'extension.js';
 
 const getExtensionDoc = (name, options = {}) => db.medic
+  .get(`${PREFIXES.UI_EXTENSION}${name}`, options)
+  .then(doc => doc.type === DOC_TYPES.UI_EXTENSION ? doc : null)
   .catch(err => {
     if (err.status === 404) {
       return null;
@@ -17,11 +15,9 @@ const getExtensionDoc = (name, options = {}) => db.medic
   });
 
 module.exports = {
-  isExtensionChange: ({ id }) => id.startsWith(PREFIX),
+  isExtensionChange: ({ id }) => id.startsWith(PREFIXES.UI_EXTENSION),
 
   getScript: async (name) => {
-    const doc = await getExtensionDoc(name);
-    const attachment = doc?._attachments?.['extension.js'];
     const doc = await getExtensionDoc(name, { attachments: true });
     const attachment = doc?._attachments?.[ATTACHMENT_NAME];
     if (!attachment) {
@@ -40,16 +36,16 @@ module.exports = {
 
   getAllProperties: async () => {
     const result = await db.medic.allDocs({
-      startkey: PREFIX,
-      endkey: `${PREFIX}\ufff0`,
+      startkey: PREFIXES.UI_EXTENSION,
+      endkey: `${PREFIXES.UI_EXTENSION}\ufff0`,
       include_docs: true,
     });
     
     return result.rows
       .map(({ doc }) => doc)
-      .filter(({ type }) => type === TYPE)
+      .filter(({ type }) => type === DOC_TYPES.UI_EXTENSION)
       .map(doc => {
-        const id = doc._id.replace(PREFIX, '');
+        const id = doc._id.replace(PREFIXES.UI_EXTENSION, '');
 
         const properties = { id };
         // Do not include CouchDB specific fields (starting with '_')

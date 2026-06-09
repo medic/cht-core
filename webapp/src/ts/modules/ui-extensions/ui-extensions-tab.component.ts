@@ -96,8 +96,8 @@ export class UiExtensionsTabComponent implements AfterViewInit, OnDestroy {
       this.extensionTitle = title ?? '';
       this.extensionType = extension_type;
       this.accentColor = accent_color;
-      if (!customElements.get(elementName)) {
-        customElements.define(elementName, Element);
+      if (!window.customElements.get(elementName)) {
+        window.customElements.define(elementName, Element);
       }
       const element = document.createElement(elementName);
 

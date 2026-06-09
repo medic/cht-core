@@ -410,7 +410,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           change.id === '_design/medic-client' ||
           change.id === DOC_IDS.SERVICE_WORKER_META ||
           change.id === DOC_IDS.SETTINGS ||
-          change.id.startsWith('ui-extension:') // online-only extensions for online users
+          change.id.startsWith(PREFIXES.UI_EXTENSION) // online-only extensions for online users
         );
       },
       callback: (change) => {
