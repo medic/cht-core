@@ -105,6 +105,7 @@ describe('replication failure logging @docker', () => {
   before(async () => {
     await utils.saveDocs([facility, mathilPlace, janicePlace, mathilContact, janiceContact]);
     await utils.createUsers(users, true);
+    await clearLogs();
   });
 
   after(async () => {
