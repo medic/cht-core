@@ -260,7 +260,12 @@ export class FormService {
     return contact;
   }
 
-  private saveGeo(geoHandle, docs) {
+  private getGeoContext(formHtml?: Element): string | undefined {
+    const geoGroup = formHtml?.querySelector('.or-appearance-geolocation-capture')?.closest('.or-group');
+    return (geoGroup?.querySelector('.or-appearance-geolocation-context input') as HTMLInputElement)?.value || undefined;
+  }
+
+  private saveGeo(geoHandle, docs, contextValue?: string) {
     if (!geoHandle) {
       return docs;
     }
@@ -270,10 +275,11 @@ export class FormService {
       .then(geoData => {
         docs.forEach(doc => {
           doc.geolocation_log = doc.geolocation_log || [];
-          doc.geolocation_log.push({
-            timestamp: Date.now(),
-            recording: geoData
-          });
+          const logEntry: Record<string, unknown> = { timestamp: Date.now(), recording: geoData };
+          if (contextValue && !geoData.code) {
+            logEntry.context = contextValue;
+          }
+          doc.geolocation_log.push(logEntry);
           doc.geolocation = geoData;
         });
         return docs;
@@ -324,12 +330,13 @@ export class FormService {
 
   async save(formInternalId, form, geoHandle, docId?) {
     const docs = await this.completeReport(formInternalId, form, docId);
-    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
+    const contextValue = this.getGeoContext(form?.view?.html);
+    return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle, contextValue));
   }
 
-  private _save(docs, geoHandle) {
+  private _save(docs, geoHandle, contextValue?: string) {
     return this.validateAttachments(docs)
-      .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.saveGeo(geoHandle, docs, contextValue))
       .then((docs) => this.transitionsService.applyTransitions(docs))
       .then((docs) => this.saveDocs(docs))
       .then((docs) => {
@@ -418,7 +425,8 @@ export class FormService {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
     }
 
-    const docsWithGeo = await this.saveGeo(geoHandle, preparedDocs.preparedDocs);
+    const contextValue = this.getGeoContext(form?.view?.html);
+    const docsWithGeo = await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
