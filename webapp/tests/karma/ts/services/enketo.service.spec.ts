@@ -1200,8 +1200,8 @@ describe('Enketo service', () => {
       expect(actual._attachments['user-file-my-form/my_file']).to.exist;
     });
 
-    it('restores an inline-binary field from owner doc fields when no sidecar is present', async () => {
-      // No sidecar on the node; the reference is recovered from the loaded fields.
+    it('leaves an empty inline-binary field empty on edit when no sidecar is present', async () => {
+      // No sidecar on the node, so the saved-fields reference is not recovered - the sidecar is the only source.
       form.validate.resolves(true);
       form.getDataStr.returns(
         '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
@@ -1219,8 +1219,7 @@ describe('Enketo service', () => {
       const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
 
       expect(AddAttachment.callCount).to.equal(0);
-      expect(actual.fields.my_file).to.equal('my-form/my_file');
-      expect(actual._attachments['user-file-my-form/my_file']).to.exist;
+      expect(actual.fields.my_file).to.equal('');
     });
 
     it('leaves an empty inline-binary field empty on edit when no attachment exists', async () => {

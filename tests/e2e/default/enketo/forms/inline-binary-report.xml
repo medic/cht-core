@@ -7,7 +7,7 @@
             <instance>
                 <inline-binary-report id="inline-binary-report">
                     <patient_name/>
-                    <badge type="binary">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII=</badge>
+                    <badge type="binary"/>
                     <meta>
                         <instanceID/>
                     </meta>
