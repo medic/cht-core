@@ -107,7 +107,6 @@ describe('UI Extensions tab', () => {
         expect(await customElement.getText()).to.equal('Hello world');
 
         const telemetries = await getTelemetry(`ui-extension:header-tab:render`, user.username);
-        // Rendered twice because this is the first tab (weight 0) and is loaded when the user logs in
         expect(telemetries).to.have.lengthOf(1);
       });
     });

@@ -115,6 +115,11 @@ export class HeaderTabsService {
   private tabs?: HeaderTab[];
   private sidebarTabs?: SidebarTab[];
 
+  private async filterAuthorizedTabs<T extends SidebarTab>(tabs: T[]): Promise<T[]> {
+    const tabAuthorization = await Promise.all(tabs.map(tab => this.authService.has(tab.permissions)));
+    return tabs.filter((tab, index) => tabAuthorization[index]);
+  }
+
   private async getHeaderTabs(tabs: HeaderTab[]) {
     const { header_tabs } = await this.settingsService.get();
     const headerTabs = tabs.map(tab => {
@@ -127,8 +132,7 @@ export class HeaderTabsService {
       };
     });
 
-    const tabAuthorization = await Promise.all(headerTabs.map(tab => this.authService.has(tab.permissions)));
-    return headerTabs.filter((tab, index) => tabAuthorization[index]);
+    return this.filterAuthorizedTabs(headerTabs);
   }
 
   private async getUiExtensionTabs(type: string) {
@@ -148,16 +152,17 @@ export class HeaderTabsService {
 
   async getSidebarTabs(): Promise<SidebarTab[]> {
     if (!this.sidebarTabs) {
-      const [headerTabs, uiExtensionTabs] = await Promise.all([
+      const [headerTabs, uiExtensionTabs, sidebarTabs] = await Promise.all([
         this.getHeaderTabs(this.SIDEBAR_HEADER_TABS),
-        this.getUiExtensionTabs('sidebar_tab')
+        this.getUiExtensionTabs('sidebar_tab'),
+        this.filterAuthorizedTabs(this.SIDEBAR_TABS)
       ]);
       headerTabs.sort((a, b) => a.weight - b.weight);
       // sidebar_tab extensions should always come after the headers
       this.sidebarTabs = [
         ...headerTabs,
         ...uiExtensionTabs,
-        ...this.SIDEBAR_TABS
+        ...sidebarTabs
       ];
     }
 

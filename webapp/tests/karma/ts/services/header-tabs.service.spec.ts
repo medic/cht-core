@@ -503,13 +503,37 @@ describe('HeaderTabs service', () => {
       },
     ];
 
-    it('should return only the secondary sidebar tabs when no header_tab permissions are granted', async () => {
+    it('should return secondary sidebar tabs whose permissions are met when no header_tab permissions are granted',
+      async () => {
+        authService.has.returns(false);
+        authService.has.withArgs([]).returns(true);
+
+        const tabs = await service.getSidebarTabs();
+
+        // the `user` tab requires `can_edit_profile`, which is not granted here
+        expect(tabs).to.deep.equal(SIDEBAR_SECONDARY_TABS.filter(tab => tab.name !== 'user'));
+        expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
+      });
+
+    it('should include the user tab when can_edit_profile is granted', async () => {
       authService.has.returns(false);
+      authService.has.withArgs([]).returns(true);
+      authService.has.withArgs(['can_edit_profile']).returns(true);
 
       const tabs = await service.getSidebarTabs();
 
       expect(tabs).to.deep.equal(SIDEBAR_SECONDARY_TABS);
-      expect(uiExtensionsService.getPropertiesByType).to.have.been.calledOnceWithExactly('sidebar_tab');
+    });
+
+    it('should exclude secondary sidebar tabs whose permissions are not met', async () => {
+      authService.has.returns(true);
+      authService.has.withArgs(['can_edit_profile']).returns(false);
+
+      const tabs = await service.getSidebarTabs();
+
+      const names = tabs.map(t => t.name);
+      expect(names).to.not.include('user');
+      expect(names).to.include.members(['trainings', 'about', 'privacy-policy', 'bug']);
     });
 
     it('should include header tabs with negated tab permissions, sorted by weight, before secondary tabs', async () => {

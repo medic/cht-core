@@ -106,7 +106,7 @@ describe('Navigation tests', () => {
             weight: 1,
             icon: 'fa-bar-chart-o'
           },
-        } }, { ignoreReload: false });
+        } });
         const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
         expect(tabsButtonLabelsNames).to.deep.equal(['People', 'Reports', 'Messages']);
         const tabsButtonIcons = await commonPage.getAllButtonFaIconClasses();
