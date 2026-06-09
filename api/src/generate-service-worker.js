@@ -91,10 +91,10 @@ const appendUiExtensions = async (config) => {
   for (const ext of offlineExtensions) {
     const extPath = path.join('/ui-extension', ext.id);
     config.globPatterns.push(extPath);
-    
-    const script = await uiExtensionService.getScript(ext.id);
-    if (script?.data) {
-      config.templatedURLs[extPath] = script.data;
+
+    const revision = await uiExtensionService.getScriptDigest(ext.id);
+    if (revision) {
+      config.templatedURLs[extPath] = revision;
     }
   }
 };

@@ -6,9 +6,12 @@ const PREFIX = `${TYPE}:`;
 const getExtensionDoc = (name) => db.medic
   .get(`${PREFIX}${name}`, { attachments: true })
   .then(doc => doc.type === TYPE ? doc : null)
+const ATTACHMENT_NAME = 'extension.js';
+
+const getExtensionDoc = (name, options = {}) => db.medic
   .catch(err => {
     if (err.status === 404) {
-      return;
+      return null;
     }
     throw err;
   });
@@ -19,6 +22,8 @@ module.exports = {
   getScript: async (name) => {
     const doc = await getExtensionDoc(name);
     const attachment = doc?._attachments?.['extension.js'];
+    const doc = await getExtensionDoc(name, { attachments: true });
+    const attachment = doc?._attachments?.[ATTACHMENT_NAME];
     if (!attachment) {
       return null;
     }
@@ -27,7 +32,12 @@ module.exports = {
       data: attachment.data,
     };
   },
-  
+
+  getScriptDigest: async (name) => {
+    const doc = await getExtensionDoc(name);
+    return doc?._attachments?.[ATTACHMENT_NAME]?.digest || null;
+  },
+
   getAllProperties: async () => {
     const result = await db.medic.allDocs({
       startkey: PREFIX,

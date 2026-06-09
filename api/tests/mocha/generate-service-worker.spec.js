@@ -30,7 +30,7 @@ describe('generate service worker', () => {
     sinon.stub(db.medic, 'put');
     sinon.stub(extensionLibsService, 'getAll');
     sinon.stub(uiExtensionService, 'getAllProperties').resolves([]);
-    sinon.stub(uiExtensionService, 'getScript').resolves();
+    sinon.stub(uiExtensionService, 'getScriptDigest').resolves();
     sinon.stub(roles, 'isOffline');
     workboxGenerate = sinon.stub();
     clock = sinon.useFakeTimers();
@@ -65,9 +65,9 @@ describe('generate service worker', () => {
     ]);
     roles.isOffline.withArgs(['chw']).returns(true);
     roles.isOffline.withArgs(['nurse']).returns(false);
-    uiExtensionService.getScript.withArgs('offline-ext').resolves({ data: 'my-script' });
-    uiExtensionService.getScript.withArgs('no-roles-ext').resolves({ data: 'other extension script' });
-    uiExtensionService.getScript.withArgs('no-script-ext').resolves();
+    uiExtensionService.getScriptDigest.withArgs('offline-ext').resolves('md5-offline');
+    uiExtensionService.getScriptDigest.withArgs('no-roles-ext').resolves('md5-no-roles');
+    uiExtensionService.getScriptDigest.withArgs('no-script-ext').resolves();
     sinon.stub(workbox, 'generateSW').returns();
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
@@ -117,8 +117,8 @@ describe('generate service worker', () => {
         '/extension-libs/bar.js': 'barcode',
         '/ui-extension': '[{"id":"offline-ext","roles":["chw"]},' +
           '{"id":"online-ext","roles":["nurse"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
-        '/ui-extension/offline-ext': 'my-script',
-        '/ui-extension/no-roles-ext': 'other extension script'
+        '/ui-extension/offline-ext': 'md5-offline',
+        '/ui-extension/no-roles-ext': 'md5-no-roles'
       },
       ignoreURLParametersMatching: [/redirect/, /username/],
       modifyURLPrefix: {

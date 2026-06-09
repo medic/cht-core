@@ -75,6 +75,57 @@ describe('UI Extension service', () => {
     });
   });
 
+  describe('getScriptDigest', () => {
+    it('handles 404', async () => {
+      dbGet.rejects({ status: 404 });
+      const actual = await service.getScriptDigest('test');
+      expect(actual).to.be.null;
+      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+    });
+
+    it('throws anything else', async () => {
+      dbGet.rejects({ status: 500 });
+      try {
+        await service.getScriptDigest('test');
+        expect.fail('should have thrown');
+      } catch (e) {
+        expect(e.status).to.equal(500);
+        expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+      }
+    });
+
+    it('returns null when the doc is not a ui-extension', async () => {
+      dbGet.resolves({
+        type: 'something-else',
+        _attachments: {
+          'extension.js': { digest: 'md5-abc' }
+        }
+      });
+      const actual = await service.getScriptDigest('test');
+      expect(actual).to.be.null;
+      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+    });
+
+    it('returns null when the doc has no extension.js attachment', async () => {
+      dbGet.resolves({ type: 'ui-extension' });
+      const actual = await service.getScriptDigest('test');
+      expect(actual).to.be.null;
+      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+    });
+
+    it('returns the attachment digest without downloading the attachment', async () => {
+      dbGet.resolves({
+        type: 'ui-extension',
+        _attachments: {
+          'extension.js': { digest: 'md5-abc', stub: true }
+        }
+      });
+      const actual = await service.getScriptDigest('test');
+      expect(actual).to.equal('md5-abc');
+      expect(dbGet).to.have.been.calledOnceWithExactly('ui-extension:test', {});
+    });
+  });
+
   describe('getAllProperties', () => {
     it('removes CouchDB fields and maps id', async () => {
       allDocs.resolves({
