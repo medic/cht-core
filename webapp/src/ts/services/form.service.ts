@@ -261,8 +261,15 @@ export class FormService {
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
-    const geoGroup = formHtml?.querySelector('.or-appearance-geolocation-capture')?.closest('.or-group');
-    return (geoGroup?.querySelector('.or-appearance-geolocation-context input') as HTMLInputElement)?.value || undefined;
+    const geoGroup = formHtml?.querySelector('.or-appearance-geolocation-capture')?.closest('.or-group, .or-group-data');
+    if (!geoGroup) {
+      return undefined;
+    }
+    const checkedRadio = geoGroup.querySelector('.or-appearance-geolocation-context input[type="radio"]:checked') as HTMLInputElement;
+    if (checkedRadio) {
+      return checkedRadio.value || undefined;
+    }
+    return (geoGroup.querySelector('.or-appearance-geolocation-context input') as HTMLInputElement)?.value || undefined;
   }
 
   private saveGeo(geoHandle, docs, contextValue?: string) {

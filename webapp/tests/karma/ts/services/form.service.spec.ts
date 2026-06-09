@@ -949,13 +949,15 @@ describe('Form service', () => {
         UserContact.resolves({ _id: '123', phone: '555' });
 
         const group = document.createElement('div');
-        group.classList.add('or-group');
+        group.classList.add('or-group-data');
         const captureWrapper = document.createElement('div');
         captureWrapper.classList.add('or-appearance-geolocation-capture');
         const contextWrapper = document.createElement('div');
         contextWrapper.classList.add('or-appearance-geolocation-context');
         const contextInput = document.createElement('input');
+        contextInput.type = 'radio';
         contextInput.value = 'home';
+        contextInput.checked = true;
         contextWrapper.appendChild(contextInput);
         group.appendChild(captureWrapper);
         group.appendChild(contextWrapper);
@@ -976,13 +978,15 @@ describe('Form service', () => {
         UserContact.resolves({ _id: '123', phone: '555' });
 
         const group = document.createElement('div');
-        group.classList.add('or-group');
+        group.classList.add('or-group-data');
         const captureWrapper = document.createElement('div');
         captureWrapper.classList.add('or-appearance-geolocation-capture');
         const contextWrapper = document.createElement('div');
         contextWrapper.classList.add('or-appearance-geolocation-context');
         const contextInput = document.createElement('input');
+        contextInput.type = 'radio';
         contextInput.value = 'home';
+        contextInput.checked = true;
         contextWrapper.appendChild(contextInput);
         group.appendChild(captureWrapper);
         group.appendChild(contextWrapper);
@@ -1904,13 +1908,15 @@ describe('Form service', () => {
 
       const html = document.createElement('div');
       const group = document.createElement('div');
-      group.classList.add('or-group');
+      group.classList.add('or-group-data');
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
       const contextWrapper = document.createElement('div');
       contextWrapper.classList.add('or-appearance-geolocation-context');
       const contextInput = document.createElement('input');
+      contextInput.type = 'radio';
       contextInput.value = 'workplace';
+      contextInput.checked = true;
       contextWrapper.appendChild(contextInput);
       group.appendChild(captureWrapper);
       group.appendChild(contextWrapper);
@@ -1939,13 +1945,15 @@ describe('Form service', () => {
 
       const html = document.createElement('div');
       const group = document.createElement('div');
-      group.classList.add('or-group');
+      group.classList.add('or-group-data');
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
       const contextWrapper = document.createElement('div');
       contextWrapper.classList.add('or-appearance-geolocation-context');
       const contextInput = document.createElement('input');
+      contextInput.type = 'radio';
       contextInput.value = 'home';
+      contextInput.checked = true;
       contextWrapper.appendChild(contextInput);
       group.appendChild(captureWrapper);
       group.appendChild(contextWrapper);
