@@ -287,11 +287,22 @@
   }
 
   .or-appearance-geolocation-capture {
-    .geolocation-capture-btn,
     .geolocation-permission-denied,
     .geolocation-unavailable {
       display: block;
       margin: 8px 0;
+    }
+
+    .geolocation-capture-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      background-color: @gray-light;
+
+      .fa {
+        color: @error-color;
+      }
     }
 
     .geolocation-status {
@@ -306,6 +317,10 @@
         .geolocation-progress-label {
           font-weight: bold;
           white-space: nowrap;
+
+          &::after {
+            content: ':';
+          }
         }
 
         .geolocation-progress-bar {
@@ -349,10 +364,13 @@
 
         .geolocation-result-label {
           font-weight: bold;
+
+          &::after {
+            content: ':';
+          }
         }
 
         .geolocation-success-msg {
-          color: @ok-color;
           margin: 0;
         }
 
@@ -362,13 +380,27 @@
         }
       }
 
-      .geolocation-retry-btn,
+      .geolocation-retry-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        max-width: 280px;
+        margin: 4px 0;
+        background-color: @gray-light;
+
+        .fa {
+          color: @error-color;
+        }
+      }
+
       .geolocation-skip-btn {
         display: block;
         width: 100%;
         max-width: 280px;
         margin: 4px 0;
         text-align: left;
+        background-color: @gray-light;
       }
     }
   }

@@ -19,7 +19,8 @@ class GeolocationWidget extends Widget {
       return globalThis.CHTCore.Translate.get('geolocation.permission.denied')
         .then(text => $el.text(text));
     } else if (this._isGeolocationAvailable()) {
-      const $button = $('<button type="button" class="btn btn-primary geolocation-capture-btn">');
+      const $button = $('<button type="button" class="btn btn-default geolocation-capture-btn">');
+      $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($button);
       $button.on('click', () => this._startCapture());
       $question.append($button);
 
@@ -30,7 +31,7 @@ class GeolocationWidget extends Widget {
       }
 
       return globalThis.CHTCore.Translate.get('geolocation.capture')
-        .then(text => $button.text(text));
+        .then(text => $button.append($('<span class="geolocation-btn-label">').text(text)));
     } else {
       const $el = $('<p class="geolocation-unavailable">');
       $question.append($el);
@@ -75,6 +76,7 @@ class GeolocationWidget extends Widget {
         $status.append($resultRow);
 
         const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">');
+        $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($retryBtn);
         $retryBtn.on('click', () => {
           globalThis.CHTCore.Geolocation.retry();
           this._startCapture();
@@ -85,7 +87,7 @@ class GeolocationWidget extends Widget {
 
         globalThis.CHTCore.Translate.get('geolocation.result.label').then(text => $resultLabel.text(text));
         globalThis.CHTCore.Translate.get('geolocation.failure').then(text => $resultText.text(text));
-        globalThis.CHTCore.Translate.get('geolocation.retry').then(text => $retryBtn.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.retry').then(text => $retryBtn.append($('<span class="geolocation-btn-label">').text(text)));
         globalThis.CHTCore.Translate.get('geolocation.skip').then(text => $skipBtn.text(text));
 
         $(this.element).val('not_captured').trigger('change');

@@ -86,6 +86,16 @@ describe('Enketo: Geolocation Widget', () => {
       expect(container.querySelector('.geolocation-unavailable')).to.be.null;
     });
 
+    it('should include a map icon in the capture button', () => {
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
+
+      const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn')!;
+      expect(btn.querySelector('.fa.fa-map-marker')).to.not.be.null;
+    });
+
     describe('context question', () => {
       const buildHtmlWithContext = (contextAlreadyAnswered = false) => {
         document.body.insertAdjacentHTML('afterbegin', `
@@ -266,6 +276,21 @@ describe('Enketo: Geolocation Widget', () => {
 
         expect(container.querySelector('.geolocation-retry-btn')).to.not.be.null;
         expect(container.querySelector('.geolocation-skip-btn')).to.not.be.null;
+      });
+
+      it('should include a map icon in the retry button', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
+        await promise;
+
+        const retryBtn = document.querySelector('#geolocation-widget-test .geolocation-retry-btn')!;
+        expect(retryBtn.querySelector('.fa.fa-map-marker')).to.not.be.null;
       });
 
       it('should set hidden input to "not_captured" and fire change event on failure', async () => {
