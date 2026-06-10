@@ -42,7 +42,7 @@ describe('UI Extension', () => {
     it('returns 200 and script data for known extension', async () => {
       const scriptContent = 'console.log("integration-test-ext");';
       await utils.saveDoc({
-        _id: `${PREFIXES.UI_EXTENSION}}integration-test-ext-script`,
+        _id: `${PREFIXES.UI_EXTENSION}integration-test-ext-script`,
         type: DOC_TYPES.UI_EXTENSION,
         _attachments: {
           'extension.js': {

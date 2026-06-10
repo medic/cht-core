@@ -506,7 +506,6 @@ describe('HeaderTabs service', () => {
     it('should return secondary sidebar tabs whose permissions are met when no header_tab permissions are granted',
       async () => {
         authService.has.returns(false);
-        authService.has.withArgs([]).returns(true);
 
         const tabs = await service.getSidebarTabs();
 
@@ -517,7 +516,6 @@ describe('HeaderTabs service', () => {
 
     it('should include the user tab when can_edit_profile is granted', async () => {
       authService.has.returns(false);
-      authService.has.withArgs([]).returns(true);
       authService.has.withArgs(['can_edit_profile']).returns(true);
 
       const tabs = await service.getSidebarTabs();
@@ -636,6 +634,17 @@ describe('HeaderTabs service', () => {
         weight: 6,
         accentColor: undefined,
       });
+    });
+
+    it('should authorize tabs without permissions without calling authService', async () => {
+      // deny everything, including any empty-permissions check
+      authService.has.returns(false);
+
+      const tabs = await service.getSidebarTabs();
+
+      expect(authService.has).to.not.have.been.calledWith([]);
+      // only the permission-less secondary tabs remain (no header tabs, no `user` tab)
+      expect(tabs.map(t => t.name)).to.deep.equal(['trainings', 'about', 'privacy-policy', 'bug']);
     });
 
     it('should cache sidebar tabs after first call', async () => {

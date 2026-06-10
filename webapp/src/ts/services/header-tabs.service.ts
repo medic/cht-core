@@ -116,7 +116,9 @@ export class HeaderTabsService {
   private sidebarTabs?: SidebarTab[];
 
   private async filterAuthorizedTabs<T extends SidebarTab>(tabs: T[]): Promise<T[]> {
-    const tabAuthorization = await Promise.all(tabs.map(tab => this.authService.has(tab.permissions)));
+    const tabAuthorization = await Promise.all(
+      tabs.map(({ permissions }) => !permissions.length || this.authService.has(permissions))
+    );
     return tabs.filter((tab, index) => tabAuthorization[index]);
   }
 
