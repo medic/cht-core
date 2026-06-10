@@ -55,6 +55,12 @@ describe('Submit inline-binary report form', () => {
     await commonPage.goToReports();
     await reportsPage.openReport(report._id);
     await commonPage.accessEditOption();
+
+    // Guard: the inline-binary field must load EMPTY (the form has no default/calculate),
+    // so the sidecar — not a re-supplied value — is what preserves it on save.
+    const badgeInput = await $('input[name="/inline-binary-report/badge"]');
+    expect(await badgeInput.getValue()).to.equal('');
+
     await commonEnketoPage.setInputValue('Patient Name', 'Ada Lovelace');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

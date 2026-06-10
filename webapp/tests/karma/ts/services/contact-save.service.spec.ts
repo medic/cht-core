@@ -1198,6 +1198,114 @@ describe('ContactSave service', () => {
       ).to.be.true;
     });
 
+    it('preserves an untouched main-doc binary on edit via the data-attachment-ref sidecar', async () => {
+      const ref = 'contact:family:create/family/photo';
+      const name = `user-file-${ref}`;
+      const attachment = {
+        content_type: 'image/png',
+        data: 'iVBORw0KGgoAAAANSUhEUg==',
+        digest: 'md5-1B2M2Y8AsgTpgAmY7PhCfg==',
+        revpos: 4,
+        length: 17,
+      };
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            `<photo type="binary" data-attachment-ref="${ref}"></photo>` +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      // Binary node loads empty (no form default); only the sidecar carries the reference.
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: '' },
+      });
+      getContact.withArgs(Qualifier.byUuid('main1')).resolves({
+        _id: 'main1',
+        _rev: '4-abc',
+        type: 'family',
+        name: 'Kigali HF',
+        photo: ref,
+        _attachments: { [name]: { ...attachment } },
+      });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, 'main1', 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      expect(main.photo, 'field value restored from sidecar').to.equal(ref);
+      expect(attachmentService.add.called, 'untouched binary not re-attached').to.be.false;
+      expect(attachmentService.remove.called, 'preserved attachment not orphan-removed').to.be.false;
+      expect(main._attachments[name], 'attachment content + revision untouched').to.deep.equal(attachment);
+      expect(main._attachments[name].data, 'content unchanged').to.equal(attachment.data);
+      expect(main._attachments[name].revpos, 'revision unchanged').to.equal(4);
+    });
+
+    it('ignores a stale sidecar when the binary is edited (fresh base64 wins)', async () => {
+      // Non-empty content wins: re-attach and recompute the value from the xpath, ignoring the sidecar.
+      const staleRef = 'contact:family:create/family/old-photo';
+      const base64 = 'FRESH_BASE64';
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            `<photo type="binary" data-attachment-ref="${staleRef}">${base64}</photo>` +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: base64 },
+      });
+      getContact.withArgs(Qualifier.byUuid('main1')).resolves({
+        _id: 'main1', type: 'family', name: 'Kigali HF',
+      });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, 'main1', 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      const photoCall = attachmentService.add.getCalls().find(c => c.args[2] === base64);
+      expect(photoCall, 'fresh base64 should be attached').to.not.be.undefined;
+      expect(
+        photoCall.args[1],
+        'attached under the recomputed reference name',
+      ).to.equal('user-file-contact:family:create/family/photo');
+      expect(main.photo, 'value is the recomputed reference, not the stale sidecar')
+        .to.equal('contact:family:create/family/photo');
+    });
+
+    it('does not restore a sibling binary that carries no sidecar (non-goal)', async () => {
+      // Brand-new siblings are never stamped with a sidecar, so nothing is restored.
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<contact db-doc="true">' +
+            '<name>Amina</name>' +
+            '<badge type="binary"></badge>' +
+          '</contact>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', contact: 'NEW' },
+        siblings: { contact: { _id: 'sib1', type: 'person', name: 'Amina', badge: '', parent: 'PARENT' } },
+        repeats: {},
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const sibling = result.preparedDocs.find(d => d._id === 'sib1');
+
+      expect(attachmentService.add.called, 'no attach for an empty sibling binary').to.be.false;
+      expect(sibling.badge, 'sibling binary left empty (no sidecar to restore)').to.equal('');
+    });
+
     it('routes uploads using the type="file" attribute', async () => {
       // Enketo's setVal rewrites uploaded binary nodes to type="file" at
       // runtime (enketo-core form-model.js setVal).
