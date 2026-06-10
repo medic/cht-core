@@ -17,6 +17,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'Polling replication data…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit of ${limit}. Do you wish to continue?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'Your account is set up to synchronize more records than can be handled. Please contact your administrator.',
     CONTINUE: 'Continue',
     ABORT: 'Cancel',
     SESSION_EXPIRED_TITLE: 'Session has expired',
@@ -37,6 +39,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'Obteniendo datos de replicación…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `¡Advertencia! Va a descargar ${count} documentos, que excede el límite recomendado de ${limit}. ¿Desea continuar?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'Su cuenta está configurada para sincronizar más registros de los que se pueden gestionar. Por favor, póngase en contacto con su administrador.',
     CONTINUE: 'Continuar',
     ABORT: 'Cancelar',
     SESSION_EXPIRED_TITLE: 'La sesión ha expirado',
@@ -58,6 +62,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'Kuandika data ya kujaza…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Onyo! Uko karibu kupakua hati ${count}, ambazo zinazidi kikomo kilichopendekezwa cha ${limit}. Je! Unataka kuendelea?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'Akaunti yako imewekwa kusawazisha rekodi nyingi kuliko zinazoweza kushughulikiwa. Tafadhali wasiliana na msimamizi wako.',
     CONTINUE: 'Endelea',
     ABORT: 'Sitisha',
     SESSION_EXPIRED_TITLE: 'Kipindi kimeisha',
@@ -78,6 +84,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'रिप्लिकेसन डाटा चेक गर्दै…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => eurodigit.to_non_euro.devanagari(`सावधान! तपाई ${count} डकुमेन्ट डाउनलोड गर्न जाँदै हुनुहुन्छ, जुन कि सुझावित ${limit} भन्दा बढी छ. के तपाई डाउनलोड गर्न चाहनु हुन्छ?`),
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'तपाईंको खाता व्यवस्थापन गर्न सकिनेभन्दा बढी रेकर्डहरू सिंक्रोनाइज गर्न मिलाइएको छ। कृपया आफ्नो प्रशासकलाई सम्पर्क गर्नुहोस्।',
     CONTINUE: 'जारी राख्नुस',
     ABORT: 'बन्द गर्नुस',
     SESSION_EXPIRED_TITLE: 'अघिल्लो सत्रको म्याद सकियो',
@@ -98,6 +106,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'Examen de la réplication des données…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Attention ! Vous êtes sur le point de télécharger ${count} documents, ce qui dépasse la limite recommandée de ${limit}. Souhaitez-vous continuer ?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'Votre compte est configuré pour synchroniser plus d’enregistrements que ce qui peut être géré. Veuillez contacter votre administrateur.',
     CONTINUE: 'Continuer',
     ABORT: 'Annuler',
     SESSION_EXPIRED_TITLE: 'Session expirée',
@@ -119,6 +129,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: ' प्रतिकृति डेटा चेक हो रहा है…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `चेतावनी! आप ${count} डॉक्स डाउनलोड करने वाले हैं, जो ${limit} की अनुशंसित सीमा से अधिक है। क्या आप  डाउनलोड जारी रखना चाहते हैं?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'आपका खाता संभाले जा सकने वाले रिकॉर्ड से अधिक को सिंक्रनाइज़ करने के लिए सेट किया गया है। कृपया अपने व्यवस्थापक से संपर्क करें।',
     CONTINUE: 'जारी रखें',
     ABORT: 'रद्द करें',
     SESSION_EXPIRED_TITLE: 'सेशुन समाप्त हो चुका है',
@@ -140,6 +152,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'Menyalin data ke perangkat Anda…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Peringatan! Anda akan mengunduh ${count} dokumen, yang melebihi rekomendasi batasan ${limit}. Apakah Anda ingin melanjutkan?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'Akun Anda diatur untuk menyinkronkan lebih banyak catatan daripada yang dapat ditangani. Silakan hubungi administrator Anda.',
     CONTINUE: 'Lanjutkan',
     ABORT: 'Batal',
     SESSION_EXPIRED_TITLE: 'Sesi kadalursa',
@@ -161,6 +175,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'استقصاء بيانات النسخ المتماثل...',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `تحذير! أنت على وشك تنزيل مستندات ${count}، وهو ما يتجاوز الحد الموصى به وهو ${limit}. هل ترغب في الاستمرار؟`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'تم إعداد حسابك لمزامنة عدد من السجلات أكبر مما يمكن التعامل معه. يرجى الاتصال بالمسؤول الخاص بك.',
     CONTINUE: 'متابعة',
     ABORT: 'إلغاء',
     SESSION_EXPIRED_TITLE: 'انتهت صلاحية الجلسة',
@@ -181,6 +197,8 @@ const TRANSLATIONS = {
     POLL_REPLICATION: 'Obtendo dados de replicação…',
     // eslint-disable-next-line @stylistic/max-len
     TOO_MANY_DOCS: ({ count, limit }) => `Atenção! Você vai baixar ${count} documentos, o que excede o limite recomendado de ${limit}. Deseja continuar?`,
+    // eslint-disable-next-line @stylistic/max-len
+    REPLICATION_LIMIT_EXCEEDED: 'A sua conta está configurada para sincronizar mais registos do que é possível processar. Por favor, contacte o seu administrador.',
     CONTINUE: 'Continuar',
     ABORT: 'Cancelar',
     SESSION_EXPIRED_TITLE: 'Sessão expirada',

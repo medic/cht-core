@@ -33,11 +33,21 @@ const fetchJSON = async (path) => {
     headers: opts.remote_headers
   };
   const response = await fetch(`${baseUrl}${path}`, options);
-  const jsonResponse = await response.json();
   if (response.ok) {
-    return jsonResponse;
+    return response.json();
   }
-  throw jsonResponse;
+
+  // Check the status before parsing: error responses can be plain text (e.g. a 413/429), and
+  // calling response.json() on those would throw a SyntaxError that masks the real status.
+  const error = new Error(`Error fetching JSON from ${path}: ${response.status}`);
+  error.status = response.status;
+  const body = await response.text().catch(() => undefined);
+  try {
+    error.body = body && JSON.parse(body);
+  } catch (e) { // eslint-disable-line no-unused-vars
+    error.body = body;
+  }
+  throw error;
 };
 
 module.exports = {

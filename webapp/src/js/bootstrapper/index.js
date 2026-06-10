@@ -74,6 +74,13 @@
     if (errorCode === 401) {
       return redirectToLogin(dbInfo);
     }
+    // The server rejected replication because the user is configured to sync too many documents
+    // (413), or is being throttled after a recent rejection (429). Reloading cannot fix this, so
+    // show a terminal message rather than the generic, retryable connection error.
+    if (errorCode === 413 || errorCode === 429) {
+      err.key = 'REPLICATION_LIMIT_EXCEEDED';
+      err.retryable = false;
+    }
     setUiError(err);
     throw (err);
   };

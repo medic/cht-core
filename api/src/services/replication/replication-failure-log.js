@@ -8,6 +8,7 @@ const REPORTING_PERIOD_FORMAT = 'YYYY-MM';
 const DAILY_COUNT_KEY_FORMAT = 'YYYY-MM-DD';
 const UNKNOWN = null;
 const MAX_PERIODS = 60;
+const LIMIT_FAILURE_COOLDOWN = 60 * 60 * 1000; // 1 hour
 
 const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const log = await getLog(userCtx.name);
@@ -16,6 +17,7 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   // Counts are only set on userCtx as each phase of the request completes. When a count is missing
   // we record null instead of omitting the key, so a stable shape on the failure entry tells you
   // (by which counters are null) how far the request progressed before failing.
+  const limitExceeded = userCtx.replicationLimitExceeded === true;
   const failure = {
     date: now.valueOf(),
     status_code: statusCode,
@@ -25,6 +27,8 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
     subjects_count: userCtx.subjectsCount ?? UNKNOWN,
     docs_count: userCtx.docsCount ?? UNKNOWN,
     unpurged_docs_count: userCtx.unpurgedDocsCount ?? UNKNOWN,
+    limit_exceeded: limitExceeded,
+    limit_type: userCtx.replicationLimitType ?? UNKNOWN,
   };
 
   log.failures = log.failures || [];
@@ -39,7 +43,35 @@ const captureFailure = async (userCtx, requestId, statusCode, duration) => {
   const dayKey = now.format(DAILY_COUNT_KEY_FORMAT);
   log.daily_failures[dayKey] = (log.daily_failures[dayKey] || 0) + 1;
 
+  if (limitExceeded) {
+    // Persist the cooldown signal as a top-level field so the MAX_FAILURES slice above can never
+    // evict it - an aggressively retrying client must not be able to push the limit failure out of
+    // the window and silently disengage the cooldown.
+    log.last_limit_failure = now.valueOf();
+    // Track limit failures per day separately from generic failures so monitoring (#10407) can count
+    // "users blocked by a hard limit" without scanning the capped `failures` array.
+    log.daily_limit_failures = log.daily_limit_failures || {};
+    log.daily_limit_failures[dayKey] = (log.daily_limit_failures[dayKey] || 0) + 1;
+  }
+
   return db.medicLogs.put(log);
+};
+
+/**
+ * Returns whether the user hit a hard replication limit within the cooldown window. Reads the
+ * current and previous reporting-period logs so a window that spans a month boundary still applies.
+ * @param {string} userName
+ * @returns {Promise<boolean>}
+ */
+const hasRecentLimitFailure = async (userName) => {
+  const since = moment().valueOf() - LIMIT_FAILURE_COOLDOWN;
+  const periods = [
+    moment().format(REPORTING_PERIOD_FORMAT),
+    moment().subtract(1, 'month').format(REPORTING_PERIOD_FORMAT),
+  ];
+  const keys = periods.map(period => getDocId(userName, period));
+  const result = await db.medicLogs.allDocs({ keys, include_docs: true });
+  return result.rows.some(row => row.doc?.last_limit_failure >= since);
 };
 
 const getDocId = (userName, reportingPeriod) => {
@@ -170,4 +202,5 @@ module.exports = {
   capture: captureFailure,
   get,
   getUsersWithFailuresCount,
+  hasRecentLimitFailure,
 };

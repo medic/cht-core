@@ -38,9 +38,11 @@ describe('utils', () => {
       ]]);
     });
 
-    it('should throw json response when failed', async () => {
+    it('should throw an error carrying the status and parsed body when not ok', async () => {
       const response = {
-        json: sinon.stub().resolves({ the: 'error' }),
+        ok: false,
+        status: 413,
+        text: sinon.stub().resolves(JSON.stringify({ code: 413, error: 'doc_limit_exceeded' })),
       };
       const fetch = sinon.stub().resolves(response);
       utils.__set__('fetch', fetch);
@@ -49,7 +51,26 @@ describe('utils', () => {
         await utils.fetchJSON('/the/path');
         expect.fail();
       } catch (err) {
-        expect(err).to.deep.equal({ the: 'error' });
+        expect(err.status).to.equal(413);
+        expect(err.body).to.deep.equal({ code: 413, error: 'doc_limit_exceeded' });
+      }
+    });
+
+    it('should surface the status even when the error body is not JSON', async () => {
+      const response = {
+        ok: false,
+        status: 429,
+        text: sinon.stub().resolves('Too Many Requests'),
+      };
+      const fetch = sinon.stub().resolves(response);
+      utils.__set__('fetch', fetch);
+
+      try {
+        await utils.fetchJSON('/the/path');
+        expect.fail();
+      } catch (err) {
+        expect(err.status).to.equal(429);
+        expect(err.body).to.equal('Too Many Requests');
       }
     });
   });

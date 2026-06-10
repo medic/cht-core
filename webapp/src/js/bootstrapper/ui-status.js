@@ -9,14 +9,22 @@ const setUiStatus = (translationKey, args)  => {
 
 const setUiError = err => {
   const errorMessage = translator.translate(err && err.key || 'ERROR_MESSAGE');
+  // Some errors are terminal - reloading would just re-trigger the same rejection (e.g. a replication
+  // hard limit). For those we show the message without a "Try again" button to avoid a reload loop.
+  const retryable = !err || err.retryable !== false;
   const tryAgain = translator.translate('TRY_AGAIN');
+  const retryButton = retryable
+    ? `<a id="btn-reload" class="btn btn-primary" href="#">${tryAgain}</a>`
+    : '';
   const content = `
     <div>
       <p>${errorMessage}</p>
-      <a id="btn-reload" class="btn btn-primary" href="#">${tryAgain}</a>
+      ${retryButton}
     </div>`;
   $('.bootstrap-layer .error').html(content);
-  $('#btn-reload').click(() => window.location.reload(false));
+  if (retryable) {
+    $('#btn-reload').click(() => window.location.reload(false));
+  }
   $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
   $('.bootstrap-layer .error').show();
 };

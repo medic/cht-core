@@ -7,6 +7,8 @@ const authorization = require('../../../../src/services/replication/authorizatio
 const purgedDocs = require('../../../../src/services/replication/purged-docs');
 const replication = require('../../../../src/services/replication/replication');
 const replicationLimitLog = require('../../../../src/services/replication/replication-limit-log');
+const replicationFailureLog = require('../../../../src/services/replication/replication-failure-log');
+const replicationLimit = require('../../../../src/services/replication/replication-limit');
 
 let userCtx;
 let authContext;
@@ -24,6 +26,11 @@ describe('Initial Replication service', () => {
   });
 
   describe('getContext', () => {
+    beforeEach(() => {
+      // By default the user is not throttled; individual tests override this to true.
+      sinon.stub(replicationFailureLog, 'hasRecentLimitFailure').resolves(false);
+    });
+
     it('should return initial replication context', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '123-aaa' });
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
@@ -177,6 +184,64 @@ describe('Initial Replication service', () => {
       expect(userCtx.docsCount).to.equal(3);
       // unpurgedDocsCount is only set after the purge step succeeds, so it should be absent.
       expect(userCtx).to.not.have.property('unpurgedDocsCount');
+    });
+
+    it('should throw a throttle error and do no work when the user recently hit a limit', async () => {
+      replicationFailureLog.hasRecentLimitFailure.resolves(true);
+      const info = sinon.stub(db.medic, 'info');
+      const getAuthCtx = sinon.stub(authorization, 'getAuthorizationContext');
+
+      await expect(replication.getContext(userCtx))
+        .to.be.rejectedWith(replicationLimit.ReplicationThrottledError);
+
+      expect(replicationFailureLog.hasRecentLimitFailure.args).to.deep.equal([[userCtx.name]]);
+      // the expensive work must not run for a throttled user
+      expect(info.notCalled).to.be.true;
+      expect(getAuthCtx.notCalled).to.be.true;
+      expect(userCtx).to.not.have.property('subjectsCount');
+    });
+
+    it('should throw a limit error and mark the user when too many docs would replicate', async () => {
+      sinon.stub(replicationLimit.limits, 'DOC_LIMIT').value(3);
+      sinon.stub(db.medic, 'info').resolves({ update_seq: '444-ddd' });
+      sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
+      sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
+      const allowedIds = [1, 2, 3, 4, 5];
+      sinon.stub(authorization, 'filterAllowedDocIds').returns(allowedIds);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(allowedIds);
+      const put = sinon.stub(replicationLimitLog, 'put');
+
+      await expect(replication.getContext(userCtx))
+        .to.be.rejectedWith(replicationLimit.ReplicationLimitError);
+
+      expect(userCtx.replicationLimitExceeded).to.equal(true);
+      expect(userCtx.replicationLimitType).to.equal('documents');
+      // all counts are set before the limit check, so the failure log can record them
+      expect(userCtx.subjectsCount).to.equal(authContext.subjectIds.length);
+      expect(userCtx.docsCount).to.equal(allowedIds.length);
+      expect(userCtx.unpurgedDocsCount).to.equal(allowedIds.length);
+      // we throw before logging the replication count
+      expect(put.notCalled).to.be.true;
+    });
+
+    it('should not count tasks toward the hard document limit', async () => {
+      sinon.stub(replicationLimit.limits, 'DOC_LIMIT').value(3);
+      sinon.stub(db.medic, 'info').resolves({ update_seq: '555-eee' });
+      sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
+      sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
+      const allowedIds = [1, 2, 3, 4, 5]; // includes tasks - over the limit
+      const nonTaskIds = [1, 2]; // under the limit once tasks are excluded
+      sinon.stub(authorization, 'filterAllowedDocIds')
+        .onCall(0).returns(allowedIds)
+        .onCall(1).returns(nonTaskIds);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(allowedIds);
+      sinon.stub(replicationLimitLog, 'put');
+
+      const result = await replication.getContext(userCtx);
+
+      expect(result.docIds).to.deep.equal(allowedIds);
+      expect(result.warnDocIds).to.deep.equal(nonTaskIds);
+      expect(userCtx).to.not.have.property('replicationLimitExceeded');
     });
   });
 

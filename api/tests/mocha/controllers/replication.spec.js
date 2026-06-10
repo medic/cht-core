@@ -3,6 +3,10 @@ const sinon = require('sinon');
 const controller = require('../../../src/controllers/replication');
 const replicationService = require('../../../src/services/replication/replication');
 const serverUtils = require('../../../src/server-utils');
+const {
+  ReplicationLimitError,
+  ReplicationThrottledError,
+} = require('../../../src/services/replication/replication-limit');
 
 let req;
 let res;
@@ -106,6 +110,32 @@ describe('Initial Replication controller', () => {
 
       expect(replicationService.getContext.callCount).to.equal(1);
       expect(serverUtils.serverError.args).to.deep.equal([[ { status: 502 }, req, res ]]);
+      expect(res.json.callCount).to.equal(0);
+    });
+
+    it('should respond with error with status code', async () => {
+      const limitReq = { userCtx: { name: 'michael' } };
+      const err = new ReplicationLimitError('too many', 'documents');
+      sinon.stub(replicationService, 'getContext').rejects(err);
+      sinon.stub(serverUtils, 'error');
+
+      await controller.getDocIds(limitReq, res);
+
+      expect(serverUtils.error.args).to.deep.equal([[err, limitReq, res]]);
+      expect(limitReq.replicationThrottled).to.be.undefined;
+      expect(res.json.callCount).to.equal(0);
+    });
+
+    it('should flag the request as throttled for a throttle error', async () => {
+      const throttleReq = { userCtx: { name: 'michael' } };
+      const err = new ReplicationThrottledError('slow down');
+      sinon.stub(replicationService, 'getContext').rejects(err);
+      sinon.stub(serverUtils, 'error');
+
+      await controller.getDocIds(throttleReq, res);
+
+      expect(serverUtils.error.args).to.deep.equal([[err, throttleReq, res]]);
+      expect(throttleReq.replicationThrottled).to.be.true;
       expect(res.json.callCount).to.equal(0);
     });
   });

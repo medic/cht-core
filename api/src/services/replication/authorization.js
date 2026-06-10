@@ -8,6 +8,7 @@ const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
 const { DOC_IDS, PREFIXES, DOC_TYPES } = require('@medic/constants');
+const { limits, ReplicationLimitError } = require('./replication-limit');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
@@ -347,12 +348,26 @@ const getContactSubjects = (row) => {
  * Returns the authorization context for an offline user.
  * @param {{ name:string, roles:string[] }} userCtx
  * @returns* {Promise<AuthorizationContext>}
+ * @throws ReplicationLimitError if the user's subject count exceeds `limits.DOC_LIMIT`
  */
 const getAuthorizationContext = async (userCtx) => {
   const authCtx = getContextObject(userCtx);
   const contactsSubjects = {};
 
-  const results = await db.medic.query('medic/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
+  // Cap the rows materialized so a pathological hierarchy cannot blow up memory here. The extra
+  // row lets us detect that the limit was exceeded.
+  const results = await db.medic.query('medic/contacts_by_depth', {
+    keys: authCtx.contactsByDepthKeys,
+    limit: limits.DOC_LIMIT + 1,
+  });
+  if (results.rows.length > limits.DOC_LIMIT) {
+    userCtx.replicationLimitExceeded = true;
+    userCtx.replicationLimitType = 'contacts';
+    throw new ReplicationLimitError(
+      `User "${userCtx.name}" exceeds the replication limit of ${limits.DOC_LIMIT} subjects.`,
+      'contacts'
+    );
+  }
   results.rows.forEach(row => {
     const subjects = getContactSubjects(row);
 
@@ -645,6 +660,19 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
           key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
         },
       });
+    }
+
+    // Backstop against users with an astronomical number of documents: bail mid-enumeration rather
+    // than accumulating the entire corpus in memory. `hits` can over-count (a doc whose subjects span
+    // two query batches appears in both), so this is an imprecise upper bound, not the policy limit.
+    if (hits.length > limits.ENUMERATION_LIMIT) {
+      authorizationContext.userCtx.replicationLimitExceeded = true;
+      authorizationContext.userCtx.replicationLimitType = 'enumeration';
+      throw new ReplicationLimitError(
+        `User "${authorizationContext.userCtx.name}" exceeds the document enumeration limit of ` +
+        `${limits.ENUMERATION_LIMIT}`,
+        'enumeration'
+      );
     }
   }
 
