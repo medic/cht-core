@@ -111,9 +111,6 @@ export namespace v1 {
   export const getSummaries = ({ medicDb }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
     return async ({ uuids }: UuidsQualifier): Promise<Report.v1.ReportSummary[]> => {
-      if (!uuids.length) {
-        return [];
-      }
       const docs = await getMedicDocsByIds(uuids);
       return docs
         .filter(isReport)

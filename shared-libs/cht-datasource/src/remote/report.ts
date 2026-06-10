@@ -34,9 +34,6 @@ export namespace v1 {
   export const getSummaries = (
     remoteContext: RemoteDataContext
   ) => ({ uuids }: UuidsQualifier): Promise<Report.v1.ReportSummary[]> => {
-    if (!uuids.length) {
-      return Promise.resolve([]);
-    }
     return postReportSummary(remoteContext)({ uuids });
   };
 

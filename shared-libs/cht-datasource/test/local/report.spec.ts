@@ -115,11 +115,14 @@ describe('local report', () => {
         getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
       });
 
-      it('returns empty array when given no uuids', async () => {
+      it('passes empty uuids through to getDocsByIds', async () => {
+        getDocsByIdsInner.resolves([]);
+
         const result = await Report.v1.getSummaries(localContext)({ uuids: [] });
 
         expect(result).to.deep.equal([]);
-        expect(getDocsByIdsInner.notCalled).to.be.true;
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly([])).to.be.true;
       });
 
       it('summarises reports and filters out non-report docs', async () => {

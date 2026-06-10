@@ -155,12 +155,14 @@ describe('remote report', () => {
     });
 
     describe('getSummaries', () => {
-      it('returns empty array when given no uuids', async () => {
+      it('POSTs empty uuids to the report summary endpoint', async () => {
+        postSummaryResourceInner.resolves([]);
+
         const result = await Report.v1.getSummaries(remoteContext)({ uuids: [] });
 
         expect(result).to.deep.equal([]);
-        expect(postSummaryResourceOuter.notCalled).to.be.true;
-        expect(postSummaryResourceInner.notCalled).to.be.true;
+        expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ uuids: [] })).to.be.true;
       });
 
       it('POSTs the uuids array to the report summary endpoint', async () => {
