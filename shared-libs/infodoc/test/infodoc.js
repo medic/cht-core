@@ -613,7 +613,12 @@ describe('infodoc', () => {
 
       return lib.saveTransitions(change, true).then(() => {
         const saved = db.sentinel.put.args[0][0];
-        assert.isUndefined(saved.transitions_started);
+        // transitions are written and the mid-write marker removed; nothing else is touched
+        assert.deepEqual(saved, {
+          _id: 'some-info',
+          doc_id: 'some',
+          transitions: { one: { ok: true } },
+        });
       });
     });
   });
@@ -629,6 +634,12 @@ describe('infodoc', () => {
         const saved = db.sentinel.put.args[0][0];
         assert.isString(saved.transitions_started);
         assert.isNotNaN(Date.parse(saved.transitions_started));
+        // only the marker is added, no other fields are changed
+        assert.deepEqual(saved, {
+          _id: 'some-info',
+          doc_id: 'some',
+          transitions_started: saved.transitions_started,
+        });
       });
     });
 
@@ -638,19 +649,24 @@ describe('infodoc', () => {
       sinon.stub(db.sentinel, 'put').resolves();
 
       return lib.clearTransitionsStarted('some').then(() => {
-        assert.isUndefined(db.sentinel.put.args[0][0].transitions_started);
+        const saved = db.sentinel.put.args[0][0];
+        // only the marker is removed, no other fields are changed
+        assert.deepEqual(saved, { _id: 'some-info', doc_id: 'some' });
       });
     });
 
-    it('retries on 409 conflict', () => {
+    it('retries on 409 conflict indefinitely (no retry limit)', () => {
       const info = { _id: 'some-info', doc_id: 'some' };
       sinon.stub(db.sentinel, 'get').resolves(info);
       const put = sinon.stub(db.sentinel, 'put');
-      put.onCall(0).rejects({ status: 409 });
-      put.onCall(1).resolves();
+      // conflict on the first 100 attempts, succeed on the 101st - a retry limit below this would fail
+      for (let i = 0; i < 100; i++) {
+        put.onCall(i).rejects({ status: 409 });
+      }
+      put.onCall(100).resolves();
 
       return lib.markTransitionsStarted('some').then(() => {
-        assert.equal(db.sentinel.put.callCount, 2);
+        assert.equal(db.sentinel.put.callCount, 101);
       });
     });
 

@@ -50,14 +50,13 @@ const INFODOC_WAIT_INTERVAL = 100;
 
 const isInfoDocMidWrite = infoDoc => infoDoc && infoDoc.transitions_started !== undefined;
 
-const getConsistentInfoDoc = (change, retriesLeft) => {
-  return infodoc.get(change).then(infoDoc => {
-    if (!isInfoDocMidWrite(infoDoc) || retriesLeft <= 0) {
-      return infoDoc;
-    }
-    return new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL))
-      .then(() => getConsistentInfoDoc(change, retriesLeft - 1));
-  });
+const getConsistentInfoDoc = async (change, retriesLeft) => {
+  const infoDoc = await infodoc.get(change);
+  if (!isInfoDocMidWrite(infoDoc) || retriesLeft <= 0) {
+    return infoDoc;
+  }
+  await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
+  return getConsistentInfoDoc(change, retriesLeft - 1);
 };
 
 // applies all loaded transitions over a change
@@ -132,7 +131,7 @@ const processDocs = docs => {
               result => callback(null, result),
               err => callback(null, err)
             );
-          }, { manageInfoDocRev: true });
+          }, { markStarted: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -257,8 +256,8 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, results, manageInfoDocRev = false }, callback) => {
-  finalizeChange({ change, results, manageInfoDocRev })
+const finalize = ({ change, results, markStarted = false }, callback) => {
+  finalizeChange({ change, results, markStarted })
     .then(result => callback(null, result))
     .catch(err => {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
@@ -266,7 +265,7 @@ const finalize = ({ change, results, manageInfoDocRev = false }, callback) => {
     });
 };
 
-const finalizeChange = async ({ change, results, manageInfoDocRev }) => {
+const finalizeChange = async ({ change, results, markStarted }) => {
   logger.debug(`transition results: ${JSON.stringify(results)}`);
 
   if (!_.some(results, Boolean)) {
@@ -279,7 +278,7 @@ const finalizeChange = async ({ change, results, manageInfoDocRev }) => {
   }
 
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
-  return manageInfoDocRev ? saveForApi(change) : saveForSentinel(change);
+  return markStarted ? saveForApi(change) : saveForSentinel(change);
 };
 
 // Sentinel processing: save the doc, then record transitions. Sentinel never writes the
@@ -372,7 +371,7 @@ const applyTransition = ({ key, change, transition, force }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = (change, callback, { manageInfoDocRev = false } = {}) => {
+const applyTransitions = (change, callback, { markStarted = false } = {}) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -390,7 +389,7 @@ const applyTransitions = (change, callback, { manageInfoDocRev = false } = {}) =
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) => finalize({ change, results, manageInfoDocRev }, callback));
+  async.series(operations, (err, results) => finalize({ change, results, markStarted }, callback));
 };
 
 const availableTransitions = () => {

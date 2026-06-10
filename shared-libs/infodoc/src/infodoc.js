@@ -152,13 +152,14 @@ const updateTransition = (change, transition, ok) => {
 };
 
 const saveTransitions = (change, clearStarted = false) => {
-  return modifyInfoDoc(change.id, infoDoc => {
+  const modify = infoDoc => {
     infoDoc.transitions = (change.info && change.info.transitions) || {};
     // Clear the in-progress marker in the same write that commits the transitions (API branch only)
     if (clearStarted) {
       delete infoDoc.transitions_started;
     }
-  }, change.info);
+  };
+  return modifyInfoDoc(change.id, modify, change.info);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
@@ -167,36 +168,33 @@ const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
   }, infodoc);
 };
 
-// Mark the infodoc as having transitions in progress (API is running transitions and writing the doc).
-// Stored as a timestamp so stale markers from a crashed write are diagnosable; the locking logic only
-// checks presence/absence of the field.
 const markTransitionsStarted = (id) => {
-  return modifyInfoDoc(id, infoDoc => {
+  const modify = infoDoc => {
     infoDoc.transitions_started = new Date().toISOString();
-  });
+  };
+  return modifyInfoDoc(id, modify, blankInfoDoc(id));
 };
 
 const clearTransitionsStarted = (id) => {
-  return modifyInfoDoc(id, infoDoc => {
+  const modify = infoDoc => {
     delete infoDoc.transitions_started;
-  });
+  };
+  return modifyInfoDoc(id, modify, blankInfoDoc(id));
 };
 
 // Fetch the infodoc. If it is missing, return `fallback` (to be created) when provided;
-// otherwise the 404 is raised.
 const fetchInfoDoc = async (id, fallback) => {
   try {
     return await db.sentinel.get(getInfoDocId(id));
   } catch (err) {
-    if (err.status !== 404 || !fallback) {
-      throw err;
+    if (err.status === 404 && fallback) {
+      return fallback;
     }
-    return fallback;
+    throw err;
   }
 };
 
-// Fetch the infodoc, apply `modify`, and save, retrying on conflict so the change always lands on the
-// latest rev.
+// Fetch the infodoc, apply `modify`, and save, retrying on conflict
 const modifyInfoDoc = async (id, modify, fallback) => {
   const infoDoc = await fetchInfoDoc(id, fallback);
 

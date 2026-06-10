@@ -22,7 +22,7 @@ describe('finalize transition', () => {
     );
   });
 
-  it('save is called if transition results have changes (API branch manages rev)', done => {
+  it('save is called if transition results have changes (API branch marks transitions started)', done => {
     const doc = { _rev: '1' };
     const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true, rev: '2' });
     const markTransitionsStarted = sinon.stub(infodoc, 'markTransitionsStarted').resolves();
@@ -32,7 +32,7 @@ describe('finalize transition', () => {
       {
         change: { id: 'abc', doc: doc },
         results: [null, null, true],
-        manageInfoDocRev: true,
+        markStarted: true,
       },
       (err, result) => {
         assert.equal(saveDoc.callCount, 1);
@@ -59,7 +59,7 @@ describe('finalize transition', () => {
       {
         change: { id: 'abc', doc: doc },
         results: [null, null, true],
-        manageInfoDocRev: true,
+        markStarted: true,
       },
       (err, result) => {
         assert.deepEqual(err, { error: 'something' });
