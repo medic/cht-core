@@ -1,3 +1,4 @@
+import { ContactSummary as LineageContactSummary } from '@medic/lineage';
 import {
   getPagedGenerator, NormalizedParent,
   Nullable,
@@ -51,18 +52,7 @@ export namespace v1 {
   /**
    * A compact summary of a contact record.
    */
-  export interface ContactSummary {
-    readonly _id: string;
-    readonly _rev: string;
-    readonly name?: string;
-    readonly phone?: string;
-    readonly type: string;
-    readonly contact_type?: string;
-    readonly contact?: string;
-    readonly lineage: string[];
-    readonly date_of_death?: number;
-    readonly muted?: boolean;
-  }
+  export type ContactSummary = LineageContactSummary;
 
   const getContact =
     <T>(

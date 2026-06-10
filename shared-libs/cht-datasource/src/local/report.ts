@@ -26,7 +26,7 @@ import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc }
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertReportInput } from '../libs/parameter-validators';
-import { summariseReport } from '../libs/summary';
+import { summariseReport } from '@medic/lineage';
 
 const FORM_DOC_ID_PREFIX = 'form:';
 

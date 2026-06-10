@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import {
+const { expect } = require('chai');
+const {
   getLineage,
   getSubject,
   isContact,
@@ -7,7 +7,7 @@ import {
   summarise,
   summariseContact,
   summariseReport,
-} from '../../src/libs/summary';
+} = require('../src');
 
 describe('summary lib', () => {
   describe('getLineage', () => {
@@ -91,23 +91,23 @@ describe('summary lib', () => {
     });
 
     it('returns false for doc without type', () => {
-      expect(isContact({ _id: 'a' } as never)).to.equal(false);
+      expect(isContact({ _id: 'a' })).to.equal(false);
     });
 
     it('returns true for configurable contact type', () => {
-      expect(isContact({ type: 'contact', contact_type: 'patient' } as never)).to.equal(true);
+      expect(isContact({ type: 'contact', contact_type: 'patient' })).to.equal(true);
     });
 
     it('returns true for hardcoded types', () => {
-      expect(isContact({ type: 'person' } as never)).to.equal(true);
-      expect(isContact({ type: 'clinic' } as never)).to.equal(true);
-      expect(isContact({ type: 'health_center' } as never)).to.equal(true);
-      expect(isContact({ type: 'district_hospital' } as never)).to.equal(true);
+      expect(isContact({ type: 'person' })).to.equal(true);
+      expect(isContact({ type: 'clinic' })).to.equal(true);
+      expect(isContact({ type: 'health_center' })).to.equal(true);
+      expect(isContact({ type: 'district_hospital' })).to.equal(true);
     });
 
     it('returns false for non-contact types', () => {
-      expect(isContact({ type: 'data_record' } as never)).to.equal(false);
-      expect(isContact({ type: 'form' } as never)).to.equal(false);
+      expect(isContact({ type: 'data_record' })).to.equal(false);
+      expect(isContact({ type: 'form' })).to.equal(false);
     });
   });
 
@@ -118,15 +118,15 @@ describe('summary lib', () => {
     });
 
     it('returns true for data_record with form', () => {
-      expect(isReport({ type: 'data_record', form: 'pregnancy' } as never)).to.equal(true);
+      expect(isReport({ type: 'data_record', form: 'pregnancy' })).to.equal(true);
     });
 
     it('returns false for data_record without form', () => {
-      expect(isReport({ type: 'data_record' } as never)).to.equal(false);
+      expect(isReport({ type: 'data_record' })).to.equal(false);
     });
 
     it('returns false for non-data_record docs', () => {
-      expect(isReport({ type: 'person', form: 'pregnancy' } as never)).to.equal(false);
+      expect(isReport({ type: 'person', form: 'pregnancy' })).to.equal(false);
     });
   });
 

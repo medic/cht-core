@@ -1,4 +1,17 @@
 import type PouchDB from 'pouchdb';
+
+export {
+  ContactSummary,
+  ReportSummary,
+  getLineage,
+  getSubject,
+  isContact,
+  isReport,
+  summarise,
+  summariseContact,
+  summariseReport,
+} from './summary';
+
 export default function (p: typeof Promise, db: PouchDB.Database): {
   fetchHydratedDoc: (
     uuid: string,

@@ -1,3 +1,4 @@
+import { ReportSummary as LineageReportSummary } from '@medic/lineage';
 import { DataObject, getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
@@ -40,25 +41,7 @@ export namespace v1 {
   /**
    * A compact summary of a report record.
    */
-  export interface ReportSummary {
-    readonly _id: string;
-    readonly _rev: string;
-    readonly from?: string;
-    readonly phone?: string;
-    readonly form: string;
-    readonly read?: string[];
-    readonly valid: boolean;
-    readonly verified?: boolean;
-    readonly reported_date?: number;
-    readonly contact?: string;
-    readonly lineage: string[];
-    readonly subject: {
-      readonly name?: string;
-      readonly value?: string;
-      readonly type?: string;
-    };
-    readonly case_id?: string;
-  }
+  export type ReportSummary = LineageReportSummary;
 
 
   /**

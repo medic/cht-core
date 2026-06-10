@@ -23,7 +23,6 @@ export { DataContext, SettingsService } from './libs/data-context';
 export { getLocalDataContext } from './local';
 export { getRemoteDataContext } from './remote';
 export { InvalidArgumentError, ResourceNotFoundError } from './libs/error';
-export { summarise } from './libs/summary';
 export { SourceDatabases } from './local/libs/data-context';
 export * as Contact from './contact';
 export * as Person from './person';
