@@ -81,7 +81,9 @@ const placeRequest = (filters) => {
   return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
 };
 
-const normalizeNumerals = (text) => text.replace(/[०-९]/g, (d) => String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
+const normalizeNumerals = (text) => {
+  return text.replace(/[०-९]/g, (d) => String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
+};
 
 const freetextRequestParams = (word) => {
   const params = {};

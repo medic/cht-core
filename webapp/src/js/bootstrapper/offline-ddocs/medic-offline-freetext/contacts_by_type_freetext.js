@@ -1,9 +1,9 @@
 module.exports.map = (doc) => {
   const skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
-  const normalizeNumerals = (str) =>
-    str.replace(/[०-९]/g, (d) =>
-      String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
+  const normalizeNumerals = (str) => {
+    return str.replace(/[०-९]/g, (d) => String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
+  };
   const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
 
   const usedKeys = [];
