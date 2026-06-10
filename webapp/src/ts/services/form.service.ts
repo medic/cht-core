@@ -261,17 +261,8 @@ export class FormService {
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
-    const captureEl = formHtml?.querySelector('.or-appearance-geolocation-capture');
-    const geoGroup = captureEl?.closest('.or-group, .or-group-data');
-    if (!geoGroup) {
-      return undefined;
-    }
-    const checkedRadio = geoGroup
-      .querySelector('.or-appearance-geolocation-context input[type="radio"]:checked') as HTMLInputElement;
-    if (checkedRadio) {
-      return checkedRadio.value || undefined;
-    }
-    return (geoGroup.querySelector('.or-appearance-geolocation-context input') as HTMLInputElement)?.value || undefined;
+    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    return captureInput?.dataset?.geoContext || undefined;
   }
 
   private saveGeo(geoHandle, docs, contextValue?: string) {
@@ -282,14 +273,13 @@ export class FormService {
     return geoHandle()
       .catch(err => err)
       .then(geoData => {
+        const isHome = contextValue === 'home';
         docs.forEach(doc => {
           doc.geolocation_log = doc.geolocation_log || [];
-          const logEntry: Record<string, unknown> = { timestamp: Date.now(), recording: geoData };
-          if (contextValue && !geoData.code) {
-            logEntry.context = contextValue;
+          doc.geolocation_log.push({ timestamp: Date.now(), recording: geoData, is_home: isHome });
+          if (!geoData.code && (contextValue === undefined || isHome)) {
+            doc.geolocation = geoData;
           }
-          doc.geolocation_log.push(logEntry);
-          doc.geolocation = geoData;
         });
         return docs;
       });

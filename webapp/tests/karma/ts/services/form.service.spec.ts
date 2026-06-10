@@ -863,7 +863,7 @@ describe('Form service', () => {
           expect(actual.content_type).to.equal('xml');
           expect(actual.contact._id).to.equal('123');
           expect(actual.from).to.equal('555');
-          expect(actual.geolocation).to.deep.equal(geoError);
+          expect(actual).not.to.have.property('geolocation');
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoError);
@@ -940,7 +940,7 @@ describe('Form service', () => {
         });
       });
 
-      it('saves geolocation context into the log entry when capture succeeds', () => {
+      it('reads geo context from data-geo-context attribute on capture input', () => {
         form.validate.resolves(true);
         const content = loadXML('sally-lmp');
         form.getDataStr.returns(content);
@@ -948,28 +948,22 @@ describe('Form service', () => {
         xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
         UserContact.resolves({ _id: '123', phone: '555' });
 
-        const group = document.createElement('div');
-        group.classList.add('or-group-data');
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureInput.dataset.geoContext = 'home';
         const captureWrapper = document.createElement('div');
         captureWrapper.classList.add('or-appearance-geolocation-capture');
-        const contextWrapper = document.createElement('div');
-        contextWrapper.classList.add('or-appearance-geolocation-context');
-        const contextInput = document.createElement('input');
-        contextInput.type = 'radio';
-        contextInput.value = 'home';
-        contextInput.checked = true;
-        contextWrapper.appendChild(contextInput);
-        group.appendChild(captureWrapper);
-        group.appendChild(contextWrapper);
-        form.view.html.appendChild(group);
+        captureWrapper.appendChild(captureInput);
+        form.view.html.appendChild(captureWrapper);
 
         const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
         return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
-          expect(actual[0].geolocation_log[0].context).to.equal('home');
+          expect(actual[0].geolocation_log[0].is_home).to.be.true;
+          expect(actual[0].geolocation).to.deep.equal(geoData);
         });
       });
 
-      it('does not save geolocation context into the log entry when capture fails', () => {
+      it('includes is_home: false in log entry and does not set geolocation when context is other', () => {
         form.validate.resolves(true);
         const content = loadXML('sally-lmp');
         form.getDataStr.returns(content);
@@ -977,38 +971,42 @@ describe('Form service', () => {
         xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
         UserContact.resolves({ _id: '123', phone: '555' });
 
-        const group = document.createElement('div');
-        group.classList.add('or-group-data');
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureInput.dataset.geoContext = 'other';
         const captureWrapper = document.createElement('div');
         captureWrapper.classList.add('or-appearance-geolocation-capture');
-        const contextWrapper = document.createElement('div');
-        contextWrapper.classList.add('or-appearance-geolocation-context');
-        const contextInput = document.createElement('input');
-        contextInput.type = 'radio';
-        contextInput.value = 'home';
-        contextInput.checked = true;
-        contextWrapper.appendChild(contextInput);
-        group.appendChild(captureWrapper);
-        group.appendChild(contextWrapper);
-        form.view.html.appendChild(group);
+        captureWrapper.appendChild(captureInput);
+        form.view.html.appendChild(captureWrapper);
+
+        const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+        return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
+          expect(actual[0].geolocation_log[0].is_home).to.be.false;
+          expect(actual[0]).not.to.have.property('geolocation');
+        });
+      });
+
+      it('writes a log entry with is_home when GPS capture fails', () => {
+        form.validate.resolves(true);
+        const content = loadXML('sally-lmp');
+        form.getDataStr.returns(content);
+        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+        xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
+        UserContact.resolves({ _id: '123', phone: '555' });
+
+        const captureInput = document.createElement('input');
+        captureInput.type = 'hidden';
+        captureInput.dataset.geoContext = 'home';
+        const captureWrapper = document.createElement('div');
+        captureWrapper.classList.add('or-appearance-geolocation-capture');
+        captureWrapper.appendChild(captureInput);
+        form.view.html.appendChild(captureWrapper);
 
         const geoError = { code: 42, message: 'some bad geo' };
         return service.save('V', form, () => Promise.reject(geoError)).then(actual => {
-          expect(actual[0].geolocation_log[0]).not.to.have.property('context');
-        });
-      });
-
-      it('does not save geolocation context into the log entry when the context field is absent', () => {
-        form.validate.resolves(true);
-        const content = loadXML('sally-lmp');
-        form.getDataStr.returns(content);
-        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-        xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
-        UserContact.resolves({ _id: '123', phone: '555' });
-
-        const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
-        return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
-          expect(actual[0].geolocation_log[0]).not.to.have.property('context');
+          expect(actual[0].geolocation_log.length).to.equal(1);
+          expect(actual[0].geolocation_log[0].is_home).to.be.true;
+          expect(actual[0]).not.to.have.property('geolocation');
         });
       });
     });
@@ -1039,7 +1037,7 @@ describe('Form service', () => {
         expect(actual.content_type).to.equal('xml');
         expect(actual.contact._id).to.equal('123');
         expect(actual.from).to.equal('555');
-        expect(actual.geolocation).to.deep.equal(geoError);
+        expect(actual).not.to.have.property('geolocation');
         expect(xmlFormGetWithAttachment.callCount).to.equal(1);
         expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
         expect(AddAttachment.callCount).to.equal(0);
@@ -1364,24 +1362,24 @@ describe('Form service', () => {
                 form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: DOC_TYPES.DATA_RECORD,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: 'repeater',
                 some_property: 'some_value_1',
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: 'repeater',
                 some_property: 'some_value_2',
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: 'repeater',
                 some_property: 'some_value_3',
               },
@@ -1416,27 +1414,27 @@ describe('Form service', () => {
                 form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: DOC_TYPES.DATA_RECORD,
                 transitioned: true,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: 'repeater',
                 some_property: 'some_value_1',
                 transitioned: true,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: 'repeater',
                 some_property: 'some_value_2',
                 transitioned: true,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' } }],
+                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
                 type: 'repeater',
                 some_property: 'some_value_3',
                 transitioned: true,
@@ -1896,31 +1894,24 @@ describe('Form service', () => {
       assert.equal(dbBulkDocs.callCount, 1);
       const savedDocs = dbBulkDocs.args[0][0];
       assert.equal(savedDocs.length, 1);
-      assert.deepEqual(savedDocs[0].geolocation, geoError);
+      assert.notProperty(savedDocs[0], 'geolocation');
       assert.equal(savedDocs[0].geolocation_log.length, 1);
       assert.deepEqual(savedDocs[0].geolocation_log[0].recording, geoError);
     });
 
-    it('saves geolocation context into a contact doc when capture succeeds', async () => {
+    it('saves is_home: true into a contact doc log entry when context is home', async () => {
       const type = 'some-contact-type';
       const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
       const geoHandle = sinon.stub().resolves(geoData);
 
-      const html = document.createElement('div');
-      const group = document.createElement('div');
-      group.classList.add('or-group-data');
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.dataset.geoContext = 'home';
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
-      const contextWrapper = document.createElement('div');
-      contextWrapper.classList.add('or-appearance-geolocation-context');
-      const contextInput = document.createElement('input');
-      contextInput.type = 'radio';
-      contextInput.value = 'workplace';
-      contextInput.checked = true;
-      contextWrapper.appendChild(contextInput);
-      group.appendChild(captureWrapper);
-      group.appendChild(contextWrapper);
-      html.appendChild(group);
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
 
       enketoTranslationService.contactRecordToJs.returns({
         doc: { _id: 'main1', type: 'some-contact-type' }
@@ -1935,29 +1926,23 @@ describe('Form service', () => {
       );
 
       const savedDocs = dbBulkDocs.args[0][0];
-      assert.equal(savedDocs[0].geolocation_log[0].context, 'workplace');
+      assert.isTrue(savedDocs[0].geolocation_log[0].is_home);
+      assert.deepEqual(savedDocs[0].geolocation, geoData);
     });
 
-    it('does not save geolocation context into a contact doc when capture fails', async () => {
+    it('saves is_home: false and omits geolocation on contact doc when context is other', async () => {
       const type = 'some-contact-type';
-      const geoError = { code: -2, message: 'Geolocation timeout exceeded' };
-      const geoHandle = sinon.stub().rejects(geoError);
+      const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
+      const geoHandle = sinon.stub().resolves(geoData);
 
-      const html = document.createElement('div');
-      const group = document.createElement('div');
-      group.classList.add('or-group-data');
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.dataset.geoContext = 'other';
       const captureWrapper = document.createElement('div');
       captureWrapper.classList.add('or-appearance-geolocation-capture');
-      const contextWrapper = document.createElement('div');
-      contextWrapper.classList.add('or-appearance-geolocation-context');
-      const contextInput = document.createElement('input');
-      contextInput.type = 'radio';
-      contextInput.value = 'home';
-      contextInput.checked = true;
-      contextWrapper.appendChild(contextInput);
-      group.appendChild(captureWrapper);
-      group.appendChild(contextWrapper);
-      html.appendChild(group);
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
 
       enketoTranslationService.contactRecordToJs.returns({
         doc: { _id: 'main1', type: 'some-contact-type' }
@@ -1972,7 +1957,8 @@ describe('Form service', () => {
       );
 
       const savedDocs = dbBulkDocs.args[0][0];
-      assert.notProperty(savedDocs[0].geolocation_log[0], 'context');
+      assert.isFalse(savedDocs[0].geolocation_log[0].is_home);
+      assert.notProperty(savedDocs[0], 'geolocation');
     });
   });
 
