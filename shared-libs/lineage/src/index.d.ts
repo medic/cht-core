@@ -3,10 +3,6 @@ import type PouchDB from 'pouchdb';
 export {
   ContactSummary,
   ReportSummary,
-  getLineage,
-  getSubject,
-  isContact,
-  isReport,
   summarise,
   summariseContact,
   summariseReport,

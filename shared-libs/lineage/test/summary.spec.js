@@ -1,135 +1,11 @@
 const { expect } = require('chai');
 const {
-  getLineage,
-  getSubject,
-  isContact,
-  isReport,
   summarise,
   summariseContact,
   summariseReport,
 } = require('../src');
 
 describe('summary lib', () => {
-  describe('getLineage', () => {
-    it('returns empty array for falsy contact', () => {
-      expect(getLineage(null)).to.deep.equal([]);
-      expect(getLineage(undefined)).to.deep.equal([]);
-    });
-
-    it('returns lineage of parent ids', () => {
-      const contact = {
-        _id: 'a',
-        parent: {
-          _id: 'b',
-          parent: { _id: 'c' },
-        },
-      };
-      expect(getLineage(contact)).to.deep.equal(['a', 'b', 'c']);
-    });
-
-    it('skips contacts without _id', () => {
-      const contact = { parent: { _id: 'b' } };
-      expect(getLineage(contact)).to.deep.equal(['b']);
-    });
-  });
-
-  describe('getSubject', () => {
-    it('returns reference type for patient_id', () => {
-      expect(getSubject({ patient_id: '12345', fields: {} }))
-        .to.deep.equal({ value: '12345', type: 'reference' });
-    });
-
-    it('returns reference type for fields.patient_id', () => {
-      expect(getSubject({ fields: { patient_id: '12345' } }))
-        .to.deep.equal({ value: '12345', type: 'reference' });
-    });
-
-    it('returns reference type for fields.patient_uuid', () => {
-      expect(getSubject({ fields: { patient_uuid: 'uuid-123' } }))
-        .to.deep.equal({ value: 'uuid-123', type: 'reference' });
-    });
-
-    it('returns reference type for place_id', () => {
-      expect(getSubject({ place_id: 'place-1', fields: {} }))
-        .to.deep.equal({ value: 'place-1', type: 'reference' });
-    });
-
-    it('returns reference type for fields.place_id', () => {
-      expect(getSubject({ fields: { place_id: 'place-1' } }))
-        .to.deep.equal({ value: 'place-1', type: 'reference' });
-    });
-
-    it('includes patient_name when present with reference', () => {
-      expect(getSubject({ fields: { patient_id: '123', patient_name: 'jeff' } }))
-        .to.deep.equal({ name: 'jeff', value: '123', type: 'reference' });
-    });
-
-    it('returns name type when only patient_name', () => {
-      expect(getSubject({ fields: { patient_name: 'jeff' } }))
-        .to.deep.equal({ name: 'jeff', value: 'jeff', type: 'name' });
-    });
-
-    it('returns unknown type for missing subject errors', () => {
-      const doc = { fields: {}, errors: [{ code: 'sys.missing_fields', fields: ['patient_id'] }] };
-      expect(getSubject(doc)).to.deep.equal({ type: 'unknown' });
-    });
-
-    it('returns empty object when no subject info', () => {
-      expect(getSubject({ fields: {} })).to.deep.equal({});
-    });
-
-    it('returns empty object for non-missing-subject errors', () => {
-      const doc = { fields: {}, errors: [{ code: 'other_error', fields: ['patient_id'] }] };
-      expect(getSubject(doc)).to.deep.equal({});
-    });
-  });
-
-  describe('isContact', () => {
-    it('returns false for falsy doc', () => {
-      expect(isContact(null)).to.equal(false);
-      expect(isContact(undefined)).to.equal(false);
-    });
-
-    it('returns false for doc without type', () => {
-      expect(isContact({ _id: 'a' })).to.equal(false);
-    });
-
-    it('returns true for configurable contact type', () => {
-      expect(isContact({ type: 'contact', contact_type: 'patient' })).to.equal(true);
-    });
-
-    it('returns true for hardcoded types', () => {
-      expect(isContact({ type: 'person' })).to.equal(true);
-      expect(isContact({ type: 'clinic' })).to.equal(true);
-      expect(isContact({ type: 'health_center' })).to.equal(true);
-      expect(isContact({ type: 'district_hospital' })).to.equal(true);
-    });
-
-    it('returns false for non-contact types', () => {
-      expect(isContact({ type: 'data_record' })).to.equal(false);
-      expect(isContact({ type: 'form' })).to.equal(false);
-    });
-  });
-
-  describe('isReport', () => {
-    it('returns false for falsy doc', () => {
-      expect(isReport(null)).to.equal(false);
-      expect(isReport(undefined)).to.equal(false);
-    });
-
-    it('returns true for data_record with form', () => {
-      expect(isReport({ type: 'data_record', form: 'pregnancy' })).to.equal(true);
-    });
-
-    it('returns false for data_record without form', () => {
-      expect(isReport({ type: 'data_record' })).to.equal(false);
-    });
-
-    it('returns false for non-data_record docs', () => {
-      expect(isReport({ type: 'person', form: 'pregnancy' })).to.equal(false);
-    });
-  });
-
   describe('summariseReport', () => {
     it('summarises a report', () => {
       const doc = {
@@ -190,6 +66,75 @@ describe('summary lib', () => {
       const doc = { _id: 'r1', _rev: '1', type: 'data_record', form: 'R', fields: { case_id: '67890' } };
       expect(summariseReport(doc).case_id).to.equal('67890');
     });
+
+    describe('lineage', () => {
+      it('is empty when the report contact has no parent', () => {
+        const doc = { _id: 'r1', _rev: '1', type: 'data_record', form: 'R' };
+        expect(summariseReport(doc).lineage).to.deep.equal([]);
+      });
+
+      it('contains the contact parent ids', () => {
+        const doc = {
+          _id: 'r1',
+          _rev: '1',
+          type: 'data_record',
+          form: 'R',
+          contact: { _id: 'c', parent: { _id: 'd', parent: { _id: 'e' } } },
+        };
+        expect(summariseReport(doc).lineage).to.deep.equal(['d', 'e']);
+      });
+    });
+
+    describe('subject', () => {
+      it('returns reference type for patient_id', () => {
+        expect(summariseReport({ patient_id: '12345', fields: {} }).subject)
+          .to.deep.equal({ value: '12345', type: 'reference' });
+      });
+
+      it('returns reference type for fields.patient_id', () => {
+        expect(summariseReport({ fields: { patient_id: '12345' } }).subject)
+          .to.deep.equal({ value: '12345', type: 'reference' });
+      });
+
+      it('returns reference type for fields.patient_uuid', () => {
+        expect(summariseReport({ fields: { patient_uuid: 'uuid-123' } }).subject)
+          .to.deep.equal({ value: 'uuid-123', type: 'reference' });
+      });
+
+      it('returns reference type for place_id', () => {
+        expect(summariseReport({ place_id: 'place-1', fields: {} }).subject)
+          .to.deep.equal({ value: 'place-1', type: 'reference' });
+      });
+
+      it('returns reference type for fields.place_id', () => {
+        expect(summariseReport({ fields: { place_id: 'place-1' } }).subject)
+          .to.deep.equal({ value: 'place-1', type: 'reference' });
+      });
+
+      it('includes patient_name when present with reference', () => {
+        expect(summariseReport({ fields: { patient_id: '123', patient_name: 'jeff' } }).subject)
+          .to.deep.equal({ name: 'jeff', value: '123', type: 'reference' });
+      });
+
+      it('returns name type when only patient_name', () => {
+        expect(summariseReport({ fields: { patient_name: 'jeff' } }).subject)
+          .to.deep.equal({ name: 'jeff', value: 'jeff', type: 'name' });
+      });
+
+      it('returns unknown type for missing subject errors', () => {
+        const doc = { fields: {}, errors: [{ code: 'sys.missing_fields', fields: ['patient_id'] }] };
+        expect(summariseReport(doc).subject).to.deep.equal({ type: 'unknown' });
+      });
+
+      it('returns empty object when no subject info', () => {
+        expect(summariseReport({ fields: {} }).subject).to.deep.equal({});
+      });
+
+      it('returns empty object for non-missing-subject errors', () => {
+        const doc = { fields: {}, errors: [{ code: 'other_error', fields: ['patient_id'] }] };
+        expect(summariseReport(doc).subject).to.deep.equal({});
+      });
+    });
   });
 
   describe('summariseContact', () => {
@@ -248,12 +193,28 @@ describe('summary lib', () => {
       const doc = { _id: 'c1', _rev: '1', type: 'person', phone: '0123456789' };
       expect(summariseContact(doc).name).to.equal('0123456789');
     });
+
+    describe('lineage', () => {
+      it('is empty when the contact has no parent', () => {
+        const doc = { _id: 'c1', _rev: '1', type: 'person' };
+        expect(summariseContact(doc).lineage).to.deep.equal([]);
+      });
+
+      it('skips ancestors without an _id', () => {
+        const doc = { _id: 'c1', _rev: '1', type: 'person', parent: { parent: { _id: 'b' } } };
+        expect(summariseContact(doc).lineage).to.deep.equal(['b']);
+      });
+    });
   });
 
   describe('summarise', () => {
     it('returns undefined for falsy doc', () => {
       expect(summarise(null)).to.equal(undefined);
       expect(summarise(undefined)).to.equal(undefined);
+    });
+
+    it('returns undefined for a doc without a type', () => {
+      expect(summarise({ _id: 'a', _rev: '1' })).to.equal(undefined);
     });
 
     it('returns undefined for non-matching doc types', () => {
@@ -274,6 +235,23 @@ describe('summary lib', () => {
       const doc = { _id: 'c1', _rev: '1', type: 'person', name: 'jeff' };
       const summary = summarise(doc);
       expect(summary).to.include({ _id: 'c1', type: 'person', name: 'jeff' });
+    });
+
+    it('dispatches to summariseContact for configurable contact types', () => {
+      const doc = { _id: 'c1', _rev: '1', type: 'contact', contact_type: 'patient' };
+      expect(summarise(doc)).to.include({ _id: 'c1', type: 'contact', contact_type: 'patient' });
+    });
+
+    it('dispatches to summariseContact for hardcoded contact types', () => {
+      for (const type of ['person', 'clinic', 'health_center', 'district_hospital']) {
+        expect(summarise({ _id: 'c1', _rev: '1', type })).to.include({ _id: 'c1', type });
+      }
+    });
+
+    it('does not treat a non-data_record with a form as a report', () => {
+      const summary = summarise({ _id: 'c1', _rev: '1', type: 'person', form: 'pregnancy' });
+      expect(summary).to.include({ _id: 'c1', type: 'person' });
+      expect(summary).to.not.have.property('subject');
     });
   });
 });

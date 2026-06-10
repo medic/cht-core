@@ -37,18 +37,6 @@ export interface ReportSummary {
   readonly case_id?: string;
 }
 
-/** Returns the array of `_id`s for the given contact and its parent lineage. */
-export function getLineage(contact: Record<string, unknown> | null | undefined): string[];
-
-/** Resolves the subject (name/reference) for a report document. */
-export function getSubject(doc: Record<string, unknown>): ReportSummary['subject'];
-
-/** Returns `true` if the document is a contact (configurable or hardcoded type). */
-export function isContact(doc: Record<string, unknown> | null | undefined): boolean;
-
-/** Returns `true` if the document is a report (a `data_record` with a `form`). */
-export function isReport(doc: Record<string, unknown> | null | undefined): boolean;
-
 /** Produces a compact summary of a contact document. */
 export function summariseContact(doc: Record<string, unknown>): ContactSummary;
 

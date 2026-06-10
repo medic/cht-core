@@ -113,10 +113,6 @@ const summarise = (doc) => {
 };
 
 module.exports = {
-  getLineage,
-  getSubject,
-  isContact,
-  isReport,
   summarise,
   summariseContact,
   summariseReport,
