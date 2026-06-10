@@ -11,7 +11,7 @@ const startupLog = require('./startup-log');
  * - assigns deploy info do staged ddocs
  * - renames staged ddocs to their prod names
  * - sets upgrade log to complete.
- * - runs view cleanup and compaction
+ * - runs view cleanup
  * @return {Promise}
  */
 const finalize = async () => {
