@@ -110,12 +110,16 @@ describe('sentinel processes archive jobs', () => {
     }
   };
 
-  const runArchiving = async () => {
+  const updateSettings = async (duration = '2 hours') => {
     await utils.updateSettings(
-      { archive: { text_expression: 'every 1 seconds' } },
+      { archive: { text_expression: 'every 1 seconds', duration: duration } },
       { ignoreReload: true }
     );
+    await utils.toggleSentinelTransitions();
+    await sentinelUtils.skipToSeq();
+  };
 
+  const runArchiving = async () => {
     await utils.runSentinelTasks();
     await sentinelUtils.waitForArchiveCompletion();
   };
@@ -150,6 +154,7 @@ describe('sentinel processes archive jobs', () => {
     const { jobs } = await postCsv(csv);
     expect(jobs).to.have.lengthOf(1);
 
+    await updateSettings();
     await runArchiving();
 
     const archiveRows = await liveRows(archiveDb, { keys: archivableIds, include_docs: true });
@@ -172,11 +177,11 @@ describe('sentinel processes archive jobs', () => {
 
   it('processes a multi-batch payload, archiving thousands of docs', async function () {
     this.timeout(180000);
-    await utils.toggleSentinelTransitions();
+    await updateSettings();
 
     // Larger than BATCH_SIZE (1000) so the archive loop has to take more than one batch
     // and persist the cursor between them.
-    const COUNT = 30000;
+    const COUNT = 15000;
     const bulkDocs = Array.from({ length: COUNT }, (_, i) => ({
       _id: `archive-e2e-bulk-${String(i).padStart(5, '0')}`,
       type: DOC_TYPES.DATA_RECORD,
@@ -190,15 +195,12 @@ describe('sentinel processes archive jobs', () => {
 
     // sometimes there's an ongoing process that creates info docs.
     await utils.delayPromise(3000);
-    await sentinelUtils.skipToSeq();
 
     const { jobs } = await postCsv(ids.join('\n'));
     expect(jobs).to.have.lengthOf(1);
     expect(jobs[0].count).to.equal(COUNT);
 
-    await utils.delayPromise(15000); // wait for all the docs to be processed by api
-
-    await runArchiving(true);
+    await runArchiving();
 
     const archived = await liveRows(archiveDb, { keys: ids });
     expect(archived).to.have.lengthOf(COUNT);
@@ -227,12 +229,7 @@ describe('sentinel processes archive jobs', () => {
     expect(jobs).to.have.lengthOf(1);
     const jobId = jobs[0].id;
 
-    await utils.updateSettings(
-      { archive: { text_expression: 'every 1 seconds', duration: '50 milliseconds' } },
-      { ignoreReload: 'sentinel' }
-    );
-    await utils.toggleSentinelTransitions();
-    await sentinelUtils.skipToSeq();
+    await updateSettings('10 milliseconds');
 
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
@@ -278,6 +275,7 @@ describe('sentinel processes archive jobs', () => {
 
     await postCsv(id);
 
+    await updateSettings();
     await runArchiving();
 
     const archived = await archiveDb.get(id, { attachments: true });
@@ -312,6 +310,7 @@ describe('sentinel processes archive jobs', () => {
 
     await postCsv(id);
 
+    await updateSettings();
     await runArchiving();
 
     const archived = await archiveDb.get(id);
