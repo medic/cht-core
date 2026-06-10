@@ -260,11 +260,21 @@ export class ContactSaveService {
     fileManagerNames: Set<string>,
     newAttachmentNamesByDoc: AttachmentNamesByDoc,
   ) {
-    const content = $(element).text();
-    // Skip: empty; a value that already looks like an attachment reference
-    // (re-saves stay idempotent); or a file-upload widget tagged type="binary"
-    // whose blob the FileManager pass already attached.
-    if (!content || this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
+    const $element = $(element);
+    // Reference stashed at load for an untouched field (see bindJsonToXml);
+    // it survives Enketo's model merge as a data-* attribute.
+    const sidecar = $element.attr('data-attachment-ref');
+    $element.removeAttr('data-attachment-ref');
+
+    const content = $element.text();
+    if (!content) {
+      this.restoreUntouchedBinary(element, ctx, sidecar);
+      return;
+    }
+
+    // Skip a value that is already a reference (idempotent re-save) or a
+    // type="file" widget whose blob the FileManager pass already attached.
+    if (this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
       return;
     }
 
@@ -281,6 +291,23 @@ export class ContactSaveService {
     const fieldPath = container && this.computeFieldPath(element, container);
     if (fieldPath) {
       objectPath.set(ownerDoc, fieldPath, reference);
+    }
+  }
+
+  /**
+   * Restores an untouched inline-binary field on edit from its sidecar reference.
+   * Restoring the value is enough: finalizeDocs's referenced-attachment scan keeps
+   * the attachment.
+   */
+  private restoreUntouchedBinary(element: Element, ctx: ContactOwnerContext, sidecar?: string) {
+    if (!sidecar) {
+      return;
+    }
+    const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
+    const container = this.findFieldContainerElement(element, ctx);
+    const fieldPath = container && this.computeFieldPath(element, container);
+    if (fieldPath) {
+      objectPath.set(ownerDoc, fieldPath, sidecar);
     }
   }
 
