@@ -167,6 +167,13 @@ describe('Tasks Free Text Search', () => {
     });
 
     await tasksPage.resetFilters();
+    await browser.waitUntil(async () => (await tasksPage.getTasks()).length === searchCount, {
+      timeout: 10000,
+      timeoutMsg: 'Expected reset to restore the search-only result while keeping the search'
+    });
+    const afterResetInfos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
+    afterResetInfos.forEach(info => expect(info.contactName).to.equal('Margaret Williams'));
+
     await searchPage.clearSearch();
     await browser.waitUntil(async () => (await tasksPage.getTasks()).length === totalCount);
   });

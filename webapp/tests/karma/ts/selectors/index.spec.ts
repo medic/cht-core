@@ -678,9 +678,9 @@ describe('Selectors', () => {
         const arabicResult = Selectors.getFilteredTasksList.projector(tasksState, arabicState);
         expect(arabicResult).to.deep.equal([tasksState.tasksList[1]]);
 
-        const crossScriptState = { filters: { search: 'فاطمة' } } as any;
-        const crossScriptResult = Selectors.getFilteredTasksList.projector(tasksState, crossScriptState);
-        expect(crossScriptResult).to.deep.equal([tasksState.tasksList[1]]);
+        const byLineageState = { filters: { search: 'गाउँपालिका' } } as any;
+        const byLineageResult = Selectors.getFilteredTasksList.projector(tasksState, byLineageState);
+        expect(byLineageResult).to.deep.equal([tasksState.tasksList[0]]);
       });
 
       it('should normalize diacritics in search', () => {
@@ -752,6 +752,31 @@ describe('Selectors', () => {
         const globalState = { filters: { search: 'elodei' } } as any;
         const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
         expect(result).to.deep.equal([tasksState.tasksList[0]]);
+      });
+
+      it('should return substring matches before fuzzy matches', () => {
+        const tasksState = {
+          tasksList: [
+            {
+              _id: 'task1',
+              title: 'Follow up',
+              contact: { name: 'Alice Johnson' }, // matches 'jonson' only by fuzzy
+              lineage: ['Village Alpha'],
+              lineageIds: ['c1']
+            },
+            {
+              _id: 'task2',
+              title: 'Vaccination',
+              contact: { name: 'Bob Jonson' }, // matches 'jonson' by substring
+              lineage: ['Village Beta'],
+              lineageIds: ['c2']
+            },
+          ],
+        };
+        
+        const globalState = { filters: { search: 'jonson' } } as any;
+        const result = Selectors.getFilteredTasksList.projector(tasksState, globalState);
+        expect(result).to.deep.equal([tasksState.tasksList[1], tasksState.tasksList[0]]);
       });
 
       it('should return all tasks when search is empty', () => {

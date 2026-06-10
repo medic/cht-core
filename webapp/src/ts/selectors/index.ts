@@ -34,10 +34,9 @@ const getSearchCandidates = (task: TaskWithLineage): string[] => {
 };
 
 const FUSE_OPTIONS = {
-  threshold: 0.2,        // 0 = exact, 1 = match anything; 0.2 allows minor typos
-  distance: 50,          // how far from expected position a match can appear
-  minMatchCharLength: 3, // skip fuzzy matching for very short queries
-  ignoreLocation: true,  // match can appear anywhere in the string
+  threshold: 0.2,        // 0 = exact match, 1 = matches anything; 0.2 tolerates minor typos
+  ignoreLocation: true,  // a match can appear anywhere in the string
+  minMatchCharLength: 3,
 };
 
 const filterTasksBySearch = (tasks: TaskWithLineage[], normalizedSearch: string): TaskWithLineage[] => {
