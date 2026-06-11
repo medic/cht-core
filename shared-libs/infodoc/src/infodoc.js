@@ -35,7 +35,7 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
     return results.reduce((acc, row) => {
       if (!row.doc) {
         acc.missing.push({ _id: row.key });
-      } else if (!row.doc.transitions) {
+      } else if (!row.doc.transitions && !row.doc.transitions_started) {
         // No transitions may mean that API created this infodoc on write but sentinel hasn't seen
         // it yet. It's possible that there is a legacy infodoc with transition information.
         acc.missingTransitions.push(row.doc);
