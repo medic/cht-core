@@ -1,4 +1,4 @@
-import { ContactSummary as LineageContactSummary } from '@medic/lineage';
+import { ContactSummary as LibContactSummary } from '@medic/summaries';
 import {
   getPagedGenerator, NormalizedParent,
   Nullable,
@@ -52,7 +52,7 @@ export namespace v1 {
   /**
    * A compact summary of a contact record.
    */
-  export type ContactSummary = LineageContactSummary;
+  export type ContactSummary = LibContactSummary;
 
   const getContact =
     <T>(

@@ -19,7 +19,7 @@ import { normalizeFreetextQualifier, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
-import { summariseContact } from '@medic/lineage';
+import { summariseContact } from '@medic/summaries';
 
 const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQualifier) => {
   const contactTypesIds = contactTypeUtils.getContactTypeIds(settings);

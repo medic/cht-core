@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Contact, Qualifier, Report } from '@medic/cht-datasource';
-import { summarise } from '@medic/lineage';
+import { summarise } from '@medic/summaries';
 
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 

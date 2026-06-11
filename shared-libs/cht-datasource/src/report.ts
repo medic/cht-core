@@ -1,4 +1,4 @@
-import { ReportSummary as LineageReportSummary } from '@medic/lineage';
+import { ReportSummary as LibReportSummary } from '@medic/summaries';
 import { DataObject, getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
@@ -41,7 +41,7 @@ export namespace v1 {
   /**
    * A compact summary of a report record.
    */
-  export type ReportSummary = LineageReportSummary;
+  export type ReportSummary = LibReportSummary;
 
 
   /**
