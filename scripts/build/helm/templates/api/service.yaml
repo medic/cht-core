@@ -5,7 +5,7 @@ metadata:
     cht.service: api
   name: api
 spec:
-  type: {{ .Values.api.service.type | default "ClusterIP" }}
+  type: {{ (default (dict) (default (dict) .Values.api).service).type | default "ClusterIP" }}
   ports:
     - port: 5988
       targetPort: 5988

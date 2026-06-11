@@ -1,5 +1,5 @@
 const authorization = require('./authorization');
-const db = require('../db');
+const db = require('../../db');
 const _ = require('lodash');
 
 // filters response from CouchDB only to include successfully read and allowed docs

@@ -1,9 +1,9 @@
-const service = require('../../../src/services/all-docs');
-const db = require('../../../src/db');
+const service = require('../../../../src/services/replication/all-docs');
+const db = require('../../../../src/db');
 const sinon = require('sinon');
 require('chai').should();
 
-const authorization = require('../../../src/services/authorization');
+const authorization = require('../../../../src/services/replication/authorization');
 
 let userCtx;
 let query;

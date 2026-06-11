@@ -1,6 +1,6 @@
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
-const replicationLimitLog = require('../services/replication-limit-log');
+const replicationLimitLog = require('../services/replication/replication-limit-log');
 
 module.exports = {
   /**

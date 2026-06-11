@@ -11,7 +11,7 @@ const startupLog = require('./startup-log');
  * - assigns deploy info do staged ddocs
  * - renames staged ddocs to their prod names
  * - sets upgrade log to complete.
- * - runs view cleanup and compaction
+ * - runs view cleanup
  * @return {Promise}
  */
 const finalize = async () => {
@@ -20,7 +20,7 @@ const finalize = async () => {
   await upgradeUtils.unstageStagedDdocs();
   await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setFinalized();
-  await upgradeUtils.cleanup();
+  upgradeUtils.cleanup();
   await serverInfo.getDeployInfo(true);
 };
 
@@ -36,7 +36,7 @@ const abort = async () => {
   viewIndexer.stopIndexing();
   await upgradeUtils.deleteStagedDdocs();
   await upgradeLogService.setAborted();
-  await upgradeUtils.cleanup();
+  upgradeUtils.cleanup();
 };
 
 /**

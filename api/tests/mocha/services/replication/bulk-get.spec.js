@@ -1,8 +1,8 @@
 const sinon = require('sinon');
 require('chai').should();
-const service = require('../../../src/services/bulk-get');
-const db = require('../../../src/db');
-const authorization = require('../../../src/services/authorization');
+const service = require('../../../../src/services/replication/bulk-get');
+const db = require('../../../../src/db');
+const authorization = require('../../../../src/services/replication/authorization');
 
 let userCtx;
 let query;

@@ -2,11 +2,11 @@ const sinon = require('sinon');
 const chai = require('chai').use(require('chai-as-promised'));
 const expect = chai.expect;
 
-const db = require('../../../src/db');
-const authorization = require('../../../src/services/authorization');
-const purgedDocs = require('../../../src/services/purged-docs');
-const replication = require('../../../src/services/replication');
-const replicationLimitLog = require('../../../src/services/replication-limit-log');
+const db = require('../../../../src/db');
+const authorization = require('../../../../src/services/replication/authorization');
+const purgedDocs = require('../../../../src/services/replication/purged-docs');
+const replication = require('../../../../src/services/replication/replication');
+const replicationLimitLog = require('../../../../src/services/replication/replication-limit-log');
 
 let userCtx;
 let authContext;
@@ -14,8 +14,8 @@ let docsByReplicationKey;
 
 describe('Initial Replication service', () => {
   beforeEach(() => {
-    userCtx = Object.freeze({ roles: ['one'], name: 'john' });
-    authContext = Object.freeze({ auth: 'context' });
+    userCtx = { roles: ['one'], name: 'john' };
+    authContext = Object.freeze({ auth: 'context', subjectIds: ['_all', 's1', 's2'] });
     docsByReplicationKey = Object.freeze({ docs: 'by replication key' });
   });
 
@@ -41,6 +41,9 @@ describe('Initial Replication service', () => {
         limit: 10000,
         lastSeq: '123-aaa',
       });
+      expect(userCtx.subjectsCount).to.equal(3);
+      expect(userCtx.docsCount).to.equal(4);
+      expect(userCtx.unpurgedDocsCount).to.equal(3);
 
       expect(authorization.getAuthorizationContext.args).to.deep.equal([[userCtx]]);
       expect(authorization.getDocsByReplicationKey.args).to.deep.equal([[authContext]]);
@@ -71,6 +74,9 @@ describe('Initial Replication service', () => {
         limit: 10000,
         lastSeq: '222-bbb',
       });
+      expect(userCtx.subjectsCount).to.equal(authContext.subjectIds.length);
+      expect(userCtx.docsCount).to.equal(allDocsIds.length);
+      expect(userCtx.unpurgedDocsCount).to.equal(allDocsIds.length);
 
       expect(purgedDocs.getUnPurgedIds.args).to.deep.equal([[userCtx, allDocsIds]]);
       expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, allDocsIds.length, allDocsIds.length]]);
@@ -95,6 +101,9 @@ describe('Initial Replication service', () => {
         limit: 10000,
         lastSeq: '222-bbb',
       });
+      expect(userCtx.subjectsCount).to.equal(authContext.subjectIds.length);
+      expect(userCtx.docsCount).to.equal(allDocsIds.length);
+      expect(userCtx.unpurgedDocsCount).to.equal(unpurgedDocsIDs.length);
     });
 
     it('should not count tasks as warning docs', async () => {
@@ -118,30 +127,44 @@ describe('Initial Replication service', () => {
         limit: 10000,
         lastSeq: '333-ccc',
       });
+      expect(userCtx.subjectsCount).to.equal(authContext.subjectIds.length);
+      expect(userCtx.docsCount).to.equal(allDocsIds.length);
+      expect(userCtx.unpurgedDocsCount).to.equal(allDocsIds.length);
     });
 
-    it('should throw db info errors', async () => {
+    it('should throw db info errors and not set any counts', async () => {
       sinon.stub(db.medic, 'info').rejects(new Error('omg'));
 
       await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'omg');
+      expect(userCtx).to.not.have.property('subjectsCount');
+      expect(userCtx).to.not.have.property('docsCount');
+      expect(userCtx).to.not.have.property('unpurgedDocsCount');
     });
 
-    it('should throw getAuthorizationContext errors', async () => {
+    it('should throw getAuthorizationContext errors and not set any counts', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '333-ccc' });
       sinon.stub(authorization, 'getAuthorizationContext').rejects(new Error('failed'));
 
       await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'failed');
+      expect(userCtx).to.not.have.property('subjectsCount');
+      expect(userCtx).to.not.have.property('docsCount');
+      expect(userCtx).to.not.have.property('unpurgedDocsCount');
     });
 
-    it('should throw getDocsByReplicationKey errors', async () => {
+    it('should throw getDocsByReplicationKey errors with only subjectsCount set', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '333-ccc' });
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
       sinon.stub(authorization, 'getDocsByReplicationKey').rejects(new Error('wrong'));
 
       await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'wrong');
+      // subjectsCount is set right after getAuthorizationContext returns.
+      expect(userCtx.subjectsCount).to.equal(authContext.subjectIds.length);
+      expect(userCtx).to.not.have.property('docsCount');
+      expect(userCtx).to.not.have.property('unpurgedDocsCount');
     });
 
-    it('should throw getUnPurgedIds errors', async () => {
+    it('should throw getUnPurgedIds errors with subjectsCount and docsCount set but not ' +
+       'unpurgedDocsCount', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '333-ccc' });
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
       sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
@@ -149,6 +172,11 @@ describe('Initial Replication service', () => {
       sinon.stub(purgedDocs, 'getUnPurgedIds').rejects(new Error('didnt work'));
 
       await expect(replication.getContext(userCtx)).to.be.rejectedWith(Error, 'didnt work');
+      // subjectsCount and docsCount are set before the purge step throws.
+      expect(userCtx.subjectsCount).to.equal(authContext.subjectIds.length);
+      expect(userCtx.docsCount).to.equal(3);
+      // unpurgedDocsCount is only set after the purge step succeeds, so it should be absent.
+      expect(userCtx).to.not.have.property('unpurgedDocsCount');
     });
   });
 
