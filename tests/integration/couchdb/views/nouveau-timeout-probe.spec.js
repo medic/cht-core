@@ -26,9 +26,9 @@ const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { DOC_TYPES } = require('@medic/constants');
 
-const TOTAL = Number(process.env.NOUVEAU_PROBE_REQUESTS) || 2000;
-const CONCURRENCY = Number(process.env.NOUVEAU_PROBE_CONCURRENCY) || 10;
-const SEED_REPORTS = Number(process.env.NOUVEAU_PROBE_REPORTS) || 500;
+const TOTAL = Number(process.env.NOUVEAU_PROBE_REQUESTS) || 3000;
+const CONCURRENCY = Number(process.env.NOUVEAU_PROBE_CONCURRENCY) || 15;
+const SEED_REPORTS = Number(process.env.NOUVEAU_PROBE_REPORTS) || 1000;
 
 // anything within a couple seconds of couch's 30s request_timeout is a (near-)miss worth flagging
 const SLOW_MS = 28 * 1000;
