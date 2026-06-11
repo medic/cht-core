@@ -110,7 +110,7 @@ export namespace v1 {
       const docs = await getMedicDocsByIds(uuids);
       return docs
         .filter(doc => isContact(settings, doc))
-        .map(summariseContact);
+        .map(doc => summariseContact(doc));
     };
   };
 

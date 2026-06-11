@@ -114,7 +114,7 @@ export namespace v1 {
       const docs = await getMedicDocsByIds(uuids);
       return docs
         .filter(isReport)
-        .map(summariseReport);
+        .map(doc => summariseReport(doc));
     };
   };
 
