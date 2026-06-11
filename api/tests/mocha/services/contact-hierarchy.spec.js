@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const db = require('../../../src/db');
+const dataContext = require('../../../src/services/data-context');
 const service = require('../../../src/services/contact-hierarchy');
 
 const CONTACTS_BY_DEPTH = 'medic/contacts_by_depth';
@@ -18,6 +19,7 @@ describe('contact-hierarchy service', () => {
   beforeEach(() => {
     query = sinon.stub(db.medic, 'query');
     bulkDocs = sinon.stub(db.medic, 'bulkDocs').resolves([]);
+    sinon.stub(dataContext, 'bind').returns(sinon.stub().resolves(undefined));
   });
 
   afterEach(() => sinon.restore());
@@ -131,6 +133,52 @@ describe('contact-hierarchy service', () => {
       expect(result.errors).to.deep.equal([
         { _id: 'c1', error: 'conflict', reason: 'Document update conflict' },
       ]);
+    });
+
+    it('clears the primary-contact reference on a deleted contact\'s surviving parent', async () => {
+      stubCount(1);
+      stubSubtree([contactDoc('chw', { parent: { _id: 'hca' } })]);
+      stubReports([]);
+      const parent = { _id: 'hca', _rev: '1-abc', type: 'health_center', contact: { _id: 'chw' } };
+      dataContext.bind.returns(sinon.stub().resolves(parent));
+
+      await service.deleteHierarchy('chw');
+
+      const written = bulkDocs.firstCall.args[0];
+      const writtenParent = written.find(doc => doc._id === 'hca');
+      expect(writtenParent).to.exist;
+      expect(writtenParent.contact).to.be.null;
+      expect(writtenParent._deleted).to.be.undefined;
+    });
+
+    it('leaves a parent untouched when its primary contact is not being deleted', async () => {
+      stubCount(1);
+      stubSubtree([contactDoc('chw', { parent: { _id: 'hca' } })]);
+      stubReports([]);
+      const parent = { _id: 'hca', _rev: '1-abc', type: 'health_center', contact: { _id: 'someone-else' } };
+      dataContext.bind.returns(sinon.stub().resolves(parent));
+
+      await service.deleteHierarchy('chw');
+
+      expect(bulkDocs.firstCall.args[0].map(doc => doc._id)).to.deep.equal(['chw']);
+    });
+
+    it('does not write a parent that is itself being deleted', async () => {
+      stubCount(2);
+      stubSubtree([
+        contactDoc('place', { type: 'clinic', parent: { _id: 'hc' }, contact: { _id: 'person' } }),
+        contactDoc('person', { parent: { _id: 'place' } }),
+      ]);
+      stubReports([]);
+      // the deleted person is the primary contact of the deleted place
+      const place = { _id: 'place', _rev: '1-abc', type: 'clinic', contact: { _id: 'person' } };
+      dataContext.bind.returns(sinon.stub().resolves(place));
+
+      await service.deleteHierarchy('place');
+
+      const written = bulkDocs.firstCall.args[0];
+      expect(written.filter(doc => doc._id === 'place')).to.have.length(1);
+      expect(written.every(doc => doc._deleted)).to.be.true;
     });
 
     it('writes in batches of 100 documents', async () => {

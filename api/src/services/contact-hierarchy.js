@@ -1,5 +1,8 @@
 const db = require('../db');
+const dataContext = require('./data-context');
 const logger = require('@medic/logger');
+
+const bulkDocsUtils = require('@medic/bulk-docs-utils')({ Promise, dataContext });
 
 const BATCH_SIZE = 100;
 const MAX_HIERARCHY_SIZE = 5000;
@@ -48,11 +51,10 @@ const getSubjectReports = async (contacts) => {
   return [...reportsById.values()];
 };
 
-const bulkDelete = async (docs) => {
+const bulkWrite = async (docs) => {
   const errors = [];
-  const tombstones = docs.map(doc => ({ ...doc, _deleted: true }));
-  for (let i = 0; i < tombstones.length; i += BATCH_SIZE) {
-    const results = await db.medic.bulkDocs(tombstones.slice(i, i + BATCH_SIZE));
+  for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+    const results = await db.medic.bulkDocs(docs.slice(i, i + BATCH_SIZE));
     results.forEach((result) => {
       if (result.error) {
         errors.push({ _id: result.id, error: result.error, reason: result.reason });
@@ -77,7 +79,15 @@ const deleteHierarchy = async (contactId) => {
 
   const contacts = await getSubtreeContacts(contactId);
   const reports = await getSubjectReports(contacts);
-  const errors = await bulkDelete([...contacts, ...reports]);
+
+  const deletedDocs = [...contacts, ...reports].map(doc => ({ ...doc, _deleted: true }));
+  const deletedIds = new Set(deletedDocs.map(doc => doc._id));
+
+  // Clear the primary-contact reference on any surviving parent of a deleted contact.
+  const { docs: parents } = await bulkDocsUtils.updateParentContacts(deletedDocs);
+  const parentUpdates = parents.filter(parent => !deletedIds.has(parent._id));
+
+  const errors = await bulkWrite([...deletedDocs, ...parentUpdates]);
 
   logger.info(`Deleted contact ${contactId}: ${contacts.length} contact(s), ${reports.length} report(s)`);
 
