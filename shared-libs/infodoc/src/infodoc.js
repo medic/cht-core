@@ -153,7 +153,7 @@ const updateTransition = (change, transition, ok) => {
 
 const saveTransitions = (change, clearStarted = false) => {
   const modify = infoDoc => {
-    infoDoc.transitions = (change.info && change.info.transitions) || {};
+    infoDoc.transitions = change.info?.transitions || {};
     // Clear the in-progress marker in the same write that commits the transitions (API branch only)
     if (clearStarted) {
       delete infoDoc.transitions_started;
@@ -164,7 +164,7 @@ const saveTransitions = (change, clearStarted = false) => {
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
   return modifyInfoDoc(id, infoDoc => {
-    infoDoc.completed_tasks = (infodoc && infodoc.completed_tasks) || completedTasks;
+    infoDoc.completed_tasks = infodoc?.completed_tasks || completedTasks;
   }, infodoc);
 };
 

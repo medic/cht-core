@@ -48,7 +48,7 @@ let loadErrors = false;
 const MAX_INFODOC_WAIT = 5;
 const INFODOC_WAIT_INTERVAL = 100;
 
-const isInfoDocMidWrite = infoDoc => infoDoc && infoDoc.transitions_started !== undefined;
+const isInfoDocMidWrite = infoDoc => infoDoc?.transitions_started !== undefined;
 
 const getConsistentInfoDoc = async (change, retriesLeft) => {
   const infoDoc = await infodoc.get(change);
