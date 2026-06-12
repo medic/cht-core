@@ -38,6 +38,24 @@ class Bikramsambatdatepicker extends Widget {
 
         bikram_sambat_bs.initListeners( $parent, $realDateInput );
 
+        // Fix for #8011: initListeners fires conversion on any field
+        // change, but the month input is type="hidden" and only gets
+        // a value when the user clicks the dropdown. Without this guard,
+        // conversion fires with empty month, defaulting to Baisakh (month 1).
+        $parent.on( 'change', 'input', function( event ) {
+          if ( $( event.target ).is( $realDateInput ) ) {
+            return;
+          }
+          const day   = $parent.find( 'input[name="day"]' ).val();
+          const month = $parent.find( 'input[name="month"]' ).val();
+          const year  = $parent.find( 'input[name="year"]' ).val();
+
+          if ( !day || !month || !year ) {
+            $realDateInput.val( '' );
+            $realDateInput.trigger( 'change' );
+          }
+        });
+
         if ( initialVal ) {
           bikram_sambat_bs.setDate_greg_text(
             $parent.children( '.bikram-sambat-input-group' ),
@@ -78,3 +96,4 @@ const TEMPLATE =
     '<input name="year" type="tel" class="form-control devanagari-number-input" placeholder="साल" aria-label="साल" ' +
       'maxlength="4">' +
   '</div>';
+  
