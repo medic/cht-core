@@ -162,7 +162,10 @@ module.exports = {
      */
     getSummaries: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const summaries = await getReportSummaries(Qualifier.byIds(req.body?.ids));
+      const summaries = [];
+      for await (const summary of getReportSummaries(Qualifier.byIds(req.body?.ids))) {
+        summaries.push(summary);
+      }
       return res.json(summaries);
     }),
 

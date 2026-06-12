@@ -186,7 +186,9 @@ describe('Report Controller Tests', () => {
         const ids = ['a', 'b'];
         const summaries = [{ _id: 'a' }, { _id: 'b' }];
         req = { body: { ids } };
-        reportGetSummaries.resolves(summaries);
+        reportGetSummaries.returns((async function* () {
+          yield* summaries;
+        })());
 
         await controller.v1.getSummaries(req, res);
 

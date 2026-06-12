@@ -261,7 +261,9 @@ describe('Contact Controller', () => {
         const ids = ['a', 'b'];
         const summaries = [{ _id: 'a' }, { _id: 'b' }];
         req = { body: { ids } };
-        contactGetSummaries.resolves(summaries);
+        contactGetSummaries.returns((async function* () {
+          yield* summaries;
+        })());
 
         await controller.v1.getSummaries(req, res);
 

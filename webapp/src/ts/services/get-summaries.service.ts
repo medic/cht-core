@@ -14,8 +14,8 @@ export class GetSummariesService {
   constructor(
     chtDatasourceService: CHTDatasourceService,
   ) {
-    this.getContactSummaries = chtDatasourceService.bind(Contact.v1.getSummaries);
-    this.getReportSummaries = chtDatasourceService.bind(Report.v1.getSummaries);
+    this.getContactSummaries = chtDatasourceService.bindGenerator(Contact.v1.getSummaries);
+    this.getReportSummaries = chtDatasourceService.bindGenerator(Report.v1.getSummaries);
   }
 
   async getContacts(ids?) {
@@ -23,7 +23,11 @@ export class GetSummariesService {
       return [];
     }
 
-    return this.getContactSummaries(Qualifier.byIds(ids));
+    const summaries: Contact.v1.ContactSummary[] = [];
+    for await (const summary of this.getContactSummaries(Qualifier.byIds(ids))) {
+      summaries.push(summary);
+    }
+    return summaries;
   }
 
   async getReports(ids?) {
@@ -31,7 +35,11 @@ export class GetSummariesService {
       return [];
     }
 
-    return this.getReportSummaries(Qualifier.byIds(ids));
+    const summaries: Report.v1.ReportSummary[] = [];
+    for await (const summary of this.getReportSummaries(Qualifier.byIds(ids))) {
+      summaries.push(summary);
+    }
+    return summaries;
   }
 
   getByDocs(docs) {

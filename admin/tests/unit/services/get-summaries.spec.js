@@ -6,6 +6,10 @@ describe('GetSummaries service', () => {
   let bind;
   let summariesFn;
 
+  const fakeGenerator = (values) => (async function* () {
+    yield* values;
+  })();
+
   beforeEach(() => {
     summariesFn = sinon.stub();
     bind = sinon.stub().returns(summariesFn);
@@ -22,7 +26,7 @@ describe('GetSummaries service', () => {
   describe('getContacts', () => {
     it('loads summaries for the given ids', () => {
       const contactSummaries = [{ _id: 'a', name: 'james' }];
-      summariesFn.resolves(contactSummaries);
+      summariesFn.returns(fakeGenerator(contactSummaries));
 
       return service.getContacts([ 'a', 'b' ]).then(actual => {
         chai.expect(bind.callCount).to.equal(1);
@@ -35,7 +39,7 @@ describe('GetSummaries service', () => {
   describe('getReports', () => {
     it('loads summaries for the given ids', () => {
       const reportSummaries = [{ _id: 'b', form: 'delivery' }];
-      summariesFn.resolves(reportSummaries);
+      summariesFn.returns(fakeGenerator(reportSummaries));
 
       return service.getReports([ 'a', 'b' ]).then(actual => {
         chai.expect(bind.callCount).to.equal(1);
@@ -46,7 +50,7 @@ describe('GetSummaries service', () => {
   });
 
   it('binds a different datasource function for contacts than for reports', () => {
-    summariesFn.resolves([]);
+    summariesFn.callsFake(() => fakeGenerator([]));
 
     return service.getContacts([ 'a' ])
       .then(() => service.getReports([ 'b' ]))

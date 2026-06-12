@@ -14,13 +14,13 @@ describe('GetSummaries service', () => {
     getContactSummaries = sinon.stub();
     getReportSummaries = sinon.stub();
 
-    const bind = sinon.stub();
-    bind.onFirstCall().returns(getContactSummaries);
-    bind.onSecondCall().returns(getReportSummaries);
+    const bindGenerator = sinon.stub();
+    bindGenerator.onFirstCall().returns(getContactSummaries);
+    bindGenerator.onSecondCall().returns(getReportSummaries);
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: CHTDatasourceService, useValue: { bind } },
+        { provide: CHTDatasourceService, useValue: { bindGenerator } },
       ]
     });
 
@@ -48,7 +48,9 @@ describe('GetSummaries service', () => {
 
     it('only loads contact summaries from the datasource', async () => {
       const contactSummaries = [{ _id: 'a', name: 'james' }];
-      getContactSummaries.resolves(contactSummaries);
+      getContactSummaries.returns((async function* () {
+        yield* contactSummaries;
+      })());
 
       const actual = await service.getContacts(['a', 'b']);
 
@@ -75,7 +77,9 @@ describe('GetSummaries service', () => {
 
     it('only loads report summaries from the datasource', async () => {
       const reportSummaries = [{ _id: 'b', form: 'delivery' }];
-      getReportSummaries.resolves(reportSummaries);
+      getReportSummaries.returns((async function* () {
+        yield* reportSummaries;
+      })());
 
       const actual = await service.getReports(['a', 'b']);
 
