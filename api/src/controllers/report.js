@@ -123,10 +123,10 @@ module.exports = {
      * @openapi
      * /api/v1/report/summary:
      *   post:
-     *     summary: Get report summaries by UUIDs
+     *     summary: Get report summaries by id
      *     operationId: v1ReportSummaryPost
      *     description: >
-     *       Returns compact summary records for the reports identified by the provided UUIDs. UUIDs that do not
+     *       Returns compact summary records for the reports identified by the provided ids. Ids that do not
      *       identify an existing report are silently omitted from the result.
      *     tags: [Report]
      *     x-since: 5.3.0
@@ -139,11 +139,11 @@ module.exports = {
      *           schema:
      *             type: object
      *             properties:
-     *               uuids:
+     *               ids:
      *                 type: array
      *                 items:
      *                   type: string
-     *             required: [uuids]
+     *             required: [ids]
      *     responses:
      *       '200':
      *         description: An array of report summaries
@@ -162,7 +162,7 @@ module.exports = {
      */
     getSummaries: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const summaries = await getReportSummaries(Qualifier.byUuids(req.body?.uuids));
+      const summaries = await getReportSummaries(Qualifier.byIds(req.body?.ids));
       return res.json(summaries);
     }),
 

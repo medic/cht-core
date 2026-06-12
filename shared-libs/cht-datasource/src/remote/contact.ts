@@ -1,5 +1,5 @@
 import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
-import { ContactTypeQualifier, FreetextQualifier, UuidQualifier, UuidsQualifier } from '../qualifier';
+import { ContactTypeQualifier, FreetextQualifier, UuidQualifier, IdsQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Contact from '../contact';
 import { isContactType, isFreetextType } from '../libs/parameter-validators';
@@ -29,8 +29,8 @@ export namespace v1 {
   /** @internal */
   export const getSummaries = (
     remoteContext: RemoteDataContext
-  ) => ({ uuids }: UuidsQualifier): Promise<Contact.v1.ContactSummary[]> => {
-    return postContactSummary(remoteContext)({ uuids });
+  ) => ({ ids }: IdsQualifier): Promise<Contact.v1.ContactSummary[]> => {
+    return postContactSummary(remoteContext)({ ids });
   };
 
   /** @internal */

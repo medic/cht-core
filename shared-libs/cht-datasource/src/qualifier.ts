@@ -57,33 +57,33 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
- * A qualifier that identifies entities by their UUIDs.
+ * A qualifier that identifies entities by their identifiers.
  */
-export type UuidsQualifier = Readonly<{ uuids: string[] }>;
+export type IdsQualifier = Readonly<{ ids: string[] }>;
 
 /**
- * Returns `true` if the given qualifier is a {@link UuidsQualifier}, otherwise `false`. An empty array of UUIDs is
+ * Returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`. An empty array of identifiers is
  * considered valid.
  * @param qualifier the qualifier to check
- * @returns `true` if the given qualifier is a {@link UuidsQualifier}, otherwise `false`
+ * @returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`
  */
-export const isUuidsQualifier = (qualifier: unknown): qualifier is UuidsQualifier => {
+export const isIdsQualifier = (qualifier: unknown): qualifier is IdsQualifier => {
   return isRecord(qualifier)
-    && hasField(qualifier, { name: 'uuids', type: 'object' })
-    && Array.isArray(qualifier.uuids)
-    && qualifier.uuids.every(uuid => isString(uuid) && uuid.length > 0);
+    && hasField(qualifier, { name: 'ids', type: 'object' })
+    && Array.isArray(qualifier.ids)
+    && qualifier.ids.every(id => isString(id) && id.length > 0);
 };
 
 /**
- * Builds a qualifier that identifies entities by their UUIDs.
- * @param uuids the UUIDs of the entities
+ * Builds a qualifier that identifies entities by their identifiers.
+ * @param ids the identifiers of the entities
  * @returns the qualifier
- * @throws InvalidArgumentError if the UUIDs are not an array of non-empty strings
+ * @throws InvalidArgumentError if the identifiers are not an array of non-empty strings
  */
-export const byUuids = (uuids: string[]): UuidsQualifier => {
-  const qualifier = { uuids };
-  if (!isUuidsQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid UUIDs [${JSON.stringify(uuids)}].`);
+export const byIds = (ids: string[]): IdsQualifier => {
+  const qualifier = { ids };
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(ids)}].`);
   }
   return qualifier;
 };

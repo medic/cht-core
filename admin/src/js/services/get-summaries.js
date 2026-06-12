@@ -10,10 +10,10 @@ angular.module('inboxServices').factory('GetSummaries',
 
     return {
       getContacts: ids => DataContext.then(
-        dataContext => dataContext.bind(cht.Contact.v1.getSummaries)(cht.Qualifier.byUuids(ids))
+        dataContext => dataContext.bind(cht.Contact.v1.getSummaries)(cht.Qualifier.byIds(ids))
       ),
       getReports: ids => DataContext.then(
-        dataContext => dataContext.bind(cht.Report.v1.getSummaries)(cht.Qualifier.byUuids(ids))
+        dataContext => dataContext.bind(cht.Report.v1.getSummaries)(cht.Qualifier.byIds(ids))
       ),
     };
   });

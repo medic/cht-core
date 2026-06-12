@@ -52,7 +52,7 @@ describe('GetSummaries service', () => {
 
       const actual = await service.getContacts(['a', 'b']);
 
-      expect(getContactSummaries.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
+      expect(getContactSummaries.calledOnceWithExactly({ ids: ['a', 'b'] })).to.be.true;
       expect(getReportSummaries.notCalled).to.be.true;
       expect(actual).to.deep.equal(contactSummaries);
     });
@@ -79,7 +79,7 @@ describe('GetSummaries service', () => {
 
       const actual = await service.getReports(['a', 'b']);
 
-      expect(getReportSummaries.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
+      expect(getReportSummaries.calledOnceWithExactly({ ids: ['a', 'b'] })).to.be.true;
       expect(getContactSummaries.notCalled).to.be.true;
       expect(actual).to.deep.equal(reportSummaries);
     });

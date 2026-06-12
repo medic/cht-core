@@ -23,7 +23,7 @@ export class GetSummariesService {
       return [];
     }
 
-    return this.getContactSummaries(Qualifier.byUuids(ids));
+    return this.getContactSummaries(Qualifier.byIds(ids));
   }
 
   async getReports(ids?) {
@@ -31,7 +31,7 @@ export class GetSummariesService {
       return [];
     }
 
-    return this.getReportSummaries(Qualifier.byUuids(ids));
+    return this.getReportSummaries(Qualifier.byIds(ids));
   }
 
   getByDocs(docs) {

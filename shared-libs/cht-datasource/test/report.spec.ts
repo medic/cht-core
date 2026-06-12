@@ -144,8 +144,8 @@ describe('report', () => {
     });
 
     describe('getSummaries', () => {
-      const uuids = ['report-1', 'report-2'];
-      const qualifier = { uuids };
+      const ids = ['report-1', 'report-2'];
+      const qualifier = { ids };
       const summaries = [{ _id: 'report-1' }, { _id: 'report-2' }] as Report.v1.ReportSummary[];
       let getSummariesFn: SinonStub;
 
@@ -179,13 +179,13 @@ describe('report', () => {
         null,
         undefined,
         'not-an-array',
-        { uuids: 'not-an-array' },
-        { uuids: [1, 2] },
-        { uuids: ['valid', ''] },
+        { ids: 'not-an-array' },
+        { ids: [1, 2] },
+        { ids: ['valid', ''] },
       ] as unknown[]).forEach((invalid) => {
         it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, async () => {
           await expect(Report.v1.getSummaries(dataContext)(invalid as never))
-            .to.be.rejectedWith(`Invalid UUIDs [${JSON.stringify(invalid)}].`);
+            .to.be.rejectedWith(`Invalid identifiers [${JSON.stringify(invalid)}].`);
 
           expect(getSummariesFn.notCalled).to.be.true;
         });
@@ -493,16 +493,16 @@ describe('report', () => {
         const expectedSummaries = [{}];
         const reportGetSummaries = sinon.stub().resolves(expectedSummaries);
         dataContextBind.returns(reportGetSummaries);
-        const uuids = ['uuid-1', 'uuid-2'];
-        const qualifier = { uuids };
-        const byUuids = sinon.stub(Qualifier, 'byUuids').returns(qualifier);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(qualifier);
 
-        const returnedSummaries = await report.getSummaries(uuids);
+        const returnedSummaries = await report.getSummaries(ids);
 
         expect(returnedSummaries).to.equal(expectedSummaries);
         expect(dataContextBind.calledOnceWithExactly(Report.v1.getSummaries)).to.be.true;
         expect(reportGetSummaries.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(byUuids.calledOnceWithExactly(uuids)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
       });
 
       it('getByUuid', async () => {

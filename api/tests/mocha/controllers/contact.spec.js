@@ -257,10 +257,10 @@ describe('Contact Controller', () => {
     });
 
     describe('getSummaries', () => {
-      it('returns summaries for the provided uuids', async () => {
-        const uuids = ['a', 'b'];
+      it('returns summaries for the provided ids', async () => {
+        const ids = ['a', 'b'];
         const summaries = [{ _id: 'a' }, { _id: 'b' }];
-        req = { body: { uuids } };
+        req = { body: { ids } };
         contactGetSummaries.resolves(summaries);
 
         await controller.v1.getSummaries(req, res);
@@ -269,7 +269,7 @@ describe('Contact Controller', () => {
           req,
           { isOnline: true, hasAll: ['can_view_contacts'] }
         )).to.be.true;
-        expect(contactGetSummaries.calledOnceWithExactly({ uuids })).to.be.true;
+        expect(contactGetSummaries.calledOnceWithExactly({ ids })).to.be.true;
         expect(res.json.calledOnceWithExactly(summaries)).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });

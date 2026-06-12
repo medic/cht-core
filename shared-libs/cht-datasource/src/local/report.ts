@@ -6,7 +6,7 @@ import {
   queryDocIdsByKey,
   queryDocIdsByRange, updateDoc
 } from './libs/doc';
-import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier, UuidsQualifier } from '../qualifier';
+import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier, IdsQualifier } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import * as LocalContact from './contact';
@@ -110,8 +110,8 @@ export namespace v1 {
   /** @internal */
   export const getSummaries = ({ medicDb }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
-    return async ({ uuids }: UuidsQualifier): Promise<Report.v1.ReportSummary[]> => {
-      const docs = await getMedicDocsByIds(uuids);
+    return async ({ ids }: IdsQualifier): Promise<Report.v1.ReportSummary[]> => {
+      const docs = await getMedicDocsByIds(ids);
       return docs
         .filter(isReport)
         .map(doc => summariseReport(doc));

@@ -26,7 +26,7 @@ describe('GetSummaries service', () => {
 
       return service.getContacts([ 'a', 'b' ]).then(actual => {
         chai.expect(bind.callCount).to.equal(1);
-        chai.expect(summariesFn.calledOnceWithExactly({ uuids: [ 'a', 'b' ] })).to.equal(true);
+        chai.expect(summariesFn.calledOnceWithExactly({ ids: [ 'a', 'b' ] })).to.equal(true);
         chai.expect(actual).to.deep.equal(contactSummaries);
       });
     });
@@ -39,7 +39,7 @@ describe('GetSummaries service', () => {
 
       return service.getReports([ 'a', 'b' ]).then(actual => {
         chai.expect(bind.callCount).to.equal(1);
-        chai.expect(summariesFn.calledOnceWithExactly({ uuids: [ 'a', 'b' ] })).to.equal(true);
+        chai.expect(summariesFn.calledOnceWithExactly({ ids: [ 'a', 'b' ] })).to.equal(true);
         chai.expect(actual).to.deep.equal(reportSummaries);
       });
     });

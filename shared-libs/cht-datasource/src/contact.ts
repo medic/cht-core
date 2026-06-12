@@ -9,11 +9,11 @@ import {
   byContactType,
   byFreetext,
   byUuid,
-  byUuids,
+  byIds,
   ContactTypeQualifier,
   FreetextQualifier,
   UuidQualifier,
-  UuidsQualifier
+  IdsQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { LocalDataContext } from './local/libs/data-context';
@@ -26,7 +26,7 @@ import {
   assertCursor,
   assertLimit,
   assertUuidQualifier,
-  assertUuidsQualifier,
+  assertIdsQualifier,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
 
@@ -102,14 +102,14 @@ export namespace v1 {
     const fn = adapt(context, Local.Contact.v1.getSummaries, Remote.Contact.v1.getSummaries);
 
     /**
-     * Returns summary records for the contacts identified by the given qualifier. Any UUIDs that do not identify an
-     * existing contact are silently omitted from the result.
-     * @param qualifier the UUIDs of the contacts to summarise
+     * Returns summary records for the contacts identified by the given qualifier. Any identifiers that do not identify
+     * an existing contact are silently omitted from the result.
+     * @param qualifier the identifiers of the contacts to summarise
      * @returns an array of contact summaries
-     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty UUID strings
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
      */
-    const curriedFn = async (qualifier: UuidsQualifier): Promise<ContactSummary[]> => {
-      assertUuidsQualifier(qualifier);
+    const curriedFn = async (qualifier: IdsQualifier): Promise<ContactSummary[]> => {
+      assertIdsQualifier(qualifier);
       return fn(qualifier);
     };
     return curriedFn;
@@ -182,13 +182,13 @@ export namespace v1 {
    */
   export interface Datasource {
     /**
-     * Returns summary records for the given contact UUIDs.
-     * @param uuids the UUIDs of the contacts to summarise
-     * @returns an array of contact summaries. UUIDs that do not identify an existing contact are silently
+     * Returns summary records for the given contact identifiers.
+     * @param ids the identifiers of the contacts to summarise
+     * @returns an array of contact summaries. Identifiers that do not identify an existing contact are silently
      * omitted from the result.
-     * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+     * @throws InvalidArgumentError if `ids` is not an array of non-empty strings
      */
-    getSummaries: (uuids: string[]) => Promise<ContactSummary[]>;
+    getSummaries: (ids: string[]) => Promise<ContactSummary[]>;
 
     /**
      * Returns a contact by their UUID.
@@ -294,7 +294,7 @@ export namespace v1 {
   /** @internal */
   export const getDatasource = (ctx: DataContext): Datasource => {
     return {
-      getSummaries: (uuids) => ctx.bind(v1.getSummaries)(byUuids(uuids)),
+      getSummaries: (ids) => ctx.bind(v1.getSummaries)(byIds(ids)),
       getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
       getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
       getUuidsPageByTypeFreetext: (

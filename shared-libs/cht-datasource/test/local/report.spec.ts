@@ -115,10 +115,10 @@ describe('local report', () => {
         getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
       });
 
-      it('passes empty uuids through to getDocsByIds', async () => {
+      it('passes empty ids through to getDocsByIds', async () => {
         getDocsByIdsInner.resolves([]);
 
-        const result = await Report.v1.getSummaries(localContext)({ uuids: [] });
+        const result = await Report.v1.getSummaries(localContext)({ ids: [] });
 
         expect(result).to.deep.equal([]);
         expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
@@ -138,7 +138,7 @@ describe('local report', () => {
         const contactDoc = { _id: 'b', _rev: '2', type: 'person', name: 'james' };
         getDocsByIdsInner.resolves([reportDoc, contactDoc, null]);
 
-        const result = await Report.v1.getSummaries(localContext)({ uuids: ['a', 'b', 'missing'] });
+        const result = await Report.v1.getSummaries(localContext)({ ids: ['a', 'b', 'missing'] });
 
         expect(result).to.deep.equal([{
           _id: 'a',

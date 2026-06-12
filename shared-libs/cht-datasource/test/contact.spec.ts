@@ -133,8 +133,8 @@ describe('contact', () => {
     });
 
     describe('getSummaries', () => {
-      const uuids = ['contact-1', 'contact-2'];
-      const qualifier = { uuids };
+      const ids = ['contact-1', 'contact-2'];
+      const qualifier = { ids };
       const summaries = [{ _id: 'contact-1' }, { _id: 'contact-2' }] as Contact.v1.ContactSummary[];
       let getSummariesFn: SinonStub;
 
@@ -168,13 +168,13 @@ describe('contact', () => {
         null,
         undefined,
         'not-an-array',
-        { uuids: 'not-an-array' },
-        { uuids: [1, 2] },
-        { uuids: ['valid', ''] },
+        { ids: 'not-an-array' },
+        { ids: [1, 2] },
+        { ids: ['valid', ''] },
       ] as unknown[]).forEach((invalid) => {
         it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, async () => {
           await expect(Contact.v1.getSummaries(dataContext)(invalid as never))
-            .to.be.rejectedWith(`Invalid UUIDs [${JSON.stringify(invalid)}].`);
+            .to.be.rejectedWith(`Invalid identifiers [${JSON.stringify(invalid)}].`);
 
           expect(getSummariesFn.notCalled).to.be.true;
         });
@@ -493,16 +493,16 @@ describe('contact', () => {
         const expectedSummaries = [{}];
         const contactGetSummaries = sinon.stub().resolves(expectedSummaries);
         dataContextBind.returns(contactGetSummaries);
-        const uuids = ['uuid-1', 'uuid-2'];
-        const qualifier = { uuids };
-        const byUuids = sinon.stub(Qualifier, 'byUuids').returns(qualifier);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(qualifier);
 
-        const returnedSummaries = await contact.getSummaries(uuids);
+        const returnedSummaries = await contact.getSummaries(ids);
 
         expect(returnedSummaries).to.equal(expectedSummaries);
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getSummaries)).to.be.true;
         expect(contactGetSummaries.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(byUuids.calledOnceWithExactly(uuids)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
       });
 
       it('getByUuid', async () => {

@@ -138,10 +138,10 @@ module.exports = {
      * @openapi
      * /api/v1/contact/summary:
      *   post:
-     *     summary: Get contact summaries by UUIDs
+     *     summary: Get contact summaries by id
      *     operationId: v1ContactSummaryPost
      *     description: >
-     *       Returns compact summary records for the contacts identified by the provided UUIDs. UUIDs that do not
+     *       Returns compact summary records for the contacts identified by the provided ids. Ids that do not
      *       identify an existing contact are silently omitted from the result.
      *     tags: [Contact]
      *     x-since: 5.3.0
@@ -154,11 +154,11 @@ module.exports = {
      *           schema:
      *             type: object
      *             properties:
-     *               uuids:
+     *               ids:
      *                 type: array
      *                 items:
      *                   type: string
-     *             required: [uuids]
+     *             required: [ids]
      *     responses:
      *       '200':
      *         description: An array of contact summaries
@@ -177,7 +177,7 @@ module.exports = {
      */
     getSummaries: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      const summaries = await getContactSummaries(Qualifier.byUuids(req.body?.uuids));
+      const summaries = await getContactSummaries(Qualifier.byIds(req.body?.ids));
       return res.json(summaries);
     }),
   },

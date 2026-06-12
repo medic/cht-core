@@ -3,7 +3,7 @@ import { DataObject, getPagedGenerator, isIdentifiable, isRecord, NormalizedPare
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import * as Local from './local';
-import { byFreetext, byUuid, byUuids, FreetextQualifier, UuidQualifier, UuidsQualifier } from './qualifier';
+import { byFreetext, byUuid, byIds, FreetextQualifier, UuidQualifier, IdsQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
@@ -11,7 +11,7 @@ import {
   assertFreetextQualifier,
   assertLimit,
   assertUuidQualifier,
-  assertUuidsQualifier,
+  assertIdsQualifier,
 } from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
@@ -80,14 +80,14 @@ export namespace v1 {
     const fn = adapt(context, Local.Report.v1.getSummaries, Remote.Report.v1.getSummaries);
 
     /**
-     * Returns summary records for the reports identified by the given qualifier. Any UUIDs that do not identify an
-     * existing report are silently omitted from the result.
-     * @param qualifier the UUIDs of the reports to summarise
+     * Returns summary records for the reports identified by the given qualifier. Any identifiers that do not identify
+     * an existing report are silently omitted from the result.
+     * @param qualifier the identifiers of the reports to summarise
      * @returns an array of report summaries
-     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty UUID strings
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
      */
-    const curriedFn = async (qualifier: UuidsQualifier): Promise<ReportSummary[]> => {
-      assertUuidsQualifier(qualifier);
+    const curriedFn = async (qualifier: IdsQualifier): Promise<ReportSummary[]> => {
+      assertIdsQualifier(qualifier);
       return fn(qualifier);
     };
     return curriedFn;
@@ -247,13 +247,13 @@ export namespace v1 {
    */
   export interface Datasource {
     /**
-     * Returns summary records for the given report UUIDs.
-     * @param uuids the UUIDs of the reports to summarise
-     * @returns an array of report summaries. UUIDs that do not identify an existing report are silently
+     * Returns summary records for the given report identifiers.
+     * @param ids the identifiers of the reports to summarise
+     * @returns an array of report summaries. Identifiers that do not identify an existing report are silently
      * omitted from the result.
-     * @throws InvalidArgumentError if `uuids` is not an array of non-empty strings
+     * @throws InvalidArgumentError if `ids` is not an array of non-empty strings
      */
-    getSummaries: (uuids: string[]) => Promise<ReportSummary[]>;
+    getSummaries: (ids: string[]) => Promise<ReportSummary[]>;
 
     /**
      * Returns a report by their UUID.
@@ -328,7 +328,7 @@ export namespace v1 {
   /** @internal */
   export const getDatasource = (ctx: DataContext): Datasource => {
     return {
-      getSummaries: (uuids) => ctx.bind(v1.getSummaries)(byUuids(uuids)),
+      getSummaries: (ids) => ctx.bind(v1.getSummaries)(byIds(ids)),
       getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
       getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
       getUuidsPageByFreetext: (

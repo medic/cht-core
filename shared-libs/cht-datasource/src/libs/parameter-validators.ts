@@ -5,9 +5,9 @@ import {
   isContactTypeQualifier,
   isFreetextQualifier,
   isUuidQualifier,
-  isUuidsQualifier,
+  isIdsQualifier,
   UuidQualifier,
-  UuidsQualifier,
+  IdsQualifier,
 } from '../qualifier';
 import {
   assertDataObject,
@@ -143,11 +143,11 @@ export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is U
 };
 
 /** @internal */
-export const assertUuidsQualifier: (
+export const assertIdsQualifier: (
   qualifier: unknown
-) => asserts qualifier is UuidsQualifier = (qualifier: unknown) => {
-  if (!isUuidsQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid UUIDs [${JSON.stringify(qualifier)}].`);
+) => asserts qualifier is IdsQualifier = (qualifier: unknown) => {
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(qualifier)}].`);
   }
 };
 

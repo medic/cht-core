@@ -13,7 +13,7 @@ import {
   isFreetextType,
   isContactTypeAndFreetextType,
   assertUuidQualifier,
-  assertUuidsQualifier
+  assertIdsQualifier
 } from '../../src/libs/parameter-validators';
 import { InvalidArgumentError } from '../../src';
 import { DOC_TYPES, CONTACT_TYPES } from '@medic/constants';
@@ -242,40 +242,40 @@ describe('libs parameter-validators', () => {
     });
   });
 
-  describe('assertUuidsQualifier', () => {
+  describe('assertIdsQualifier', () => {
     it('should pass when given a qualifier with an array of non-empty strings', () => {
-      expect(() => assertUuidsQualifier({ uuids: ['a', 'b', 'c'] })).to.not.throw();
+      expect(() => assertIdsQualifier({ ids: ['a', 'b', 'c'] })).to.not.throw();
     });
 
     it('should pass when given a qualifier with an empty array', () => {
-      expect(() => assertUuidsQualifier({ uuids: [] })).to.not.throw();
+      expect(() => assertIdsQualifier({ ids: [] })).to.not.throw();
     });
 
-    it('should throw InvalidArgumentError when the uuids property is not an array', () => {
-      expect(() => assertUuidsQualifier({ uuids: 'abc' }))
-        .to.throw(InvalidArgumentError, `Invalid UUIDs [{"uuids":"abc"}].`);
+    it('should throw InvalidArgumentError when the ids property is not an array', () => {
+      expect(() => assertIdsQualifier({ ids: 'abc' }))
+        .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":"abc"}].`);
     });
 
     it('should throw InvalidArgumentError when not given an object', () => {
-      expect(() => assertUuidsQualifier('abc')).to.throw(InvalidArgumentError, `Invalid UUIDs ["abc"].`);
+      expect(() => assertIdsQualifier('abc')).to.throw(InvalidArgumentError, `Invalid identifiers ["abc"].`);
     });
 
     it('should throw InvalidArgumentError when given null', () => {
-      expect(() => assertUuidsQualifier(null)).to.throw(InvalidArgumentError, `Invalid UUIDs [null].`);
+      expect(() => assertIdsQualifier(null)).to.throw(InvalidArgumentError, `Invalid identifiers [null].`);
     });
 
     it('should throw InvalidArgumentError when given undefined', () => {
-      expect(() => assertUuidsQualifier(undefined)).to.throw(InvalidArgumentError);
+      expect(() => assertIdsQualifier(undefined)).to.throw(InvalidArgumentError);
     });
 
     it('should throw InvalidArgumentError when an element is not a string', () => {
-      expect(() => assertUuidsQualifier({ uuids: ['a', 123, 'c'] }))
-        .to.throw(InvalidArgumentError, `Invalid UUIDs [{"uuids":["a",123,"c"]}].`);
+      expect(() => assertIdsQualifier({ ids: ['a', 123, 'c'] }))
+        .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":["a",123,"c"]}].`);
     });
 
     it('should throw InvalidArgumentError when an element is an empty string', () => {
-      expect(() => assertUuidsQualifier({ uuids: ['a', '', 'c'] }))
-        .to.throw(InvalidArgumentError, `Invalid UUIDs [{"uuids":["a","","c"]}].`);
+      expect(() => assertIdsQualifier({ ids: ['a', '', 'c'] }))
+        .to.throw(InvalidArgumentError, `Invalid identifiers [{"ids":["a","","c"]}].`);
     });
   });
 

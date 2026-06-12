@@ -7,7 +7,7 @@ import {
   isFreetextQualifier,
   isKeyedFreetextQualifier,
   UuidQualifier,
-  UuidsQualifier
+  IdsQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
 import { DataObject, Nullable, Page } from '../libs/core';
@@ -106,8 +106,8 @@ export namespace v1 {
   /** @internal */
   export const getSummaries = ({ medicDb, settings }: LocalDataContext) => {
     const getMedicDocsByIds = getDocsByIds(medicDb);
-    return async ({ uuids }: UuidsQualifier): Promise<Contact.v1.ContactSummary[]> => {
-      const docs = await getMedicDocsByIds(uuids);
+    return async ({ ids }: IdsQualifier): Promise<Contact.v1.ContactSummary[]> => {
+      const docs = await getMedicDocsByIds(ids);
       return docs
         .filter(doc => isContact(settings, doc))
         .map(doc => summariseContact(doc));

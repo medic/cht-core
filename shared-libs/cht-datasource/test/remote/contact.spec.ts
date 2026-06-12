@@ -89,25 +89,25 @@ describe('remote contact', () => {
     });
 
     describe('getSummaries', () => {
-      it('POSTs empty uuids to the contact summary endpoint', async () => {
+      it('POSTs empty ids to the contact summary endpoint', async () => {
         postSummaryResourceInner.resolves([]);
 
-        const result = await Contact.v1.getSummaries(remoteContext)({ uuids: [] });
+        const result = await Contact.v1.getSummaries(remoteContext)({ ids: [] });
 
         expect(result).to.deep.equal([]);
         expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
-        expect(postSummaryResourceInner.calledOnceWithExactly({ uuids: [] })).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ ids: [] })).to.be.true;
       });
 
-      it('POSTs the uuids array to the contact summary endpoint', async () => {
+      it('POSTs the ids array to the contact summary endpoint', async () => {
         const summaries = [{ _id: 'a' }, { _id: 'b' }];
         postSummaryResourceInner.resolves(summaries);
 
-        const result = await Contact.v1.getSummaries(remoteContext)({ uuids: ['a', 'b'] });
+        const result = await Contact.v1.getSummaries(remoteContext)({ ids: ['a', 'b'] });
 
         expect(result).to.equal(summaries);
         expect(postSummaryResourceOuter.calledOnceWithExactly(remoteContext)).to.be.true;
-        expect(postSummaryResourceInner.calledOnceWithExactly({ uuids: ['a', 'b'] })).to.be.true;
+        expect(postSummaryResourceInner.calledOnceWithExactly({ ids: ['a', 'b'] })).to.be.true;
       });
     });
 
