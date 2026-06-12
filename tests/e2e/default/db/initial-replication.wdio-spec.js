@@ -171,7 +171,7 @@ describe('initial-replication', () => {
     await refreshAndWaitForAngular();
 
     // it should support reloading the page while offline
-    await browser.throttle('offline');
+    await browser.throttleNetwork('offline');
     await refreshAndWaitForAngular();
   });
 
