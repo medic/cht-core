@@ -5,14 +5,12 @@ const crypto = require('crypto');
 
 const resources = require('./resources.js');
 const db = require('./db');
-const config = require('./config');
+const settings = require('./config');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
 const extensionLibs = require('./services/extension-libs');
 const uiExtensionService = require('./services/ui-extension');
 const { DOC_IDS } = require('@medic/constants');
-const dataContext = require('./services/data-context');
-const { roles } = require('@medic/user-management')(config, db, dataContext);
 
 const SWMETA_DOC_ID = DOC_IDS.SERVICE_WORKER_META;
 
@@ -87,7 +85,11 @@ const appendUiExtensions = async (config) => {
 
   // Do not include the actual endpoints for online-only extensions. These should only be called by online users and
   // do not need to be cached in the service worker at all.
-  const offlineExtensions = extensions.filter(ext => !ext.roles || roles.isOffline(ext.roles));
+  const offlineRoles = Object
+    .entries(settings.get('roles') ?? {})
+    .filter(([,{ offline }]) => offline)
+    .map(([key]) => key);
+  const offlineExtensions = extensions.filter(({ roles }) => (roles || []).every(role => offlineRoles.includes(role)));
   for (const ext of offlineExtensions) {
     const extPath = path.join('/ui-extension', ext.id);
     config.globPatterns.push(extPath);

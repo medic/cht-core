@@ -12,8 +12,6 @@ const extensionLibsService = require('../../src/services/extension-libs');
 const uiExtensionService = require('../../src/services/ui-extension');
 const { DOC_IDS } = require('@medic/constants');
 const config = require('../../src/config');
-const dataContext = require('../../src/services/data-context');
-const { roles } = require('@medic/user-management')(config, db, dataContext);
 
 describe('generate service worker', () => {
   let clock;
@@ -31,7 +29,7 @@ describe('generate service worker', () => {
     sinon.stub(extensionLibsService, 'getAll');
     sinon.stub(uiExtensionService, 'getAllProperties').resolves([]);
     sinon.stub(uiExtensionService, 'getScriptDigest').resolves();
-    sinon.stub(roles, 'isOffline');
+    sinon.stub(config, 'get');
     workboxGenerate = sinon.stub();
     clock = sinon.useFakeTimers();
 
@@ -63,8 +61,10 @@ describe('generate service worker', () => {
       { id: 'no-roles-ext' },
       { id: 'no-script-ext' },
     ]);
-    roles.isOffline.withArgs(['chw']).returns(true);
-    roles.isOffline.withArgs(['nurse']).returns(false);
+    config.get.withArgs('roles').returns({
+      chw: { offline: true },
+      nurse: { offline: false },
+    });
     uiExtensionService.getScriptDigest.withArgs('offline-ext').resolves('md5-offline');
     uiExtensionService.getScriptDigest.withArgs('no-roles-ext').resolves('md5-no-roles');
     uiExtensionService.getScriptDigest.withArgs('no-script-ext').resolves();
