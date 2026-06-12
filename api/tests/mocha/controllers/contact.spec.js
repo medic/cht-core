@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const auth = require('../../../src/auth');
 const dataContext = require('../../../src/services/data-context');
 const serverUtils = require('../../../src/server-utils');
+const contactHierarchy = require('../../../src/services/contact-hierarchy');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const {expect} = require('chai');
 
@@ -250,6 +251,62 @@ describe('Contact Controller', () => {
         expect(qualifierByFreetext.notCalled).to.be.true;
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
+        expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+    });
+
+    describe('delete', () => {
+      let deleteHierarchy;
+
+      beforeEach(() => {
+        deleteHierarchy = sinon.stub(contactHierarchy, 'deleteHierarchy');
+        req = { params: { uuid: 'contact-1' }, query: {} };
+      });
+
+      it('deletes a contact and returns the summary', async () => {
+        const result = { deleted_contacts: 3, deleted_reports: 5, errors: [] };
+        deleteHierarchy.resolves(result);
+
+        await controller.v1.delete(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAny: ['can_delete_contacts', 'can_edit'] }
+        )).to.be.true;
+        expect(deleteHierarchy.calledOnceWithExactly('contact-1', { recursive: false })).to.be.true;
+        expect(res.json.calledOnceWithExactly(result)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('passes recursive=true through when the query param is set', async () => {
+        req.query = { recursive: 'true' };
+        deleteHierarchy.resolves({ deleted_contacts: 1, deleted_reports: 0, errors: [] });
+
+        await controller.v1.delete(req, res);
+
+        expect(deleteHierarchy.calledOnceWithExactly('contact-1', { recursive: true })).to.be.true;
+      });
+
+      it('returns 404 when the contact does not exist', async () => {
+        deleteHierarchy.resolves(null);
+
+        await controller.v1.delete(req, res);
+
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 404, message: `Contact with id 'contact-1' could not be found` },
+          req,
+          res
+        )).to.be.true;
+        expect(res.json.notCalled).to.be.true;
+      });
+
+      it('surfaces a permission failure', async () => {
+        const err = new Error('Insufficient privileges');
+        assertPermissions.rejects(err);
+
+        await controller.v1.delete(req, res);
+
+        expect(deleteHierarchy.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
       });
     });

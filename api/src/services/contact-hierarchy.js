@@ -64,10 +64,15 @@ const bulkWrite = async (docs) => {
   return errors;
 };
 
-const deleteHierarchy = async (contactId) => {
+const deleteHierarchy = async (contactId, { recursive = false } = {}) => {
   const count = await countSubtree(contactId);
   if (!count) {
     return null;
+  }
+  if (!recursive && count > 1) {
+    const error = new Error('Contact has descendants. Pass recursive=true to delete the whole hierarchy.');
+    error.code = 400;
+    throw error;
   }
   if (count > MAX_HIERARCHY_SIZE) {
     const error = new Error(

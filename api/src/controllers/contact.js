@@ -2,6 +2,7 @@ const auth = require('../auth');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
+const contactHierarchy = require('../services/contact-hierarchy');
 
 const getContact = ctx.bind(Contact.v1.get);
 const getContactWithLineage = ctx.bind(Contact.v1.getWithLineage);
@@ -131,6 +132,70 @@ module.exports = {
       }
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/contact/{uuid}:
+     *   delete:
+     *     summary: Delete a contact
+     *     operationId: v1ContactUuidDelete
+     *     description: >
+     *       Deletes the contact identified by `uuid` and all reports for which it is the subject.
+     *       Without `recursive=true`, a contact that has child contacts is rejected. With
+     *       `recursive=true`, the contact and its entire descendant hierarchy are deleted.
+     *     tags: [Contact]
+     *     x-since: 4.22.0
+     *     x-permissions:
+     *       hasAny: [can_delete_contacts, can_edit]
+     *     parameters:
+     *       - in: path
+     *         name: uuid
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The id of the contact to delete
+     *       - in: query
+     *         name: recursive
+     *         required: false
+     *         schema:
+     *           type: boolean
+     *           default: false
+     *         description: When true, also delete all descendant contacts and their reports
+     *     responses:
+     *       '200':
+     *         description: Summary of the deleted documents
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 deleted_contacts:
+     *                   type: integer
+     *                 deleted_reports:
+     *                   type: integer
+     *                 errors:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     */
+    delete: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAny: ['can_delete_contacts', 'can_edit'] });
+      const { uuid } = req.params;
+      const recursive = req.query.recursive === 'true';
+      const result = await contactHierarchy.deleteHierarchy(uuid, { recursive });
+      if (!result) {
+        return serverUtils.error({ status: 404, message: `Contact with id '${uuid}' could not be found` }, req, res);
+      }
+      return res.json(result);
     }),
   },
 };

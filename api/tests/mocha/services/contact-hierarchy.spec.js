@@ -51,7 +51,7 @@ describe('contact-hierarchy service', () => {
       stubCount(5001);
 
       try {
-        await service.deleteHierarchy('huge');
+        await service.deleteHierarchy('huge', { recursive: true });
         expect.fail('expected deleteHierarchy to throw');
       } catch (err) {
         expect(err.code).to.equal(400);
@@ -75,12 +75,25 @@ describe('contact-hierarchy service', () => {
       expect(written[0]._deleted).to.be.true;
     });
 
+    it('rejects with code 400 when the contact has descendants and recursive is not set', async () => {
+      stubCount(3);
+
+      try {
+        await service.deleteHierarchy('root');
+        expect.fail('expected deleteHierarchy to throw');
+      } catch (err) {
+        expect(err.code).to.equal(400);
+        expect(err.message).to.contain('recursive=true');
+      }
+      expect(bulkDocs.called).to.be.false;
+    });
+
     it('recursively deletes the contact and all of its descendants', async () => {
       stubCount(3);
       stubSubtree([contactDoc('root'), contactDoc('child1'), contactDoc('child2')]);
       stubReports([]);
 
-      const result = await service.deleteHierarchy('root');
+      const result = await service.deleteHierarchy('root', { recursive: true });
 
       expect(result.deleted_contacts).to.equal(3);
       const written = bulkDocs.firstCall.args[0];
@@ -98,7 +111,7 @@ describe('contact-hierarchy service', () => {
         ] });
       stubReports([]);
 
-      const result = await service.deleteHierarchy('root');
+      const result = await service.deleteHierarchy('root', { recursive: true });
 
       expect(result.deleted_contacts).to.equal(1);
       expect(bulkDocs.firstCall.args[0].map(doc => doc._id)).to.deep.equal(['root']);
@@ -174,7 +187,7 @@ describe('contact-hierarchy service', () => {
       const place = { _id: 'place', _rev: '1-abc', type: 'clinic', contact: { _id: 'person' } };
       dataContext.bind.returns(sinon.stub().resolves(place));
 
-      await service.deleteHierarchy('place');
+      await service.deleteHierarchy('place', { recursive: true });
 
       const written = bulkDocs.firstCall.args[0];
       expect(written.filter(doc => doc._id === 'place')).to.have.length(1);
@@ -190,7 +203,7 @@ describe('contact-hierarchy service', () => {
       stubSubtree(docs);
       stubReports([]);
 
-      await service.deleteHierarchy('c0');
+      await service.deleteHierarchy('c0', { recursive: true });
 
       expect(bulkDocs.callCount).to.equal(2);
       expect(bulkDocs.firstCall.args[0]).to.have.length(100);
