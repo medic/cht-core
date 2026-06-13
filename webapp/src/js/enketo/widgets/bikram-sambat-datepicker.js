@@ -112,4 +112,3 @@ const TEMPLATE =
     '<input name="year" type="tel" class="form-control devanagari-number-input" placeholder="साल" aria-label="साल" ' +
       'maxlength="4">' +
   '</div>';
-  
