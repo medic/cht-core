@@ -15,10 +15,15 @@ const reportRow = (doc) => ({ id: doc._id, key: 'subject', doc });
 describe('contact-hierarchy service', () => {
   let query;
   let bulkDocs;
+  let allDocs;
 
   beforeEach(() => {
     query = sinon.stub(db.medic, 'query');
     bulkDocs = sinon.stub(db.medic, 'bulkDocs').resolves([]);
+    // Conflict retries re-fetch fresh revisions; return a minimal live doc for any id.
+    allDocs = sinon.stub(db.medic, 'allDocs').callsFake(({ keys }) => Promise.resolve({
+      rows: keys.map(id => ({ id, doc: { _id: id, _rev: '9-fresh' } })),
+    }));
     sinon.stub(dataContext, 'bind').returns(sinon.stub().resolves(undefined));
   });
 
@@ -36,6 +41,20 @@ describe('contact-hierarchy service', () => {
   const stubReports = (docs) => query
     .withArgs(REPORTS_BY_SUBJECT, sinon.match.any)
     .resolves({ rows: docs.map(reportRow) });
+
+  // bulkDocs returns one result per input doc; conflict for the given ids until `healAfter`.
+  const stubConflicts = (conflictIds, { healAfter = Infinity } = {}) => {
+    let call = 0;
+    bulkDocs.callsFake((docs) => {
+      call += 1;
+      return Promise.resolve(docs.map((doc) => {
+        const stillConflicts = conflictIds.includes(doc._id) && call < healAfter;
+        return stillConflicts
+          ? { id: doc._id, error: 'conflict', reason: 'Document update conflict' }
+          : { id: doc._id, ok: true };
+      }));
+    });
+  };
 
   describe('deleteHierarchy', () => {
     it('returns null when the contact does not exist', async () => {
@@ -114,10 +133,10 @@ describe('contact-hierarchy service', () => {
       expect(bulkDocs.firstCall.args[0].map(doc => doc._id)).to.deep.equal(['root']);
     });
 
-    it('queries reports_by_subject by both uuid and shortcode, and dedupes reports', async () => {
+    it('queries reports_by_subject by contact uuid only, and dedupes reports', async () => {
       const report = reportDoc('r1');
       stubSubtree([contactDoc('c1', { patient_id: 'SC1' })]);
-      // same report emitted under both the uuid key and the shortcode key
+      // same report emitted under more than one key
       query
         .withArgs(REPORTS_BY_SUBJECT, sinon.match.any)
         .resolves({ rows: [reportRow(report), reportRow(report)] });
@@ -127,14 +146,45 @@ describe('contact-hierarchy service', () => {
       expect(result.deleted_reports).to.equal(1);
       const keys = query.withArgs(REPORTS_BY_SUBJECT, sinon.match.any).firstCall.args[1].keys;
       expect(keys).to.include('c1');
-      expect(keys).to.include('SC1');
+      expect(keys).to.not.include('SC1');
       expect(bulkDocs.firstCall.args[0].map(doc => doc._id)).to.have.members(['c1', 'r1']);
     });
 
-    it('surfaces per-document bulkDocs errors and excludes them from the deleted counts', async () => {
+    it('pages through reports_by_subject until a short page is returned', async () => {
+      stubSubtree([contactDoc('c1')]);
+      const firstPage = [];
+      for (let i = 0; i < 100; i++) {
+        firstPage.push(reportDoc(`r${i}`));
+      }
+      const secondPage = [reportDoc('r100'), reportDoc('r101')];
+      const reportsQuery = query.withArgs(REPORTS_BY_SUBJECT, sinon.match.any);
+      reportsQuery.onFirstCall().resolves({ rows: firstPage.map(reportRow) });
+      reportsQuery.onSecondCall().resolves({ rows: secondPage.map(reportRow) });
+
+      const result = await service.deleteHierarchy('c1');
+
+      expect(result.deleted_reports).to.equal(102);
+      expect(reportsQuery.firstCall.args[1].skip).to.equal(0);
+      expect(reportsQuery.secondCall.args[1].skip).to.equal(100);
+    });
+
+    it('retries a conflicting write with a fresh revision and then succeeds', async () => {
       stubSubtree([contactDoc('c1')]);
       stubReports([]);
-      bulkDocs.resolves([{ id: 'c1', error: 'conflict', reason: 'Document update conflict' }]);
+      stubConflicts(['c1'], { healAfter: 2 });
+
+      const result = await service.deleteHierarchy('c1');
+
+      expect(result.deleted_contacts).to.equal(1);
+      expect(result.errors).to.deep.equal([]);
+      expect(bulkDocs.callCount).to.equal(2);
+      expect(allDocs.calledOnce).to.be.true;
+    });
+
+    it('surfaces a conflict that persists past the retry limit and excludes it from the counts', async () => {
+      stubSubtree([contactDoc('c1')]);
+      stubReports([]);
+      stubConflicts(['c1']);
 
       const result = await service.deleteHierarchy('c1');
 
@@ -142,12 +192,13 @@ describe('contact-hierarchy service', () => {
         { _id: 'c1', error: 'conflict', reason: 'Document update conflict' },
       ]);
       expect(result.deleted_contacts).to.equal(0);
+      expect(bulkDocs.callCount).to.equal(3);
     });
 
-    it('reports only the documents that were actually deleted when some writes fail', async () => {
+    it('reports only the documents that were actually deleted when a write fails', async () => {
       stubSubtree([contactDoc('root'), contactDoc('child')]);
       stubReports([reportDoc('r1')]);
-      bulkDocs.resolves([{ id: 'child', error: 'conflict', reason: 'Document update conflict' }]);
+      stubConflicts(['child']);
 
       const result = await service.deleteHierarchy('root', { recursive: true });
 

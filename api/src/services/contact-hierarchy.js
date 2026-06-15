@@ -6,6 +6,7 @@ const bulkDocsUtils = require('@medic/bulk-docs-utils')({ Promise, dataContext }
 
 const BATCH_SIZE = 100;
 const MAX_HIERARCHY_SIZE = 5000;
+const MAX_WRITE_ATTEMPTS = 3;
 
 // contacts_by_depth emits a bare [ancestorId] key for a contact and each of its
 // ancestors, so { key: [contactId] } returns one row per member of the subtree. Cap the
@@ -19,42 +20,75 @@ const getSubtreeRows = async (contactId) => {
   return result.rows;
 };
 
-// reports_by_subject indexes by both shortcode (patient_id/place_id) and uuid, so a
-// contact's reports are matched by either identifier.
-const getSubjectKeys = (contacts) => {
-  const keys = new Set();
-  contacts.forEach((contact) => {
-    keys.add(contact._id);
-    const shortcode = contact.patient_id || contact.place_id;
-    if (shortcode) {
-      keys.add(shortcode);
-    }
-  });
-  return [...keys];
-};
-
+// Match reports by the contact uuid only. reports_by_subject also indexes shortcodes
+// (patient_id/place_id), but those are resolvable references rather than guaranteed-unique
+// permanent ids, so matching on them risks deleting a report about a different contact that
+// shares or has reused a shortcode. cht-conf's delete queries by uuid for the same reason.
 const getSubjectReports = async (contacts) => {
-  const keys = getSubjectKeys(contacts);
+  const ids = contacts.map(contact => contact._id);
   const reportsById = new Map();
-  for (let i = 0; i < keys.length; i += BATCH_SIZE) {
-    const result = await db.medic.query('medic-client/reports_by_subject', {
-      keys: keys.slice(i, i + BATCH_SIZE),
-      include_docs: true,
-    });
-    result.rows.forEach(row => row.doc && reportsById.set(row.doc._id, row.doc));
+  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+    const keys = ids.slice(i, i + BATCH_SIZE);
+    // Page through the results so a subject with a very large report volume does not load
+    // every matching doc into memory in a single response.
+    let skip = 0;
+    let rows;
+    do {
+      const result = await db.medic.query('medic-client/reports_by_subject', {
+        keys,
+        include_docs: true,
+        limit: BATCH_SIZE,
+        skip,
+      });
+      rows = result.rows;
+      rows.forEach(row => row.doc && reportsById.set(row.doc._id, row.doc));
+      skip += rows.length;
+    } while (rows.length >= BATCH_SIZE);
   }
   return [...reportsById.values()];
 };
 
+// Re-fetch fresh revisions for docs that hit a conflict and re-apply the intended change
+// (deletion, or clearing a parent's primary-contact reference) so the retry is not stale.
+const refreshConflicts = async (docs) => {
+  const result = await db.medic.allDocs({ keys: docs.map(doc => doc._id), include_docs: true });
+  const liveById = new Map();
+  result.rows.forEach(row => row.doc && liveById.set(row.doc._id, row.doc));
+  return docs
+    .map((doc) => {
+      const live = liveById.get(doc._id);
+      if (!live) {
+        return null;
+      }
+      return doc._deleted ? { ...live, _deleted: true } : { ...live, contact: null };
+    })
+    .filter(doc => doc);
+};
+
 const bulkWrite = async (docs) => {
   const errors = [];
-  for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-    const results = await db.medic.bulkDocs(docs.slice(i, i + BATCH_SIZE));
-    results.forEach((result) => {
-      if (result.error) {
-        errors.push({ _id: result.id, error: result.error, reason: result.reason });
-      }
-    });
+  let pending = docs;
+  for (let attempt = 1; pending.length; attempt++) {
+    const conflicts = [];
+    for (let i = 0; i < pending.length; i += BATCH_SIZE) {
+      const batch = pending.slice(i, i + BATCH_SIZE);
+      const results = await db.medic.bulkDocs(batch);
+      results.forEach((result, index) => {
+        if (!result.error) {
+          return;
+        }
+        // A conflict means another client wrote the doc first; retry with a fresh revision.
+        if (result.error === 'conflict' && attempt < MAX_WRITE_ATTEMPTS) {
+          conflicts.push(batch[index]);
+        } else {
+          errors.push({ _id: result.id, error: result.error, reason: result.reason });
+        }
+      });
+    }
+    if (!conflicts.length) {
+      break;
+    }
+    pending = await refreshConflicts(conflicts);
   }
   return errors;
 };
