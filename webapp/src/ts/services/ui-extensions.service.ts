@@ -46,11 +46,12 @@ export class UiExtensionsService {
     try {
       const request = this.http.get<UiExtensionProperties[]>('/ui-extension', { responseType: 'json' });
       const extensions = await lastValueFrom(request);
-      this.extensionProperties = extensions.filter(extension => {
-        if (!extension.roles?.length) {
-          return true;
+      this.extensionProperties = extensions.filter(({ roles }) => {
+        const extRoles = roles === null || roles === undefined ? [] : roles;
+        if (!Array.isArray(extRoles)) {
+          return false;
         }
-        return extension.roles.some(role => this.sessionService.hasRole(role));
+        return !extRoles.length || extRoles.some(role => this.sessionService.hasRole(role));
       });
     } catch (e) {
       console.error('Error loading UI extension properties', e);

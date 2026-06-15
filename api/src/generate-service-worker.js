@@ -92,10 +92,11 @@ const appendUiExtensions = async (config) => {
       .map(([key]) => key)
   );
   const keepOfflineExtension = ({ roles }) => {
-    if (!roles?.length) {
-      return true;
+    const extRoles = roles === null || roles === undefined ? [] : roles;
+    if (!Array.isArray(extRoles)) {
+      return false;
     }
-    return roles.find(role => offlineRoles.has(role));
+    return !extRoles.length || extRoles.find(role => offlineRoles.has(role));
   };
   const offlineExtensions = extensions.filter(keepOfflineExtension);
   for (const ext of offlineExtensions) {

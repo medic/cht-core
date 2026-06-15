@@ -72,12 +72,13 @@ describe('UiExtensionsService', () => {
       const extensions = [
         { id: 'ext-1', extension_type: 'tab' },
         { id: 'ext-2', extension_type: 'tab', roles: [] },
+        { id: 'ext-3', extension_type: 'tab', roles: null },
       ];
       http.get.returns(of(extensions));
 
       const result = await service.getPropertiesByType('tab');
 
-      expect(result).to.have.length(2);
+      expect(result).to.have.length(3);
     });
 
     it('should keep extensions where user has at least one matching role', async () => {
@@ -96,6 +97,7 @@ describe('UiExtensionsService', () => {
     it('should remove extensions where user has no matching role', async () => {
       const extensions = [
         { id: 'ext-1', extension_type: 'tab', roles: ['chw', 'nurse'] },
+        { id: 'ext-1', extension_type: 'tab', roles: 'chw' },
       ];
       http.get.returns(of(extensions));
       sessionService.hasRole.returns(false);

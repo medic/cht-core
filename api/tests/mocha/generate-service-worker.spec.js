@@ -59,6 +59,7 @@ describe('generate service worker', () => {
       { id: 'offline-ext', roles: ['chw'] },
       { id: 'online-ext', roles: ['nurse'] },
       { id: 'mixed-ext', roles: ['nurse', 'chw'] },
+      { id: 'invalid-roles', roles: 'chw' },
       { id: 'no-roles-ext' },
       { id: 'no-script-ext' },
     ]);
@@ -119,7 +120,8 @@ describe('generate service worker', () => {
         '/extension-libs': '["bar.js"]',
         '/extension-libs/bar.js': 'barcode',
         '/ui-extension': '[{"id":"offline-ext","roles":["chw"]},{"id":"online-ext","roles":["nurse"]},' +
-          '{"id":"mixed-ext","roles":["nurse","chw"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
+          '{"id":"mixed-ext","roles":["nurse","chw"]},{"id":"invalid-roles","roles":"chw"},{"id":"no-roles-ext"},' +
+          '{"id":"no-script-ext"}]',
         '/ui-extension/offline-ext': 'md5-offline',
         '/ui-extension/mixed-ext': 'md5-mixed',
         '/ui-extension/no-roles-ext': 'md5-no-roles'
