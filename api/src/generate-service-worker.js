@@ -89,7 +89,13 @@ const appendUiExtensions = async (config) => {
     .entries(settings.get('roles') ?? {})
     .filter(([,{ offline }]) => offline)
     .map(([key]) => key);
-  const offlineExtensions = extensions.filter(({ roles }) => (roles || []).every(role => offlineRoles.includes(role)));
+  const keepOfflineExtension = ({ roles }) => {
+    if (!roles?.length) {
+      return true;
+    }
+    return roles.find(role => offlineRoles.includes(role));
+  };
+  const offlineExtensions = extensions.filter(keepOfflineExtension);
   for (const ext of offlineExtensions) {
     const extPath = path.join('/ui-extension', ext.id);
     config.globPatterns.push(extPath);

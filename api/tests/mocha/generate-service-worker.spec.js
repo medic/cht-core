@@ -58,6 +58,7 @@ describe('generate service worker', () => {
     uiExtensionService.getAllProperties.resolves([
       { id: 'offline-ext', roles: ['chw'] },
       { id: 'online-ext', roles: ['nurse'] },
+      { id: 'mixed-ext', roles: ['nurse', 'chw'] },
       { id: 'no-roles-ext' },
       { id: 'no-script-ext' },
     ]);
@@ -66,6 +67,7 @@ describe('generate service worker', () => {
       nurse: { offline: false },
     });
     uiExtensionService.getScriptDigest.withArgs('offline-ext').resolves('md5-offline');
+    uiExtensionService.getScriptDigest.withArgs('mixed-ext').resolves('md5-mixed');
     uiExtensionService.getScriptDigest.withArgs('no-roles-ext').resolves('md5-no-roles');
     uiExtensionService.getScriptDigest.withArgs('no-script-ext').resolves();
     sinon.stub(workbox, 'generateSW').returns();
@@ -103,6 +105,7 @@ describe('generate service worker', () => {
         '/extension-libs/bar.js',
         '/ui-extension',
         '/ui-extension/offline-ext',
+        '/ui-extension/mixed-ext',
         '/ui-extension/no-roles-ext',
         '/ui-extension/no-script-ext'
       ],
@@ -115,9 +118,10 @@ describe('generate service worker', () => {
         ],
         '/extension-libs': '["bar.js"]',
         '/extension-libs/bar.js': 'barcode',
-        '/ui-extension': '[{"id":"offline-ext","roles":["chw"]},' +
-          '{"id":"online-ext","roles":["nurse"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
+        '/ui-extension': '[{"id":"offline-ext","roles":["chw"]},{"id":"online-ext","roles":["nurse"]},' +
+          '{"id":"mixed-ext","roles":["nurse","chw"]},{"id":"no-roles-ext"},{"id":"no-script-ext"}]',
         '/ui-extension/offline-ext': 'md5-offline',
+        '/ui-extension/mixed-ext': 'md5-mixed',
         '/ui-extension/no-roles-ext': 'md5-no-roles'
       },
       ignoreURLParametersMatching: [/redirect/, /username/],
