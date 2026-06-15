@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import {ChangesService} from '@mm-services/changes.service';
 import {DbService} from '@mm-services/db.service';
 import { DOC_IDS } from '@medic/constants';
+const logger = require('@medic/logger');
 
 @Injectable({
   providedIn: 'root'
@@ -81,7 +82,8 @@ export class CustomResourceService {
       }
 
       return this.buildAndCacheContent(name, docId, faPlaceholder);
-    } catch (_) {
+    } catch (err) {
+      logger.error(`Error getting resource content [${name}] from [${docId}: `, err);
       return '&nbsp';
     }
   }

@@ -85,15 +85,17 @@ const appendUiExtensions = async (config) => {
 
   // Do not include the actual endpoints for online-only extensions. These should only be called by online users and
   // do not need to be cached in the service worker at all.
-  const offlineRoles = Object
-    .entries(settings.get('roles') ?? {})
-    .filter(([,{ offline }]) => offline)
-    .map(([key]) => key);
+  const offlineRoles = new Set(
+    Object
+      .entries(settings.get('roles') ?? {})
+      .filter(([,{ offline }]) => offline)
+      .map(([key]) => key)
+  );
   const keepOfflineExtension = ({ roles }) => {
     if (!roles?.length) {
       return true;
     }
-    return roles.find(role => offlineRoles.includes(role));
+    return roles.find(role => offlineRoles.has(role));
   };
   const offlineExtensions = extensions.filter(keepOfflineExtension);
   for (const ext of offlineExtensions) {

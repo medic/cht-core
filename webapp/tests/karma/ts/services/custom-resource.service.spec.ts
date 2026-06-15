@@ -7,6 +7,8 @@ import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 
+const logger = require('@medic/logger');
+
 describe('ResourceIcons service', () => {
   let get;
   let Changes;
@@ -244,12 +246,16 @@ describe('ResourceIcons service', () => {
           }
         }
       };
+      const errorLog = sinon.stub(logger, 'error');
       get.resolves(resources);
       const service = getService();
       tick();
       const actual = service.getImg('broken', 'resources', 'fa-test');
       const expected = '<span class="resource-icon" title="broken" data-fa-placeholder="fa-test">&nbsp</span>';
       expect(actual).to.equal(expected);
+      expect(errorLog.callCount).to.equal(1);
+      expect(errorLog.args[0][0]).to.equal('Error getting resource content [broken] from [resources: ');
+      expect(errorLog.args[0][1].name).to.equal('InvalidCharacterError');
     }));
 
     it('should return inline svg for svg images', fakeAsync(() => {
@@ -322,6 +328,7 @@ describe('ResourceIcons service', () => {
           }
         }
       };
+      const errorLog = sinon.stub(logger, 'error');
       get.resolves(resources);
       const service = getService();
       const dom = $('<ul>' +
@@ -336,6 +343,10 @@ describe('ResourceIcons service', () => {
       // the throw is caught and the fallback content is used
       const broken = dom.find('.resource-icon[title="broken"]');
       expect(broken.find('img').length).to.equal(0);
+      // the error is logged
+      expect(errorLog.callCount).to.equal(1);
+      expect(errorLog.args[0][0]).to.equal('Error getting resource content [broken] from [resources: ');
+      expect(errorLog.args[0][1].name).to.equal('InvalidCharacterError');
       expect(broken.text()).to.equal(' ');
     }));
 
