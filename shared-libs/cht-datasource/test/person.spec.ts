@@ -240,7 +240,7 @@ describe('person', () => {
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage))
             .to.be.true;
-          expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+          expect(isContactTypeQualifier.notCalled).to.be.true;
           expect(getPage.notCalled).to.be.true;
         });
       });
@@ -261,7 +261,7 @@ describe('person', () => {
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.getPage, Remote.Person.v1.getPage))
             .to.be.true;
-          expect(isContactTypeQualifier.calledOnceWithExactly((personTypeQualifier))).to.be.true;
+          expect(isContactTypeQualifier.notCalled).to.be.true;
           expect(getPage.notCalled).to.be.true;
         });
       });

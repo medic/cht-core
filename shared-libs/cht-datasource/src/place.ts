@@ -1,14 +1,15 @@
 import * as Contact from './contact';
 import * as Person from './person';
 import { LocalDataContext } from './local/libs/data-context';
-import { byContactType, byUuid, ContactTypeQualifier, UuidQualifier } from './qualifier';
+import { byContactType, byUuid, UuidQualifier } from './qualifier';
 import { RemoteDataContext } from './remote/libs/data-context';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
+import { getGeneratorFn, getPagedDataFn } from './libs/paginated';
 import * as Local from './local';
 import * as Remote from './remote';
-import { getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
+import { isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { DEFAULT_DOCS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertLimit, assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertTypeQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import { InvalidArgumentError } from './libs/error';
 import * as Input from './input';
 
@@ -67,34 +68,12 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
-  export const getPage = (context: DataContext): typeof curriedFn => {
-    assertDataContext(context);
-    const fn = adapt(context, Local.Place.v1.getPage, Remote.Place.v1.getPage);
-
-    /**
-     * Returns an array of places for the provided page specifications.
-     * @param placeType the type of places to return
-     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
-     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
-     * @param limit the maximum number of places to return. Default is 100.
-     * @returns a page of places for the provided specification
-     * @throws InvalidArgumentError if no type is provided or if the type is not a supported place contact type
-     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
-     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
-     */
-    const curriedFn = async (
-      placeType: ContactTypeQualifier,
-      cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
-    ): Promise<Page<Place>> => {
-      assertTypeQualifier(placeType);
-      assertCursor(cursor);
-      assertLimit(limit);
-
-      return fn(placeType, cursor, Number(limit));
-    };
-    return curriedFn;
-  };
+  export const getPage = getPagedDataFn(
+    Local.Place.v1.getPage,
+    Remote.Place.v1.getPage,
+    assertTypeQualifier,
+    DEFAULT_DOCS_PAGE_LIMIT,
+  );
 
   /**
    * Returns a function for getting a generator that fetches places from the given data context.
@@ -102,22 +81,7 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches places
    * @throws Error if a data context is not provided
    */
-  export const getAll = (context: DataContext): typeof curriedGen => {
-    assertDataContext(context);
-    const getPage = context.bind(v1.getPage);
-
-    /**
-     * Returns a generator for fetching all places with the given type
-     * @param placeType the type of places to return
-     * @returns a generator for fetching all places with the given type
-     * @throws InvalidArgumentError if no type is provided or if the type is not a supported place contact type
-     */
-    const curriedGen = (placeType: ContactTypeQualifier) => {
-      assertTypeQualifier(placeType);
-      return getPagedGenerator(getPage, placeType);
-    };
-    return curriedGen;
-  };
+  export const getAll = getGeneratorFn(v1.getPage, assertTypeQualifier);
 
   /**
    * Returns a function for creating a place from the given data context.

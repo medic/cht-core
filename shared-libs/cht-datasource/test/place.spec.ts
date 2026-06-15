@@ -239,7 +239,7 @@ describe('place', () => {
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))
             .to.be.true;
-          expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
+          expect(isContactTypeQualifier.notCalled).to.be.true;
           expect(getPage.notCalled).to.be.true;
         });
       });
@@ -262,7 +262,7 @@ describe('place', () => {
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))
             .to.be.true;
-          expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
+          expect(isContactTypeQualifier.notCalled).to.be.true;
           expect(getPage.notCalled).to.be.true;
         });
       });
