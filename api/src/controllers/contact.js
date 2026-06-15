@@ -95,8 +95,8 @@ module.exports = {
      *     operationId: v1ContactUuidGet
      *     description: >
      *       Returns a paginated array of contact identifier strings matching the given filter criteria.
-     *       At least one qualifier param (`type`, `freetext`, or `phone`) must be provided. Qualifier
-     *       params are mutually exclusive — the only combination allowed is `type` + `freetext`
+     *       At least one qualifier param (`type`, `freetext`, `phone`, or `phones`) must be provided.
+     *       Qualifier params are mutually exclusive — the only combination allowed is `type` + `freetext`
      *       (backed by a dedicated view). Any other combination returns 400.
      *     tags: [Contact]
      *     x-since: 4.18.0
@@ -124,6 +124,14 @@ module.exports = {
      *         description: >
      *           A phone number to match exactly against the contact's `phone` field. Passed as-is — no
      *           normalization is performed. Mutually exclusive with `type` / `freetext`.
+     *       - in: query
+     *         name: phones
+     *         schema:
+     *           type: string
+     *         description: >
+     *           Comma-separated phone numbers to match exactly against the contact's `phone` field. Bulk
+     *           variant of `phone`; values are passed as-is — no normalization is performed. Mutually
+     *           exclusive with `type` / `freetext` / `phone`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitId'
      *     responses:
@@ -153,7 +161,7 @@ module.exports = {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
 
       validateQualifierParams(req.query, {
-        params: ['type', 'freetext', 'phone'],
+        params: ['type', 'freetext', 'phone', 'phones'],
         combinable: ['type', 'freetext'],
         label: 'query',
       });
@@ -162,6 +170,9 @@ module.exports = {
       if (req.query.phone) {
         Object.assign(qualifier, Qualifier.byPhone(req.query.phone));
       }
+      if (req.query.phones) {
+        Object.assign(qualifier, Qualifier.byPhones(req.query.phones.split(',').filter(Boolean)));
+      }
       if (req.query.freetext) {
         Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
       }
@@ -169,72 +180,6 @@ module.exports = {
         Object.assign(qualifier, Qualifier.byContactType(req.query.type));
       }
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
-      return res.json(docs);
-    }),
-
-    /**
-     * @openapi
-     * /api/v1/contact/uuid:
-     *   post:
-     *     summary: Get contact UUIDs (bulk variant)
-     *     operationId: v1ContactUuidPost
-     *     description: >
-     *       Bulk variant of the GET endpoint. Accepts array-valued qualifiers in a JSON body.
-     *     tags: [Contact]
-     *     x-since: 4.21.0
-     *     x-permissions:
-     *       hasAll: [can_view_contacts]
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               phones:
-     *                 type: array
-     *                 items:
-     *                   type: string
-     *                 description: >
-     *                   Phone numbers to match exactly against the contact's `phone` field.
-     *               cursor:
-     *                 type: string
-     *                 nullable: true
-     *               limit:
-     *                 type: integer
-     *             required: [phones]
-     *     responses:
-     *       '200':
-     *         description: A page of contact UUIDs
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 data:
-     *                   type: array
-     *                   items:
-     *                     type: string
-     *                 cursor:
-     *                   $ref: '#/components/schemas/PageCursor'
-     *               required: [data, cursor]
-     *       '400':
-     *         $ref: '#/components/responses/BadRequest'
-     *       '401':
-     *         $ref: '#/components/responses/Unauthorized'
-     *       '403':
-     *         $ref: '#/components/responses/Forbidden'
-     */
-    postUuids: serverUtils.doOrError(async (req, res) => {
-      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-
-      validateQualifierParams(req.body, { params: ['phones'], combinable: [], label: 'body' });
-
-      const qualifier = {};
-      if (req.body.phones) {
-        Object.assign(qualifier, Qualifier.byPhones(req.body.phones));
-      }
-      const docs = await getContactIds(qualifier, req.body.cursor, req.body.limit);
       return res.json(docs);
     }),
   },

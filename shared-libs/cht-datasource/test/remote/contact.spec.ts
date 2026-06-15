@@ -11,18 +11,11 @@ describe('remote contact', () => {
   let getResourcesInner: SinonStub;
   let getResourcesOuter: SinonStub;
 
-  let postResourceInnermost: SinonStub;  // (body) => Promise<T>
-  let postResourceMiddle: SinonStub;     // (context) => (body)
-  let postResourceOuter: SinonStub;      // (path) => (context)
-
   beforeEach(() => {
     getResourceInner = sinon.stub();
     getResourceOuter = sinon.stub(RemoteEnv, 'getResource').returns(getResourceInner);
     getResourcesInner = sinon.stub();
     getResourcesOuter = sinon.stub(RemoteEnv, 'getResources').returns(getResourcesInner);
-    postResourceInnermost = sinon.stub();
-    postResourceMiddle = sinon.stub().returns(postResourceInnermost);
-    postResourceOuter = sinon.stub(RemoteEnv, 'postResource').returns(postResourceMiddle);
   });
 
   afterEach(() => sinon.restore());
@@ -158,19 +151,14 @@ describe('remote contact', () => {
         })).to.be.true;
       });
 
-      // The single-phone qualifier dispatches a GET (phone as query param); the bulk-phones qualifier
-      // POSTs the array in the body. Both share the same request/response and cursor handling.
+      // The single-phone qualifier dispatches a GET with the phone as a query param; the bulk-phones
+      // qualifier dispatches the same GET with the phones comma-joined into a single query param.
       const phone = '+15551234567';
       const phones: [string, ...string[]] = ['+15551234567', '+15559999999'];
       ([
         {
           label: 'phone qualifier',
           qualifier: { phone },
-          // GET: query params, limit serialized to string
-          callStub: () => getResourcesInner,
-          verifyDispatch: () => {
-            expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
-          },
           params: (withCursor: boolean) => ({
             limit: limit.toString(),
             ...(withCursor ? { cursor } : {}),
@@ -180,19 +168,18 @@ describe('remote contact', () => {
         {
           label: 'phones qualifier (bulk)',
           qualifier: { phones },
-          // POST: array in the body, limit kept numeric, three-layer postResource chain
-          callStub: () => postResourceInnermost,
-          verifyDispatch: () => {
-            expect(postResourceOuter.calledOnceWithExactly('api/v1/contact/uuid')).to.be.true;
-            expect(postResourceMiddle.calledOnceWithExactly(remoteContext)).to.be.true;
-          },
+          // comma-joined phones, matching the byContactIds convention
           params: (withCursor: boolean) => ({
-            phones,
-            limit,
+            limit: limit.toString(),
             ...(withCursor ? { cursor } : {}),
+            phones: phones.join(','),
           }),
         },
-      ]).forEach(({ label, qualifier, callStub, verifyDispatch, params }) => {
+      ]).forEach(({ label, qualifier, params }) => {
+        const callStub = () => getResourcesInner;
+        const verifyDispatch = () => {
+          expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact/uuid')).to.be.true;
+        };
         describe(label, () => {
           it('dispatches the request with the qualifier and returns the response', async () => {
             const expectedResponse = { data: ['a'], cursor };

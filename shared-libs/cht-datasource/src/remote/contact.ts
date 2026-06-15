@@ -1,4 +1,4 @@
-import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, RemoteDataContext } from './libs/data-context';
 import { ContactGetUuidsQualifier, isPhoneQualifier, isPhonesQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Contact from '../contact';
@@ -9,10 +9,6 @@ export namespace v1 {
   const getContact = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/contact');
 
   const getContactUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/contact/uuid');
-
-  const postContactUuids = (
-    remoteContext: RemoteDataContext
-  ) => postResource('api/v1/contact/uuid')(remoteContext);
 
   /** @internal */
   export const get = (remoteContext: RemoteDataContext) => (
@@ -32,6 +28,9 @@ export namespace v1 {
     if (isPhoneQualifier(qualifier)) {
       return { phone: qualifier.phone };
     }
+    if (isPhonesQualifier(qualifier)) {
+      return { phones: qualifier.phones.join(',') };
+    }
     const params: Record<string, string> = {};
     if (isFreetextType(qualifier)) {
       params.freetext = qualifier.freetext;
@@ -48,14 +47,9 @@ export namespace v1 {
     cursor: Nullable<string>,
     limit: number
   ): Promise<Page<string>> => {
-    const cursorParam: Record<string, string> = cursor ? { cursor } : {};
-    if (isPhonesQualifier(qualifier)) {
-      return postContactUuids(remoteContext)({ phones: qualifier.phones, limit, ...cursorParam });
-    }
-
     const queryParams = {
       limit: limit.toString(),
-      ...cursorParam,
+      ...(cursor ? { cursor } : {}),
       ...toQualifierParams(qualifier),
     };
     return getContactUuids(remoteContext)(queryParams);
