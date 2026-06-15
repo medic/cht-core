@@ -1,7 +1,14 @@
 import { Nullable, Page } from '../libs/core';
 import { ContactTypeQualifier, UuidQualifier } from '../qualifier';
 import * as Place from '../place';
-import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
+import {
+  getPageQueryParams,
+  getResource,
+  getResources,
+  postResource,
+  putResource,
+  RemoteDataContext
+} from './libs/data-context';
 
 /** @internal */
 export namespace v1 {
@@ -27,14 +34,9 @@ export namespace v1 {
     placeType: ContactTypeQualifier,
     cursor: Nullable<string>,
     limit: number,
-  ): Promise<Page<Place.v1.Place>> => {
-    const queryParams = {
-      'limit': limit.toString(),
-      'type': placeType.contactType,
-      ...(cursor ? { cursor } : {})
-    };
-    return getPlaces(remoteContext)(queryParams);
-  };
+  ): Promise<Page<Place.v1.Place>> => getPlaces(remoteContext)(
+    getPageQueryParams(cursor, limit, { type: placeType.contactType })
+  );
 
   /** @internal */
   export const create = postResource('api/v1/place');

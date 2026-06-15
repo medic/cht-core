@@ -130,6 +130,26 @@ export namespace v1 {
     };
   };
 
+  /** @internal */
+  export const getPage = (context: LocalDataContext) => {
+    const getReportUuidsPage = getUuidsPage(context);
+    const getMedicDocsByIds = getDocsByIds(context.medicDb);
+
+    return async (
+      qualifier: FreetextQualifier,
+      cursor: Nullable<string>,
+      limit: number
+    ): Promise<Page<Report.v1.Report>> => {
+      // Resolve the page of IDs, then hydrate with one batched allDocs.
+      const idsPage = await getReportUuidsPage(qualifier, cursor, limit);
+      const docs = await getMedicDocsByIds(idsPage.data);
+      return {
+        data: docs.filter((doc): doc is Report.v1.Report => isReport(doc)),
+        cursor: idsPage.cursor,
+      };
+    };
+  };
+
   /** @internal*/
   export const create = ({ medicDb, settings }: LocalDataContext) => {
     const createMedicDoc = createDoc(medicDb);

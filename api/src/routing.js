@@ -737,9 +737,11 @@ app.get('/api/v1/person/:uuid', person.v1.get);
 app.postJson('/api/v1/person', person.v1.create);
 app.putJson('/api/v1/person/:uuid', person.v1.update);
 
+app.get('/api/v1/contact', contact.v1.getAll);
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
 app.get('/api/v1/contact/:uuid', contact.v1.get);
 
+app.get('/api/v1/report', report.v1.getAll);
 app.get('/api/v1/report/uuid', report.v1.getUuids);
 app.get('/api/v1/report/:uuid', report.v1.get);
 app.postJson('/api/v1/report', report.v1.create);

@@ -1,4 +1,11 @@
-import { getResource, getResources, postResource, putResource, RemoteDataContext } from './libs/data-context';
+import {
+  getPageQueryParams,
+  getResource,
+  getResources,
+  postResource,
+  putResource,
+  RemoteDataContext
+} from './libs/data-context';
 import { FreetextQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
@@ -7,6 +14,8 @@ import { Nullable, Page } from '../libs/core';
 export namespace v1 {
   const getReport = (remoteContext: RemoteDataContext) => getResource(remoteContext, 'api/v1/report');
 
+  const getReports = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report');
+
   const getReportUuids = (remoteContext: RemoteDataContext) => getResources(remoteContext, 'api/v1/report/uuid');
 
   /** @internal */
@@ -14,19 +23,25 @@ export namespace v1 {
     identifier: UuidQualifier
   ): Promise<Nullable<Report.v1.Report>> => getReport(remoteContext)(identifier.uuid);
 
+  const getReportQueryParams = (
+    qualifier: FreetextQualifier,
+    cursor: Nullable<string>,
+    limit: number
+  ): Record<string, string> => getPageQueryParams(cursor, limit, { freetext: qualifier.freetext });
+
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (
     qualifier: FreetextQualifier,
     cursor: Nullable<string>,
     limit: number
-  ): Promise<Page<string>> => {
-    const queryParams = {
-      limit: limit.toString(),
-      freetext: qualifier.freetext,
-      ...(cursor ? { cursor } : {}),
-    };
-    return getReportUuids(remoteContext)(queryParams);
-  };
+  ): Promise<Page<string>> => getReportUuids(remoteContext)(getReportQueryParams(qualifier, cursor, limit));
+
+  /** @internal */
+  export const getPage = (remoteContext: RemoteDataContext) => (
+    qualifier: FreetextQualifier,
+    cursor: Nullable<string>,
+    limit: number
+  ): Promise<Page<Report.v1.Report>> => getReports(remoteContext)(getReportQueryParams(qualifier, cursor, limit));
 
   /** @internal */
   export const create = postResource('api/v1/report');

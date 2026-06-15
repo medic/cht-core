@@ -338,6 +338,59 @@ describe('local report', () => {
       });
     });
 
+    describe('getPage', () => {
+      const limit = 3;
+      const freetext = 'report';
+      const idsPage = { cursor: 'bookmark', data: ['r1', 'r2', 'r3'] };
+      const reportDocs = [
+        { _id: 'r1', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+        { _id: 'r2', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+        { _id: 'r3', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+      ];
+      let queryNouveauFreetext: SinonStub;
+      let useNouveauIndexes: SinonStub;
+      let getDocsByIdsInner: SinonStub;
+      let getDocsByIdsOuter: SinonStub;
+
+      beforeEach(() => {
+        queryNouveauFreetext = sinon.stub();
+        sinon
+          .stub(Nouveau, 'queryByFreetext')
+          .withArgs(localContext.medicDb, 'reports_by_freetext')
+          .returns(queryNouveauFreetext);
+        useNouveauIndexes = sinon.stub(Nouveau, 'useNouveauIndexes');
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+      });
+
+      it('resolves a page of report IDs then hydrates them with a single batched allDocs', async () => {
+        const qualifier = Qualifier.byFreetext(freetext);
+        useNouveauIndexes.resolves(true);
+        queryNouveauFreetext.resolves(idsPage);
+        getDocsByIdsInner.resolves(reportDocs);
+
+        const res = await Report.v1.getPage(localContext)(qualifier, null, limit);
+
+        expect(res).to.deep.equal({ data: reportDocs, cursor: idsPage.cursor });
+        expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, null, limit)).to.be.true;
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly(idsPage.data)).to.be.true;
+      });
+
+      it('passes the cursor through unchanged and filters out hydrated docs that are not reports', async () => {
+        const qualifier = Qualifier.byFreetext(freetext);
+        useNouveauIndexes.resolves(true);
+        queryNouveauFreetext.resolves(idsPage);
+        getDocsByIdsInner.resolves([reportDocs[0], null, { _id: 'r3', _rev: '1', type: 'something-else' }]);
+
+        const res = await Report.v1.getPage(localContext)(qualifier, 'bookmark', limit);
+
+        expect(res).to.deep.equal({ data: [reportDocs[0]], cursor: idsPage.cursor });
+        expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, 'bookmark', limit)).to.be.true;
+        expect(getDocsByIdsInner.calledOnceWithExactly(idsPage.data)).to.be.true;
+      });
+    });
+
     describe('create', () => {
       const minifiedContact = {
         _id: 'contact-1',

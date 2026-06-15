@@ -2,12 +2,17 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const { Report, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../auth');
+const { pageHandler } = require('./libs/pagination');
 
 const getReport = ctx.bind(Report.v1.get);
 const getReportWithLineage = ctx.bind(Report.v1.getWithLineage);
 const getReportIds = ctx.bind(Report.v1.getUuidsPage);
+const getReportDocs = ctx.bind(Report.v1.getPage);
 const create = ctx.bind(Report.v1.create);
 const update = ctx.bind(Report.v1.update);
+
+const PERMISSIONS = { isOnline: true, hasAll: ['can_view_reports'] };
+const buildReportQualifier = ({ freetext }) => Qualifier.byFreetext(freetext);
 
 /**
  * @openapi
@@ -111,11 +116,64 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getUuids: serverUtils.doOrError(async (req, res) => {
-      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const qualifier = Qualifier.byFreetext(req.query.freetext);
-      const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
-      return res.json(docs);
+    getUuids: pageHandler({
+      permissions: PERMISSIONS,
+      getQualifier: buildReportQualifier,
+      getPage: getReportIds,
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/report:
+     *   get:
+     *     summary: Get reports
+     *     operationId: v1ReportGet
+     *     description: >
+     *       Returns a paginated array of report records matching the given freetext search term. Use the `cursor`
+     *       returned in each response to retrieve subsequent pages. See also
+     *       [Get report UUIDs](#/Report/v1ReportUuidGet) for retrieving only the matching identifiers.
+     *     tags: [Report]
+     *     x-since: 4.18.0
+     *     x-permissions:
+     *       hasAll: [can_view_reports]
+     *     parameters:
+     *       - in: query
+     *         name: freetext
+     *         required: true
+     *         schema:
+     *           type: string
+     *           minLength: 3
+     *         description: >
+     *           A search term for filtering reports. Must be at least 3 characters and not contain whitespace.
+     *       - $ref: '#/components/parameters/cursor'
+     *       - $ref: '#/components/parameters/limitEntity'
+     *     responses:
+     *       '200':
+     *         description: A page of report records
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   description: The results for this page
+     *                   items:
+     *                     $ref: '#/components/schemas/v1.Report'
+     *                 cursor:
+     *                   $ref: '#/components/schemas/PageCursor'
+     *               required: [data, cursor]
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getAll: pageHandler({
+      permissions: PERMISSIONS,
+      getQualifier: buildReportQualifier,
+      getPage: getReportDocs,
     }),
 
     /**

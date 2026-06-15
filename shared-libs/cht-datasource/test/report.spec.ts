@@ -259,7 +259,7 @@ describe('report', () => {
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage))
             .to.be.true;
-          expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+          expect(isFreetextQualifier.notCalled).to.be.true;
           expect(getIdsPage.notCalled).to.be.true;
         });
       });
@@ -280,7 +280,7 @@ describe('report', () => {
           expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
           expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getUuidsPage, Remote.Report.v1.getUuidsPage))
             .to.be.true;
-          expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+          expect(isFreetextQualifier.notCalled).to.be.true;
           expect(getIdsPage.notCalled).to.be.true;
         });
       });
@@ -331,6 +331,124 @@ describe('report', () => {
         expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(reportGetIdsPage.notCalled).to.be.true;
         expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+      });
+    });
+
+    describe('getPage', () => {
+      const reports = [{ _id: 'report1' }, { _id: 'report2' }] as Report.v1.Report[];
+      const cursor = '1';
+      const pageData = { data: reports, cursor };
+      const limit = 3;
+      const stringifiedLimit = '3';
+      const freetextQualifier = { freetext: 'freetext' } as const;
+      const invalidFreetextQualifier = { freetext: 'invalid_freetext' } as const;
+      let getDocsPage: SinonStub;
+
+      beforeEach(() => {
+        getDocsPage = sinon.stub();
+        adapt.returns(getDocsPage);
+      });
+
+      it('retrieves a page of reports from the data context when cursor is null', async () => {
+        isFreetextQualifier.returns(true);
+        getDocsPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(freetextQualifier, null, limit);
+
+        expect(result).to.equal(pageData);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)
+        ).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(freetextQualifier, null, limit)).to.be.true;
+        expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+      });
+
+      it('uses default cursor and limit when not provided', async () => {
+        isFreetextQualifier.returns(true);
+        getDocsPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(freetextQualifier);
+
+        expect(result).to.equal(pageData);
+        expect(getDocsPage.calledOnceWithExactly(freetextQualifier, null, 100)).to.be.true;
+      });
+
+      it('retrieves a page of reports when cursor is not null and limit is a stringified number', async () => {
+        isFreetextQualifier.returns(true);
+        getDocsPage.resolves(pageData);
+
+        const result = await Report.v1.getPage(dataContext)(freetextQualifier, cursor, stringifiedLimit);
+
+        expect(result).to.equal(pageData);
+        expect(getDocsPage.calledOnceWithExactly(freetextQualifier, cursor, limit)).to.be.true;
+      });
+
+      it('throws an error if the qualifier is invalid', async () => {
+        isFreetextQualifier.returns(false);
+
+        await expect(Report.v1.getPage(dataContext)(invalidFreetextQualifier, cursor, limit))
+          .to.be.rejectedWith(`Invalid freetext [${JSON.stringify(invalidFreetextQualifier)}].`);
+        expect(getDocsPage.notCalled).to.be.true;
+      });
+
+      it('throws an error if the limit is invalid', async () => {
+        isFreetextQualifier.returns(true);
+        getDocsPage.resolves(pageData);
+
+        await expect(Report.v1.getPage(dataContext)(freetextQualifier, cursor, -1))
+          .to.be.rejectedWith('The limit must be a positive integer: [-1]');
+        expect(getDocsPage.notCalled).to.be.true;
+      });
+
+      it('throws an error if the cursor is invalid', async () => {
+        isFreetextQualifier.returns(true);
+        getDocsPage.resolves(pageData);
+
+        await expect(Report.v1.getPage(dataContext)(freetextQualifier, 1 as unknown as string, limit))
+          .to.be.rejectedWith('The cursor must be a string or null for first page: [1]');
+        expect(getDocsPage.notCalled).to.be.true;
+      });
+    });
+
+    describe('getAll', () => {
+      const freetextQualifier = { freetext: 'freetext' } as const;
+      const mockGenerator = {} as AsyncGenerator<Report.v1.Report, null>;
+      let reportGetPage: SinonStub;
+      let getPagedGenerator: SinonStub;
+
+      beforeEach(() => {
+        reportGetPage = sinon.stub(Report.v1, 'getPage');
+        dataContext.bind = sinon.stub().returns(reportGetPage);
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+      });
+
+      it('gets a report generator with correct parameters', () => {
+        isFreetextQualifier.returns(true);
+        getPagedGenerator.returns(mockGenerator);
+
+        const generator = Report.v1.getAll(dataContext)(freetextQualifier);
+
+        expect(generator).to.deep.equal(mockGenerator);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(reportGetPage, freetextQualifier)).to.be.true;
+        expect(isFreetextQualifier.calledOnceWithExactly(freetextQualifier)).to.be.true;
+      });
+
+      it('throws an error for an invalid data context', () => {
+        const errMsg = 'Invalid data context [null].';
+        assertDataContext.throws(new Error(errMsg));
+
+        expect(() => Report.v1.getAll(dataContext)).to.throw(errMsg);
+        expect(reportGetPage.notCalled).to.be.true;
+      });
+
+      it('throws an error for an invalid qualifier', () => {
+        isFreetextQualifier.returns(false);
+
+        expect(() => Report.v1.getAll(dataContext)(freetextQualifier))
+          .to.throw(`Invalid freetext [${JSON.stringify(freetextQualifier)}]`);
+        expect(getPagedGenerator.notCalled).to.be.true;
       });
     });
 

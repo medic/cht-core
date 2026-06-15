@@ -1,5 +1,13 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
+import {
+  fetchAndFilter,
+  fetchAndFilterIds,
+  getDocById,
+  getDocsByIds,
+  queryDocIdsByKey,
+  queryDocIdsByRange,
+  queryDocsByKey
+} from './libs/doc';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
@@ -134,6 +142,40 @@ export namespace v1 {
       const skip = validateCursor(cursor);
       const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
+    };
+  };
+
+  /** @internal */
+  export const getPage = (context: LocalDataContext) => {
+    const { medicDb, settings } = context;
+    const getDocsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    const getContactUuidsPage = getUuidsPage(context);
+
+    return async (
+      qualifier: ContactTypeQualifier | FreetextQualifier,
+      cursor: Nullable<string>,
+      limit: number
+    ): Promise<Page<Contact.v1.Contact>> => {
+      if (!isFreetextQualifier(qualifier)) {
+        // Simple contact type query - resolved with a single include_docs view query.
+        assertValidContactType(settings.getAll(), qualifier);
+        const skip = validateCursor(cursor);
+        const getPageFn = (limit: number, skip: number) => getDocsByType([qualifier.contactType], limit, skip);
+        return await fetchAndFilter(
+          getPageFn,
+          (doc: Nullable<Doc>) => isContact(settings, doc),
+          limit
+        )(limit, skip) as Page<Contact.v1.Contact>;
+      }
+
+      // Freetext (with or without type) - resolve the page of IDs, then hydrate with one batched allDocs.
+      const idsPage = await getContactUuidsPage(qualifier, cursor, limit);
+      const docs = await getMedicDocsByIds(idsPage.data);
+      return {
+        data: docs.filter((doc): doc is Contact.v1.Contact => isContact(settings, doc)),
+        cursor: idsPage.cursor,
+      };
     };
   };
 }

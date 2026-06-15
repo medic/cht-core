@@ -416,6 +416,58 @@ describe('Report API', () => {
     });
   });
 
+  describe('GET /api/v1/report', async () => {
+    const freetext = 'report';
+    const fiveLimit = 5;
+    const endpoint = '/api/v1/report';
+    const emptyNouveauCursor = 'W10=';
+
+    it('returns a page of report documents for a freetext query', async () => {
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+      const opts = {
+        path: `${endpoint}`,
+        qs: { freetext }
+      };
+
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(responsePage.cursor).to.not.equal(emptyNouveauCursor);
+      // The page contains full documents, not just identifiers
+      responsePage.data.forEach(doc => expect(doc).to.have.property('_rev'));
+      responsePage.data.forEach(doc => expect(doc).to.have.property('form'));
+    });
+
+    it('walks two cursor pages of report documents for a freetext query', async () => {
+      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
+      const qs = {
+        freetext,
+        limit: fiveLimit
+      };
+      const firstPage = await utils.request({ path: `${endpoint}`, qs });
+
+      qs.cursor = firstPage.cursor;
+      const secondPage = await utils.request({ path: `${endpoint}`, qs });
+
+      const allReports = [ ...firstPage.data, ...secondPage.data ];
+
+      expect(allReports.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedReportIds);
+      expect(firstPage.data.length).to.be.equal(5);
+      expect(secondPage.data.length).to.be.equal(1);
+      expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
+      firstPage.data.forEach(doc => expect(doc).to.have.property('_rev'));
+    });
+
+    it('throws error when user does not have can_view_reports permission', async () => {
+      const opts = {
+        path: endpoint,
+        qs: { freetext },
+        auth: { username: userNoPerms.username, password: userNoPerms.password },
+      };
+      await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+    });
+  });
+
   describe('POST /api/v1/report/', () => {
     const postOptions = {
       path: `/api/v1/report`,

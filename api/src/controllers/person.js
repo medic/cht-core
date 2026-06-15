@@ -2,6 +2,7 @@ const { Person, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
+const { pageHandler } = require('./libs/pagination');
 
 const getPerson = ctx.bind(Person.v1.get);
 const getPersonWithLineage = ctx.bind(Person.v1.getWithLineage);
@@ -110,11 +111,10 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getAll: serverUtils.doOrError(async (req, res) => {
-      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      const personType = Qualifier.byContactType(req.query.type);
-      const docs = await getPage(personType, req.query.cursor, req.query.limit);
-      return res.json(docs);
+    getAll: pageHandler({
+      permissions: { isOnline: true, hasAll: ['can_view_contacts'] },
+      getQualifier: ({ type }) => Qualifier.byContactType(type),
+      getPage,
     }),
 
     /**

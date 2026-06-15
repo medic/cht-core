@@ -87,6 +87,21 @@ export const getResources = (context: RemoteDataContext, path: string) => async 
   }
 };
 
+/**
+ * Builds the query params for a paginated remote request, including the common `limit` and (optional) `cursor`
+ * params along with any qualifier-specific params.
+ * @internal
+ */
+export const getPageQueryParams = (
+  cursor: Nullable<string>,
+  limit: number,
+  params: Record<string, string>,
+): Record<string, string> => ({
+  limit: limit.toString(),
+  ...(cursor ? { cursor } : {}),
+  ...params,
+});
+
 /** @internal */
 export const postResource = (path: string) => (context: RemoteDataContext) => async <T>(
   body: Record<string, unknown>,

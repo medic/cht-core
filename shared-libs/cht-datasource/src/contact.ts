@@ -1,5 +1,5 @@
 import {
-  getPagedGenerator, NormalizedParent,
+  NormalizedParent,
   Nullable,
   Page,
 } from './libs/core';
@@ -8,20 +8,17 @@ import {
   byContactType,
   byFreetext,
   byUuid,
-  ContactTypeQualifier,
-  FreetextQualifier,
   UuidQualifier
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
+import { getGeneratorFn, getPagedDataFn } from './libs/paginated';
 import { LocalDataContext } from './local/libs/data-context';
 import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
-import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
+import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertContactTypeFreetextQualifier,
-  assertCursor,
-  assertLimit,
   assertUuidQualifier,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
@@ -84,39 +81,20 @@ export namespace v1 {
 
   /**
    * Returns a function for retrieving a paged array of contact identifiers from the given data context.
+   *
+   * The returned function accepts a `ContactTypeQualifier` and/or `FreetextQualifier`, an optional page `cursor`
+   * (`null` for the first page) and an optional `limit` (default 10000), and resolves a page of contact identifiers.
    * @param context the current data context
    * @returns a function for retrieving a paged array of contact identifiers
    * @throws Error if a data context is not provided
    * @see {@link getUuids} which provides the same data, but without having to manually account for paging
    */
-  export const getUuidsPage = (context: DataContext): typeof curriedFn => {
-    assertDataContext(context);
-    const fn = adapt(context, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage);
-
-    /**
-     * Returns an array of contact identifiers for the provided page specifications.
-     * @param qualifier the limiter defining which identifiers to return
-     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
-     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
-     * @param limit the maximum number of identifiers to return. Default is 10000.
-     * @returns a page of contact identifiers for the provided specification
-     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
-     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
-     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
-     */
-    const curriedFn = async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
-      cursor: Nullable<string> = null,
-      limit: number | `${number}` = DEFAULT_IDS_PAGE_LIMIT
-    ): Promise<Page<string>> => {
-      assertCursor(cursor);
-      assertLimit(limit);
-      assertContactTypeFreetextQualifier(qualifier);
-
-      return fn(qualifier, cursor, Number(limit));
-    };
-    return curriedFn;
-  };
+  export const getUuidsPage = getPagedDataFn(
+    Local.Contact.v1.getUuidsPage,
+    Remote.Contact.v1.getUuidsPage,
+    assertContactTypeFreetextQualifier,
+    DEFAULT_IDS_PAGE_LIMIT,
+  );
 
   /**
    * Returns a function for getting a generator that fetches contact identifiers from the given data context.
@@ -124,25 +102,32 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches contact identifiers
    * @throws Error if a data context is not provided
    */
-  export const getUuids = (context: DataContext): typeof curriedGen => {
-    assertDataContext(context);
-    const getPage = context.bind(v1.getUuidsPage);
+  export const getUuids = getGeneratorFn(v1.getUuidsPage, assertContactTypeFreetextQualifier);
 
-    /**
-     * Returns a generator for fetching all contact identifiers that match the given qualifier
-     * @param qualifier the limiter defining which identifiers to return
-     * @returns a generator for fetching all contact identifiers that match the given qualifier
-     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
-     */
-    const curriedGen = (
-      qualifier: ContactTypeQualifier | FreetextQualifier
-    ): AsyncGenerator<string, null> => {
-      assertContactTypeFreetextQualifier(qualifier);
+  /**
+   * Returns a function for retrieving a paged array of contacts from the given data context.
+   *
+   * The returned function accepts a `ContactTypeQualifier` and/or `FreetextQualifier`, an optional page `cursor`
+   * (`null` for the first page) and an optional `limit` (default 100), and resolves a page of contacts.
+   * @param context the current data context
+   * @returns a function for retrieving a paged array of contacts
+   * @throws Error if a data context is not provided
+   * @see {@link getAll} which provides the same data, but without having to manually account for paging
+   */
+  export const getPage = getPagedDataFn(
+    Local.Contact.v1.getPage,
+    Remote.Contact.v1.getPage,
+    assertContactTypeFreetextQualifier,
+    DEFAULT_DOCS_PAGE_LIMIT,
+  );
 
-      return getPagedGenerator(getPage, qualifier);
-    };
-    return curriedGen;
-  };
+  /**
+   * Returns a function for getting a generator that fetches contacts from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches contacts
+   * @throws Error if a data context is not provided
+   */
+  export const getAll = getGeneratorFn(v1.getPage, assertContactTypeFreetextQualifier);
 
   /**
    * Operations for working with contacts.

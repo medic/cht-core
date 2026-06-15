@@ -151,5 +151,88 @@ describe('remote contact', () => {
         })).to.be.true;
       });
     });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = '1';
+      const contactType = 'person';
+      const freetext = 'contact';
+      const qualifier = {
+        contactType,
+        freetext
+      };
+      const queryParam = {
+        limit: limit.toString(),
+        freetext: freetext,
+        type: contactType,
+        cursor,
+      };
+
+      it('returns a page of contacts', async () => {
+        const doc = [{ type: 'person' }, { type: 'person' }];
+        const expectedResponse = { data: doc, cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)(qualifier, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+
+      it('returns empty array if docs are not found', async () => {
+        getResourcesInner.resolves([]);
+
+        const result = await Contact.v1.getPage(remoteContext)(qualifier, cursor, limit);
+
+        expect(result).to.deep.equal([]);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+      });
+
+      it('omits cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)(qualifier, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          freetext: freetext,
+          type: contactType,
+        })).to.be.true;
+      });
+
+      it('omits type param when qualifier is freetext-only', async () => {
+        const freetextOnly = { freetext };
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)(freetextOnly, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          freetext,
+        })).to.be.true;
+      });
+
+      it('omits freetext param when qualifier is contactType-only', async () => {
+        const typeOnly = { contactType };
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)(typeOnly, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          type: contactType,
+        })).to.be.true;
+      });
+    });
   });
 });
