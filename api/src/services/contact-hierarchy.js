@@ -8,20 +8,15 @@ const BATCH_SIZE = 100;
 const MAX_HIERARCHY_SIZE = 5000;
 
 // contacts_by_depth emits a bare [ancestorId] key for a contact and each of its
-// ancestors, so { key: [contactId] } returns one row per member of the subtree.
-const countSubtree = async (contactId) => {
-  const result = await db.medic.query('medic/contacts_by_depth', { key: [contactId] });
-  return result.rows.length;
-};
-
-const getSubtreeContacts = async (contactId) => {
+// ancestors, so { key: [contactId] } returns one row per member of the subtree. Cap the
+// query one past the max so an oversized hierarchy is rejected without loading it all.
+const getSubtreeRows = async (contactId) => {
   const result = await db.medic.query('medic/contacts_by_depth', {
     key: [contactId],
     include_docs: true,
+    limit: MAX_HIERARCHY_SIZE + 1,
   });
-  return result.rows
-    .map(row => row.doc)
-    .filter(doc => doc && doc.type !== 'tombstone');
+  return result.rows;
 };
 
 // reports_by_subject indexes by both shortcode (patient_id/place_id) and uuid, so a
@@ -65,24 +60,27 @@ const bulkWrite = async (docs) => {
 };
 
 const deleteHierarchy = async (contactId, { recursive = false } = {}) => {
-  const count = await countSubtree(contactId);
-  if (!count) {
+  const rows = await getSubtreeRows(contactId);
+  const subtreeSize = rows.length;
+  if (!subtreeSize) {
     return null;
   }
-  if (!recursive && count > 1) {
+  if (!recursive && subtreeSize > 1) {
     const error = new Error('Contact has descendants. Pass recursive=true to delete the whole hierarchy.');
     error.code = 400;
     throw error;
   }
-  if (count > MAX_HIERARCHY_SIZE) {
+  if (subtreeSize > MAX_HIERARCHY_SIZE) {
     const error = new Error(
-      `Hierarchy too large to delete via the API (${count} contacts, max ${MAX_HIERARCHY_SIZE}). Use cht-conf instead.`
+      `Hierarchy too large to delete via the API (more than ${MAX_HIERARCHY_SIZE} contacts). Use cht-conf instead.`
     );
     error.code = 400;
     throw error;
   }
 
-  const contacts = await getSubtreeContacts(contactId);
+  const contacts = rows
+    .map(row => row.doc)
+    .filter(doc => doc && doc.type !== 'tombstone');
   const reports = await getSubjectReports(contacts);
 
   const deletedDocs = [...contacts, ...reports].map(doc => ({ ...doc, _deleted: true }));
@@ -93,12 +91,13 @@ const deleteHierarchy = async (contactId, { recursive = false } = {}) => {
   const parentUpdates = parents.filter(parent => !deletedIds.has(parent._id));
 
   const errors = await bulkWrite([...deletedDocs, ...parentUpdates]);
+  const failedIds = new Set(errors.map(error => error._id));
 
   logger.info(`Deleted contact ${contactId}: ${contacts.length} contact(s), ${reports.length} report(s)`);
 
   return {
-    deleted_contacts: contacts.length,
-    deleted_reports: reports.length,
+    deleted_contacts: contacts.filter(contact => !failedIds.has(contact._id)).length,
+    deleted_reports: reports.filter(report => !failedIds.has(report._id)).length,
     errors,
   };
 };

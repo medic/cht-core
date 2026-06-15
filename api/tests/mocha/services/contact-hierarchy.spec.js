@@ -24,14 +24,14 @@ describe('contact-hierarchy service', () => {
 
   afterEach(() => sinon.restore());
 
-  // count query omits include_docs; subtree query sets it.
-  const stubCount = (count) => query
-    .withArgs(CONTACTS_BY_DEPTH, sinon.match(opts => !opts.include_docs))
-    .resolves({ rows: new Array(count).fill({ id: 'x', key: ['x'] }) });
-
   const stubSubtree = (docs) => query
     .withArgs(CONTACTS_BY_DEPTH, sinon.match({ include_docs: true }))
     .resolves({ rows: docs.map(contactRow) });
+
+  // For guard tests we only care about the subtree row count, not the doc bodies.
+  const stubSubtreeRows = (count) => query
+    .withArgs(CONTACTS_BY_DEPTH, sinon.match({ include_docs: true }))
+    .resolves({ rows: new Array(count).fill({ id: 'x', key: ['x'] }) });
 
   const stubReports = (docs) => query
     .withArgs(REPORTS_BY_SUBJECT, sinon.match.any)
@@ -39,7 +39,7 @@ describe('contact-hierarchy service', () => {
 
   describe('deleteHierarchy', () => {
     it('returns null when the contact does not exist', async () => {
-      stubCount(0);
+      stubSubtreeRows(0);
 
       const result = await service.deleteHierarchy('missing');
 
@@ -48,7 +48,7 @@ describe('contact-hierarchy service', () => {
     });
 
     it('rejects with code 400 when the subtree exceeds the size guard', async () => {
-      stubCount(5001);
+      stubSubtreeRows(5001);
 
       try {
         await service.deleteHierarchy('huge', { recursive: true });
@@ -61,7 +61,6 @@ describe('contact-hierarchy service', () => {
     });
 
     it('deletes a single contact with no children or reports', async () => {
-      stubCount(1);
       stubSubtree([contactDoc('c1', { patient_id: 'SC1' })]);
       stubReports([]);
 
@@ -76,7 +75,7 @@ describe('contact-hierarchy service', () => {
     });
 
     it('rejects with code 400 when the contact has descendants and recursive is not set', async () => {
-      stubCount(3);
+      stubSubtreeRows(3);
 
       try {
         await service.deleteHierarchy('root');
@@ -89,7 +88,6 @@ describe('contact-hierarchy service', () => {
     });
 
     it('recursively deletes the contact and all of its descendants', async () => {
-      stubCount(3);
       stubSubtree([contactDoc('root'), contactDoc('child1'), contactDoc('child2')]);
       stubReports([]);
 
@@ -102,7 +100,6 @@ describe('contact-hierarchy service', () => {
     });
 
     it('filters out tombstone documents from the subtree', async () => {
-      stubCount(2);
       query
         .withArgs(CONTACTS_BY_DEPTH, sinon.match({ include_docs: true }))
         .resolves({ rows: [
@@ -119,7 +116,6 @@ describe('contact-hierarchy service', () => {
 
     it('queries reports_by_subject by both uuid and shortcode, and dedupes reports', async () => {
       const report = reportDoc('r1');
-      stubCount(1);
       stubSubtree([contactDoc('c1', { patient_id: 'SC1' })]);
       // same report emitted under both the uuid key and the shortcode key
       query
@@ -135,8 +131,7 @@ describe('contact-hierarchy service', () => {
       expect(bulkDocs.firstCall.args[0].map(doc => doc._id)).to.have.members(['c1', 'r1']);
     });
 
-    it('surfaces per-document bulkDocs errors in the response', async () => {
-      stubCount(1);
+    it('surfaces per-document bulkDocs errors and excludes them from the deleted counts', async () => {
       stubSubtree([contactDoc('c1')]);
       stubReports([]);
       bulkDocs.resolves([{ id: 'c1', error: 'conflict', reason: 'Document update conflict' }]);
@@ -146,10 +141,22 @@ describe('contact-hierarchy service', () => {
       expect(result.errors).to.deep.equal([
         { _id: 'c1', error: 'conflict', reason: 'Document update conflict' },
       ]);
+      expect(result.deleted_contacts).to.equal(0);
+    });
+
+    it('reports only the documents that were actually deleted when some writes fail', async () => {
+      stubSubtree([contactDoc('root'), contactDoc('child')]);
+      stubReports([reportDoc('r1')]);
+      bulkDocs.resolves([{ id: 'child', error: 'conflict', reason: 'Document update conflict' }]);
+
+      const result = await service.deleteHierarchy('root', { recursive: true });
+
+      expect(result.deleted_contacts).to.equal(1);
+      expect(result.deleted_reports).to.equal(1);
+      expect(result.errors).to.have.length(1);
     });
 
     it('clears the primary-contact reference on a deleted contact\'s surviving parent', async () => {
-      stubCount(1);
       stubSubtree([contactDoc('chw', { parent: { _id: 'hca' } })]);
       stubReports([]);
       const parent = { _id: 'hca', _rev: '1-abc', type: 'health_center', contact: { _id: 'chw' } };
@@ -165,7 +172,6 @@ describe('contact-hierarchy service', () => {
     });
 
     it('leaves a parent untouched when its primary contact is not being deleted', async () => {
-      stubCount(1);
       stubSubtree([contactDoc('chw', { parent: { _id: 'hca' } })]);
       stubReports([]);
       const parent = { _id: 'hca', _rev: '1-abc', type: 'health_center', contact: { _id: 'someone-else' } };
@@ -177,7 +183,6 @@ describe('contact-hierarchy service', () => {
     });
 
     it('does not write a parent that is itself being deleted', async () => {
-      stubCount(2);
       stubSubtree([
         contactDoc('place', { type: 'clinic', parent: { _id: 'hc' }, contact: { _id: 'person' } }),
         contactDoc('person', { parent: { _id: 'place' } }),
@@ -199,7 +204,6 @@ describe('contact-hierarchy service', () => {
       for (let i = 0; i < 150; i++) {
         docs.push(contactDoc(`c${i}`));
       }
-      stubCount(150);
       stubSubtree(docs);
       stubReports([]);
 
