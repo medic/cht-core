@@ -131,192 +131,74 @@ describe('place', () => {
       });
     });
 
+    // The cursor/limit/qualifier validation, defaults and delegation are exercised once against the shared
+    // factory in test/libs/paginated.spec.ts. These tests only assert the per-noun wiring.
     describe('getPage', () => {
-      const places = [{ _id: 'place1' }, { _id: 'place2' }, { _id: 'place3' }] as Place.v1.Place[];
       const cursor = '1';
-      const pageData = { data: places, cursor };
-      const limit = 3;
-      const stringifiedLimit = '3';
+      const pageData = { data: [{ _id: 'place1' }, { _id: 'place2' }] as Place.v1.Place[], cursor };
       const placeTypeQualifier = { contactType: 'place' } as const;
       const invalidQualifier = { contactType: 'invalid' } as const;
       let getPage: SinonStub;
 
       beforeEach(() => {
-        getPage = sinon.stub();
+        getPage = sinon.stub().resolves(pageData);
         adapt.returns(getPage);
       });
 
-      it('retrieves places from the data context when cursor is null', async () => {
+      it('delegates to the doc-page local/remote implementations', async () => {
         isContactTypeQualifier.returns(true);
-        getPage.resolves(pageData);
 
-        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier, null, limit);
+        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, 3);
 
         expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage)).to.be.true;
-        expect(getPage.calledOnceWithExactly(placeTypeQualifier, null, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
+        expect(getPage.calledOnceWithExactly(placeTypeQualifier, cursor, 3)).to.be.true;
       });
 
-      it('uses default cursor and limit when not provided', async () => {
+      it('defaults to the docs page limit', async () => {
         isContactTypeQualifier.returns(true);
-        getPage.resolves(pageData);
 
-        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier);
+        await Place.v1.getPage(dataContext)(placeTypeQualifier);
 
-        expect(result).to.equal(pageData);
         expect(getPage.calledOnceWithExactly(placeTypeQualifier, null, 100)).to.be.true;
       });
 
-      it('retrieves places from the data context when cursor is not null', async () => {
-        isContactTypeQualifier.returns(true);
-        getPage.resolves(pageData);
-
-        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, limit);
-
-        expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage)).to.be.true;
-        expect(getPage.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
-      });
-
-      it('retrieves places from the data context when cursor is not null and ' +
-        'limit is stringified number', async () => {
-        isContactTypeQualifier.returns(true);
-        getPage.resolves(pageData);
-
-        const result = await Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, stringifiedLimit);
-
-        expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage)).to.be.true;
-        expect(getPage.calledOnceWithExactly(placeTypeQualifier, cursor, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly((placeTypeQualifier))).to.be.true;
-      });
-
-      it('throws an error if the data context is invalid', () => {
-        isContactTypeQualifier.returns(true);
-        assertDataContext.throws(new Error(`Invalid data context [null].`));
-
-        expect(() => Place.v1.getPage(dataContext)).to.throw(`Invalid data context [null].`);
-
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.notCalled).to.be.true;
-        expect(getPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.notCalled).to.be.true;
-      });
-
-      it('throws an error if the qualifier is invalid', async () => {
+      it('validates with the contact-type qualifier assertion', async () => {
         isContactTypeQualifier.returns(false);
 
-        await expect(Place.v1.getPage(dataContext)(invalidQualifier, cursor, limit))
+        await expect(Place.v1.getPage(dataContext)(invalidQualifier))
           .to.be.rejectedWith(`Invalid contact type [${JSON.stringify(invalidQualifier)}].`);
-
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
         expect(getPage.notCalled).to.be.true;
-      });
-
-      [
-        -1,
-        null,
-        {},
-        '',
-        0,
-        1.1,
-        false
-      ].forEach((limitValue) => {
-        it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
-          isContactTypeQualifier.returns(true);
-          getPage.resolves(places);
-
-          await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, cursor, limitValue as number))
-            .to.be.rejectedWith(`The limit must be a positive integer: [${JSON.stringify(limitValue)}]`);
-
-          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))
-            .to.be.true;
-          expect(isContactTypeQualifier.notCalled).to.be.true;
-          expect(getPage.notCalled).to.be.true;
-        });
-      });
-
-      [
-        {},
-        '',
-        1,
-        false,
-      ].forEach((invalidCursor) => {
-        it('throws an error if cursor is invalid', async () => {
-          isContactTypeQualifier.returns(true);
-          getPage.resolves(places);
-
-          await expect(Place.v1.getPage(dataContext)(placeTypeQualifier, invalidCursor as string, limit))
-            .to.be.rejectedWith(
-              `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`
-            );
-
-          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(adapt.calledOnceWithExactly(dataContext, Local.Place.v1.getPage, Remote.Place.v1.getPage))
-            .to.be.true;
-          expect(isContactTypeQualifier.notCalled).to.be.true;
-          expect(getPage.notCalled).to.be.true;
-        });
       });
     });
 
     describe('getAll', () => {
-      const placeType = 'place';
-      const placeTypeQualifier = { contactType: placeType } as const;
-      const firstPlace = { _id: 'place1' } as Place.v1.Place;
-      const secondPlace = { _id: 'place2' } as Place.v1.Place;
-      const thirdPlace = { _id: 'place3' } as Place.v1.Place;
-      const places = [firstPlace, secondPlace, thirdPlace];
-      const mockGenerator = fakeGenerator(places);
-
-      let placeGetPage: sinon.SinonStub;
-      let getPagedGenerator: sinon.SinonStub;
+      const placeTypeQualifier = { contactType: 'place' } as const;
+      const mockGenerator = {} as AsyncGenerator<Place.v1.Place, null>;
+      let placeGetPage: SinonStub;
+      let getPagedGenerator: SinonStub;
 
       beforeEach(() => {
         placeGetPage = sinon.stub(Place.v1, 'getPage');
         dataContext.bind = sinon.stub().returns(placeGetPage);
-        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator').returns(mockGenerator);
       });
 
-      it('should get place generator with correct parameters', () => {
+      it('drains the doc-page getter into a generator', () => {
         isContactTypeQualifier.returns(true);
-        getPagedGenerator.returns(mockGenerator);
 
         const generator = Place.v1.getAll(dataContext)(placeTypeQualifier);
 
-        expect(generator).to.deep.equal(mockGenerator);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(generator).to.equal(mockGenerator);
         expect(getPagedGenerator.calledOnceWithExactly(placeGetPage, placeTypeQualifier)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
       });
 
-      it('should throw an error for invalid datacontext', () => {
-        const errMsg = 'Invalid data context [null].';
-        isContactTypeQualifier.returns(true);
-        assertDataContext.throws(new Error(errMsg));
-
-        expect(() => Place.v1.getAll(dataContext)).to.throw(errMsg);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(placeGetPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.notCalled).to.be.true;
-      });
-
-      it('should throw an error for invalid placeType', () => {
+      it('validates with the contact-type qualifier assertion', () => {
         isContactTypeQualifier.returns(false);
 
         expect(() => Place.v1.getAll(dataContext)(placeTypeQualifier))
           .to.throw(`Invalid contact type [${JSON.stringify(placeTypeQualifier)}].`);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(placeGetPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(placeTypeQualifier)).to.be.true;
+        expect(getPagedGenerator.notCalled).to.be.true;
       });
     });
 

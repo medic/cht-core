@@ -132,372 +132,127 @@ describe('contact', () => {
       });
     });
 
+    // The cursor/limit/qualifier validation, defaults and delegation are exercised once against the shared
+    // factory in test/libs/paginated.spec.ts. These tests only assert the per-noun wiring.
     describe('getUuidsPage', () => {
-      const contactIds = ['contact1', 'contact2', 'contact3'] as string[];
       const cursor = '1';
-      const pageData = { data: contactIds, cursor };
-      const limit = 3;
-      const stringifiedLimit = '3';
-      const contactTypeQualifier = { contactType: 'person' } as const;
-      const freetextQualifier = { freetext: 'freetext' } as const;
-      const qualifier = {
-        ...contactTypeQualifier,
-        ...freetextQualifier,
-      };
-      const invalidContactTypeQualifier = { contactType: 'invalidContactType' } as const;
-      const invalidFreetextQualifier = { freetext: 'invalidFreetext' } as const;
-      const invalidQualifier = {
-        ...invalidContactTypeQualifier,
-        ...invalidFreetextQualifier,
-      };
+      const pageData = { data: ['contact1', 'contact2', 'contact3'], cursor };
+      const qualifier = { contactType: 'person', freetext: 'freetext' } as const;
+      const invalidQualifier = { contactType: 'invalidContactType' } as const;
       let getIdsPage: SinonStub;
 
       beforeEach(() => {
-        getIdsPage = sinon.stub();
+        getIdsPage = sinon.stub().resolves(pageData);
         adapt.returns(getIdsPage);
       });
 
-      it('retrieves contact id page from the data context when cursor is null', async () => {
+      it('delegates to the id-page local/remote implementations', async () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
-        getIdsPage.resolves(pageData);
 
-        const result = await Contact.v1.getUuidsPage(dataContext)(qualifier, null, limit);
+        const result = await Contact.v1.getUuidsPage(dataContext)(qualifier, cursor, 3);
 
         expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
         expect(
           adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
         ).to.be.true;
-        expect(getIdsPage.calledOnceWithExactly(qualifier, null, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
+        expect(getIdsPage.calledOnceWithExactly(qualifier, cursor, 3)).to.be.true;
       });
 
-      it('uses default cursor and limit when not provided', async () => {
+      it('defaults to the ids page limit', async () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
-        getIdsPage.resolves(pageData);
 
-        const result = await Contact.v1.getUuidsPage(dataContext)(qualifier);
+        await Contact.v1.getUuidsPage(dataContext)(qualifier);
 
-        expect(result).to.equal(pageData);
         expect(getIdsPage.calledOnceWithExactly(qualifier, null, 10000)).to.be.true;
       });
 
-      it('retrieves contact id page from the data context when cursor is not null', async () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-        getIdsPage.resolves(pageData);
-
-        const result = await Contact.v1.getUuidsPage(dataContext)(qualifier, cursor, limit);
-
-        expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-        ).to.be.true;
-        expect(getIdsPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
-      });
-
-      it('retrieves contact id page from the data context when cursor is not null and ' +
-        'limit is stringified number', async () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-        getIdsPage.resolves(pageData);
-
-        const result = await Contact.v1.getUuidsPage(dataContext)(qualifier, cursor, stringifiedLimit);
-
-        expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-        ).to.be.true;
-        expect(getIdsPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
-      });
-
-      it('throws an error if the data context is invalid', () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-        assertDataContext.throws(new Error(`Invalid data context [null].`));
-
-        expect(() => Contact.v1.getUuidsPage(dataContext)).to.throw(`Invalid data context [null].`);
-
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(adapt.notCalled).to.be.true;
-        expect(getIdsPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.notCalled).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
-      });
-
-      it('throws an error if the contact type qualifier is invalid', async () => {
-        isContactTypeQualifier.returns(false);
-
-        await expect(Contact.v1.getUuidsPage(dataContext)(invalidContactTypeQualifier, cursor, limit))
-          .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-            `Must be a contact type and/or freetext qualifier.`);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-        ).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidContactTypeQualifier)).to.be.true;
-        expect(isFreetextQualifier.calledOnceWithExactly(invalidContactTypeQualifier)).to.be.true;
-        expect(getIdsPage.notCalled).to.be.true;
-      });
-
-      it('throws an error if the freetext type qualifier is invalid', async () => {
-        isFreetextQualifier.returns(false);
-
-        await expect(Contact.v1.getUuidsPage(dataContext)(invalidFreetextQualifier, cursor, limit))
-          .to.be.rejectedWith(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-            `Must be a contact type and/or freetext qualifier.`);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-        ).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
-        expect(isFreetextQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
-        expect(getIdsPage.notCalled).to.be.true;
-      });
-
-      it('throws an error if the qualifier is invalid for both contact type and freetext', async () => {
+      it('validates with the contact-type/freetext qualifier assertion', async () => {
         isContactTypeQualifier.returns(false);
         isFreetextQualifier.returns(false);
 
-        await expect(Contact.v1.getUuidsPage(dataContext)(invalidQualifier, cursor, limit)).to.be.rejectedWith(
+        await expect(Contact.v1.getUuidsPage(dataContext)(invalidQualifier)).to.be.rejectedWith(
           `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
         );
-
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-        ).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
-        expect(isFreetextQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
         expect(getIdsPage.notCalled).to.be.true;
-      });
-
-      [
-        -1,
-        null,
-        {},
-        '',
-        0,
-        1.1,
-        false
-      ].forEach((limitValue) => {
-        it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
-          isContactTypeQualifier.returns(true);
-          getIdsPage.resolves(pageData);
-
-          await expect(Contact.v1.getUuidsPage(dataContext)(qualifier, cursor, limitValue as number))
-            .to.be.rejectedWith(`The limit must be a positive integer: [${JSON.stringify(limitValue)}]`);
-
-          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(
-            adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-          ).to.be.true;
-          expect(isContactTypeQualifier.notCalled).to.be.true;
-          expect(isFreetextQualifier.notCalled).to.be.true;
-          expect(getIdsPage.notCalled).to.be.true;
-        });
-      });
-
-      [
-        {},
-        '',
-        1,
-        false,
-      ].forEach((skipValue) => {
-        it('throws an error if cursor is invalid', async () => {
-          isContactTypeQualifier.returns(true);
-          getIdsPage.resolves(pageData);
-
-          await expect(Contact.v1.getUuidsPage(dataContext)(qualifier, skipValue as string, limit))
-            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(skipValue)}]`);
-
-          expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-          expect(
-            adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getUuidsPage, Remote.Contact.v1.getUuidsPage)
-          ).to.be.true;
-          expect(isContactTypeQualifier.notCalled).to.be.true;
-          expect(isFreetextQualifier.notCalled).to.be.true;
-          expect(getIdsPage.notCalled).to.be.true;
-        });
       });
     });
 
     describe('getUuids', () => {
-      const contactTypeQualifier = { contactType: 'person' } as const;
-      const freetextQualifier = { freetext: 'freetext' } as const;
-      const qualifier = {
-        ...contactTypeQualifier,
-        ...freetextQualifier,
-      };
-      const invalidContactTypeQualifier = { contactType: 'invalidContactType' } as const;
-      const invalidFreetextQualifier = { freetext: 'invalidFreetext' } as const;
-      const invalidQualifier = {
-        ...invalidContactTypeQualifier,
-        ...invalidFreetextQualifier
-      };
-      const mockGenerator = {} as Generator<string, void>;
-      let contactGetIdsPage: sinon.SinonStub;
-      let getPagedGenerator: sinon.SinonStub;
+      const qualifier = { contactType: 'person', freetext: 'freetext' } as const;
+      const invalidQualifier = { contactType: 'invalidContactType' } as const;
+      const mockGenerator = {} as AsyncGenerator<string, null>;
+      let contactGetIdsPage: SinonStub;
+      let getPagedGenerator: SinonStub;
 
       beforeEach(() => {
         contactGetIdsPage = sinon.stub(Contact.v1, 'getUuidsPage');
         dataContext.bind = sinon.stub().returns(contactGetIdsPage);
-        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator').returns(mockGenerator);
       });
 
-      it('should get contact generator with correct parameters', () => {
+      it('drains the id-page getter into a generator', () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
-        getPagedGenerator.returns(mockGenerator);
 
         const generator = Contact.v1.getUuids(dataContext)(qualifier);
 
-        expect(generator).to.deep.equal(mockGenerator);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(generator).to.equal(mockGenerator);
         expect(getPagedGenerator.calledOnceWithExactly(contactGetIdsPage, qualifier)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
       });
 
-      it('should throw an error for invalid datacontext', () => {
-        const errMsg = 'Invalid data context [null].';
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-        assertDataContext.throws(new Error(errMsg));
-
-        expect(() => Contact.v1.getUuids(dataContext)).to.throw(errMsg);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.notCalled).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
-      });
-
-      it('should throw an error for invalid contactType', () => {
-        isContactTypeQualifier.returns(false);
-
-        expect(() => Contact.v1.getUuids(dataContext)(invalidContactTypeQualifier))
-          .to.throw(`Invalid qualifier [${JSON.stringify(invalidContactTypeQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidContactTypeQualifier)).to.be.true;
-        expect(isFreetextQualifier.calledOnceWithExactly(invalidContactTypeQualifier)).to.be.true;
-      });
-
-      it('should throw an error for invalid freetext', () => {
-        isFreetextQualifier.returns(false);
-
-        expect(() => Contact.v1.getUuids(dataContext)(invalidFreetextQualifier))
-          .to.throw(`Invalid qualifier [${JSON.stringify(invalidFreetextQualifier)}]. ` +
-          `Must be a contact type and/or freetext qualifier.`);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
-        expect(isFreetextQualifier.calledOnceWithExactly(invalidFreetextQualifier)).to.be.true;
-      });
-
-      it('should throw an error for both invalid contactType and freetext', () => {
+      it('validates with the contact-type/freetext qualifier assertion', () => {
         isContactTypeQualifier.returns(false);
         isFreetextQualifier.returns(false);
 
         expect(() => Contact.v1.getUuids(dataContext)(invalidQualifier)).to.throw(
           `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
         );
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(contactGetIdsPage.notCalled).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
-        expect(isFreetextQualifier.calledOnceWithExactly(invalidQualifier)).to.be.true;
+        expect(getPagedGenerator.notCalled).to.be.true;
       });
     });
 
     describe('getPage', () => {
-      const contacts = [{ _id: 'contact1' }, { _id: 'contact2' }] as Contact.v1.Contact[];
       const cursor = '1';
-      const pageData = { data: contacts, cursor };
-      const limit = 3;
-      const stringifiedLimit = '3';
+      const pageData = { data: [{ _id: 'contact1' }, { _id: 'contact2' }] as Contact.v1.Contact[], cursor };
       const qualifier = { contactType: 'person', freetext: 'freetext' } as const;
       const invalidQualifier = { contactType: 'invalid', freetext: 'inv' } as const;
       let getDocsPage: SinonStub;
 
       beforeEach(() => {
-        getDocsPage = sinon.stub();
+        getDocsPage = sinon.stub().resolves(pageData);
         adapt.returns(getDocsPage);
       });
 
-      it('retrieves a page of contacts from the data context when cursor is null', async () => {
+      it('delegates to the doc-page local/remote implementations', async () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
-        getDocsPage.resolves(pageData);
 
-        const result = await Contact.v1.getPage(dataContext)(qualifier, null, limit);
+        const result = await Contact.v1.getPage(dataContext)(qualifier, cursor, 3);
 
         expect(result).to.equal(pageData);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
-        expect(
-          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getPage, Remote.Contact.v1.getPage)
-        ).to.be.true;
-        expect(getDocsPage.calledOnceWithExactly(qualifier, null, limit)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
-        expect(isFreetextQualifier.notCalled).to.be.true;
+        expect(adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getPage, Remote.Contact.v1.getPage))
+          .to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(qualifier, cursor, 3)).to.be.true;
       });
 
-      it('uses default cursor and limit when not provided', async () => {
+      it('defaults to the docs page limit', async () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
-        getDocsPage.resolves(pageData);
 
-        const result = await Contact.v1.getPage(dataContext)(qualifier);
+        await Contact.v1.getPage(dataContext)(qualifier);
 
-        expect(result).to.equal(pageData);
         expect(getDocsPage.calledOnceWithExactly(qualifier, null, 100)).to.be.true;
       });
 
-      it('retrieves a page of contacts when cursor is not null and limit is a stringified number', async () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-        getDocsPage.resolves(pageData);
-
-        const result = await Contact.v1.getPage(dataContext)(qualifier, cursor, stringifiedLimit);
-
-        expect(result).to.equal(pageData);
-        expect(getDocsPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
-      });
-
-      it('throws an error if the qualifier is invalid for both contact type and freetext', async () => {
+      it('validates with the contact-type/freetext qualifier assertion', async () => {
         isContactTypeQualifier.returns(false);
         isFreetextQualifier.returns(false);
 
-        await expect(Contact.v1.getPage(dataContext)(invalidQualifier, cursor, limit)).to.be.rejectedWith(
+        await expect(Contact.v1.getPage(dataContext)(invalidQualifier)).to.be.rejectedWith(
           `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
         );
-        expect(getDocsPage.notCalled).to.be.true;
-      });
-
-      it('throws an error if the limit is invalid', async () => {
-        isContactTypeQualifier.returns(true);
-        getDocsPage.resolves(pageData);
-
-        await expect(Contact.v1.getPage(dataContext)(qualifier, cursor, -1))
-          .to.be.rejectedWith('The limit must be a positive integer: [-1]');
-        expect(getDocsPage.notCalled).to.be.true;
-      });
-
-      it('throws an error if the cursor is invalid', async () => {
-        isContactTypeQualifier.returns(true);
-        getDocsPage.resolves(pageData);
-
-        await expect(Contact.v1.getPage(dataContext)(qualifier, 1 as unknown as string, limit))
-          .to.be.rejectedWith('The cursor must be a string or null for first page: [1]');
         expect(getDocsPage.notCalled).to.be.true;
       });
     });
@@ -512,31 +267,20 @@ describe('contact', () => {
       beforeEach(() => {
         contactGetPage = sinon.stub(Contact.v1, 'getPage');
         dataContext.bind = sinon.stub().returns(contactGetPage);
-        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator').returns(mockGenerator);
       });
 
-      it('gets a contact generator with correct parameters', () => {
+      it('drains the doc-page getter into a generator', () => {
         isContactTypeQualifier.returns(true);
         isFreetextQualifier.returns(true);
-        getPagedGenerator.returns(mockGenerator);
 
         const generator = Contact.v1.getAll(dataContext)(qualifier);
 
-        expect(generator).to.deep.equal(mockGenerator);
-        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(generator).to.equal(mockGenerator);
         expect(getPagedGenerator.calledOnceWithExactly(contactGetPage, qualifier)).to.be.true;
-        expect(isContactTypeQualifier.calledOnceWithExactly(qualifier)).to.be.true;
       });
 
-      it('throws an error for an invalid data context', () => {
-        const errMsg = 'Invalid data context [null].';
-        assertDataContext.throws(new Error(errMsg));
-
-        expect(() => Contact.v1.getAll(dataContext)).to.throw(errMsg);
-        expect(contactGetPage.notCalled).to.be.true;
-      });
-
-      it('throws an error for an invalid qualifier', () => {
+      it('validates with the contact-type/freetext qualifier assertion', () => {
         isContactTypeQualifier.returns(false);
         isFreetextQualifier.returns(false);
 
