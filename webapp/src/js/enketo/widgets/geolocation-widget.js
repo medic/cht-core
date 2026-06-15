@@ -27,28 +27,39 @@ class GeolocationWidget extends Widget {
         .then(text => $el.text(text));
     }
 
+    const radioName = 'geo-ctx-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
+    const $homeSpan = $('<span class="geolocation-context-label">');
+    const $homeRadio = $('<input type="radio">').attr('name', radioName).val('home');
+    const $homeLabel = $('<label class="geolocation-context-option">').append($homeRadio, $homeSpan);
+
+    const $otherSpan = $('<span class="geolocation-context-label">');
+    const $otherRadio = $('<input type="radio">').attr('name', radioName).val('other');
+    const $otherLabel = $('<label class="geolocation-context-option">').append($otherRadio, $otherSpan);
+
+    const $contextOptions = $('<div class="geolocation-context-options">').append($homeLabel, $otherLabel);
+    $question.append($contextOptions);
+
     const $button = $('<button type="button" class="btn btn-default geolocation-capture-btn">');
     $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($button);
+    $button.prop('disabled', true);
     $button.on('click', () => this._startCapture());
     $question.append($button);
 
-    const geoGroup = this.question.closest('.or-group, .or-group-data');
-    const contextEl = geoGroup && geoGroup.querySelector('.or-appearance-geolocation-context'); // NOSONAR
-    if (contextEl && !contextEl.querySelector('input[type="radio"]:checked')) {
-      $button.prop('disabled', true);
-      $(contextEl).one('change', 'input[type="radio"]', () => $button.prop('disabled', false));
-    }
+    $contextOptions.on('change', 'input[type="radio"]', event => {
+      this.element.dataset.geoContext = event.target.value;
+      $button.prop('disabled', false);
+    });
 
-    return globalThis.CHTCore.Translate.get('geolocation.capture')
-      .then(text => $button.append($('<span class="geolocation-btn-label">').text(text)));
+    return Promise.all([
+      globalThis.CHTCore.Translate.get('geolocation.capture')
+        .then(text => $button.append($('<span class="geolocation-btn-label">').text(text))),
+      globalThis.CHTCore.Translate.get('geolocation.context.home').then(text => $homeSpan.text(text)),
+      globalThis.CHTCore.Translate.get('geolocation.context.other').then(text => $otherSpan.text(text)),
+    ]);
   }
 
   _startCapture() {
-    const geoGroup = this.question.closest('.or-group, .or-group-data');
-    const contextEl = geoGroup && geoGroup.querySelector('.or-appearance-geolocation-context'); // NOSONAR
-    if (contextEl) {
-      $(contextEl).hide();
-    }
+    $(this.question).find('.geolocation-context-options').hide();
 
     const $question = $(this.question);
     $question.find([

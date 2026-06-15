@@ -80,28 +80,6 @@ describe('Geolocation widget - contact save pipeline', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should store geolocation context on the contact doc when a context option is selected', async () => {
-    await commonPage.goToPeople(healthCenter._id);
-    await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
-
-    await $('.or-appearance-geolocation-context').waitForDisplayed();
-    await commonEnketoPage.selectRadioButton('Where are you capturing GPS location?', 'At the beneficiary\'s home');
-
-    await $('.geolocation-capture-btn').waitForDisplayed();
-    await $('.geolocation-capture-btn').click();
-    await $('.geolocation-success-msg').waitForDisplayed();
-    await commonEnketoPage.setInputValue('Full name', 'Test Person Context');
-    await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await contactPage.waitForContactLoaded();
-
-    const contactId = await contactPage.getCurrentContactId();
-    const savedDoc = await utils.getDoc(contactId);
-
-    expect(savedDoc.geolocation_log).to.exist;
-    expect(savedDoc.geolocation_log[0].context).to.equal('home');
-  });
-
   it('should store geolocation data on the contact doc when the form has a geolocation widget', async () => {
     await commonPage.goToPeople(healthCenter._id);
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });

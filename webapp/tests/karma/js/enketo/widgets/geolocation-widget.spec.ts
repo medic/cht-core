@@ -96,98 +96,105 @@ describe('Enketo: Geolocation Widget', () => {
       expect(btn.querySelector('.fa.fa-map-marker')).to.not.be.null;
     });
 
-    describe('context question', () => {
-      const buildHtmlWithContext = (contextAlreadyAnswered = false) => {
-        const checked = contextAlreadyAnswered ? 'checked' : '';
-        document.body.insertAdjacentHTML('afterbegin', `
-          <div id="geolocation-widget-test">
-            <section class="or-group-data or-appearance-field-list">
-              <fieldset class="question or-appearance-geolocation-context">
-                <div class="option-wrapper">
-                  <label><input type="radio" name="/data/geo_context" value="home" ${checked}></label>
-                  <label><input type="radio" name="/data/geo_context" value="workplace"></label>
-                </div>
-              </fieldset>
-              <label class="question non-select or-appearance-geolocation-capture">
-                <input type="hidden" name="/geolocation/capture" data-type-xml="string" />
-              </label>
-            </section>
-          </div>`);
-      };
+    it('should render home and other context options', () => {
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
 
-      it('should disable the capture button when the context question is unanswered', () => {
-        buildHtmlWithContext();
-        const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
-        widget._init();
+      const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+      expect(container.querySelector('.geolocation-context-options')).to.not.be.null;
+      expect(container.querySelector('input[type="radio"][value="home"]')).to.not.be.null;
+      expect(container.querySelector('input[type="radio"][value="other"]')).to.not.be.null;
+    });
 
-        const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLButtonElement;
-        expect(btn).to.not.be.null;
-        expect(btn.disabled).to.be.true;
-      });
+    it('should disable the capture button until a context option is selected', () => {
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
 
-      it('should enable the capture button when a context option is selected', () => {
-        buildHtmlWithContext();
-        const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
-        widget._init();
+      const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLButtonElement;
+      expect(btn).to.not.be.null;
+      expect(btn.disabled).to.be.true;
+    });
 
-        const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLButtonElement;
-        expect(btn.disabled).to.be.true;
+    it('should set data-geo-context and enable capture button when home is selected', () => {
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
 
-        const radio = document.querySelector(
-          '#geolocation-widget-test input[type="radio"][value="home"]'
-        ) as HTMLInputElement;
-        radio.checked = true;
-        $(radio).trigger('change');
+      const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLButtonElement;
+      const homeRadio = document.querySelector(
+        '#geolocation-widget-test input[type="radio"][value="home"]'
+      ) as HTMLInputElement;
+      homeRadio.checked = true;
+      $(homeRadio).trigger('change');
 
-        expect(btn.disabled).to.be.false;
-      });
+      expect(btn.disabled).to.be.false;
+      expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('home');
+    });
 
-      it('should not disable the capture button when the context question is already answered', () => {
-        buildHtmlWithContext(true);
-        const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
-        widget._init();
+    it('should set data-geo-context to other when other is selected', () => {
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
 
-        const btn = document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLButtonElement;
-        expect(btn).to.not.be.null;
-        expect(btn.disabled).to.be.false;
-      });
+      const otherRadio = document.querySelector(
+        '#geolocation-widget-test input[type="radio"][value="other"]'
+      ) as HTMLInputElement;
+      otherRadio.checked = true;
+      $(otherRadio).trigger('change');
 
-      it('should hide the context question when capture starts', () => {
-        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
-        buildHtmlWithContext(true);
-        const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
-        widget._init();
+      expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('other');
+    });
 
-        const contextEl = document.querySelector(
-          '#geolocation-widget-test .or-appearance-geolocation-context'
-        ) as HTMLElement;
-        expect(contextEl.style.display).not.to.equal('none');
+    it('should hide context options when capture starts', () => {
+      window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
 
-        (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
+      const homeRadio = document.querySelector(
+        '#geolocation-widget-test input[type="radio"][value="home"]'
+      ) as HTMLInputElement;
+      homeRadio.checked = true;
+      $(homeRadio).trigger('change');
 
-        expect(contextEl.style.display).to.equal('none');
-      });
+      const contextOptions = document.querySelector(
+        '#geolocation-widget-test .geolocation-context-options'
+      ) as HTMLElement;
+      expect(contextOptions.style.display).not.to.equal('none');
 
-      it('should hide the context question when capture fails', async () => {
-        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
-        buildHtmlWithContext(true);
-        const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
-        widget._init();
+      (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
 
-        (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
-        await promise;
+      expect(contextOptions.style.display).to.equal('none');
+    });
 
-        const contextEl = document.querySelector(
-          '#geolocation-widget-test .or-appearance-geolocation-context'
-        ) as HTMLElement;
-        expect(contextEl.style.display).to.equal('none');
-      });
+    it('should hide context options when capture fails', async () => {
+      const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+      window.CHTCore.Geolocation = { currentPromise: promise };
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => true;
+      widget._init();
+
+      const homeRadio = document.querySelector(
+        '#geolocation-widget-test input[type="radio"][value="home"]'
+      ) as HTMLInputElement;
+      homeRadio.checked = true;
+      $(homeRadio).trigger('change');
+
+      (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
+      await promise;
+
+      const contextOptions = document.querySelector(
+        '#geolocation-widget-test .geolocation-context-options'
+      ) as HTMLElement;
+      expect(contextOptions.style.display).to.equal('none');
     });
 
     describe('_startCapture()', () => {
@@ -195,11 +202,20 @@ describe('Enketo: Geolocation Widget', () => {
         window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
       });
 
+      const selectHomeContext = () => {
+        const radio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="home"]'
+        ) as HTMLInputElement;
+        radio.checked = true;
+        $(radio).trigger('change');
+      };
+
       it('should show progress bar and remove capture button on click', () => {
         buildHtml();
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
@@ -217,6 +233,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
@@ -237,6 +254,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
@@ -255,6 +273,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
@@ -275,6 +294,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
@@ -292,6 +312,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         (document.querySelector('#geolocation-widget-test .geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -307,6 +328,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
@@ -327,6 +349,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
@@ -353,6 +376,7 @@ describe('Enketo: Geolocation Widget', () => {
         const widget = createWidget();
         widget._isGeolocationAvailable = () => true;
         widget._init();
+        selectHomeContext();
 
         const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
