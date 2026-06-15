@@ -231,6 +231,27 @@ describe('ResourceIcons service', () => {
       expect(actual).to.equal(expected);
     }));
 
+    it('should return &nbsp when building the content throws', fakeAsync(() => {
+      const resources = {
+        resources: {
+          broken: 'broken.svg'
+        },
+        _attachments: {
+          'broken.svg': {
+            content_type: 'image/svg+xml',
+            // invalid base64 data causes atob to throw inside buildAndCacheContent
+            data: 'not-valid-base64-@@@'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+      const actual = service.getImg('broken', 'resources', 'fa-test');
+      const expected = '<span class="resource-icon" title="broken" data-fa-placeholder="fa-test">&nbsp</span>';
+      expect(actual).to.equal(expected);
+    }));
+
     it('should return inline svg for svg images', fakeAsync(() => {
       const data = `<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"/>
@@ -281,6 +302,41 @@ describe('ResourceIcons service', () => {
         .to.equal('data:image/png;base64,kiddlywinks');
       expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
         .to.equal(undefined);
+    }));
+
+    it('should set the fallback content when building the content throws', fakeAsync(() => {
+      const resources = {
+        resources: {
+          child: 'child.png',
+          broken: 'broken.svg'
+        },
+        _attachments: {
+          'child.png': {
+            content_type: 'image/png',
+            data: 'kiddlywinks'
+          },
+          'broken.svg': {
+            content_type: 'image/svg+xml',
+            // invalid base64 data causes atob to throw inside buildAndCacheContent
+            data: 'not-valid-base64-@@@'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      const dom = $('<ul>' +
+        '<li><span class="resource-icon" title="child"></span></li>' +
+        '<li><span class="resource-icon" title="broken"></span></li>' +
+        '</ul>');
+      service.replacePlaceholders(dom);
+      tick();
+      // sibling element is still processed normally
+      expect(dom.find('.resource-icon[title="child"] img').attr('src'))
+        .to.equal('data:image/png;base64,kiddlywinks');
+      // the throw is caught and the fallback content is used
+      const broken = dom.find('.resource-icon[title="broken"]');
+      expect(broken.find('img').length).to.equal(0);
+      expect(broken.text()).to.equal(' ');
     }));
 
     it('should keep the placeholder', fakeAsync(() => {

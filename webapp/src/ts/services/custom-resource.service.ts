@@ -71,15 +71,19 @@ export class CustomResourceService {
   }
 
   private getHtmlContent(name, docId, faPlaceholder) {
-    if (!this.cache[docId]?.htmlContent) {
+    try {
+      if (!this.cache[docId]?.htmlContent) {
+        return '&nbsp';
+      }
+
+      if (this.cache[docId].htmlContent[name]) {
+        return this.cache[docId].htmlContent[name];
+      }
+
+      return this.buildAndCacheContent(name, docId, faPlaceholder);
+    } catch (_) {
       return '&nbsp';
     }
-
-    if (this.cache[docId].htmlContent[name]) {
-      return this.cache[docId].htmlContent[name];
-    }
-    
-    return this.buildAndCacheContent(name, docId, faPlaceholder);
   }
 
   private getHtml (name, docId, faPlaceholder) {
