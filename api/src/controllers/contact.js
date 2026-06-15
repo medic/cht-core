@@ -18,7 +18,7 @@ module.exports = {
   v1: {
     /**
      * @openapi
-     * /api/v1/contact/{id}:
+     * /api/v1/contact/{uuid}:
      *   get:
      *     summary: Get a contact by id
      *     operationId: v1ContactIdGet
@@ -30,7 +30,7 @@ module.exports = {
      *       hasAll: [can_view_contacts]
      *     parameters:
      *       - in: path
-     *         name: id
+     *         name: uuid
      *         required: true
      *         schema:
      *           type: string
