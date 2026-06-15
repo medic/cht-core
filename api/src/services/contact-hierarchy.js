@@ -62,13 +62,15 @@ const refreshConflicts = async (docs) => {
       }
       return doc._deleted ? { ...live, _deleted: true } : { ...live, contact: null };
     })
-    .filter(doc => doc);
+    .filter(Boolean);
 };
 
 const bulkWrite = async (docs) => {
   const errors = [];
   let pending = docs;
-  for (let attempt = 1; pending.length; attempt++) {
+  let attempt = 0;
+  while (pending.length) {
+    attempt += 1;
     const conflicts = [];
     for (let i = 0; i < pending.length; i += BATCH_SIZE) {
       const batch = pending.slice(i, i + BATCH_SIZE);
