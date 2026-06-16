@@ -176,7 +176,9 @@ const getIssueNumbers = commitMessage => {
     const authors = commit.authors.nodes;
     let authConcat = '';
     authors.forEach((author) => {
-      authConcat += ` (${author.user.login})`;
+      if (author.user !== null) {
+        authConcat += ` (${author.user.login})`;
+      }
     });
     return authConcat.trim();
   };
