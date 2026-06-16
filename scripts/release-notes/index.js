@@ -165,7 +165,7 @@ const getIssueNumbers = commitMessage => {
   const commitMadeByDependabot = commit => {
     let result = false;
     commit.authors.nodes.forEach((author) => {
-      if (BOTS.includes(author.user.login)) {
+      if (author.user !== null && BOTS.includes(author.user.login)) {
         result = true;
       }
     });
