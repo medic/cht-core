@@ -323,6 +323,9 @@ Commits:
     const lines = [];
     const authors = commits.flatMap((commit) => commit.authors.nodes);
     authors.forEach((author) => {
+      if (author.user === null ){
+        return;
+      }
       const { login, name, url } = author.user;
       if (login && !ignoreLogins.has(login)) {
         ignoreLogins.add(login);
