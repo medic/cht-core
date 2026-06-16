@@ -58,11 +58,16 @@ export class SessionService {
    */
   userCtx () {
     if (!this.userCtxCookieValue) {
-      try {
-        this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
-      } catch (error) {
-        console.error('Cookie parsing error', error);
-        this.userCtxCookieValue = null;
+      const cookieValue = this.cookieService.get(COOKIE_NAME);
+      // An absent cookie is an expected state (e.g. not logged in yet), so don't try to parse it.
+      // Only log when a cookie is actually present but cannot be parsed.
+      if (cookieValue) {
+        try {
+          this.userCtxCookieValue = JSON.parse(cookieValue);
+        } catch (error) {
+          console.error('Cookie parsing error', error);
+          this.userCtxCookieValue = null;
+        }
       }
     }
 
