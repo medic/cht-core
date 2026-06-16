@@ -320,10 +320,10 @@ app.all('/admin{/{*thing}}', authorization.handleAuthErrors, authorization.offli
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
-app.get('/extension-libs', extensionLibs.list);
-app.get('/extension-libs/:name', extensionLibs.get);
-app.get('/ui-extension', uiExtension.list);
-app.get('/ui-extension/:id', uiExtension.get);
+app.get('/extension-libs', authorization.handleAuthErrors, extensionLibs.list);
+app.get('/extension-libs/:name', authorization.handleAuthErrors, extensionLibs.get);
+app.get('/ui-extension', authorization.handleAuthErrors, uiExtension.list);
+app.get('/ui-extension/:id', authorization.handleAuthErrors, uiExtension.get);
 app.get(`${routePrefix}login`, login.get);
 app.get(`${routePrefix}login/identity`, login.getIdentity);
 app.postJson(`${routePrefix}login`, login.post);
