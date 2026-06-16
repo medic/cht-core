@@ -272,12 +272,11 @@ const baseConfig = {
     globalThis.expect = chai.expect;
     if (!utils.isMinimumChromeVersion) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
+
+      const throttleNetwork = (originalFn, params) => networkUtils.throttleNetwork(params);
+      browser.overwriteCommand('throttleNetwork', throttleNetwork);
+      browser.overwriteCommand('throttle', throttleNetwork);
     }
-    // Replace WebdriverIO's throttle commands with one that reuses a single CDP session, so an
-    // `online` call reliably clears a prior `offline` instead of racing a leaked offline session.
-    const throttleNetwork = (originalFn, params) => networkUtils.throttleNetwork(params);
-    browser.overwriteCommand('throttleNetwork', throttleNetwork);
-    browser.overwriteCommand('throttle', throttleNetwork);
   },
   /**
    * Runs before a WebdriverIO command gets executed.
