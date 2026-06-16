@@ -4,11 +4,13 @@ const logger = require('@medic/logger');
 const DOC_IDS_WARN_LIMIT = 10000;
 
 const LOG_TYPE = 'replication-count-';
-// The count and month difference between old and new log.
-// To determine when the old log will updated with the new one.
-const LOG_COUNT_DIFF = 100;
+// Age (in months) past which a log counts as stale, i.e. the user has not successfully replicated
+// within the window. Used by getStaleLogs.
 const LOG_MONTH_DIFF = 1;
 
+// The log is rewritten on every successful replication so its `date` always reflects the user's last
+// successful replication — this is what getStaleLogs relies on to detect users who have stopped
+// replicating.
 const persistLog = (info) => {
   if (!info || !info.user) {
     const error = new Error('Error when persisting log: Log Information missing.');
@@ -26,36 +28,9 @@ const persistLog = (info) => {
       throw error;
     })
     .then(doc => {
-      if (!isLogDifferent(doc, info)) {
-        return;
-      }
-
       const logDoc = Object.assign(doc, info);
       return db.medicLogs.put(logDoc);
     });
-};
-
-const isLogDifferent = (oldLog, newLog) => {
-  if (!oldLog.date && !oldLog.count) {
-    return true;
-  }
-
-  const countDiff = Math.abs(oldLog.count - newLog.count);
-
-  const oldPrePurge = oldLog.all_docs_count || 0;
-  const newPrePurge = newLog.all_docs_count || 0;
-
-  const prePurgeDiff = Math.abs(oldPrePurge - newPrePurge);
-
-  if (countDiff > LOG_COUNT_DIFF || prePurgeDiff > LOG_COUNT_DIFF) {
-    return true;
-  }
-
-  const oldLogDate = moment(oldLog.date);
-  const newLogDate = moment(newLog.date);
-  const monthDiff = newLogDate.diff(oldLogDate, 'months', true);
-
-  return monthDiff > LOG_MONTH_DIFF;
 };
 
 const getLogsByType = (docPrefix) => {
@@ -82,6 +57,16 @@ const getReplicationLimitLog = (userName) => {
     });
 };
 
+// Returns the full replication limit logs whose last entry is older than LOG_MONTH_DIFF months —
+// i.e. users whose replication context has not been successfully recomputed within that window. The
+// log is rewritten on every successful replication (see persistLog), so an older entry means no
+// successful replication has happened since.
+const getStaleLogs = () => {
+  const cutoff = moment().subtract(LOG_MONTH_DIFF, 'months').valueOf();
+  return getLogsByType(LOG_TYPE)
+    .then(logs => logs.filter(log => log.date && log.date < cutoff));
+};
+
 const logReplicationLimit = (userName, count, prePurgeCount) => {
   const info = {
     user: userName,
@@ -99,7 +84,8 @@ const logReplicationLimit = (userName, count, prePurgeCount) => {
 module.exports = {
   put: logReplicationLimit,
   get: getReplicationLimitLog,
-  _isLogDifferent: isLogDifferent,
+  getStaleLogs,
   LOG_TYPE,
+  LOG_MONTH_DIFF,
   DOC_IDS_WARN_LIMIT,
 };

@@ -63,6 +63,7 @@ const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const replicationFailureLogController = require('./controllers/replication-failure-log');
+const usersWithoutReplicationController = require('./controllers/users-without-replication');
 const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
@@ -796,6 +797,7 @@ app.put(
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);
+app.get('/api/v1/users-without-replication', usersWithoutReplicationController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`

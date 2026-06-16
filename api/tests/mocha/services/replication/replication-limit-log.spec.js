@@ -1,5 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const moment = require('moment');
 const replicationLimitLogService = require('../../../../src/services/replication/replication-limit-log');
 const db = require('../../../../src/db');
 const logger = require('@medic/logger');
@@ -44,6 +45,30 @@ describe('Replication Limit Log service', () => {
           chai.expect(getStub.called).to.be.true;
           chai.expect(putStub.called).to.be.true;
           chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
+        });
+    });
+
+    it('should always update the existing log, even when counts and date are unchanged', () => {
+      const logType = replicationLimitLogService.LOG_TYPE;
+      const existingDoc = {
+        _id: logType + 'userXYZ',
+        _rev: '1-abc',
+        user: 'userXYZ',
+        date: 1000,
+        count: 100,
+        all_docs_count: 500
+      };
+      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.resolve(existingDoc));
+      const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
+
+      return replicationLimitLogService
+        .put('userXYZ', 100, 500)
+        .then(() => {
+          chai.expect(getStub.called).to.be.true;
+          chai.expect(putStub.called).to.be.true;
+          // Keeps the existing _rev (updates in place) and refreshes the date.
+          chai.expect(putStub.args[0][0]._rev).to.equal('1-abc');
+          chai.expect(putStub.args[0][0].date).to.not.equal(1000);
         });
     });
   });
@@ -107,80 +132,61 @@ describe('Replication Limit Log service', () => {
     });
   });
 
-  describe('_isLogDifferent()', () => {
-    it('should return false when logs are not different enough', () => {
-      const oldLog = {
-        date: 1583944505000, // 2020/03/12 03:05:05
-        count: 50,
-        all_docs_count: 100
-      };
-      const newLog = {
-        date: 1584635705000, // 2020/03/20 03:05:05
-        count: 55,
-        all_docs_count: 105
-      };
+  describe('getStaleLogs()', () => {
+    const logType = replicationLimitLogService.LOG_TYPE;
+    const log = (user, date) => ({ _id: logType + user, user, date });
 
-      const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
+    // Today: 2026-06-16. LOG_MONTH_DIFF is 1, so the cutoff is 2026-05-16.
+    beforeEach(() => sinon.useFakeTimers(new Date('2026-06-16T12:00:00Z').valueOf()));
 
-      chai.expect(result).to.be.false;
+    it('should return only logs older than LOG_MONTH_DIFF months', () => {
+      const fresh = log('fresh', moment('2026-06-01T00:00:00Z').valueOf());
+      const stale = log('stale', moment('2026-04-01T00:00:00Z').valueOf());
+      sinon.stub(db.medicLogs, 'get');
+      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
+        rows: [{ doc: fresh }, { doc: stale }],
+      }));
+
+      return replicationLimitLogService
+        .getStaleLogs()
+        .then((logs) => {
+          chai.expect(allDocsStub.args[0][0]).to.deep.include({
+            startkey: logType,
+            endkey: logType + '\ufff0',
+            include_docs: true,
+          });
+          chai.expect(logs).to.deep.equal([stale]);
+        });
     });
 
-    it('should return true when count is different enough', () => {
-      const oldLog = {
-        date: 1583944505000, // 2020/03/12 03:05:05
-        count: 150
-      };
-      const newLog = {
-        date: 1584635705000, // 2020/03/20 03:05:05
-        count: 40
-      };
+    it('should ignore logs without a date', () => {
+      sinon.stub(db.medicLogs, 'get');
+      sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
+        rows: [
+          { doc: log('nodate', undefined) },
+          { doc: log('stale', moment('2026-01-01T00:00:00Z').valueOf()) },
+        ],
+      }));
 
-      const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
-
-      chai.expect(result).to.be.true;
+      return replicationLimitLogService
+        .getStaleLogs()
+        .then((logs) => {
+          chai.expect(logs.map(l => l.user)).to.deep.equal(['stale']);
+        });
     });
 
-    it('should return true when date is different enough', () => {
-      const oldLog = {
-        date: 1584203705000, // 2020/03/15 03:05:05
-        count: 50
-      };
-      const newLog = {
-        date: 1587317705000, // 2020/04/20 03:05:05
-        count: 40
-      };
+    it('should return an empty array when no logs are stale', () => {
+      sinon.stub(db.medicLogs, 'get');
+      sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
+        rows: [{ doc: log('fresh', moment('2026-06-10T00:00:00Z').valueOf()) }],
+      }));
 
-      const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
-
-      chai.expect(result).to.be.true;
-    });
-
-    it('should return true when old log is missing data', () => {
-      const newLog = {
-        date: 1587317705000, // 2020/04/20 03:05:05
-        count: 40
-      };
-
-      const result = replicationLimitLogService._isLogDifferent({}, newLog);
-
-      chai.expect(result).to.be.true;
-    });
-
-    it('should return true when all_docs_count count is different enough', () => {
-      const oldLog = {
-        date: 1583944505000,
-        count: 50,
-        all_docs_count: 100
-      };
-      const newLog = {
-        date: 1583944505000,
-        count: 50,
-        all_docs_count: 250
-      };
-
-      const result = replicationLimitLogService._isLogDifferent(oldLog, newLog);
-
-      chai.expect(result).to.be.true;
+      return replicationLimitLogService
+        .getStaleLogs()
+        .then((logs) => {
+          chai.expect(logs).to.deep.equal([]);
+        });
     });
   });
+
 });
