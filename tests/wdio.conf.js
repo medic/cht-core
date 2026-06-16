@@ -9,6 +9,7 @@ const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
 const browserLogsUtils = require('@utils/browser-logs');
+const networkUtils = require('@utils/network');
 const { generateReport } = require('@utils/allure');
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
@@ -272,6 +273,11 @@ const baseConfig = {
     if (!utils.isMinimumChromeVersion) {
       await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
     }
+    // Replace WebdriverIO's throttle commands with one that reuses a single CDP session, so an
+    // `online` call reliably clears a prior `offline` instead of racing a leaked offline session.
+    const throttleNetwork = (originalFn, params) => networkUtils.throttleNetwork(params);
+    browser.overwriteCommand('throttleNetwork', throttleNetwork);
+    browser.overwriteCommand('throttle', throttleNetwork);
   },
   /**
    * Runs before a WebdriverIO command gets executed.
