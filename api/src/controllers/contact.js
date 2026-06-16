@@ -2,19 +2,13 @@ const auth = require('../auth');
 const { Contact, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
-const { pageHandler } = require('./libs/pagination');
 
 const getContact = ctx.bind(Contact.v1.get);
 const getContactWithLineage = ctx.bind(Contact.v1.getWithLineage);
 const getContactIds = ctx.bind(Contact.v1.getUuidsPage);
 const getContactDocs = ctx.bind(Contact.v1.getPage);
 
-const PERMISSIONS = { isOnline: true, hasAll: ['can_view_contacts'] };
-
 const buildContactQualifier = ({ freetext, type }) => {
-  if (!freetext && !type) {
-    throw { status: 400, message: 'Either query param freetext or type is required' };
-  }
   const qualifier = {};
   if (freetext) {
     Object.assign(qualifier, Qualifier.byFreetext(freetext));
@@ -135,10 +129,14 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getUuids: pageHandler({
-      permissions: PERMISSIONS,
-      getQualifier: buildContactQualifier,
-      getPage: getContactIds,
+    getUuids: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
+      if (!req.query.freetext && !req.query.type) {
+        return serverUtils.error({ status: 400, message: 'Either query param freetext or type is required' }, req, res);
+      }
+      const qualifier = buildContactQualifier(req.query);
+      const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
+      return res.json(docs);
     }),
 
     /**
@@ -197,10 +195,14 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getAll: pageHandler({
-      permissions: PERMISSIONS,
-      getQualifier: buildContactQualifier,
-      getPage: getContactDocs,
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
+      if (!req.query.freetext && !req.query.type) {
+        return serverUtils.error({ status: 400, message: 'Either query param freetext or type is required' }, req, res);
+      }
+      const qualifier = buildContactQualifier(req.query);
+      const docs = await getContactDocs(qualifier, req.query.cursor, req.query.limit);
+      return res.json(docs);
     }),
   },
 };

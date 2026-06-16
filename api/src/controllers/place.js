@@ -2,7 +2,6 @@ const { Place, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
-const { pageHandler } = require('./libs/pagination');
 
 const getPlace = ctx.bind(Place.v1.get);
 const getPlaceWithLineage = ctx.bind(Place.v1.getWithLineage);
@@ -110,10 +109,11 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getAll: pageHandler({
-      permissions: { isOnline: true, hasAll: ['can_view_contacts'] },
-      getQualifier: ({ type }) => Qualifier.byContactType(type),
-      getPage: getPageByType,
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
+      const placeType = Qualifier.byContactType(req.query.type);
+      const docs = await getPageByType(placeType, req.query.cursor, req.query.limit);
+      return res.json(docs);
     }),
 
     /**

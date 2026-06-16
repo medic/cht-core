@@ -2,7 +2,6 @@ const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const { Report, Qualifier } = require('@medic/cht-datasource');
 const auth = require('../auth');
-const { pageHandler } = require('./libs/pagination');
 
 const getReport = ctx.bind(Report.v1.get);
 const getReportWithLineage = ctx.bind(Report.v1.getWithLineage);
@@ -10,9 +9,6 @@ const getReportIds = ctx.bind(Report.v1.getUuidsPage);
 const getReportDocs = ctx.bind(Report.v1.getPage);
 const create = ctx.bind(Report.v1.create);
 const update = ctx.bind(Report.v1.update);
-
-const PERMISSIONS = { isOnline: true, hasAll: ['can_view_reports'] };
-const buildReportQualifier = ({ freetext }) => Qualifier.byFreetext(freetext);
 
 /**
  * @openapi
@@ -116,10 +112,11 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getUuids: pageHandler({
-      permissions: PERMISSIONS,
-      getQualifier: buildReportQualifier,
-      getPage: getReportIds,
+    getUuids: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      const qualifier = Qualifier.byFreetext(req.query.freetext);
+      const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
+      return res.json(docs);
     }),
 
     /**
@@ -170,10 +167,11 @@ module.exports = {
      *       '403':
      *         $ref: '#/components/responses/Forbidden'
      */
-    getAll: pageHandler({
-      permissions: PERMISSIONS,
-      getQualifier: buildReportQualifier,
-      getPage: getReportDocs,
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      const qualifier = Qualifier.byFreetext(req.query.freetext);
+      const docs = await getReportDocs(qualifier, req.query.cursor, req.query.limit);
+      return res.json(docs);
     }),
 
     /**
