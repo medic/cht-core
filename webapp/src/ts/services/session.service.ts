@@ -59,8 +59,7 @@ export class SessionService {
   userCtx () {
     if (!this.userCtxCookieValue) {
       const cookieValue = this.cookieService.get(COOKIE_NAME);
-      // An absent cookie is an expected state (e.g. not logged in yet), so don't try to parse it.
-      // Only log when a cookie is actually present but cannot be parsed.
+      // An absent cookie is an expected state
       if (cookieValue) {
         try {
           this.userCtxCookieValue = JSON.parse(cookieValue);
