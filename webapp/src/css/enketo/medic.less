@@ -316,6 +316,14 @@
       .fa {
         color: @error-color;
       }
+
+      &:disabled {
+        cursor: not-allowed;
+
+        &:hover {
+          background-color: @gray-light;
+        }
+      }
     }
 
     .geolocation-status {
