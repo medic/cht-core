@@ -321,7 +321,7 @@ describe('Enketo: Geolocation Widget', () => {
         expect(retryBtn.querySelector('.fa.fa-map-marker')).to.not.be.null;
       });
 
-      it('should set hidden input to "not_captured" and fire change event on failure', async () => {
+      it('should not set hidden input value or fire change event on failure', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
         buildHtml();
@@ -338,8 +338,52 @@ describe('Enketo: Geolocation Widget', () => {
 
         await promise;
 
-        expect(widget.element.value).to.equal('not_captured');
+        expect(widget.element.value).to.equal('');
+        expect(changeHandler.callCount).to.equal(0);
+      });
+
+      it('should set hidden input to "skipped" and fire change event when skip button is clicked', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const changeHandler = sinon.stub();
+        $(widget.element).on('change', changeHandler);
+
+        (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
+
+        expect(widget.element.value).to.equal('skipped');
         expect(changeHandler.callCount).to.equal(1);
+      });
+
+      it('should remove retry and skip buttons and show a confirmation message when skip is clicked', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
+
+        expect(container.querySelector('.geolocation-retry-btn')).to.be.null;
+        expect(container.querySelector('.geolocation-skip-btn')).to.be.null;
+        expect(container.querySelector('.geolocation-skipped-msg')).to.not.be.null;
       });
 
       it('should call retry() and return to loading state when retry button is clicked', async () => {

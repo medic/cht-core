@@ -110,4 +110,22 @@ describe('cht-form web component - Geolocation Widget', () => {
     await $('.geolocation-retry-btn').waitForExist();
     expect(await $('.geolocation-context-options').isDisplayed()).to.be.false;
   });
+
+  it('should show a confirmation message and remove retry/skip buttons when skip is clicked', async () => {
+    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+
+    await browser.execute((geoFailure) => {
+      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoFailure), retry: () => {} };
+    }, GEO_FAILURE);
+
+    await selectHomeContext();
+    await $('.geolocation-capture-btn').click();
+
+    await $('.geolocation-skip-btn').waitForExist();
+    await $('.geolocation-skip-btn').click();
+
+    await $('.geolocation-skipped-msg').waitForExist();
+    expect(await $('.geolocation-retry-btn').isExisting()).to.be.false;
+    expect(await $('.geolocation-skip-btn').isExisting()).to.be.false;
+  });
 });

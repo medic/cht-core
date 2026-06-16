@@ -9,6 +9,7 @@
           <meta><instanceID/></meta>
         </data>
       </instance>
+      <bind nodeset="/data/geo_capture" type="string" required="true()"/>
     </model>
   </h:head>
   <h:body>

@@ -15,6 +15,22 @@ const selectHomeContext = async () => {
   await $('.geolocation-context-options input[value="home"]').click();
 };
 
+const captureAndWait = async () => {
+  await $('.geolocation-capture-btn').click();
+  // GPS may succeed or fail depending on the environment. Wait for either outcome.
+  await browser.waitUntil(
+    async () => {
+      const success = await $('.geolocation-success-msg').isExisting();
+      const skip = await $('.geolocation-skip-btn').isExisting();
+      return success || skip;
+    },
+    { timeout: 35000 }
+  );
+  if (await $('.geolocation-skip-btn').isExisting()) {
+    await $('.geolocation-skip-btn').click();
+  }
+};
+
 describe('Geolocation widget - contact save pipeline', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
@@ -91,6 +107,7 @@ describe('Geolocation widget - contact save pipeline', () => {
 
     await $('.or-appearance-geolocation-capture').waitForDisplayed();
     await selectHomeContext();
+    await captureAndWait();
     await commonEnketoPage.setInputValue('Full name', 'Test Person With Geo');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

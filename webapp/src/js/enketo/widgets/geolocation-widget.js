@@ -46,6 +46,7 @@ class GeolocationWidget extends Widget {
     $question.append($button);
 
     $contextOptions.on('change', 'input[type="radio"]', event => {
+      event.stopPropagation();
       this.element.dataset.geoContext = event.target.value;
       $button.prop('disabled', false);
     });
@@ -98,6 +99,16 @@ class GeolocationWidget extends Widget {
         });
 
         const $skipBtn = $('<button type="button" class="btn btn-default geolocation-skip-btn">');
+        $skipBtn.on('click', () => {
+          $retryBtn.remove();
+          $skipBtn.remove();
+
+          const $skippedMsg = $('<p class="geolocation-skipped-msg">');
+          $status.append($skippedMsg);
+          globalThis.CHTCore.Translate.get('geolocation.skipped').then(text => $skippedMsg.text(text));
+
+          $(this.element).val('skipped').trigger('change');
+        });
         $status.append($retryBtn, $skipBtn);
 
         globalThis.CHTCore.Translate.get('geolocation.result.label').then(text => $resultLabel.text(text));
@@ -105,8 +116,6 @@ class GeolocationWidget extends Widget {
         globalThis.CHTCore.Translate.get('geolocation.retry')
           .then(text => $retryBtn.append($('<span class="geolocation-btn-label">').text(text)));
         globalThis.CHTCore.Translate.get('geolocation.skip').then(text => $skipBtn.text(text));
-
-        $(this.element).val('not_captured').trigger('change');
       } else {
         $bar.addClass('geolocation-progress-success');
 

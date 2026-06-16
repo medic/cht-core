@@ -29,7 +29,7 @@
       <bind nodeset="/data/person_with_geo/parent" type="string"/>
       <bind nodeset="/data/person_with_geo/type" type="string"/>
       <bind nodeset="/data/person_with_geo/name" type="string" required="true()"/>
-      <bind nodeset="/data/person_with_geo/geo_capture" type="string"/>
+      <bind nodeset="/data/person_with_geo/geo_capture" type="string" required="true()"/>
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
