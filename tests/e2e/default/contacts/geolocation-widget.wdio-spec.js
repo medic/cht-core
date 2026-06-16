@@ -10,6 +10,11 @@ const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const { CONTACT_TYPES } = require('@medic/constants');
 
+const selectHomeContext = async () => {
+  await $('.geolocation-context-options input[value="home"]').waitForExist();
+  await $('.geolocation-context-options input[value="home"]').click();
+};
+
 describe('Geolocation widget - contact save pipeline', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
@@ -84,15 +89,8 @@ describe('Geolocation widget - contact save pipeline', () => {
     await commonPage.goToPeople(healthCenter._id);
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
-    // Sanity check: verify the correct form loaded with our test fixture label
-    await $('label*=Capture GPS Location').waitForDisplayed();
-
-    // Check whether Enketo generated the geolocation widget CSS class
-    const hasWidgetClass = await browser.execute(() => {
-      return !!document.querySelector('.or-appearance-geolocation-capture');
-    });
-    expect(hasWidgetClass, 'Enketo should add or-appearance-geolocation-capture class').to.be.true;
-
+    await $('.or-appearance-geolocation-capture').waitForDisplayed();
+    await selectHomeContext();
     await commonEnketoPage.setInputValue('Full name', 'Test Person With Geo');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -101,11 +99,10 @@ describe('Geolocation widget - contact save pipeline', () => {
     const contactId = await contactPage.getCurrentContactId();
     const savedDoc = await utils.getDoc(contactId);
 
-    // The geolocation save pipeline runs regardless of GPS outcome (success or failure).
     expect(savedDoc.geolocation_log).to.exist;
     expect(savedDoc.geolocation_log).to.have.lengthOf(1);
     expect(savedDoc.geolocation_log[0].timestamp).to.be.greaterThan(0);
-    expect(savedDoc.geolocation).to.exist;
-    expect(savedDoc.geolocation_log[0].recording).to.deep.equal(savedDoc.geolocation);
+    expect(savedDoc.geolocation_log[0].is_home).to.be.true;
+    expect(savedDoc.geolocation_log[0].recording).to.exist;
   });
 });

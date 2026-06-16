@@ -11,18 +11,6 @@
           <text id="/data/person_with_geo/geo_capture:label">
             <value>Capture GPS Location</value>
           </text>
-          <text id="/data/person_with_geo/geo_context:label">
-            <value>Where are you capturing GPS location?</value>
-          </text>
-          <text id="/data/person_with_geo/geo_context:option0">
-            <value>At the beneficiary's home</value>
-          </text>
-          <text id="/data/person_with_geo/geo_context:option1">
-            <value>At the beneficiary's workplace</value>
-          </text>
-          <text id="/data/person_with_geo/geo_context:option2">
-            <value>Other</value>
-          </text>
         </translation>
       </itext>
       <instance>
@@ -32,7 +20,6 @@
             <type>person</type>
             <name/>
             <geo_capture/>
-            <geo_context/>
           </person_with_geo>
           <meta tag="hidden">
             <instanceID/>
@@ -43,7 +30,6 @@
       <bind nodeset="/data/person_with_geo/type" type="string"/>
       <bind nodeset="/data/person_with_geo/name" type="string" required="true()"/>
       <bind nodeset="/data/person_with_geo/geo_capture" type="string"/>
-      <bind nodeset="/data/person_with_geo/geo_context" type="string" required="true()"/>
       <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
@@ -55,21 +41,6 @@
       <input ref="/data/person_with_geo/geo_capture" appearance="geolocation-capture">
         <label ref="jr:itext('/data/person_with_geo/geo_capture:label')"/>
       </input>
-      <select1 ref="/data/person_with_geo/geo_context" appearance="geolocation-context">
-        <label ref="jr:itext('/data/person_with_geo/geo_context:label')"/>
-        <item>
-          <label ref="jr:itext('/data/person_with_geo/geo_context:option0')"/>
-          <value>home</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person_with_geo/geo_context:option1')"/>
-          <value>workplace</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person_with_geo/geo_context:option2')"/>
-          <value>other</value>
-        </item>
-      </select1>
     </group>
   </h:body>
 </h:html>
