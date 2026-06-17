@@ -182,21 +182,13 @@ describe('Report Controller Tests', () => {
     });
 
     describe('getAll', () => {
-      const freetext = 'report';
-      const freetexQualifier = Qualifier.byFreetext(freetext);
       const report = { name: 'Nice report', type: DOC_TYPES.DATA_RECORD, form: 'yes' };
       const limit = 100;
       const cursor = null;
       const reports = Array.from({ length: 3 }, () => ({ ...report }));
 
-      it('returns a page of reports', async () => {
-        req = {
-          query: {
-            freetext,
-            cursor,
-            limit,
-          }
-        };
+      it('returns a page of all reports (no qualifier)', async () => {
+        req = { query: { cursor, limit } };
         reportGetPage.resolves({ data: reports, cursor: null });
 
         await controller.v1.getAll(req, res);
@@ -205,23 +197,18 @@ describe('Report Controller Tests', () => {
           req,
           { isOnline: true, hasAll: ['can_view_reports'] }
         )).to.be.true;
-        expect(reportGetPage.calledOnceWithExactly(freetexQualifier, cursor, limit)).to.be.true;
+        expect(reportGetPage.calledOnceWithExactly(undefined, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly({ data: reports, cursor: null })).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns a page of reports for undefined limit', async () => {
-        req = {
-          query: {
-            freetext,
-            cursor,
-          }
-        };
+      it('passes through cursor and an undefined limit', async () => {
+        req = { query: { cursor } };
         reportGetPage.resolves({ data: reports, cursor: null });
 
         await controller.v1.getAll(req, res);
 
-        expect(reportGetPage.calledOnceWithExactly(freetexQualifier, cursor, undefined)).to.be.true;
+        expect(reportGetPage.calledOnceWithExactly(undefined, cursor, undefined)).to.be.true;
         expect(res.json.calledOnceWithExactly({ data: reports, cursor: null })).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });

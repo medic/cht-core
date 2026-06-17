@@ -140,6 +140,17 @@ export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is U
   }
 };
 
+/**
+ * Asserts that no qualifier was provided. Used by paged getters that do not (yet) support any qualifier and simply
+ * page all entities.
+ * @internal
+ */
+export const assertNoQualifier: (qualifier: unknown) => asserts qualifier is undefined = (qualifier: unknown) => {
+  if (qualifier !== undefined) {
+    throw new InvalidArgumentError(`Unsupported qualifier [${JSON.stringify(qualifier)}].`);
+  }
+};
+
 /** @ignore */
 export const isContactType = (value: ContactTypeQualifier | FreetextQualifier): value is ContactTypeQualifier => {
   return 'contactType' in value;

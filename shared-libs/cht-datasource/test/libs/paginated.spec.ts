@@ -59,6 +59,14 @@ describe('paginated', () => {
       expect(innerFn.calledOnceWithExactly(qualifier, null, defaultLimit)).to.be.true;
     });
 
+    it('resolves a page when no qualifier is provided (passes undefined through)', async () => {
+      const result = await build()();
+
+      expect(result).to.equal(page);
+      expect(assertQualifier.calledOnceWithExactly(undefined)).to.be.true;
+      expect(innerFn.calledOnceWithExactly(undefined, null, defaultLimit)).to.be.true;
+    });
+
     it('passes the cursor through and coerces a stringified limit to a number', async () => {
       const result = await build()(qualifier, '5', '3');
 
@@ -131,6 +139,16 @@ describe('paginated', () => {
       expect(() => getGeneratorFn(pagedFn, assertQualifier)(dataContext)(qualifier))
         .to.throw(InvalidArgumentError, 'Invalid qualifier.');
       expect(getPagedGenerator.notCalled).to.be.true;
+    });
+
+    it('drains a qualifier-less getter when called with no qualifier', () => {
+      getPagedGenerator.returns(mockGenerator);
+
+      const generator = getGeneratorFn(pagedFn, assertQualifier)(dataContext)();
+
+      expect(generator).to.equal(mockGenerator);
+      expect(assertQualifier.calledOnceWithExactly(undefined)).to.be.true;
+      expect(getPagedGenerator.calledOnceWithExactly(boundPagedFn, undefined)).to.be.true;
     });
   });
 });

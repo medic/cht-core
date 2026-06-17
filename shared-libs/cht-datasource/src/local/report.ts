@@ -1,10 +1,11 @@
 import { LocalDataContext } from './libs/data-context';
 import {
   createDoc,
+  fetchAndFilter,
   fetchAndFilterIds,
   getDocById, getDocIdsByIdRange, getDocsByIds,
   queryDocIdsByKey,
-  queryDocIdsByRange, updateDoc
+  queryDocIdsByRange, queryDocsByKey, updateDoc
 } from './libs/doc';
 import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
@@ -131,22 +132,24 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getPage = (context: LocalDataContext) => {
-    const getReportUuidsPage = getUuidsPage(context);
-    const getMedicDocsByIds = getDocsByIds(context.medicDb);
+  export const getPage = ({ medicDb }: LocalDataContext) => {
+    const getReportsPage = queryDocsByKey(medicDb, 'medic-client/data_records_by_type');
 
     return async (
-      qualifier: FreetextQualifier,
+      // No qualifier is supported yet - all reports are returned. The leading argument is reserved for the
+      // qualifiers that will be added later.
+      _qualifier: undefined,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<Report.v1.Report>> => {
-      // Resolve the page of IDs, then hydrate with one batched allDocs.
-      const idsPage = await getReportUuidsPage(qualifier, cursor, limit);
-      const docs = await getMedicDocsByIds(idsPage.data);
-      return {
-        data: docs.filter((doc): doc is Report.v1.Report => isReport(doc)),
-        cursor: idsPage.cursor,
-      };
+      // Resolved with a single include_docs view query returning every report.
+      const skip = validateCursor(cursor);
+      const getPageFn = (limit: number, skip: number) => getReportsPage('report', limit, skip);
+      return await fetchAndFilter(
+        getPageFn,
+        (doc: Nullable<Doc>) => isReport(doc),
+        limit
+      )(limit, skip) as Page<Report.v1.Report>;
     };
   };
 

@@ -19,6 +19,7 @@ import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertContactTypeFreetextQualifier,
+  assertNoQualifier,
   assertUuidQualifier,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
@@ -107,8 +108,9 @@ export namespace v1 {
   /**
    * Returns a function for retrieving a paged array of contacts from the given data context.
    *
-   * The returned function accepts a `ContactTypeQualifier` and/or `FreetextQualifier`, an optional page `cursor`
-   * (`null` for the first page) and an optional `limit` (default 100), and resolves a page of contacts.
+   * The returned function accepts an optional page `cursor` (`null` for the first page) and an optional `limit`
+   * (default 100), and resolves a page of contacts. All contacts are returned (this is not filtered by a qualifier);
+   * use the typed {@link https://docs.communityhealthtoolkit.org | Person} / Place pages to filter by contact type.
    * @param context the current data context
    * @returns a function for retrieving a paged array of contacts
    * @throws Error if a data context is not provided
@@ -117,17 +119,17 @@ export namespace v1 {
   export const getPage = getPagedDataFn(
     Local.Contact.v1.getPage,
     Remote.Contact.v1.getPage,
-    assertContactTypeFreetextQualifier,
+    assertNoQualifier,
     DEFAULT_DOCS_PAGE_LIMIT,
   );
 
   /**
-   * Returns a function for getting a generator that fetches contacts from the given data context.
+   * Returns a function for getting a generator that fetches all contacts from the given data context.
    * @param context the current data context
-   * @returns a function for getting a generator that fetches contacts
+   * @returns a function for getting a generator that fetches all contacts
    * @throws Error if a data context is not provided
    */
-  export const getAll = getGeneratorFn(v1.getPage, assertContactTypeFreetextQualifier);
+  export const getAll = getGeneratorFn(v1.getPage, assertNoQualifier);
 
   /**
    * Operations for working with contacts.

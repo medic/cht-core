@@ -126,22 +126,14 @@ module.exports = {
      *     summary: Get reports
      *     operationId: v1ReportGet
      *     description: >
-     *       Returns a paginated array of report records matching the given freetext search term. Use the `cursor`
-     *       returned in each response to retrieve subsequent pages. See also
-     *       [Get report UUIDs](#/Report/v1ReportUuidGet) for retrieving only the matching identifiers.
+     *       Returns a paginated array of all report records. Use the `cursor` returned in each response to retrieve
+     *       subsequent pages. See also [Get report UUIDs](#/Report/v1ReportUuidGet) for retrieving only identifiers
+     *       (which supports a `freetext` filter).
      *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
      *     parameters:
-     *       - in: query
-     *         name: freetext
-     *         required: true
-     *         schema:
-     *           type: string
-     *           minLength: 3
-     *         description: >
-     *           A search term for filtering reports. Must be at least 3 characters and not contain whitespace.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -169,8 +161,8 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      const qualifier = Qualifier.byFreetext(req.query.freetext);
-      const docs = await getReportDocs(qualifier, req.query.cursor, req.query.limit);
+      // No qualifier is supported yet - all reports are returned.
+      const docs = await getReportDocs(undefined, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
 

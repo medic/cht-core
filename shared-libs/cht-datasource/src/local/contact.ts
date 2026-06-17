@@ -3,10 +3,9 @@ import {
   fetchAndFilter,
   fetchAndFilterIds,
   getDocById,
-  getDocsByIds,
   queryDocIdsByKey,
   queryDocIdsByRange,
-  queryDocsByKey
+  queryDocsByPage
 } from './libs/doc';
 import {
   ContactTypeQualifier,
@@ -146,36 +145,23 @@ export namespace v1 {
   };
 
   /** @internal */
-  export const getPage = (context: LocalDataContext) => {
-    const { medicDb, settings } = context;
-    const getDocsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
-    const getMedicDocsByIds = getDocsByIds(medicDb);
-    const getContactUuidsPage = getUuidsPage(context);
+  export const getPage = ({ medicDb, settings }: LocalDataContext) => {
+    const getContactsPage = queryDocsByPage(medicDb, 'medic-client/contacts_by_type');
 
     return async (
-      qualifier: ContactTypeQualifier | FreetextQualifier,
+      // No qualifier is supported yet - all contacts are returned. The leading argument is reserved for the
+      // qualifiers (e.g. by-ids) that will be added later.
+      _qualifier: undefined,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<Contact.v1.Contact>> => {
-      if (!isFreetextQualifier(qualifier)) {
-        // Simple contact type query - resolved with a single include_docs view query.
-        assertValidContactType(settings.getAll(), qualifier);
-        const skip = validateCursor(cursor);
-        const getPageFn = (limit: number, skip: number) => getDocsByType([qualifier.contactType], limit, skip);
-        return await fetchAndFilter(
-          getPageFn,
-          (doc: Nullable<Doc>) => isContact(settings, doc),
-          limit
-        )(limit, skip) as Page<Contact.v1.Contact>;
-      }
-
-      // Freetext (with or without type) - resolve the page of IDs, then hydrate with one batched allDocs.
-      const idsPage = await getContactUuidsPage(qualifier, cursor, limit);
-      const docs = await getMedicDocsByIds(idsPage.data);
-      return {
-        data: docs.filter((doc): doc is Contact.v1.Contact => isContact(settings, doc)),
-        cursor: idsPage.cursor,
-      };
+      // Resolved with a single include_docs view query returning every contact.
+      const skip = validateCursor(cursor);
+      return await fetchAndFilter(
+        getContactsPage,
+        (doc: Nullable<Doc>) => isContact(settings, doc),
+        limit
+      )(limit, skip) as Page<Contact.v1.Contact>;
     };
   };
 }

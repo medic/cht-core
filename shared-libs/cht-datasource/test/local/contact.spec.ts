@@ -612,140 +612,55 @@ describe('local contact', () => {
 
     describe('getPage', () => {
       const limit = 3;
-      const contactType = 'person';
-      let getContactTypeIds: SinonStub;
-      let queryDocsByKeyInner: SinonStub;
-      let queryDocsByKeyOuter: SinonStub;
+      let queryDocsByPageInner: SinonStub;
+      let queryDocsByPageOuter: SinonStub;
       let fetchAndFilterInner: SinonStub;
       let fetchAndFilterOuter: SinonStub;
-      let queryNouveauFreetext: SinonStub;
-      let useNouveauIndexes: SinonStub;
-      let getDocsByIdsInner: SinonStub;
-      let getDocsByIdsOuter: SinonStub;
 
       beforeEach(() => {
-        getContactTypeIds = sinon.stub(contactTypeUtils, 'getContactTypeIds').returns([contactType]);
-
-        queryDocsByKeyInner = sinon.stub();
-        queryDocsByKeyOuter = sinon
-          .stub(LocalDoc, 'queryDocsByKey')
+        queryDocsByPageInner = sinon.stub();
+        queryDocsByPageOuter = sinon
+          .stub(LocalDoc, 'queryDocsByPage')
           .withArgs(localContext.medicDb, 'medic-client/contacts_by_type')
-          .returns(queryDocsByKeyInner);
+          .returns(queryDocsByPageInner);
 
         fetchAndFilterInner = sinon.stub();
         fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
-
-        queryNouveauFreetext = sinon.stub();
-        sinon
-          .stub(Nouveau, 'queryByFreetext')
-          .withArgs(localContext.medicDb, 'contacts_by_freetext')
-          .returns(queryNouveauFreetext);
-        useNouveauIndexes = sinon.stub(Nouveau, 'useNouveauIndexes');
-
-        getDocsByIdsInner = sinon.stub();
-        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
       });
 
-      describe('contact type qualifier', () => {
-        const expectedResult = { cursor: '3', data: [{ type: 'person' }, { type: 'person' }, { type: 'person' }] };
+      ([
+        [null, 0],
+        ['1', 1]
+      ] as [string | null, number][]).forEach(([cursor, skip]) => {
+        it(`resolves a page of all contacts via a single include_docs view query, cursor [${cursor}]`, async () => {
+          const expectedResult = { cursor: '3', data: [{ type: 'person' }, { type: 'person' }, { type: 'person' }] };
+          fetchAndFilterInner.resolves(expectedResult);
 
-        ([
-          [null, 0],
-          ['1', 1]
-        ] as [string | null, number][]).forEach(([cursor, skip]) => {
-          it(`resolves a page of contacts with a single include_docs view query with cursor [${cursor}]`, async () => {
-            const qualifier = Qualifier.byContactType(contactType);
-            fetchAndFilterInner.resolves(expectedResult);
+          const res = await Contact.v1.getPage(localContext)(undefined, cursor, limit);
 
-            const res = await Contact.v1.getPage(localContext)(qualifier, cursor, limit);
-
-            expect(res).to.deep.equal(expectedResult);
-            expect(getContactTypeIds.calledOnceWithExactly(settings)).to.be.true;
-            expect(queryDocsByKeyOuter.calledWithExactly(
-              localContext.medicDb, 'medic-client/contacts_by_type'
-            )).to.be.true;
-            expect(fetchAndFilterOuter.calledOnce).to.be.true;
-            expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
-            expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
-            expect(fetchAndFilterInner.calledOnceWithExactly(limit, skip)).to.be.true;
-            // Verify the page function uses the contacts_by_type view with include_docs
-            const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
-            pageFn(limit, skip);
-            expect(queryDocsByKeyInner.calledOnceWithExactly([contactType], limit, skip)).to.be.true;
-            // No freetext path and no id hydration
-            expect(queryNouveauFreetext.notCalled).to.be.true;
-            expect(getDocsByIdsInner.notCalled).to.be.true;
-          });
-        });
-
-        it('throws for invalid contact type', async () => {
-          getContactTypeIds.returns(['not-person']);
-          const qualifier = Qualifier.byContactType(contactType);
-
-          await expect(Contact.v1.getPage(localContext)(qualifier, null, limit))
-            .to.be.rejectedWith(InvalidArgumentError, `Invalid contact type [${contactType}].`);
-
-          expect(fetchAndFilterOuter.notCalled).to.be.true;
-          expect(fetchAndFilterInner.notCalled).to.be.true;
-          expect(getDocsByIdsInner.notCalled).to.be.true;
-        });
-
-        it('throws for invalid cursor', async () => {
-          const qualifier = Qualifier.byContactType(contactType);
-          const cursor = 'not a number';
-
-          await expect(Contact.v1.getPage(localContext)(qualifier, cursor, limit))
-            .to.be.rejectedWith(
-              InvalidArgumentError,
-              `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
-            );
-
-          expect(fetchAndFilterOuter.notCalled).to.be.true;
-          expect(fetchAndFilterInner.notCalled).to.be.true;
-          expect(getDocsByIdsInner.notCalled).to.be.true;
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocsByPageOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/contacts_by_type'))
+            .to.be.true;
+          expect(fetchAndFilterOuter.calledOnce).to.be.true;
+          // The page function is the (unfiltered) contacts_by_type view query
+          expect(fetchAndFilterOuter.firstCall.args[0]).to.equal(queryDocsByPageInner);
+          expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+          expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+          expect(fetchAndFilterInner.calledOnceWithExactly(limit, skip)).to.be.true;
         });
       });
 
-      describe('freetext qualifier', () => {
-        const idsPage = { cursor: 'bookmark', data: ['1', '2', '3'] };
-        const contactDocs = [
-          { _id: '1', _rev: '1', type: 'person' },
-          { _id: '2', _rev: '1', type: 'clinic' },
-          { _id: '3', _rev: '1', type: 'person' },
-        ];
+      it('throws for invalid cursor', async () => {
+        const cursor = 'not a number';
 
-        it('resolves a page of IDs then hydrates them with a single batched allDocs', async () => {
-          const qualifier = Qualifier.byFreetext('search');
-          useNouveauIndexes.resolves(true);
-          queryNouveauFreetext.resolves(idsPage);
-          getDocsByIdsInner.resolves(contactDocs);
-          isContact.returns(true);
+        await expect(Contact.v1.getPage(localContext)(undefined, cursor, limit))
+          .to.be.rejectedWith(
+            InvalidArgumentError,
+            `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+          );
 
-          const res = await Contact.v1.getPage(localContext)(qualifier, null, limit);
-
-          expect(res).to.deep.equal({ data: contactDocs, cursor: idsPage.cursor });
-          expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, null, limit)).to.be.true;
-          expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-          expect(getDocsByIdsInner.calledOnceWithExactly(idsPage.data)).to.be.true;
-          // No contact-type view path
-          expect(fetchAndFilterOuter.notCalled).to.be.true;
-        });
-
-        it('passes the cursor through unchanged and filters out hydrated docs that are not contacts', async () => {
-          const qualifier = Qualifier.byFreetext('search');
-          useNouveauIndexes.resolves(true);
-          queryNouveauFreetext.resolves(idsPage);
-          getDocsByIdsInner.resolves(contactDocs);
-          isContact.onFirstCall().returns(true);
-          isContact.onSecondCall().returns(false);
-          isContact.onThirdCall().returns(true);
-
-          const res = await Contact.v1.getPage(localContext)(qualifier, 'bookmark', limit);
-
-          expect(res).to.deep.equal({ data: [contactDocs[0], contactDocs[2]], cursor: idsPage.cursor });
-          expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, 'bookmark', limit)).to.be.true;
-          expect(getDocsByIdsInner.calledOnceWithExactly(idsPage.data)).to.be.true;
-        });
+        expect(fetchAndFilterOuter.notCalled).to.be.true;
+        expect(fetchAndFilterInner.notCalled).to.be.true;
       });
     });
   });

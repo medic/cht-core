@@ -219,8 +219,6 @@ describe('report', () => {
     describe('getPage', () => {
       const cursor = '1';
       const pageData = { data: [{ _id: 'report1' }, { _id: 'report2' }] as Report.v1.Report[], cursor };
-      const freetextQualifier = { freetext: 'freetext' } as const;
-      const invalidFreetextQualifier = { freetext: 'invalid_freetext' } as const;
       let getDocsPage: SinonStub;
 
       beforeEach(() => {
@@ -228,60 +226,46 @@ describe('report', () => {
         adapt.returns(getDocsPage);
       });
 
-      it('delegates to the doc-page local/remote implementations', async () => {
-        isFreetextQualifier.returns(true);
-
-        const result = await Report.v1.getPage(dataContext)(freetextQualifier, cursor, 3);
+      it('delegates to the doc-page local/remote implementations (no qualifier - all reports)', async () => {
+        const result = await Report.v1.getPage(dataContext)(undefined, cursor, 3);
 
         expect(result).to.equal(pageData);
         expect(adapt.calledOnceWithExactly(dataContext, Local.Report.v1.getPage, Remote.Report.v1.getPage)).to.be.true;
-        expect(getDocsPage.calledOnceWithExactly(freetextQualifier, cursor, 3)).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(undefined, cursor, 3)).to.be.true;
       });
 
       it('defaults to the docs page limit', async () => {
-        isFreetextQualifier.returns(true);
+        await Report.v1.getPage(dataContext)();
 
-        await Report.v1.getPage(dataContext)(freetextQualifier);
-
-        expect(getDocsPage.calledOnceWithExactly(freetextQualifier, null, 100)).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(undefined, null, 100)).to.be.true;
       });
 
-      it('validates with the freetext qualifier assertion', async () => {
-        isFreetextQualifier.returns(false);
-
-        await expect(Report.v1.getPage(dataContext)(invalidFreetextQualifier))
-          .to.be.rejectedWith(`Invalid freetext [${JSON.stringify(invalidFreetextQualifier)}].`);
+      it('rejects a qualifier (none is supported yet)', async () => {
+        await expect(Report.v1.getPage(dataContext)({ unexpected: true } as unknown as undefined))
+          .to.be.rejectedWith('Unsupported qualifier [{"unexpected":true}].');
         expect(getDocsPage.notCalled).to.be.true;
       });
     });
 
     describe('getAll', () => {
-      const freetextQualifier = { freetext: 'freetext' } as const;
       const mockGenerator = {} as AsyncGenerator<Report.v1.Report, null>;
-      let reportGetPage: SinonStub;
+      let boundPage: SinonStub;
+      let bind: SinonStub;
       let getPagedGenerator: SinonStub;
 
       beforeEach(() => {
-        reportGetPage = sinon.stub(Report.v1, 'getPage');
-        dataContext.bind = sinon.stub().returns(reportGetPage);
+        boundPage = sinon.stub();
+        bind = sinon.stub().returns(boundPage);
+        dataContext.bind = bind;
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator').returns(mockGenerator);
       });
 
-      it('drains the doc-page getter into a generator', () => {
-        isFreetextQualifier.returns(true);
-
-        const generator = Report.v1.getAll(dataContext)(freetextQualifier);
+      it('returns a generator that drains all reports (no qualifier)', () => {
+        const generator = Report.v1.getAll(dataContext)();
 
         expect(generator).to.equal(mockGenerator);
-        expect(getPagedGenerator.calledOnceWithExactly(reportGetPage, freetextQualifier)).to.be.true;
-      });
-
-      it('validates with the freetext qualifier assertion', () => {
-        isFreetextQualifier.returns(false);
-
-        expect(() => Report.v1.getAll(dataContext)(freetextQualifier))
-          .to.throw(`Invalid freetext [${JSON.stringify(freetextQualifier)}]`);
-        expect(getPagedGenerator.notCalled).to.be.true;
+        expect(bind.calledOnceWithExactly(Report.v1.getPage)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(boundPage, undefined)).to.be.true;
       });
     });
 

@@ -216,8 +216,6 @@ describe('contact', () => {
     describe('getPage', () => {
       const cursor = '1';
       const pageData = { data: [{ _id: 'contact1' }, { _id: 'contact2' }] as Contact.v1.Contact[], cursor };
-      const qualifier = { contactType: 'person', freetext: 'freetext' } as const;
-      const invalidQualifier = { contactType: 'invalid', freetext: 'inv' } as const;
       let getDocsPage: SinonStub;
 
       beforeEach(() => {
@@ -225,69 +223,47 @@ describe('contact', () => {
         adapt.returns(getDocsPage);
       });
 
-      it('delegates to the doc-page local/remote implementations', async () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-
-        const result = await Contact.v1.getPage(dataContext)(qualifier, cursor, 3);
+      it('delegates to the doc-page local/remote implementations (no qualifier - all contacts)', async () => {
+        const result = await Contact.v1.getPage(dataContext)(undefined, cursor, 3);
 
         expect(result).to.equal(pageData);
         expect(adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getPage, Remote.Contact.v1.getPage))
           .to.be.true;
-        expect(getDocsPage.calledOnceWithExactly(qualifier, cursor, 3)).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(undefined, cursor, 3)).to.be.true;
       });
 
       it('defaults to the docs page limit', async () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
+        await Contact.v1.getPage(dataContext)();
 
-        await Contact.v1.getPage(dataContext)(qualifier);
-
-        expect(getDocsPage.calledOnceWithExactly(qualifier, null, 100)).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(undefined, null, 100)).to.be.true;
       });
 
-      it('validates with the contact-type/freetext qualifier assertion', async () => {
-        isContactTypeQualifier.returns(false);
-        isFreetextQualifier.returns(false);
-
-        await expect(Contact.v1.getPage(dataContext)(invalidQualifier)).to.be.rejectedWith(
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
-        );
+      it('rejects a qualifier (none is supported yet)', async () => {
+        await expect(Contact.v1.getPage(dataContext)({ unexpected: true } as unknown as undefined))
+          .to.be.rejectedWith('Unsupported qualifier [{"unexpected":true}].');
         expect(getDocsPage.notCalled).to.be.true;
       });
     });
 
     describe('getAll', () => {
-      const qualifier = { contactType: 'person', freetext: 'freetext' } as const;
-      const invalidQualifier = { contactType: 'invalid', freetext: 'inv' } as const;
       const mockGenerator = {} as AsyncGenerator<Contact.v1.Contact, null>;
-      let contactGetPage: SinonStub;
+      let boundPage: SinonStub;
+      let bind: SinonStub;
       let getPagedGenerator: SinonStub;
 
       beforeEach(() => {
-        contactGetPage = sinon.stub(Contact.v1, 'getPage');
-        dataContext.bind = sinon.stub().returns(contactGetPage);
+        boundPage = sinon.stub();
+        bind = sinon.stub().returns(boundPage);
+        dataContext.bind = bind;
         getPagedGenerator = sinon.stub(Core, 'getPagedGenerator').returns(mockGenerator);
       });
 
-      it('drains the doc-page getter into a generator', () => {
-        isContactTypeQualifier.returns(true);
-        isFreetextQualifier.returns(true);
-
-        const generator = Contact.v1.getAll(dataContext)(qualifier);
+      it('returns a generator that drains all contacts (no qualifier)', () => {
+        const generator = Contact.v1.getAll(dataContext)();
 
         expect(generator).to.equal(mockGenerator);
-        expect(getPagedGenerator.calledOnceWithExactly(contactGetPage, qualifier)).to.be.true;
-      });
-
-      it('validates with the contact-type/freetext qualifier assertion', () => {
-        isContactTypeQualifier.returns(false);
-        isFreetextQualifier.returns(false);
-
-        expect(() => Contact.v1.getAll(dataContext)(invalidQualifier)).to.throw(
-          `Invalid qualifier [${JSON.stringify(invalidQualifier)}]. Must be a contact type and/or freetext qualifier.`
-        );
-        expect(getPagedGenerator.notCalled).to.be.true;
+        expect(bind.calledOnceWithExactly(Contact.v1.getPage)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(boundPage, undefined)).to.be.true;
       });
     });
 

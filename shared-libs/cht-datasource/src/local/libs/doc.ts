@@ -88,6 +88,18 @@ export const queryDocsByKey = (
   skip: number
 ): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, key, limit, skip, reduce: false });
 
+/**
+ * Queries all the documents emitted by the given view (without filtering by key).
+ * @internal
+ */
+export const queryDocsByPage = (
+  db: PouchDB.Database<Doc>,
+  view: string
+) => async (
+  limit: number,
+  skip: number
+): Promise<Nullable<Doc>[]> => queryDocs(db, view, { include_docs: true, limit, skip, reduce: false });
+
 const queryDocIds = (
   db: PouchDB.Database<Doc>,
   view: string,

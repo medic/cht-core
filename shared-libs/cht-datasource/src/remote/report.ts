@@ -38,10 +38,12 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    qualifier: FreetextQualifier,
+    // No qualifier is supported yet - all reports are returned. The leading argument is reserved for the
+    // qualifiers that will be added later.
+    _qualifier: undefined,
     cursor: Nullable<string>,
     limit: number
-  ): Promise<Page<Report.v1.Report>> => getReports(remoteContext)(getReportQueryParams(qualifier, cursor, limit));
+  ): Promise<Page<Report.v1.Report>> => getReports(remoteContext)(getPageQueryParams(cursor, limit, {}));
 
   /** @internal */
   export const create = postResource('api/v1/report');

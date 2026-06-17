@@ -646,78 +646,57 @@ describe('Contact API', () => {
 
   describe('GET /api/v1/contact', async () => {
     const fiveLimit = 5;
-    const threeLimit = 3;
-    const freetext = 'contact';
     const endpoint = '/api/v1/contact';
+    // All seeded contacts span persons AND places (the doc-page is unqualified).
+    const seededContactIds = [
+      ...expectedPeopleIds,
+      place0._id, place1._id, place2._id, clinic1._id, clinic2._id,
+    ];
 
-    it('returns a page of contact documents for a contact type', async () => {
-      const opts = {
-        path: `${endpoint}`,
-        qs: { type: personType }
-      };
+    const drain = async (qs = {}) => {
+      const data = [];
+      let cursor = null;
+      do {
+        const page = await utils.request({ path: endpoint, qs: { ...qs, cursor } });
+        data.push(...page.data);
+        cursor = page.cursor;
+      } while (cursor);
+      return data;
+    };
 
-      const responsePage = await utils.request(opts);
+    it('returns a page of contact documents (not just identifiers)', async () => {
+      const responsePage = await utils.request({ path: endpoint });
 
-      expect(responsePage.data.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedPeopleIds);
-      expect(responsePage.cursor).to.be.equal(null);
-      // The page contains full documents, not just identifiers
-      responsePage.data.forEach(doc => expect(doc).to.have.property('_rev'));
+      expect(responsePage.data.length).to.be.greaterThan(0);
+      responsePage.data.forEach(doc => {
+        expect(doc).to.have.property('_rev');
+        expect(doc).to.have.property('type');
+      });
     });
 
-    it('walks two cursor pages of contact documents for a contact type', async () => {
-      const qs = {
-        type: personType,
-        limit: fiveLimit
-      };
-      const firstPage = await utils.request({ path: `${endpoint}`, qs });
+    it('returns all contacts (persons and places) across pages', async () => {
+      const ids = (await drain({ limit: fiveLimit })).map(doc => doc._id);
 
-      qs.cursor = firstPage.cursor;
-      const secondPage = await utils.request({ path: `${endpoint}`, qs });
+      seededContactIds.forEach(id => expect(ids).to.include(id));
+    });
 
-      const allData = [...firstPage.data, ...secondPage.data];
+    it('walks cursor pages with skip-based, reusable cursors', async () => {
+      const qs = { limit: fiveLimit };
+      const firstPage = await utils.request({ path: endpoint, qs });
 
-      expect(allData.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedPeopleIds);
-      expect(firstPage.data.length).to.be.equal(5);
-      expect(secondPage.data.length).to.be.equal(2);
+      expect(firstPage.data.length).to.be.equal(fiveLimit);
       expect(firstPage.cursor).to.be.equal('5');
-      expect(secondPage.cursor).to.be.equal(null);
-      firstPage.data.forEach(doc => expect(doc).to.have.property('_rev'));
-    });
 
-    it('walks two cursor pages of contact documents for a freetext query', async () => {
-      const expectedContactIds = [contact0._id, contact1._id, contact2._id, place0._id, place1._id, place2._id];
-      const qs = {
-        freetext,
-        limit: threeLimit
-      };
-      const firstPage = await utils.request({ path: `${endpoint}`, qs });
+      const secondPage = await utils.request({ path: endpoint, qs: { ...qs, cursor: firstPage.cursor } });
 
-      qs.cursor = firstPage.cursor;
-      const secondPage = await utils.request({ path: `${endpoint}`, qs });
-
-      const allData = [...firstPage.data, ...secondPage.data];
-
-      expect(allData.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedContactIds);
-      expect(firstPage.data.length).to.be.equal(3);
-      expect(secondPage.data.length).to.be.equal(3);
-      firstPage.data.forEach(doc => expect(doc).to.have.property('_rev'));
-    });
-
-    it('returns 400 when neither type nor freetext is provided', async () => {
-      const opts = {
-        path: `${endpoint}`,
-        qs: { }
-      };
-
-      await expect(utils.request(opts)).to.be.rejectedWith(
-        '400 - {"code":400,"error":"Either query param freetext or type is required"}'
-      );
+      // The pages are disjoint
+      const firstPageIds = firstPage.data.map(doc => doc._id);
+      secondPage.data.forEach(doc => expect(firstPageIds).to.not.include(doc._id));
     });
 
     it('throws error when user does not have can_view_contacts permission', async () => {
       const opts = {
         path: endpoint,
-        qs: { type: personType },
         auth: { username: userNoPerms.username, password: userNoPerms.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');

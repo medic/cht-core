@@ -417,51 +417,57 @@ describe('Report API', () => {
   });
 
   describe('GET /api/v1/report', async () => {
-    const freetext = 'report';
     const fiveLimit = 5;
     const endpoint = '/api/v1/report';
-    const emptyNouveauCursor = 'W10=';
+    const seededReportIds = [
+      report0._id, report1._id, report2._id, report3._id, report4._id,
+      report5._id, report6._id, report7._id, report8._id,
+    ];
 
-    it('returns a page of report documents for a freetext query', async () => {
-      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
-      const opts = {
-        path: `${endpoint}`,
-        qs: { freetext }
-      };
+    const drain = async (qs = {}) => {
+      const data = [];
+      let cursor = null;
+      do {
+        const page = await utils.request({ path: endpoint, qs: { ...qs, cursor } });
+        data.push(...page.data);
+        cursor = page.cursor;
+      } while (cursor);
+      return data;
+    };
 
-      const responsePage = await utils.request(opts);
+    it('returns a page of report documents (not just identifiers)', async () => {
+      const responsePage = await utils.request({ path: endpoint });
 
-      expect(responsePage.data.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedReportIds);
-      expect(responsePage.cursor).to.not.equal(emptyNouveauCursor);
-      // The page contains full documents, not just identifiers
-      responsePage.data.forEach(doc => expect(doc).to.have.property('_rev'));
-      responsePage.data.forEach(doc => expect(doc).to.have.property('form'));
+      expect(responsePage.data.length).to.be.greaterThan(0);
+      responsePage.data.forEach(doc => {
+        expect(doc).to.have.property('_rev');
+        expect(doc).to.have.property('form');
+      });
     });
 
-    it('walks two cursor pages of report documents for a freetext query', async () => {
-      const expectedReportIds = [ report0._id, report1._id, report2._id, report3._id, report4._id, report5._id ];
-      const qs = {
-        freetext,
-        limit: fiveLimit
-      };
-      const firstPage = await utils.request({ path: `${endpoint}`, qs });
+    it('returns all reports across pages', async () => {
+      const ids = (await drain({ limit: fiveLimit })).map(doc => doc._id);
 
-      qs.cursor = firstPage.cursor;
-      const secondPage = await utils.request({ path: `${endpoint}`, qs });
+      seededReportIds.forEach(id => expect(ids).to.include(id));
+    });
 
-      const allReports = [ ...firstPage.data, ...secondPage.data ];
+    it('walks cursor pages with skip-based, reusable cursors', async () => {
+      const qs = { limit: fiveLimit };
+      const firstPage = await utils.request({ path: endpoint, qs });
 
-      expect(allReports.map(doc => doc._id)).to.deep.equalInAnyOrder(expectedReportIds);
-      expect(firstPage.data.length).to.be.equal(5);
-      expect(secondPage.data.length).to.be.equal(1);
-      expect(firstPage.cursor).to.not.equal(emptyNouveauCursor);
-      firstPage.data.forEach(doc => expect(doc).to.have.property('_rev'));
+      expect(firstPage.data.length).to.be.equal(fiveLimit);
+      expect(firstPage.cursor).to.be.equal('5');
+
+      const secondPage = await utils.request({ path: endpoint, qs: { ...qs, cursor: firstPage.cursor } });
+
+      // The pages are disjoint
+      const firstPageIds = firstPage.data.map(doc => doc._id);
+      secondPage.data.forEach(doc => expect(firstPageIds).to.not.include(doc._id));
     });
 
     it('throws error when user does not have can_view_reports permission', async () => {
       const opts = {
         path: endpoint,
-        qs: { freetext },
         auth: { username: userNoPerms.username, password: userNoPerms.password },
       };
       await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');

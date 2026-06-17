@@ -6,7 +6,7 @@ import * as Local from './local';
 import { byFreetext, byUuid, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertFreetextQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertFreetextQualifier, assertNoQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
@@ -83,8 +83,8 @@ export namespace v1 {
   /**
    * Returns a function for retrieving a paged array of reports from the given data context.
    *
-   * The returned function accepts a `FreetextQualifier`, an optional page `cursor` (`null` for the first page) and
-   * an optional `limit` (default 100), and resolves a page of reports.
+   * The returned function accepts an optional page `cursor` (`null` for the first page) and an optional `limit`
+   * (default 100), and resolves a page of reports. All reports are returned (this is not filtered by a qualifier).
    * @param context the current data context
    * @returns a function for retrieving a paged array of reports
    * @throws Error if a data context is not provided
@@ -93,17 +93,17 @@ export namespace v1 {
   export const getPage = getPagedDataFn(
     Local.Report.v1.getPage,
     Remote.Report.v1.getPage,
-    assertFreetextQualifier,
+    assertNoQualifier,
     DEFAULT_DOCS_PAGE_LIMIT,
   );
 
   /**
-   * Returns a function for getting a generator that fetches reports from the given data context.
+   * Returns a function for getting a generator that fetches all reports from the given data context.
    * @param context the current data context
-   * @returns a function for getting a generator that fetches reports
+   * @returns a function for getting a generator that fetches all reports
    * @throws Error if a data context is not provided
    */
-  export const getAll = getGeneratorFn(v1.getPage, assertFreetextQualifier);
+  export const getAll = getGeneratorFn(v1.getPage, assertNoQualifier);
 
   /**
    * Returns a function for creating a report from the given data context.

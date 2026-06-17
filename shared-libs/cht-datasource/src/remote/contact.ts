@@ -45,8 +45,10 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    qualifier: ContactTypeQualifier | FreetextQualifier,
+    // No qualifier is supported yet - all contacts are returned. The leading argument is reserved for the
+    // qualifiers that will be added later.
+    _qualifier: undefined,
     cursor: Nullable<string>,
     limit: number
-  ): Promise<Page<Contact.v1.Contact>> => getContacts(remoteContext)(getContactQueryParams(qualifier, cursor, limit));
+  ): Promise<Page<Contact.v1.Contact>> => getContacts(remoteContext)(getPageQueryParams(cursor, limit, {}));
 }

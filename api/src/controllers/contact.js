@@ -146,30 +146,16 @@ module.exports = {
      *     summary: Get contacts
      *     operationId: v1ContactGet
      *     description: >
-     *       Returns a paginated array of contact records (persons and places) matching the given filter criteria.
-     *       At least one of `type` or `freetext` must be provided. Use the `cursor` returned in each response to
-     *       retrieve subsequent pages. See also [Get contact UUIDs](#/Contact/v1ContactUuidGet) for retrieving only
-     *       the matching identifiers.
+     *       Returns a paginated array of all contact records (persons and places). Use the `cursor` returned in each
+     *       response to retrieve subsequent pages. To filter contacts by type, use the
+     *       [Get persons](#/Person/v1PersonGet) or [Get places](#/Place/v1PlaceGet) endpoints. See also
+     *       [Get contact UUIDs](#/Contact/v1ContactUuidGet) for retrieving only identifiers (which supports
+     *       `type`/`freetext` filters).
      *     tags: [Contact]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
      *     parameters:
-     *       - in: query
-     *         name: type
-     *         schema:
-     *           type: string
-     *         description: >
-     *           The contact_type id for the type of contacts to fetch. Required if `freetext` is not provided
-     *           and may be combined with `freetext`.
-     *       - in: query
-     *         name: freetext
-     *         schema:
-     *           type: string
-     *           minLength: 3
-     *         description: >
-     *           A search term for filtering contacts. Must be at least 3 characters and not contain whitespace.
-     *           Required if `type` is not provided and may be combined with `type`.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -197,11 +183,8 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      if (!req.query.freetext && !req.query.type) {
-        return serverUtils.error({ status: 400, message: 'Either query param freetext or type is required' }, req, res);
-      }
-      const qualifier = buildContactQualifier(req.query);
-      const docs = await getContactDocs(qualifier, req.query.cursor, req.query.limit);
+      // No qualifier is supported yet - all contacts are returned.
+      const docs = await getContactDocs(undefined, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
   },

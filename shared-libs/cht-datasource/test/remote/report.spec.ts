@@ -153,49 +153,27 @@ describe('remote report', () => {
     describe('getPage', () => {
       const limit = 3;
       const cursor = '1';
-      const freetext = 'report';
-      const qualifier = {
-        freetext
-      };
-      const queryParam = {
-        limit: limit.toString(),
-        freetext: freetext,
-        cursor,
-      };
 
-      it('returns a page of reports', async () => {
+      it('returns a page of all reports', async () => {
         const doc = [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }, { type: DOC_TYPES.DATA_RECORD, form: 'yes' }];
         const expectedResponse = { data: doc, cursor };
         getResourcesInner.resolves(expectedResponse);
 
-        const result = await Report.v1.getPage(remoteContext)(qualifier, cursor, limit);
+        const result = await Report.v1.getPage(remoteContext)(undefined, cursor, limit);
 
         expect(result).to.equal(expectedResponse);
         expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
-        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
-      });
-
-      it('returns empty array if docs are not found', async () => {
-        getResourcesInner.resolves([]);
-
-        const result = await Report.v1.getPage(remoteContext)(qualifier, cursor, limit);
-
-        expect(result).to.deep.equal([]);
-        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
-        expect(getResourcesInner.calledOnceWithExactly(queryParam)).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), cursor })).to.be.true;
       });
 
       it('omits cursor param when cursor is null', async () => {
         const expectedResponse = { data: [], cursor: null };
         getResourcesInner.resolves(expectedResponse);
 
-        const result = await Report.v1.getPage(remoteContext)(qualifier, null, limit);
+        const result = await Report.v1.getPage(remoteContext)(undefined, null, limit);
 
         expect(result).to.equal(expectedResponse);
-        expect(getResourcesInner.calledOnceWithExactly({
-          limit: limit.toString(),
-          freetext: freetext,
-        })).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString() })).to.be.true;
       });
     });
 

@@ -257,33 +257,13 @@ describe('Contact Controller', () => {
     });
 
     describe('getAll', () => {
-      let qualifierByContactType;
-      let qualifierByFreetext;
-      const contactType = 'person';
-      const freetext = 'John';
-      const contactTypeOnlyQualifier = { contactType };
-      const freetextOnlyQualifier = { freetext };
-      const bothQualifier = { contactType, freetext };
-      const contact = { name: 'John Doe', type: contactType };
+      const contact = { name: 'John Doe', type: 'person' };
       const limit = 100;
       const cursor = null;
       const contacts = Array.from({ length: 3 }, () => ({ ...contact }));
 
-      beforeEach(() => {
-        qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
-        qualifierByFreetext = sinon.stub(Qualifier, 'byFreetext');
-        qualifierByContactType.returns(contactTypeOnlyQualifier);
-        qualifierByFreetext.returns(freetextOnlyQualifier);
-      });
-
-      it('returns a page of contacts with contact type param only', async () => {
-        req = {
-          query: {
-            type: contactType,
-            cursor,
-            limit,
-          }
-        };
+      it('returns a page of all contacts (no qualifier)', async () => {
+        req = { query: { cursor, limit } };
         contactGetPage.resolves({ data: contacts, cursor: null });
 
         await controller.v1.getAll(req, res);
@@ -292,71 +272,20 @@ describe('Contact Controller', () => {
           req,
           { isOnline: true, hasAll: ['can_view_contacts'] }
         )).to.be.true;
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
-        expect(qualifierByFreetext.notCalled).to.be.true;
-        expect(contactGetPage.calledOnceWithExactly(contactTypeOnlyQualifier, cursor, limit)).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(undefined, cursor, limit)).to.be.true;
         expect(res.json.calledOnceWithExactly({ data: contacts, cursor: null })).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
 
-      it('returns a page of contacts with freetext param only', async () => {
-        req = {
-          query: {
-            freetext,
-            cursor,
-            limit,
-          }
-        };
-        contactGetPage.resolves({ data: contacts, cursor: null });
+      it('passes through cursor and limit', async () => {
+        req = { query: { cursor: '5', limit: 50 } };
+        contactGetPage.resolves({ data: contacts, cursor: '10' });
 
         await controller.v1.getAll(req, res);
 
-        expect(qualifierByContactType.notCalled).to.be.true;
-        expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(contactGetPage.calledOnceWithExactly(freetextOnlyQualifier, cursor, limit)).to.be.true;
-        expect(res.json.calledOnceWithExactly({ data: contacts, cursor: null })).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(undefined, '5', 50)).to.be.true;
+        expect(res.json.calledOnceWithExactly({ data: contacts, cursor: '10' })).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
-      });
-
-      it('returns a page of contacts with both contactType and freetext param', async () => {
-        req = {
-          query: {
-            type: contactType,
-            freetext,
-            cursor,
-            limit,
-          }
-        };
-        contactGetPage.resolves({ data: contacts, cursor: null });
-
-        await controller.v1.getAll(req, res);
-
-        expect(qualifierByContactType.calledOnceWithExactly(req.query.type)).to.be.true;
-        expect(qualifierByFreetext.calledOnceWithExactly(req.query.freetext)).to.be.true;
-        expect(contactGetPage.calledOnceWithExactly(bothQualifier, cursor, limit)).to.be.true;
-        expect(res.json.calledOnceWithExactly({ data: contacts, cursor: null })).to.be.true;
-        expect(serverUtilsError.notCalled).to.be.true;
-      });
-
-      it('returns 400 error when contactType AND freetext is not present', async () => {
-        req = {
-          query: {
-            cursor,
-            limit,
-          }
-        };
-
-        await controller.v1.getAll(req, res);
-
-        expect(qualifierByContactType.notCalled).to.be.true;
-        expect(qualifierByFreetext.notCalled).to.be.true;
-        expect(contactGetPage.notCalled).to.be.true;
-        expect(res.json.notCalled).to.be.true;
-        expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'Either query param freetext or type is required' },
-          req,
-          res
-        )).to.be.true;
       });
     });
   });

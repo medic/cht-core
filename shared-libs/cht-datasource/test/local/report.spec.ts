@@ -340,54 +340,64 @@ describe('local report', () => {
 
     describe('getPage', () => {
       const limit = 3;
-      const freetext = 'report';
-      const idsPage = { cursor: 'bookmark', data: ['r1', 'r2', 'r3'] };
-      const reportDocs = [
-        { _id: 'r1', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
-        { _id: 'r2', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
-        { _id: 'r3', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
-      ];
-      let queryNouveauFreetext: SinonStub;
-      let useNouveauIndexes: SinonStub;
-      let getDocsByIdsInner: SinonStub;
-      let getDocsByIdsOuter: SinonStub;
+      let queryDocsByKeyInner: SinonStub;
+      let queryDocsByKeyOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
 
       beforeEach(() => {
-        queryNouveauFreetext = sinon.stub();
-        sinon
-          .stub(Nouveau, 'queryByFreetext')
-          .withArgs(localContext.medicDb, 'reports_by_freetext')
-          .returns(queryNouveauFreetext);
-        useNouveauIndexes = sinon.stub(Nouveau, 'useNouveauIndexes');
-        getDocsByIdsInner = sinon.stub();
-        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+        queryDocsByKeyInner = sinon.stub();
+        queryDocsByKeyOuter = sinon
+          .stub(LocalDoc, 'queryDocsByKey')
+          .withArgs(localContext.medicDb, 'medic-client/data_records_by_type')
+          .returns(queryDocsByKeyInner);
+
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
       });
 
-      it('resolves a page of report IDs then hydrates them with a single batched allDocs', async () => {
-        const qualifier = Qualifier.byFreetext(freetext);
-        useNouveauIndexes.resolves(true);
-        queryNouveauFreetext.resolves(idsPage);
-        getDocsByIdsInner.resolves(reportDocs);
+      ([
+        [null, 0],
+        ['1', 1]
+      ] as [string | null, number][]).forEach(([cursor, skip]) => {
+        it(`resolves a page of all reports with a single include_docs view query with cursor [${cursor}]`, async () => {
+          const expectedResult = {
+            cursor: '3',
+            data: [
+              { _id: 'r1', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+              { _id: 'r2', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+              { _id: 'r3', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+            ]
+          };
+          fetchAndFilterInner.resolves(expectedResult);
 
-        const res = await Report.v1.getPage(localContext)(qualifier, null, limit);
+          const res = await Report.v1.getPage(localContext)(undefined, cursor, limit);
 
-        expect(res).to.deep.equal({ data: reportDocs, cursor: idsPage.cursor });
-        expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, null, limit)).to.be.true;
-        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
-        expect(getDocsByIdsInner.calledOnceWithExactly(idsPage.data)).to.be.true;
+          expect(res).to.deep.equal(expectedResult);
+          expect(queryDocsByKeyOuter.calledOnceWithExactly(localContext.medicDb, 'medic-client/data_records_by_type'))
+            .to.be.true;
+          expect(fetchAndFilterOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+          expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+          expect(fetchAndFilterInner.calledOnceWithExactly(limit, skip)).to.be.true;
+          // Verify the page function queries data_records_by_type with the 'report' key
+          const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          pageFn(limit, skip);
+          expect(queryDocsByKeyInner.calledOnceWithExactly('report', limit, skip)).to.be.true;
+        });
       });
 
-      it('passes the cursor through unchanged and filters out hydrated docs that are not reports', async () => {
-        const qualifier = Qualifier.byFreetext(freetext);
-        useNouveauIndexes.resolves(true);
-        queryNouveauFreetext.resolves(idsPage);
-        getDocsByIdsInner.resolves([reportDocs[0], null, { _id: 'r3', _rev: '1', type: 'something-else' }]);
+      it('throws for invalid cursor', async () => {
+        const cursor = 'not a number';
 
-        const res = await Report.v1.getPage(localContext)(qualifier, 'bookmark', limit);
+        await expect(Report.v1.getPage(localContext)(undefined, cursor, limit))
+          .to.be.rejectedWith(
+            InvalidArgumentError,
+            `The cursor must be a string or null for first page: [${JSON.stringify(cursor)}]`
+          );
 
-        expect(res).to.deep.equal({ data: [reportDocs[0]], cursor: idsPage.cursor });
-        expect(queryNouveauFreetext.calledOnceWithExactly(qualifier, 'bookmark', limit)).to.be.true;
-        expect(getDocsByIdsInner.calledOnceWithExactly(idsPage.data)).to.be.true;
+        expect(fetchAndFilterOuter.notCalled).to.be.true;
+        expect(fetchAndFilterInner.notCalled).to.be.true;
       });
     });
 
