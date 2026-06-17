@@ -100,7 +100,8 @@ class GeolocationWidget extends Widget {
 
         const $acknowledgeCheckbox = $('<input type="checkbox" class="geolocation-acknowledge-checkbox ignore">');
         const $acknowledgeSpan = $('<span class="geolocation-acknowledge-text">');
-        const $acknowledgeLabel = $('<label class="geolocation-acknowledge-label">').append($acknowledgeCheckbox, $acknowledgeSpan);
+        const $acknowledgeLabel = $('<label class="geolocation-acknowledge-label">')
+          .append($acknowledgeCheckbox, $acknowledgeSpan);
 
         const $skipBtn = $('<button type="button" class="btn btn-default geolocation-skip-btn">');
         $skipBtn.prop('disabled', true);

@@ -325,7 +325,8 @@ describe('Enketo: Geolocation Widget', () => {
         expect(skipBtn.disabled).to.be.true;
       });
 
-      it('should enable the "Continue without location" button when the acknowledgement checkbox is checked', async () => {
+      it('should enable the "Continue without location" button when the acknowledgement checkbox is checked',
+        async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
         buildHtml();
@@ -348,7 +349,8 @@ describe('Enketo: Geolocation Widget', () => {
         expect(skipBtn.disabled).to.be.false;
       });
 
-      it('should re-disable the "Continue without location" button when the acknowledgement checkbox is unchecked', async () => {
+      it('should re-disable the "Continue without location" button when the acknowledgement checkbox is unchecked',
+        async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
         buildHtml();
