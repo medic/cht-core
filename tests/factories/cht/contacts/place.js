@@ -1,17 +1,17 @@
 const Factory = require('rosie').Factory;
-const uuid = require('uuid');
+const { v7: uuid } = require('uuid');
 const { CONTACT_TYPES } = require('@medic/constants');
 
 const place = () => {
   return new Factory()
-    .sequence('_id', uuid.v4)
+    .sequence('_id', uuid)
     .attr('parent', '')
     .attr('type', '')
     .attr('is_name_generated', 'true')
     .attr('name', 'A Place 1')
     .attr('external_id', '')
     .attr('notes', '')
-    .attr('place_id', uuid.v4)
+    .attr('place_id', uuid)
     .attr('reported_date', () => new Date())
     .attr('contact')
     .attr('contact_type', '');

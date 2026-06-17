@@ -88,8 +88,11 @@ class PhoneWidget extends Widget {
 
 const formatAndCopy = ( $from, $to, settings ) => {
   $from.change( function() {
+    const formattedValue = getFormattedValue( settings, $from.val() );
     // Also trigger the change() event, since input was not by user.
-    $to.val( getFormattedValue( settings, $from.val() ) ).change();
+    $to.val( formattedValue ).change();
+    // Update the proxy input to display the formatted value to the user.
+    $from.val( formattedValue );
   } );
 };
 

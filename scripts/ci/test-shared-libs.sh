@@ -15,7 +15,7 @@ FAILED_LIBS_DETAILS=""
 FAILED_LIBS_SUMMARY=""
 FAIL_COUNT=0
 FINAL_EXIT_CODE=0
-LIBS_DIR="shared-libs"
+LIBS_DIR="${LIBS_DIR:-shared-libs}"
 SEPARATOR="========================================================"
 
 echo "--------------------------------------------------------"

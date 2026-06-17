@@ -3,7 +3,7 @@ const sentinelUtils = require('@utils/sentinel');
 const moment = require('moment/moment');
 const testForm = require('./transitions/test-stubs');
 const constants = require('@constants');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 const contacts = [

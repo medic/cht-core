@@ -5,7 +5,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { expect } = require('chai');
 const { USER_ROLES } = require('@medic/constants');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('Report API', () => {
