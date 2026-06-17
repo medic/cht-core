@@ -98,9 +98,21 @@ class GeolocationWidget extends Widget {
           this._startCapture();
         });
 
+        const $acknowledgeCheckbox = $('<input type="checkbox" class="geolocation-acknowledge-checkbox ignore">');
+        const $acknowledgeSpan = $('<span class="geolocation-acknowledge-text">');
+        const $acknowledgeLabel = $('<label class="geolocation-acknowledge-label">').append($acknowledgeCheckbox, $acknowledgeSpan);
+
         const $skipBtn = $('<button type="button" class="btn btn-default geolocation-skip-btn">');
+        $skipBtn.prop('disabled', true);
+
+        $acknowledgeCheckbox.on('change', event => {
+          event.stopPropagation();
+          $skipBtn.prop('disabled', !$acknowledgeCheckbox.prop('checked'));
+        });
+
         $skipBtn.on('click', () => {
           $retryBtn.remove();
+          $acknowledgeLabel.remove();
           $skipBtn.remove();
 
           const $skippedMsg = $('<p class="geolocation-skipped-msg">');
@@ -109,13 +121,14 @@ class GeolocationWidget extends Widget {
 
           $(this.element).val('skipped').trigger('change');
         });
-        $status.append($retryBtn, $skipBtn);
+        $status.append($retryBtn, $acknowledgeLabel, $skipBtn);
 
         globalThis.CHTCore.Translate.get('geolocation.result.label').then(text => $resultLabel.text(text));
         globalThis.CHTCore.Translate.get('geolocation.failure').then(text => $resultText.text(text));
         globalThis.CHTCore.Translate.get('geolocation.retry')
           .then(text => $retryBtn.append($('<span class="geolocation-btn-label">').text(text)));
-        globalThis.CHTCore.Translate.get('geolocation.skip').then(text => $skipBtn.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.skip.button').then(text => $skipBtn.text(text));
+        globalThis.CHTCore.Translate.get('geolocation.skip.acknowledge').then(text => $acknowledgeSpan.text(text));
       } else {
         $bar.addClass('geolocation-progress-success');
 

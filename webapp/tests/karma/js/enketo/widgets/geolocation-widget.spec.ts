@@ -287,7 +287,7 @@ describe('Enketo: Geolocation Widget', () => {
         expect(changeHandler.callCount).to.equal(1);
       });
 
-      it('should show retry and skip buttons when GPS acquisition fails', async () => {
+      it('should show retry button, acknowledgement checkbox, and skip button when GPS acquisition fails', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
         buildHtml();
@@ -302,7 +302,76 @@ describe('Enketo: Geolocation Widget', () => {
         await promise;
 
         expect(container.querySelector('.geolocation-retry-btn')).to.not.be.null;
+        expect(container.querySelector('.geolocation-acknowledge-checkbox')).to.not.be.null;
         expect(container.querySelector('.geolocation-skip-btn')).to.not.be.null;
+      });
+
+      it('should disable the "Continue without location" button immediately after GPS failure', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const skipBtn = container.querySelector('.geolocation-skip-btn') as HTMLButtonElement;
+        expect(skipBtn).to.not.be.null;
+        expect(skipBtn.disabled).to.be.true;
+      });
+
+      it('should enable the "Continue without location" button when the acknowledgement checkbox is checked', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const checkbox = container.querySelector('.geolocation-acknowledge-checkbox') as HTMLInputElement;
+        const skipBtn = container.querySelector('.geolocation-skip-btn') as HTMLButtonElement;
+
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+
+        expect(skipBtn.disabled).to.be.false;
+      });
+
+      it('should re-disable the "Continue without location" button when the acknowledgement checkbox is unchecked', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const checkbox = container.querySelector('.geolocation-acknowledge-checkbox') as HTMLInputElement;
+        const skipBtn = container.querySelector('.geolocation-skip-btn') as HTMLButtonElement;
+
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+        expect(skipBtn.disabled).to.be.false;
+
+        checkbox.checked = false;
+        $(checkbox).trigger('change');
+        expect(skipBtn.disabled).to.be.true;
       });
 
       it('should include a map icon in the retry button', async () => {
@@ -359,13 +428,17 @@ describe('Enketo: Geolocation Widget', () => {
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
 
+        const checkbox = container.querySelector('.geolocation-acknowledge-checkbox') as HTMLInputElement;
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+
         (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
 
         expect(widget.element.value).to.equal('skipped');
         expect(changeHandler.callCount).to.equal(1);
       });
 
-      it('should remove retry and skip buttons and show a confirmation message when skip is clicked', async () => {
+      it('should remove retry, acknowledge, and skip elements and show confirmation when skip is clicked', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
         buildHtml();
@@ -379,9 +452,14 @@ describe('Enketo: Geolocation Widget', () => {
 
         await promise;
 
+        const checkbox = container.querySelector('.geolocation-acknowledge-checkbox') as HTMLInputElement;
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+
         (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
 
         expect(container.querySelector('.geolocation-retry-btn')).to.be.null;
+        expect(container.querySelector('.geolocation-acknowledge-label')).to.be.null;
         expect(container.querySelector('.geolocation-skip-btn')).to.be.null;
         expect(container.querySelector('.geolocation-skipped-msg')).to.not.be.null;
       });
