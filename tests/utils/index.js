@@ -1736,6 +1736,10 @@ const collectLogs = (container, ...regex) => {
       throw error;
     }
 
+    if (!matches.length) {
+      console.warn('No logs matched', logs);
+    }
+
     return matches;
   };
 
