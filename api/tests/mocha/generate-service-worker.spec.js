@@ -9,7 +9,6 @@ const resources = require('../../src/resources');
 const logger = require('@medic/logger');
 const loginController = require('../../src/controllers/login');
 const { DOC_IDS } = require('@medic/constants');
-const config = require('../../src/config');
 
 describe('generate service worker', () => {
   let clock;
@@ -24,7 +23,6 @@ describe('generate service worker', () => {
     sinon.stub(loginController, 'renderPasswordReset');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'put');
-    sinon.stub(config, 'get');
     workboxGenerate = sinon.stub();
     clock = sinon.useFakeTimers();
 
@@ -49,10 +47,6 @@ describe('generate service worker', () => {
   it('should generate the service worker file and update the service worker meta doc', async () => {
     loginController.renderLogin.resolves('loginpage html');
     loginController.renderPasswordReset.resolves('passwordresetpage html');
-    config.get.withArgs('roles').returns({
-      chw: { offline: true },
-      nurse: { offline: false },
-    });
     sinon.stub(workbox, 'generateSW').returns();
     db.medic.get.resolves({ _id: DOC_IDS.SERVICE_WORKER_META });
     db.medic.put.resolves();
