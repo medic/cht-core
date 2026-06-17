@@ -40,7 +40,6 @@ describe('UI Extensions tab', () => {
       ...places.values(),
       supervisorPerson
     ]);
-    await (await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX)).promise;
     await utils.createUsers([offlineUser, onlineUser]);
   });
 

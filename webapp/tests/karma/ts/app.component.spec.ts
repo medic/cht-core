@@ -701,6 +701,7 @@ describe('AppComponent', () => {
       expect(filter({ id: '_design/medic-client' })).to.equal(true);
       expect(filter({ id: DOC_IDS.SERVICE_WORKER_META })).to.equal(true);
       expect(filter({ id: DOC_IDS.SETTINGS })).to.equal(true);
+      expect(filter({ id: DOC_IDS.EXTENSION_LIBS })).to.equal(true);
       expect(filter({ id: `${PREFIXES.UI_EXTENSION}foo` })).to.equal(true);
       expect(filter({ id: PREFIXES.UI_EXTENSION })).to.equal(true);
       expect(filter({ id: 'something-else' })).to.equal(false);

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { lastValueFrom } from 'rxjs';
 
 import { SessionService } from '@mm-services/session.service';
+import { DbService } from '@mm-services/db.service';
+import { DOC_TYPES, PREFIXES } from '@medic/constants';
 
 interface UiExtensionProperties {
   readonly id: string;
@@ -25,12 +25,13 @@ interface UiExtension {
   providedIn: 'root'
 })
 export class UiExtensionsService {
+  private readonly ATTACHMENT_NAME = 'extension.js';
   private extensionProperties: UiExtensionProperties[] = [];
   private extensionScripts: Record<string, new () => HTMLElement> = {};
   private initialized = false;
 
   constructor(
-    private readonly http: HttpClient,
+    private readonly dbService: DbService,
     private readonly sessionService: SessionService,
   ) { }
 
@@ -44,25 +45,37 @@ export class UiExtensionsService {
 
   private async loadExtensionProperties() {
     try {
-      const request = this.http.get<UiExtensionProperties[]>('/ui-extension', { responseType: 'json' });
-      const extensions = await lastValueFrom(request);
-      this.extensionProperties = extensions.filter(({ roles }) => {
-        const extRoles = roles === null || roles === undefined ? [] : roles;
-        if (!Array.isArray(extRoles)) {
-          return false;
-        }
-        return !extRoles.length || extRoles.some(role => this.sessionService.hasRole(role));
+      const result = await this.dbService.get().allDocs({
+        startkey: PREFIXES.UI_EXTENSION,
+        endkey: `${PREFIXES.UI_EXTENSION}\ufff0`,
+        include_docs: true,
       });
+      this.extensionProperties = result.rows
+        .map(({ doc }) => doc)
+        .filter(({ type }) => type === DOC_TYPES.UI_EXTENSION)
+        .filter(({ roles }) => {
+          const extRoles = roles === null || roles === undefined ? [] : roles;
+          if (!Array.isArray(extRoles)) {
+            return false;
+          }
+          return !extRoles.length || extRoles.some(role => this.sessionService.hasRole(role));
+        })
+        .map(doc => {
+          const id = doc._id.replace(PREFIXES.UI_EXTENSION, '');
+          return { ...doc, id };
+        });
     } catch (e) {
       console.error('Error loading UI extension properties', e);
     }
   }
 
   private async loadExtensionScript(id: string) {
-    const request = this.http.get('/ui-extension/' + id, { responseType: 'text' });
-    const result = await lastValueFrom(request);
+    const blob: Blob = await this.dbService
+      .get()
+      .getAttachment(`${PREFIXES.UI_EXTENSION}${id}`, this.ATTACHMENT_NAME);
+    const source = await blob.text();
     const module = { exports: null as any };
-    new Function('module', result)(module);
+    new Function('module', source)(module);
     const Element = module.exports;
     if (!Element || !(Element.prototype instanceof HTMLElement)) {
       throw new Error(`Could not load UI Extension element with id [${id}].`);
