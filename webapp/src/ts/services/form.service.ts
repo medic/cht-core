@@ -304,6 +304,11 @@ export class FormService {
     return captureInput?.dataset?.geoContext || undefined;
   }
 
+  private getGeoCaptureValue(formHtml?: Element): string | undefined {
+    const captureInput = formHtml?.querySelector('.or-appearance-geolocation-capture input') as HTMLInputElement;
+    return captureInput?.value || undefined;
+  }
+
   private saveGeo(geoHandle, docs, contextValue?: string) {
     if (!geoHandle) {
       return docs;
@@ -464,7 +469,10 @@ export class FormService {
     }
 
     const contextValue = this.getGeoContext(form?.view?.html);
-    const docsWithGeo = await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue);
+    const geoCaptureValue = this.getGeoCaptureValue(form?.view?.html);
+    const docsWithGeo = geoCaptureValue === 'kept'
+      ? preparedDocs.preparedDocs
+      : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
