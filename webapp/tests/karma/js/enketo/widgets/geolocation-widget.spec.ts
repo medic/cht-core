@@ -4,6 +4,8 @@ import { expect } from 'chai';
 
 const GeolocationWidget = require('../../../../../src/js/enketo/widgets/geolocation-widget');
 
+const MS_PER_DAY = 86400000;
+
 describe('Enketo: Geolocation Widget', () => {
   const $ = jQuery;
   let originalMedicmobileAndroid;
@@ -512,5 +514,344 @@ describe('Enketo: Geolocation Widget', () => {
         expect(bar.classList.contains('geolocation-progress-success')).to.be.false;
       });
     });
+
+    describe('edit mode', () => {
+      const buildHtmlWithExistingLocation = (lastCapture?: object) => {
+        const lastCaptureAttr = lastCapture
+          ? `data-geo-last-capture='${JSON.stringify(lastCapture)}'`
+          : '';
+        document.body.insertAdjacentHTML('afterbegin', `
+          <div id="geolocation-widget-test">
+            <label class="question non-select or-appearance-geolocation-capture">
+              <input type="hidden" name="/geolocation/capture" data-type-xml="string"
+                data-geo-has-location="true" ${lastCaptureAttr} />
+            </label>
+          </div>`);
+      };
+
+      const createWidget = () => {
+        const widget = Object.create(GeolocationWidget.prototype);
+        widget.element = document.querySelector('#geolocation-widget-test ' + GeolocationWidget.selector);
+        widget.question = widget.element.closest('.question');
+        return widget;
+      };
+
+      it('renders edit badge instead of context radios and capture button', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        expect(container.querySelector('.geolocation-edit-badge')).to.not.be.null;
+        expect(container.querySelector('.geolocation-context-options')).to.be.null;
+        expect(container.querySelector('.geolocation-capture-btn')).to.be.null;
+      });
+
+      it('renders keep and capture-new radio options', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        expect(container.querySelector('input[type="radio"][value="kept"]')).to.not.be.null;
+        expect(container.querySelector('input[type="radio"][value="capture-new"]')).to.not.be.null;
+      });
+
+      it('pre-selects the keep radio and sets element value to kept on init', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const keptRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="kept"]'
+        ) as HTMLInputElement;
+        expect(keptRadio.checked).to.be.true;
+        expect((widget.element as HTMLInputElement).value).to.equal('kept');
+      });
+
+      it('sets data-geo-context to home on init', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('home');
+      });
+
+      it('clears element value when capture-new is selected', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        expect((widget.element as HTMLInputElement).value).to.equal('');
+      });
+
+      it('shows warning and acknowledge checkbox when capture-new is selected', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        expect((container.querySelector('.geolocation-edit-warning') as HTMLElement).style.display)
+          .to.not.equal('none');
+        expect(container.querySelector('.geolocation-edit-acknowledge-checkbox')).to.not.be.null;
+      });
+
+      it('acknowledge checkbox has the ignore class', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        const checkbox = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        expect(checkbox.classList.contains('ignore')).to.be.true;
+      });
+
+      it('re-selecting keep restores element value and hides warning', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        const keptRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="kept"]'
+        ) as HTMLInputElement;
+        keptRadio.checked = true;
+        $(keptRadio).trigger('change');
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        expect((widget.element as HTMLInputElement).value).to.equal('kept');
+        expect((container.querySelector('.geolocation-edit-warning') as HTMLElement).style.display)
+          .to.equal('none');
+      });
+
+      it('ticking the acknowledge checkbox shows capture progress UI and hides edit options', () => {
+        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        const checkbox = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        expect(container.querySelector('.geolocation-progress-bar')).to.not.be.null;
+        expect((container.querySelector('.geolocation-edit-options') as HTMLElement).style.display)
+          .to.equal('none');
+      });
+
+      it('data-geo-context remains home after capture starts', () => {
+        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        const checkbox = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+
+        expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('home');
+      });
+
+      it('clicking skip after GPS failure reverts to edit options with kept selected', async () => {
+        const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const captureNewRadio = document.querySelector(
+          '#geolocation-widget-test input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        const editCheckbox = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        editCheckbox.checked = true;
+        $(editCheckbox).trigger('change');
+
+        await promise;
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        const skipAcknowledgeCheckbox = container.querySelector(
+          '.geolocation-status .geolocation-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        skipAcknowledgeCheckbox.checked = true;
+        $(skipAcknowledgeCheckbox).trigger('change');
+
+        (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
+
+        const editOptions = container.querySelector('.geolocation-edit-options') as HTMLElement;
+        expect(editOptions.style.display).to.not.equal('none');
+        expect(container.querySelector('.geolocation-status')).to.be.null;
+
+        const keptRadio = container.querySelector(
+          'input[type="radio"][value="kept"]'
+        ) as HTMLInputElement;
+        expect(keptRadio.checked).to.be.true;
+        expect((widget.element as HTMLInputElement).value).to.equal('kept');
+      });
+
+      it('does not render context or meta elements when data-geo-last-capture is absent', () => {
+        buildHtmlWithExistingLocation();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        expect(container.querySelector('.geolocation-edit-badge-context')).to.be.null;
+        expect(container.querySelector('.geolocation-edit-badge-meta')).to.be.null;
+      });
+
+      it('renders context and meta elements when data-geo-last-capture is provided', () => {
+        buildHtmlWithExistingLocation({ isHome: true, timestamp: Date.now() - 30 * MS_PER_DAY });
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+
+        const container = document.querySelector(
+          '#geolocation-widget-test .or-appearance-geolocation-capture'
+        )!;
+        expect(container.querySelector('.geolocation-edit-badge-context')).to.not.be.null;
+        expect(container.querySelector('.geolocation-edit-badge-meta')).to.not.be.null;
+      });
+
+      it('uses home context translation key when isHome is true', async () => {
+        buildHtmlWithExistingLocation({ isHome: true, timestamp: Date.now() - 30 * MS_PER_DAY });
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        await widget._init();
+
+        const context = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-badge-context'
+        ) as HTMLElement;
+        expect(context.textContent).to.equal('geolocation.edit.context.home');
+      });
+
+      it('uses other context translation key when isHome is false', async () => {
+        buildHtmlWithExistingLocation({ isHome: false, timestamp: Date.now() - 30 * MS_PER_DAY });
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        await widget._init();
+
+        const context = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-badge-context'
+        ) as HTMLElement;
+        expect(context.textContent).to.equal('geolocation.edit.context.other');
+      });
+
+      it('shows correct day count in badge meta when capture was multiple days ago', async () => {
+        window.CHTCore.Translate.get = sinon.stub().callsFake((key: string) => {
+          if (key === 'geolocation.edit.last_updated_days') {
+            return Promise.resolve('{{days}} days ago');
+          }
+          return Promise.resolve(key);
+        });
+        const threeDaysAgo = Date.now() - 3 * MS_PER_DAY;
+        buildHtmlWithExistingLocation({ isHome: true, timestamp: threeDaysAgo });
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        await widget._init();
+
+        const meta = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-badge-meta'
+        ) as HTMLElement;
+        expect(meta.textContent).to.equal('3 days ago');
+      });
+
+      it('uses singular day translation key when capture was exactly one day ago', async () => {
+        const oneDayAgo = Date.now() - MS_PER_DAY;
+        buildHtmlWithExistingLocation({ isHome: true, timestamp: oneDayAgo });
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        await widget._init();
+
+        const meta = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-badge-meta'
+        ) as HTMLElement;
+        expect(meta.textContent).to.equal('geolocation.edit.last_updated_day');
+      });
+
+      it('uses today translation key when capture timestamp is from the current day', async () => {
+        const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
+        buildHtmlWithExistingLocation({ isHome: true, timestamp: twoHoursAgo });
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        await widget._init();
+
+        const meta = document.querySelector(
+          '#geolocation-widget-test .geolocation-edit-badge-meta'
+        ) as HTMLElement;
+        expect(meta.textContent).to.equal('geolocation.edit.last_updated_today');
+      });
+    });
   });
 });
+

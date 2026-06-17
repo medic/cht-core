@@ -306,6 +306,62 @@
       }
     }
 
+    .geolocation-edit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      margin: 8px 0;
+      background-color: @ok-color;
+      color: @white;
+      border-radius: @radius-size-small;
+      font-size: 0.875em;
+      font-weight: bold;
+
+      .geolocation-edit-badge-meta {
+        font-weight: normal;
+        opacity: 0.85;
+      }
+    }
+
+    .geolocation-edit-options {
+      margin: 8px 0;
+
+      .geolocation-context-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 4px 0;
+        cursor: pointer;
+      }
+
+      .geolocation-edit-warning {
+        margin-top: 8px;
+        padding: 8px;
+        background-color: @yellow-highlight;
+        border-left: 3px solid @yellow;
+        border-radius: 0 @radius-size-small @radius-size-small 0;
+
+        .geolocation-edit-warning-text {
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        .geolocation-edit-acknowledge-label {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          cursor: pointer;
+          font-weight: normal;
+        }
+
+        .geolocation-edit-acknowledge-checkbox {
+          margin-top: 3px;
+          flex-shrink: 0;
+        }
+      }
+    }
+
     .geolocation-capture-btn {
       display: flex;
       align-items: center;

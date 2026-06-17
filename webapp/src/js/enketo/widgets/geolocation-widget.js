@@ -4,6 +4,8 @@ const Widget = require('enketo-core/src/js/widget').default;
 const $ = require('jquery');
 require('enketo-core/src/js/plugins');
 
+const MS_PER_DAY = 86400000;
+
 class GeolocationWidget extends Widget {
   static get selector() {
     return '.or-appearance-geolocation-capture input';
@@ -25,6 +27,10 @@ class GeolocationWidget extends Widget {
       $question.append($el);
       return globalThis.CHTCore.Translate.get('geolocation.unavailable')
         .then(text => $el.text(text));
+    }
+
+    if (this.element.dataset.geoHasLocation === 'true') {
+      return this._initEditMode();
     }
 
     const radioName = 'geo-ctx-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
@@ -59,10 +65,138 @@ class GeolocationWidget extends Widget {
     ]);
   }
 
-  _startCapture() {
-    $(this.question).find('.geolocation-context-options').hide();
-
+  _initEditMode() {
     const $question = $(this.question);
+
+    $(this.element).val('kept').trigger('change');
+    this.element.dataset.geoContext = 'home';
+
+    let lastCapture = null;
+    try {
+      if (this.element.dataset.geoLastCapture) {
+        lastCapture = JSON.parse(this.element.dataset.geoLastCapture);
+      }
+    } catch (e) { // eslint-disable-line no-unused-vars
+    }
+
+    const $badge = $('<div class="geolocation-edit-badge">');
+    const $badgeText = $('<span class="geolocation-edit-badge-text">');
+    $badge.append($badgeText);
+
+    let $badgeContext = null;
+    let $badgeMeta = null;
+    if (lastCapture) {
+      $badgeContext = $('<span class="geolocation-edit-badge-context">');
+      $badgeMeta = $('<span class="geolocation-edit-badge-meta">');
+      $badge.append($badgeContext, $badgeMeta);
+    }
+
+    $question.append($badge);
+
+    const radioName = 'geo-edit-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
+
+    const $keptSpan = $('<span class="geolocation-context-label">');
+    const $keptRadio = $('<input type="radio">').attr('name', radioName).val('kept').prop('checked', true);
+    const $keptLabel = $('<label class="geolocation-context-option">').append($keptRadio, $keptSpan);
+
+    const $captureNewSpan = $('<span class="geolocation-context-label">');
+    const $captureNewRadio = $('<input type="radio">').attr('name', radioName).val('capture-new');
+    const $captureNewLabel = $('<label class="geolocation-context-option">')
+      .append($captureNewRadio, $captureNewSpan);
+
+    const $editAcknowledgeCheckbox = $(
+      '<input type="checkbox" class="geolocation-edit-acknowledge-checkbox ignore">'
+    );
+    const $editAcknowledgeSpan = $('<span class="geolocation-edit-acknowledge-text">');
+    const $editAcknowledgeLabel = $('<label class="geolocation-edit-acknowledge-label">')
+      .append($editAcknowledgeCheckbox, $editAcknowledgeSpan);
+
+    const $warning = $('<div class="geolocation-edit-warning">').hide()
+      .append($editAcknowledgeLabel);
+
+    const $editOptions = $('<div class="geolocation-edit-options">')
+      .append($keptLabel, $captureNewLabel, $warning);
+    $question.append($editOptions);
+
+    $editOptions.on('change', 'input[type="radio"]', event => {
+      event.stopPropagation();
+      this._handleEditRadioChange(event.target.value, $warning);
+    });
+
+    $editAcknowledgeCheckbox.on('change', event => {
+      event.stopPropagation();
+      this._onEditAcknowledgeChange($editAcknowledgeCheckbox, $editOptions);
+    });
+
+    return Promise.all([
+      globalThis.CHTCore.Translate.get('geolocation.edit.badge').then(text => $badgeText.text(text)),
+      ...(lastCapture ? [
+        this._translateBadgeContext(lastCapture, $badgeContext),
+        this._translateBadgeMeta(lastCapture, $badgeMeta),
+      ] : []),
+      globalThis.CHTCore.Translate.get('geolocation.edit.keep').then(text => $keptSpan.text(text)),
+      globalThis.CHTCore.Translate.get('geolocation.edit.capture_new')
+        .then(text => $captureNewSpan.text(text)),
+      globalThis.CHTCore.Translate.get('geolocation.edit.warning').then(text => {
+        $warning.prepend($('<span class="geolocation-edit-warning-text">').text(text));
+      }),
+      globalThis.CHTCore.Translate.get('geolocation.edit.acknowledge')
+        .then(text => $editAcknowledgeSpan.text(text)),
+    ]);
+  }
+
+  _handleEditRadioChange(value, $warning) {
+    if (value === 'capture-new') {
+      $(this.element).val('').trigger('change');
+      $warning.show();
+    } else {
+      $(this.element).val('kept').trigger('change');
+      $warning.hide();
+    }
+  }
+
+  _onEditAcknowledgeChange($editAcknowledgeCheckbox, $editOptions) {
+    if ($editAcknowledgeCheckbox.prop('checked')) {
+      $editOptions.hide();
+      this._startCapture();
+    }
+  }
+
+  _translateBadgeContext(lastCapture, $badgeContext) {
+    const key = lastCapture.isHome ? 'geolocation.edit.context.home' : 'geolocation.edit.context.other';
+    return globalThis.CHTCore.Translate.get(key).then(text => $badgeContext.text(text));
+  }
+
+  _translateBadgeMeta(lastCapture, $badgeMeta) {
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    if (lastCapture.timestamp >= todayMidnight.getTime()) {
+      return globalThis.CHTCore.Translate.get('geolocation.edit.last_updated_today')
+        .then(text => $badgeMeta.text(text));
+    }
+    const days = Math.floor((Date.now() - lastCapture.timestamp) / MS_PER_DAY);
+    const key = days === 1 ? 'geolocation.edit.last_updated_day' : 'geolocation.edit.last_updated_days';
+    return globalThis.CHTCore.Translate.get(key)
+      .then(text => $badgeMeta.text(text.replace('{{days}}', days)));
+  }
+
+  _revertToEditChoice() {
+    const $question = $(this.question);
+    $question.find('.geolocation-edit-options').show();
+    const $keptRadio = $question.find('input[type="radio"][value="kept"]');
+    $keptRadio.prop('checked', true).trigger('change');
+  }
+
+  _startCapture() {
+    const isEditMode = this.element.dataset.geoHasLocation === 'true';
+    const $question = $(this.question);
+
+    if (isEditMode) {
+      $question.find('.geolocation-edit-options').hide();
+    } else {
+      $question.find('.geolocation-context-options').hide();
+    }
+
     $question.find([
       '.geolocation-capture-btn',
       '.geolocation-status',
@@ -111,17 +245,25 @@ class GeolocationWidget extends Widget {
           $skipBtn.prop('disabled', !$acknowledgeCheckbox.prop('checked'));
         });
 
-        $skipBtn.on('click', () => {
-          $retryBtn.remove();
-          $acknowledgeLabel.remove();
-          $skipBtn.remove();
+        if (isEditMode) {
+          $skipBtn.on('click', () => {
+            $status.remove();
+            this._revertToEditChoice();
+          });
+        } else {
+          $skipBtn.on('click', () => {
+            $retryBtn.remove();
+            $acknowledgeLabel.remove();
+            $skipBtn.remove();
 
-          const $skippedMsg = $('<p class="geolocation-skipped-msg">');
-          $status.append($skippedMsg);
-          globalThis.CHTCore.Translate.get('geolocation.skipped').then(text => $skippedMsg.text(text));
+            const $skippedMsg = $('<p class="geolocation-skipped-msg">');
+            $status.append($skippedMsg);
+            globalThis.CHTCore.Translate.get('geolocation.skipped').then(text => $skippedMsg.text(text));
 
-          $(this.element).val('skipped').trigger('change');
-        });
+            $(this.element).val('skipped').trigger('change');
+          });
+        }
+
         $status.append($retryBtn, $acknowledgeLabel, $skipBtn);
 
         globalThis.CHTCore.Translate.get('geolocation.result.label').then(text => $resultLabel.text(text));
