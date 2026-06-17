@@ -6,8 +6,10 @@ function(doc) {
       doc._id === 'zscore-charts' ||
       doc._id === 'settings' ||
       doc._id === 'privacy-policies' ||
+      doc._id === 'extension-libs' ||
       doc.type === 'form' ||
-      doc.type === 'translations') {
+      doc.type === 'translations' ||
+      doc.type === 'ui-extension') {
     index('string', 'key', '_all', { store: true });
     return;
   }

@@ -1,7 +1,7 @@
 const utils = require('@utils');
 const nouveau = require('@medic/nouveau');
 const { expect } = require('chai');
-const { CONTACT_TYPES, DOC_TYPES, PREFIXES } = require('@medic/constants');
+const { CONTACT_TYPES, DOC_TYPES, PREFIXES, DOC_IDS } = require('@medic/constants');
 
 describe('docs_by_replication_key', () => {
   let docByPlaceIds;
@@ -12,6 +12,14 @@ describe('docs_by_replication_key', () => {
       _id: 'form:doc_by_place_test_form',
       reported_date: 1,
       type: 'form',
+    },
+    {
+      _id: `${PREFIXES.UI_EXTENSION}chw`,
+      type: DOC_TYPES.UI_EXTENSION,
+      roles: ['chw']
+    },
+    {
+      _id: DOC_IDS.EXTENSION_LIBS,
     },
     {
       _id: 'report_about_patient',
@@ -86,6 +94,15 @@ describe('docs_by_replication_key', () => {
         _id: 'form:some_deleted_form',
         reported_date: 1,
         type: 'form',
+        _deleted: true,
+      },
+    },
+    {
+      _id: `${PREFIXES.UI_EXTENSION}some_deleted_extension____tombstone`,
+      type: 'tombstone',
+      tombstone: {
+        _id: `${PREFIXES.UI_EXTENSION}some_deleted_extension`,
+        type: DOC_TYPES.UI_EXTENSION,
         _deleted: true,
       },
     },
@@ -346,8 +363,20 @@ describe('docs_by_replication_key', () => {
     expect(docByPlaceIds).to.include('form:doc_by_place_test_form');
   });
 
+  it('should always return the extension-libs doc', () => {
+    expect(docByPlaceIds).to.include('extension-libs');
+  });
+
+  it('should always return the UI Extensions', () => {
+    expect(docByPlaceIds).to.include(`${PREFIXES.UI_EXTENSION}chw`);
+  });
+
   it('should never return form deletes', () => {
     expect(docByPlaceIds).to.not.include('form:some_deleted_form____tombstone');
+  });
+
+  it('should never return UI Extension deletes', () => {
+    expect(docByPlaceIds).to.not.include(`${PREFIXES.UI_EXTENSION}some_deleted_extension____tombstone`);
   });
 
   describe('Documents associated with the person id', () => {
