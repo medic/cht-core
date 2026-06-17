@@ -5,11 +5,8 @@ const crypto = require('crypto');
 
 const resources = require('./resources.js');
 const db = require('./db');
-const settings = require('./config');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
-const extensionLibs = require('./services/extension-libs');
-const uiExtensionService = require('./services/ui-extension');
 const { DOC_IDS } = require('@medic/constants');
 
 const SWMETA_DOC_ID = DOC_IDS.SERVICE_WORKER_META;
@@ -60,56 +57,6 @@ const getPasswordResetPageContents = async () => {
   return await loginController.renderPasswordReset();
 };
 
-const appendExtensionLibs = async (config) => {
-  const libs = await extensionLibs.getAll();
-  // cache this even if there are no libs so offline client knows there are no libs
-  config.globPatterns.push('/extension-libs');
-  config.templatedURLs['/extension-libs'] = JSON.stringify(libs.map(lib => lib.name));
-  libs.forEach(lib => {
-    const libPath = path.join('/extension-libs', lib.name);
-    config.globPatterns.push(libPath);
-    config.templatedURLs[libPath] = lib.data;
-  });
-};
-
-const appendUiExtensions = async (config) => {
-  // cache this even if there are no extensions so offline client knows
-  config.globPatterns.push('/ui-extension');
-
-  const extensions = await uiExtensionService.getAllProperties();
-  // Include all extensions here because this endpoint is in globPatterns and so the results for the endpoint
-  // get cached even for online users. Online users call the actual endpoint and do not get the templatedURLs value
-  // set here, but the value returned from the endpoint is cached in the browser service worker anyway. So, the
-  // service worker hash must change even when an online-only ui-extension property changes.
-  config.templatedURLs['/ui-extension'] = JSON.stringify(extensions);
-
-  // Do not include the actual endpoints for online-only extensions. These should only be called by online users and
-  // do not need to be cached in the service worker at all.
-  const offlineRoles = new Set(
-    Object
-      .entries(settings.get('roles') ?? {})
-      .filter(([,{ offline }]) => offline)
-      .map(([key]) => key)
-  );
-  const keepOfflineExtension = ({ roles }) => {
-    const extRoles = roles === null || roles === undefined ? [] : roles;
-    if (!Array.isArray(extRoles)) {
-      return false;
-    }
-    return !extRoles.length || extRoles.find(role => offlineRoles.has(role));
-  };
-  const offlineExtensions = extensions.filter(keepOfflineExtension);
-  for (const ext of offlineExtensions) {
-    const extPath = path.join('/ui-extension', ext.id);
-    config.globPatterns.push(extPath);
-
-    const revision = await uiExtensionService.getScriptDigest(ext.id);
-    if (revision) {
-      config.templatedURLs[extPath] = revision;
-    }
-  }
-};
-
 // Use the workbox library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
   const config = {
@@ -152,8 +99,6 @@ const writeServiceWorkerFile = async () => {
       'webapp/': '/',
     },
   };
-  await appendExtensionLibs(config);
-  await appendUiExtensions(config);
   await workbox.generateSW(config);
 };
 

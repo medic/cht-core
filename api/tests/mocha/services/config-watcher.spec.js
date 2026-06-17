@@ -1,15 +1,13 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const fs = require('fs');
-const { DOC_IDS, PREFIXES } = require('@medic/constants');
+const { DOC_IDS } = require('@medic/constants');
 
 const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
 const dbWatcher = require('../../../src/services/db-watcher');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
-const extensionLibsService = require('../../../src/services/extension-libs');
-const uiExtensionService = require('../../../src/services/ui-extension');
 const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
@@ -28,8 +26,6 @@ describe('Configuration', () => {
     sinon.stub(settingsService, 'update');
     sinon.stub(generateServiceWorker, 'run');
     sinon.stub(manifest, 'generate');
-    sinon.stub(extensionLibsService, 'isLibChange').returns(false);
-    sinon.stub(uiExtensionService, 'isExtensionChange').returns(false);
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
@@ -313,40 +309,5 @@ describe('Configuration', () => {
         });
       });
     });
-
-    describe('extension libs changes', () => {
-
-      it('generates service worker when extension libs doc is updated', () => {
-        extensionLibsService.isLibChange.returns(true);
-        generateServiceWorker.run.resolves();
-        return dbWatcher.medic.args[0][0]({ id: 'my-secret-id' }).then(() => {
-          extensionLibsService.isLibChange.returns(true);
-          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-        });
-      });
-
-    });
-
-    describe('ui extension changes', () => {
-
-      it('generates service worker when a ui-extension doc change is detected', () => {
-        uiExtensionService.isExtensionChange.returns(true);
-        generateServiceWorker.run.resolves();
-        return dbWatcher.medic.args[0][0]({ id: `${PREFIXES.UI_EXTENSION}my-ext` }).then(() => {
-          chai.expect(
-            uiExtensionService.isExtensionChange.calledWith({ id: `${PREFIXES.UI_EXTENSION}my-ext` })
-          ).to.be.true;
-          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
-        });
-      });
-
-      it('does not generate service worker for unrelated doc changes', () => {
-        generateServiceWorker.run.resolves();
-        dbWatcher.medic.args[0][0]({ id: 'some-other-doc' });
-        chai.expect(generateServiceWorker.run.callCount).to.equal(0);
-      });
-
-    });
-
   });
 });

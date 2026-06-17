@@ -5,9 +5,6 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const { DOC_IDS } = require('@medic/constants');
-const path = require('path');
-const { buildExtensionDoc } = require('@page-objects/default/ui-extensions/ui-extensions.wdio.page');
-const { closeReloadModal } = require('@page-objects/default/common/common.wdio.page');
 
 describe('Service worker cache', () => {
   const DEFAULT_TRANSLATIONS = {
@@ -15,7 +12,6 @@ describe('Service worker cache', () => {
     'sidebar_menu.title': 'Menu',
     'sync.status.not_required': 'All reports synced',
   };
-  const EXTENSIONS_DIR = path.join(__dirname, '..', 'ui-extensions', 'ui-extensions');
 
   // global caches fetch Response navigator
   const getCachedRequests = async (raw) => {
@@ -34,10 +30,9 @@ describe('Service worker cache', () => {
       return cacheDetails;
     }
 
-    const parsed = cacheDetails.requests.map(request => URL.parse(request.url, true));
-    const urls = parsed.map(p => p.pathname).sort();
-    const revisions = Object.fromEntries(parsed.map(p => [p.pathname, p.query.__WB_REVISION__ ?? null]));
-    return { name: cacheDetails.name, urls, revisions };
+    const urls = cacheDetails.requests.map(request => URL.parse(request.url).pathname);
+    urls.sort();
+    return { name: cacheDetails.name, urls };
   };
 
   const stubAllCachedRequests = () => browser.execute(async () => {
@@ -111,8 +106,6 @@ describe('Service worker cache', () => {
       '/',
       '/audio/alert.mp3',
       '/deploy-info.json',
-      '/extension-libs',
-      '/ui-extension',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
@@ -147,64 +140,6 @@ describe('Service worker cache', () => {
       '/scripts.js',
       '/styles.css',
     ].sort());
-  });
-
-  it('caches details about UI Extensions and refreshes when changed', async () => {
-    const uiExtensionDocs = [
-      buildExtensionDoc(EXTENSIONS_DIR, 'header-tab'),
-      buildExtensionDoc(EXTENSIONS_DIR, 'sidebar-tab'),
-      buildExtensionDoc(EXTENSIONS_DIR, 'online-only') // Not included in service worker
-    ];
-    let waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await utils.saveDocs(uiExtensionDocs);
-    await await waitForLogs.promise;
-    await closeReloadModal(true);
-
-    const cacheDetails = await getCachedRequests();
-
-    expect(cacheDetails.urls).to.include('/ui-extension');
-    expect(cacheDetails.urls).to.include('/ui-extension/header-tab');
-    expect(cacheDetails.urls).to.include('/ui-extension/sidebar-tab');
-    expect(cacheDetails.urls).to.not.include('/ui-extension/online-only');
-
-    // Update extension property
-    let headerTabExtensionDoc = await utils.getDoc(uiExtensionDocs[0]._id);
-    waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await utils.saveDoc({
-      ...headerTabExtensionDoc,
-      title: 'Updated title'
-    });
-    await await waitForLogs.promise;
-    await closeReloadModal(true);
-
-    const cacheDetails1 = await getCachedRequests();
-    // Properties hash updated
-    expect(cacheDetails1.revisions['/ui-extension']).to.not.equal(cacheDetails.revisions['/ui-extension']);
-    // Extension script hashes do not change
-    expect(cacheDetails1.revisions['/ui-extension/header-tab'])
-      .to.equal(cacheDetails.revisions['/ui-extension/header-tab']);
-    expect(cacheDetails1.revisions['/ui-extension/sidebar-tab'])
-      .to.equal(cacheDetails.revisions['/ui-extension/sidebar-tab']);
-
-    // Update attached script
-    headerTabExtensionDoc = await utils.getDoc(uiExtensionDocs[0]._id);
-    waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await utils.saveDoc({
-      ...headerTabExtensionDoc,
-      _attachments: uiExtensionDocs[2]._attachments
-    });
-    await await waitForLogs.promise;
-    await closeReloadModal(true);
-
-    const cacheDetails2 = await getCachedRequests();
-    // Properties hash not updated
-    expect(cacheDetails2.revisions['/ui-extension']).to.equal(cacheDetails1.revisions['/ui-extension']);
-    // Changed script hash updated
-    expect(cacheDetails2.revisions['/ui-extension/header-tab'])
-      .to.not.equal(cacheDetails.revisions['/ui-extension/header-tab']);
-    // Unchanged script hash does not change
-    expect(cacheDetails2.revisions['/ui-extension/sidebar-tab'])
-      .to.equal(cacheDetails.revisions['/ui-extension/sidebar-tab']);
   });
 
   it('branding updates trigger login page refresh', async () => {

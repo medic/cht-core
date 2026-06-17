@@ -16,8 +16,6 @@ const manifest = require('./manifest');
 const config = require('../config');
 const environment = require('@medic/environment');
 const dataContext = require('./data-context');
-const extensionLibs = require('./extension-libs');
-const uiExtension = require('./ui-extension');
 const deployInfo = require('./deploy-info');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -176,14 +174,6 @@ const listen = () => {
 
     if (change.id === DOC_IDS.BRANDING) {
       return handleBrandingChanges();
-    }
-
-    if (extensionLibs.isLibChange(change)) {
-      return updateServiceWorker();
-    }
-
-    if (uiExtension.isExtensionChange(change)) {
-      return updateServiceWorker();
     }
   });
 };
