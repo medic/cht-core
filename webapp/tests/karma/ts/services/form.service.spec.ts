@@ -681,6 +681,137 @@ describe('Form service', () => {
     }));
   });
 
+  describe('injectGeoEditContext', () => {
+    const EARLIER_CAPTURE_TS = 1749168000000; // 2025-06-06T00:00:00.000Z
+    const LATER_CAPTURE_TS   = 1749600000000; // 2025-06-11T00:00:00.000Z
+
+    const buildFormHtml = () => {
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const formHtml = document.createElement('div');
+      formHtml.appendChild(captureWrapper);
+      return { formHtml, captureInput };
+    };
+
+    beforeEach(() => {
+      service = TestBed.inject(FormService);
+    });
+
+    it('does nothing when formHtml is undefined', () => {
+      expect(() =>
+        (service as any).injectGeoEditContext(undefined, { geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS }] })
+      ).not.to.throw();
+    });
+
+    it('does nothing when contact is undefined', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, undefined);
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does nothing when contact has no geolocation data', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1' });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('does nothing when contact has empty geolocation_log and no geolocation', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1', geolocation_log: [] });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('sets data-geo-has-location when geolocation_log is non-empty', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('sets data-geo-has-location when geolocation exists but log is empty (defensive)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation_log: [],
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+      });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('sets data-geo-has-location when geolocation exists and log field is absent (defensive)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { geolocation: { latitude: 1.23, longitude: 36.8 } });
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
+    it('sets data-geo-last-capture with isHome:true from most recent successful home entry when geolocation exists', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+          { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.30, longitude: 36.9 }, is_home: false },
+        ],
+      });
+      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
+      expect(lastCapture.isHome).to.be.true;
+      expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
+    });
+
+    it('sets data-geo-last-capture with isHome:false from most recent entry when no geolocation', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
+          { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.30, longitude: 36.9 }, is_home: false },
+        ],
+      });
+      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
+      expect(lastCapture.isHome).to.be.false;
+      expect(lastCapture.timestamp).to.equal(LATER_CAPTURE_TS);
+    });
+
+    it('does not set data-geo-last-capture when geolocation exists but log is empty (degraded)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+        geolocation_log: [],
+      });
+      expect(captureInput.dataset.geoLastCapture).to.be.undefined;
+    });
+
+    it('uses most recent successful home entry even when a later other capture exists', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+          { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.30, longitude: 36.9 }, is_home: false },
+        ],
+      });
+      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
+      expect(lastCapture.isHome).to.be.true;
+      expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
+    });
+
+    it('skips failed home attempts when finding most recent successful home entry', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation: { latitude: 1.23, longitude: 36.8 },
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+          { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },
+        ],
+      });
+      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
+      expect(lastCapture.isHome).to.be.true;
+      expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
+    });
+  });
+
   describe('save', () => {
 
     beforeEach(() => {

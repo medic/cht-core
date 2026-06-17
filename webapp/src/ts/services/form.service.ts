@@ -208,6 +208,10 @@ export class FormService {
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
+      const contact = typeof instanceData === 'object' && instanceData !== null
+        ? Object.values(instanceData as Record<string, any>)[0]
+        : undefined;
+      this.injectGeoEditContext(doc.html.get(0), contact);
       return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
       if (error.translationKey) {
@@ -258,6 +262,41 @@ export class FormService {
       throw err;
     }
     return contact;
+  }
+
+  private injectGeoEditContext(formHtml: Element | undefined, contact: any) {
+    const captureInput = formHtml?.querySelector(
+      '.or-appearance-geolocation-capture input'
+    ) as HTMLInputElement | null;
+    if (!captureInput || !contact) {
+      return;
+    }
+
+    const log: any[] = contact.geolocation_log || [];
+    const hasHomeLocation = !!contact.geolocation;
+    if (!log.length && !hasHomeLocation) {
+      return;
+    }
+
+    captureInput.dataset.geoHasLocation = 'true';
+
+    if (hasHomeLocation) {
+      const homeEntry = [...log].reverse().find(e => e.is_home && !('code' in e.recording));
+      if (homeEntry) {
+        captureInput.dataset.geoLastCapture = JSON.stringify({
+          isHome: true,
+          timestamp: homeEntry.timestamp,
+        });
+      }
+    } else {
+      const latest = log[log.length - 1];
+      if (latest) {
+        captureInput.dataset.geoLastCapture = JSON.stringify({
+          isHome: false,
+          timestamp: latest.timestamp,
+        });
+      }
+    }
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
