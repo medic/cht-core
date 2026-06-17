@@ -68,8 +68,11 @@ class GeolocationWidget extends Widget {
   _initEditMode() {
     const $question = $(this.question);
 
-    $(this.element).val('kept').trigger('change');
+    $(this.element).val('kept');
     this.element.dataset.geoContext = 'home';
+    // Defer the change trigger: Enketo's setEventHandlers() runs after widgets.init(),
+    // so triggering immediately would fire before the model update listener is registered.
+    setTimeout(() => $(this.element).trigger('change'), 0);
 
     let lastCapture = null;
     try {

@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const utils = require('@utils');
+const MS_PER_DAY = 86400000;
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -121,5 +122,96 @@ describe('Geolocation widget - contact save pipeline', () => {
     expect(savedDoc.geolocation_log[0].timestamp).to.be.greaterThan(0);
     expect(savedDoc.geolocation_log[0].is_home).to.be.true;
     expect(savedDoc.geolocation_log[0].recording).to.exist;
+  });
+
+  describe('edit mode', () => {
+    const seedGeoData = {
+      latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 0, speed: 0
+    };
+
+    const contactWithGeo = {
+      _id: 'person-with-geo-existing',
+      type: 'contact',
+      contact_type: 'person_with_geo',
+      parent: { _id: healthCenter._id },
+      name: 'Person With Existing Geo',
+      reported_date: Date.now() - 10 * MS_PER_DAY,
+      geolocation: seedGeoData,
+      geolocation_log: [{
+        timestamp: Date.now() - 3 * MS_PER_DAY,
+        is_home: true,
+        recording: seedGeoData,
+      }],
+    };
+
+    before(async () => {
+      await utils.saveDoc(contactWithGeo);
+    });
+
+    after(async () => {
+      await utils.deleteDocs([contactWithGeo._id]);
+    });
+
+    const openEditForm = async () => {
+      await browser.url(`/#/contacts/${contactWithGeo._id}/edit`);
+      await commonPage.waitForPageLoaded();
+      await $('.geolocation-edit-badge').waitForExist();
+    };
+
+    it('should show edit-mode badge and radios when editing a contact with existing geolocation', async () => {
+      await openEditForm();
+
+      expect(await $('.geolocation-edit-badge').isExisting()).to.be.true;
+      expect(await $('.geolocation-edit-badge-context').isExisting()).to.be.true;
+      expect(await $('.geolocation-edit-badge-meta').isExisting()).to.be.true;
+      expect(await $('input[value="kept"]').isExisting()).to.be.true;
+      expect(await $('input[value="capture-new"]').isExisting()).to.be.true;
+      expect(await $('.geolocation-capture-btn').isExisting()).to.be.false;
+      expect(await $('.geolocation-context-options').isExisting()).to.be.false;
+    });
+
+    it('should preserve geolocation data when keeping existing location and submitting', async () => {
+      await openEditForm();
+
+      await genericForm.submitForm();
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const savedDoc = await utils.getDoc(contactWithGeo._id);
+      expect(savedDoc.geolocation_log).to.have.lengthOf(1);
+      expect(savedDoc.geolocation_log[0].recording.latitude).to.equal(seedGeoData.latitude);
+      expect(savedDoc.geolocation).to.exist;
+      expect(savedDoc.geolocation.latitude).to.equal(seedGeoData.latitude);
+    });
+
+    it('should start GPS capture and handle the outcome when capture-new is acknowledged', async () => {
+      await openEditForm();
+
+      await $('input[value="capture-new"]').click();
+      await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
+      await $('.geolocation-edit-acknowledge-checkbox').click();
+
+      // GPS may succeed or fail depending on the environment. Wait for either outcome.
+      await browser.waitUntil(
+        async () => {
+          const retry = await $('.geolocation-retry-btn').isExisting();
+          const success = await $('.geolocation-success-msg').isExisting();
+          return retry || success;
+        },
+        { timeout: 35000 }
+      );
+
+      if (await $('.geolocation-retry-btn').isExisting()) {
+        // GPS failed — verify the revert path: continue without location returns to edit choice
+        await $('.geolocation-acknowledge-checkbox').click();
+        await $('.geolocation-skip-btn').click();
+
+        await $('.geolocation-edit-options').waitForDisplayed();
+        expect(await $('input[value="kept"]').isSelected()).to.be.true;
+      } else {
+        // GPS succeeded — verify the success message is shown
+        expect(await $('.geolocation-success-msg').isExisting()).to.be.true;
+      }
+    });
   });
 });
