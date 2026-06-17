@@ -36,6 +36,8 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
   afterEach(() => {
     sinon.restore();
     $('#bikram-sambat-test').remove();
+    $('.nepali-date-picker-overlay').remove();
+    $('.nepali-date-picker').remove();
   });
 
   const initWidget = async () => {
@@ -75,7 +77,7 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     await initWidget();
 
     dayInput().val('9').trigger('change');
-    monthInput().val('4').trigger('change');
+    monthInput().val('जेठ').trigger('change');
     yearInput().val('2081').trigger('change').trigger('blur');
 
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -92,5 +94,73 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(realDateInput().val()).to.equal('2024-07-24');
+  });
+
+  it('initializes with a calendar button', async () => {
+    await initWidget();
+    expect($('.calendar-btn').length).to.equal(1);
+  });
+
+  it('opens calendar popup and backdrop when calendar button is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker').length).to.equal(1);
+    expect($('.nepali-date-picker-overlay').length).to.equal(1);
+    expect($('.nepali-date-picker .close-btn').length).to.equal(1);
+  });
+
+  it('closes calendar popup and backdrop when close button is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker').length).to.equal(1);
+    $('.nepali-date-picker .close-btn').click();
+
+    expect($('.nepali-date-picker').length).to.equal(0);
+    expect($('.nepali-date-picker-overlay').length).to.equal(0);
+  });
+
+  it('closes calendar popup and backdrop when overlay is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker-overlay').length).to.equal(1);
+    $('.nepali-date-picker-overlay').click();
+
+    expect($('.nepali-date-picker').length).to.equal(0);
+    expect($('.nepali-date-picker-overlay').length).to.equal(0);
+  });
+
+  it('closes calendar popup and backdrop when Escape key is pressed', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker').length).to.equal(1);
+    
+    // Simulate Escape key press
+    const event = $.Event('keydown');
+    event.keyCode = 27;
+    $(document).trigger(event);
+
+    expect($('.nepali-date-picker').length).to.equal(0);
+    expect($('.nepali-date-picker-overlay').length).to.equal(0);
+  });
+
+  it('updates input fields when a date is selected from calendar', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    // Click on a date cell in the calendar table (e.g. the first active day)
+    const activeDays = $('.nepali-date-picker table tbody td.current-month-date:not(.disable)');
+    if (activeDays.length > 0) {
+      $(activeDays[0]).click();
+    }
+
+    // Expect inputs to have been populated
+    expect(dayInput().val()).to.not.equal('');
+    expect(monthInput().val()).to.not.equal('');
+    expect(yearInput().val()).to.not.equal('');
+    expect(realDateInput().val()).to.not.equal('');
   });
 });
