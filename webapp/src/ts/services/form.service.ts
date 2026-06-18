@@ -274,7 +274,8 @@ export class FormService {
 
     const log: any[] = contact.geolocation_log || [];
     const hasHomeLocation = !!contact.geolocation;
-    if (!log.length && !hasHomeLocation) {
+    const hasSuccessfulLogEntry = log.some(e => !('code' in e.recording));
+    if (!hasHomeLocation && !hasSuccessfulLogEntry) {
       return;
     }
 

@@ -726,6 +726,15 @@ describe('Form service', () => {
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
 
+    it('does nothing when geolocation_log contains only failed recordings and no geolocation', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation: '',
+        geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS, recording: { code: 1, message: 'User denied Geolocation' }, is_home: true }],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
     it('sets data-geo-has-location when geolocation_log is non-empty', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
