@@ -48,7 +48,7 @@ describe('ongoing replication', function() {
   });
 
   afterEach(async () => {
-    await browser.throttleNetwork('online');
+    await browser.throttle('online');
   });
 
   it('should download new documents ', async () => {
@@ -61,7 +61,7 @@ describe('ongoing replication', function() {
     expect(localDocIdsPreSync).to.include.members(dataFactory.ids(userAllowedDocs.persons));
     expect(localDocIdsPreSync).to.include.members(dataFactory.ids(userAllowedDocs.reports));
 
-    await browser.throttleNetwork('offline');
+    await browser.throttle('offline');
 
     additionalAllowed = dataFactory.createData({
       healthCenter: userAllowedDocs.healthCenter,
@@ -76,7 +76,7 @@ describe('ongoing replication', function() {
     await saveData(additionalAllowed);
     await saveData(additionalDenied);
 
-    await browser.throttleNetwork('online');
+    await browser.throttle('online');
     await commonPage.sync({ expectReload: true, timeout: 30000 });
 
     const localDocsPostSync = await chtDbUtils.getDocs();
