@@ -307,21 +307,38 @@
     }
 
     .geolocation-edit-badge {
-      display: inline-flex;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
+      gap: 2px;
+      padding: 8px 12px;
       margin: 8px 0;
-      background-color: @ok-color;
-      color: @white;
+      background-color: lighten(@ok-color, 38%);
+      border: 2px solid darken(@ok-color, 15%);
+      color: darken(@ok-color, 22%);
       border-radius: @radius-size-small;
       font-size: 0.875em;
       font-weight: bold;
 
+      .geolocation-edit-badge-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .geolocation-edit-badge-icon {
+        color: darken(@ok-color, 22%);
+      }
+
+      .geolocation-edit-badge-context,
       .geolocation-edit-badge-meta {
         font-weight: normal;
-        opacity: 0.85;
       }
+    }
+
+    .geolocation-edit-prompt {
+      margin: 4px 0 6px;
+      font-weight: bold;
     }
 
     .geolocation-edit-options {
@@ -335,30 +352,48 @@
         cursor: pointer;
       }
 
-      .geolocation-edit-warning {
+      .geolocation-edit-warning-group {
         margin-top: 8px;
-        padding: 8px;
+      }
+
+      .geolocation-edit-warning {
+        padding: 12px;
         background-color: @yellow-highlight;
         border-left: 3px solid @yellow;
         border-radius: 0 @radius-size-small @radius-size-small 0;
+        text-align: center;
+        color: darken(@yellow-dark, 20%);
+
+        .geolocation-edit-warning-title {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-weight: bold;
+          margin-bottom: 6px;
+        }
+
+        .geolocation-edit-warning-title-icon {
+          color: darken(@yellow-dark, 20%);
+        }
 
         .geolocation-edit-warning-text {
           display: block;
-          margin-bottom: 8px;
         }
+      }
 
-        .geolocation-edit-acknowledge-label {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          cursor: pointer;
-          font-weight: normal;
-        }
+      .geolocation-edit-acknowledge-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 8px;
+        cursor: pointer;
+        font-weight: normal;
+      }
 
-        .geolocation-edit-acknowledge-checkbox {
-          margin-top: 3px;
-          flex-shrink: 0;
-        }
+      .geolocation-edit-acknowledge-checkbox {
+        margin-top: 3px;
+        flex-shrink: 0;
       }
     }
 

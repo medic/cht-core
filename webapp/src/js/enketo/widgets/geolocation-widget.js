@@ -83,8 +83,10 @@ class GeolocationWidget extends Widget {
     }
 
     const $badge = $('<div class="geolocation-edit-badge">');
+    const $badgeIcon = $('<i class="fa fa-map-marker geolocation-edit-badge-icon" aria-hidden="true">');
     const $badgeText = $('<span class="geolocation-edit-badge-text">');
-    $badge.append($badgeText);
+    const $badgeHeader = $('<span class="geolocation-edit-badge-header">').append($badgeIcon, $badgeText);
+    $badge.append($badgeHeader);
 
     let $badgeContext = null;
     let $badgeMeta = null;
@@ -95,6 +97,9 @@ class GeolocationWidget extends Widget {
     }
 
     $question.append($badge);
+
+    const $prompt = $('<p class="geolocation-edit-prompt">');
+    $question.append($prompt);
 
     const radioName = 'geo-edit-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
 
@@ -114,16 +119,21 @@ class GeolocationWidget extends Widget {
     const $editAcknowledgeLabel = $('<label class="geolocation-edit-acknowledge-label">')
       .append($editAcknowledgeCheckbox, $editAcknowledgeSpan);
 
-    const $warning = $('<div class="geolocation-edit-warning">').hide()
-      .append($editAcknowledgeLabel);
+    const $warningTitleIcon = $('<i class="fa fa-exclamation-triangle geolocation-edit-warning-title-icon" aria-hidden="true">');
+    const $warningTitleText = $('<span>');
+    const $warningTitle = $('<div class="geolocation-edit-warning-title">').append($warningTitleIcon, $warningTitleText);
+    const $warningText = $('<span class="geolocation-edit-warning-text">');
+    const $warning = $('<div class="geolocation-edit-warning">').append($warningTitle, $warningText);
+    const $warningGroup = $('<div class="geolocation-edit-warning-group">').hide()
+      .append($warning, $editAcknowledgeLabel);
 
     const $editOptions = $('<div class="geolocation-edit-options">')
-      .append($keptLabel, $captureNewLabel, $warning);
+      .append($keptLabel, $captureNewLabel, $warningGroup);
     $question.append($editOptions);
 
     $editOptions.on('change', 'input[type="radio"]', event => {
       event.stopPropagation();
-      this._handleEditRadioChange(event.target.value, $warning);
+      this._handleEditRadioChange(event.target.value, $warningGroup);
     });
 
     $editAcknowledgeCheckbox.on('change', event => {
@@ -137,12 +147,13 @@ class GeolocationWidget extends Widget {
         this._translateBadgeContext(lastCapture, $badgeContext),
         this._translateBadgeMeta(lastCapture, $badgeMeta),
       ] : []),
+      globalThis.CHTCore.Translate.get('geolocation.edit.prompt').then(text => $prompt.text(text)),
       globalThis.CHTCore.Translate.get('geolocation.edit.keep').then(text => $keptSpan.text(text)),
       globalThis.CHTCore.Translate.get('geolocation.edit.capture_new')
         .then(text => $captureNewSpan.text(text)),
-      globalThis.CHTCore.Translate.get('geolocation.edit.warning').then(text => {
-        $warning.prepend($('<span class="geolocation-edit-warning-text">').text(text));
-      }),
+      globalThis.CHTCore.Translate.get('geolocation.edit.warning.title')
+        .then(text => $warningTitleText.text(text)),
+      globalThis.CHTCore.Translate.get('geolocation.edit.warning').then(text => $warningText.text(text)),
       globalThis.CHTCore.Translate.get('geolocation.edit.acknowledge')
         .then(text => $editAcknowledgeSpan.text(text)),
     ]);
@@ -150,7 +161,7 @@ class GeolocationWidget extends Widget {
 
   _handleEditRadioChange(value, $warning) {
     if (value === 'capture-new') {
-      $(this.element).val('').trigger('change');
+      $(this.element).val('');
       $warning.show();
     } else {
       $(this.element).val('kept').trigger('change');

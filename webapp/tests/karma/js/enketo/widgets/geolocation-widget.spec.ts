@@ -615,7 +615,7 @@ describe('Enketo: Geolocation Widget', () => {
         captureNewRadio.checked = true;
         $(captureNewRadio).trigger('change');
 
-        expect((container.querySelector('.geolocation-edit-warning') as HTMLElement).style.display)
+        expect((container.querySelector('.geolocation-edit-warning-group') as HTMLElement).style.display)
           .to.not.equal('none');
         expect(container.querySelector('.geolocation-edit-acknowledge-checkbox')).to.not.be.null;
       });
@@ -660,7 +660,7 @@ describe('Enketo: Geolocation Widget', () => {
           '#geolocation-widget-test .or-appearance-geolocation-capture'
         )!;
         expect((widget.element as HTMLInputElement).value).to.equal('kept');
-        expect((container.querySelector('.geolocation-edit-warning') as HTMLElement).style.display)
+        expect((container.querySelector('.geolocation-edit-warning-group') as HTMLElement).style.display)
           .to.equal('none');
       });
 
