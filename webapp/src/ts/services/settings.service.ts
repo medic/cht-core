@@ -15,7 +15,7 @@ export class SettingsService {
     private db: DbService,
     private cacheService: CacheService
   ) {
-    this.cache = this.cacheService.register({
+    this.cache = this.cacheService.register<Record<string, unknown>>({
       get: (callback) => {
         this.db.get()
           .get(this.SETTINGS_ID)
