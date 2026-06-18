@@ -79,7 +79,8 @@ class GeolocationWidget extends Widget {
       if (this.element.dataset.geoLastCapture) {
         lastCapture = JSON.parse(this.element.dataset.geoLastCapture);
       }
-    } catch (e) { // eslint-disable-line no-unused-vars
+    } catch (e) {
+      console.error('Failed to parse geoLastCapture dataset', e);
     }
 
     const $badge = $('<div class="geolocation-edit-badge">');
@@ -119,9 +120,12 @@ class GeolocationWidget extends Widget {
     const $editAcknowledgeLabel = $('<label class="geolocation-edit-acknowledge-label">')
       .append($editAcknowledgeCheckbox, $editAcknowledgeSpan);
 
-    const $warningTitleIcon = $('<i class="fa fa-exclamation-triangle geolocation-edit-warning-title-icon" aria-hidden="true">');
+    const $warningTitleIcon = $(
+      '<i class="fa fa-exclamation-triangle geolocation-edit-warning-title-icon" aria-hidden="true">'
+    );
     const $warningTitleText = $('<span>');
-    const $warningTitle = $('<div class="geolocation-edit-warning-title">').append($warningTitleIcon, $warningTitleText);
+    const $warningTitle = $('<div class="geolocation-edit-warning-title">')
+      .append($warningTitleIcon, $warningTitleText);
     const $warningText = $('<span class="geolocation-edit-warning-text">');
     const $warning = $('<div class="geolocation-edit-warning">').append($warningTitle, $warningText);
     const $warningGroup = $('<div class="geolocation-edit-warning-group">').hide()

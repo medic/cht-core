@@ -208,10 +208,7 @@ export class FormService {
       if (!await this.canAccessForm(formContext)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-      const contact = typeof instanceData === 'object' && instanceData !== null
-        ? Object.values(instanceData as Record<string, any>)[0]
-        : undefined;
-      this.injectGeoEditContext(doc.html.get(0), contact);
+      this.injectGeoEditContext(doc.html.get(0), this.getContactFromInstanceData(instanceData));
       return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
       if (error.translationKey) {
@@ -264,6 +261,33 @@ export class FormService {
     return contact;
   }
 
+  private getContactFromInstanceData(instanceData: any): any {
+    if (typeof instanceData !== 'object' || instanceData === null) {
+      return undefined;
+    }
+    return Object.values(instanceData)[0];
+  }
+
+  private setLastCaptureFromHomeLog(log: any[], captureInput: HTMLInputElement) {
+    const homeEntry = [...log].reverse().find(e => e.is_home && !('code' in e.recording));
+    if (homeEntry) {
+      captureInput.dataset.geoLastCapture = JSON.stringify({
+        isHome: true,
+        timestamp: homeEntry.timestamp,
+      });
+    }
+  }
+
+  private setLastCaptureFromOtherLog(log: any[], captureInput: HTMLInputElement) {
+    const latest = log[log.length - 1];
+    if (latest) {
+      captureInput.dataset.geoLastCapture = JSON.stringify({
+        isHome: false,
+        timestamp: latest.timestamp,
+      });
+    }
+  }
+
   private injectGeoEditContext(formHtml: Element | undefined, contact: any) {
     const captureInput = formHtml?.querySelector(
       '.or-appearance-geolocation-capture input'
@@ -280,24 +304,11 @@ export class FormService {
     }
 
     captureInput.dataset.geoHasLocation = 'true';
-
     if (hasHomeLocation) {
-      const homeEntry = [...log].reverse().find(e => e.is_home && !('code' in e.recording));
-      if (homeEntry) {
-        captureInput.dataset.geoLastCapture = JSON.stringify({
-          isHome: true,
-          timestamp: homeEntry.timestamp,
-        });
-      }
-    } else {
-      const latest = log[log.length - 1];
-      if (latest) {
-        captureInput.dataset.geoLastCapture = JSON.stringify({
-          isHome: false,
-          timestamp: latest.timestamp,
-        });
-      }
+      this.setLastCaptureFromHomeLog(log, captureInput);
+      return;
     }
+    this.setLastCaptureFromOtherLog(log, captureInput);
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
@@ -435,6 +446,22 @@ export class FormService {
     }
   }
 
+  private async restoreGeoFieldsIfKept(
+    geoCaptureValue: string | undefined,
+    docId: string | undefined,
+    preparedDocs: any[]
+  ) {
+    if (geoCaptureValue !== 'kept' || !docId) {
+      return;
+    }
+    const originalDoc = await this.dbService.get().get(docId);
+    const contactDoc = preparedDocs.find(doc => doc._id === docId);
+    if (contactDoc && originalDoc) {
+      contactDoc.geolocation = originalDoc.geolocation;
+      contactDoc.geo_capture = originalDoc.geo_capture;
+    }
+  }
+
   async saveContact(
     contactInfo: {
       docId: string | undefined;
@@ -472,14 +499,7 @@ export class FormService {
     const contextValue = this.getGeoContext(form?.view?.html);
     const geoCaptureValue = this.getGeoCaptureValue(form?.view?.html);
 
-    if (geoCaptureValue === 'kept' && docId) {
-      const originalDoc = await this.dbService.get().get(docId);
-      const contactDoc = preparedDocs.preparedDocs.find(doc => doc._id === docId);
-      if (contactDoc && originalDoc) {
-        contactDoc.geolocation = originalDoc.geolocation;
-        contactDoc.geo_capture = originalDoc.geo_capture;
-      }
-    }
+    await this.restoreGeoFieldsIfKept(geoCaptureValue, docId, preparedDocs.preparedDocs);
 
     const docsWithGeo = geoCaptureValue === 'kept'
       ? preparedDocs.preparedDocs
