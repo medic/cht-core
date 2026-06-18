@@ -38,6 +38,10 @@
  *   --limit <n>         Max number of runs to scan (default: 100).
  *   --since <date>      Only runs created on/after this date (YYYY-MM-DD).
  *   --repo <owner/repo> Repository to query (default: medic/cht-core).
+ *   --job <name>        Only scan jobs whose name matches (substring or /regex/).
+ *                       A spec runs in one CI suite, so naming it (e.g. the
+ *                       "ci-webdriver-default-lowLevel" partition) skips the
+ *                       other jobs' log downloads and is much faster.
  *   --scan-all          Also scan green runs and passing jobs. Catches specs
  *                       that failed an attempt but were retried-and-passed
  *                       (flaky-recovered). Slower. Default scans only failed
@@ -50,6 +54,7 @@
  * Examples:
  *   node scripts/ci/find-test-failures.js reports-list.wdio-spec.js
  *   node scripts/ci/find-test-failures.js "should display the correct number" --since 2026-01-01
+ *   node scripts/ci/find-test-failures.js replace_user --job lowLevel
  *   node scripts/ci/find-test-failures.js "/replication.*offline/" --scan-all --json
  */
 
@@ -61,12 +66,54 @@ const { spawnSync } = require('node:child_process');
 // CLI parsing
 // ---------------------------------------------------------------------------
 
+const asString = (value) => value;
+
+// Flag table: boolean flags carry `flag: true`; value flags carry a `parse`
+// that converts the following argv token.
+const ARG_FLAGS = {
+  '-h': { key: 'help', flag: true },
+  '--help': { key: 'help', flag: true },
+  '--scan-all': { key: 'scanAll', flag: true },
+  '--json': { key: 'json', flag: true },
+  '--debug': { key: 'debug', flag: true },
+  '--branch': { key: 'branch', parse: asString },
+  '--since': { key: 'since', parse: asString },
+  '--repo': { key: 'repo', parse: asString },
+  '--job': { key: 'job', parse: asString },
+  '--limit': { key: 'limit', parse: Number },
+  '--concurrency': { key: 'concurrency', parse: Number },
+};
+
+const applyPositional = (rest, arg) => {
+  if (arg.startsWith('--')) {
+    throw new Error(`Unknown option: ${arg}`);
+  }
+  rest.push(arg);
+};
+
+// Apply argv[i] to opts. Returns the index of the last token consumed (i for a
+// boolean/positional, i+1 for a value flag).
+const applyArg = (opts, rest, argv, i) => {
+  const spec = ARG_FLAGS[argv[i]];
+  if (!spec) {
+    applyPositional(rest, argv[i]);
+    return i;
+  }
+  if (spec.flag) {
+    opts[spec.key] = true;
+    return i;
+  }
+  opts[spec.key] = spec.parse(argv[i + 1]);
+  return i + 1;
+};
+
 const parseArgs = (argv) => {
   const opts = {
     term: null,
     branch: null,
     limit: 100,
     since: null,
+    job: null,
     repo: 'medic/cht-core',
     scanAll: false,
     concurrency: 6,
@@ -75,26 +122,7 @@ const parseArgs = (argv) => {
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    switch (arg) {
-      case '-h':
-      case '--help':
-        opts.help = true;
-        break;
-      case '--branch': opts.branch = argv[++i]; break;
-      case '--limit': opts.limit = Number(argv[++i]); break;
-      case '--since': opts.since = argv[++i]; break;
-      case '--repo': opts.repo = argv[++i]; break;
-      case '--concurrency': opts.concurrency = Number(argv[++i]); break;
-      case '--scan-all': opts.scanAll = true; break;
-      case '--json': opts.json = true; break;
-      case '--debug': opts.debug = true; break;
-      default:
-        if (arg.startsWith('--')) {
-          throw new Error(`Unknown option: ${arg}`);
-        }
-        rest.push(arg);
-    }
+    i = applyArg(opts, rest, argv, i);
   }
   opts.term = rest[0] || null;
   return opts;
@@ -114,6 +142,8 @@ Options:
   --limit <n>         Max number of runs to scan (default: 100).
   --since <date>      Only runs created on/after this date (YYYY-MM-DD).
   --repo <owner/repo> Repository to query (default: medic/cht-core).
+  --job <name>        Only scan jobs whose name matches (substring or /regex/);
+                      faster, since it skips other suites' log downloads.
   --scan-all          Also scan green runs / passing jobs (catches flaky-recovered).
   --concurrency <n>   Parallel log downloads (default: 6).
   --json              Emit JSON instead of a table.
@@ -144,7 +174,7 @@ const ghJson = (endpoint) => {
   return JSON.parse(stdout);
 };
 
-const assertAuth = () => {
+const  assertAuth = () => {
   const res = runGh(['auth', 'status'], { allowFail: true });
   if (res.status !== 0 && !process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
     throw new Error(
@@ -180,112 +210,157 @@ const buildMatcher = (term) => {
 };
 
 // ---------------------------------------------------------------------------
-// Log parsing: produce a list of failure records { title, file, source }
+// Shared helpers
 // ---------------------------------------------------------------------------
 
 const SPEC_FILE_RE = /(?:[\w./-]*\/)?[\w.-]+\.(?:wdio-spec|spec)\.js/;
 
-// Parse wdio "spec" reporter output. Returns failures grouped per spec file,
-// keeping only the *final* attempt unless includeAllAttempts is set.
-const parseWdioLog = (lines, includeAllAttempts) => {
-  // collect ordered blocks: { file, fails: [titles] }
+const groupBy = (items, keyFn) => {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+    map.get(key).push(item);
+  }
+  return map;
+};
+
+// ---------------------------------------------------------------------------
+// Log parsing: produce a list of failure records { title, file, source }
+// ---------------------------------------------------------------------------
+
+const WDIO_SPEC_HEADER_RE = /^\s*(?:Spec:|»)\s*(\S+\.js)\s*$/;
+const WDIO_STREAMING_RE = /✖.*»\s*\[/;
+const WDIO_FAIL_RE = /(?:\[FAIL\]|✖)\s*(.+?)\s*$/;
+
+// Fold one (prefix-stripped) wdio log line into the running block list, and
+// return the block that subsequent failure lines belong to.
+const foldWdioLine = (line, blocks, current) => {
+  const specMatch = line.match(WDIO_SPEC_HEADER_RE);
+  if (specMatch) {
+    const block = { file: specMatch[1], fails: [] };
+    blocks.push(block);
+    return block;
+  }
+  // Streaming concise lines ("✖ <title> » [ <path> ]") repeat every attempt and
+  // aren't tied to an open block; skip them. The grouped block re-reports the
+  // same failures and is authoritative for retry handling.
+  if (WDIO_STREAMING_RE.test(line)) {
+    return current;
+  }
+  const failMatch = line.match(WDIO_FAIL_RE);
+  if (failMatch && current) {
+    current.fails.push(failMatch[1].trim());
+  }
+  return current;
+};
+
+const collectWdioBlocks = (lines) => {
   const blocks = [];
   let current = null;
   for (const raw of lines) {
-    const line = cleanLine(raw).replace(WDIO_RUNNER_PREFIX, '');
-    // Spec-block header. Two reporter styles show up in this repo's logs:
-    //   - classic spec-reporter:    "Spec: <path>"
-    //   - per-worker grouped block: "» <path>"  (current wdio output)
-    const specMatch = line.match(/^\s*(?:Spec:|»)\s*(\S+\.js)\s*$/);
-    if (specMatch) {
-      current = { file: specMatch[1], fails: [] };
-      blocks.push(current);
-      continue;
-    }
-    // Streaming concise lines ("✖ <title> » [ <path> ]") repeat every
-    // attempt and aren't tied to an open block; skip them. The grouped block
-    // re-reports the same failures and is authoritative for retry handling.
-    if (/✖.*»\s*\[/.test(line)) {
-      continue;
-    }
-    // Failure markers within a block: classic "[FAIL] <title>" or the
-    // "✖ <title>" tree line emitted by the grouped block.
-    const failMatch = line.match(/(?:\[FAIL\]|✖)\s*(.+?)\s*$/);
-    if (failMatch && current) {
-      current.fails.push(failMatch[1].trim());
-    }
+    current = foldWdioLine(cleanLine(raw).replace(WDIO_RUNNER_PREFIX, ''), blocks, current);
   }
+  return blocks;
+};
 
-  // group blocks by file, preserving order so the last block is the final attempt
-  const byFile = new Map();
-  for (const block of blocks) {
-    if (!byFile.has(block.file)) {
-      byFile.set(block.file, []);
-    }
-    byFile.get(block.file).push(block);
-  }
+const blocksToFailures = (file, blocks) => blocks.flatMap(
+  (block) => block.fails.map((title) => ({ title, file, source: 'wdio' }))
+);
 
+// Parse wdio "spec" reporter output. Returns failures grouped per spec file,
+// keeping only the *final* attempt unless includeAllAttempts is set.
+const parseWdioLog = (lines, includeAllAttempts) => {
+  const byFile = groupBy(collectWdioBlocks(lines), (block) => block.file);
   const failures = [];
   for (const [file, fileBlocks] of byFile) {
-    const relevant = includeAllAttempts ? fileBlocks : [fileBlocks[fileBlocks.length - 1]];
-    for (const block of relevant) {
-      for (const title of block.fails) {
-        failures.push({ title, file, source: 'wdio' });
-      }
-    }
+    const relevant = includeAllAttempts ? fileBlocks : [fileBlocks.at(-1)];
+    failures.push(...blocksToFailures(file, relevant));
   }
   return failures;
 };
 
-// Parse mocha "spec" reporter trailing "N failing" summary. Each entry looks like:
-//   1) Suite title
-//        sub-suite
-//          test name:
-//      AssertionError: ...
-//        at Context.<anonymous> (tests/integration/.../foo.spec.js:12:34)
+// Mocha "N failing" entry: "  1) Suite title", indented sub-titles, then the
+// error message / stack. These delimit the title and the stack respectively.
+const MOCHA_HEADER_RE = /^\s{1,4}(\d+)\)\s+(.*\S)\s*$/;
+const MOCHA_NEXT_RE = /^\s{1,4}\d+\)\s/;
+const MOCHA_STACK_RE = /^\s*(at\s|[A-Z]\w*(Error|Exception):|AssertionError|\+ expected|- actual|Error:)/;
+
+// Index where the multi-line title ends: first blank, next-entry, or stack line.
+const findTitleEnd = (clean, start) => {
+  let j = start + 1;
+  for (; j < clean.length; j++) {
+    const l = clean[j];
+    if (!l.trim() || MOCHA_NEXT_RE.test(l) || MOCHA_STACK_RE.test(l)) {
+      break;
+    }
+  }
+  return j;
+};
+
+const gatherTitle = (clean, start, end, firstPart) => {
+  const parts = [firstPart];
+  for (let k = start + 1; k < end; k++) {
+    parts.push(clean[k].trim());
+  }
+  return parts.join(' ').replace(/:$/, '').replace(/\s+/g, ' ').trim();
+};
+
+// Index of the next numbered entry (or end of log), bounding this entry's stack.
+const nextEntryIndex = (clean, start) => {
+  for (let k = start + 1; k < clean.length; k++) {
+    if (MOCHA_NEXT_RE.test(clean[k])) {
+      return k;
+    }
+  }
+  return clean.length;
+};
+
+const matchSpecFile = (line) => {
+  const m = line.match(SPEC_FILE_RE);
+  return m && /tests\//.test(m[0]) ? m[0] : null;
+};
+
+const findSpecFile = (entryLines) => {
+  for (const line of entryLines) {
+    const file = matchSpecFile(line);
+    if (file) {
+      return file;
+    }
+  }
+  return null;
+};
+
+// Build the failure for the entry starting at `start`, plus the index to resume
+// scanning from (after the title — stack lines are skipped by the main loop).
+const parseMochaEntry = (clean, start, firstPart) => {
+  const titleEnd = findTitleEnd(clean, start);
+  const entryEnd = nextEntryIndex(clean, start);
+  return {
+    failure: {
+      title: gatherTitle(clean, start, titleEnd, firstPart),
+      file: findSpecFile(clean.slice(start, entryEnd)),
+      source: 'mocha',
+    },
+    next: titleEnd,
+  };
+};
+
 const parseMochaLog = (lines) => {
   const clean = lines.map(cleanLine);
   const failures = [];
   let i = 0;
   while (i < clean.length) {
-    const header = clean[i].match(/^\s{1,4}(\d+)\)\s+(.*\S)\s*$/);
+    const header = clean[i].match(MOCHA_HEADER_RE);
     if (!header) {
       i++;
       continue;
     }
-    // gather the multi-line title: indented lines until we hit the error/stack
-    const titleParts = [header[2]];
-    let j = i + 1;
-    for (; j < clean.length; j++) {
-      const l = clean[j];
-      if (!l.trim()) {
-        break;
-      }
-      // start of next numbered failure
-      if (/^\s{1,4}\d+\)\s/.test(l)) {
-        break;
-      }
-      // error message / stack lines: typically "     SomeError: ..." or "at ..."
-      if (/^\s*(at\s|[A-Z]\w*(Error|Exception):|AssertionError|\+ expected|- actual|Error:)/.test(l)) {
-        break;
-      }
-      titleParts.push(l.trim());
-    }
-    // scan forward (within this entry) for a spec-file path in the stack
-    let file = null;
-    for (let k = i; k < clean.length; k++) {
-      if (k > i && /^\s{1,4}\d+\)\s/.test(clean[k])) {
-        break;
-      }
-      const m = clean[k].match(SPEC_FILE_RE);
-      if (m && /tests\//.test(m[0])) {
-        file = m[0];
-        break;
-      }
-    }
-    const title = titleParts.join(' ').replace(/:$/, '').replace(/\s+/g, ' ').trim();
-    failures.push({ title, file, source: 'mocha' });
-    i = j;
+    const { failure, next } = parseMochaEntry(clean, i, header[2]);
+    failures.push(failure);
+    i = next;
   }
   return failures;
 };
@@ -318,31 +393,30 @@ const mapWithConcurrency = async (items, limit, worker) => {
 // Main
 // ---------------------------------------------------------------------------
 
+const runsEndpoint = (opts, perPage, page) => {
+  const params = [`per_page=${perPage}`, `page=${page}`];
+  if (opts.branch) {
+    params.push(`branch=${encodeURIComponent(opts.branch)}`);
+  }
+  if (!opts.scanAll) {
+    params.push('status=failure'); // only runs that ended in failure
+  }
+  if (opts.since) {
+    params.push(`created=${encodeURIComponent('>=' + opts.since)}`);
+  }
+  return `/repos/${opts.repo}/actions/workflows/build.yml/runs?${params.join('&')}`;
+};
+
 const listRuns = (opts) => {
   const runs = [];
   const perPage = 100;
   let page = 1;
   while (runs.length < opts.limit) {
-    const params = [`per_page=${perPage}`, `page=${page}`];
-    if (opts.branch) {
-      params.push(`branch=${encodeURIComponent(opts.branch)}`);
-    }
-    if (!opts.scanAll) {
-      params.push('status=failure'); // only runs that ended in failure
-    }
-    if (opts.since) {
-      params.push(`created=${encodeURIComponent('>=' + opts.since)}`);
-    }
-    const endpoint = `/repos/${opts.repo}/actions/workflows/build.yml/runs?${params.join('&')}`;
-    const data = ghJson(endpoint);
-    const batch = data.workflow_runs || [];
-    if (!batch.length) {
-      break;
-    }
+    const batch = ghJson(runsEndpoint(opts, perPage, page)).workflow_runs || [];
     runs.push(...batch);
     page++;
     if (batch.length < perPage) {
-      break;
+      break; // last (or empty) page reached
     }
   }
   return runs.slice(0, opts.limit);
@@ -357,48 +431,52 @@ const fetchJobLog = (repo, jobId) => {
   return res.stdout;
 };
 
-const scanRun = async (run, opts, matcher) => {
-  let jobsData;
+const isScannableJob = (job, opts) => {
+  if (!TEST_JOB_RE.test(job.name)) {
+    return false;
+  }
+  if (opts.jobMatcher && !opts.jobMatcher(job.name)) {
+    return false;
+  }
+  return opts.scanAll || job.conclusion === 'failure';
+};
+
+const scanJob = async (job, run, opts, matcher) => {
+  const log = fetchJobLog(opts.repo, job.id);
+  if (log === null) {
+    if (opts.debug) {
+      process.stderr.write(`run ${run.id} job ${job.name}: log unavailable\n`);
+    }
+    return [];
+  }
+  const lines = log.split('\n');
+  const failures = isIntegrationJob(job.name)
+    ? parseMochaLog(lines)
+    : parseWdioLog(lines, opts.scanAll);
+
+  const matched = failures.filter((f) => matcher(f.title || '') || (f.file && matcher(f.file)));
+  if (opts.debug) {
+    process.stderr.write(`run ${run.id} job ${job.name}: ` +
+                         `${failures.length} failures, ${matched.length} matched\n`);
+  }
+  return matched.map((f) => ({ ...f, jobName: job.name, jobUrl: job.html_url }));
+};
+
+const listRunJobs = (run, opts) => {
   try {
-    jobsData = ghJson(`/repos/${opts.repo}/actions/runs/${run.id}/jobs?per_page=100`);
+    const jobsData = ghJson(`/repos/${opts.repo}/actions/runs/${run.id}/jobs?per_page=100`);
+    return jobsData.jobs || [];
   } catch (err) {
     if (opts.debug) {
       process.stderr.write(`run ${run.id}: failed to list jobs: ${err.message}\n`);
     }
     return [];
   }
-  const jobs = (jobsData.jobs || []).filter((job) => {
-    if (!TEST_JOB_RE.test(job.name)) {
-      return false;
-    }
-    if (!opts.scanAll && job.conclusion !== 'failure') {
-      return false;
-    }
-    return true;
-  });
+};
 
-  const perJob = await mapWithConcurrency(jobs, opts.concurrency, async (job) => {
-    const log = fetchJobLog(opts.repo, job.id);
-    if (log === null) {
-      if (opts.debug) {
-        process.stderr.write(`run ${run.id} job ${job.name}: log unavailable\n`);
-      }
-      return [];
-    }
-    const lines = log.split('\n');
-    const failures = isIntegrationJob(job.name)
-      ? parseMochaLog(lines)
-      : parseWdioLog(lines, opts.scanAll);
-
-    const matched = failures.filter((f) => matcher(f.title || '') || (f.file && matcher(f.file)));
-
-    if (opts.debug) {
-      process.stderr.write(`run ${run.id} job ${job.name}: ` +
-                           `${failures.length} failures, ${matched.length} matched\n`);
-    }
-    return matched.map((f) => ({ ...f, jobName: job.name, jobUrl: job.html_url }));
-  });
-
+const scanRun = async (run, opts, matcher) => {
+  const jobs = listRunJobs(run, opts).filter((job) => isScannableJob(job, opts));
+  const perJob = await mapWithConcurrency(jobs, opts.concurrency, (job) => scanJob(job, run, opts, matcher));
   return perJob.flat();
 };
 
@@ -417,28 +495,26 @@ const formatRow = (run, failures) => {
   };
 };
 
-const printTable = (matchedRuns, scannedCount, opts) => {
-  if (!matchedRuns.length) {
-    console.log(`\nNo failures of "${opts.term}" found in ${scannedCount} scanned run(s).`);
-    if (!opts.scanAll) {
-      console.log('(Only failed runs/jobs were scanned. Use --scan-all to also catch ' +
-                  'specs that failed but were retried-and-passed.)');
-    }
-    return;
+const printNoMatches = (scannedCount, opts) => {
+  console.log(`\nNo failures of "${opts.term}" found in ${scannedCount} scanned run(s).`);
+  if (!opts.scanAll) {
+    console.log('(Only failed runs/jobs were scanned. Use --scan-all to also catch ' +
+                'specs that failed but were retried-and-passed.)');
   }
-  console.log(`\n"${opts.term}" failed in ${matchedRuns.length} of ${scannedCount} scanned run(s):\n`);
-  for (const row of matchedRuns) {
-    const prNote = row.event === 'pull_request' ? ' (PR)' : '';
-    console.log(`● ${row.date}  ${row.branch}${prNote}  [run #${row.runNumber}, ${row.conclusion}]`);
-    console.log(`  jobs:  ${row.jobs.join(', ')}`);
-    for (const title of row.titles) {
-      console.log(`  fail:  ${title}`);
-    }
-    console.log(`  ${row.url}`);
-    console.log('');
-  }
+};
 
-  // simple branch breakdown
+const printRun = (row) => {
+  const prNote = row.event === 'pull_request' ? ' (PR)' : '';
+  console.log(`● ${row.date}  ${row.branch}${prNote}  [run #${row.runNumber}, ${row.conclusion}]`);
+  console.log(`  jobs:  ${row.jobs.join(', ')}`);
+  for (const title of row.titles) {
+    console.log(`  fail:  ${title}`);
+  }
+  console.log(`  ${row.url}`);
+  console.log('');
+};
+
+const printBranchBreakdown = (matchedRuns) => {
   const byBranch = {};
   for (const row of matchedRuns) {
     byBranch[row.branch] = (byBranch[row.branch] || 0) + 1;
@@ -450,27 +526,39 @@ const printTable = (matchedRuns, scannedCount, opts) => {
   }
 };
 
-const main = async () => {
-  const opts = parseArgs(process.argv.slice(2));
+const printTable = (matchedRuns, scannedCount, opts) => {
+  if (!matchedRuns.length) {
+    printNoMatches(scannedCount, opts);
+    return;
+  }
+  console.log(`\n"${opts.term}" failed in ${matchedRuns.length} of ${scannedCount} scanned run(s):\n`);
+  matchedRuns.forEach(printRun);
+  printBranchBreakdown(matchedRuns);
+};
+
+const handleHelp = (opts) => {
   if (opts.help || !opts.term) {
     console.log(HELP);
     process.exit(opts.term ? 0 : 1);
   }
+};
+
+const validateLimit = (opts) => {
   if (!Number.isFinite(opts.limit) || opts.limit <= 0) {
     throw new Error('--limit must be a positive number');
   }
+};
 
-  assertAuth();
-  const matcher = buildMatcher(opts.term);
+const describeScan = (opts) => {
+  const scope = opts.scanAll ? 'all' : 'failed-only';
+  const branch = opts.branch ? `, branch=${opts.branch}` : ', all branches';
+  const since = opts.since ? `, since=${opts.since}` : '';
+  return `Listing build.yml runs (${scope}${branch}${since}, limit=${opts.limit})...`;
+};
 
-  process.stderr.write(`Listing build.yml runs (${opts.scanAll ? 'all' : 'failed-only'}` +
-                       `${opts.branch ? `, branch=${opts.branch}` : ', all branches'}` +
-                       `${opts.since ? `, since=${opts.since}` : ''}, limit=${opts.limit})...\n`);
-  const runs = listRuns(opts);
-  process.stderr.write(`Scanning ${runs.length} run(s) for "${opts.term}"...\n`);
-
+// scan runs sequentially; log downloads within each run are parallelised
+const scanAllRuns = async (runs, opts, matcher) => {
   const matchedRuns = [];
-  // scan runs sequentially; log downloads within each run are parallelised
   for (let i = 0; i < runs.length; i++) {
     const run = runs[i];
     process.stderr.write(`  [${i + 1}/${runs.length}] run #${run.run_number} (${run.head_branch})\r`);
@@ -479,8 +567,10 @@ const main = async () => {
       matchedRuns.push(formatRow(run, failures));
     }
   }
-  process.stderr.write('\n');
+  return matchedRuns;
+};
 
+const emitResults = (matchedRuns, runs, opts) => {
   if (opts.json) {
     console.log(JSON.stringify({
       term: opts.term,
@@ -488,9 +578,28 @@ const main = async () => {
       failedRuns: matchedRuns.length,
       runs: matchedRuns,
     }, null, 2));
-  } else {
-    printTable(matchedRuns, runs.length, opts);
+    return;
   }
+  printTable(matchedRuns, runs.length, opts);
+};
+
+const main = async () => {
+  const opts = parseArgs(process.argv.slice(2));
+  handleHelp(opts);
+  validateLimit(opts);
+
+  assertAuth();
+  const matcher = buildMatcher(opts.term);
+  opts.jobMatcher = opts.job ? buildMatcher(opts.job) : null;
+
+  process.stderr.write(`${describeScan(opts)}\n`);
+  const runs = listRuns(opts);
+  process.stderr.write(`Scanning ${runs.length} run(s) for "${opts.term}"...\n`);
+
+  const matchedRuns = await scanAllRuns(runs, opts, matcher);
+  process.stderr.write('\n');
+
+  emitResults(matchedRuns, runs, opts);
 };
 
 if (require.main === module) {
