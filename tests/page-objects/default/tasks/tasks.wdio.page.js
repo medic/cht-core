@@ -140,7 +140,7 @@ const filterByOverdue = async (overdueOption) => {
     await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
   }
 
-  const option = sidebarFilterSelectors.overdueAccordionBody().$(`a*=${overdueOption}`);
+  const option = sidebarFilterSelectors.overdueAccordionBody().$(`label*=${overdueOption}`);
   await option.click();
 };
 
