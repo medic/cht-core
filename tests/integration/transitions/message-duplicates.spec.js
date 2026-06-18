@@ -2,6 +2,7 @@ const chai = require('chai');
 const { v7: uuid } = require('uuid');
 const utils = require('@utils');
 const apiUtils = require('./utils');
+const sentinelUtils = require('@utils/sentinel');
 
 const settings = {
   transitions: {
@@ -88,7 +89,7 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
@@ -102,7 +103,7 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
@@ -116,7 +117,7 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const recipient = getRecipient(doc);
@@ -158,11 +159,7 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          if (doc.tasks.length > 1) {
-            // this test has been flaking on GHA only (no repro locally)
-            console.log(JSON.stringify(doc, null, 2));
-          }
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
@@ -176,7 +173,7 @@ describe('message duplicates', () => {
       .then(ids => utils.getDocs(ids))
       .then(docs => {
         docs.forEach(doc => {
-          chai.expect(doc.tasks.length).to.equal(1);
+          chai.expect(doc.tasks.length).to.equal(1, `doc: ${JSON.stringify(doc, null, 2)}`);
           chai.expect(doc.tasks[0].messages.length).to.equal(1);
 
           const task = doc.tasks[0];
