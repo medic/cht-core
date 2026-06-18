@@ -2,7 +2,6 @@ const chai = require('chai');
 const { v7: uuid } = require('uuid');
 const utils = require('@utils');
 const apiUtils = require('./utils');
-const sentinelUtils = require('@utils/sentinel');
 
 const settings = {
   transitions: {
