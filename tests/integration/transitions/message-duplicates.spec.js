@@ -49,8 +49,6 @@ const postMessages = (messages) => {
 const getRecipient = doc => doc.tasks[0].messages[0].to;
 
 describe('message duplicates', () => {
-  afterEach(() => utils.revertSettings(true));
-
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
       from: 'duplicate-phone',
