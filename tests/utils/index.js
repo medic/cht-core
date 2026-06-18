@@ -1726,7 +1726,7 @@ const collectLogs = (container, ...regex) => {
 
   const collect = async () => {
     if (isK3D()) {
-      await delayPromise(500);
+      await delayPromise(1000);
     }
     clearTimeout(timeout);
     if (errors.length) {
