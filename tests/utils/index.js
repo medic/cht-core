@@ -1595,7 +1595,7 @@ const waitForLogs = async (container, tail, ...regex) => {
   let timeout;
   let logs = '';
   let isReady = false;
-  const startTime = Date.now() - 50; // Subtract a small buffer to account for any clock skew
+  const startTime = Date.now();
   tail = (isDocker() || tail) ? '--tail=20' : '';
 
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
