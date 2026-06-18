@@ -703,9 +703,11 @@ describe('Form service', () => {
     });
 
     it('does nothing when formHtml is undefined', () => {
-      expect(() =>
-        (service as any).injectGeoEditContext(undefined, { geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS }] })
-      ).not.to.throw();
+      const fn = () => (service as any).injectGeoEditContext(
+        undefined,
+        { geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS }] }
+      );
+      expect(fn).not.to.throw();
     });
 
     it('does nothing when contact is undefined', () => {
@@ -730,7 +732,9 @@ describe('Form service', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         geolocation: '',
-        geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS, recording: { code: 1, message: 'User denied Geolocation' }, is_home: true }],
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { code: 1, message: 'User denied Geolocation' }, is_home: true }
+        ],
       });
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
@@ -738,7 +742,9 @@ describe('Form service', () => {
     it('sets data-geo-has-location when geolocation_log is non-empty', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
-        geolocation_log: [{ timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }],
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
+        ],
       });
       expect(captureInput.dataset.geoHasLocation).to.equal('true');
     });
@@ -758,7 +764,7 @@ describe('Form service', () => {
       expect(captureInput.dataset.geoHasLocation).to.equal('true');
     });
 
-    it('sets data-geo-last-capture with isHome:true from most recent successful home entry when geolocation exists', () => {
+    it('sets data-geo-last-capture with isHome:true from most recent successful home entry', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         geolocation: { latitude: 1.23, longitude: 36.8 },
