@@ -258,7 +258,7 @@ class GeolocationWidget extends Widget {
 
     globalThis.CHTCore.Geolocation.currentPromise.then(result => {
       if ('code' in result) {
-        this._buildCaptureFailureUI($status, $bar, isEditMode);
+        this._buildCaptureFailureUI(result.code, $status, $bar, isEditMode);
       } else {
         this._buildCaptureSuccessUI($status, $bar);
       }
@@ -275,7 +275,7 @@ class GeolocationWidget extends Widget {
     return { $status, $progressLabel, $bar };
   }
 
-  _buildCaptureFailureUI($status, $bar, isEditMode) {
+  _buildCaptureFailureUI(errorCode, $status, $bar, isEditMode) {
     $bar.addClass('geolocation-progress-failure');
 
     const $resultRow = $('<div class="geolocation-result-row">');
@@ -283,6 +283,13 @@ class GeolocationWidget extends Widget {
     const $resultText = $('<span class="geolocation-failure-msg">');
     $resultRow.append($resultLabel, $resultText);
     $status.append($resultRow);
+
+    const isWeakSignal = errorCode === 2 || errorCode === 3;
+    if (isWeakSignal) {
+      const $weakSignalMsg = $('<p class="geolocation-weak-signal-msg">');
+      $status.append($weakSignalMsg);
+      globalThis.CHTCore.Translate.get('geolocation.signal.weak').then(text => $weakSignalMsg.text(text));
+    }
 
     const $retryBtn = $('<button type="button" class="btn btn-default geolocation-retry-btn">');
     $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($retryBtn);

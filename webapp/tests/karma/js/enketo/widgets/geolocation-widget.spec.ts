@@ -513,6 +513,95 @@ describe('Enketo: Geolocation Widget', () => {
         expect(bar.classList.contains('geolocation-progress-failure')).to.be.true;
         expect(bar.classList.contains('geolocation-progress-success')).to.be.false;
       });
+
+      it('should show weak signal message for POSITION_UNAVAILABLE (code 2)', async () => {
+        const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(container.querySelector('.geolocation-weak-signal-msg')).to.not.be.null;
+      });
+
+      it('should show weak signal message for TIMEOUT (code 3)', async () => {
+        const promise = Promise.resolve({ code: 3, message: 'Timeout expired' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(container.querySelector('.geolocation-weak-signal-msg')).to.not.be.null;
+      });
+
+      it('should not show weak signal message for PERMISSION_DENIED (code 1)', async () => {
+        const promise = Promise.resolve({ code: 1, message: 'User denied Geolocation' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(container.querySelector('.geolocation-weak-signal-msg')).to.be.null;
+      });
+
+      it('should not show weak signal message for other failure codes', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Unknown failure' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        expect(container.querySelector('.geolocation-weak-signal-msg')).to.be.null;
+      });
+
+      it('should render weak signal message above the retry button', async () => {
+        const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        buildHtml();
+        const widget = createWidget();
+        widget._isGeolocationAvailable = () => true;
+        widget._init();
+        selectHomeContext();
+
+        const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+
+        await promise;
+
+        const status = container.querySelector('.geolocation-status')!;
+        const children = Array.from(status.children);
+        const weakSignalIndex = children.indexOf(container.querySelector('.geolocation-weak-signal-msg')!);
+        const retryBtnIndex = children.indexOf(container.querySelector('.geolocation-retry-btn')!);
+        expect(weakSignalIndex).to.be.lessThan(retryBtnIndex);
+      });
     });
 
     describe('edit mode', () => {
