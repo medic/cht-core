@@ -283,7 +283,6 @@ const getRecordsForContactsBatch = async (subjectIds) => {
     });
 
     bookmark = result.bookmark;
-    logger.warn('%o', result);
     results.push(...result.hits.filter(hit => isRelevantRecordEmission(hit, subjectIds)));
     requestNext = bookmark && result.hits.length >= nouveau.RESULTS_LIMIT && results.length < MAX_BATCH_SIZE;
   } while (requestNext);
