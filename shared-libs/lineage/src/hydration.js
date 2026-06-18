@@ -229,16 +229,25 @@ module.exports = function(Promise, DB) {
   };
 
   const fetchLineageById = function(id) {
-    const options = {
-      startkey: [id],
-      endkey: [id, {}],
-      include_docs: true
-    };
-    return DB.query('medic-client/docs_by_id_lineage', options)
-      .then(function(result) {
-        return result.rows.map(function(row) {
-          return row.doc;
+    // The lineage of a document is recorded on the document itself: the parent chain for a contact, or the contact's
+    // parent chain for a report. Fetch the document, then fetch its ancestors by id, preserving lineage order.
+    return DB.get(id)
+      .then(function(doc) {
+        const startParent = utils.isReport(doc) ? doc.contact : doc.parent;
+        const parentIds = extractParentIds(startParent);
+        if (!parentIds.length) {
+          return [doc];
+        }
+        return fetchDocs(parentIds).then(function(ancestors) {
+          const ancestorsById = new Map(ancestors.map(ancestor => [ancestor._id, ancestor]));
+          return [doc, ...parentIds.map(parentId => ancestorsById.get(parentId))];
         });
+      })
+      .catch(function(err) {
+        if (err.status === 404) {
+          return [];
+        }
+        throw err;
       });
   };
 
