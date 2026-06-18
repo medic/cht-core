@@ -5,6 +5,7 @@ const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
+const logger = require('@medic/logger');
 const dataContext = require('../../src/data-context');
 const { Contact } = require('@medic/cht-datasource');
 const { DOC_TYPES, CONTACT_TYPES } = require('@medic/constants');
@@ -41,8 +42,10 @@ describe('functional transitions', () => {
       },
     });
     const infoDocSave = sinon.stub(infodoc, 'saveTransitions').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
     sinon.stub(db.medic, 'get').rejects({ status: 404 });
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
 
     transitions.loadTransitions();
     const change1 = {
@@ -97,8 +100,10 @@ describe('functional transitions', () => {
       },
     });
 
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
     const infoDoc = sinon.stub(infodoc, 'saveTransitions').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
     transitions.loadTransitions();
     const change1 = {
@@ -164,8 +169,10 @@ describe('functional transitions', () => {
     });
     configGet.withArgs('forms').returns({ V: { }});
 
-    const saveDoc = sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+    const saveDoc = sinon.stub(db.medic, 'put').resolves({ ok: true });
     const infoDoc = sinon.stub(infodoc, 'saveTransitions').resolves();
+    sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+    sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
     transitions.loadTransitions();
     const change1 = {
@@ -264,7 +271,7 @@ describe('functional transitions', () => {
 
       transitions.loadTransitions();
       transitions.processChange({ id: doc._id}, (err, result) => {
-        assert.isUndefined(err);
+        assert.isNull(err);
         assert.isUndefined(result);
 
         assert.equal(infodoc.get.callCount, 1);
@@ -293,8 +300,10 @@ describe('functional transitions', () => {
 
         sinon.stub(infodoc, 'get').resolves(info);
         sinon.stub(infodoc, 'saveTransitions').resolves();
+        sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+        sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
 
-        sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+        sinon.stub(db.medic, 'put').resolves({ ok: true });
         sinon.spy(transitions, 'applyTransitions');
 
         const doc = {
@@ -351,7 +360,9 @@ describe('functional transitions', () => {
 
       sinon.stub(infodoc, 'get').resolves({});
       sinon.stub(infodoc, 'saveTransitions').resolves();
-      sinon.stub(db.medic, 'put').callsArgWith(1, { error: 'something' });
+      sinon.stub(infodoc, 'markTransitionsStarted').resolves();
+      sinon.stub(infodoc, 'clearTransitionsStarted').resolves();
+      sinon.stub(db.medic, 'put').rejects({ error: 'something' });
 
       const doc = {
         _id: 'my_id',
@@ -377,6 +388,76 @@ describe('functional transitions', () => {
         assert.deepEqual(transitions._lineage.minify.args[0], [doc]);
         done();
       });
+    });
+
+    // fake timers so the 100ms retry waits don't cost real time or flake near mocha's timeout;
+    // tickAsync advances the clock and flushes the awaited infodoc.get between each retry
+    const RETRY_INTERVAL = 100;
+    const MAX_RETRIES = 5;
+    const processChangeWithFakeTimers = async (change) => {
+      const clock = sinon.useFakeTimers();
+      const processed = new Promise((resolve, reject) => {
+        transitions.processChange(change, (err, result) => (err ? reject(err) : resolve(result)));
+      });
+      // one extra tick past MAX_RETRIES is harmless and guarantees the change settles either way
+      for (let i = 0; i <= MAX_RETRIES; i++) {
+        await clock.tickAsync(RETRY_INTERVAL);
+      }
+      return processed;
+    };
+
+    it('should wait for transitions_started to clear before processing the change', async () => {
+      configGet.withArgs('transitions').returns({ conditional_alerts: {} });
+      configGet.withArgs('forms').returns({ V: { } });
+
+      // infodoc is mid-write (API is running transitions) on the first two reads, then clears
+      const get = sinon.stub(infodoc, 'get');
+      get.onCall(0).resolves({ _id: 'my_id-info', transitions: {}, transitions_started: '2026-01-01T00:00:00.000Z' });
+      get.onCall(1).resolves({ _id: 'my_id-info', transitions: {}, transitions_started: '2026-01-01T00:00:00.000Z' });
+      get.onCall(2).resolves({ _id: 'my_id-info', transitions: {} });
+      const saveTransitions = sinon.stub(infodoc, 'saveTransitions').resolves();
+      const put = sinon.stub(db.medic, 'put').resolves({ ok: true });
+
+      const doc = { _id: 'my_id', _rev: '1-abc', reported_date: 1 };
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+
+      transitions.loadTransitions();
+      const result = await processChangeWithFakeTimers({ id: doc._id });
+
+      assert.isUndefined(result);
+      // initial read + 2 reads where the marker was still set
+      assert.equal(infodoc.get.callCount, 3);
+      // no transition matched, so nothing is saved, but the change was processed (not skipped)
+      assert.equal(saveTransitions.callCount, 0);
+      assert.equal(put.callCount, 0);
+    });
+
+    it('should skip processing the change when transitions_started never clears', async () => {
+      configGet.withArgs('transitions').returns({ conditional_alerts: {} });
+      configGet.withArgs('forms').returns({ V: { } });
+
+      // infodoc stays mid-write forever
+      sinon.stub(infodoc, 'get')
+        .resolves({ _id: 'my_id-info', transitions: {}, transitions_started: '2026-01-01T00:00:00.000Z' });
+      const saveTransitions = sinon.stub(infodoc, 'saveTransitions').resolves();
+      const put = sinon.stub(db.medic, 'put').resolves({ ok: true });
+
+      const doc = { _id: 'my_id', _rev: '1-abc', reported_date: 1 };
+      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+
+      transitions.loadTransitions();
+      // stub after loadTransitions so we only capture the skip warning, not the "disabled transition" ones
+      const warn = sinon.stub(logger, 'warn');
+      const result = await processChangeWithFakeTimers({ id: doc._id });
+
+      assert.isUndefined(result);
+      // initial read + 5 retries, then it gives up
+      assert.equal(infodoc.get.callCount, 6);
+      // the change is skipped: no transitions run and nothing is saved
+      assert.equal(saveTransitions.callCount, 0);
+      assert.equal(put.callCount, 0);
+      assert.equal(warn.callCount, 1);
+      assert.match(warn.args[0][0], /still mid-write after 5 retries, skipping/);
     });
   });
 
@@ -522,7 +603,7 @@ describe('functional transitions', () => {
       sinon.stub(db.sentinel, 'get').callsFake(id => Promise.resolve({ id, doc_id: id.replace('-info', '') }));
       sinon.stub(db.sentinel, 'put').resolves();
 
-      sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+      sinon.stub(db.medic, 'put').resolves({ ok: true });
 
       sinon.stub(db.medic, 'query')
       // update_clinics
@@ -568,10 +649,25 @@ describe('functional transitions', () => {
         assert.deepEqualExcluding(savedDocs[0], originalDocs[0], ['_id', 'errors', 'contact', 'sent_by', 'tasks']);
         // first doc is updated by 3 transitions
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[0]._id);
-        assert.equal(infodocSaves.length, 1);
-        assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.conditional_alerts.ok, true);
+        assert.equal(infodocSaves.length, 2);
+        // the first write only marks the infodoc as mid-write, with no transitions yet
+        let startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
+        assert.isString(startedSave.transitions_started);
+        assert.deepEqual(startedSave, {
+          id: `${savedDocs[0]._id}-info`,
+          doc_id: savedDocs[0]._id,
+          transitions_started: startedSave.transitions_started,
+        });
+        // the second write commits the transitions and removes the mid-write marker
+        let txnSave = infodocSaves.find(args => args[0].transitions)[0];
+        assert.isUndefined(txnSave.transitions_started);
+        assert.sameMembers(
+          Object.keys(txnSave.transitions),
+          ['update_clinics', 'update_sent_by', 'conditional_alerts']
+        );
+        assert.equal(txnSave.transitions.update_clinics.ok, true);
+        assert.equal(txnSave.transitions.update_sent_by.ok, true);
+        assert.equal(txnSave.transitions.conditional_alerts.ok, true);
 
         assert.equal(savedDocs[1].id, 'has default response');
         assert.equal(savedDocs[1]._id.length, 36);
@@ -581,21 +677,43 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[1].errors[0].code, 'sys.facility_not_found');
         assert.deepEqualExcluding(savedDocs[1], originalDocs[1], ['_id', 'tasks', 'errors']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[1]._id);
-        assert.equal(infodocSaves.length, 1);
-        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.update_clinics.ok, true);
+        assert.equal(infodocSaves.length, 2);
+        startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
+        assert.isString(startedSave.transitions_started);
+        assert.deepEqual(startedSave, {
+          id: `${savedDocs[1]._id}-info`,
+          doc_id: savedDocs[1]._id,
+          transitions_started: startedSave.transitions_started,
+        });
+        txnSave = infodocSaves.find(args => args[0].transitions)[0];
+        assert.isUndefined(txnSave.transitions_started);
+        assert.sameMembers(Object.keys(txnSave.transitions), ['default_responses', 'update_clinics']);
+        assert.equal(txnSave.transitions.default_responses.ok, true);
+        assert.equal(txnSave.transitions.update_clinics.ok, true);
 
         assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);
+        // no transition changed this doc, so it is saved as-is with a single infodoc write (no marker)
         assert.equal(infodocSaves.length, 1);
+        assert.isUndefined(infodocSaves[0][0].transitions_started);
 
         assert.equal(savedDocs[3].id, 'random form with contact');
         assert.equal(savedDocs[3].sent_by, 'Angela');
         assert.deepEqualExcluding(savedDocs[3], originalDocs[3], 'sent_by');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[3]._id);
-        assert.equal(infodocSaves.length, 1);
-        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
+        assert.equal(infodocSaves.length, 2);
+        startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
+        assert.isString(startedSave.transitions_started);
+        assert.deepEqual(startedSave, {
+          id: `${savedDocs[3]._id}-info`,
+          doc_id: savedDocs[3]._id,
+          transitions_started: startedSave.transitions_started,
+        });
+        txnSave = infodocSaves.find(args => args[0].transitions)[0];
+        assert.isUndefined(txnSave.transitions_started);
+        assert.sameMembers(Object.keys(txnSave.transitions), ['default_responses', 'update_sent_by']);
+        assert.equal(txnSave.transitions.default_responses.ok, true);
+        assert.equal(txnSave.transitions.update_sent_by.ok, true);
 
         assert.equal(savedDocs[4].id, 'will have errors');
         assert.equal(savedDocs[4].sent_by, 'Angela');
@@ -609,11 +727,24 @@ describe('functional transitions', () => {
         assert.equal(savedDocs[4].tasks[1].messages[0].message, 'too much randomness');
         assert.deepEqualExcluding(savedDocs[4], originalDocs[4], ['_id', 'sent_by', 'errors', 'tasks']);
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[4]._id);
-        assert.equal(infodocSaves.length, 1);
-        assert.equal(infodocSaves[0][0].transitions.default_responses.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.update_sent_by.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.accept_patient_reports.ok, true);
-        assert.equal(infodocSaves[0][0].transitions.conditional_alerts.ok, true);
+        assert.equal(infodocSaves.length, 2);
+        startedSave = infodocSaves.find(args => args[0].transitions_started)[0];
+        assert.isString(startedSave.transitions_started);
+        assert.deepEqual(startedSave, {
+          id: `${savedDocs[4]._id}-info`,
+          doc_id: savedDocs[4]._id,
+          transitions_started: startedSave.transitions_started,
+        });
+        txnSave = infodocSaves.find(args => args[0].transitions)[0];
+        assert.isUndefined(txnSave.transitions_started);
+        assert.sameMembers(
+          Object.keys(txnSave.transitions),
+          ['default_responses', 'update_sent_by', 'accept_patient_reports', 'conditional_alerts']
+        );
+        assert.equal(txnSave.transitions.default_responses.ok, true);
+        assert.equal(txnSave.transitions.update_sent_by.ok, true);
+        assert.equal(txnSave.transitions.accept_patient_reports.ok, true);
+        assert.equal(txnSave.transitions.conditional_alerts.ok, true);
       });
     });
   });

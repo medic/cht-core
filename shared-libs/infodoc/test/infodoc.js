@@ -604,6 +604,80 @@ describe('infodoc', () => {
         assert.deepEqual(db.sentinel.put.args[20], [{ ...info, transitions: change.info.transitions }]);
       });
     });
+
+    it('clears transitions_started when clearStarted is set', () => {
+      const info = { _id: 'some-info', doc_id: 'some', transitions_started: '2026-01-01T00:00:00.000Z' };
+      const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.saveTransitions(change, true).then(() => {
+        const saved = db.sentinel.put.args[0][0];
+        // transitions are written and the mid-write marker removed; nothing else is touched
+        assert.deepEqual(saved, {
+          _id: 'some-info',
+          doc_id: 'some',
+          transitions: { one: { ok: true } },
+        });
+      });
+    });
+  });
+
+  describe('markTransitionsStarted / clearTransitionsStarted', () => {
+    it('markTransitionsStarted marks the infodoc mid-write with a timestamp', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.markTransitionsStarted('some').then(() => {
+        assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
+        const saved = db.sentinel.put.args[0][0];
+        assert.isString(saved.transitions_started);
+        assert.isNotNaN(Date.parse(saved.transitions_started));
+        // only the marker is added, no other fields are changed
+        assert.deepEqual(saved, {
+          _id: 'some-info',
+          doc_id: 'some',
+          transitions_started: saved.transitions_started,
+        });
+      });
+    });
+
+    it('clearTransitionsStarted removes the mid-write marker', () => {
+      const info = { _id: 'some-info', doc_id: 'some', transitions_started: '2026-01-01T00:00:00.000Z' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      sinon.stub(db.sentinel, 'put').resolves();
+
+      return lib.clearTransitionsStarted('some').then(() => {
+        const saved = db.sentinel.put.args[0][0];
+        // only the marker is removed, no other fields are changed
+        assert.deepEqual(saved, { _id: 'some-info', doc_id: 'some' });
+      });
+    });
+
+    it('retries on 409 conflict indefinitely (no retry limit)', () => {
+      const info = { _id: 'some-info', doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(info);
+      const put = sinon.stub(db.sentinel, 'put');
+      // conflict on the first 100 attempts, succeed on the 101st - a retry limit below this would fail
+      for (let i = 0; i < 100; i++) {
+        put.onCall(i).rejects({ status: 409 });
+      }
+      put.onCall(100).resolves();
+
+      return lib.markTransitionsStarted('some').then(() => {
+        assert.equal(db.sentinel.put.callCount, 101);
+      });
+    });
+
+    it('throws non-409 errors', () => {
+      sinon.stub(db.sentinel, 'get').resolves({ _id: 'some-info', doc_id: 'some' });
+      sinon.stub(db.sentinel, 'put').rejects({ status: 500 });
+
+      return lib.markTransitionsStarted('some')
+        .then(() => assert.fail('should have thrown'))
+        .catch(err => assert.equal(err.status, 500));
+    });
   });
 
   describe('saveCompletedTasks', () => {

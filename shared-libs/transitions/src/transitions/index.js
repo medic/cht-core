@@ -45,13 +45,33 @@ const AVAILABLE_TRANSITIONS = [
 const transitions = [];
 let loadErrors = false;
 
+const MAX_INFODOC_WAIT = 5;
+const INFODOC_WAIT_INTERVAL = 100;
+
+const isInfoDocMidWrite = infoDoc => infoDoc?.transitions_started !== undefined;
+
+const getConsistentInfoDoc = async (change, retriesLeft) => {
+  const infoDoc = await infodoc.get(change);
+  if (!isInfoDocMidWrite(infoDoc) || retriesLeft <= 0) {
+    return infoDoc;
+  }
+  await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
+  return getConsistentInfoDoc(change, retriesLeft - 1);
+};
+
 // applies all loaded transitions over a change
 const processChange = (change, callback) => {
   lineage
     .fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      return infodoc.get(change).then(infoDoc => {
+      return getConsistentInfoDoc(change, MAX_INFODOC_WAIT).then(infoDoc => {
+        if (isInfoDocMidWrite(infoDoc)) {
+          logger.warn(
+            `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
+          );
+          return callback();
+        }
         change.info = infoDoc;
         change.initialProcessing = !infoDoc.transitions;
         // Remove transitions from doc since those
@@ -107,10 +127,11 @@ const processDocs = docs => {
 
             // doc was not changed by any transition, so we save the original doc
             change.doc = docs.find(doc => doc._id === change.id);
-            saveDoc(change, (err, result) => {
-              callback(null, err || result);
-            });
-          });
+            saveDoc(change).then(
+              result => callback(null, result),
+              err => callback(null, err)
+            );
+          }, { markStarted: true });
         });
         async.series(operations, (err, results) => {
           return err ? reject(err) : resolve(results);
@@ -235,46 +256,61 @@ const canRun = ({ key, change, transition }) => {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-const finalize = ({ change, results }, callback) => {
-  logger.debug(`transition results: ${JSON.stringify(results)}`);
-
-  const changed = _.some(results, i => Boolean(i));
-  if (!changed) {
-    logger.debug(
-      `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
-    );
-    // info.transitions is how we know if a doc has been processed by Sentinel before. Even if no transitions ran,
-    // we still want to save transitions, so we know it's been processed.
-    return Promise
-      .resolve()
-      .then(() => {
-        if (change.initialProcessing) {
-          return infodoc.saveTransitions(change);
-        }
-      })
-      .then(() => callback())
-      .catch(err => callback(err));
-  }
-  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
-
-  saveDoc(change, (err, result) => {
-    // todo: how to handle a failed save? for now just
-    // waiting until next change and try again.
-    if (err) {
+const finalize = ({ change, results, markStarted = false }, callback) => {
+  finalizeChange({ change, results, markStarted })
+    .then(result => callback(null, result))
+    .catch(err => {
       logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: %o`, err);
-      return callback(err);
-    }
-
-    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    infodoc.saveTransitions(change)
-      .then(() => callback(null, result))
-      .catch(err => callback(err));
-  });
+      callback(err);
+    });
 };
 
-const saveDoc = (change, callback) => {
+const finalizeChange = async ({ change, results, markStarted }) => {
+  logger.debug(`transition results: ${JSON.stringify(results)}`);
+
+  if (!_.some(results, Boolean)) {
+    logger.debug(`nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`);
+    // info.transitions is how we know Sentinel has processed a doc; record it even when nothing ran.
+    if (change.initialProcessing) {
+      await infodoc.saveTransitions(change);
+    }
+    return;
+  }
+
+  logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
+  return markStarted ? saveForApi(change) : saveForSentinel(change);
+};
+
+// Sentinel processing: save the doc, then record transitions. Sentinel never writes the
+// transitions_started marker; it only reads it (see getConsistentInfoDoc) to skip docs API is writing.
+const saveForSentinel = async change => {
+  const result = await saveDoc(change);
+  logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+  await infodoc.saveTransitions(change);
+  return result;
+};
+
+// API processing: mark the infodoc mid-write (transitions_started) around the doc write so a concurrent
+// sentinel read detects it and waits. The marker is cleared as part of the transitions write on
+// success, or rolled back on any failure after it's set.
+const saveForApi = async change => {
+  await infodoc.markTransitionsStarted(change.id);
+  try {
+    const result = await saveDoc(change);
+    logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
+    await infodoc.saveTransitions(change, true);
+    return result;
+  } catch (err) {
+    await infodoc
+      .clearTransitionsStarted(change.id)
+      .catch(clearErr => logger.error(`error clearing transitions_started on doc ${change.id}: %o`, clearErr));
+    throw err;
+  }
+};
+
+const saveDoc = change => {
   lineage.minify(change.doc);
-  db.medic.put(change.doc, callback);
+  return db.medic.put(change.doc);
 };
 
 /*
@@ -335,7 +371,7 @@ const applyTransition = ({ key, change, transition, force }, callback) => {
     .then(changed => callback(null, changed)); // return the promise instead
 };
 
-const applyTransitions = (change, callback) => {
+const applyTransitions = (change, callback, { markStarted = false } = {}) => {
   const operations = transitions
     .map(transition => {
       const opts = {
@@ -353,7 +389,7 @@ const applyTransitions = (change, callback) => {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, (err, results) => finalize({ change, results }, callback));
+  async.series(operations, (err, results) => finalize({ change, results, markStarted }, callback));
 };
 
 const availableTransitions = () => {

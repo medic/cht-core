@@ -35,7 +35,7 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
     return results.reduce((acc, row) => {
       if (!row.doc) {
         acc.missing.push({ _id: row.key });
-      } else if (!row.doc.transitions) {
+      } else if (!row.doc.transitions && !row.doc.transitions_started) {
         // No transitions may mean that API created this infodoc on write but sentinel hasn't seen
         // it yet. It's possible that there is a legacy infodoc with transition information.
         acc.missingTransitions.push(row.doc);
@@ -151,33 +151,62 @@ const updateTransition = (change, transition, ok) => {
   };
 };
 
-const saveTransitions = change => {
-  return saveProperty(change.id, change.info, 'transitions', {});
+const saveTransitions = (change, clearStarted = false) => {
+  const modify = infoDoc => {
+    infoDoc.transitions = change.info?.transitions || {};
+    // Clear the in-progress marker in the same write that commits the transitions (API branch only)
+    if (clearStarted) {
+      delete infoDoc.transitions_started;
+    }
+  };
+  return modifyInfoDoc(change.id, modify, change.info);
 };
 
 const saveCompletedTasks = (id, infodoc, completedTasks = []) => {
-  return saveProperty(id, infodoc, 'completed_tasks', completedTasks);
+  return modifyInfoDoc(id, infoDoc => {
+    infoDoc.completed_tasks = infodoc?.completed_tasks || completedTasks;
+  }, infodoc);
 };
 
-const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
-  let updatedInfoDoc;
+const markTransitionsStarted = (id) => {
+  const modify = infoDoc => {
+    infoDoc.transitions_started = new Date().toISOString();
+  };
+  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+};
+
+const clearTransitionsStarted = (id) => {
+  const modify = infoDoc => {
+    delete infoDoc.transitions_started;
+  };
+  return modifyInfoDoc(id, modify, blankInfoDoc(id));
+};
+
+// Fetch the infodoc. If it is missing, return `fallback` (to be created) when provided;
+const fetchInfoDoc = async (id, fallback) => {
   try {
-    updatedInfoDoc = await db.sentinel.get(getInfoDocId(id));
-    updatedInfoDoc[property] = (infodoc && infodoc[property]) || defaultValue;
+    return await db.sentinel.get(getInfoDocId(id));
   } catch (err) {
-    if (err.status !== 404) {
-      throw err;
+    if (err.status === 404 && fallback) {
+      return fallback;
     }
-    updatedInfoDoc = infodoc;
+    throw err;
   }
+};
+
+// Fetch the infodoc, apply `modify`, and save, retrying on conflict
+const modifyInfoDoc = async (id, modify, fallback) => {
+  const infoDoc = await fetchInfoDoc(id, fallback);
+
+  modify(infoDoc);
 
   try {
-    return await db.sentinel.put(updatedInfoDoc);
+    return await db.sentinel.put(infoDoc);
   } catch (err) {
     if (err.status !== 409) {
       throw err;
     }
-    return saveProperty(id, infodoc, property, defaultValue);
+    return modifyInfoDoc(id, modify, fallback);
   }
 };
 
@@ -283,6 +312,8 @@ module.exports = {
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
   saveCompletedTasks: saveCompletedTasks,
+  markTransitionsStarted: markTransitionsStarted,
+  clearTransitionsStarted: clearTransitionsStarted,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
   // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup
