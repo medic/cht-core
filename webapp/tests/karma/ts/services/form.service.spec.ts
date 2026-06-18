@@ -70,6 +70,7 @@ describe('Form service', () => {
   let getReport;
   let getContact;
   let dbBulkDocs;
+  let dbGet;
   let ContactSummary;
   let Form2Sms;
   let UserContact;
@@ -114,6 +115,7 @@ describe('Form service', () => {
     getReport = sinon.stub();
     getContact = sinon.stub();
     dbBulkDocs = sinon.stub();
+    dbGet = sinon.stub();
     ContactSummary = sinon.stub();
     Form2Sms = sinon.stub();
     UserContact = sinon.stub();
@@ -196,7 +198,7 @@ describe('Form service', () => {
         {
           provide: DbService,
           useValue: {
-            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
+            get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs, get: dbGet })
           }
         },
         { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -1638,7 +1640,7 @@ describe('Form service', () => {
           {
             provide: DbService,
             useValue: {
-              get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
+              get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs, get: dbGet })
             }
           },
           { provide: ContactSummaryService, useValue: { get: ContactSummary } },
@@ -2193,6 +2195,47 @@ describe('Form service', () => {
       const savedDocs = dbBulkDocs.args[0][0];
       assert.equal(savedDocs[0].name, 'Updated Name');
       assert.deepEqual(savedDocs[0].geolocation, existingGeo);
+    });
+
+    it('restores geolocation and geo_capture from the original doc when editing with geo_capture kept', async () => {
+      const docId = 'existing-contact-id';
+      const type = 'clinic';
+      const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
+      const originalLog = [{ timestamp: 1749168000000, recording: originalGeo, is_home: true }];
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'kept';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'kept' }
+      });
+      dbGet.withArgs(docId).resolves({
+        _id: docId,
+        geolocation: originalGeo,
+        geo_capture: 'captured',
+        geolocation_log: originalLog
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        sinon.stub()
+      );
+
+      assert.equal(dbGet.callCount, 1);
+      assert.equal(dbBulkDocs.callCount, 1);
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, originalGeo);
+      assert.equal(savedDocs[0].geo_capture, 'captured');
+      assert.equal(savedDocs[0].name, 'My Household');
     });
   });
 

@@ -470,6 +470,16 @@ export class FormService {
 
     const contextValue = this.getGeoContext(form?.view?.html);
     const geoCaptureValue = this.getGeoCaptureValue(form?.view?.html);
+
+    if (geoCaptureValue === 'kept' && docId) {
+      const originalDoc = await this.dbService.get().get(docId);
+      const contactDoc = preparedDocs.preparedDocs.find(doc => doc._id === docId);
+      if (contactDoc && originalDoc) {
+        contactDoc.geolocation = originalDoc.geolocation;
+        contactDoc.geo_capture = originalDoc.geo_capture;
+      }
+    }
+
     const docsWithGeo = geoCaptureValue === 'kept'
       ? preparedDocs.preparedDocs
       : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue);
