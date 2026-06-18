@@ -24,8 +24,8 @@ module.exports = [
     title: 'person_create',
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: function () {
-      return true;
+    appliesIf: function (contact) {
+      return contact.contact.role !== 'chw';
     },
     resolvedIf: function (contact) {
       return isFormArraySubmittedInWindow(contact.reports, ['home_visit'], contact.contact.reported_date);
