@@ -284,32 +284,6 @@ describe('bootstrapper', () => {
     assert.isTrue(offlineDdocsInit.calledOnce);
   });
 
-  it('maps a replication limit (413) error to a terminal, non-retryable message', async () => {
-    setUserCtxCookie({ name: 'jim' });
-    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(true);
-    sinon.stub(utils, 'setOptions');
-    sinon.stub(initialReplication, 'replicate').rejects({ status: 413 });
-
-    let caught;
-    await bootstrapper(pouchDbOptions).catch(err => caught = err);
-
-    expect(caught.key).to.equal('REPLICATION_LIMIT_EXCEEDED');
-    expect(caught.retryable).to.equal(false);
-  });
-
-  it('maps a throttle (429) error to a terminal, non-retryable message', async () => {
-    setUserCtxCookie({ name: 'jim' });
-    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(true);
-    sinon.stub(utils, 'setOptions');
-    sinon.stub(initialReplication, 'replicate').rejects({ status: 429 });
-
-    let caught;
-    await bootstrapper(pouchDbOptions).catch(err => caught = err);
-
-    expect(caught.key).to.equal('REPLICATION_LIMIT_EXCEEDED');
-    expect(caught.retryable).to.equal(false);
-  });
-
   it('returns error if initial replication is still needed', async () => {
     setUserCtxCookie({ name: 'jim' });
     sinon.stub(utils, 'setOptions');

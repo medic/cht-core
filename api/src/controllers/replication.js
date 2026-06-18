@@ -1,6 +1,5 @@
 const replication = require('../services/replication/replication');
 const serverUtils = require('../server-utils');
-const { ReplicationThrottledError } = require('../services/replication/replication-limit');
 
 module.exports = {
   getDocIds: async (req, res) => {
@@ -15,10 +14,7 @@ module.exports = {
         limit: context.limit,
       });
     } catch (err) {
-      if (err instanceof ReplicationThrottledError) {
-        req.replicationThrottled = true;
-      }
-      return serverUtils.error(err, req, res);
+      return serverUtils.serverError(err, req, res);
     }
   },
   getDocIdsToDelete: async (req, res) => {

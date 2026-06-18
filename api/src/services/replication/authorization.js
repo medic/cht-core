@@ -8,8 +8,14 @@ const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
 const nouveau = require('@medic/nouveau');
 const { DOC_IDS, PREFIXES, DOC_TYPES } = require('@medic/constants');
-const { limits, ReplicationLimitError } = require('./replication-limit');
+const { ReplicationLimitError } = require('../../errors');
 
+
+const REPLICATION_LIMITS = {
+  SUBJECTS_COUNT: 100 * 1000,
+  SUBJECT_HITS: 500 * 1000,
+  UNPURGED_DOCS_COUNT: 50 * 1000
+};
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 const MEDIC_CLIENT_DDOC = '_design/medic-client';
@@ -348,26 +354,12 @@ const getContactSubjects = (row) => {
  * Returns the authorization context for an offline user.
  * @param {{ name:string, roles:string[] }} userCtx
  * @returns* {Promise<AuthorizationContext>}
- * @throws ReplicationLimitError if the user's subject count exceeds `limits.DOC_LIMIT`
  */
 const getAuthorizationContext = async (userCtx) => {
   const authCtx = getContextObject(userCtx);
   const contactsSubjects = {};
 
-  // Cap the rows materialized so a pathological hierarchy cannot blow up memory here. The extra
-  // row lets us detect that the limit was exceeded.
-  const results = await db.medic.query('medic/contacts_by_depth', {
-    keys: authCtx.contactsByDepthKeys,
-    limit: limits.DOC_LIMIT + 1,
-  });
-  if (results.rows.length > limits.DOC_LIMIT) {
-    userCtx.replicationLimitExceeded = true;
-    userCtx.replicationLimitType = 'contacts';
-    throw new ReplicationLimitError(
-      `User "${userCtx.name}" exceeds the replication limit of ${limits.DOC_LIMIT} subjects.`,
-      'contacts'
-    );
-  }
+  const results = await db.medic.query('medic/contacts_by_depth', { keys: authCtx.contactsByDepthKeys });
   results.rows.forEach(row => {
     const subjects = getContactSubjects(row);
 
@@ -644,12 +636,23 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
       uri: `${environment.couchUrl}/_design/medic/_nouveau/docs_by_replication_key`,
       body: {
         q: `key:(${chunk.map(nouveau.escapeKeys).join(' OR ')})`,
-        limit: nouveau.RESULTS_LIMIT,
+        limit: REPLICATION_LIMITS.SUBJECT_HITS,
       }
     });
 
     if (!response.hits || !response.hits.length) {
       continue;
+    }
+
+    // A single doc can have multiple hits (for different subjects), so this is not a strict "doc limit", but
+    // it is our "give up" limit
+    if ((hits.length + response.hits) > REPLICATION_LIMITS.SUBJECT_HITS) {
+      authorizationContext.userCtx.replicationLimitExceeded = true;
+      throw new ReplicationLimitError(
+        `User "${authorizationContext.userCtx.name}" exceeds the subject hits limit with at least [${
+          hits.length + response.hits
+        }] subject hits.`,
+      );
     }
 
     for (const hit of response.hits) {
@@ -660,19 +663,6 @@ const getDocsByReplicationKeyNouveau = async (authorizationContext) => {
           key: Array.isArray(hit.fields.key) ? hit.fields.key : [hit.fields.key],
         },
       });
-    }
-
-    // Backstop against users with an astronomical number of documents: bail mid-enumeration rather
-    // than accumulating the entire corpus in memory. `hits` can over-count (a doc whose subjects span
-    // two query batches appears in both), so this is an imprecise upper bound, not the policy limit.
-    if (hits.length > limits.ENUMERATION_LIMIT) {
-      authorizationContext.userCtx.replicationLimitExceeded = true;
-      authorizationContext.userCtx.replicationLimitType = 'enumeration';
-      throw new ReplicationLimitError(
-        `User "${authorizationContext.userCtx.name}" exceeds the document enumeration limit of ` +
-        `${limits.ENUMERATION_LIMIT}`,
-        'enumeration'
-      );
     }
   }
 
@@ -752,6 +742,7 @@ const getViewResults = (doc) => {
 };
 
 module.exports = {
+  REPLICATION_LIMITS,
   DEFAULT_DDOCS,
   updateContext,
   getDefaultDocs,

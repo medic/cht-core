@@ -396,19 +396,6 @@ describe('Authorization middleware', () => {
       expect(args[2]).to.equal(0);
     });
 
-    it('should not capture throttle (429) responses', () => {
-      testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
-      testReq.replicationThrottled = true;
-      auth.isOnlineOnly.returns(false);
-      testRes.writableFinished = true;
-      testRes.statusCode = 429;
-
-      middleware.captureReplicationFailures(testReq, testRes, next);
-      closeHandler();
-
-      expect(replicationFailureLog.capture.callCount).to.equal(0);
-    });
-
     it('should log error when capture fails', async () => {
       testReq.userCtx = { name: 'bob', roles: ['district_admin'] };
       testReq.id = 'req-789';

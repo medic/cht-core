@@ -7,7 +7,6 @@ const rewire = require('rewire');
 const service = rewire('../../../../src/services/replication/authorization');
 const request = require('@medic/couch-request');
 const environment = require('@medic/environment');
-const replicationLimit = require('../../../../src/services/replication/replication-limit');
 
 const { assert } = require('chai');
 const { CONTACT_TYPES, DOC_TYPES, PREFIXES } = require('@medic/constants');
@@ -160,9 +159,9 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
 
-          db.medic.query.args[0][1].keys.should.deep.equal(
-            [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
-          );
+          db.medic.query.args[0][1].should.deep.equal({
+            keys: [[ 'facilityId', 0 ], [ 'facilityId', 1 ], [ 'facilityId', 2 ]]
+          });
         });
     });
 
@@ -174,11 +173,13 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
 
-          db.medic.query.args[0][1].keys.should.deep.equal([
-            [ 'a', 0 ], [ 'a', 1 ], [ 'a', 2 ],
-            [ 'b', 0 ], [ 'b', 1 ], [ 'b', 2 ],
-            [ 'c', 0 ], [ 'c', 1 ], [ 'c', 2 ],
-          ]);
+          db.medic.query.args[0][1].should.deep.equal({
+            keys: [
+              [ 'a', 0 ], [ 'a', 1 ], [ 'a', 2 ],
+              [ 'b', 0 ], [ 'b', 1 ], [ 'b', 2 ],
+              [ 'c', 0 ], [ 'c', 1 ], [ 'c', 2 ],
+            ]
+          });
         });
     });
 
@@ -189,7 +190,7 @@ describe('Authorization service', () => {
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
-          db.medic.query.args[0][1].keys.should.deep.equal([[ 'facilityId' ]]);
+          db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
         });
     });
 
@@ -200,51 +201,7 @@ describe('Authorization service', () => {
         .then(() => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
-          db.medic.query.args[0][1].keys.should.deep.equal([[ 'a' ], [ 'b' ], [ 'c' ]]);
-        });
-    });
-
-    it('always caps the contacts query and throws when the contact limit is exceeded', () => {
-      sinon.stub(replicationLimit.limits, 'DOC_LIMIT').value(2);
-      service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: -1 });
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [
-          { id: 1, key: 'k', value: {} },
-          { id: 2, key: 'k', value: {} },
-          { id: 3, key: 'k', value: {} },
-        ]
-      });
-      const ctx = { facility_id: ['facilityId'], name: 'over' };
-
-      return service
-        .getAuthorizationContext(ctx)
-        .then(() => assert.fail('should have thrown'))
-        .catch(err => {
-          err.should.be.an.instanceof(replicationLimit.ReplicationLimitError);
-          err.code.should.equal(413);
-          err.limitType.should.equal('contacts');
-          ctx.replicationLimitExceeded.should.equal(true);
-          ctx.replicationLimitType.should.equal('contacts');
-          // the query is capped at limit + 1 so the overflow is detectable
-          db.medic.query.args[0][1].limit.should.equal(3);
-        });
-    });
-
-    it('caps the contacts query but does not throw when within the contact limit', () => {
-      sinon.stub(replicationLimit.limits, 'DOC_LIMIT').value(5);
-      service.__get__('getDepth').returns({ contactDepth: 2, reportDepth: -1 });
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [
-          { id: 1, key: 'k', value: {} },
-          { id: 2, key: 'k', value: {} },
-        ]
-      });
-
-      return service
-        .getAuthorizationContext({ facility_id: ['facilityId'], name: 'ok' })
-        .then(result => {
-          result.subjectIds.should.include(1);
-          db.medic.query.args[0][1].limit.should.equal(6);
+          db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'a' ], [ 'b' ], [ 'c' ]] });
         });
     });
 
@@ -496,10 +453,7 @@ describe('Authorization service', () => {
       ]);
       result.should.deep.include({ contactDepth: 1 });
       db.medic.query.callCount.should.equal(2);
-      db.medic.query.args[0].should.deep.equal([
-        'medic/contacts_by_depth',
-        { keys: [[ 'aaa', 0], [ 'aaa', 1]], limit: replicationLimit.limits.DOC_LIMIT + 1 }
-      ]);
+      db.medic.query.args[0].should.deep.equal(['medic/contacts_by_depth', { keys: [[ 'aaa', 0], [ 'aaa', 1]] }]);
       db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact']] }]);
     });
 
@@ -545,7 +499,7 @@ describe('Authorization service', () => {
       db.medic.query.callCount.should.equal(2);
       db.medic.query.args[0].should.deep.equal([
         'medic/contacts_by_depth',
-        { keys: [[ 'aaa', 0], [ 'aaa', 1], [ 'aaa', 2]], limit: replicationLimit.limits.DOC_LIMIT + 1 }
+        { keys: [[ 'aaa', 0], [ 'aaa', 1], [ 'aaa', 2]] }
       ]);
       db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact']] }]);
     });
@@ -611,10 +565,7 @@ describe('Authorization service', () => {
       db.medic.query.callCount.should.equal(2);
       db.medic.query.args[0].should.deep.equal([
         'medic/contacts_by_depth',
-        {
-          keys: [['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]],
-          limit: replicationLimit.limits.DOC_LIMIT + 1,
-        }
+        { keys: [['aaa', 0], ['aaa', 1], ['aaa', 2], ['bbb', 0], ['bbb', 1], ['bbb', 2]] }
       ]);
       db.medic.query.args[1].should.deep.equal(['medic/contacts_by_depth', { keys: [['contact2'], ['contact3']] }]);
     }); 
@@ -629,38 +580,6 @@ describe('Authorization service', () => {
         .then(() => assert.fail('should have thrown'))
         .catch(err => {
           err.should.deep.equal({ some: 'error' });
-        });
-    });
-
-    it('throws a limit error when the number of hits exceeds the enumeration limit', () => {
-      sinon.stub(replicationLimit.limits, 'ENUMERATION_LIMIT').value(2);
-      request.post.resolves({ hits: [
-        { id: 'a', fields: { key: 'k' } },
-        { id: 'b', fields: { key: 'k' } },
-        { id: 'c', fields: { key: 'k' } },
-      ] });
-      const ctx = { name: 'whale' };
-
-      return service
-        .getDocsByReplicationKey({ subjectIds, userCtx: ctx })
-        .then(() => assert.fail('should have thrown'))
-        .catch(err => {
-          err.should.be.an.instanceof(replicationLimit.ReplicationLimitError);
-          err.code.should.equal(413);
-          err.limitType.should.equal('enumeration');
-          ctx.replicationLimitExceeded.should.equal(true);
-          ctx.replicationLimitType.should.equal('enumeration');
-        });
-    });
-
-    it('does not throw when the number of hits is within the enumeration limit', () => {
-      sinon.stub(replicationLimit.limits, 'ENUMERATION_LIMIT').value(5);
-      request.post.resolves({ hits: [{ id: 'a', fields: { key: 'k' } }] });
-
-      return service
-        .getDocsByReplicationKey({ subjectIds, userCtx: { name: 'ok' } })
-        .then(result => {
-          result.length.should.equal(1);
         });
     });
 

@@ -102,9 +102,6 @@ module.exports = {
   captureReplicationFailures: (req, res, next) => {
     const start = Date.now();
     res.on('close', () => {
-      if (req.replicationThrottled) {
-        return;
-      }
       if (!res.writableFinished || res.statusCode >= 400) {
         const duration = Date.now() - start;
         const statusCode = res.writableFinished ? res.statusCode : 0;

@@ -27,9 +27,13 @@ class AuthenticationError extends Error {
   }
 }
 
+class ReplicationLimitError extends Error {
+}
+
 module.exports = {
   PublicError,
   NotFoundError,
   PermissionError,
   AuthenticationError,
+  ReplicationLimitError
 };

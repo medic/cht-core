@@ -53,6 +53,7 @@ const USER_EDITABLE_FIELDS = RESTRICTED_USER_EDITABLE_FIELDS.concat([
   'type',
   'roles',
   'oidc_username',
+  'replication_blocked'
 ]);
 
 const RESTRICTED_SETTINGS_EDITABLE_FIELDS = [
@@ -374,6 +375,7 @@ const mapUser = (user, setting, facilities) => {
     external_id: setting.external_id,
     known: user.known,
     oidc_username: user.oidc_username,
+    replication_blocked: user.replication_blocked
   };
 };
 

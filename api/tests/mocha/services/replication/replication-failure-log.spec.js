@@ -376,8 +376,6 @@ describe('Replication Failure Log Service', () => {
           docs_count: 1234,
           unpurged_docs_count: 1200,
           roles: ['chw'],
-          limit_exceeded: false,
-          limit_type: null,
         }],
         daily_failures: { '2026-04-15': 1 },
       });
@@ -554,72 +552,9 @@ describe('Replication Failure Log Service', () => {
           docs_count: null,
           unpurged_docs_count: null,
           roles: ['chw'],
-          limit_exceeded: false,
-          limit_type: null,
         }],
         daily_failures: { '2026-04-15': 1 },
       });
-    });
-
-    it('should record the limit marker and set last_limit_failure when the user hit a limit', async () => {
-      const now = new Date('2026-04-15T12:00:00Z').valueOf();
-      sinon.useFakeTimers(now);
-      db.medicLogs.get.rejects({ status: 404 });
-      db.medicLogs.put.resolves();
-
-      const userCtx = {
-        name: 'bob',
-        roles: ['chw'],
-        subjectsCount: 99,
-        replicationLimitExceeded: true,
-        replicationLimitType: 'documents',
-      };
-      await replicationFailureLog.capture(userCtx, 'req-limit', 413, 100);
-
-      const saved = db.medicLogs.put.args[0][0];
-      expect(saved.failures[0].limit_exceeded).to.be.true;
-      expect(saved.failures[0].limit_type).to.equal('documents');
-      expect(saved.last_limit_failure).to.equal(now);
-      expect(saved.daily_limit_failures).to.deep.equal({ '2026-04-15': 1 });
-    });
-
-    it('should not set last_limit_failure for a non-limit failure', async () => {
-      sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf());
-      db.medicLogs.get.rejects({ status: 404 });
-      db.medicLogs.put.resolves();
-
-      await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req', 500, 100);
-
-      const saved = db.medicLogs.put.args[0][0];
-      expect(saved.failures[0].limit_exceeded).to.be.false;
-      expect(saved).to.not.have.property('last_limit_failure');
-      expect(saved).to.not.have.property('daily_limit_failures');
-    });
-
-    it('should preserve last_limit_failure even when old failures are evicted by the cap', async () => {
-      const now = new Date('2026-04-15T12:00:00Z').valueOf();
-      sinon.useFakeTimers(now);
-      const oldFailures = Array.from({ length: 50 }, (_, i) => ({
-        date: i * 1000, status_code: 500, duration: 100, request_id: `old-${i}`, limit_exceeded: false,
-      }));
-      const lastLimit = now - 1000;
-      db.medicLogs.get.resolves({
-        _id: 'replication-fail-2026-04-bob',
-        _rev: '1-abc',
-        user: 'bob',
-        total_failures: 50,
-        failures: oldFailures,
-        daily_failures: { '2026-04-15': 50 },
-        last_limit_failure: lastLimit,
-      });
-      db.medicLogs.put.resolves();
-
-      // A flood of NON-limit failures slices the array, but the top-level cooldown signal must survive.
-      await replicationFailureLog.capture({ name: 'bob', roles: ['chw'] }, 'req-new', 500, 100);
-
-      const saved = db.medicLogs.put.args[0][0];
-      expect(saved.failures).to.have.lengthOf(50);
-      expect(saved.last_limit_failure).to.equal(lastLimit);
     });
 
     describe('defensive lazy-init of mutable fields', () => {
@@ -714,60 +649,6 @@ describe('Replication Failure Log Service', () => {
           '2026-04-15': 1,
         });
       });
-    });
-  });
-
-  describe('hasRecentLimitFailure', () => {
-    beforeEach(() => sinon.useFakeTimers(new Date('2026-04-15T12:00:00Z').valueOf()));
-
-    it('should read the current and previous reporting-period docs', async () => {
-      db.medicLogs.allDocs.resolves({ rows: [] });
-
-      await replicationFailureLog.hasRecentLimitFailure('bob');
-
-      expect(db.medicLogs.allDocs.callCount).to.equal(1);
-      expect(db.medicLogs.allDocs.args[0][0]).to.deep.equal({
-        keys: ['replication-fail-2026-04-bob', 'replication-fail-2026-03-bob'],
-        include_docs: true,
-      });
-    });
-
-    it('should return true when a limit failure is within the cooldown window', async () => {
-      const now = new Date('2026-04-15T12:00:00Z').valueOf();
-      db.medicLogs.allDocs.resolves({ rows: [
-        { id: 'replication-fail-2026-04-bob', doc: { last_limit_failure: now - (30 * 60 * 1000) } },
-        { key: 'replication-fail-2026-03-bob', error: 'not_found' },
-      ] });
-
-      expect(await replicationFailureLog.hasRecentLimitFailure('bob')).to.be.true;
-    });
-
-    it('should return true when only the previous period has a recent limit failure', async () => {
-      const now = new Date('2026-04-15T12:00:00Z').valueOf();
-      db.medicLogs.allDocs.resolves({ rows: [
-        { key: 'replication-fail-2026-04-bob', error: 'not_found' },
-        { id: 'replication-fail-2026-03-bob', doc: { last_limit_failure: now - (10 * 60 * 1000) } },
-      ] });
-
-      expect(await replicationFailureLog.hasRecentLimitFailure('bob')).to.be.true;
-    });
-
-    it('should return false when the limit failure is older than the cooldown window', async () => {
-      const now = new Date('2026-04-15T12:00:00Z').valueOf();
-      db.medicLogs.allDocs.resolves({ rows: [
-        { id: 'replication-fail-2026-04-bob', doc: { last_limit_failure: now - (2 * 60 * 60 * 1000) } },
-      ] });
-
-      expect(await replicationFailureLog.hasRecentLimitFailure('bob')).to.be.false;
-    });
-
-    it('should return false when there are no logs or no limit failures', async () => {
-      db.medicLogs.allDocs.resolves({ rows: [
-        { key: 'replication-fail-2026-04-bob', error: 'not_found' },
-        { id: 'replication-fail-2026-03-bob', doc: { failures: [], daily_failures: {} } },
-      ] });
-
-      expect(await replicationFailureLog.hasRecentLimitFailure('bob')).to.be.false;
     });
   });
 });
