@@ -65,7 +65,7 @@ export class CHTDatasourceService {
   }
 
   private async loadExtensionLibs() {
-    const doc: { _attachments: { data: string }[] } | null = await this.dbService
+    const doc: { _attachments?: Record<string, { data: string }> } | null = await this.dbService
       .get()
       .get(DOC_IDS.EXTENSION_LIBS, { attachments: true })
       .catch(err => {
