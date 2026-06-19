@@ -141,7 +141,8 @@ const filterByOverdue = async (overdueOption) => {
   }
 
   const option = sidebarFilterSelectors.overdueAccordionBody().$(`label*=${overdueOption}`);
-  await option.click();
+  const radio = await option.$('input[type="radio"]');
+  await radio.click();
 };
 
 const filterByTaskType = async (taskType) => {
