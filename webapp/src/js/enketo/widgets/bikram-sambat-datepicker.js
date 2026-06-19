@@ -2,12 +2,17 @@
 /* global globalThis */
 const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
-globalThis.jQuery = globalThis.$ = $;
 require( 'enketo-core/src/js/plugins' );
 const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 
-// Load the nepali-date-picker jQuery plugin
+// Load the nepali-date-picker jQuery plugin into webpack's local $
+// by temporarily making it the global, then restoring the original.
+const _prevJQuery = globalThis.jQuery;
+const _prev$ = globalThis.$;
+globalThis.jQuery = globalThis.$ = $;
 require( 'nepali-date-picker/dist/nepaliDatePicker.min.js' );
+globalThis.jQuery = _prevJQuery;
+globalThis.$ = _prev$;
 
 const NEPALI_MONTH_NAMES = [
   'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
