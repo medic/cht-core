@@ -291,6 +291,23 @@ describe('ContactsEdit component', () => {
       expect(formService.unload.args[0]).to.deep.equal(['form instance']);
     });
 
+    it('should cancel geolocation watcher on destroy when currentHandle exists', async () => {
+      await createComponent();
+
+      const cancel = sinon.stub();
+      geolocationService.currentHandle = { cancel };
+      component.ngOnDestroy();
+
+      expect(cancel.callCount).to.equal(1);
+    });
+
+    it('should not throw on destroy when no geolocation watcher is active', async () => {
+      await createComponent();
+
+      geolocationService.currentHandle = undefined;
+      expect(() => component.ngOnDestroy()).to.not.throw();
+    });
+
     it('should respond to url changes', fakeAsync(async () => {
       routeSnapshot.params = { type: 'random', parent_id: 'the_district' };
       route.params.next({ type: 'random', parent_id: 'the_district' });

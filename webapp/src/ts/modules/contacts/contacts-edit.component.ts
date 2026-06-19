@@ -169,6 +169,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
     this.translationsLoadedSubscription?.unsubscribe();
+    this.geolocationService.currentHandle?.cancel();
     this.globalActions.setTitle();
     if (this.enketoContact?.formInstance) {
       this.formService.unload(this.enketoContact.formInstance);
