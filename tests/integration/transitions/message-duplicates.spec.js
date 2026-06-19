@@ -179,5 +179,6 @@ describe('message duplicates', () => {
           chai.expect(task.state_history.length).to.equal(1);
         });
       });
+
   });
 });
