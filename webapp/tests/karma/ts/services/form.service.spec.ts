@@ -739,6 +739,17 @@ describe('Form service', () => {
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
 
+    it('does not throw when a log entry has a null recording', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      expect(() => (service as any).injectGeoEditContext(formHtml, {
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: null, is_home: false },
+          { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+        ],
+      })).to.not.throw();
+      expect(captureInput.dataset.geoHasLocation).to.equal('true');
+    });
+
     it('sets data-geo-has-location when geolocation_log is non-empty', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {

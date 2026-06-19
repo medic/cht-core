@@ -269,7 +269,7 @@ export class FormService {
   }
 
   private setLastCaptureFromHomeLog(log: any[], captureInput: HTMLInputElement) {
-    const homeEntry = [...log].reverse().find(e => e.is_home && !('code' in e.recording));
+    const homeEntry = [...log].reverse().find(e => e.is_home && e.recording && !('code' in e.recording));
     if (homeEntry) {
       captureInput.dataset.geoLastCapture = JSON.stringify({
         isHome: true,
@@ -279,7 +279,7 @@ export class FormService {
   }
 
   private setLastCaptureFromOtherLog(log: any[], captureInput: HTMLInputElement) {
-    const latestSuccess = [...log].reverse().find(e => !('code' in e.recording));
+    const latestSuccess = [...log].reverse().find(e => e.recording && !('code' in e.recording));
     if (latestSuccess) {
       captureInput.dataset.geoLastCapture = JSON.stringify({
         isHome: latestSuccess.is_home,
@@ -298,7 +298,7 @@ export class FormService {
 
     const log: any[] = contact.geolocation_log || [];
     const hasHomeLocation = !!contact.geolocation;
-    const hasSuccessfulLogEntry = log.some(e => !('code' in e.recording));
+    const hasSuccessfulLogEntry = log.some(e => e.recording && !('code' in e.recording));
     if (!hasHomeLocation && !hasSuccessfulLogEntry) {
       return;
     }
