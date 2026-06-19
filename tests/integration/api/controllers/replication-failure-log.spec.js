@@ -95,6 +95,11 @@ describe('replication failure logging @docker', () => {
     await utils.clearReplicationFailureLogs();
   });
 
+  after(async () => {
+    await utils.deleteUsers(users);
+    await utils.revertDb();
+  });
+
   describe('on successful replication', () => {
     it('should not create a failure log on a successful requests', async () => {
       await replicationGetIds('mathil');
