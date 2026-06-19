@@ -827,6 +827,20 @@ describe('Form service', () => {
       expect(lastCapture.isHome).to.be.true;
       expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
     });
+
+    it('skips failed trailing entries when finding most recent successful other-context entry', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
+          { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },
+        ],
+      });
+      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
+      expect(lastCapture.isHome).to.be.false;
+      expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
+    });
+
   });
 
   describe('getGeoCaptureValue', () => {

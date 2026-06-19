@@ -279,11 +279,11 @@ export class FormService {
   }
 
   private setLastCaptureFromOtherLog(log: any[], captureInput: HTMLInputElement) {
-    const latest = log[log.length - 1];
-    if (latest) {
+    const latestSuccess = [...log].reverse().find(e => !('code' in e.recording));
+    if (latestSuccess) {
       captureInput.dataset.geoLastCapture = JSON.stringify({
-        isHome: false,
-        timestamp: latest.timestamp,
+        isHome: latestSuccess.is_home,
+        timestamp: latestSuccess.timestamp,
       });
     }
   }
