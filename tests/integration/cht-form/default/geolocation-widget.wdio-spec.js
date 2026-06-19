@@ -11,6 +11,18 @@ const selectHomeContext = async () => {
   await $('.geolocation-context-options input[value="home"]').click();
 };
 
+const mockGeoPending = async () => {
+  await browser.execute(() => {
+    window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}), retry: () => {} };
+  });
+};
+
+const mockGeoResolved = async (result) => {
+  await browser.execute((r) => {
+    window.CHTCore.Geolocation = { currentPromise: Promise.resolve(r), retry: () => {} };
+  }, result);
+};
+
 describe('cht-form web component - Geolocation Widget', () => {
   it('should render capture button when geolocation is available', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
@@ -42,9 +54,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   it('should show progress bar and remove capture button when capture is started', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
-    await browser.execute(() => {
-      window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}), retry: () => {} };
-    });
+    await mockGeoPending();
 
     await selectHomeContext();
     await $('.geolocation-capture-btn').click();
@@ -56,9 +66,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   it('should hide context options when capture starts', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
-    await browser.execute(() => {
-      window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}), retry: () => {} };
-    });
+    await mockGeoPending();
 
     await selectHomeContext();
     expect(await $('.geolocation-context-options').isDisplayed()).to.be.true;
@@ -71,9 +79,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   it('should show success message when GPS is acquired', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
-    await browser.execute((geoSuccess) => {
-      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoSuccess), retry: () => {} };
-    }, GEO_SUCCESS);
+    await mockGeoResolved(GEO_SUCCESS);
 
     await selectHomeContext();
     await $('.geolocation-capture-btn').click();
@@ -85,9 +91,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   it('should show retry and skip buttons when GPS acquisition fails', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
-    await browser.execute((geoFailure) => {
-      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoFailure), retry: () => {} };
-    }, GEO_FAILURE);
+    await mockGeoResolved(GEO_FAILURE);
 
     await selectHomeContext();
     await $('.geolocation-capture-btn').click();
@@ -100,9 +104,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   it('should hide context options when GPS acquisition fails', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
-    await browser.execute((geoFailure) => {
-      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoFailure), retry: () => {} };
-    }, GEO_FAILURE);
+    await mockGeoResolved(GEO_FAILURE);
 
     await selectHomeContext();
     await $('.geolocation-capture-btn').click();
@@ -114,9 +116,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   it('should show a confirmation message and remove retry/skip buttons when skip is clicked', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
-    await browser.execute((geoFailure) => {
-      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoFailure), retry: () => {} };
-    }, GEO_FAILURE);
+    await mockGeoResolved(GEO_FAILURE);
 
     await selectHomeContext();
     await $('.geolocation-capture-btn').click();
@@ -135,6 +135,13 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
   const loadEditForm = (lastCapture) => mockConfig.loadFormWithEditContext(
     'default', 'geolocation-widget', lastCapture ? { lastCapture } : {}
   );
+
+  const selectCaptureNewAndAcknowledge = async () => {
+    await $('input[value="capture-new"]').waitForExist();
+    await $('input[value="capture-new"]').click();
+    await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
+    await $('.geolocation-edit-acknowledge-checkbox').click();
+  };
 
   it('should render edit badge instead of context radios and capture button', async () => {
     await loadEditForm();
@@ -194,14 +201,9 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
   it('should show GPS capture progress UI and hide edit options when acknowledge is ticked', async () => {
     await loadEditForm();
 
-    await browser.execute(() => {
-      window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}), retry: () => {} };
-    });
+    await mockGeoPending();
 
-    await $('input[value="capture-new"]').waitForExist();
-    await $('input[value="capture-new"]').click();
-    await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
-    await $('.geolocation-edit-acknowledge-checkbox').click();
+    await selectCaptureNewAndAcknowledge();
 
     await $('.geolocation-progress-bar').waitForExist();
     expect(await $('.geolocation-edit-options').isDisplayed()).to.be.false;
@@ -210,14 +212,9 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
   it('should show success message when GPS is acquired in edit mode', async () => {
     await loadEditForm();
 
-    await browser.execute((geoSuccess) => {
-      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoSuccess), retry: () => {} };
-    }, GEO_SUCCESS);
+    await mockGeoResolved(GEO_SUCCESS);
 
-    await $('input[value="capture-new"]').waitForExist();
-    await $('input[value="capture-new"]').click();
-    await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
-    await $('.geolocation-edit-acknowledge-checkbox').click();
+    await selectCaptureNewAndAcknowledge();
 
     await $('.geolocation-success-msg').waitForExist();
     expect(await $('.geolocation-retry-btn').isExisting()).to.be.false;
@@ -226,14 +223,9 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
   it('should revert to edit choice with keep pre-selected when GPS fails and continue is clicked', async () => {
     await loadEditForm();
 
-    await browser.execute((geoFailure) => {
-      window.CHTCore.Geolocation = { currentPromise: Promise.resolve(geoFailure), retry: () => {} };
-    }, GEO_FAILURE);
+    await mockGeoResolved(GEO_FAILURE);
 
-    await $('input[value="capture-new"]').waitForExist();
-    await $('input[value="capture-new"]').click();
-    await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
-    await $('.geolocation-edit-acknowledge-checkbox').click();
+    await selectCaptureNewAndAcknowledge();
 
     await $('.geolocation-retry-btn').waitForExist();
     await $('.geolocation-acknowledge-checkbox').click();
