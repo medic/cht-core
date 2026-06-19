@@ -28,6 +28,9 @@ const captureAndWait = async () => {
     { timeout: 35000 }
   );
   if (await $('.geolocation-skip-btn').isExisting()) {
+    await $('.geolocation-acknowledge-checkbox').waitForExist();
+    await $('.geolocation-acknowledge-checkbox').click();
+    await $('.geolocation-skip-btn').waitForEnabled();
     await $('.geolocation-skip-btn').click();
   }
 };
