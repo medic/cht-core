@@ -227,6 +227,7 @@ class GeolocationWidget extends Widget {
   }
 
   _revertToEditChoice() {
+    globalThis.CHTCore.Geolocation.retry();
     const $question = $(this.question);
     $question.find('.geolocation-edit-options').show();
     const $keptRadio = $question.find('input[type="radio"][value="kept"]');

@@ -600,7 +600,7 @@ describe('Enketo: Geolocation Widget', () => {
 
       it('clicking skip after GPS failure reverts to edit options with kept selected', async () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation = { currentPromise: promise, retry: sinon.stub() };
         const { widget, container } = await initEditWidget();
 
         const captureNewRadio = container.querySelector(
@@ -632,6 +632,46 @@ describe('Enketo: Geolocation Widget', () => {
         const keptRadio = container.querySelector('input[type="radio"][value="kept"]') as HTMLInputElement;
         expect(keptRadio.checked).to.be.true;
         expect((widget.element as HTMLInputElement).value).to.equal('kept');
+      });
+
+      it('calls retry() when re-acknowledging capture-new after a failed attempt', async () => {
+        const failureResult = { code: 2, message: 'Position unavailable' };
+        const retryStub = sinon.stub();
+        window.CHTCore.Geolocation = {
+          currentPromise: Promise.resolve(failureResult),
+          retry: retryStub,
+        };
+        const { container } = await initEditWidget();
+
+        const captureNewRadio = container.querySelector(
+          'input[type="radio"][value="capture-new"]'
+        ) as HTMLInputElement;
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+
+        const editCheckbox = container.querySelector(
+          '.geolocation-edit-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        editCheckbox.checked = true;
+        $(editCheckbox).trigger('change');
+
+        await window.CHTCore.Geolocation.currentPromise;
+
+        // Skip reverts to edit choice
+        const skipAcknowledgeCheckbox = container.querySelector(
+          '.geolocation-status .geolocation-acknowledge-checkbox'
+        ) as HTMLInputElement;
+        skipAcknowledgeCheckbox.checked = true;
+        $(skipAcknowledgeCheckbox).trigger('change');
+        (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
+
+        // Re-select capture-new and acknowledge again
+        captureNewRadio.checked = true;
+        $(captureNewRadio).trigger('change');
+        editCheckbox.checked = true;
+        $(editCheckbox).trigger('change');
+
+        expect(retryStub.callCount).to.equal(1);
       });
 
       it('does not render context or meta elements when data-geo-last-capture is absent', async () => {
