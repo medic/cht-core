@@ -455,16 +455,17 @@ describe('Enketo: Geolocation Widget', () => {
 
     describe('edit mode', () => {
       const buildHtmlWithExistingLocation = (lastCapture?: object) => {
-        const lastCaptureAttr = lastCapture
-          ? `data-geo-last-capture='${JSON.stringify(lastCapture)}'`
-          : '';
         document.body.insertAdjacentHTML('afterbegin', `
           <div id="geolocation-widget-test">
             <label class="question non-select or-appearance-geolocation-capture">
               <input type="hidden" name="/geolocation/capture" data-type-xml="string"
-                data-geo-has-location="true" ${lastCaptureAttr} />
+                data-geo-has-location="true" />
             </label>
           </div>`);
+        if (lastCapture) {
+          const input = document.querySelector('#geolocation-widget-test input') as HTMLInputElement;
+          input.dataset.geoLastCapture = JSON.stringify(lastCapture);
+        }
       };
 
       const createWidget = () => {

@@ -47,7 +47,8 @@ const loadFormWithEditContext = async (config, formName, editContext = {}) => {
 
   let attrs = 'data-geo-has-location="true"';
   if (editContext.lastCapture) {
-    attrs += ` data-geo-last-capture='${JSON.stringify(editContext.lastCapture)}'`;
+    attrs += ` data-geo-last-capture="${JSON.stringify(editContext.lastCapture).replace(/"/g, '&quot;')}"`;
+
   }
 
   const modifiedFormHtml = formData.formHtml.replace(

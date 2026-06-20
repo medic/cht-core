@@ -1172,6 +1172,8 @@ describe('Form service', () => {
 
         const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
         return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
+          expect(actual[0].geolocation_log[0].timestamp).to.be.greaterThan(0);
+          expect(actual[0].geolocation_log[0].recording).to.deep.equal(geoData);
           expect(actual[0].geolocation_log[0].is_home).to.be.true;
           expect(actual[0].geolocation).to.deep.equal(geoData);
         });
@@ -1195,6 +1197,8 @@ describe('Form service', () => {
 
         const geoData = { latitude: 1, longitude: 2, accuracy: 4 };
         return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
+          expect(actual[0].geolocation_log[0].timestamp).to.be.greaterThan(0);
+          expect(actual[0].geolocation_log[0].recording).to.deep.equal(geoData);
           expect(actual[0].geolocation_log[0].is_home).to.be.false;
           expect(actual[0]).not.to.have.property('geolocation');
         });
@@ -1219,6 +1223,8 @@ describe('Form service', () => {
         const geoError = { code: 42, message: 'some bad geo' };
         return service.save('V', form, () => Promise.reject(geoError)).then(actual => {
           expect(actual[0].geolocation_log.length).to.equal(1);
+          expect(actual[0].geolocation_log[0].timestamp).to.be.greaterThan(0);
+          expect(actual[0].geolocation_log[0].recording).to.deep.equal(geoError);
           expect(actual[0].geolocation_log[0].is_home).to.be.true;
           expect(actual[0]).not.to.have.property('geolocation');
         });
@@ -1576,24 +1582,24 @@ describe('Form service', () => {
                 form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: DOC_TYPES.DATA_RECORD,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_1',
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_2',
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_3',
               },
@@ -1628,27 +1634,27 @@ describe('Form service', () => {
                 form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: DOC_TYPES.DATA_RECORD,
                 transitioned: true,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_1',
                 transitioned: true,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_2',
                 transitioned: true,
               },
               {
                 geolocation: { geo: 'data' },
-                geolocation_log: [{ recording: { geo: 'data' }, is_home: false }],
+                geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_3',
                 transitioned: true,
@@ -2072,6 +2078,7 @@ describe('Form service', () => {
       assert.equal(savedDocs[0].geolocation_log.length, 1);
       assert.isAbove(savedDocs[0].geolocation_log[0].timestamp, 0);
       assert.deepEqual(savedDocs[0].geolocation_log[0].recording, geoData);
+      assert.notProperty(savedDocs[0].geolocation_log[0], 'is_home');
     });
 
     it('does not add geolocation fields when no geoHandle is provided', async () => {
