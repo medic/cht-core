@@ -733,6 +733,22 @@ describe('Enketo: Geolocation Widget', () => {
         expect(meta.textContent).to.equal('geolocation.edit.last_updated_day');
       });
 
+      it('shows 1 day ago for a capture just before midnight yesterday', async () => {
+        window.CHTCore.Translate.get = sinon.stub().callsFake((key: string) => {
+          if (key === 'geolocation.edit.last_updated_day') {
+            return Promise.resolve('1 day ago');
+          }
+          return Promise.resolve(key);
+        });
+        const todayMidnight = new Date();
+        todayMidnight.setHours(0, 0, 0, 0);
+        const fiveMinutesBeforeMidnight = todayMidnight.getTime() - 5 * 60 * 1000;
+        const { container } = await initEditWidget({ isHome: true, timestamp: fiveMinutesBeforeMidnight });
+
+        const meta = container.querySelector('.geolocation-edit-badge-meta') as HTMLElement;
+        expect(meta.textContent).to.equal('1 day ago');
+      });
+
       it('uses today translation key when capture timestamp is from the current day', async () => {
         const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
         const { container } = await initEditWidget({ isHome: true, timestamp: twoHoursAgo });

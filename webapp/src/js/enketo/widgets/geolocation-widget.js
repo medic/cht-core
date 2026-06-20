@@ -220,7 +220,9 @@ class GeolocationWidget extends Widget {
       return globalThis.CHTCore.Translate.get('geolocation.edit.last_updated_today')
         .then(text => $badgeMeta.text(text));
     }
-    const days = Math.floor((Date.now() - lastCapture.timestamp) / MS_PER_DAY);
+    const captureDay = new Date(lastCapture.timestamp);
+    captureDay.setHours(0, 0, 0, 0);
+    const days = Math.round((todayMidnight.getTime() - captureDay.getTime()) / MS_PER_DAY);
     const key = days === 1 ? 'geolocation.edit.last_updated_day' : 'geolocation.edit.last_updated_days';
     return globalThis.CHTCore.Translate.get(key)
       .then(text => $badgeMeta.text(text.replace('{{days}}', days)));
