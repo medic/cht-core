@@ -46,7 +46,6 @@
  *                       that failed an attempt but were retried-and-passed
  *                       (flaky-recovered). Slower. Default scans only failed
  *                       runs / failed jobs (i.e. final, job-failing failures).
- *   --concurrency <n>   Parallel log downloads (default: 6).
  *   --json              Emit machine-readable JSON instead of a table.
  *   --debug             Print per-job parsing diagnostics to stderr.
  *   -h, --help          Show this help.
@@ -81,7 +80,6 @@ const ARG_FLAGS = {
   '--repo': { key: 'repo', parse: asString },
   '--job': { key: 'job', parse: asString },
   '--limit': { key: 'limit', parse: Number },
-  '--concurrency': { key: 'concurrency', parse: Number },
 };
 
 const applyPositional = (rest, arg) => {
@@ -116,7 +114,6 @@ const parseArgs = (argv) => {
     job: null,
     repo: 'medic/cht-core',
     scanAll: false,
-    concurrency: 6,
     json: false,
     debug: false,
   };
@@ -145,7 +142,6 @@ Options:
   --job <name>        Only scan jobs whose name matches (substring or /regex/);
                       faster, since it skips other suites' log downloads.
   --scan-all          Also scan green runs / passing jobs (catches flaky-recovered).
-  --concurrency <n>   Parallel log downloads (default: 6).
   --json              Emit JSON instead of a table.
   --debug             Print parsing diagnostics to stderr.
   -h, --help          Show this help.
@@ -373,6 +369,10 @@ const TEST_JOB_RE = /(ci-webdriver|wdio-performance|ci-integration|test-cht-form
 // Concurrency helper
 // ---------------------------------------------------------------------------
 
+// Parallel log downloads per run. Modest enough to stay well under GitHub's
+// secondary rate limits while keeping each run's scan fast.
+const LOG_DOWNLOAD_CONCURRENCY = 6;
+
 const mapWithConcurrency = async (items, limit, worker) => {
   const results = new Array(items.length);
   let next = 0;
@@ -476,7 +476,7 @@ const listRunJobs = (run, opts) => {
 
 const scanRun = async (run, opts, matcher) => {
   const jobs = listRunJobs(run, opts).filter((job) => isScannableJob(job, opts));
-  const perJob = await mapWithConcurrency(jobs, opts.concurrency, (job) => scanJob(job, run, opts, matcher));
+  const perJob = await mapWithConcurrency(jobs, LOG_DOWNLOAD_CONCURRENCY, (job) => scanJob(job, run, opts, matcher));
   return perJob.flat();
 };
 
