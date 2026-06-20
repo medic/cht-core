@@ -162,13 +162,18 @@ const randomIp = () => {
   return `${section()}.${section()}.${section()}.${section()}`;
 };
 
+const stringifyParam = (key, value) => {
+  if (key.startsWith('start') || key.startsWith('end') || key.startsWith('doc_ids') || Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+  return value;
+};
+
 const getRequestUri = (options) => {
   let uri = (options.uri || `${constants.BASE_URL}${options.path}`);
   if (options.qs) {
     Object.keys(options.qs).forEach((key) => {
-      if (Array.isArray(options.qs[key])) {
-        options.qs[key] = JSON.stringify(options.qs[key]);
-      }
+      options.qs[key] = stringifyParam(key, options.qs[key]);
     });
     uri = `${uri}?${new URLSearchParams(options.qs).toString()}`;
   }
@@ -962,6 +967,58 @@ const listenForApi = async () => {
   throw new Error('API failed to start after 3 minutes');
 };
 
+const NGINX_PORT_HINT =
+  'Ports 80 and/or 443 are often already in use; stop the other service or set NGINX_HTTP_PORT ' +
+  'and NGINX_HTTPS_PORT (see tests/constants.js for HTTPS).';
+
+const waitForNginxContainerRunning = async () => {
+  if (!isDocker()) {
+    return;
+  }
+  const containerName = getContainerName('nginx');
+  const maxTries = 30;
+  for (let i = 0; i < maxTries; i++) {
+    let state;
+    try {
+      const rawState = await runCommand(
+        `docker inspect -f '{{json .State}}' ${containerName}`,
+        { verbose: false }
+      );
+      state = JSON.parse(rawState);
+    } catch (err) {
+      throw new Error(
+        `Expected nginx container "${containerName}" was not found after docker compose up ` +
+        `(${err.message}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    // A failed port bind leaves the container in `created` state (never exited/dead) with the
+    // real reason in `State.Error`, so check it explicitly to fail fast on the issue #9491 case.
+    if (state.Error) {
+      throw new Error(
+        `nginx container "${containerName}" failed to start: ${state.Error} ` +
+        `(exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    if (state.Status === 'exited' || state.Status === 'dead') {
+      throw new Error(
+        `nginx container "${containerName}" failed to start ` +
+        `(status: ${state.Status}, exitCode: ${state.ExitCode}). ${NGINX_PORT_HINT}`
+      );
+    }
+
+    if (state.Status === 'running') {
+      return;
+    }
+
+    await delayPromise(1000);
+  }
+  throw new Error(
+    `nginx container "${containerName}" did not become running within ${maxTries} tries. ${NGINX_PORT_HINT}`
+  );
+};
+
 const dockerComposeCmd = (params) => {
   const composeFiles = COMPOSE_FILES.map(file => ['-f', getTestComposeFilePath(file)]).flat();
   composeFiles.push('-f', COMPOSE_OVERRIDE_FILE);
@@ -1309,6 +1366,7 @@ const startServices = async () => {
   env.COUCHDB_NOUVEAU_DATA = makeTempDir('ci-nouveaudata');
 
   await dockerComposeCmd('up -d');
+  await waitForNginxContainerRunning();
   const services = await dockerComposeCmd('ps -q');
   if (!services.length) {
     throw new Error('Errors when starting services');
@@ -1715,6 +1773,9 @@ const updateContainerNames = (project = PROJECT_NAME) => {
 };
 
 const getContainerName = (service, project = PROJECT_NAME) => {
+  if (service.includes('nouveau')) {
+    service = 'nouveau'; // naming here is inconsistent between container and repository.
+  }
   return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
 };
 
