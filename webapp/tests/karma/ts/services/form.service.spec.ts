@@ -2237,7 +2237,7 @@ describe('Form service', () => {
       assert.deepEqual(savedDocs[0].geolocation, existingGeo);
     });
 
-    it('restores geolocation and geo_capture from the original doc when editing with geo_capture kept', async () => {
+    it('restores geolocation fields from the original doc when geo_capture is kept', async () => {
       const docId = 'existing-contact-id';
       const type = 'clinic';
       const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
@@ -2275,6 +2275,7 @@ describe('Form service', () => {
       const savedDocs = dbBulkDocs.args[0][0];
       assert.deepEqual(savedDocs[0].geolocation, originalGeo);
       assert.equal(savedDocs[0].geo_capture, 'captured');
+      assert.deepEqual(savedDocs[0].geolocation_log, originalLog);
       assert.equal(savedDocs[0].name, 'My Household');
     });
   });

@@ -459,6 +459,7 @@ export class FormService {
     if (contactDoc && originalDoc) {
       contactDoc.geolocation = originalDoc.geolocation;
       contactDoc.geo_capture = originalDoc.geo_capture;
+      contactDoc.geolocation_log = originalDoc.geolocation_log;
     }
   }
 
