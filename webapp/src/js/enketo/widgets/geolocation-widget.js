@@ -328,6 +328,8 @@ class GeolocationWidget extends Widget {
         $retryBtn.remove();
         $acknowledgeLabel.remove();
         $skipBtn.remove();
+        $resultRow.remove();
+        $status.find('.geolocation-weak-signal-msg').remove();
         const $skippedMsg = $('<p class="geolocation-skipped-msg">');
         $status.append($skippedMsg);
         globalThis.CHTCore.Translate.get('geolocation.skipped').then(text => $skippedMsg.text(text));

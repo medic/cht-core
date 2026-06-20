@@ -398,6 +398,21 @@ describe('Enketo: Geolocation Widget', () => {
         expect(bar.classList.contains('geolocation-progress-success')).to.be.false;
       });
 
+      it('should hide weak signal message when skip is clicked after a weak signal failure', async () => {
+        const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        const { container } = initAndSelectHome();
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+        await promise;
+
+        const checkbox = container.querySelector('.geolocation-acknowledge-checkbox') as HTMLInputElement;
+        checkbox.checked = true;
+        $(checkbox).trigger('change');
+        (container.querySelector('.geolocation-skip-btn') as HTMLElement).click();
+
+        expect(container.querySelector('.geolocation-weak-signal-msg')).to.be.null;
+      });
+
       it('should show weak signal message for POSITION_UNAVAILABLE (code 2)', async () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
         window.CHTCore.Geolocation = { currentPromise: promise };
