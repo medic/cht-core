@@ -188,6 +188,15 @@ describe('Enketo: Geolocation Widget', () => {
         return { widget, container };
       };
 
+      it('logs an error and does not throw when currentPromise is unavailable', () => {
+        window.CHTCore.Geolocation = {};
+        const consoleErrorStub = sinon.stub(console, 'error');
+        const { container } = initAndSelectHome();
+
+        expect(() => (container.querySelector('.geolocation-capture-btn') as HTMLElement).click()).to.not.throw();
+        expect(consoleErrorStub.callCount).to.equal(1);
+      });
+
       it('should show progress bar and remove capture button on click', () => {
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
