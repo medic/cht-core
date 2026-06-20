@@ -259,7 +259,7 @@ class GeolocationWidget extends Widget {
     globalThis.CHTCore.Translate.get('geolocation.progress')
       .then(text => $progressLabel.text(text));
 
-    if (!globalThis.CHTCore.Geolocation || !globalThis.CHTCore.Geolocation.currentPromise) {
+    if (!globalThis.CHTCore?.Geolocation?.currentPromise) {
       console.error('Geolocation widget: currentPromise is not available. Has geolocationService.init() been called?');
       return;
     }
