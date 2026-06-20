@@ -193,7 +193,7 @@ class GeolocationWidget extends Widget {
 
   _handleEditRadioChange(value, $warning) {
     if (value === 'capture-new') {
-      $(this.element).val('');
+      $(this.element).val('').trigger('change');
       $warning.show();
     } else {
       $(this.element).val('kept').trigger('change');
