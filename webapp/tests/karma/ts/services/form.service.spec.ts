@@ -1041,6 +1041,7 @@ describe('Form service', () => {
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoData);
+          expect(actual.geolocation_log[0]).not.to.have.property('is_home');
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(AddAttachment.callCount).to.equal(0);
@@ -1079,6 +1080,7 @@ describe('Form service', () => {
           expect(actual.geolocation_log.length).to.equal(1);
           expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoError);
+          expect(actual.geolocation_log[0]).not.to.have.property('is_home');
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
           expect(AddAttachment.callCount).to.equal(0);

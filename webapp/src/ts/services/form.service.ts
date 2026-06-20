@@ -332,7 +332,11 @@ export class FormService {
         const isHome = contextValue === 'home';
         docs.forEach(doc => {
           doc.geolocation_log = doc.geolocation_log || [];
-          doc.geolocation_log.push({ timestamp: Date.now(), recording: geoData, is_home: isHome });
+          const entry: any = { timestamp: Date.now(), recording: geoData };
+          if (contextValue !== undefined) {
+            entry.is_home = isHome;
+          }
+          doc.geolocation_log.push(entry);
           if (!geoData.code && (contextValue === undefined || isHome)) {
             doc.geolocation = geoData;
           }
