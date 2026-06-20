@@ -4,7 +4,7 @@
       *ngFor="let status of statuses"
       [class.selected]="filter?.selected.has(status)"
       [class.disabled]="disabled">
-      <label>
+      <label style="font-weight: normal;">
         <input
           type="radio"
           name="overdue-filter"
