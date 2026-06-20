@@ -813,6 +813,42 @@ describe('ContactSave service', () => {
       expect(bTarget?.args[0]._id, 'childB file -> second repeat doc').to.equal('kid2');
     });
 
+    it('routes repeat-child uploads correctly when <repeat> has a leading non-child node', async () => {
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<repeat>' +
+            '<child_count>2</child_count>' +
+            '<child><name>Child A</name><photo type="file">childA.png</photo></child>' +
+            '<child><name>Child B</name><photo type="file">childB.png</photo></child>' +
+          '</repeat>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF' },
+        siblings: {},
+        repeats: { child_data: [
+          { _id: 'kid1', type: 'person', name: 'Child A', parent: 'PARENT' },
+          { _id: 'kid2', type: 'person', name: 'Child B', parent: 'PARENT' },
+        ] },
+      });
+      stubSiblingAndRepeat();
+
+      const fileA = new File(['a'], 'childA.png', { type: 'image/png' });
+      const fileB = new File(['b'], 'childB.png', { type: 'image/png' });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([ fileA, fileB ]);
+
+      await service.save(form, null, 'family');
+
+      const calls = attachmentService.add.getCalls();
+      const aTarget = calls.find(c => c.args[1] === 'user-file-childA.png');
+      const bTarget = calls.find(c => c.args[1] === 'user-file-childB.png');
+      expect(aTarget?.args[0]._id, 'childA file -> first repeat doc').to.equal('kid1');
+      expect(bTarget?.args[0]._id, 'childB file -> second repeat doc').to.equal('kid2');
+    });
+
     it('routes mixed uploads to their respective sub-docs', async () => {
       const xml =
         '<data id="contact:family:create">' +
