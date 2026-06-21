@@ -1,16 +1,14 @@
 import { v7 as uuid } from 'uuid';
 import { Injectable, NgZone } from '@angular/core';
 import { defaults as _defaults, isObject as _isObject } from 'lodash-es';
-import * as objectPath from 'object-path';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { AttachmentService } from '@mm-services/attachment.service';
+import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
+import { AttachmentRoutingStrategy, FieldPath, computeFieldPath } from '@mm-services/attachment-routing';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { USER_FILE_PREFIX } from '@mm-services/enketo.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { Xpath } from '@mm-providers/xpath-element-path.provider';
-import FileManager from '../../js/enketo/file-manager';
 
 interface ContactOwnerContext {
   root: Element;
@@ -18,9 +16,6 @@ interface ContactOwnerContext {
   mainDoc: Record<string, any>;
   submittedRepeatsLen: number;
 }
-
-type AttachmentNamesByDoc = Map<Record<string, any>, Set<string>>;
-type FileNameMapByDoc = Map<Record<string, any>, Map<string, string>>;
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +26,7 @@ export class ContactSaveService {
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
+    private readonly attachmentRoutingService: AttachmentRoutingService,
     private enketoTranslationService:EnketoTranslationService,
     private extractLineageService:ExtractLineageService,
     private readonly attachmentService:AttachmentService,
@@ -97,93 +93,6 @@ export class ContactSaveService {
     });
   }
 
-  /**
-   * Sanitizes a file name by removing special characters.
-   * Only allows letters (a-z, A-Z), numbers (0-9), underscores (_), dashes (-), and dots (.).
-   * All other characters are removed.
-   *
-   * If sanitizing removes all characters from the file stem (e.g. a file name written entirely
-   * in a non-Latin script like Devanagari), a UUID is used as the stem to ensure a valid file name.
-   *
-   * @param fileName - The file name to sanitize
-   * @returns The sanitized file name with special characters removed, or a UUID-based name if
-   *          the stem becomes empty after sanitization
-   */
-  private sanitizeFileName(fileName: string): string {
-    const disallowedChars = /[^a-zA-Z0-9_.-]/g;
-    const lastDotIndex = fileName.lastIndexOf('.');
-    const hasExtension = lastDotIndex > 0;
-
-    if (!hasExtension) {
-      return fileName.replace(disallowedChars, '') || uuid(); // NOSONAR
-    }
-
-    const stem = fileName.slice(0, lastDotIndex);
-    const extension = fileName.slice(lastDotIndex);
-    const sanitizedStem = stem.replace(disallowedChars, ''); // NOSONAR
-    return (sanitizedStem || uuid()) + extension;
-  }
-
-  /**
-   * Finds all paths in a document that match a given filter predicate.
-   * Returns paths in dot notation (e.g., 'photo', 'metadata.images.0.photo').
-   *
-   * Always skips keys starting with underscore (CouchDB internal fields like _id, _rev, _attachments).
-   *
-   * @param doc - The document to search
-   * @param filter - Predicate function that returns true for values we want to find
-   * @returns Array of paths in dot notation
-   */
-  private findPaths(
-    doc: Record<string, any>,
-    filter: (value: any) => boolean
-  ): string[] {
-    const paths: string[] = [];
-
-    const traverse = (current: any, currentPath: string[] = []) => {
-      if (filter(current)) {
-        paths.push(currentPath.join('.'));
-      }
-
-      if (Array.isArray(current)) {
-        current.forEach((item, idx) => traverse(item, [...currentPath, idx.toString()]));
-      } else if (current && typeof current === 'object') {
-        Object.entries(current).forEach(([key, value]) => {
-          if (!key.startsWith('_')) {
-            traverse(value, [...currentPath, key]);
-          }
-        });
-      }
-    };
-
-    Object.entries(doc).forEach(([key, value]) => {
-      if (!key.startsWith('_')) {
-        traverse(value, [key]);
-      }
-    });
-
-    return paths;
-  }
-
-  /**
-   * Recursively scans through a document and replaces field values that reference
-   * uploaded file names with their sanitized equivalents. Modifies the document in place.
-   *
-   * @param doc - The document to scan and modify
-   * @param fileNameMap - Map of original file names to sanitized file names
-   */
-  private sanitizeFieldValues(doc: Record<string, any>, fileNameMap: Map<string, string>): void {
-    const pathsToUpdate = this.findPaths(
-      doc,
-      value => typeof value === 'string' && fileNameMap.has(value)
-    );
-
-    pathsToUpdate.forEach(path => {
-      const currentValue = objectPath.get(doc, path);
-      objectPath.set(doc, path, fileNameMap.get(currentValue));
-    });
-  }
-
   private processAllAttachments(
     preparedDocs: Record<string, any>[],
     submitted: { doc; siblings?; repeats? },
@@ -196,146 +105,27 @@ export class ContactSaveService {
       submittedRepeatsLen: submitted?.repeats?.child_data?.length ?? 0
     };
 
-    const newAttachmentNamesByDoc: AttachmentNamesByDoc = new Map();
-    const fileNameMapByDoc: FileNameMapByDoc = new Map();
-
-    const fileManagerNames = this.attachUploadedFiles(ctx, newAttachmentNamesByDoc, fileNameMapByDoc);
-    this.attachInlineBinaryFields(ctx, fileManagerNames, newAttachmentNamesByDoc);
-    this.finalizeDocs(preparedDocs, fileNameMapByDoc, newAttachmentNamesByDoc);
-  }
-
-  private trackNewAttachment(map: AttachmentNamesByDoc, doc: Record<string, any>, name: string) {
-    const set = map.get(doc) ?? new Set<string>();
-    set.add(name);
-    map.set(doc, set);
-  }
-
-  private trackFileName(map: FileNameMapByDoc, doc: Record<string, any>, original: string, sanitized: string) {
-    const names = map.get(doc) ?? new Map<string, string>();
-    names.set(original, sanitized);
-    map.set(doc, names);
-  }
-
-  /** Attaches FileManager uploads, routed per sub-doc. Returns the original
-   * filenames so the binary pass can skip upload widgets that also carry
-   * `type="binary"` markup. */
-  private attachUploadedFiles(
-    ctx: ContactOwnerContext,
-    newAttachmentNamesByDoc: AttachmentNamesByDoc,
-    fileNameMapByDoc: FileNameMapByDoc,
-  ): Set<string> {
-    const fileManagerNames = new Set<string>();
-    FileManager
-      .getCurrentFiles()
-      .forEach(file => {
-        const ownerDoc = this.findContactOwnerForFilename(file.name, ctx);
-        const sanitizedFileName = this.sanitizeFileName(file.name);
-        const attachmentName = `${USER_FILE_PREFIX}${sanitizedFileName}`;
-
-        this.attachmentService.add(ownerDoc, attachmentName, file, file.type, false);
-        this.trackNewAttachment(newAttachmentNamesByDoc, ownerDoc, attachmentName);
-        this.trackFileName(fileNameMapByDoc, ownerDoc, file.name, sanitizedFileName);
-        fileManagerNames.add(file.name);
-      });
-    return fileManagerNames;
-  }
-
-  private attachInlineBinaryFields(
-    ctx: ContactOwnerContext,
-    fileManagerNames: Set<string>,
-    newAttachmentNamesByDoc: AttachmentNamesByDoc,
-  ) {
-    $(ctx.root)
-      .find('[type=binary]')
-      .each((_idx, element: Element) => {
-        this.attachOneBinaryField(element, ctx, fileManagerNames, newAttachmentNamesByDoc);
-      });
-  }
-
-  /** Attaches the blob to the owning doc and mirrors the bare reference into the
-   * doc's field value, so the renderer resolves the image via
-   * `USER_FILE_PREFIX + value`. */
-  private attachOneBinaryField(
-    element: Element,
-    ctx: ContactOwnerContext,
-    fileManagerNames: Set<string>,
-    newAttachmentNamesByDoc: AttachmentNamesByDoc,
-  ) {
-    const $element = $(element);
-    // Reference stashed at load for an untouched field (see bindJsonToXml);
-    // it survives Enketo's model merge as a data-* attribute.
-    const sidecar = $element.attr('data-attachment-ref');
-    $element.removeAttr('data-attachment-ref');
-
-    const content = $element.text();
-    if (!content) {
-      this.restoreUntouchedBinary(element, ctx, sidecar);
-      return;
-    }
-
-    // Skip a value that is already a reference (idempotent re-save) or a
-    // type="file" widget whose blob the FileManager pass already attached.
-    if (this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
-      return;
-    }
-
-    const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
-    const reference = this.computeBinaryReference(element, ctx);
-    const attachmentName = `${USER_FILE_PREFIX}${reference}`;
-
-    this.attachmentService.add(ownerDoc, attachmentName, content, 'image/png', true);
-    this.trackNewAttachment(newAttachmentNamesByDoc, ownerDoc, attachmentName);
-
-    // Field path is the element's position relative to its section container
-    // (the section for main/sibling, the i-th repeat child for a repeat).
-    const container = this.findFieldContainerElement(element, ctx);
-    const fieldPath = container && this.computeFieldPath(element, container);
-    if (fieldPath) {
-      objectPath.set(ownerDoc, fieldPath, reference);
-    }
+    this.attachmentRoutingService.route(this.contactRoutingStrategy(ctx));
   }
 
   /**
-   * Restores an untouched inline-binary field on edit from its sidecar reference.
-   * Restoring the value is enough: finalizeDocs's referenced-attachment scan keeps
-   * the attachment.
+   * Contact pipeline's attachment-routing strategy. Owner resolution classifies
+   * the element's section (main / sibling / repeat `<child>`); the formId is the
+   * form-instance root's id; field paths are plain dot-paths relative to the
+   * field's section container (contact repeats are separate docs, never arrays).
    */
-  private restoreUntouchedBinary(element: Element, ctx: ContactOwnerContext, sidecar?: string) {
-    if (!sidecar) {
-      return;
-    }
-    const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
-    const container = this.findFieldContainerElement(element, ctx);
-    const fieldPath = container && this.computeFieldPath(element, container);
-    if (fieldPath) {
-      objectPath.set(ownerDoc, fieldPath, sidecar);
-    }
-  }
-
-  /** Bare attachment reference for a binary node: the element's xpath with the
-   * instance root swapped for the form internal ID and the leading slash
-   * dropped -> `<formId>/<xpath>/<field>`. */
-  private computeBinaryReference(element: Element, ctx: ContactOwnerContext): string {
-    const formId = $(ctx.root).attr('id');
-    const xpath = Xpath.getElementXPath(element);
-    return (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId)).slice(1);
-  }
-
-  /** Per-doc field-value sanitization + orphan cleanup. */
-  private finalizeDocs(
-    preparedDocs: Record<string, any>[],
-    fileNameMapByDoc: FileNameMapByDoc,
-    newAttachmentNamesByDoc: AttachmentNamesByDoc,
-  ) {
-    for (const doc of preparedDocs) {
-      const nameMap = fileNameMapByDoc.get(doc) ?? new Map<string, string>();
-      this.sanitizeFieldValues(doc, nameMap);
-
-      const newNames = newAttachmentNamesByDoc.get(doc) ?? new Set<string>();
-      const referenced = this.findReferencedAttachments(doc);
-      const valid = new Set([ ...newNames, ...referenced ]);
-      this.removeOrphanedAttachments(doc, valid);
-    }
+  private contactRoutingStrategy(ctx: ContactOwnerContext): AttachmentRoutingStrategy {
+    return {
+      root: ctx.root,
+      docs: ctx.preparedDocs,
+      mainDoc: ctx.mainDoc,
+      resolveOwnerForNode: (element: Element) => this.resolveContactOwnerDoc(element, ctx),
+      formIdFor: () => $(ctx.root).attr('id'),
+      fieldPathFor: (element: Element): FieldPath | null => {
+        const container = this.findFieldContainerElement(element, ctx);
+        return container ? computeFieldPath(element, container) : null;
+      },
+    };
   }
 
   private findSectionForElement(el: Element, root: Element): Element | null {
@@ -397,20 +187,6 @@ export class ContactSaveService {
   }
 
   /**
-   * Dot-path of the element's position relative to its container, e.g.
-   * `<container><group><photo type="binary"/></group></container>` → `group.photo`.
-   */
-  private computeFieldPath(el: Element, container: Element): string {
-    const segments: string[] = [];
-    let node: Node | null = el;
-    while (node && node !== container) {
-      segments.unshift((node as Element).tagName);
-      node = node.parentNode;
-    }
-    return segments.join('.');
-  }
-
-  /**
    * Resolves the prepared sub-doc that owns an XML element by walking up to its
    * section root (a direct child of the form root):
    *
@@ -433,60 +209,6 @@ export class ContactSaveService {
     }
     return mainDoc;
   }
-
-  /**
-   * Resolves the owning prepared doc for a FileManager upload by matching the
-   * filename against `[type=file]` widget text, falling back to mainDoc when no
-   * node matches. Filenames are unique within a form session (Enketo's
-   * timestamp suffix), so the first match is the only match.
-   */
-  private findContactOwnerForFilename(filename: string, ctx: ContactOwnerContext): Record<string, any> {
-    const match = $(ctx.root)
-      .find('[type=file]')
-      .toArray()
-      .find(el => $(el).text() === filename);
-    if (!match) {
-      return ctx.mainDoc;
-    }
-    return this.resolveContactOwnerDoc(match, ctx);
-  }
-
-  private findReferencedAttachments(doc: Record<string, any>): Set<string> {
-    const referenced = new Set<string>();
-    if (!doc._attachments) {
-      return referenced;
-    }
-
-    const existingAttachmentNames = Object.keys(doc._attachments);
-
-    const isReferencedAttachment = (value: any): boolean => {
-      if (typeof value !== 'string' || !value) {
-        return false;
-      }
-      const possibleAttachmentName = `${USER_FILE_PREFIX}${value}`;
-      return existingAttachmentNames.includes(possibleAttachmentName);
-    };
-
-    const referencedPaths = this.findPaths(doc, isReferencedAttachment);
-
-    referencedPaths.forEach(path => {
-      const value = objectPath.get(doc, path);
-      referenced.add(`${USER_FILE_PREFIX}${value}`);
-    });
-
-    return referenced;
-  }
-
-  private removeOrphanedAttachments(doc: Record<string, any>, validAttachmentNames: Set<string>) {
-    if (!doc._attachments) {
-      return;
-    }
-
-    Object.keys(doc._attachments)
-      .filter(name => name.startsWith(USER_FILE_PREFIX) && !validAttachmentNames.has(name))
-      .forEach(name => this.attachmentService.remove(doc, name));
-  }
-
 
   private extractIfRequired(name, value) {
     return this.CONTACT_FIELD_NAMES.includes(name) ? this.extractLineageService.extract(value) : value;

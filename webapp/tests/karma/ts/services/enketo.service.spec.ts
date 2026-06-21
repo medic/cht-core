@@ -1544,6 +1544,91 @@ describe('Enketo service', () => {
       );
       expect(subDocAttachments).to.be.empty;
     });
+
+    it('sanitizes report upload filenames and field values', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns('<my-form><my_file type="file">my photo!.png</my_file></my-form>');
+      dbGetAttachment.resolves('<form/>');
+      const file = { name: 'my photo!.png', type: 'image/png' };
+      getCurrentFiles.returns([file]);
+
+      const [actual] = await service.completeNewReport(
+        'my-form', form, { doc: {} }, { _id: 'my-user', phone: '8989' }
+      );
+
+      const addCall = AddAttachment.args.find(args => args[2] === file);
+      expect(addCall[1]).to.equal('user-file-myphoto.png');
+      expect(actual.fields.my_file).to.equal('myphoto.png');
+    });
+
+    it('removes orphaned report attachments but keeps referenced ones on edit', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns('<my-form><keep type="binary">my-form/keep</keep></my-form>');
+      dbGetAttachment.resolves('<form/>');
+      getReport.resolves({
+        _id: '7',
+        _rev: '1-x',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1,
+        fields: { keep: 'my-form/keep' },
+        _attachments: {
+          'user-file-my-form/keep': { stub: true, content_type: 'image/png' },
+          'user-file-my-form/stale': { stub: true, content_type: 'image/png' },
+        },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '7');
+
+      expect(actual.fields.keep).to.equal('my-form/keep');
+      expect(removeAttachment.args.some(args => args[1] === 'user-file-my-form/stale')).to.be.true;
+      expect(removeAttachment.args.some(args => args[1] === 'user-file-my-form/keep')).to.be.false;
+    });
+
+    it('routes plain-repeat inline binaries to array-indexed field paths', async () => {
+      // The dropped reparse means fieldPathFor must reconstruct the repeat array
+      // index so doc.fields.<repeat>[i] stays an array. The form XML (with the
+      // <repeat nodeset>) is supplied via formDoc.xml, which drives getRepeatPaths.
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('plain-repeat-binary'));
+      dbGetAttachment.resolves('<form/>');
+
+      const [actual] = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {}, xml: loadXML('plain-repeat-binary-form') },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(actual.fields.my_repeat).to.deep.equal([
+        { photo: 'my-form/my_repeat[1]/photo' },
+        { photo: 'my-form/my_repeat[2]/photo' },
+      ]);
+      expect(AddAttachment.callCount).to.equal(2);
+      expect(AddAttachment.args.map(args => args[1])).to.have.members([
+        'user-file-my-form/my_repeat[1]/photo',
+        'user-file-my-form/my_repeat[2]/photo',
+      ]);
+    });
+
+    it('leaves a legacy slash-named report attachment intact on edit', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns('<my-form><name>Mary</name></my-form>');
+      dbGetAttachment.resolves('<form/>');
+      getReport.resolves({
+        _id: '8',
+        _rev: '1-x',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1,
+        fields: { name: 'Mary' },
+        _attachments: { 'user-file/my-form/legacy': { stub: true, content_type: 'image/png' } },
+      });
+
+      await service.completeExistingReport(form, { doc: {} }, '8');
+
+      expect(removeAttachment.args.some(args => args[1] === 'user-file/my-form/legacy')).to.be.false;
+    });
   });
 
   describe('multimedia', () => {

@@ -2,10 +2,16 @@ import { Injectable, NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
-import * as FileManager from '../../js/enketo/file-manager.js';
 import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
+import {
+  AttachmentRoutingStrategy,
+  FieldPath,
+  computeFieldPath,
+  indexedFieldPath,
+} from '@mm-services/attachment-routing';
+import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
@@ -19,15 +25,6 @@ import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
 
 /**
- * Prefix for every CouchDB attachment created from a form media field, so a
- * field's value is uniformly resolved as `USER_FILE_PREFIX + value`:
- *   - file-widget uploads  -> `user-file-<sanitized-filename>`
- *   - inline-binary fields -> `user-file-<formId>/<field-path>`
- *     (field-path is the field's xpath under the form root, e.g. `group/photo`)
- */
-export const USER_FILE_PREFIX = 'user-file-';
-
-/**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
  * reused by code outside the CHT (e.g. cht-conf-test-harness). All logic that is proper to Enketo functionality should
  * be included here. Logic that is peripheral to Enketo forms (needed to support form functionality in the CHT, but not
@@ -39,6 +36,7 @@ export const USER_FILE_PREFIX = 'user-file-';
 export class EnketoService {
   constructor(
     private attachmentService: AttachmentService,
+    private readonly attachmentRoutingService: AttachmentRoutingService,
     private dbService: DbService,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
     private enketoTranslationService: EnketoTranslationService,
@@ -371,13 +369,6 @@ export class EnketoService {
     return form;
   }
 
-  private findFileNodeByFilename($record, filename: string) {
-    return $record
-      .find('[type=file]')
-      .toArray()
-      .find((element) => $(element).text() === filename) ?? $record[0];
-  }
-
   private xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
@@ -481,10 +472,9 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    // Sub-docs are parsed twice: first to populate fields (so the binary loop
-    // can read each sub-doc's `type` and route attachments to the right doc),
-    // then again after the loop rewrites node text to the attachment reference
-    // so the final field values use those references, not the inline base64.
+    // Single sub-doc parse, taken after the db-doc-ref rewrites so the resolved
+    // IDs land in doc.fields; route() objectPath-sets the binary references below.
+    const resolvedRecord = getOuterHTML($record[0]);
     const subDocElements = $record.find('[db-doc=true]').toArray();
     const docsToStore = subDocElements.map((element: any) => {
       const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
@@ -503,90 +493,67 @@ export class EnketoService {
     const subDocById = new Map<string, any>();
     docsToStore.forEach(subDoc => subDocById.set(subDoc._id, subDoc));
 
-    // Resolve the owner document for a given XML element by walking
-    // up to the nearest [db-doc="true"] ancestor. Falls back to the
-    // main report doc when the element is not inside a sub-doc.
-    const resolveOwnerDoc = (element) => {
-      let node = element.parentNode;
-      while (node && node !== recordDoc) {
-        if (node._couchId && subDocById.has(node._couchId)) {
-          return subDocById.get(node._couchId);
-        }
-        node = node.parentNode;
-      }
-      return doc;
+    // doc.fields must exist before route() objectPath-sets binary references into it.
+    doc.fields = this.enketoTranslationService.reportRecordToJs(resolvedRecord, formXml);
+
+    const routingContext: ReportRoutingContext = {
+      doc, docsToStore, root: $record[0], recordDoc, subDocById, repeatPaths,
     };
-
-    // Route each FileManager file to its owner doc: match the filename against a
-    // [type=file] node, then resolve the owner from its position in the tree.
-    // Inline [type=binary] fields are handled by the loop below.
-    FileManager
-      .getCurrentFiles()
-      .forEach(file => {
-        const ownerDoc = resolveOwnerDoc(
-          this.findFileNodeByFilename($record, file.name) ?? $record[0]
-        );
-        this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${file.name}`, file, file.type, false);
-      });
-
-    const computeInlineBinaryReference = (elem, ownerDoc) => {
-      const xpath = Xpath.getElementXPath(elem);
-      const formId = ownerDoc.form || doc.form;
-      // the element's xpath with its root node name swapped for the form id and
-      // the leading slash dropped, e.g. `/my-form/group/photo` -> `my-form/group/photo`
-      return (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId))
-        .slice(1);
-    };
-
-    const attachInlineBinary = (elem, file, type, alreadyEncoded) => {
-      const ownerDoc = resolveOwnerDoc(elem);
-      const reference = computeInlineBinaryReference(elem, ownerDoc);
-      this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${reference}`, file, type, alreadyEncoded);
-      return reference;
-    };
-
-    $record
-      .find('[type=binary]')
-      .each((idx, element) => {
-        const $element = $(element);
-        // Reference stashed during prepopulation for an untouched field (see
-        // bindJsonToXml); it rides through Enketo's model merge as a data-*
-        // attribute, so an unedited field still carries it here on save.
-        const sidecar = $element.attr('data-attachment-ref');
-        $element.removeAttr('data-attachment-ref');
-
-        const file = $element.text();
-        if (!file) {
-          // An untouched field loads empty on edit (its base64 lives only in the
-          // attachment); restore its reference so the field keeps pointing at it.
-          if (sidecar) {
-            $element.text(sidecar);
-          }
-          return;
-        }
-        // Don't re-attach a value that is already a reference.
-        if (this.enketoTranslationService.isAttachmentRef(file)) {
-          return;
-        }
-        const reference = attachInlineBinary(element, file, 'image/png', true);
-        $element.text(reference);
-      });
-
-    // Re-parse sub-docs from the now-rewritten XML and merge in the
-    // reference-name field values.
-    subDocElements.forEach((element: any, idx: number) => {
-      const parsed = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
-      Object.assign(docsToStore[idx], parsed);
-    });
-
-    record = getOuterHTML($record[0]);
+    this.attachmentRoutingService.route(this.reportRoutingStrategy(routingContext));
 
     // remove old style content attachment
     this.attachmentService.remove(doc, REPORT_ATTACHMENT_NAME);
     docsToStore.unshift(doc);
-
-    doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
     return docsToStore;
+  }
+
+  /**
+   * Report pipeline's attachment-routing strategy: owner is the nearest
+   * `[db-doc=true]` ancestor (else the main doc); formId is the owner's own `form`
+   * (else the main report's); field paths route to repeat-index-aware `doc.fields`
+   * for the main doc, or top-level fields for db-doc sub-reports.
+   */
+  private reportRoutingStrategy(ctx: ReportRoutingContext): AttachmentRoutingStrategy {
+    return {
+      root: ctx.root,
+      docs: [ ctx.doc, ...ctx.docsToStore ],
+      mainDoc: ctx.doc,
+      resolveOwnerForNode: (element) => this.resolveReportOwnerDoc(element, ctx),
+      formIdFor: (ownerDoc) => ownerDoc.form || ctx.doc.form,
+      fieldPathFor: (element, ownerDoc) => this.reportFieldPath(element, ownerDoc, ctx),
+    };
+  }
+
+  /** Owner doc for a node: the nearest `[db-doc=true]` ancestor, else the main doc. */
+  private resolveReportOwnerDoc(element, ctx: ReportRoutingContext) {
+    let node = element.parentNode;
+    while (node && node !== ctx.recordDoc) {
+      if (node._couchId && ctx.subDocById.has(node._couchId)) {
+        return ctx.subDocById.get(node._couchId);
+      }
+      node = node.parentNode;
+    }
+    return ctx.doc;
+  }
+
+  /** The db-doc ancestor element that owns `ownerDoc` (its fields' container). */
+  private reportSubDocContainer(element, ownerDoc, ctx: ReportRoutingContext): Element | null {
+    let node = element;
+    while (node && node !== ctx.recordDoc) {
+      if (node._couchId === ownerDoc._id) {
+        return node;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  private reportFieldPath(element, ownerDoc, ctx: ReportRoutingContext): FieldPath | null {
+    if (ownerDoc === ctx.doc) {
+      return [ 'fields', ...indexedFieldPath(element, ctx.root, ctx.repeatPaths) ];
+    }
+    const container = this.reportSubDocContainer(element, ownerDoc, ctx);
+    return container ? computeFieldPath(element, container) : null;
   }
 
   private async update(docId) {
@@ -712,6 +679,15 @@ interface XmlFormContext {
   isFormInModal?: boolean;
   contactSummary?: ContactSummary;
   userContactSummary?: ContactSummary;
+}
+
+interface ReportRoutingContext {
+  doc: Record<string, any>;
+  docsToStore: Record<string, any>[];
+  root: Element;
+  recordDoc: Document;
+  subDocById: Map<string, any>;
+  repeatPaths: string[];
 }
 
 export type FormType = 'contact' | 'report' | 'task' | 'training-card';
