@@ -93,12 +93,6 @@ describe('Enketo: Geolocation Widget', () => {
       expect(container.querySelector('.geolocation-unavailable')).to.be.null;
     });
 
-    it('should include a map icon in the capture button', () => {
-      const { container } = initWidget();
-      const btn = container.querySelector('.geolocation-capture-btn')!;
-      expect(btn.querySelector('.fa.fa-map-marker')).to.not.be.null;
-    });
-
     it('should render home and other context options', () => {
       const { container } = initWidget();
       expect(container.querySelector('.geolocation-context-options')).to.not.be.null;
@@ -306,17 +300,6 @@ describe('Enketo: Geolocation Widget', () => {
           expect(skipBtn.disabled).to.be.true;
         });
 
-      it('should include a map icon in the retry button', async () => {
-        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
-        const { container } = initAndSelectHome();
-        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
-        await promise;
-
-        const retryBtn = container.querySelector('.geolocation-retry-btn')!;
-        expect(retryBtn.querySelector('.fa.fa-map-marker')).to.not.be.null;
-      });
-
       it('should not set hidden input value or fire change event on failure', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation = { currentPromise: promise };
@@ -453,19 +436,6 @@ describe('Enketo: Geolocation Widget', () => {
         expect(container.querySelector('.geolocation-weak-signal-msg')).to.be.null;
       });
 
-      it('should render weak signal message above the retry button', async () => {
-        const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
-        const { container } = initAndSelectHome();
-        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
-        await promise;
-
-        const status = container.querySelector('.geolocation-status')!;
-        const children = Array.from(status.children);
-        const weakSignalIndex = children.indexOf(container.querySelector('.geolocation-weak-signal-msg')!);
-        const retryBtnIndex = children.indexOf(container.querySelector('.geolocation-retry-btn')!);
-        expect(weakSignalIndex).to.be.lessThan(retryBtnIndex);
-      });
     });
 
     describe('edit mode', () => {

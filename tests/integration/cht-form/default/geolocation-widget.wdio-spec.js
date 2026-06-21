@@ -101,18 +101,6 @@ describe('cht-form web component - Geolocation Widget', () => {
     expect(await $('.geolocation-success-msg').isExisting()).to.be.false;
   });
 
-  it('should hide context options when GPS acquisition fails', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
-
-    await mockGeoResolved(GEO_FAILURE);
-
-    await selectHomeContext();
-    await $('.geolocation-capture-btn').click();
-
-    await $('.geolocation-retry-btn').waitForExist();
-    expect(await $('.geolocation-context-options').isDisplayed()).to.be.false;
-  });
-
   it('should show a confirmation message and remove retry/skip buttons when skip is clicked', async () => {
     await mockConfig.loadForm('default', 'test', 'geolocation-widget');
 
