@@ -118,8 +118,9 @@ const parseArgs = (argv) => {
     debug: false,
   };
   const rest = [];
-  for (let i = 0; i < argv.length; i++) {
-    i = applyArg(opts, rest, argv, i);
+  let i = 0;
+  while (i < argv.length) {
+    i = applyArg(opts, rest, argv, i) + 1;
   }
   opts.term = rest[0] || null;
   return opts;
