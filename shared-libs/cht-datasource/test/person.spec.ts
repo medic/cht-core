@@ -9,15 +9,18 @@ import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import { DataContext } from '../src';
 import { fakeGenerator } from './utils';
+import { Page } from '../src';
 
 describe('person', () => {
-  const dataContext = {} as DataContext;
+  const dataContext = { bind: () => null } as DataContext;
+  let dataContextBind: SinonStub;
   let assertDataContext: SinonStub;
   let adapt: SinonStub;
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
 
   beforeEach(() => {
+    dataContextBind = sinon.stub(dataContext, 'bind');
     assertDataContext = sinon.stub(Context, 'assertDataContext');
     adapt = sinon.stub(Context, 'adapt');
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
@@ -400,6 +403,141 @@ describe('person', () => {
         expect(adapt.calledOnceWithExactly(dataContext, Local.Person.v1.update, Remote.Person.v1.update))
           .to.be.true;
         expect(updatePersonDoc.notCalled).to.be.true;
+      });
+    });
+
+    describe('getDatasource', () => {
+      let person: Person.v1.Datasource;
+
+      beforeEach(() => person = Person.v1.getDatasource(dataContext));
+
+      it('contains expected keys', () => {
+        expect(person).to.have.all.keys([
+          'getByType',
+          'getByUuid',
+          'getByUuidWithLineage',
+          'getPageByType',
+          'create',
+          'update'
+        ]);
+      });
+
+      it('getByUuid', async () => {
+        const expectedPerson = {};
+        const personGet = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personGet);
+        const qualifier = { uuid: 'my-persons-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedPerson = await person.getByUuid(qualifier.uuid);
+
+        expect(returnedPerson).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.get)).to.be.true;
+        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('create', async () => {
+        const personInput = { name: 'apoorva', type: 'person', parent: 'p1' };
+        const expectedPerson = {
+          ...personInput,
+          reported_date: 12312312
+        };
+        const personCreate = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personCreate);
+
+        const returnedPerson = await person.create(personInput);
+
+        expect(returnedPerson).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.create)).to.be.true;
+        expect(personCreate.calledOnceWithExactly(personInput)).to.be.true;
+      });
+
+      it('update', async () => {
+        const personInput = {
+          name: 'apoorva',
+          type: 'person',
+          parent: { _id: 'p1' },
+          _id: '123',
+          _rev: '1-abc',
+          reported_date: 12312312
+        };
+        const expectedPerson = {
+          ...personInput,
+          _rev: '2-def',
+        };
+        const personUpdate = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personUpdate);
+
+        const returnedPlace = await person.update(personInput);
+
+        expect(returnedPlace).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.update)).to.be.true;
+        expect(personUpdate.calledOnceWithExactly(personInput)).to.be.true;
+      });
+
+      it('getByUuidWithLineage', async () => {
+        const expectedPerson = {};
+        const personGet = sinon.stub().resolves(expectedPerson);
+        dataContextBind.returns(personGet);
+        const qualifier = { uuid: 'my-persons-uuid' };
+        const byUuid = sinon.stub(Qualifier, 'byUuid').returns(qualifier);
+
+        const returnedPerson = await person.getByUuidWithLineage(qualifier.uuid);
+
+        expect(returnedPerson).to.equal(expectedPerson);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getWithLineage)).to.be.true;
+        expect(personGet.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getPageByType', async () => {
+        const expectedPeople: Page<Person.v1.Person> = { data: [], cursor: null };
+        const personGetPage = sinon.stub().resolves(expectedPeople);
+        dataContextBind.returns(personGetPage);
+        const personType = 'person';
+        const limit = 2;
+        const cursor = '1';
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const returnedPeople = await person.getPageByType(personType, cursor, limit);
+
+        expect(returnedPeople).to.equal(expectedPeople);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getPage)).to.be.true;
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, cursor, limit)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
+      });
+
+      it('getPageByType uses default cursor and limit', async () => {
+        const expectedPeople: Page<Person.v1.Person> = {data: [], cursor: null};
+        const personGetPage = sinon.stub().resolves(expectedPeople);
+        dataContextBind.returns(personGetPage);
+        const personType = 'person';
+        const personTypeQualifier = { contactType: personType };
+        sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const returnedPeople = await person.getPageByType(personType);
+
+        expect(returnedPeople).to.equal(expectedPeople);
+        expect(personGetPage.calledOnceWithExactly(personTypeQualifier, null, 100)).to.be.true;
+      });
+
+      it('getByType', () => {
+        const mockAsyncGenerator = fakeGenerator();
+
+        const personGetAll = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(personGetAll);
+        const personType = 'person';
+        const personTypeQualifier = { contactType: personType };
+        const byContactType = sinon.stub(Qualifier, 'byContactType').returns(personTypeQualifier);
+
+        const res = person.getByType(personType);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Person.v1.getAll)).to.be.true;
+        expect(personGetAll.calledOnceWithExactly(personTypeQualifier)).to.be.true;
+        expect(byContactType.calledOnceWithExactly(personType)).to.be.true;
       });
     });
   });
