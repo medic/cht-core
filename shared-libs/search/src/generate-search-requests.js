@@ -233,6 +233,16 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
   return params;
 };
 
+const combineParams = (typeKeys, freetextParamSets) => {
+  const combined = [];
+  for (const typeKey of typeKeys) {
+    for (const freetextParams of freetextParamSets) {
+      combined.push(makeCombinedParams({ params: freetextParams }, typeKey));
+    }
+  }
+  return combined;
+};
+
 const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   const result = {
     view: 'contacts_by_type_freetext',
@@ -244,13 +254,7 @@ const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
     : [ freetextRequest.params ];
 
   const typeKeys = typeRequests.params.keys;
-
-  const combinedParamSets = [];
-  for (const typeKey of typeKeys) {
-    for (const freetextParams of freetextParamSets) {
-      combinedParamSets.push(makeCombinedParams({ params: freetextParams }, typeKey));
-    }
-  }
+  const combinedParamSets = combineParams(typeKeys, freetextParamSets);
 
   if (combinedParamSets.length > 1) {
     result.union = true;
