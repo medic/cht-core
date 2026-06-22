@@ -12,6 +12,7 @@ import { Select2SearchService } from '@mm-services/select2-search.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { Selectors } from '@mm-selectors/index';
+import { VersionService } from '@mm-services/version.service';
 
 describe('Select2SearchService', () => {
   let service: Select2SearchService;
@@ -71,6 +72,7 @@ describe('Select2SearchService', () => {
         { provide: SearchService, useValue: searchService },
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
+        { provide: VersionService, useValue: { getServiceWorker: sinon.stub().resolves({ version: '4.1.0' }) } },
       ]
     });
     service = TestBed.inject(Select2SearchService);

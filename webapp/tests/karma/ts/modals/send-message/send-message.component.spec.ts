@@ -13,6 +13,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ModalLayoutComponent } from '@mm-components/modal-layout/modal-layout.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
+import { VersionService } from '@mm-services/version.service';
 
 describe('SendMessageComponent', () => {
   let component: SendMessageComponent;
@@ -49,6 +50,7 @@ describe('SendMessageComponent', () => {
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: MatDialogRef, useValue: matDialogRef },
           { provide: MAT_DIALOG_DATA, useValue: {} },
+          { provide: VersionService, useValue: { getServiceWorker: sinon.stub().resolves({ version: '4.1.0' }) } },
         ]
       })
       .compileComponents()

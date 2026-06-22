@@ -5,6 +5,7 @@ import { DOC_IDS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
+import { VersionService } from '@mm-services/version.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,7 @@ export class TelemetryService {
   constructor(
     private dbService:DbService,
     private sessionService:SessionService,
+    private readonly versionService:VersionService,
     private ngZone:NgZone,
     @Inject(DOCUMENT) private document:Document,
   ) {
@@ -71,14 +73,14 @@ export class TelemetryService {
       .all([
         this.dbService.get().get('_design/medic-client'),
         this.dbService.get().query('medic-client/doc_by_type', { key: ['form'], include_docs: true }),
-        this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS })
+        this.dbService.get().allDocs({ key: DOC_IDS.SETTINGS }),
+        this.versionService.getServiceWorker().catch(() => ({ version: undefined })),
       ])
-      .then(([ ddoc, formResults, settingsResults ]) => {
+      .then(([ ddoc, formResults, settingsResults, serviceWorkerInfo ]) => {
         const date = this.getDBDate(dbName);
         const version = ddoc?.build_info?.version || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
           keyToVersion[row.doc.internalId] = row.doc._rev;
-
           return keyToVersion;
         }, {});
 
@@ -91,6 +93,7 @@ export class TelemetryService {
           deviceId: this.getUniqueDeviceId(),
           versions: {
             app: version,
+            serviceWorker: serviceWorkerInfo?.version,
             forms: forms,
             settings: settingsResults?.rows?.[0].value?.rev,
           }

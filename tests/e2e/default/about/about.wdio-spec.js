@@ -16,6 +16,12 @@ describe('About page', () => {
   it('should open the about page', async () => {
     await commonPage.goToAboutPage();
     await aboutPage.userName().waitForDisplayed();
+
+    const versionField = await $('[test-id="about-version"]');
+    await expect(versionField).toBeDisplayed();
+
+    const mismatchWarning = await $('[test-id="about-app-version"]');
+    await expect(mismatchWarning).not.toExist();
   });
 
   it('should display partners', async () => {
