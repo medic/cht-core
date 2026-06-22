@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const auth = require('../../src/auth');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
-const { PermissionError } = require('../../src/errors');
+const { PermissionError, AuthenticationError } = require('../../src/errors');
 const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 
 let req;
@@ -213,6 +213,33 @@ describe('Auth', () => {
       });
 
       chai.expect(request.get.callCount).to.equal(1);
+    });
+  });
+
+  describe('assertDbAdmin', () => {
+    it('should return the userCtx when the user is a db admin', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'admin', roles: [COUCHDB_ADMIN] } });
+
+      const result = await auth.assertDbAdmin(req);
+
+      chai.expect(result).to.deep.equal({ name: 'admin', roles: [COUCHDB_ADMIN] });
+    });
+
+    it('should throw an AuthenticationError when the user is not a db admin', async () => {
+      sinon.stub(request, 'get').resolves({ userCtx: { name: 'user', roles: ['chw'] } });
+
+      await chai.expect(auth.assertDbAdmin(req))
+        .to.be.rejectedWith(AuthenticationError, 'User is not an admin');
+    });
+
+    it('should propagate authentication errors from getUserCtx', async () => {
+      sinon.stub(request, 'get').rejects({ status: 401, error: 'not logged in' });
+
+      await chai.expect(auth.assertDbAdmin(req)).to.be.rejected.and.eventually.deep.equal({
+        code: 401,
+        message: 'Not logged in',
+        err: { status: 401, error: 'not logged in' }
+      });
     });
   });
 

@@ -55,6 +55,7 @@ describe('replication health', () => {
             user: 'stale_failing',
             last_replication_date: lastReplication.valueOf(),
             failures_since_last_replication: 3,
+            failures_in_window: 3,
           },
         ],
       });
@@ -78,11 +79,11 @@ describe('replication health', () => {
     });
 
     it('should only count failures logged on or after the user\'s last replication', async () => {
-      const lastReplication = moment().subtract(10, 'days');
+      const lastReplication = moment().subtract(40, 'days');
       await utils.logsDb.put(limitLog('boundary', lastReplication));
       await utils.logsDb.put(failureLog('boundary', {
-        [day(moment().subtract(20, 'days'))]: 4, // before the last replication — excluded
-        [day(moment().subtract(5, 'days'))]: 2, // after — counted
+        [day(moment().subtract(50, 'days'))]: 4, // before the last replication — excluded
+        [day(moment().subtract(5, 'days'))]: 2, // after the last replication and in window — counted
       }));
 
       const response = await getFailed();
@@ -93,6 +94,36 @@ describe('replication health', () => {
             user: 'boundary',
             last_replication_date: lastReplication.valueOf(),
             failures_since_last_replication: 2,
+            failures_in_window: 2,
+          },
+        ],
+      });
+    });
+
+    it('should not list a stale user whose failures all predate the window', async () => {
+      // Last replicated 60 days ago; last failure 40 days ago — nothing within the default 30-day window.
+      const lastReplication = moment().subtract(60, 'days');
+      await utils.logsDb.put(limitLog('old_failures', lastReplication));
+      await utils.logsDb.put(failureLog('old_failures', { [day(moment().subtract(40, 'days'))]: 9 }));
+
+      const response = await getFailed();
+
+      expect(response).to.deep.equal({ users: [] });
+    });
+
+    it('should list a user that has never successfully replicated (no limit log)', async () => {
+      // Failures within the window but no replication-count log at all.
+      await utils.logsDb.put(failureLog('never_replicated', { [day(recently())]: 4 }));
+
+      const response = await getFailed();
+
+      expect(response).to.deep.equal({
+        users: [
+          {
+            user: 'never_replicated',
+            last_replication_date: null,
+            failures_since_last_replication: null,
+            failures_in_window: 4,
           },
         ],
       });
@@ -113,25 +144,31 @@ describe('replication health', () => {
             user: 'few_failures',
             last_replication_date: lastReplication.valueOf(),
             failures_since_last_replication: 2,
+            failures_in_window: 2,
           },
         ],
       });
     });
 
-    it('should honour an explicit days window', async () => {
-      // Last replicated 10 days ago, with failures since.
+    it('should honour an explicit days window and bound failures_in_window by it', async () => {
+      // Last replicated 10 days ago, with failures both before and inside a 5-day window.
       const lastReplication = moment().subtract(10, 'days');
       await utils.logsDb.put(limitLog('days_user', lastReplication));
-      await utils.logsDb.put(failureLog('days_user', { [day(recently())]: 3 }));
+      await utils.logsDb.put(failureLog('days_user', {
+        [day(moment().subtract(8, 'days'))]: 2, // since last replication, before a 5-day window
+        [day(moment().subtract(3, 'days'))]: 3, // since last replication AND inside a 5-day window
+      }));
 
       // days=5 → cutoff 5 days ago: last replication (10 days ago) is older → listed.
+      // failures_since_last_replication counts both buckets (5); failures_in_window only the recent one (3).
       const stale = await getFailed({ days: 5 });
       expect(stale).to.deep.equal({
         users: [
           {
             user: 'days_user',
             last_replication_date: lastReplication.valueOf(),
-            failures_since_last_replication: 3,
+            failures_since_last_replication: 5,
+            failures_in_window: 3,
           },
         ],
       });

@@ -177,12 +177,13 @@ const getUsersWithFailuresCount = async (intervalDays) => {
  */
 const getDailyFailuresByUserSince = async (sinceDay) => {
   const result = await db.medicLogs.query('logs/replication_failures', { startkey: [sinceDay] });
-  return result.rows.reduce((byUser, row) => {
+  const byUser = {};
+  for (const row of result.rows) {
     const [day, user] = row.key;
     byUser[user] = byUser[user] || {};
     byUser[user][day] = (byUser[user][day] || 0) + row.value;
-    return byUser;
-  }, {});
+  }
+  return byUser;
 };
 
 module.exports = {

@@ -6,8 +6,7 @@ const DOC_IDS_WARN_LIMIT = 10000;
 const LOG_TYPE = 'replication-count-';
 
 // The log is rewritten on every successful replication so its `date` always reflects the user's last
-// successful replication — this is what getStaleLogs relies on to detect users who have stopped
-// replicating.
+// successful replication.
 const persistLog = (info) => {
   if (!info || !info.user) {
     const error = new Error('Error when persisting log: Log Information missing.');
@@ -54,13 +53,18 @@ const getReplicationLimitLog = (userName) => {
     });
 };
 
-// Returns the replication limit logs whose last entry predates `cutoff` (ms timestamp) — i.e. users
-// who have not successfully replicated since then. Each log's `date` is the user's last successful
-// replication, since the log is rewritten on every successful replication (see persistLog). The
-// staleness window is the caller's policy, so `cutoff` is required.
-const getStaleLogs = (cutoff) => {
-  return getLogsByType(LOG_TYPE)
-    .then(logs => logs.filter(log => log.date && log.date < cutoff));
+const getLogsForUsers = async (userNames) => {
+  if (!userNames.length) {
+    return {};
+  }
+  const result = await db.medicLogs.allDocs({ keys: userNames.map(name => LOG_TYPE + name), include_docs: true });
+  const logsByUser = {};
+  for (const row of result.rows) {
+    if (row.doc) {
+      logsByUser[row.doc.user] = row.doc;
+    }
+  }
+  return logsByUser;
 };
 
 const logReplicationLimit = (userName, count, prePurgeCount) => {
@@ -80,7 +84,7 @@ const logReplicationLimit = (userName, count, prePurgeCount) => {
 module.exports = {
   put: logReplicationLimit,
   get: getReplicationLimitLog,
-  getStaleLogs,
+  getLogsForUsers,
   LOG_TYPE,
   DOC_IDS_WARN_LIMIT,
 };

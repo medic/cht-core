@@ -5,7 +5,7 @@ const config = require('./config');
 const dataContext = require('./services/data-context');
 const { roles, users } = require('@medic/user-management')(config, db, dataContext);
 const { getDatasource } = require('@medic/cht-datasource');
-const { PermissionError } = require('./errors');
+const { PermissionError, AuthenticationError } = require('./errors');
 const contentLengthRegex = /^content-length$/i;
 const contentTypeRegex = /^content-type$/i;
 const { HTTP_HEADERS } = require('@medic/constants');
@@ -40,9 +40,18 @@ const assertPermissions = async (req, { isOnline = false, hasAll = [], hasAny = 
   return userCtx;
 };
 
+const assertDbAdmin = async (req) => {
+  const userCtx = await module.exports.getUserCtx(req);
+  if (!roles.isDbAdmin(userCtx)) {
+    throw new AuthenticationError('User is not an admin');
+  }
+  return userCtx;
+};
+
 module.exports = {
   isOnlineOnly: roles.isOnlineOnly,
   isDbAdmin: roles.isDbAdmin,
+  assertDbAdmin,
   getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
     if (roles.isDbAdmin(userCtx)) {
