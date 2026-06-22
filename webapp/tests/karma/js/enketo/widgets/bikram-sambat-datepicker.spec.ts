@@ -98,53 +98,53 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
 
   it('initializes with a calendar button', async () => {
     await initWidget();
-    expect($('.calendar-btn').length).to.equal(1);
+    expect($('.calendar-btn')).to.have.lengthOf(1);
   });
 
   it('opens calendar popup and backdrop when calendar button is clicked', async () => {
     await initWidget();
     $('.calendar-btn').click();
 
-    expect($('.nepali-date-picker').length).to.equal(1);
-    expect($('.nepali-date-picker-overlay').length).to.equal(1);
-    expect($('.nepali-date-picker .close-btn').length).to.equal(1);
+    expect($('.nepali-date-picker')).to.have.lengthOf(1);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(1);
+    expect($('.nepali-date-picker .close-btn')).to.have.lengthOf(1);
   });
 
   it('closes calendar popup and backdrop when close button is clicked', async () => {
     await initWidget();
     $('.calendar-btn').click();
 
-    expect($('.nepali-date-picker').length).to.equal(1);
+    expect($('.nepali-date-picker')).to.have.lengthOf(1);
     $('.nepali-date-picker .close-btn').click();
 
-    expect($('.nepali-date-picker').length).to.equal(0);
-    expect($('.nepali-date-picker-overlay').length).to.equal(0);
+    expect($('.nepali-date-picker')).to.have.lengthOf(0);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
   });
 
   it('closes calendar popup and backdrop when overlay is clicked', async () => {
     await initWidget();
     $('.calendar-btn').click();
 
-    expect($('.nepali-date-picker-overlay').length).to.equal(1);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(1);
     $('.nepali-date-picker-overlay').click();
 
-    expect($('.nepali-date-picker').length).to.equal(0);
-    expect($('.nepali-date-picker-overlay').length).to.equal(0);
+    expect($('.nepali-date-picker')).to.have.lengthOf(0);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
   });
 
   it('closes calendar popup and backdrop when Escape key is pressed', async () => {
     await initWidget();
     $('.calendar-btn').click();
 
-    expect($('.nepali-date-picker').length).to.equal(1);
+    expect($('.nepali-date-picker')).to.have.lengthOf(1);
     
     // Simulate Escape key press
     const event = $.Event('keydown');
     event.keyCode = 27;
     $(document).trigger(event);
 
-    expect($('.nepali-date-picker').length).to.equal(0);
-    expect($('.nepali-date-picker-overlay').length).to.equal(0);
+    expect($('.nepali-date-picker')).to.have.lengthOf(0);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
   });
 
   it('updates input fields when a date is selected from calendar', async () => {

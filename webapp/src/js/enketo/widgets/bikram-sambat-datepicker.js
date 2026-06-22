@@ -26,7 +26,7 @@ class Bikramsambatdatepicker extends Widget {
   _init() {
     const el = this.element;
 
-    window.CHTCore.Language
+    globalThis.CHTCore.Language
       .get()
       .then( function( language ) {
         const $el = $( el );
@@ -145,7 +145,6 @@ const setupCalendarPicker = ($parent) => {
     try {
       $hiddenDateInput.nepaliDatePicker('hide');
     } catch (e) {
-      // Ignore if datepicker is not open
       console.debug('Error hiding date picker:', e);
     }
     $('.nepali-date-picker-overlay').remove();
