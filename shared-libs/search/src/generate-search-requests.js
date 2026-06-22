@@ -117,20 +117,28 @@ const freetextRequest = (filters, view) => {
     .trim()
     .toLowerCase()
     .split(/\s+/);
-  const requests = words.flatMap((word) => {
-    const normalizedPhone = getNormalizedPhone(word, filters.settings);
-    const results = [];
+  const requests = words.map((word) => {
     const originalParams = freetextRequestParams(word);
-    if (originalParams) {
-      results.push({ view, params: originalParams, freetext: true });
+    const normalizedPhone = getNormalizedPhone(word, filters.settings);
+    const normalizedParams = normalizedPhone ? freetextRequestParams(normalizedPhone) : null;
+
+    if (originalParams && normalizedParams) {
+      return {
+        view,
+        union: true,
+        freetext: true,
+        paramSets: [ originalParams, normalizedParams ]
+      };
     }
-    if (normalizedPhone) {
-      const normalizedParams = freetextRequestParams(normalizedPhone);
-      if (normalizedParams) {
-        results.push({ view, params: normalizedParams, freetext: true });
-      } 
+
+    const params = originalParams || normalizedParams;
+    if (params) {
+      return {
+        view,
+        freetext: true,
+        params
+      };
     }
-    return results;
   });
   return _.compact(requests);
 };
@@ -228,18 +236,30 @@ const makeCombinedParams = (freetextRequest, typeKey) => {
 const getContactsByTypeAndFreetextRequest = (typeRequests, freetextRequest) => {
   const result = {
     view: 'contacts_by_type_freetext',
-    union: typeRequests.params.keys.length > 1,
     freetext: true
   };
 
-  if (result.union) {
-    result.paramSets = typeRequests.params.keys.map(typeRequest => {
-      return makeCombinedParams(freetextRequest, typeRequest);
-    });
-    return result;
+  const freetextParamSets = freetextRequest.union
+    ? freetextRequest.paramSets
+    : [ freetextRequest.params ];
+
+  const typeKeys = typeRequests.params.keys;
+
+  const combinedParamSets = [];
+  for (const typeKey of typeKeys) {
+    for (const freetextParams of freetextParamSets) {
+      combinedParamSets.push(makeCombinedParams({ params: freetextParams }, typeKey));
+    }
   }
 
-  result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
+  if (combinedParamSets.length > 1) {
+    result.union = true;
+    result.paramSets = combinedParamSets;
+  } else {
+    result.union = false;
+    result.params = combinedParamSets[0];
+  }
+
   return result;
 };
 
