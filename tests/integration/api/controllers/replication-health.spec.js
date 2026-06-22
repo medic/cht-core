@@ -1,12 +1,36 @@
 const utils = require('@utils');
 const moment = require('moment');
+const { CONTACT_TYPES } = require('@medic/constants');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 
 const day = (m) => m.format('YYYY-MM-DD');
 const period = (m) => m.format('YYYY-MM');
 
-// Older than the default 7-day staleness cutoff used by the endpoint.
+// Older than the default 30-day staleness cutoff used by the endpoint.
 const twoMonthsAgo = () => moment().subtract(2, 'months');
 const recently = () => moment().subtract(3, 'days');
+
+const password = 'passwordSUP3RS3CR37!';
+const offlineFacility = placeFactory.place().build({ type: CONTACT_TYPES.DISTRICT_HOSPITAL });
+const offlinePlace = placeFactory.place().build({
+  type: CONTACT_TYPES.HEALTH_CENTER,
+  parent: { _id: offlineFacility._id },
+  place_id: 'shortcode:rh-offlineville',
+});
+const offlineContact = personFactory.build({
+  role: 'chw',
+  parent: { _id: offlinePlace._id, parent: { _id: offlineFacility._id } },
+  name: 'Offline',
+  patient_id: 'shortcode:user:rh-offline',
+});
+const offlineUser = userFactory.build({
+  username: 'rh-offline-user',
+  password,
+  place: offlinePlace._id,
+  contact: offlineContact._id,
+});
 
 const limitLog = (user, date) => ({
   _id: `replication-count-${user}`,
@@ -31,6 +55,11 @@ const failureLog = (user, dailyFailures) => {
 const getFailed = (qs = {}) => utils.request({ path: '/api/v1/replication-health/failed', qs });
 
 describe('replication health', () => {
+  before(async () => {
+    await utils.saveDocs([offlineFacility, offlinePlace, offlineContact]);
+    await utils.createUsers([offlineUser], true);
+  });
+
   afterEach(async () => {
     // Only remove the replication count and failure logs this suite seeds; leave other logs intact.
     await utils.deleteLogsByPrefix('replication-count-');
@@ -38,10 +67,18 @@ describe('replication health', () => {
   });
 
   after(async () => {
+    await utils.deleteUsers([offlineUser], true);
     await utils.revertDb();
   });
 
   describe('/failed', () => {
+    it('should reject a non-admin user with a 401', async () => {
+      await expect(utils.request({
+        path: '/api/v1/replication-health/failed',
+        auth: { username: offlineUser.username, password },
+      })).to.be.rejected.and.eventually.have.property('status', 401);
+    });
+
     it('should list a user with a stale limit log and failures since that log', async () => {
       const lastReplication = twoMonthsAgo();
       await utils.logsDb.put(limitLog('stale_failing', lastReplication));
