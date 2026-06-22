@@ -1151,18 +1151,17 @@ describe('Enketo service', () => {
         { doc: { } },
         { _id: 'my-user', phone: '8989' }
       );
-      // The binary loop attaches the base64 under `user-file-<formId>/<xpath>/
-      // <field>` and rewrites the field to the bare reference, so doc.fields
-      // resolves via the same `user-file-` + value rule as file-widget uploads.
+      // The binary loop attaches the base64 under its relative name and rewrites
+      // the field to the bare reference, resolved via `user-file-` + value.
       expect(actual.fields).to.deep.equal({
         name: 'Mary',
         age: '10',
         gender: 'f',
-        my_file: 'my-form/my_file',
+        my_file: 'my_file',
       });
       expect(AddAttachment.callCount).to.equal(1);
 
-      expect(AddAttachment.args[0][1]).to.equal('user-file-my-form/my_file');
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my_file');
       expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
       expect(AddAttachment.args[0][3]).to.equal('image/png');
     });
@@ -1190,7 +1189,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       form.getDataStr.returns(
         '<my-form><name>Mary</name>'
-          + '<my_file type="binary" data-attachment-ref="my-form/my_file"></my_file>'
+          + '<my_file type="binary" data-attachment-ref="my_file"></my_file>'
           + '</my-form>'
       );
       getReport.resolves({
@@ -1200,14 +1199,14 @@ describe('Enketo service', () => {
         type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
         fields: { name: 'Mary' },
-        _attachments: { 'user-file-my-form/my_file': { stub: true, content_type: 'image/png' } },
+        _attachments: { 'user-file-my_file': { stub: true, content_type: 'image/png' } },
       });
 
       const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
 
       expect(AddAttachment.callCount).to.equal(0);
-      expect(actual.fields.my_file).to.equal('my-form/my_file');
-      expect(actual._attachments['user-file-my-form/my_file']).to.exist;
+      expect(actual.fields.my_file).to.equal('my_file');
+      expect(actual._attachments['user-file-my_file']).to.exist;
     });
 
     it('leaves an empty inline-binary field empty on edit when no sidecar is present', async () => {
@@ -1222,8 +1221,8 @@ describe('Enketo service', () => {
         form: 'my-form',
         type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
-        fields: { name: 'Mary', my_file: 'my-form/my_file' },
-        _attachments: { 'user-file-my-form/my_file': { stub: true, content_type: 'image/png' } },
+        fields: { name: 'Mary', my_file: 'my_file' },
+        _attachments: { 'user-file-my_file': { stub: true, content_type: 'image/png' } },
       });
 
       const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
@@ -1257,7 +1256,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       form.getDataStr.returns(
         '<my-form><name>Mary</name>'
-          + '<my_file type="binary" data-attachment-ref="my-form/my_file">NEW_BASE64</my_file>'
+          + '<my_file type="binary" data-attachment-ref="my_file">NEW_BASE64</my_file>'
           + '</my-form>'
       );
       getReport.resolves({
@@ -1266,16 +1265,16 @@ describe('Enketo service', () => {
         form: 'my-form',
         type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
-        fields: { name: 'Mary', my_file: 'my-form/my_file' },
-        _attachments: { 'user-file-my-form/my_file': { stub: true, content_type: 'image/png' } },
+        fields: { name: 'Mary', my_file: 'my_file' },
+        _attachments: { 'user-file-my_file': { stub: true, content_type: 'image/png' } },
       });
 
       const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
 
       expect(AddAttachment.callCount).to.equal(1);
-      expect(AddAttachment.args[0][1]).to.equal('user-file-my-form/my_file');
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my_file');
       expect(AddAttachment.args[0][2]).to.equal('NEW_BASE64');
-      expect(actual.fields.my_file).to.equal('my-form/my_file');
+      expect(actual.fields.my_file).to.equal('my_file');
     });
 
     it('restores an unchanged sub-doc binary field from its sidecar on edit', async () => {
@@ -1284,7 +1283,7 @@ describe('Enketo service', () => {
         '<my-form><name>Sally</name>'
           + '<doc1 db-doc="true">'
           + '<type>data_record</type><form>thing_1</form>'
-          + '<photo1 type="binary" data-attachment-ref="thing_1/doc1/photo1"></photo1>'
+          + '<photo1 type="binary" data-attachment-ref="photo1"></photo1>'
           + '</doc1>'
           + '</my-form>'
       );
@@ -1301,14 +1300,12 @@ describe('Enketo service', () => {
 
       // actual[0] = main doc, actual[1] = doc1 sub-doc
       expect(AddAttachment.callCount).to.equal(0);
-      expect(actual[1].photo1).to.equal('thing_1/doc1/photo1');
+      expect(actual[1].photo1).to.equal('photo1');
     });
 
-    it('reports with an empty saved binary field re-attach under the same xpath-derived name', async () => {
-      // Pre-existing report has `my_file: ""` plus an attachment under
-      // `user-file-<form>/<rest>`. On edit the form default re-supplies fresh
-      // base64, and the save writes under the same xpath-derived key
-      // (overwrite-in-place, no orphan) and rewrites the field to the reference.
+    it('reports with an empty saved binary field re-attach under the same relative name', async () => {
+      // On edit the form default re-supplies fresh base64; the save re-attaches
+      // under the same relative name (overwrite-in-place) and rewrites the field.
       form.validate.resolves(true);
       const content = loadXML('binary-field');
       form.getDataStr.returns(content);
@@ -1322,8 +1319,8 @@ describe('Enketo service', () => {
       );
 
       expect(AddAttachment.callCount).to.equal(1);
-      expect(AddAttachment.args[0][1]).to.equal('user-file-my-form/my_file');
-      expect(actual.fields.my_file).to.equal('my-form/my_file');
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my_file');
+      expect(actual.fields.my_file).to.equal('my_file');
     });
 
     it('should route binary attachments to correct sub-docs', async () => {
@@ -1361,10 +1358,10 @@ describe('Enketo service', () => {
       expect(subPhoto2Call[0]._id).to.equal(actual[2]._id);
 
       // Each sub-doc's binary field holds its bare reference value
-      // (`<formId>/<xpath>/<field>`), resolved via `user-file-` + value.
-      expect(actual[0].fields.main_photo).to.equal('my-form/main_photo');
-      expect(actual[1].photo1).to.equal('thing_1/doc1/photo1');
-      expect(actual[2].photo2).to.equal('thing_2/doc2/photo2');
+      // (xpath relative to its owner doc), resolved via `user-file-` + value.
+      expect(actual[0].fields.main_photo).to.equal('main_photo');
+      expect(actual[1].photo1).to.equal('photo1');
+      expect(actual[2].photo2).to.equal('photo2');
     });
 
     it('should route FileManager files to correct sub-doc', async () => {
@@ -1483,7 +1480,7 @@ describe('Enketo service', () => {
       expect(mainDocFileCalls).to.be.empty;
     });
 
-    it('should root sub-doc binary attachment names at the owner doc form id', async () => {
+    it('names sub-doc binary attachments relative to the owner db-doc container', async () => {
       form.validate.resolves(true);
       const content = loadXML('db-doc-with-binary');
       form.getDataStr.returns(content);
@@ -1496,19 +1493,19 @@ describe('Enketo service', () => {
         { _id: 'my-user', phone: '8989' }
       );
 
-      // The attachment name is rooted at the owner doc's own form id (sub-docs
-      // carry their own `form`); the main doc falls back to the report form id.
+      // The name is the field's xpath relative to its owner container (the db-doc
+      // element for a sub-report, the instance root for the main doc).
       const subPhoto1Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_1');
       expect(subPhoto1Call).to.exist;
-      expect(subPhoto1Call[1]).to.equal('user-file-thing_1/doc1/photo1');
+      expect(subPhoto1Call[1]).to.equal('user-file-photo1');
 
       const subPhoto2Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_2');
       expect(subPhoto2Call).to.exist;
-      expect(subPhoto2Call[1]).to.equal('user-file-thing_2/doc2/photo2');
+      expect(subPhoto2Call[1]).to.equal('user-file-photo2');
 
       const mainPhotoCall = AddAttachment.args.find(args => args[2] === 'main_photo_data');
       expect(mainPhotoCall).to.exist;
-      expect(mainPhotoCall[1]).to.equal('user-file-my-form/main_photo');
+      expect(mainPhotoCall[1]).to.equal('user-file-main_photo');
     });
 
     it('should not attach removed files to sub-docs during edit', async () => {
@@ -1562,8 +1559,13 @@ describe('Enketo service', () => {
     });
 
     it('removes orphaned report attachments but keeps referenced ones on edit', async () => {
+      // On edit the binary node loads empty; its sidecar carries the reference,
+      // which restoreUntouchedBinary writes back as the field value so the
+      // referenced attachment survives orphan cleanup.
       form.validate.resolves(true);
-      form.getDataStr.returns('<my-form><keep type="binary">my-form/keep</keep></my-form>');
+      form.getDataStr.returns(
+        '<my-form><keep type="binary" data-attachment-ref="keep"></keep></my-form>'
+      );
       dbGetAttachment.resolves('<form/>');
       getReport.resolves({
         _id: '7',
@@ -1571,18 +1573,18 @@ describe('Enketo service', () => {
         form: 'my-form',
         type: DOC_TYPES.DATA_RECORD,
         reported_date: 1,
-        fields: { keep: 'my-form/keep' },
+        fields: { keep: 'keep' },
         _attachments: {
-          'user-file-my-form/keep': { stub: true, content_type: 'image/png' },
-          'user-file-my-form/stale': { stub: true, content_type: 'image/png' },
+          'user-file-keep': { stub: true, content_type: 'image/png' },
+          'user-file-stale': { stub: true, content_type: 'image/png' },
         },
       });
 
       const [actual] = await service.completeExistingReport(form, { doc: {} }, '7');
 
-      expect(actual.fields.keep).to.equal('my-form/keep');
-      expect(removeAttachment.args.some(args => args[1] === 'user-file-my-form/stale')).to.be.true;
-      expect(removeAttachment.args.some(args => args[1] === 'user-file-my-form/keep')).to.be.false;
+      expect(actual.fields.keep).to.equal('keep');
+      expect(removeAttachment.args.some(args => args[1] === 'user-file-stale')).to.be.true;
+      expect(removeAttachment.args.some(args => args[1] === 'user-file-keep')).to.be.false;
     });
 
     it('routes plain-repeat inline binaries to array-indexed field paths', async () => {
@@ -1601,13 +1603,13 @@ describe('Enketo service', () => {
       );
 
       expect(actual.fields.my_repeat).to.deep.equal([
-        { photo: 'my-form/my_repeat[1]/photo' },
-        { photo: 'my-form/my_repeat[2]/photo' },
+        { photo: 'my_repeat[1]/photo' },
+        { photo: 'my_repeat[2]/photo' },
       ]);
       expect(AddAttachment.callCount).to.equal(2);
       expect(AddAttachment.args.map(args => args[1])).to.have.members([
-        'user-file-my-form/my_repeat[1]/photo',
-        'user-file-my-form/my_repeat[2]/photo',
+        'user-file-my_repeat[1]/photo',
+        'user-file-my_repeat[2]/photo',
       ]);
     });
 

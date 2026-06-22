@@ -1,9 +1,7 @@
-import { Xpath } from '@mm-providers/xpath-element-path.provider';
-
 /**
  * Pure routing primitives shared by the report (`EnketoService`) and contact
  * (`ContactSaveService`) attachment pipelines. The model-specific parts (owner
- * resolution, field write-back, formId source) stay in each service.
+ * resolution, field write-back, container source) stay in each service.
  */
 
 /**
@@ -29,23 +27,12 @@ export interface AttachmentRoutingStrategy {
   /** Owner doc for an XML node (a `[type=file]` or `[type=binary]` element). */
   resolveOwnerForNode(element: Element): Record<string, any>;
 
-  /** formId used to root a binary reference owned by `ownerDoc`. */
-  formIdFor(ownerDoc: Record<string, any>): string | undefined;
+  /** The owner doc's field-container element, used to root the relative reference. */
+  containerFor(element: Element, ownerDoc: Record<string, any>): Element | null;
 
   /** objectPath location of the field value within `ownerDoc`, or null to skip. */
   fieldPathFor(element: Element, ownerDoc: Record<string, any>): FieldPath | null;
 }
-
-/**
- * Bare attachment reference for an inline-binary node: the element's xpath with
- * the instance-root segment swapped for `formId` and the leading slash dropped,
- * e.g. `/my-form/group/photo` -> `my-form/group/photo`. The field value then
- * resolves uniformly as `USER_FILE_PREFIX + value`.
- */
-export const computeAttachmentReference = (element: Element, formId: string | undefined): string => {
-  const xpath = Xpath.getElementXPath(element);
-  return (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId)).slice(1);
-};
 
 /**
  * The `[type=file]` widget node within `root` whose text is `filename`, or null.
@@ -65,6 +52,30 @@ const sameNameSiblingIndex = (element: Element): number => {
     }
   }
   return index;
+};
+
+/** True when `element` has any same-node-name sibling (preceding or following). */
+const hasSameNameSibling = (element: Element): boolean => {
+  const parent = element.parentNode;
+  return !!parent && Array.from(parent.childNodes)
+    .some(n => n !== element && n.nodeName === element.nodeName);
+};
+
+/**
+ * Bare attachment reference for an inline-binary node: the element's xpath
+ * relative to `container` (the owner doc's field container), no form-id prefix.
+ * Direct child -> `photo`; nested -> `group/photo`; repeat instance ->
+ * `my_repeat[2]/photo` (1-based bracket, only for same-name siblings).
+ */
+export const computeAttachmentReference = (element: Element, container: Element): string => {
+  const segments: string[] = [];
+  let node: Element | null = element;
+  while (node && node !== container) {
+    const bracket = hasSameNameSibling(node) ? `[${sameNameSiblingIndex(node) + 1}]` : '';
+    segments.unshift(node.nodeName + bracket);
+    node = node.parentNode as Element | null;
+  }
+  return segments.join('/');
 };
 
 /**

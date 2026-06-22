@@ -244,18 +244,17 @@ describe('FormatDataRecord service', () => {
     });
 
     it('resolves an inline-binary field via user-file- + bare reference value', async () => {
-      // Inline-binary fields store the bare reference (`<formId>/<xpath>/<field>`)
-      // as the value, attached under `user-file-<reference>`, so the same
-      // `user-file-` + value rule resolves it.
+      // Inline-binary fields store the owner-relative xpath as the value, attached
+      // under `user-file-<reference>`, resolved via `user-file-` + value.
       const report = {
         _id: 'my-report',
         form: 'my-form',
         content_type: 'xml',
         fields: {
-          photo: 'my-form/photo',
+          photo: 'photo',
         },
         _attachments: {
-          'user-file-my-form/photo': { content_type: 'image/png' },
+          'user-file-photo': { content_type: 'image/png' },
         },
       };
 
@@ -263,9 +262,9 @@ describe('FormatDataRecord service', () => {
       expect(result.fields).to.deep.equal([
         {
           label: 'report.my-form.photo',
-          value: 'my-form/photo',
+          value: 'photo',
           depth: 0,
-          imagePath: 'user-file-my-form/photo',
+          imagePath: 'user-file-photo',
           target: undefined,
         },
       ]);

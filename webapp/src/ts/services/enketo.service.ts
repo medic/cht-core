@@ -509,9 +509,10 @@ export class EnketoService {
 
   /**
    * Report pipeline's attachment-routing strategy: owner is the nearest
-   * `[db-doc=true]` ancestor (else the main doc); formId is the owner's own `form`
-   * (else the main report's); field paths route to repeat-index-aware `doc.fields`
-   * for the main doc, or top-level fields for db-doc sub-reports.
+   * `[db-doc=true]` ancestor (else the main doc); the reference container is the
+   * form-instance root for the main doc or the db-doc element for a sub-report;
+   * field paths route to repeat-index-aware `doc.fields` for the main doc, or
+   * top-level fields for db-doc sub-reports.
    */
   private reportRoutingStrategy(ctx: ReportRoutingContext): AttachmentRoutingStrategy {
     return {
@@ -519,7 +520,9 @@ export class EnketoService {
       docs: [ ctx.doc, ...ctx.docsToStore ],
       mainDoc: ctx.doc,
       resolveOwnerForNode: (element) => this.resolveReportOwnerDoc(element, ctx),
-      formIdFor: (ownerDoc) => ownerDoc.form || ctx.doc.form,
+      containerFor: (element, ownerDoc) => ownerDoc === ctx.doc
+        ? ctx.root
+        : this.reportSubDocContainer(element, ownerDoc, ctx),
       fieldPathFor: (element, ownerDoc) => this.reportFieldPath(element, ownerDoc, ctx),
     };
   }

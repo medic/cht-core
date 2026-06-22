@@ -154,7 +154,7 @@ describe('Sub-contact attachment routing', () => {
     // binary `badge` from the form's instance default. The badge field value is
     // its attachment name minus the `user-file-` prefix.
     expect(familyAttachmentNames).to.have.lengthOf(2);
-    const familyBadge = familyAttachmentNames.find(n => n.startsWith('user-file-') && n.endsWith('/badge'));
+    const familyBadge = familyAttachmentNames.find(n => n === 'user-file-badge');
     expect(familyBadge, 'family badge attachment').to.exist;
     expect(familyAttachmentNames.find(n => /^user-file-photo-for-upload-form.*\.png$/.test(n))).to.exist;
     expect(family.badge).to.equal(familyBadge.replace('user-file-', ''));
@@ -163,7 +163,7 @@ describe('Sub-contact attachment routing', () => {
     expect(primaryContact._attachments).to.exist;
     const primaryAttachmentNames = Object.keys(primaryContact._attachments);
     expect(primaryAttachmentNames).to.have.lengthOf(2);
-    const primaryBadge = primaryAttachmentNames.find(n => n.startsWith('user-file-') && n.endsWith('/badge'));
+    const primaryBadge = primaryAttachmentNames.find(n => n === 'user-file-badge');
     expect(primaryBadge, 'primary contact badge attachment').to.exist;
     expect(primaryAttachmentNames.find(n => /^user-file-layers.*\.png$/.test(n))).to.exist;
     expect(primaryContact.badge).to.equal(primaryBadge.replace('user-file-', ''));
@@ -174,17 +174,20 @@ describe('Sub-contact attachment routing', () => {
     expect(child._attachments).to.exist;
     const childAttachmentNames = Object.keys(child._attachments);
     expect(childAttachmentNames).to.have.lengthOf(2);
-    const childBadge = childAttachmentNames.find(n => n.startsWith('user-file-') && n.endsWith('/badge'));
+    const childBadge = childAttachmentNames.find(n => n === 'user-file-badge');
     expect(childBadge, 'child badge attachment').to.exist;
     expect(childAttachmentNames.find(n => /^user-file-icon.*\.png$/.test(n))).to.exist;
     expect(child.badge).to.equal(childBadge.replace('user-file-', ''));
 
+    // Under relative naming the badge on each doc is the same `user-file-badge`
+    // (uniqueness is per-doc, not global), while the three file uploads keep
+    // distinct timestamped names — so the combined set collapses to 4 names.
     const allAttachmentNames = [
       ...familyAttachmentNames,
       ...primaryAttachmentNames,
       ...childAttachmentNames,
     ];
-    expect(new Set(allAttachmentNames).size).to.equal(6);
+    expect(new Set(allAttachmentNames).size).to.equal(4);
   });
 
   it('should keep saved attachments intact when adding a new repeat child on edit', async () => {

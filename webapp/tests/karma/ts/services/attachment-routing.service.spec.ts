@@ -15,13 +15,14 @@ describe('AttachmentRoutingService', () => {
 
   const parse = (xml: string): Element => new DOMParser().parseFromString(xml, 'text/xml').documentElement;
 
-  // Single-doc strategy: every node routes to `doc`, field paths relative to root.
+  // Single-doc strategy: every node routes to `doc`, container and field paths
+  // are both relative to root.
   const singleDocStrategy = (root: Element, doc: Record<string, any>): AttachmentRoutingStrategy => ({
     root,
     docs: [ doc ],
     mainDoc: doc,
     resolveOwnerForNode: () => doc,
-    formIdFor: () => 'my-form',
+    containerFor: () => root,
     fieldPathFor: (element: Element) => computeFieldPath(element, root),
   });
 
@@ -30,7 +31,6 @@ describe('AttachmentRoutingService', () => {
     remove = sinon.stub();
     getCurrentFiles = sinon.stub(FileManager, 'getCurrentFiles').returns([]);
     TestBed.configureTestingModule({
-      // EnketoTranslationService is left real (providedIn root) for isAttachmentRef.
       providers: [
         { provide: AttachmentService, useValue: { add, remove } },
       ],
@@ -55,37 +55,46 @@ describe('AttachmentRoutingService', () => {
     expect(doc.my_file).to.equal('ab.png');
   });
 
-  it('attaches an inline binary and objectPath-sets the bare reference', () => {
+  it('attaches an inline binary and objectPath-sets the bare relative reference', () => {
     const root = parse('<my-form><photo type="binary">base64data</photo></my-form>');
     const doc: Record<string, any> = {};
 
     service.route(singleDocStrategy(root, doc));
 
     expect(add.calledOnce).to.be.true;
-    expect(add.args[0][1]).to.equal('user-file-my-form/photo');
+    expect(add.args[0][1]).to.equal('user-file-photo');
     expect(add.args[0][2]).to.equal('base64data');
-    expect(doc).to.deep.equal({ photo: 'my-form/photo' });
+    expect(doc).to.deep.equal({ photo: 'photo' });
   });
 
-  it('skips empty, already-referenced, and upload-widget binaries', () => {
-    const root = parse(
-      '<my-form><empty type="binary"></empty><ref type="binary">my-form/ref</ref></my-form>'
-    );
+  it('skips an empty binary (no content to attach)', () => {
+    const root = parse('<my-form><empty type="binary"></empty></my-form>');
     const doc: Record<string, any> = {};
 
     service.route(singleDocStrategy(root, doc));
 
     expect(add.called).to.be.false;
+  });
+
+  it('skips a binary whose blob the upload pass already attached', () => {
+    const root = parse('<my-form><widget type="binary">up.png</widget></my-form>');
+    getCurrentFiles.returns([ { name: 'up.png', type: 'image/png' } ]);
+    const doc: Record<string, any> = {};
+
+    service.route(singleDocStrategy(root, doc));
+
+    // only the upload widget's blob is attached; the binary pass does not re-attach it
+    expect(add.args.map(args => args[1])).to.deep.equal([ 'user-file-up.png' ]);
   });
 
   it('restores an untouched binary from its data-attachment-ref sidecar', () => {
-    const root = parse('<my-form><photo type="binary" data-attachment-ref="my-form/photo"></photo></my-form>');
+    const root = parse('<my-form><photo type="binary" data-attachment-ref="photo"></photo></my-form>');
     const doc: Record<string, any> = {};
 
     service.route(singleDocStrategy(root, doc));
 
     expect(add.called).to.be.false;
-    expect(doc).to.deep.equal({ photo: 'my-form/photo' });
+    expect(doc).to.deep.equal({ photo: 'photo' });
   });
 
   it('removes orphaned user-file attachments, sparing referenced/new/non-user-file names', () => {

@@ -24,8 +24,6 @@ describe('ContactSave service', () => {
   beforeEach(() => {
     enketoTranslationService = {
       contactRecordToJs: sinon.stub(),
-      // pure regex helper — delegate to the real implementation
-      isAttachmentRef: (value) => new EnketoTranslationService().isAttachmentRef(value),
     };
 
     extractLineageService = { extract: sinon.stub() };
@@ -445,8 +443,8 @@ describe('ContactSave service', () => {
       expect(addCall.args[0]._id, 'Should attach to the main document').to.equal('person1');
       expect(
         addCall.args[1],
-        'Should use XPath-based attachment name for binary field'
-      ).to.equal('user-file-contact:person:create/person/badge');
+        'Should use relative attachment name for binary field'
+      ).to.equal('user-file-badge');
       expect(
         addCall.args[2],
         'Should pass the base64 content'
@@ -714,8 +712,8 @@ describe('ContactSave service', () => {
       const photoCall = attachmentService.add.getCall(2);
       expect(
         photoCall.args[1],
-        'Photo binary field XPath-based name'
-      ).to.equal('user-file-contact:person:create/person/photo');
+        'Photo binary field relative name'
+      ).to.equal('user-file-photo');
       expect(photoCall.args[2], 'Photo binary field content').to.equal('BASE64_PHOTO_DATA');
       expect(photoCall.args[3], 'Binary field content type').to.equal('image/png');
       expect(photoCall.args[4], 'Binary field should be pre-encoded').to.be.true;
@@ -723,8 +721,8 @@ describe('ContactSave service', () => {
       const badgeCall = attachmentService.add.getCall(3);
       expect(
         badgeCall.args[1],
-        'Badge binary field XPath-based name'
-      ).to.equal('user-file-contact:person:create/person/badge');
+        'Badge binary field relative name'
+      ).to.equal('user-file-badge');
       expect(badgeCall.args[2], 'Badge binary field content').to.equal('BASE64_BADGE_DATA');
       expect(badgeCall.args[3], 'Binary field content type').to.equal('image/png');
       expect(badgeCall.args[4], 'Binary field should be pre-encoded').to.be.true;
@@ -940,13 +938,13 @@ describe('ContactSave service', () => {
       await service.save(form, null, 'family');
 
       const badgeCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file-contact:family:create/contact/badge');
+        .find(c => c.args[1] === 'user-file-badge');
       expect(badgeCall, 'sibling-routed inline binary should exist').to.not.be.undefined;
       expect(badgeCall.args[0]._id, 'inline binary should land on sibling').to.equal('sib1');
       expect(badgeCall.args[2]).to.equal('BASE64_BADGE_DATA');
       expect(badgeCall.args[3]).to.equal('image/png');
       expect(badgeCall.args[4]).to.be.true;
-      expect(badgeCall.args[0].badge).to.equal('contact:family:create/contact/badge');
+      expect(badgeCall.args[0].badge).to.equal('badge');
     });
 
     it('routes inline binary content inside a repeat child to the repeat doc', async () => {
@@ -1058,7 +1056,7 @@ describe('ContactSave service', () => {
 
     it('main contact re-attaches a binary under the same name (idempotent re-save)', async () => {
       // On edit the form's instance default re-supplies fresh base64, and the
-      // save recomputes the same xpath-derived name — overwrite-in-place.
+      // save recomputes the same relative name — overwrite-in-place.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1079,7 +1077,7 @@ describe('ContactSave service', () => {
         type: 'family',
         name: 'Kigali HF',
         _attachments: {
-          'user-file-contact:family:create/family/photo': { content_type: 'image/png' },
+          'user-file-photo': { content_type: 'image/png' },
         },
       });
 
@@ -1090,26 +1088,24 @@ describe('ContactSave service', () => {
 
       // Same key the prior save produced — CouchDB overwrite-in-place.
       const photoCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file-contact:family:create/family/photo');
+        .find(c => c.args[1] === 'user-file-photo');
       expect(photoCall, 'attach call should exist').to.not.be.undefined;
       expect(photoCall.args[0]._id).to.equal('main1');
       expect(photoCall.args[2]).to.equal('FRESH_BASE64');
-      expect(main.photo).to.equal('contact:family:create/family/photo');
+      expect(main.photo).to.equal('photo');
       // The pre-existing attachment is reused, not orphan-removed.
       expect(
         attachmentService.remove.calledWith(
           sinon.match({ _id: 'main1' }),
-          'user-file-contact:family:create/family/photo',
+          'user-file-photo',
         ),
         'pre-existing attachment should NOT be removed',
       ).to.be.false;
     });
 
     it('leaves a legacy slash-named binary attachment intact on edit (migration out of scope)', async () => {
-      // Pre-existing legacy attachment under the old slash name
-      // (`user-file/<form>/<rest>`). The save writes the new `user-file-<...>`
-      // attachment + bare field value; the legacy one is not orphan-removed
-      // (cleanup only touches `user-file-`-prefixed names), so no data loss.
+      // A pre-existing legacy attachment under the old `user-file/` slash name is
+      // not orphan-removed (cleanup only touches `user-file-`-prefixed names).
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1129,7 +1125,7 @@ describe('ContactSave service', () => {
         type: 'family',
         name: 'Kigali HF',
         _attachments: {
-          'user-file/contact:family:create/family/photo': { content_type: 'image/png' },
+          'user-file/photo': { content_type: 'image/png' },
         },
       });
 
@@ -1142,25 +1138,24 @@ describe('ContactSave service', () => {
       expect(
         attachmentService.add.calledWith(
           sinon.match({ _id: 'main1' }),
-          'user-file-contact:family:create/family/photo',
+          'user-file-photo',
         ),
         'unified-named attachment should be written',
       ).to.be.true;
-      expect(main.photo).to.equal('contact:family:create/family/photo');
+      expect(main.photo).to.equal('photo');
       // Legacy slash-named attachment is left untouched (no orphan removal).
       expect(
         attachmentService.remove.calledWith(
           sinon.match({ _id: 'main1' }),
-          'user-file/contact:family:create/family/photo',
+          'user-file/photo',
         ),
         'legacy slash-named attachment should NOT be removed',
       ).to.be.false;
     });
 
     it('routes sibling sub-contact binary writes to the sub-doc, not main', async () => {
-      // The binary attachment lives on a sibling sub-contact. The xpath-derived
-      // name embeds the parent form id, so the sub-doc field holds the bare
-      // reference value — enough on its own for renderer lookup.
+      // The binary lives on a sibling sub-contact, named relative to that sub-doc,
+      // so the sub-doc field holds the bare reference value.
       const xml =
         '<data id="contact:family:create">' +
           '<meta><instanceID/></meta>' +
@@ -1191,11 +1186,11 @@ describe('ContactSave service', () => {
       await service.save(form, null, 'family');
 
       const badgeCall = attachmentService.add.getCalls()
-        .find(c => c.args[1] === 'user-file-contact:family:create/contact/badge');
+        .find(c => c.args[1] === 'user-file-badge');
       expect(badgeCall, 'sibling-routed attach should exist').to.not.be.undefined;
       expect(badgeCall.args[0]._id, 'attachment lands on sub-doc, not main').to.equal('sib1');
       expect(badgeCall.args[2]).to.equal('FRESH_BADGE_BASE64');
-      expect(badgeCall.args[0].badge).to.equal('contact:family:create/contact/badge');
+      expect(badgeCall.args[0].badge).to.equal('badge');
     });
 
     it('runs orphan cleanup on the edit path for the main doc', async () => {
@@ -1235,7 +1230,7 @@ describe('ContactSave service', () => {
     });
 
     it('preserves an untouched main-doc binary on edit via the data-attachment-ref sidecar', async () => {
-      const ref = 'contact:family:create/family/photo';
+      const ref = 'photo';
       const name = `user-file-${ref}`;
       const attachment = {
         content_type: 'image/png',
@@ -1280,8 +1275,8 @@ describe('ContactSave service', () => {
     });
 
     it('ignores a stale sidecar when the binary is edited (fresh base64 wins)', async () => {
-      // Non-empty content wins: re-attach and recompute the value from the xpath, ignoring the sidecar.
-      const staleRef = 'contact:family:create/family/old-photo';
+      // Non-empty content wins: re-attach and recompute the value from the field position, ignoring the sidecar.
+      const staleRef = 'old-photo';
       const base64 = 'FRESH_BASE64';
       const xml =
         '<data id="contact:family:create">' +
@@ -1309,9 +1304,9 @@ describe('ContactSave service', () => {
       expect(
         photoCall.args[1],
         'attached under the recomputed reference name',
-      ).to.equal('user-file-contact:family:create/family/photo');
+      ).to.equal('user-file-photo');
       expect(main.photo, 'value is the recomputed reference, not the stale sidecar')
-        .to.equal('contact:family:create/family/photo');
+        .to.equal('photo');
     });
 
     it('does not restore a sibling binary that carries no sidecar (non-goal)', async () => {

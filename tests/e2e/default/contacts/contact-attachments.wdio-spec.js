@@ -15,7 +15,9 @@ describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
 
-  const BADGE_REFERENCE = 'person-with-attachments/badge';
+  // Relative, prefix-less naming: `badge` sits directly under its section, so the
+  // reference is the bare field name and the attachment is `user-file-badge`.
+  const BADGE_REFERENCE = 'badge';
   const BADGE_ATTACHMENT = `user-file-${BADGE_REFERENCE}`;
   const BADGE_BASE64 =
     'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';

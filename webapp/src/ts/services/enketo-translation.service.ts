@@ -93,28 +93,19 @@ export class EnketoTranslationService {
     return elem.children().filter((_idx, child) => child.nodeName === name);
   }
 
-  /**
-   * True for an attachment-reference value: the position-derived name stored for
-   * an inline-binary field after its blob is attached, e.g.
-   * `<formId>/<xpath>/<field>` (slash-delimited XML names, no `user-file-`
-   * prefix). Inline base64 never matches: it carries `+`/`=` and isn't a path.
-   */
-  isAttachmentRef(value): boolean {
-    // `:` appears in contact form ids (e.g. `contact:person:create`); base64
-    // never contains `:` so allowing it here doesn't widen the base64 overlap.
-    return typeof value === 'string' && /^[A-Za-z_][\w.:-]*(?:\/[A-Za-z_][\w.:-]*)+$/.test(value);
+  /** True for a `[type=binary]` form field (an inline-binary / media node). */
+  private isBinaryField(elem): boolean {
+    const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
+    return typeAttr === 'binary';
   }
 
-  // For [type=binary] nodes the form's instance default / calculate / itext
-  // base64 is the source of truth. Skip the bind when the saved value is empty
-  // (keep the form default) or is an attachment reference (the real data lives
-  // in the attachment). Genuine inline base64 still binds.
-  private shouldSkipBinaryBind(elem, data): boolean {
-    const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
-    if (typeAttr !== 'binary') {
-      return false;
+  // Stash a binary field's prior value so routeOneBinary can restore an untouched
+  // field on save; binary values are never loaded into the model (a relative
+  // reference can't be told apart from inline base64).
+  private stashBinaryReference(elem, data) {
+    if (![ null, undefined, '' ].includes(data)) {
+      elem.attr('data-attachment-ref', data);
     }
-    return [ null, undefined, '' ].includes(data) || this.isAttachmentRef(data);
   }
 
   private bindArrayToXml(elem, data) {
@@ -145,11 +136,8 @@ export class EnketoTranslationService {
     elem.removeAttr('jr:template');
     elem.removeAttr('template');
 
-    if (this.shouldSkipBinaryBind(elem, data)) {
-      // Stash the skipped reference so an untouched field can be restored on save.
-      if (this.isAttachmentRef(data)) {
-        elem.attr('data-attachment-ref', data);
-      }
+    if (this.isBinaryField(elem)) {
+      this.stashBinaryReference(elem, data);
       return;
     }
 

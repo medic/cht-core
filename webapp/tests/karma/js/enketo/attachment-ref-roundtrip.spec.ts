@@ -22,7 +22,7 @@ describe('inline-binary data-attachment-ref round-trip (enketo-core dependency p
     const instanceStr = [
       '<my-form id="my-form" version="1">',
       '<name>Mary</name>',
-      '<my_file type="binary" data-attachment-ref="my-form/my_file"></my_file>',
+      '<my_file type="binary" data-attachment-ref="my_file"></my_file>',
       '<meta><instanceID>uuid:test</instanceID></meta>',
       '</my-form>',
     ].join('');
@@ -34,6 +34,6 @@ describe('inline-binary data-attachment-ref round-trip (enketo-core dependency p
     const dataStr = model.getStr();
 
     // Tolerant of single/double quoting in the serializer output.
-    expect(dataStr).to.match(/data-attachment-ref=["']my-form\/my_file["']/);
+    expect(dataStr).to.match(/data-attachment-ref=["']my_file["']/);
   });
 });

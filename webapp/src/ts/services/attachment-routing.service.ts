@@ -3,7 +3,6 @@ import { v7 as uuid } from 'uuid';
 import * as objectPath from 'object-path';
 
 import { AttachmentService } from '@mm-services/attachment.service';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import {
   AttachmentRoutingStrategy,
   USER_FILE_PREFIX,
@@ -28,7 +27,6 @@ type FileNameMapByDoc = Map<Record<string, any>, Map<string, string>>;
 export class AttachmentRoutingService {
   constructor(
     private readonly attachmentService: AttachmentService,
-    private readonly enketoTranslationService: EnketoTranslationService,
   ) {}
 
   /** Routes every upload and inline binary to its owner doc, then finalizes. */
@@ -100,14 +98,19 @@ export class AttachmentRoutingService {
       return;
     }
 
-    // Skip a value that is already a reference (idempotent re-save) or a
-    // type="file" widget whose blob the upload pass already attached.
-    if (this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
+    // Skip a type="file" widget whose blob the upload pass already attached; any
+    // other non-empty value is fresh base64 (binary values are never inspected -
+    // on edit the node is empty and handled above).
+    if (fileManagerNames.has(content)) {
       return;
     }
 
     const ownerDoc = strategy.resolveOwnerForNode(element);
-    const reference = computeAttachmentReference(element, strategy.formIdFor(ownerDoc));
+    const container = strategy.containerFor(element, ownerDoc);
+    if (!container) {
+      return; // no field container -> can't name the attachment
+    }
+    const reference = computeAttachmentReference(element, container);
     const attachmentName = `${USER_FILE_PREFIX}${reference}`;
 
     this.attachmentService.add(ownerDoc, attachmentName, content, 'image/png', true);

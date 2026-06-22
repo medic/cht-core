@@ -10,28 +10,31 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 
 describe('attachment-routing', () => {
   const parse = (xml: string): Element => new DOMParser().parseFromString(xml, 'text/xml').documentElement;
-  const firstByTag = (xml: string, tag: string): Element => parse(xml).getElementsByTagName(tag)[0];
 
   describe('computeAttachmentReference', () => {
-    it('swaps the instance root segment for the formId when they differ', () => {
-      const photo = firstByTag('<my-form><group><photo/></group></my-form>', 'photo');
-      expect(computeAttachmentReference(photo, 'contact:person:create'))
-        .to.equal('contact:person:create/group/photo');
+    it('returns a single bare segment for a field directly under the container', () => {
+      const root = parse('<data><photo/></data>');
+      const photo = root.getElementsByTagName('photo')[0];
+      expect(computeAttachmentReference(photo, root)).to.equal('photo');
     });
 
-    it('only drops the leading slash when the xpath already starts with the formId', () => {
-      const photo = firstByTag('<my-form><group><photo/></group></my-form>', 'photo');
-      expect(computeAttachmentReference(photo, 'my-form')).to.equal('my-form/group/photo');
+    it('joins nested segments relative to the container, with no form-id prefix', () => {
+      const root = parse('<my-form><group><photo/></group></my-form>');
+      const photo = root.getElementsByTagName('photo')[0];
+      expect(computeAttachmentReference(photo, root)).to.equal('group/photo');
     });
 
-    it('preserves bracketed repeat indices in the path', () => {
-      const photo = firstByTag('<f><g/><g><photo/></g></f>', 'photo');
-      expect(computeAttachmentReference(photo, 'f')).to.equal('f/g[2]/photo');
+    it('adds a 1-based bracket only for same-name (repeat) siblings', () => {
+      const root = parse('<f><g/><g><photo/></g></f>');
+      const photo = root.getElementsByTagName('photo')[0];
+      expect(computeAttachmentReference(photo, root)).to.equal('g[2]/photo');
     });
 
-    it('handles form ids containing colons', () => {
-      const photo = firstByTag('<data><photo/></data>', 'photo');
-      expect(computeAttachmentReference(photo, 'contact:place:edit')).to.equal('contact:place:edit/photo');
+    it('roots the path at the given container, not the instance root (sub-doc case)', () => {
+      const root = parse('<my-form><child><group><photo/></group></child></my-form>');
+      const child = root.getElementsByTagName('child')[0];
+      const photo = root.getElementsByTagName('photo')[0];
+      expect(computeAttachmentReference(photo, child)).to.equal('group/photo');
     });
   });
 
@@ -82,22 +85,22 @@ describe('attachment-routing', () => {
       expect(indexedFieldPath(photos[0], root, repeatPaths)).to.deep.equal(['my_repeat', 0, 'photo']);
       expect(indexedFieldPath(photos[1], root, repeatPaths)).to.deep.equal(['my_repeat', 1, 'photo']);
 
-      // the attachment reference keeps the 1-based xpath bracket, so the two
-      // instances get distinct, unique attachment names
-      expect(computeAttachmentReference(photos[0], 'my-form')).to.equal('my-form/my_repeat[1]/photo');
-      expect(computeAttachmentReference(photos[1], 'my-form')).to.equal('my-form/my_repeat[2]/photo');
+      // the reference keeps the 1-based bracket relative to the container, so the
+      // two instances get distinct, unique attachment names
+      expect(computeAttachmentReference(photos[0], root)).to.equal('my_repeat[1]/photo');
+      expect(computeAttachmentReference(photos[1], root)).to.equal('my_repeat[2]/photo');
 
       // route the references into the parsed fields, as the report strategy does
       const fields: any = translation.reportRecordToJs(RECORD, FORM);
       photos.forEach((photo) => {
         const segments = indexedFieldPath(photo, root, repeatPaths);
-        objectPath.set(fields, segments, computeAttachmentReference(photo, 'my-form'));
+        objectPath.set(fields, segments, computeAttachmentReference(photo, root));
       });
 
       expect(Array.isArray(fields.my_repeat)).to.equal(true);
       expect(fields.my_repeat).to.deep.equal([
-        { photo: 'my-form/my_repeat[1]/photo' },
-        { photo: 'my-form/my_repeat[2]/photo' },
+        { photo: 'my_repeat[1]/photo' },
+        { photo: 'my_repeat[2]/photo' },
       ]);
     });
 

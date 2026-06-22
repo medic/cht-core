@@ -835,64 +835,29 @@ describe('EnketoTranslation service', () => {
         </data>`
       )).children().first();
 
-      it('preserves the form default when saved value is empty string', () => {
+      // Binary fields are never loaded into the form model (a relative reference
+      // can't be told apart from base64): the form default is kept and any prior
+      // non-empty value is stashed to the data-attachment-ref sidecar.
+
+      it('never binds a binary reference value, preserving the form default', () => {
         const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: '', name: 'Alice' });
+        service.bindJsonToXml(element, { photo: 'photo', name: 'Alice' });
         assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
         assert.equal(element.find('name').text(), 'Alice');
       });
 
-      it('preserves the form default when saved value is null', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: null, name: 'Alice' });
-        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
-      });
-
-      it('preserves the form default when saved value is undefined', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: undefined, name: 'Alice' });
-        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
-      });
-
-      it('preserves the form default when saved value is a reference name', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, {
-          photo: 'form/photo',
-          name: 'Alice',
+      [ '', null, undefined ].forEach((value) => {
+        it(`preserves the form default when saved value is ${JSON.stringify(value)}`, () => {
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: value, name: 'Alice' });
+          assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
         });
+      });
+
+      it('does not bind even genuine-looking inline base64 (binary values are never inspected)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: 'INJECTED_BASE64_DATA', name: 'Alice' });
         assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
-      });
-
-      it('preserves the form default when saved value is a contact-form reference name', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, {
-          photo: 'contact:person:create/person/photo',
-          name: 'Alice',
-        });
-        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
-      });
-
-      it('binds through genuine inline base64 (covers injection on create)', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, {
-          photo: 'INJECTED_BASE64_DATA',
-          name: 'Alice',
-        });
-        assert.equal(element.find('photo').text(), 'INJECTED_BASE64_DATA');
-      });
-
-      it('binds through base64 even when it contains slashes (not a reference)', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        // real base64 carries `+`/`=` chars, so it is not a path of node names
-        service.bindJsonToXml(element, {
-          photo: 'data:image/png;base64,iVBOR/w0K+Gg==',
-          name: 'Alice',
-        });
-        assert.equal(
-          element.find('photo').text(),
-          'data:image/png;base64,iVBOR/w0K+Gg==',
-          'base64 content should not be mistaken for a reference name'
-        );
       });
 
       it('still clears empty values on non-binary leaves (no regression)', () => {
@@ -911,58 +876,35 @@ describe('EnketoTranslation service', () => {
         assert.equal(element.find('upload').text(), 'photo.jpg-1700000000000');
       });
 
-      it('stashes attachment ref as data-attachment-ref sidecar when bind is skipped', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: 'form/photo', name: 'Alice' });
-        assert.equal(element.find('photo').attr('data-attachment-ref'), 'form/photo');
-        // text untouched, so the display widget still renders the form default
-        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
-      });
-
-      it('does not stash a sidecar when saved value is empty', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: '', name: 'Alice' });
-        assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
-      });
-
-      it('does not stash a sidecar when saved value is null', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: null, name: 'Alice' });
-        assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
-      });
-
-      it('does not stash a sidecar when value is genuine base64 (binds normally)', () => {
-        const element = buildModel('DEFAULT_BASE64');
-        service.bindJsonToXml(element, { photo: 'INJECTED_BASE64_DATA', name: 'Alice' });
-        assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
-        assert.equal(element.find('photo').text(), 'INJECTED_BASE64_DATA');
-      });
-    });
-
-    describe('isAttachmentRef', () => {
-      [
-        [ 'form/photo', true ],
-        [ 'embedded_multimedia/notes_with_media/base64_note', true ],
-        [ 'contact:person:create/person/photo', true ],
-        [ 'thing_1/doc1/photo1', true ],
-      ].forEach(([ value, expected ]) => {
-        it(`recognizes reference name "${value}"`, () => {
-          assert.equal(service.isAttachmentRef(value), expected);
+      describe('data-attachment-ref sidecar', () => {
+        it('stashes a single-segment relative reference', () => {
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: 'photo', name: 'Alice' });
+          assert.equal(element.find('photo').attr('data-attachment-ref'), 'photo');
+          // text untouched, so the display widget still renders the form default
+          assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
         });
-      });
 
-      [
-        [ 'photo', false ],                                  // single segment, no slash
-        [ '', false ],                                       // empty
-        [ 'INJECTED_BASE64_DATA', false ],                   // single token
-        [ 'data:image/png;base64,iVBOR/w0K+Gg==', false ],   // base64 (`+`/`=`/`;`/`,`)
-        [ 'aGVsbG8/d29ybGQ=', false ],                       // base64 with slash but `=` and one segment-ish
-        [ null, false ],
-        [ undefined, false ],
-        [ 42, false ],
-      ].forEach(([ value, expected ]) => {
-        it(`rejects non-reference value ${JSON.stringify(value)}`, () => {
-          assert.equal(service.isAttachmentRef(value), expected);
+        it('stashes a nested relative reference', () => {
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: 'group/photo', name: 'Alice' });
+          assert.equal(element.find('photo').attr('data-attachment-ref'), 'group/photo');
+        });
+
+        it('stashes any non-empty value without inspection, even one that looks like base64', () => {
+          // Saved docs never hold raw base64 in a binary field, so stashing
+          // whatever is there is correct; the value is deliberately not inspected.
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: 'INJECTED_BASE64_DATA', name: 'Alice' });
+          assert.equal(element.find('photo').attr('data-attachment-ref'), 'INJECTED_BASE64_DATA');
+        });
+
+        [ '', null, undefined ].forEach((value) => {
+          it(`does not stash a sidecar when saved value is ${JSON.stringify(value)}`, () => {
+            const element = buildModel('DEFAULT_BASE64');
+            service.bindJsonToXml(element, { photo: value, name: 'Alice' });
+            assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
+          });
         });
       });
     });

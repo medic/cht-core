@@ -6,8 +6,10 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const uuid = require('uuid').v7;
 
-const BADGE_ATTACHMENT = 'user-file-inline-binary-report/badge';
-const BADGE_REFERENCE = 'inline-binary-report/badge';
+// Relative, prefix-less naming: `badge` sits directly under the report root, so
+// the reference is the bare field name and the attachment is `user-file-badge`.
+const BADGE_ATTACHMENT = 'user-file-badge';
+const BADGE_REFERENCE = 'badge';
 const BADGE_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
 

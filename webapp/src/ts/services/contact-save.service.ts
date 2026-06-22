@@ -110,9 +110,9 @@ export class ContactSaveService {
 
   /**
    * Contact pipeline's attachment-routing strategy. Owner resolution classifies
-   * the element's section (main / sibling / repeat `<child>`); the formId is the
-   * form-instance root's id; field paths are plain dot-paths relative to the
-   * field's section container (contact repeats are separate docs, never arrays).
+   * the element's section (main / sibling / repeat `<child>`); the reference
+   * container is that same section / `<child>`; field paths are plain dot-paths
+   * relative to it (contact repeats are separate docs, never arrays).
    */
   private contactRoutingStrategy(ctx: ContactOwnerContext): AttachmentRoutingStrategy {
     return {
@@ -120,7 +120,7 @@ export class ContactSaveService {
       docs: ctx.preparedDocs,
       mainDoc: ctx.mainDoc,
       resolveOwnerForNode: (element: Element) => this.resolveContactOwnerDoc(element, ctx),
-      formIdFor: () => $(ctx.root).attr('id'),
+      containerFor: (element: Element) => this.findFieldContainerElement(element, ctx),
       fieldPathFor: (element: Element): FieldPath | null => {
         const container = this.findFieldContainerElement(element, ctx);
         return container ? computeFieldPath(element, container) : null;
