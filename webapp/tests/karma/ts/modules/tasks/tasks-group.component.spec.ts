@@ -8,7 +8,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
-import { TasksActions} from '@mm-actions/tasks';
+import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
@@ -18,6 +18,8 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { ContentRowListItemComponent } from '@mm-components/content-row-list-item/content-row-list-item.component';
 import { TaskDueDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
+import { CONTACT_TYPES } from '@medic/constants';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
 
 const nextTick = () => new Promise(r => setTimeout(r));
 
@@ -33,6 +35,7 @@ describe('TasksGroupComponent', () => {
   let contactViewModelGeneratorService;
   let telemetryService;
   let tasksForContactService;
+  let interactionTrackingService;
 
   beforeEach(() => {
     const mockedSelectors = [
@@ -49,6 +52,7 @@ describe('TasksGroupComponent', () => {
       getIdsForTasks: sinon.stub(),
       getTasksBreakdown: sinon.stub().resolves({}),
     };
+    interactionTrackingService = { startSession: sinon.stub(), record: sinon.stub(), endSession: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -62,6 +66,7 @@ describe('TasksGroupComponent', () => {
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: InteractionTrackingService, useValue: interactionTrackingService },
         { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } }, // used by TaskDueDatePipe
       ],
     });
@@ -110,6 +115,7 @@ describe('TasksGroupComponent', () => {
     expect(setLoadingContent.args[0]).to.deep.equal([false]);
     expect(clearTaskGroup.callCount).to.equal(1);
     expect(clearTaskGroup.args[0]).to.deep.equal([]);
+    expect(interactionTrackingService.record.args).to.deep.include(['task_group:leave']);
   });
 
   describe('ngOnInit', () => {
@@ -154,7 +160,7 @@ describe('TasksGroupComponent', () => {
         { _id: 'd', owner: 'a' },
       ];
       const contactModel = {
-        doc: { _id: 'contact', type: 'clinic' },
+        doc: { _id: 'contact', type: CONTACT_TYPES.CLINIC },
         type: { id: 'clinic' },
       };
       await compileComponent(lastSubmittedTask, tasks);
@@ -176,7 +182,7 @@ describe('TasksGroupComponent', () => {
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.args[0]).to.deep.equal([
         {
-          doc: { _id: 'contact', type: 'clinic' },
+          doc: { _id: 'contact', type: CONTACT_TYPES.CLINIC },
           type: { id: 'clinic' },
         },
       ]);
@@ -479,6 +485,7 @@ describe('TasksGroupComponent', () => {
         ['tasks:group:ready:title1', 2],
         ['tasks:group:ready:title2', 3],
       ]);
+      expect(interactionTrackingService.record.args).to.deep.include(['task_group:show', undefined, '5']);
     });
 
     it('should update cherry picked tasks when tasks are refreshed, but only record telemetry once', async () => {
@@ -690,6 +697,26 @@ describe('TasksGroupComponent', () => {
         ['/tasks/emission6'],
         ['/tasks/emission7'],
       ]);
+    });
+
+    it('records task_group:select with the raw title key as ref', () => {
+      component.tasks = [{
+        _id: 'emission-uuid-1',
+        title: 'Home visit for Diana',
+        titleKey: 'tasks.home_visit.title',
+        actions: [{ form: 'home_visit' }],
+      }];
+      store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
+      store.overrideSelector(Selectors.getPreventNavigation, true);
+      store.refreshState();
+      router.getCurrentNavigation.returns({ extras: { state: { tab: 'tasks', id: 'emission-uuid-1' } } });
+
+      expect(component.canDeactivate('/tasks/emission-uuid-1')).to.equal(true);
+
+      const selectCalls = interactionTrackingService.record.getCalls()
+        .filter(call => call.args[0] === 'task_group:select');
+      expect(selectCalls).to.have.length(1);
+      expect(selectCalls[0].args[1]).to.equal('tasks.home_visit.title');
     });
   });
 

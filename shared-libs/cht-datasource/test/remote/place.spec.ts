@@ -2,6 +2,7 @@ import sinon, { SinonStub } from 'sinon';
 import { expect } from 'chai';
 import * as RemoteEnv from '../../src/remote/libs/data-context';
 import { RemoteDataContext } from '../../src/remote/libs/data-context';
+import { CONTACT_TYPES } from '@medic/constants';
 
 describe('remote place', () => {
   const remoteContext = {} as RemoteDataContext;
@@ -52,7 +53,7 @@ describe('remote place', () => {
 
     describe('get', () => {
       it('returns a place by UUID', async () => {
-        const doc = { type: 'clinic' };
+        const doc = { type: CONTACT_TYPES.CLINIC };
         getResourceInner.resolves(doc);
 
         const result = await Place.v1.get(remoteContext)(identifier);
@@ -75,7 +76,7 @@ describe('remote place', () => {
 
     describe('getWithLineage', () => {
       it('returns a place with lineage by UUID', async () => {
-        const doc = { type: 'clinic' };
+        const doc = { type: CONTACT_TYPES.CLINIC };
         getResourceInner.resolves(doc);
 
         const result = await Place.v1.getWithLineage(remoteContext)(identifier);

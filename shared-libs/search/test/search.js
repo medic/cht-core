@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const Search = require('../src/search');
 const GenerateSearchRequests = require('../src/generate-search-requests');
+const { CONTACT_TYPES } = require('@medic/constants');
 
 describe('Search service', function() {
 
@@ -301,7 +302,7 @@ describe('Search service', function() {
     it('should return extended results when sorting by last visited date', function() {
       GenerateSearchRequests.shouldSortByLastVisitedDate.returns(true);
       GenerateSearchRequests.generate.returns([
-        { view: 'contacts_by_type', params: { key: 'clinic' } },
+        { view: 'contacts_by_type', params: { key: CONTACT_TYPES.CLINIC } },
         { view: 'contacts_by_last_visited', params: { reduce: true } }
       ]);
       DB.query.onCall(0).resolves({ rows: [{ id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 }] });
@@ -313,7 +314,7 @@ describe('Search service', function() {
           queryResultsCache: [{ id: 'a', value: 12 }, { id: 'b', value: 13 }]
         });
         chai.expect(DB.query.callCount).to.equal(2);
-        chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: 'clinic' }]);
+        chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: CONTACT_TYPES.CLINIC }]);
         chai.expect(DB.query.args[1]).to.deep.equal(['contacts_by_last_visited', { reduce: true }]);
       });
     });
@@ -321,7 +322,7 @@ describe('Search service', function() {
     it('should sort muted contacts to the bottom when sorting by last visited date', () => {
       GenerateSearchRequests.shouldSortByLastVisitedDate.returns(true);
       GenerateSearchRequests.generate.returns([
-        { view: 'contacts_by_type', params: { key: 'clinic' }, map: row => {
+        { view: 'contacts_by_type', params: { key: CONTACT_TYPES.CLINIC }, map: row => {
           const [muted, dead] = row.value.split(' ');
           row.sort = muted + ' ' + dead;
           return row;
@@ -366,7 +367,7 @@ describe('Search service', function() {
           ]
         });
         chai.expect(DB.query.callCount).to.equal(2);
-        chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: 'clinic' }]);
+        chai.expect(DB.query.args[0]).to.deep.equal(['contacts_by_type', { key: CONTACT_TYPES.CLINIC }]);
         chai.expect(DB.query.args[1]).to.deep.equal(['contacts_by_last_visited', { reduce: true }]);
       });
     });

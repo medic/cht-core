@@ -12,7 +12,7 @@ const custom_type_doctor = {
   parents: [
     CONTACT_TYPES.DISTRICT_HOSPITAL,
     CONTACT_TYPES.HEALTH_CENTER,
-    'clinic',
+    CONTACT_TYPES.CLINIC,
     'ngo',
     'office',
     'family'

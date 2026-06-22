@@ -412,7 +412,7 @@ describe('XmlForms service', () => {
       getContactType.resolves({ person: false });
       getTypeId.returns('the correct type');
 
-      const doc = { type: 'clinic', contact_type: 'not_a_clinic', _id: 'uuid' };
+      const doc = { type: CONTACT_TYPES.CLINIC, contact_type: 'not_a_clinic', _id: 'uuid' };
 
       return service.list({ doc }).then(result => {
         expect(getTypeId.callCount).to.equal(6);

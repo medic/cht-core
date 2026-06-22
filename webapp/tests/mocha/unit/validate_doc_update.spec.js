@@ -1,8 +1,7 @@
 const _ = require('lodash');
 const fs = require('fs');
 const assert = require('chai').assert;
-const { DOC_IDS, DOC_TYPES } = require('@medic/constants');
-const { PREFIXES } = require('@medic/constants');
+const { DOC_IDS, DOC_TYPES, CONTACT_TYPES, PREFIXES } = require('@medic/constants');
 
 describe('validate doc update', () => {
 
@@ -124,7 +123,7 @@ describe('validate doc update', () => {
   });
 
   it('only db admins are allowed change their own place', () => {
-    const doc = { _id: 'abc', type: 'clinic' };
+    const doc = { _id: 'abc', type: CONTACT_TYPES.CLINIC };
     const adminCtx = userCtx({ roles: [ '_admin' ], facility_id: 'abc' });
     const nationalAdminCtx = userCtx({ roles: [ 'national_admin' ] });
     const districtAdminCtx = userCtx({roles: [ 'district_admin' ], facility_id: 'abc' });

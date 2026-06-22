@@ -89,7 +89,7 @@ describe('local place', () => {
 
       it('returns a place by UUID', async () => {
         // Doc needs _id and _rev for isDoc check to pass
-        const doc = { type: 'clinic', _id: 'uuid', _rev: '1' };
+        const doc = { type: CONTACT_TYPES.CLINIC, _id: 'uuid', _rev: '1' };
         getDocByIdInner.resolves(doc);
         settingsGetAll.returns(settings);
         isPlace.returns(true);
@@ -597,7 +597,7 @@ describe('local place', () => {
           type: 'health_center',
           parent: parent._id,
         };
-        const invalidParent = { ...parent, type: 'clinic' };
+        const invalidParent = { ...parent, type: CONTACT_TYPES.CLINIC };
         getDocsByIdsInner.resolves([invalidParent, null]);
         isPlace.returns(true);
 

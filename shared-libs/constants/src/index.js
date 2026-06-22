@@ -17,6 +17,7 @@ const DOC_IDS = {
 // Contact Types
 const CONTACT_TYPES = {
   HEALTH_CENTER: 'health_center',
+  CLINIC: 'clinic',
   DISTRICT_HOSPITAL: 'district_hospital',
 };
 
@@ -57,6 +58,8 @@ const USER_ROLES = {
   COUCHDB_ADMIN: '_admin',
 };
 
+const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
+
 // Prefixes
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
@@ -69,6 +72,7 @@ module.exports = {
   HTTP_HEADERS,
   SENTINEL_METADATA,
   USER_ROLES,
+  DB_ADMIN_ROLES,
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,

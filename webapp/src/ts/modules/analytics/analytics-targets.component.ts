@@ -133,4 +133,11 @@ export class AnalyticsTargetsComponent implements OnInit, OnDestroy {
         });
       });
   }
+
+  getDisplayCount(target: any): number {
+    if (target.limit_count_to_goal && target.goal >= 0 && target.value?.pass >= target.goal) {
+      return target.goal;
+    }
+    return target.value?.pass;
+  }
 }

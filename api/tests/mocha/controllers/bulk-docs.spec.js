@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const auth = require('../../../src/auth');
 require('chai').should();
 const controller = require('../../../src/controllers/bulk-docs');
-const service = require('../../../src/services/bulk-docs');
+const service = require('../../../src/services/replication/bulk-docs');
 const serverUtils = require('../../../src/server-utils');
 
 let testReq;
@@ -12,7 +12,7 @@ let next;
 describe('Bulk Docs controller', () => {
   beforeEach(() => {
     sinon.stub(auth, 'getUserCtx');
-    sinon.stub(auth, 'hasAllPermissions');
+    sinon.stub(auth, 'check');
     sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(service, 'bulkDelete');
     sinon.stub(service, 'filterOfflineRequest').resolves();
@@ -39,15 +39,13 @@ describe('Bulk Docs controller', () => {
 
   it('checks that user is an admin', () => {
     const userCtx = {};
-    auth.getUserCtx.resolves(userCtx);
-    auth.hasAllPermissions.returns(true);
+    auth.check.resolves(userCtx);
     auth.isOnlineOnly.withArgs(userCtx).returns(false);
     const next = sinon.stub();
     return controller.bulkDelete(testReq, testRes, next)
       .then(() => {
-        auth.getUserCtx.callCount.should.equal(1);
-        auth.hasAllPermissions.callCount.should.equal(1);
-        auth.hasAllPermissions.args[0][1].should.to.deep.equal(['can_edit']);
+        auth.check.callCount.should.equal(1);
+        auth.check.args[0][1].should.to.deep.equal(['can_edit']);
         auth.isOnlineOnly.callCount.should.equal(1);
         next.callCount.should.equal(1);
         next.getCall(0).args[0].code.should.equal(401);

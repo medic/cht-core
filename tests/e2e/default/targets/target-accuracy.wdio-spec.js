@@ -25,7 +25,7 @@ const compileConfig = async (tasksFileName, targetFileName) => {
 };
 
 const places = placeFactory.generateHierarchy();
-const clinic = places.get('clinic');
+const clinic = places.get(CONTACT_TYPES.CLINIC);
 const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 const chwContact = personFactory.build({
   name: 'CHW',

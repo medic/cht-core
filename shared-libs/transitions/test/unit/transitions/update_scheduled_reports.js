@@ -12,7 +12,7 @@ describe('update_scheduled_reports', () => {
     config.init({
       getAll: sinon.stub().returns({}),
       get: sinon.stub().returns([
-        { id: 'person', parents: ['clinic'], person: true },
+        { id: 'person', parents: [CONTACT_TYPES.CLINIC], person: true },
         { id: 'clinic', parents: [CONTACT_TYPES.HEALTH_CENTER] },
         { id: CONTACT_TYPES.HEALTH_CENTER }
       ]),
@@ -204,7 +204,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: DOC_TYPES.DATA_RECORD,
         form: 'form',
-        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
         fields: {
           week: 9,
           year: 2018
@@ -222,7 +222,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: DOC_TYPES.DATA_RECORD,
         form: 'form',
-        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
         fields: {
           week_number: 15,
           year: 2018
@@ -236,8 +236,8 @@ describe('update_scheduled_reports', () => {
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,
-          startkey: ['form', 2018, 15, 'clinic'],
-          endkey: ['form', 2018, 15, 'clinic', {}],
+          startkey: ['form', 2018, 15, CONTACT_TYPES.CLINIC],
+          endkey: ['form', 2018, 15, CONTACT_TYPES.CLINIC, {}],
         });
         assert.deepEqual(result, [{ doc }]);
       });
@@ -247,7 +247,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: DOC_TYPES.DATA_RECORD,
         form: 'form',
-        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
         fields: {
           month_num: 7,
           year: 2018
@@ -261,8 +261,8 @@ describe('update_scheduled_reports', () => {
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,
-          startkey: ['form', 2018, 7, 'clinic'],
-          endkey: ['form', 2018, 7, 'clinic', {}],
+          startkey: ['form', 2018, 7, CONTACT_TYPES.CLINIC],
+          endkey: ['form', 2018, 7, CONTACT_TYPES.CLINIC, {}],
         });
         assert.deepEqual(result, [{ doc }]);
       });
@@ -272,7 +272,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: DOC_TYPES.DATA_RECORD,
         form: 'form',
-        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
         fields: {
           week: 9,
           year: 2018
@@ -286,8 +286,8 @@ describe('update_scheduled_reports', () => {
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,
-          startkey: ['form', 2018, 9, 'clinic'],
-          endkey: ['form', 2018, 9, 'clinic', {}],
+          startkey: ['form', 2018, 9, CONTACT_TYPES.CLINIC],
+          endkey: ['form', 2018, 9, CONTACT_TYPES.CLINIC, {}],
         });
         assert.deepEqual(result, [{ doc }]);
       });
@@ -297,7 +297,7 @@ describe('update_scheduled_reports', () => {
       const doc = {
         type: DOC_TYPES.DATA_RECORD,
         form: 'form',
-        contact: { parent: { _id: 'clinic', type: 'clinic' } },
+        contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
         fields: {
           month: 9,
           year: 2018
@@ -311,8 +311,8 @@ describe('update_scheduled_reports', () => {
         );
         assert.deepEqual(db.medic.query.args[0][1], {
           include_docs: true,
-          startkey: ['form', 2018, 9, 'clinic'],
-          endkey: ['form', 2018, 9, 'clinic', {}],
+          startkey: ['form', 2018, 9, CONTACT_TYPES.CLINIC],
+          endkey: ['form', 2018, 9, CONTACT_TYPES.CLINIC, {}],
         });
         assert.deepEqual(result, [{ doc }]);
       });
@@ -347,7 +347,7 @@ describe('update_scheduled_reports', () => {
         doc: {
           _id: 'abc',
           form: 'z',
-          contact: { parent: { _id: 'clinic', type: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
           fields: {
             year: 2013,
             month: 4,
@@ -419,7 +419,7 @@ describe('update_scheduled_reports', () => {
           _id: 'xyz',
           _rev: '1-kkkk',
           form: 'z',
-          contact: { parent: { _id: 'clinic', type: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
           fields: {
             month: 4,
             year: 2013,
@@ -514,7 +514,7 @@ describe('update_scheduled_reports', () => {
           _id: 'xyz',
           _rev: '1-kkkk',
           form: 'z',
-          contact: { parent: { _id: 'clinic', type: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
           fields: {
             month: 4,
             year: 2013,
@@ -536,7 +536,7 @@ describe('update_scheduled_reports', () => {
         doc: {
           _id: 'xyz',
           form: 'z',
-          contact: { parent: { _id: 'clinic', type: 'clinic' } },
+          contact: { parent: { _id: 'clinic', type: CONTACT_TYPES.CLINIC } },
           fields: {
             year: 2013,
           },
