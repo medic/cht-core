@@ -701,7 +701,7 @@ describe('mark_for_outbound', () => {
       let collect;
 
       return utils
-        .updateSettings(config, { ignoreReload: 'sentinel' })
+        .updateSettings(config, { ignoreReload: true })
         .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /cause.*ECONNREFUSED/))
         .then((result) => collect = result)
