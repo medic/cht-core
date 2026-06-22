@@ -12,6 +12,7 @@ import { ContactsActions } from '@mm-actions/contacts';
 import { Selectors } from '@mm-selectors/index';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactChangeFilterService } from '@mm-services/contact-change-filter.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -128,6 +129,9 @@ describe('Contacts content component', () => {
           { provide: Router, useValue: router },
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
           { provide: ResourceIconsService, useValue: { getImg: sinon.stub() } },
+          { provide: DbService, useValue: {
+            get: () => ({ getAttachment: sinon.stub().resolves(), get: sinon.stub().resolves({}) })
+          } },
           { provide: ContactChangeFilterService, useValue: contactChangeFilterService },
           { provide: ChangesService, useValue: changesService },
           { provide: ChangesService, useValue: changesService },
@@ -163,6 +167,23 @@ describe('Contacts content component', () => {
 
   it('should create ContactsContentComponent', () => {
     expect(component).to.exist;
+  });
+
+  it('renders mm-contact-photo in the profile heading wired to the selected contact', () => {
+    selectedContact.doc = { _id: 'c-1', name: 'Amina' };
+    selectedContact.type = { icon: 'medic-person', photo_field: 'face_pic' };
+    store.overrideSelector(Selectors.getSelectedContact, selectedContact);
+    fixture.detectChanges();
+
+    const heading = fixture.nativeElement.querySelector('.row.heading mm-contact-photo');
+    expect(heading).to.exist;
+
+    const photoComponent = fixture.debugElement
+      .query(el => el.nativeElement === heading)
+      .componentInstance;
+    expect(photoComponent.photoField).to.equal('face_pic');
+    expect(photoComponent.fallbackIcon).to.equal('medic-person');
+    expect(photoComponent.doc).to.deep.equal(selectedContact.doc);
   });
 
   it('ngOnDestroy() should unsubscribe from observables and reset state', () => {
