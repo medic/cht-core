@@ -2,15 +2,22 @@ const { InvalidArgumentError } = require('@medic/cht-datasource');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const errors = require('../errors');
-const usersWithoutReplication = require('../services/replication/users-without-replication');
+const replicationHealth = require('../services/replication/replication-health');
 
-const parseMinFailures = (value) => {
+const assertAdmin = async (req) => {
+  const userCtx = await auth.getUserCtx(req);
+  if (!auth.isDbAdmin(userCtx)) {
+    throw new errors.AuthenticationError('User is not an admin');
+  }
+};
+
+const parsePositiveInteger = (value, name) => {
   if (value === undefined || value === null || value === '') {
     return undefined;
   }
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new InvalidArgumentError(`The min_failures must be a positive integer: [${JSON.stringify(value)}].`);
+    throw new InvalidArgumentError(`The ${name} must be a positive integer: [${JSON.stringify(value)}].`);
   }
   return parsed;
 };
@@ -18,17 +25,26 @@ const parseMinFailures = (value) => {
 module.exports = {
   /**
    * @openapi
-   * /api/v1/users-without-replication:
+   * /api/v1/replication-health/failed:
    *   get:
    *     summary: Get users that are failing to replicate
-   *     operationId: v1UsersWithoutReplicationGet
+   *     operationId: v1ReplicationHealthFailedGet
    *     description: >
-   *       Returns the users that appear unable to replicate: their replication limit log is older than a
-   *       month (so no successful replication has happened since) and they have logged replication failures
-   *       since that last log. The reported failure count is the number of failures accrued since each
-   *       user's last successful replication. Only allowed for database admins.
+   *       Returns the users that appear unable to replicate: their last successful replication is older
+   *       than `days` days ago and they have logged replication failures since that last replication. The
+   *       reported failure count is the number of failures accrued since each user's last successful
+   *       replication. Only allowed for database admins.
    *     tags: [User]
    *     parameters:
+   *       - in: query
+   *         name: days
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 7
+   *         description: >
+   *           Staleness window in days. Users whose last successful replication is older than this many
+   *           days are considered. Defaults to 7.
    *       - in: query
    *         name: min_failures
    *         schema:
@@ -56,24 +72,22 @@ module.exports = {
    *                         description: The username.
    *                       last_replication_date:
    *                         type: number
-   *                         description: Timestamp of the user's last replication limit log entry.
+   *                         description: Timestamp of the user's last successful replication.
    *                       failures_since_last_replication:
    *                         type: number
-   *                         description: Number of replication failures logged since that last entry.
+   *                         description: Number of replication failures logged since that last replication.
    *       '400':
    *         description: Invalid query parameter.
    *       '401':
    *         $ref: '#/components/responses/Unauthorized'
    */
-  get: async (req, res) => {
+  failed: async (req, res) => {
     try {
-      const userCtx = await auth.getUserCtx(req);
-      if (!auth.isDbAdmin(userCtx)) {
-        throw new errors.AuthenticationError('User is not an admin');
-      }
+      await assertAdmin(req);
 
-      const result = await usersWithoutReplication.get({
-        minFailures: parseMinFailures(req.query.min_failures),
+      const result = await replicationHealth.getFailed({
+        days: parsePositiveInteger(req.query.days, 'days'),
+        minFailures: parsePositiveInteger(req.query.min_failures, 'min_failures'),
       });
       res.json(result);
     } catch (err) {

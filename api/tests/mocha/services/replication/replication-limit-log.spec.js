@@ -1,6 +1,5 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const moment = require('moment');
 const replicationLimitLogService = require('../../../../src/services/replication/replication-limit-log');
 const db = require('../../../../src/db');
 const logger = require('@medic/logger');
@@ -136,19 +135,17 @@ describe('Replication Limit Log service', () => {
     const logType = replicationLimitLogService.LOG_TYPE;
     const log = (user, date) => ({ _id: logType + user, user, date });
 
-    // Today: 2026-06-16. LOG_MONTH_DIFF is 1, so the cutoff is 2026-05-16.
-    beforeEach(() => sinon.useFakeTimers(new Date('2026-06-16T12:00:00Z').valueOf()));
-
-    it('should return only logs older than LOG_MONTH_DIFF months', () => {
-      const fresh = log('fresh', moment('2026-06-01T00:00:00Z').valueOf());
-      const stale = log('stale', moment('2026-04-01T00:00:00Z').valueOf());
+    it('should return only logs older than the given cutoff', () => {
+      const cutoff = 1000;
+      const fresh = log('fresh', 1500);
+      const stale = log('stale', 500);
       sinon.stub(db.medicLogs, 'get');
       const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
         rows: [{ doc: fresh }, { doc: stale }],
       }));
 
       return replicationLimitLogService
-        .getStaleLogs()
+        .getStaleLogs(cutoff)
         .then((logs) => {
           chai.expect(allDocsStub.args[0][0]).to.deep.include({
             startkey: logType,
@@ -164,12 +161,12 @@ describe('Replication Limit Log service', () => {
       sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
         rows: [
           { doc: log('nodate', undefined) },
-          { doc: log('stale', moment('2026-01-01T00:00:00Z').valueOf()) },
+          { doc: log('stale', 500) },
         ],
       }));
 
       return replicationLimitLogService
-        .getStaleLogs()
+        .getStaleLogs(1000)
         .then((logs) => {
           chai.expect(logs.map(l => l.user)).to.deep.equal(['stale']);
         });
@@ -178,11 +175,11 @@ describe('Replication Limit Log service', () => {
     it('should return an empty array when no logs are stale', () => {
       sinon.stub(db.medicLogs, 'get');
       sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
-        rows: [{ doc: log('fresh', moment('2026-06-10T00:00:00Z').valueOf()) }],
+        rows: [{ doc: log('fresh', 1500) }],
       }));
 
       return replicationLimitLogService
-        .getStaleLogs()
+        .getStaleLogs(1000)
         .then((logs) => {
           chai.expect(logs).to.deep.equal([]);
         });

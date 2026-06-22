@@ -4,9 +4,6 @@ const logger = require('@medic/logger');
 const DOC_IDS_WARN_LIMIT = 10000;
 
 const LOG_TYPE = 'replication-count-';
-// Age (in months) past which a log counts as stale, i.e. the user has not successfully replicated
-// within the window. Used by getStaleLogs.
-const LOG_MONTH_DIFF = 1;
 
 // The log is rewritten on every successful replication so its `date` always reflects the user's last
 // successful replication — this is what getStaleLogs relies on to detect users who have stopped
@@ -57,12 +54,11 @@ const getReplicationLimitLog = (userName) => {
     });
 };
 
-// Returns the full replication limit logs whose last entry is older than LOG_MONTH_DIFF months —
-// i.e. users whose replication context has not been successfully recomputed within that window. The
-// log is rewritten on every successful replication (see persistLog), so an older entry means no
-// successful replication has happened since.
-const getStaleLogs = () => {
-  const cutoff = moment().subtract(LOG_MONTH_DIFF, 'months').valueOf();
+// Returns the replication limit logs whose last entry predates `cutoff` (ms timestamp) — i.e. users
+// who have not successfully replicated since then. Each log's `date` is the user's last successful
+// replication, since the log is rewritten on every successful replication (see persistLog). The
+// staleness window is the caller's policy, so `cutoff` is required.
+const getStaleLogs = (cutoff) => {
   return getLogsByType(LOG_TYPE)
     .then(logs => logs.filter(log => log.date && log.date < cutoff));
 };
@@ -86,6 +82,5 @@ module.exports = {
   get: getReplicationLimitLog,
   getStaleLogs,
   LOG_TYPE,
-  LOG_MONTH_DIFF,
   DOC_IDS_WARN_LIMIT,
 };
