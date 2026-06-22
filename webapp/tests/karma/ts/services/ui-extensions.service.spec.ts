@@ -28,7 +28,9 @@ describe('UiExtensionsService', () => {
   });
 
   const mockExtensions = (extensions: any[], extraRows: any[] = []) => {
-    const rows = extensions.map(ext => ({ doc: toDoc(ext) })).concat(extraRows);
+    const rows = extensions
+      .map(ext => ({ doc: toDoc(ext) }))
+      .concat(extraRows.map(doc => ({ doc })));
     allDocs.resolves({ rows });
   };
 
@@ -86,7 +88,7 @@ describe('UiExtensionsService', () => {
     it('should ignore docs in the range that are not ui-extension docs', async () => {
       mockExtensions(
         [{ id: 'ext-1', extension_type: 'tab' }],
-        [{ doc: { _id: 'ui-extension:not-an-extension', type: 'something-else', extension_type: 'tab' } }],
+        [{ _id: 'ui-extension:not-an-extension', type: 'something-else', extension_type: 'tab' }],
       );
 
       const result = await service.getPropertiesByType('tab');

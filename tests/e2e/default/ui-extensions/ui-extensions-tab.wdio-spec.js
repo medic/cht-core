@@ -36,6 +36,7 @@ describe('UI Extensions tab', () => {
     await utils.saveDocs([
       buildExtensionDoc(EXTENSIONS_DIR, 'header-tab'),
       buildExtensionDoc(EXTENSIONS_DIR, 'sidebar-tab'),
+      buildExtensionDoc(EXTENSIONS_DIR, 'online-only'),
       buildExtensionDoc(EXTENSIONS_DIR, 'error'),
       ...places.values(),
       supervisorPerson
@@ -66,6 +67,32 @@ describe('UI Extensions tab', () => {
     afterEach(async () => {
       await destroyTelemetryDb();
     });
+
+    it('filters displayed extensions according to user role', async () => {
+      await commonPage.openHamburgerMenu();
+      const menuOption = await hamburgerMenuItemByOption('Online Extension');
+      const canSeeExtension = user.username === onlineUser.username;
+      await menuOption.waitForDisplayed({ reverse: !canSeeExtension });
+      await commonPage.closeHamburgerMenu();
+    });
+
+    if (user.username === offlineUser.username) {
+      it('records a feedback document for error in UI Extension', async () => {
+        await commonPage.openHamburgerMenu();
+        const menuOption = await hamburgerMenuItemByOption('With Error');
+        const matIcon = await (await menuOption.parentElement()).$('mat-icon');
+        expect(await matIcon.getAttribute('class')).to.contain('fa-ban');
+        await menuOption.click();
+        await commonPage.waitForPageLoaded();
+
+        const feedbackDocs = await chtDbUtils.getFeedbackDocs();
+        expect(feedbackDocs.length).to.be.greaterThan(0);
+        expect(feedbackDocs).to.have.length(1);
+        expect(feedbackDocs[0].info.message).to.equal('Error from UI Extension');
+        await chtDbUtils.clearFeedbackDocs();
+        await commonPage.closeHamburgerMenu();
+      });
+    }
 
     describe('header_tab extension', () => {
       const HEADER_TAB_ID = 'ui-extension-header-tab-tab';
@@ -135,24 +162,4 @@ describe('UI Extensions tab', () => {
       });
     });
   }));
-
-  describe('handles errors', () => {
-    it('records a feedback document for error in UI Extension', async () => {
-      await loginPage.login(offlineUser);
-      await closeReloadModal();
-
-      await commonPage.openHamburgerMenu();
-      const menuOption = await hamburgerMenuItemByOption('With Error');
-      const matIcon = await (await menuOption.parentElement()).$('mat-icon');
-      expect(await matIcon.getAttribute('class')).to.contain('fa-ban');
-      await menuOption.click();
-      await commonPage.waitForPageLoaded();
-
-      const feedbackDocs = await chtDbUtils.getFeedbackDocs();
-      expect(feedbackDocs.length).to.be.greaterThan(0);
-      expect(feedbackDocs).to.have.length(1);
-      expect(feedbackDocs[0].info.message).to.equal('Error from UI Extension');
-      await chtDbUtils.clearFeedbackDocs();
-    });
-  });
 });

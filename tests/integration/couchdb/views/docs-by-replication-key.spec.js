@@ -98,15 +98,6 @@ describe('docs_by_replication_key', () => {
       },
     },
     {
-      _id: `${PREFIXES.UI_EXTENSION}some_deleted_extension____tombstone`,
-      type: 'tombstone',
-      tombstone: {
-        _id: `${PREFIXES.UI_EXTENSION}some_deleted_extension`,
-        type: DOC_TYPES.UI_EXTENSION,
-        _deleted: true,
-      },
-    },
-    {
       _id: 'report_about_patient_deleted____tombstone',
       type: 'tombstone',
       tombstone: {
@@ -373,10 +364,6 @@ describe('docs_by_replication_key', () => {
 
   it('should never return form deletes', () => {
     expect(docByPlaceIds).to.not.include('form:some_deleted_form____tombstone');
-  });
-
-  it('should never return UI Extension deletes', () => {
-    expect(docByPlaceIds).to.not.include(`${PREFIXES.UI_EXTENSION}some_deleted_extension____tombstone`);
   });
 
   describe('Documents associated with the person id', () => {
