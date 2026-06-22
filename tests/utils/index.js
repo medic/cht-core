@@ -1534,7 +1534,7 @@ const collectLogs = (container, ...regex) => {
 
   const collect = async () => {
     if (isK3D()) {
-      await delayPromise(500);
+      await delayPromise(1000);
     }
     clearTimeout(timeout);
     if (errors.length) {
@@ -1542,6 +1542,10 @@ const collectLogs = (container, ...regex) => {
       error.errors = errors;
       error.logs = logs;
       throw error;
+    }
+
+    if (!matches.length) {
+      console.warn('No logs matched', logs);
     }
 
     return matches;
