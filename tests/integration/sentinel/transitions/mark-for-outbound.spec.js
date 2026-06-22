@@ -667,8 +667,8 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /body.+error response/))
+        .then(() => utils.saveDoc(report))
         .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
@@ -702,8 +702,8 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: true })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /cause.*ECONNREFUSED/))
+        .then(() => utils.saveDoc(report))
         .then((result) => collect = result)
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
