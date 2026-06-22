@@ -9,10 +9,10 @@ const DEFAULT_STALE_DAYS = 30;
 // "Any number of failures counts" — flag a user with at least one failure within the window.
 const DEFAULT_MIN_FAILURES = 1;
 
-const sumFailuresSince = (dailyFailures = {}, sinceDay) => {
-  return Object.keys(dailyFailures)
+const sumFailuresSince = (dailyFailures, sinceDay) => {
+  return Object.keys(dailyFailures || {})
     .filter(day => day >= sinceDay)
-    .reduce((total, day) => total + dailyFailures[day], 0);
+    .reduce((total, day) => total + (dailyFailures[day] || 0), 0);
 };
 
 const sumFailures = (dailyFailures = {}) => Object.values(dailyFailures).reduce((total, n) => total + n, 0);
