@@ -90,7 +90,6 @@ describe('UI Extensions tab', () => {
         expect(feedbackDocs).to.have.length(1);
         expect(feedbackDocs[0].info.message).to.equal('Error from UI Extension');
         await chtDbUtils.clearFeedbackDocs();
-        await commonPage.closeHamburgerMenu();
       });
     }
 
