@@ -2,11 +2,11 @@ import jQuery from 'jquery';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-const GeolocationWidget = require('../../../../../src/js/enketo/widgets/geolocation-widget');
+const HouseholdGeolocationWidget = require('../../../../../src/js/enketo/widgets/household-geolocation-widget');
 
 const MS_PER_DAY = 86400000;
 
-describe('Enketo: Geolocation Widget', () => {
+describe('Enketo: Household Geolocation Widget', () => {
   const $ = jQuery;
   let originalMedicmobileAndroid;
   let originalCHTCore;
@@ -24,7 +24,7 @@ describe('Enketo: Geolocation Widget', () => {
   });
 
   it('should have the correct selector', () => {
-    expect(GeolocationWidget.selector).to.equal('.or-appearance-geolocation-capture input');
+    expect(HouseholdGeolocationWidget.selector).to.equal('.or-appearance-geolocation-capture input');
   });
 
   describe('_init()', () => {
@@ -45,8 +45,8 @@ describe('Enketo: Geolocation Widget', () => {
     };
 
     const createWidget = () => {
-      const widget = Object.create(GeolocationWidget.prototype);
-      widget.element = document.querySelector('#geolocation-widget-test ' + GeolocationWidget.selector);
+      const widget = Object.create(HouseholdGeolocationWidget.prototype);
+      widget.element = document.querySelector('#geolocation-widget-test ' + HouseholdGeolocationWidget.selector);
       widget.question = widget.element.closest('.question');
       return widget;
     };
@@ -454,8 +454,8 @@ describe('Enketo: Geolocation Widget', () => {
       };
 
       const createWidget = () => {
-        const widget = Object.create(GeolocationWidget.prototype);
-        widget.element = document.querySelector('#geolocation-widget-test ' + GeolocationWidget.selector);
+        const widget = Object.create(HouseholdGeolocationWidget.prototype);
+        widget.element = document.querySelector('#geolocation-widget-test ' + HouseholdGeolocationWidget.selector);
         widget.question = widget.element.closest('.question');
         return widget;
       };

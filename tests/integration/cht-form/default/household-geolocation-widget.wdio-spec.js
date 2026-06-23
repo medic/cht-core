@@ -25,7 +25,7 @@ const mockGeoResolved = async (result) => {
 
 describe('cht-form web component - Geolocation Widget', () => {
   it('should render capture button when geolocation is available', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     const captureBtn = await $('.geolocation-capture-btn');
     await captureBtn.waitForExist();
@@ -33,7 +33,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should render home and other context options', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await $('.geolocation-context-options').waitForExist();
     expect(await $('.geolocation-context-options input[value="home"]').isExisting()).to.be.true;
@@ -41,7 +41,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should disable capture button until a context option is selected', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await $('.geolocation-capture-btn').waitForExist();
     expect(await $('.geolocation-capture-btn').getAttribute('disabled')).to.not.be.null;
@@ -52,7 +52,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should show progress bar and remove capture button when capture is started', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoPending();
 
@@ -64,7 +64,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should hide context options when capture starts', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoPending();
 
@@ -77,7 +77,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should show success message when GPS is acquired', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoResolved(GEO_SUCCESS);
 
@@ -89,7 +89,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should show retry and skip buttons when GPS acquisition fails', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoResolved(GEO_FAILURE);
 
@@ -102,7 +102,7 @@ describe('cht-form web component - Geolocation Widget', () => {
   });
 
   it('should show a confirmation message and remove retry/skip buttons when skip is clicked', async () => {
-    await mockConfig.loadForm('default', 'test', 'geolocation-widget');
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoResolved(GEO_FAILURE);
 
@@ -121,7 +121,7 @@ describe('cht-form web component - Geolocation Widget', () => {
 
 describe('cht-form web component - Geolocation Widget (edit mode)', () => {
   const loadEditForm = (lastCapture) => mockConfig.loadFormWithEditContext(
-    'default', 'geolocation-widget', lastCapture ? { lastCapture } : {}
+    'default', 'household-geolocation-widget', lastCapture ? { lastCapture } : {}
   );
 
   const selectCaptureNewAndAcknowledge = async () => {

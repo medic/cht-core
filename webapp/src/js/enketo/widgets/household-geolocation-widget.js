@@ -6,7 +6,7 @@ require('enketo-core/src/js/plugins');
 
 const MS_PER_DAY = 86400000;
 
-class GeolocationWidget extends Widget {
+class HouseholdGeolocationWidget extends Widget {
   static get selector() {
     return '.or-appearance-geolocation-capture input';
   }
@@ -380,4 +380,4 @@ class GeolocationWidget extends Widget {
   }
 }
 
-module.exports = GeolocationWidget;
+module.exports = HouseholdGeolocationWidget;
