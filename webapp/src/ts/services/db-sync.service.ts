@@ -16,7 +16,7 @@ import { ReplicationService } from '@mm-services/replication.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
-const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS, DOC_TYPES.UI_EXTENSIONS];
+const READ_ONLY_TYPES = ['form', DOC_TYPES.TRANSLATIONS, DOC_TYPES.UI_EXTENSION];
 const READ_ONLY_IDS = [
   DOC_IDS.RESOURCES,
   DOC_IDS.BRANDING,

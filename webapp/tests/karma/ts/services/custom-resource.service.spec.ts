@@ -307,7 +307,7 @@ describe('ResourceIcons service', () => {
       expect(dom.find('.resource-icon[title="child"] img').attr('src'))
         .to.equal('data:image/png;base64,kiddlywinks');
       expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
-        .to.equal(undefined);
+        .to.be.undefined;
     }));
 
     it('should set the fallback content when building the content throws', fakeAsync(() => {
@@ -342,7 +342,7 @@ describe('ResourceIcons service', () => {
         .to.equal('data:image/png;base64,kiddlywinks');
       // the throw is caught and the fallback content is used
       const broken = dom.find('.resource-icon[title="broken"]');
-      expect(broken.find('img').length).to.equal(0);
+      expect(broken.find('img')).to.have.lengthOf(0);
       // the error is logged
       expect(errorLog.callCount).to.equal(1);
       expect(errorLog.args[0][0]).to.equal('Error getting resource content [broken] from [resources: ');
@@ -376,7 +376,7 @@ describe('ResourceIcons service', () => {
       expect(child.data('faPlaceholder')).to.equal('fa-child');
 
       const adult = dom.find('.resource-icon[title="adult"]');
-      expect(adult.find('img').attr('src')).to.equal(undefined);
+      expect(adult.find('img').attr('src')).to.be.undefined;
       expect(adult.find('span').attr('class')).to.equal('fa fa-adult');
       expect(adult.data('faPlaceholder')).to.equal('fa-adult');
     }));
@@ -425,7 +425,7 @@ describe('ResourceIcons service', () => {
       expect(dom.find('.resource-icon[title="child"] img').attr('src'))
         .to.equal('data:image/png;base64,kiddlywinks');
       expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
-        .to.equal(undefined);
+        .to.be.undefined;
 
       Changes.args[0][0].callback({ id: 'resources' }); // invoke the changes listener
       service.replacePlaceholders(dom);
@@ -494,7 +494,7 @@ describe('ResourceIcons service', () => {
       expect(child.data('faPlaceholder')).to.equal('fa-child');
 
       let adult = dom.find('.resource-icon[title="adult"]');
-      expect(adult.find('img').attr('src')).to.equal(undefined);
+      expect(adult.find('img').attr('src')).to.be.undefined;
       expect(adult.find('span').attr('class')).to.equal('fa fa-adult');
       expect(adult.data('faPlaceholder')).to.equal('fa-adult');
 
@@ -519,7 +519,7 @@ describe('ResourceIcons service', () => {
       expect(child.data('faPlaceholder')).to.equal('fa-child');
 
       adult = dom.find('.resource-icon[title="adult"]');
-      expect(adult.find('img').attr('src')).to.equal(undefined);
+      expect(adult.find('img').attr('src')).to.be.undefined;
       expect(adult.find('span').attr('class')).to.equal('fa fa-adult');
       expect(adult.data('faPlaceholder')).to.equal('fa-adult');
     }));
