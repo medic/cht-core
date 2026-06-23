@@ -212,6 +212,21 @@ describe('Report Controller Tests', () => {
         expect(res.json.calledOnceWithExactly({ data: reports, cursor: null })).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
+
+      it('returns a page of reports for the comma-separated ids query param', async () => {
+        req = { query: { ids: 'report1,report2', cursor: '5', limit: 50 } };
+        reportGetPage.resolves({ data: reports, cursor: '10' });
+
+        await controller.v1.getAll(req, res);
+
+        expect(reportGetPage.calledOnceWithExactly(
+          Qualifier.byIds(['report1', 'report2']),
+          '5',
+          50
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly({ data: reports, cursor: '10' })).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
     });
 
     describe('create', () => {

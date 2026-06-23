@@ -7,7 +7,7 @@ import {
   queryDocIdsByKey,
   queryDocIdsByRange, queryDocsByKey, updateDoc
 } from './libs/doc';
-import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+import { FreetextQualifier, IdsQualifier, isIdsQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import * as LocalContact from './contact';
@@ -134,17 +134,20 @@ export namespace v1 {
   /** @internal */
   export const getPage = ({ medicDb }: LocalDataContext) => {
     const getReportsPage = queryDocsByKey(medicDb, 'medic-client/data_records_by_type');
+    const getMedicDocsByIds = getDocsByIds(medicDb);
 
     return async (
-      // No qualifier is supported yet - all reports are returned. The leading argument is reserved for the
-      // qualifiers that will be added later.
-      _qualifier: undefined,
+      // When an IdsQualifier is provided the requested reports are returned; otherwise all reports are returned.
+      qualifier: IdsQualifier | undefined,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<Report.v1.Report>> => {
-      // Resolved with a single include_docs view query returning every report.
       const skip = validateCursor(cursor);
-      const getPageFn = (limit: number, skip: number) => getReportsPage('report', limit, skip);
+      // By-ids: page over the provided ids and hydrate each page with a single batched allDocs lookup (no N+1).
+      // No qualifier: resolve with a single include_docs view query returning every report.
+      const getPageFn = isIdsQualifier(qualifier)
+        ? (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit))
+        : (limit: number, skip: number) => getReportsPage('report', limit, skip);
       return await fetchAndFilter(
         getPageFn,
         (doc: Nullable<Doc>) => isReport(doc),

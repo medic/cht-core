@@ -3,10 +3,10 @@ import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { getGeneratorFn, getPagedDataFn } from './libs/paginated';
 import { Doc } from './libs/doc';
 import * as Local from './local';
-import { byFreetext, byUuid, UuidQualifier } from './qualifier';
+import { byFreetext, byIds, byUuid, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertFreetextQualifier, assertNoQualifier, assertUuidQualifier } from './libs/parameter-validators';
+import { assertFreetextQualifier, assertOptionalIdsQualifier, assertUuidQualifier } from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
@@ -83,8 +83,10 @@ export namespace v1 {
   /**
    * Returns a function for retrieving a paged array of reports from the given data context.
    *
-   * The returned function accepts an optional page `cursor` (`null` for the first page) and an optional `limit`
-   * (default 100), and resolves a page of reports. All reports are returned (this is not filtered by a qualifier).
+   * The returned function accepts an optional `IdsQualifier`, an optional page `cursor` (`null` for the first page)
+   * and an optional `limit` (default 100), and resolves a page of reports. When an `IdsQualifier` is provided, only
+   * the reports with the given UUIDs are returned (in UUID order); when no qualifier is provided, all reports are
+   * returned.
    * @param context the current data context
    * @returns a function for retrieving a paged array of reports
    * @throws Error if a data context is not provided
@@ -93,17 +95,19 @@ export namespace v1 {
   export const getPage = getPagedDataFn(
     Local.Report.v1.getPage,
     Remote.Report.v1.getPage,
-    assertNoQualifier,
+    assertOptionalIdsQualifier,
     DEFAULT_DOCS_PAGE_LIMIT,
   );
 
   /**
-   * Returns a function for getting a generator that fetches all reports from the given data context.
+   * Returns a function for getting a generator that fetches reports from the given data context. When an
+   * `IdsQualifier` is provided, only the reports with the given UUIDs are fetched; when no qualifier is provided, all
+   * reports are fetched.
    * @param context the current data context
-   * @returns a function for getting a generator that fetches all reports
+   * @returns a function for getting a generator that fetches reports
    * @throws Error if a data context is not provided
    */
-  export const getAll = getGeneratorFn(v1.getPage, assertNoQualifier);
+  export const getAll = getGeneratorFn(v1.getPage, assertOptionalIdsQualifier);
 
   /**
    * Returns a function for creating a report from the given data context.
@@ -213,6 +217,51 @@ export namespace v1 {
     getByUuidWithLineage: (uuid: string) => Promise<Nullable<v1.ReportWithLineage>>;
 
     /**
+     * Returns a page of reports for the provided UUIDs.
+     * @param ids the UUIDs of the reports to retrieve
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of reports to return. Default is 100.
+     * @returns a page of reports for the provided UUIDs
+     * @throws InvalidArgumentError if no UUIDs are provided or if any of the UUIDs is invalid
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPageByIds: (
+      ids: string[],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Report>>;
+
+    /**
+     * Returns a page of all reports.
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of reports to return. Default is 100.
+     * @returns a page of reports
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPage: (
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Report>>;
+
+    /**
+     * Returns a generator for fetching all the reports with the given UUIDs.
+     * @param ids the UUIDs of the reports to retrieve
+     * @returns a generator for fetching all the reports with the given UUIDs
+     * @throws InvalidArgumentError if no UUIDs are provided or if any of the UUIDs is invalid
+     */
+    getByIds: (ids: string[]) => AsyncGenerator<v1.Report, null>;
+
+    /**
+     * Returns a generator for fetching all reports.
+     * @returns a generator for fetching all reports
+     */
+    getAll: () => AsyncGenerator<v1.Report, null>;
+
+    /**
      * Returns a paged array of report identifiers from the given data context.
      * @param qualifier the limiter defining which identifiers to return
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
@@ -271,6 +320,17 @@ export namespace v1 {
     return {
       getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
       getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
+      getPageByIds: (
+        ids,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byIds(ids), cursor, limit),
+      getPage: (
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(undefined, cursor, limit),
+      getByIds: (ids) => ctx.bind(v1.getAll)(byIds(ids)),
+      getAll: () => ctx.bind(v1.getAll)(),
       getUuidsPageByFreetext: (
         qualifier,
         cursor = null,

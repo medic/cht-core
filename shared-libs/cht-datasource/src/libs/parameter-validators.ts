@@ -2,8 +2,10 @@ import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
+  IdsQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isUuidQualifier,
   UuidQualifier,
 } from '../qualifier';
@@ -141,13 +143,16 @@ export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is U
 };
 
 /**
- * Asserts that no qualifier was provided. Used by paged getters that do not (yet) support any qualifier and simply
- * page all entities.
+ * Asserts that the provided qualifier is either an {@link IdsQualifier} or not provided at all. Used by the
+ * document-returning paged getters, which page a specific set of documents when given UUIDs and page all entities
+ * when given no qualifier.
  * @internal
  */
-export const assertNoQualifier: (qualifier: unknown) => asserts qualifier is undefined = (qualifier: unknown) => {
-  if (qualifier !== undefined) {
-    throw new InvalidArgumentError(`Unsupported qualifier [${JSON.stringify(qualifier)}].`);
+export const assertOptionalIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is IdsQualifier | undefined = (qualifier: unknown) => {
+  if (qualifier !== undefined && !isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid ids qualifier [${JSON.stringify(qualifier)}].`);
   }
 };
 

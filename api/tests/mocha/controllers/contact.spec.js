@@ -287,6 +287,21 @@ describe('Contact Controller', () => {
         expect(res.json.calledOnceWithExactly({ data: contacts, cursor: '10' })).to.be.true;
         expect(serverUtilsError.notCalled).to.be.true;
       });
+
+      it('returns a page of contacts for the comma-separated ids query param', async () => {
+        req = { query: { ids: 'contact1,contact2', cursor: '5', limit: 50 } };
+        contactGetPage.resolves({ data: contacts, cursor: '10' });
+
+        await controller.v1.getAll(req, res);
+
+        expect(contactGetPage.calledOnceWithExactly(
+          Qualifier.byIds(['contact1', 'contact2']),
+          '5',
+          50
+        )).to.be.true;
+        expect(res.json.calledOnceWithExactly({ data: contacts, cursor: '10' })).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
     });
   });
 });

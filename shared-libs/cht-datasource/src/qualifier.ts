@@ -57,6 +57,38 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
+ * A qualifier that identifies entities by their UUIDs.
+ */
+export type IdsQualifier = Readonly<{ ids: [string, ...string[]] }>;
+
+/**
+ * Returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`.
+ * @param identifier the identifier to check
+ * @returns `true` if the given identifier is an {@link IdsQualifier}, otherwise `false`
+ */
+export const isIdsQualifier = (identifier: unknown): identifier is IdsQualifier => {
+  return isRecord(identifier)
+    && hasField(identifier, { name: 'ids', type: 'object' })
+    && Array.isArray(identifier.ids)
+    && identifier.ids.length > 0
+    && identifier.ids.every((id) => isString(id) && id.length > 0);
+};
+
+/**
+ * Builds a qualifier that identifies entities by their UUIDs.
+ * @param ids the UUIDs of the entities
+ * @returns the qualifier
+ * @throws InvalidArgumentError if the UUIDs are invalid
+ */
+export const byIds = (ids: string[]): IdsQualifier => {
+  const qualifier = { ids };
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid ids [${JSON.stringify(ids)}].`);
+  }
+  return qualifier;
+};
+
+/**
  * A qualifier that identifies contacts based on type.
  */
 export type ContactTypeQualifier = Readonly<{ contactType: string }>;

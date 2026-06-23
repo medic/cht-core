@@ -465,6 +465,31 @@ describe('Report API', () => {
       secondPage.data.forEach(doc => expect(firstPageIds).to.not.include(doc._id));
     });
 
+    it('returns only the reports identified by the ids query param', async () => {
+      const requestedIds = seededReportIds.slice(0, 3);
+
+      const responsePage = await utils.request({ path: endpoint, qs: { ids: requestedIds.join(',') } });
+
+      const returnedIds = responsePage.data.map(doc => doc._id);
+      expect(returnedIds).to.have.members(requestedIds);
+      expect(returnedIds).to.have.lengthOf(requestedIds.length);
+      responsePage.data.forEach(doc => {
+        expect(doc).to.have.property('_rev');
+        expect(doc).to.have.property('form');
+      });
+    });
+
+    it('walks cursor pages for the ids query param', async () => {
+      const qs = { ids: seededReportIds.join(','), limit: fiveLimit };
+      const firstPage = await utils.request({ path: endpoint, qs });
+
+      expect(firstPage.data.length).to.be.equal(fiveLimit);
+      expect(firstPage.cursor).to.be.equal('5');
+
+      const ids = (await drain(qs)).map(doc => doc._id);
+      expect(ids).to.have.members(seededReportIds);
+    });
+
     it('throws error when user does not have can_view_reports permission', async () => {
       const opts = {
         path: endpoint,

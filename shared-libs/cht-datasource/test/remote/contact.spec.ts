@@ -177,6 +177,22 @@ describe('remote contact', () => {
         expect(result).to.equal(expectedResponse);
         expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString() })).to.be.true;
       });
+
+      it('serializes the ids qualifier as a comma-separated query param', async () => {
+        const doc = [{ type: 'person' }, { type: 'person' }];
+        const expectedResponse = { data: doc, cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)({ ids: ['contact1', 'contact2'] }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          ids: 'contact1,contact2'
+        })).to.be.true;
+      });
     });
   });
 });

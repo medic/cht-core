@@ -17,6 +17,7 @@ describe('contact', () => {
   let isUuidQualifier: SinonStub;
   let isContactTypeQualifier: SinonStub;
   let isFreetextQualifier: SinonStub;
+  let isIdsQualifier: SinonStub;
 
   beforeEach(() => {
     dataContextBind = sinon.stub(dataContext, 'bind');
@@ -25,6 +26,7 @@ describe('contact', () => {
     isUuidQualifier = sinon.stub(Qualifier, 'isUuidQualifier');
     isContactTypeQualifier = sinon.stub(Qualifier, 'isContactTypeQualifier');
     isFreetextQualifier = sinon.stub(Qualifier, 'isFreetextQualifier');
+    isIdsQualifier = sinon.stub(Qualifier, 'isIdsQualifier');
   });
 
   afterEach(() => sinon.restore());
@@ -232,15 +234,28 @@ describe('contact', () => {
         expect(getDocsPage.calledOnceWithExactly(undefined, cursor, 3)).to.be.true;
       });
 
+      it('delegates to the doc-page implementations with an ids qualifier', async () => {
+        isIdsQualifier.returns(true);
+        const qualifier = { ids: ['contact1', 'contact2'] } as Qualifier.IdsQualifier;
+
+        const result = await Contact.v1.getPage(dataContext)(qualifier, cursor, 3);
+
+        expect(result).to.equal(pageData);
+        expect(getDocsPage.calledOnceWithExactly(qualifier, cursor, 3)).to.be.true;
+      });
+
       it('defaults to the docs page limit', async () => {
         await Contact.v1.getPage(dataContext)();
 
         expect(getDocsPage.calledOnceWithExactly(undefined, null, 100)).to.be.true;
       });
 
-      it('rejects a qualifier (none is supported yet)', async () => {
-        await expect(Contact.v1.getPage(dataContext)({ unexpected: true } as unknown as undefined))
-          .to.be.rejectedWith('Unsupported qualifier [{"unexpected":true}].');
+      it('rejects an invalid qualifier', async () => {
+        isIdsQualifier.returns(false);
+        const qualifier = { unexpected: true } as unknown as undefined;
+
+        await expect(Contact.v1.getPage(dataContext)(qualifier))
+          .to.be.rejectedWith('Invalid ids qualifier [{"unexpected":true}].');
         expect(getDocsPage.notCalled).to.be.true;
       });
     });
@@ -265,6 +280,26 @@ describe('contact', () => {
         expect(bind.calledOnceWithExactly(Contact.v1.getPage)).to.be.true;
         expect(getPagedGenerator.calledOnceWithExactly(boundPage, undefined)).to.be.true;
       });
+
+      it('returns a generator that drains the contacts for an ids qualifier', () => {
+        isIdsQualifier.returns(true);
+        const qualifier = { ids: ['contact1', 'contact2'] } as Qualifier.IdsQualifier;
+
+        const generator = Contact.v1.getAll(dataContext)(qualifier);
+
+        expect(generator).to.equal(mockGenerator);
+        expect(bind.calledOnceWithExactly(Contact.v1.getPage)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(boundPage, qualifier)).to.be.true;
+      });
+
+      it('rejects an invalid qualifier', () => {
+        isIdsQualifier.returns(false);
+        const qualifier = { unexpected: true } as unknown as undefined;
+
+        expect(() => Contact.v1.getAll(dataContext)(qualifier))
+          .to.throw('Invalid ids qualifier [{"unexpected":true}].');
+        expect(getPagedGenerator.notCalled).to.be.true;
+      });
     });
 
     describe('getDatasource', () => {
@@ -277,6 +312,10 @@ describe('contact', () => {
           [
             'getByUuid',
             'getByUuidWithLineage',
+            'getPageByIds',
+            'getPage',
+            'getByIds',
+            'getAll',
             'getUuidsByTypeFreetext',
             'getUuidsPageByTypeFreetext',
             'getUuidsPageByFreetext',
@@ -315,6 +354,91 @@ describe('contact', () => {
         expect(dataContextBind.calledOnceWithExactly(Contact.v1.getWithLineage)).to.be.true;
         expect(contactGet.calledOnceWithExactly(qualifier)).to.be.true;
         expect(byUuid.calledOnceWithExactly(qualifier.uuid)).to.be.true;
+      });
+
+      it('getPageByIds', async () => {
+        const expectedPage: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const getDocsPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(getDocsPage);
+        const ids = ['contact1', 'contact2'];
+        const limit = 2;
+        const cursor = '1';
+        const idsQualifier = { ids } as Qualifier.IdsQualifier;
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+
+        const returnedPage = await contact.getPageByIds(ids, cursor, limit);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getPage)).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getPageByIds uses default cursor and limit', async () => {
+        const expectedPage: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const getDocsPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(getDocsPage);
+        const ids = ['contact1', 'contact2'];
+        const idsQualifier = { ids } as Qualifier.IdsQualifier;
+        sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+
+        const returnedPage = await contact.getPageByIds(ids);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(getDocsPage.calledOnceWithExactly(idsQualifier, null, 100)).to.be.true;
+      });
+
+      it('getPage', async () => {
+        const expectedPage: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const getDocsPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(getDocsPage);
+        const limit = 2;
+        const cursor = '1';
+
+        const returnedPage = await contact.getPage(cursor, limit);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getPage)).to.be.true;
+        expect(getDocsPage.calledOnceWithExactly(undefined, cursor, limit)).to.be.true;
+      });
+
+      it('getPage uses default cursor and limit', async () => {
+        const expectedPage: Page<Contact.v1.Contact> = { data: [], cursor: null };
+        const getDocsPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(getDocsPage);
+
+        const returnedPage = await contact.getPage();
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(getDocsPage.calledOnceWithExactly(undefined, null, 100)).to.be.true;
+      });
+
+      it('getByIds', () => {
+        const mockGenerator = fakeGenerator<Contact.v1.Contact>();
+        const getAll = sinon.stub().returns(mockGenerator);
+        dataContextBind.returns(getAll);
+        const ids = ['contact1', 'contact2'];
+        const idsQualifier = { ids } as Qualifier.IdsQualifier;
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(idsQualifier);
+
+        const generator = contact.getByIds(ids);
+
+        expect(generator).to.equal(mockGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getAll)).to.be.true;
+        expect(getAll.calledOnceWithExactly(idsQualifier)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getAll', () => {
+        const mockGenerator = fakeGenerator<Contact.v1.Contact>();
+        const getAll = sinon.stub().returns(mockGenerator);
+        dataContextBind.returns(getAll);
+
+        const generator = contact.getAll();
+
+        expect(generator).to.equal(mockGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getAll)).to.be.true;
+        expect(getAll.calledOnceWithExactly()).to.be.true;
       });
 
       it('getUuidsPageByTypeFreetext uses default cursor and limit', async () => {

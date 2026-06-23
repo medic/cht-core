@@ -19,6 +19,13 @@ const buildContactQualifier = ({ freetext, type }) => {
   return qualifier;
 };
 
+const buildIdsQualifier = ({ ids }) => {
+  if (!ids) {
+    return undefined;
+  }
+  return Qualifier.byIds(ids.split(',').filter(Boolean));
+};
+
 /**
  * @openapi
  * tags:
@@ -146,8 +153,9 @@ module.exports = {
      *     summary: Get contacts
      *     operationId: v1ContactGet
      *     description: >
-     *       Returns a paginated array of all contact records (persons and places). Use the `cursor` returned in each
-     *       response to retrieve subsequent pages. To filter contacts by type, use the
+     *       Returns a paginated array of contact records (persons and places). When `ids` is provided, only the
+     *       contacts with the given UUIDs are returned; otherwise all contacts are returned. Use the `cursor`
+     *       returned in each response to retrieve subsequent pages. To filter contacts by type, use the
      *       [Get persons](#/Person/v1PersonGet) or [Get places](#/Place/v1PlaceGet) endpoints. See also
      *       [Get contact UUIDs](#/Contact/v1ContactUuidGet) for retrieving only identifiers (which supports
      *       `type`/`freetext` filters).
@@ -156,6 +164,13 @@ module.exports = {
      *     x-permissions:
      *       hasAll: [can_view_contacts]
      *     parameters:
+     *       - in: query
+     *         name: ids
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of contact UUIDs. When provided, only the contacts with these UUIDs are
+     *           returned (paginated in the given order). When omitted, all contacts are returned.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -183,8 +198,8 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
-      // No qualifier is supported yet - all contacts are returned.
-      const docs = await getContactDocs(undefined, req.query.cursor, req.query.limit);
+      const qualifier = buildIdsQualifier(req.query);
+      const docs = await getContactDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
   },

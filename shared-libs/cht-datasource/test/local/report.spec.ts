@@ -387,6 +387,36 @@ describe('local report', () => {
         });
       });
 
+      ([
+        [null, 0],
+        ['1', 1]
+      ] as [string | null, number][]).forEach(([cursor, skip]) => {
+        it(`resolves a page of reports for an ids qualifier via a batched lookup, cursor [${cursor}]`, async () => {
+          const ids = ['r1', 'r2', 'r3', 'r4'];
+          const docs = [
+            { _id: 'r1', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+            { _id: 'r2', _rev: '1', type: DOC_TYPES.DATA_RECORD, form: 'form-1' },
+          ];
+          const getDocsByIdsInner = sinon.stub().resolves(docs);
+          const getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+          const expectedResult = { cursor: '3', data: docs };
+          fetchAndFilterInner.resolves(expectedResult);
+
+          const res = await Report.v1.getPage(localContext)({ ids } as Qualifier.IdsQualifier, cursor, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(fetchAndFilterOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+          expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+          expect(fetchAndFilterInner.calledOnceWithExactly(limit, skip)).to.be.true;
+          // The page function hydrates only the requested slice of ids (no per-document fetch, no view query).
+          const pageFn = fetchAndFilterOuter.firstCall.args[0] as (l: number, s: number) => unknown;
+          await pageFn(limit, skip);
+          expect(getDocsByIdsInner.calledOnceWithExactly(ids.slice(skip, skip + limit))).to.be.true;
+        });
+      });
+
       it('throws for invalid cursor', async () => {
         const cursor = 'not a number';
 

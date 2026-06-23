@@ -6,7 +6,7 @@ import {
   putResource,
   RemoteDataContext
 } from './libs/data-context';
-import { FreetextQualifier, UuidQualifier } from '../qualifier';
+import { FreetextQualifier, IdsQualifier, UuidQualifier } from '../qualifier';
 import * as Report from '../report';
 import { Nullable, Page } from '../libs/core';
 
@@ -38,12 +38,14 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    // No qualifier is supported yet - all reports are returned. The leading argument is reserved for the
-    // qualifiers that will be added later.
-    _qualifier: undefined,
+    // When an IdsQualifier is provided the requested reports are returned; otherwise all reports are returned.
+    qualifier: IdsQualifier | undefined,
     cursor: Nullable<string>,
     limit: number
-  ): Promise<Page<Report.v1.Report>> => getReports(remoteContext)(getPageQueryParams(cursor, limit, {}));
+  ): Promise<Page<Report.v1.Report>> => {
+    const idsParams: Record<string, string> = qualifier ? { ids: qualifier.ids.join(',') } : {};
+    return getReports(remoteContext)(getPageQueryParams(cursor, limit, idsParams));
+  };
 
   /** @internal */
   export const create = postResource('api/v1/report');

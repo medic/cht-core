@@ -175,6 +175,22 @@ describe('remote report', () => {
         expect(result).to.equal(expectedResponse);
         expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString() })).to.be.true;
       });
+
+      it('serializes the ids qualifier as a comma-separated query param', async () => {
+        const doc = [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }, { type: DOC_TYPES.DATA_RECORD, form: 'yes' }];
+        const expectedResponse = { data: doc, cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Report.v1.getPage(remoteContext)({ ids: ['report1', 'report2'] }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          ids: 'report1,report2'
+        })).to.be.true;
+      });
     });
 
     describe('create', () => {

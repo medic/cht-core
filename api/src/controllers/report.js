@@ -10,6 +10,13 @@ const getReportDocs = ctx.bind(Report.v1.getPage);
 const create = ctx.bind(Report.v1.create);
 const update = ctx.bind(Report.v1.update);
 
+const buildIdsQualifier = ({ ids }) => {
+  if (!ids) {
+    return undefined;
+  }
+  return Qualifier.byIds(ids.split(',').filter(Boolean));
+};
+
 /**
  * @openapi
  * tags:
@@ -126,14 +133,22 @@ module.exports = {
      *     summary: Get reports
      *     operationId: v1ReportGet
      *     description: >
-     *       Returns a paginated array of all report records. Use the `cursor` returned in each response to retrieve
-     *       subsequent pages. See also [Get report UUIDs](#/Report/v1ReportUuidGet) for retrieving only identifiers
-     *       (which supports a `freetext` filter).
+     *       Returns a paginated array of report records. When `ids` is provided, only the reports with the given
+     *       UUIDs are returned; otherwise all reports are returned. Use the `cursor` returned in each response to
+     *       retrieve subsequent pages. See also [Get report UUIDs](#/Report/v1ReportUuidGet) for retrieving only
+     *       identifiers (which supports a `freetext` filter).
      *     tags: [Report]
      *     x-since: 4.18.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
      *     parameters:
+     *       - in: query
+     *         name: ids
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of report UUIDs. When provided, only the reports with these UUIDs are
+     *           returned (paginated in the given order). When omitted, all reports are returned.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
@@ -161,8 +176,8 @@ module.exports = {
      */
     getAll: serverUtils.doOrError(async (req, res) => {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
-      // No qualifier is supported yet - all reports are returned.
-      const docs = await getReportDocs(undefined, req.query.cursor, req.query.limit);
+      const qualifier = buildIdsQualifier(req.query);
+      const docs = await getReportDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
 

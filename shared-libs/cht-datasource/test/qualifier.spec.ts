@@ -16,7 +16,9 @@ import {
   isUsernameQualifier,
   isUuidQualifier,
   byId,
-  isIdQualifier
+  byIds,
+  isIdQualifier,
+  isIdsQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
@@ -77,6 +79,47 @@ describe('qualifier', () => {
     ].forEach(([ identifier, expected ]) => {
       it(`evaluates ${JSON.stringify(identifier)}`, () => {
         expect(isUuidQualifier(identifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byIds', () => {
+    ([
+      ['abc-123'],
+      ['abc-123', 'abc-200']
+    ] as [string, ...string[]][]).forEach((ids) => {
+      it(`builds a qualifier for identifying entities by ${JSON.stringify(ids)}`, () => {
+        expect(byIds(ids)).to.deep.equal({ ids });
+      });
+    });
+
+    ([
+      null,
+      '',
+      [],
+      [''],
+      [null, 'abc-123'],
+    ] as [string, ...string[]][]).forEach(ids => {
+      it(`throws an error for ${JSON.stringify(ids)}`, () => {
+        expect(() => byIds(ids)).to.throw(`Invalid ids [${JSON.stringify(ids)}].`);
+      });
+    });
+  });
+
+  describe('isIdsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'abc-123', false ],
+      [ { ids: '' }, false ],
+      [ { ids: { } }, false ],
+      [ { ids: [] }, false ],
+      [ { ids: ['abc-123', ''] }, false ],
+      [ { ids: [null, 'abc-123'] }, false ],
+      [ { ids: ['abc-123'] }, true ],
+      [ { ids: ['abc-123', 'abc-456'] }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isIdsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

@@ -1,5 +1,5 @@
 import { getPageQueryParams, getResource, getResources, RemoteDataContext } from './libs/data-context';
-import { ContactTypeQualifier, FreetextQualifier, UuidQualifier } from '../qualifier';
+import { ContactTypeQualifier, FreetextQualifier, IdsQualifier, UuidQualifier } from '../qualifier';
 import { Nullable, Page } from '../libs/core';
 import * as Contact from '../contact';
 import { isContactType, isFreetextType } from '../libs/parameter-validators';
@@ -45,10 +45,12 @@ export namespace v1 {
 
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
-    // No qualifier is supported yet - all contacts are returned. The leading argument is reserved for the
-    // qualifiers that will be added later.
-    _qualifier: undefined,
+    // When an IdsQualifier is provided the requested contacts are returned; otherwise all contacts are returned.
+    qualifier: IdsQualifier | undefined,
     cursor: Nullable<string>,
     limit: number
-  ): Promise<Page<Contact.v1.Contact>> => getContacts(remoteContext)(getPageQueryParams(cursor, limit, {}));
+  ): Promise<Page<Contact.v1.Contact>> => {
+    const idsParams: Record<string, string> = qualifier ? { ids: qualifier.ids.join(',') } : {};
+    return getContacts(remoteContext)(getPageQueryParams(cursor, limit, idsParams));
+  };
 }

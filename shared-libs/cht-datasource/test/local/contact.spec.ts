@@ -650,6 +650,33 @@ describe('local contact', () => {
         });
       });
 
+      ([
+        [null, 0],
+        ['1', 1]
+      ] as [string | null, number][]).forEach(([cursor, skip]) => {
+        it(`resolves a page of contacts for an ids qualifier via a batched lookup, cursor [${cursor}]`, async () => {
+          const ids = ['contact1', 'contact2', 'contact3', 'contact4'];
+          const docs = [{ type: 'person' }, { type: 'person' }] as unknown as Doc[];
+          const getDocsByIdsInner = sinon.stub().resolves(docs);
+          const getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+          const expectedResult = { cursor: '3', data: docs };
+          fetchAndFilterInner.resolves(expectedResult);
+
+          const res = await Contact.v1.getPage(localContext)({ ids } as Qualifier.IdsQualifier, cursor, limit);
+
+          expect(res).to.deep.equal(expectedResult);
+          expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+          expect(fetchAndFilterOuter.calledOnce).to.be.true;
+          expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+          expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+          expect(fetchAndFilterInner.calledOnceWithExactly(limit, skip)).to.be.true;
+          // The page function hydrates only the requested slice of ids (no per-document fetch, no view query).
+          const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+          await getPageFn(limit, skip);
+          expect(getDocsByIdsInner.calledOnceWithExactly(ids.slice(skip, skip + limit))).to.be.true;
+        });
+      });
+
       it('throws for invalid cursor', async () => {
         const cursor = 'not a number';
 

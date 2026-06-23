@@ -3,6 +3,7 @@ import {
   fetchAndFilter,
   fetchAndFilterIds,
   getDocById,
+  getDocsByIds,
   queryDocIdsByKey,
   queryDocIdsByRange,
   queryDocsByPage
@@ -10,8 +11,10 @@ import {
 import {
   ContactTypeQualifier,
   FreetextQualifier,
+  IdsQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isKeyedFreetextQualifier,
   UuidQualifier
 } from '../qualifier';
@@ -147,18 +150,22 @@ export namespace v1 {
   /** @internal */
   export const getPage = ({ medicDb, settings }: LocalDataContext) => {
     const getContactsPage = queryDocsByPage(medicDb, 'medic-client/contacts_by_type');
+    const getMedicDocsByIds = getDocsByIds(medicDb);
 
     return async (
-      // No qualifier is supported yet - all contacts are returned. The leading argument is reserved for the
-      // qualifiers (e.g. by-ids) that will be added later.
-      _qualifier: undefined,
+      // When an IdsQualifier is provided the requested contacts are returned; otherwise all contacts are returned.
+      qualifier: IdsQualifier | undefined,
       cursor: Nullable<string>,
       limit: number
     ): Promise<Page<Contact.v1.Contact>> => {
-      // Resolved with a single include_docs view query returning every contact.
       const skip = validateCursor(cursor);
+      // By-ids: page over the provided ids and hydrate each page with a single batched allDocs lookup (no N+1).
+      // No qualifier: resolve with a single include_docs view query returning every contact.
+      const getPageFn = isIdsQualifier(qualifier)
+        ? (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit))
+        : getContactsPage;
       return await fetchAndFilter(
-        getContactsPage,
+        getPageFn,
         (doc: Nullable<Doc>) => isContact(settings, doc),
         limit
       )(limit, skip) as Page<Contact.v1.Contact>;
