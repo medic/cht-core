@@ -271,7 +271,7 @@ describe('Bikram Sambat date display', () => {
       await dateWidget.$('input[name="day"]').setValue('15');
       if (withMonth) {
         await dateWidget.$('.dropdown-toggle').click();
-        await dateWidget.$$('.dropdown-menu li')[3].click(); // असार (month 4)
+        await dateWidget.$$('.dropdown-menu li')[3].click(); // साउन (month 4)
       }
       await dateWidget.$('input[name="year"]').setValue('2081');
       // Submit directly while the year field is focused, so the blur and serialization happen on the
