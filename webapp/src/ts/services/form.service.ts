@@ -321,7 +321,7 @@ export class FormService {
     return captureInput?.value || undefined;
   }
 
-  private saveGeo(geoHandle, docs, contextValue?: string) {
+  private saveGeo(geoHandle, docs, contextValue?: string, restrictGeoToHomeCaptures = false) {
     if (!geoHandle) {
       return docs;
     }
@@ -337,7 +337,9 @@ export class FormService {
             entry.is_home = isHome;
           }
           doc.geolocation_log.push(entry);
-          if (!geoData.code && (contextValue === undefined || isHome)) {
+          if (!restrictGeoToHomeCaptures) {
+            doc.geolocation = geoData;
+          } else if (!geoData.code && isHome) {
             doc.geolocation = geoData;
           }
         });
@@ -508,7 +510,7 @@ export class FormService {
 
     const docsWithGeo = geoCaptureValue === 'kept'
       ? preparedDocs.preparedDocs
-      : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue);
+      : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue, true);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
