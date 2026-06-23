@@ -657,7 +657,7 @@ describe('Contact API', () => {
       const data = [];
       let cursor = null;
       do {
-        const page = await utils.request({ path: endpoint, qs: { ...qs, cursor } });
+        const page = await utils.request({ path: endpoint, qs: cursor ? { ...qs, cursor } : qs });
         data.push(...page.data);
         cursor = page.cursor;
       } while (cursor);
