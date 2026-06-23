@@ -131,6 +131,38 @@
   opacity: 1 !important;
   pointer-events: auto !important;
   
+  .close-btn {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    line-height: 1;
+    padding: 0;
+    color: #999;
+    
+    &:hover {
+      color: #333;
+    }
+  }
+
+  /* Browser scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 13px;
+    height: 13px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(0,0,0,.1);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,.5);
+  }
+  
   /* Table styles */
   table {
     background-color: transparent;
@@ -347,19 +379,6 @@
   }
 }
 
-/* Browser scrollbar styles */
-::-webkit-scrollbar {
-  width: 13px;
-  height: 13px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(0,0,0,.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,.5);
-}
 
 /* Enketo integration styles */
 .or {
