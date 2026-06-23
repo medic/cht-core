@@ -38,6 +38,40 @@ class Bikramsambatdatepicker extends Widget {
 
         bikram_sambat_bs.initListeners( $parent, $realDateInput );
 
+        // The bikram-sambat-bootstrap library converts the date on both
+        // "change" and "blur" of the day/year inputs, but the month input
+        // is type="hidden" and only gets a value when the user clicks the
+        // dropdown. If day/year are entered without selecting a month, the
+        // library converts with an empty month, defaulting to Baisakh
+        // (month 1), and writes that incorrect date to the real date input.
+        //
+        // A guard on "change" alone is not enough: the library's own "blur"
+        // handler fires after a delegated "blur"/"focusout" guard, so it
+        // would overwrite a cleared value with the incorrect date again.
+        // To win that race, the guard re-checks on the next tick (via
+        // setTimeout) after both "change" and "blur", once the library's
+        // own handlers have finished running.
+        const clearIfIncomplete = () => {
+          const day   = $parent.find( 'input[name="day"]' ).val();
+          const month = $parent.find( 'input[name="month"]' ).val();
+          const year  = $parent.find( 'input[name="year"]' ).val();
+
+          if ( !day || !month || !year ) {
+            $realDateInput.val( '' );
+            $realDateInput.trigger( 'change' );
+          }
+        };
+
+        $parent.on( 'change blur', 'input', function( event ) {
+          if ( $( event.target ).is( $realDateInput ) ) {
+            return;
+          }
+          clearIfIncomplete();
+          // Re-check after the library's own change/blur handlers have run,
+          // in case they wrote a value back after our guard cleared it.
+          setTimeout( clearIfIncomplete, 0 );
+        });
+
         if ( initialVal ) {
           bikram_sambat_bs.setDate_greg_text(
             $parent.children( '.bikram-sambat-input-group' ),

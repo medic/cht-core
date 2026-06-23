@@ -260,4 +260,31 @@ describe('Bikram Sambat date display', () => {
     const lmpDateValue = await reportsPage.getReportDetailFieldValueByLabel('LMP Date');
     expect(lmpDateValue).to.equal(`${dateFormat} (${relativeFormat})`);
   });
+
+  it('does not save a date when day and year are entered without a month (#8011)', async () => {
+    const testStart = Date.now();
+    const fillAndSubmit = async ({ withMonth }) => {
+      await commonPage.goToReports();
+      await commonPage.openFastActionReport('bikram-sambat-dates', false);
+      const realInput = $('input[name="/bikram-sambat-dates/data/date2"]');
+      const dateWidget = await realInput.nextElement();
+      await dateWidget.$('input[name="day"]').setValue('15');
+      if (withMonth) {
+        await dateWidget.$('.dropdown-toggle').click();
+        await dateWidget.$$('.dropdown-menu li')[3].click(); // साउन (month 4)
+      }
+      await dateWidget.$('input[name="year"]').setValue('2081');
+      // Submit directly while the year field is focused, so the blur and serialization happen on the
+      // real submit path. A separate blur step would let the deferred clear run first and mask the issue.
+      await genericForm.submitForm();
+    };
+
+    await fillAndSubmit({ withMonth: false }); // the #8011 case
+    await fillAndSubmit({ withMonth: true });  // control: a complete date must still save
+
+    const reports = (await getReports()).filter(r => r.form === 'bikram-sambat-dates' && r.reported_date >= testStart);
+    const date2vals = reports.map(r => r.fields?.data?.date2);
+    expect(date2vals.filter(v => !v)).to.have.lengthOf(1);   // incomplete: saved empty
+    expect(date2vals.filter(v => !!v)).to.have.lengthOf(1);  // complete: saved a date
+  });
 });
