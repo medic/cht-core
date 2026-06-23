@@ -13,7 +13,7 @@ import { DBSyncService } from '@mm-services/db-sync.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { UpdateServiceWorkerService } from '@mm-services/update-service-worker.service';
 import { LocationService } from '@mm-services/location.service';
@@ -52,7 +52,10 @@ import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.c
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { StorageInfoService } from '@mm-services/storage-info.service';
 import { TasksNotificationService } from '@mm-services/task-notifications.service';
-import { PREFIXES } from '@medic/constants';
+import { DOC_IDS, PREFIXES } from '@medic/constants';
+import { InteractionTrackingService } from '@mm-services/interaction-tracking.service';
+import { UiExtensionsService } from '@mm-services/ui-extensions.service';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -66,7 +69,7 @@ describe('AppComponent', () => {
   let languageService;
   let sessionService;
   let authService;
-  let resourceIconsService;
+  let customResourceService;
   let changesService;
   let locationService;
   let xmlFormsService;
@@ -87,6 +90,7 @@ describe('AppComponent', () => {
   let databaseConnectionMonitorService;
   let translateLocaleService;
   let telemetryService;
+  let interactionTrackingService;
   let transitionsService;
   let chtDatasourceService;
   let analyticsModulesService;
@@ -96,6 +100,8 @@ describe('AppComponent', () => {
   let updateServiceWorkerService;
   let storageInfoService;
   let tasksNotificationService;
+  let uiExtensionsService;
+  let headerTabsService;
   // End Services
 
   let globalActions;
@@ -124,7 +130,7 @@ describe('AppComponent', () => {
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
-    resourceIconsService = { getAppTitle: sinon.stub().resolves() };
+    customResourceService = { getAppTitle: sinon.stub().resolves() };
     privacyPoliciesService = { hasAccepted: sinon.stub().resolves() };
     formatDateService = { init: sinon.stub() };
     wealthQuintilesWatcherService = { start: sinon.stub() };
@@ -190,6 +196,7 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    interactionTrackingService = { init: sinon.stub(), persistBuffer: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: ['facility'], contact_id: 'contact' }),
@@ -197,6 +204,11 @@ describe('AppComponent', () => {
     };
     formService = { setUserContext: sinon.stub() };
     updateServiceWorkerService = { update: sinon.stub() };
+    uiExtensionsService = { getPropertiesByType: sinon.stub().resolves([]) };
+    headerTabsService = {
+      getAuthorizedTabs: sinon.stub().resolves([]),
+      getSidebarTabs: sinon.stub().resolves([]),
+    };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -221,7 +233,7 @@ describe('AppComponent', () => {
           { provide: SetLanguageService, useValue: setLanguageService },
           { provide: SessionService, useValue: sessionService },
           { provide: AuthService, useValue: authService },
-          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
           { provide: UpdateServiceWorkerService, useValue: updateServiceWorkerService },
           { provide: LocationService, useValue: locationService },
@@ -252,6 +264,9 @@ describe('AppComponent', () => {
           { provide: StorageInfoService, useValue: storageInfoService },
           { provide: Router, useValue: router },
           { provide: TasksNotificationService, useValue: tasksNotificationService },
+          { provide: InteractionTrackingService, useValue: interactionTrackingService },
+          { provide: UiExtensionsService, useValue: uiExtensionsService },
+          { provide: HeaderTabsService, useValue: headerTabsService },
         ]
       })
       .overrideComponent(SidebarMenuComponent, {
@@ -287,6 +302,8 @@ describe('AppComponent', () => {
     expect(countMessageService.init.callCount).to.equal(1);
     // init feedback service
     expect(feedbackService.init.callCount).to.equal(1);
+    // init interaction tracking service
+    expect(interactionTrackingService.init.callCount).to.equal(1);
     // check privacy policy
     expect(privacyPoliciesService.hasAccepted.callCount).to.equal(1);
     // init rules engine
@@ -492,12 +509,12 @@ describe('AppComponent', () => {
   });
 
   it('should set app title', async () => {
-    resourceIconsService.getAppTitle.resolves('My App');
+    customResourceService.getAppTitle.resolves('My App');
 
     await getComponent();
     await Promise.resolve();
 
-    expect(resourceIconsService.getAppTitle.callCount).to.equal(1);
+    expect(customResourceService.getAppTitle.callCount).to.equal(1);
     expect(document.title).to.equal('My App');
   });
 
@@ -514,6 +531,36 @@ describe('AppComponent', () => {
     expect(modalService.show.callCount).to.equal(1);
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
+
+  describe('visibilitychange', () => {
+    let originalHiddenDescriptor;
+
+    beforeEach(() => {
+      originalHiddenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+    });
+
+    afterEach(() => {
+      if (originalHiddenDescriptor) {
+        Object.defineProperty(Document.prototype, 'hidden', originalHiddenDescriptor);
+      }
+    });
+
+    const setHidden = (hidden: boolean) => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: hidden });
+    };
+
+    it('persists the interaction buffer on every visibilitychange', async () => {
+      await getComponent();
+      setHidden(true);
+      window.dispatchEvent(new Event('visibilitychange'));
+      setHidden(false);
+      window.dispatchEvent(new Event('visibilitychange'));
+
+      // On hide the buffer flushes; on show persistBuffer is still called so
+      // the service detects a day rollover and aggregates yesterday's DB.
+      expect(interactionTrackingService.persistBuffer.callCount).to.equal(2);
+    });
+  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {
@@ -642,6 +689,48 @@ describe('AppComponent', () => {
       expect(sessionService.init.callCount).to.equal(1);
       changesListener['user-context'].callback();
       expect(sessionService.init.callCount).to.equal(2);
+    });
+
+    it('ddoc change listener should filter design docs, service worker meta, settings and ui-extensions', async () => {
+      await getComponent();
+
+      const filter = changesListener.ddoc.filter;
+      expect(filter).to.be.a('function');
+
+      expect(filter({ id: '_design/medic' })).to.equal(true);
+      expect(filter({ id: '_design/medic-client' })).to.equal(true);
+      expect(filter({ id: DOC_IDS.SERVICE_WORKER_META })).to.equal(true);
+      expect(filter({ id: DOC_IDS.SETTINGS })).to.equal(true);
+      expect(filter({ id: DOC_IDS.EXTENSION_LIBS })).to.equal(true);
+      expect(filter({ id: `${PREFIXES.UI_EXTENSION}foo` })).to.equal(true);
+      expect(filter({ id: PREFIXES.UI_EXTENSION })).to.equal(true);
+      expect(filter({ id: 'something-else' })).to.equal(false);
+      expect(filter({ id: 'not-ui-extension:foo' })).to.equal(false);
+      expect(filter({ id: '_design/medic-not' })).to.equal(false);
+    });
+
+    it('ddoc change listener callback should trigger service worker update for service worker meta', async () => {
+      await getComponent();
+      sinon.resetHistory();
+
+      changesListener.ddoc.callback({ id: DOC_IDS.SERVICE_WORKER_META });
+
+      expect(updateServiceWorkerService.update.callCount).to.equal(1);
+      const callback = updateServiceWorkerService.update.args[0][0];
+      callback();
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
+    });
+
+    it('ddoc change listener callback should show update ready for ui-extension changes', async () => {
+      await getComponent();
+      sinon.resetHistory();
+
+      changesListener.ddoc.callback({ id: `${PREFIXES.UI_EXTENSIONS}my-extension` });
+
+      expect(updateServiceWorkerService.update.callCount).to.equal(0);
+      expect(modalService.show.callCount).to.equal(1);
+      expect(modalService.show.args[0]).to.have.deep.members([ReloadingComponent]);
     });
 
     it('sync-status change listener callback should do nothing if sync in progress', async () => {
