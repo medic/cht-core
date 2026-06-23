@@ -26,6 +26,7 @@ const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
   DATA_RECORD: 'data_record',
+  UI_EXTENSION: 'ui-extension'
 };
 
 // HTTP Headers
@@ -65,6 +66,7 @@ const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
   FORM: 'form:',
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`,
 };
 
 module.exports = {
