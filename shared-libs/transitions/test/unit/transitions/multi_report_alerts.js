@@ -405,6 +405,23 @@ describe('multi report alerts', () => {
     });
   });
 
+  it('adds phone_number_error code when phone error occurs', () => {
+    const recipient = 'new_report.contact.phonekkk'; // field doesn't exist
+    alertConfig.recipients = [recipient];
+    config.get.returns([alertConfig]);
+    sinon.stub(utils, 'isValidSubmission').callsFake(r => r.contact && r.contact.phone);
+    sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+    stubFetchHydratedDocs();
+    sinon.spy(messages, 'addError');
+    sinon.stub(messages, 'addMessage');
+
+    return transition.onMatch({ doc: doc }).then(() => {
+      assert.equal(messages.addError.getCalls().length, 3);
+      const errorArg = messages.addError.getCall(0).args[1];
+     assert.equal(errorArg.code, 'phone_number_error');
+    });
+  });
+
   it('does not add message when recipient is bad', () => {
     const recipient = 'ssdfds';
     alertConfig.recipients = [recipient];

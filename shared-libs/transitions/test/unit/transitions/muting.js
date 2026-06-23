@@ -1026,5 +1026,40 @@ describe('Muting transition', () => {
           chai.expect(doc.tasks[0].messages[0].message).to.equal('Muting successful');
         });
     });
+
+    it('failure adds error with muting_error code', () => {
+      const doc = {
+        type: DOC_TYPES.DATA_RECORD,
+        fields: { patient_id: 'x' },
+        contact: { phone: 'x' },
+        patient: { _id: 'patient' },
+      };
+
+      config.get.returns({
+        mute_forms: [],
+        unmute_forms: [],
+        validations: {
+          join_responses: false,
+          list: [
+            {
+              property: 'patient_id',
+              rule: 'regex("^[0-9]{5}$")',
+              message: [
+                {
+                  content: 'patient id needs 5 numbers.',
+                  locale: 'en',
+                },
+              ],
+            },
+          ],
+        }
+      });
+
+      return transition.onMatch({ doc }).then(result => {
+        chai.expect(result).to.equal(true);
+        chai.expect(doc.errors.length).to.equal(1);
+        chai.expect(doc.errors[0].code).to.equal('muting_error');
+      });
+    });
   });
 });

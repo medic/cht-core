@@ -73,9 +73,9 @@ const getReportsWithSameParentAndForm = (options = {}) => {
   }
 
   const parentId = options.doc &&
-    options.doc.contact &&
-    options.doc.contact.parent &&
-    options.doc.contact.parent._id;
+  options.doc.contact &&
+  options.doc.contact.parent &&
+  options.doc.contact.parent._id;
   if (!parentId) {
     return Promise.reject('Missing required argument `parentId` for match query.');
   }
