@@ -362,6 +362,13 @@ export class EnketoService {
     return form;
   }
 
+  private findFileNodeByFilename($record: JQuery<Element>, filename: string) {
+    return $record
+      .find('[type=file]')
+      .toArray()
+      .find(element => $(element).text() === filename) ?? $record[0];
+  }
+
   private xmlToDocs(doc, formXml, xmlVersion, record) {
     const recordDoc = $.parseXML(record);
     const $record = $($(recordDoc).children()[0]);
@@ -480,29 +487,41 @@ export class EnketoService {
       doc.form_version = xmlVersion;
     }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
+    const resolveOwner = (element) => {
+      let node = element?.parentNode;
+      while (node && node !== recordDoc) {
+        if (node._couchId) {
+          const owner = docsToStore.find(({ _id }) => node._couchId === _id);
+          if (owner) {
+            const xpathPostfix = doc.type === DOC_TYPES.DATA_RECORD ? '/fields' : '';
+            return { ownerDoc: owner, ownerXpath: `${Xpath.getElementXPath(node)}${xpathPostfix}` };
+          }
+        }
+        node = node.parentNode;
+      }
+      return { ownerDoc: doc, ownerXpath: `/${$record[0].nodeName}` };
+    };
 
     FileManager
       .getCurrentFiles()
-      .forEach(file => this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false));
-
-    const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
-      const xpath = Xpath.getElementXPath(elem);
-      // replace instance root element node name with form internal ID
-      const filename = 'user-file' +
-        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
-    };
-
+      .forEach(file => {
+        const { ownerDoc } = resolveOwner(this.findFileNodeByFilename($record, file.name));
+        this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${file.name}`, file, file.type, false);
+      });
     $record
       .find('[type=binary]')
-      .each((idx, element) => {
-        const file = $(element).text();
-        if (file) {
-          // Attach binary file with legacy-style filename because the actual filename is not stored as the question
-          // value in the form model (and so there is currently no way to map the answer in a saved report to the
-          // associated file attachment).
-          attachLegacyFile(element, file, 'image/png', true);
-        }
+      .toArray()
+      .map(element => $(element))
+      .filter($element => $element.text())
+      .forEach(($element) => {
+        const data = $element.text();
+        const { ownerDoc, ownerXpath } = resolveOwner($element[0]);
+        const xpath = Xpath
+          .getElementXPath($element[0])
+          .slice(ownerXpath.length + 1);
+        const formPrefix = ownerDoc.form ? `${ownerDoc.form}/` : '';
+        const filename = `${USER_BINARY_FILE_PREFIX}${formPrefix}${xpath}`;
+        this.attachmentService.add(ownerDoc, filename, data, 'image/png', true);
       });
 
     record = getOuterHTML($record[0]);
@@ -610,6 +629,9 @@ export class EnketoService {
     this.objUrls.length = 0;
   }
 }
+
+export const USER_BINARY_FILE_PREFIX = 'user-file/';
+export const USER_FILE_PREFIX = 'user-file-';
 
 export interface ContactSummary {
   id: string;
