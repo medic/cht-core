@@ -418,7 +418,7 @@ describe('multi report alerts', () => {
     return transition.onMatch({ doc: doc }).then(() => {
       assert.equal(messages.addError.getCalls().length, 3);
       const errorArg = messages.addError.getCall(0).args[1];
-     assert.equal(errorArg.code, 'phone_number_error');
+      assert.equal(errorArg.code, 'phone_number_error');
     });
   });
 
