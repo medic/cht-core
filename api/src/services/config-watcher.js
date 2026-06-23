@@ -16,7 +16,6 @@ const manifest = require('./manifest');
 const config = require('../config');
 const environment = require('@medic/environment');
 const dataContext = require('./data-context');
-const extensionLibs = require('./extension-libs');
 const deployInfo = require('./deploy-info');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -127,10 +126,6 @@ const handleBrandingChanges = () => {
     .then(() => updateServiceWorker());
 };
 
-const handleLibsChanges = () => {
-  return updateServiceWorker();
-};
-
 const updateManifest = () => {
   return manifest.generate().catch(err => {
     logger.error('Failed to generate manifest: %o', err);
@@ -179,10 +174,6 @@ const listen = () => {
 
     if (change.id === DOC_IDS.BRANDING) {
       return handleBrandingChanges();
-    }
-
-    if (extensionLibs.isLibChange(change)) {
-      return handleLibsChanges();
     }
   });
 };
