@@ -88,15 +88,16 @@ describe('replication failure logging @docker', () => {
   before(async () => {
     await utils.saveDocs([facility, mathilPlace, janicePlace, mathilContact, janiceContact]);
     await utils.createUsers(users, true);
+    await utils.clearReplicationFailureLogs();
+  });
+
+  afterEach(async () => {
+    await utils.clearReplicationFailureLogs();
   });
 
   after(async () => {
     await utils.deleteUsers(users);
     await utils.revertDb();
-  });
-
-  afterEach(async () => {
-    await utils.clearReplicationFailureLogs();
   });
 
   describe('on successful replication', () => {
