@@ -24,24 +24,34 @@ export type GeneratorFn<Q, T> = undefined extends Q
   : (qualifier: Q) => AsyncGenerator<T, null>;
 
 /**
+ * The named arguments for {@link getPagedDataFn}.
+ * @internal
+ */
+export interface PagedDataFnConfig<Q, T> {
+  /** the local implementation */
+  localFn: (c: LocalDataContext) => (qualifier: Q, cursor: Nullable<string>, limit: number) => Promise<Page<T>>;
+  /** the remote implementation */
+  remoteFn: (c: RemoteDataContext) => (qualifier: Q, cursor: Nullable<string>, limit: number) => Promise<Page<T>>;
+  /** asserts the provided qualifier is valid for this getter */
+  assertQualifier: (qualifier: unknown) => asserts qualifier is Q;
+  /** the default page limit used when none is provided */
+  defaultLimit: number;
+}
+
+/**
  * Builds a data-context factory for a paged getter. The returned function resolves the appropriate local/remote
  * implementation via {@link adapt} and wraps it with the validation shared by every paged getter
  * (`assertDataContext`, `assertCursor`, `assertLimit`, and the provided qualifier assertion). The qualifier is the
  * leading argument and is optional when `Q` admits `undefined` (paging all entities).
- * @param localFn the local implementation
- * @param remoteFn the remote implementation
- * @param assertQualifier asserts the provided qualifier is valid for this getter
- * @param defaultLimit the default page limit used when none is provided
+ * @param config the named arguments for the paged getter (see {@link PagedDataFnConfig})
  * @returns a function that, given a data context, returns the curried paged getter
  * @internal
  */
-export const getPagedDataFn = <Q, T>(
-  localFn: (c: LocalDataContext) => (qualifier: Q, cursor: Nullable<string>, limit: number) => Promise<Page<T>>,
-  remoteFn: (c: RemoteDataContext) => (qualifier: Q, cursor: Nullable<string>, limit: number) => Promise<Page<T>>,
-  assertQualifier: (qualifier: unknown) => asserts qualifier is Q,
-  defaultLimit: number,
-) => (context: DataContext): PagedDataFn<Q, T> => {
+export const getPagedDataFn = <Q, T>(config: PagedDataFnConfig<Q, T>) => (context: DataContext): PagedDataFn<Q, T> => {
   assertDataContext(context);
+  const { localFn, remoteFn, defaultLimit } = config;
+  // An explicitly-typed local is required for the assertion signature to narrow (a destructured binding would not).
+  const assertQualifier: (qualifier: unknown) => asserts qualifier is Q = config.assertQualifier;
   const fn = adapt(context, localFn, remoteFn);
 
   return (async (
@@ -58,18 +68,27 @@ export const getPagedDataFn = <Q, T>(
 };
 
 /**
+ * The named arguments for {@link getGeneratorFn}.
+ * @internal
+ */
+export interface GeneratorFnConfig<Q, T> {
+  /** the paged getter factory to drain (e.g. the `getPage`/`getUuidsPage` for this entity) */
+  pagedFn: (context: DataContext) => PagedDataFn<Q, T>;
+  /** asserts the provided qualifier is valid for this getter */
+  assertQualifier: (qualifier: unknown) => asserts qualifier is Q;
+}
+
+/**
  * Builds a data-context factory for a generator that drains all the pages produced by the given paged getter.
- * @param pagedFn the paged getter factory to drain (e.g. the `getPage`/`getUuidsPage` for this entity)
- * @param assertQualifier asserts the provided qualifier is valid for this getter
+ * @param config the named arguments for the generator (see {@link GeneratorFnConfig})
  * @returns a function that, given a data context, returns the curried generator
  * @internal
  */
-export const getGeneratorFn = <Q, T>(
-  pagedFn: (context: DataContext) => PagedDataFn<Q, T>,
-  assertQualifier: (qualifier: unknown) => asserts qualifier is Q,
-) => (context: DataContext): GeneratorFn<Q, T> => {
+export const getGeneratorFn = <Q, T>(config: GeneratorFnConfig<Q, T>) => (context: DataContext): GeneratorFn<Q, T> => {
   assertDataContext(context);
-  const getPage = context.bind(pagedFn);
+  // An explicitly-typed local is required for the assertion signature to narrow (a destructured binding would not).
+  const assertQualifier: (qualifier: unknown) => asserts qualifier is Q = config.assertQualifier;
+  const getPage = context.bind(config.pagedFn);
 
   return ((qualifier?: Q): AsyncGenerator<T, null> => {
     assertQualifier(qualifier);

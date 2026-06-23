@@ -75,12 +75,12 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
-  export const getPage = getPagedDataFn(
-    Local.Person.v1.getPage,
-    Remote.Person.v1.getPage,
-    assertTypeQualifier,
-    DEFAULT_DOCS_PAGE_LIMIT,
-  );
+  export const getPage = getPagedDataFn({
+    localFn: Local.Person.v1.getPage,
+    remoteFn: Remote.Person.v1.getPage,
+    assertQualifier: assertTypeQualifier,
+    defaultLimit: DEFAULT_DOCS_PAGE_LIMIT,
+  });
 
   /**
    * Returns a function for getting a generator that fetches people from the given data context.
@@ -88,7 +88,10 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches people
    * @throws Error if a data context is not provided
    */
-  export const getAll = getGeneratorFn(v1.getPage, assertTypeQualifier);
+  export const getAll = getGeneratorFn({
+    pagedFn: v1.getPage,
+    assertQualifier: assertTypeQualifier,
+  });
 
   /**
    * Returns a function for creating a person from the given data context.

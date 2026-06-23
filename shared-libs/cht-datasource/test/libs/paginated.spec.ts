@@ -19,8 +19,8 @@ describe('paginated', () => {
   afterEach(() => sinon.restore());
 
   describe('getPagedDataFn', () => {
-    const localFn = (() => null) as unknown as Parameters<typeof getPagedDataFn>[0];
-    const remoteFn = (() => null) as unknown as Parameters<typeof getPagedDataFn>[1];
+    const localFn = (() => null) as unknown as Parameters<typeof getPagedDataFn>[0]['localFn'];
+    const remoteFn = (() => null) as unknown as Parameters<typeof getPagedDataFn>[0]['remoteFn'];
     const defaultLimit = 100;
     const qualifier = { freetext: 'search' };
     const page = { data: ['a', 'b'], cursor: '2' };
@@ -33,7 +33,7 @@ describe('paginated', () => {
       assertQualifier = sinon.stub();
     });
 
-    const build = () => getPagedDataFn(localFn, remoteFn, assertQualifier, defaultLimit)(dataContext);
+    const build = () => getPagedDataFn({ localFn, remoteFn, assertQualifier, defaultLimit })(dataContext);
 
     it('asserts the data context and adapts the provided local/remote implementations', () => {
       const fn = build();
@@ -46,7 +46,7 @@ describe('paginated', () => {
     it('throws when the data context is invalid', () => {
       assertDataContext.throws(new Error('Invalid data context [null].'));
 
-      expect(() => getPagedDataFn(localFn, remoteFn, assertQualifier, defaultLimit)(dataContext))
+      expect(() => getPagedDataFn({ localFn, remoteFn, assertQualifier, defaultLimit })(dataContext))
         .to.throw('Invalid data context [null].');
       expect(adapt.notCalled).to.be.true;
     });
@@ -100,7 +100,7 @@ describe('paginated', () => {
 
   describe('getGeneratorFn', () => {
     const qualifier = { freetext: 'search' };
-    const pagedFn = (() => null) as unknown as Parameters<typeof getGeneratorFn>[0];
+    const pagedFn = (() => null) as unknown as Parameters<typeof getGeneratorFn>[0]['pagedFn'];
     const mockGenerator = {} as AsyncGenerator<string, null>;
     let bind: SinonStub;
     let boundPagedFn: SinonStub;
@@ -117,7 +117,7 @@ describe('paginated', () => {
     });
 
     it('binds the paged getter and drains it into a generator', () => {
-      const generator = getGeneratorFn(pagedFn, assertQualifier)(dataContext)(qualifier);
+      const generator = getGeneratorFn({ pagedFn, assertQualifier })(dataContext)(qualifier);
 
       expect(generator).to.equal(mockGenerator);
       expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
@@ -129,14 +129,14 @@ describe('paginated', () => {
     it('throws when the data context is invalid', () => {
       assertDataContext.throws(new Error('Invalid data context [null].'));
 
-      expect(() => getGeneratorFn(pagedFn, assertQualifier)(dataContext)).to.throw('Invalid data context [null].');
+      expect(() => getGeneratorFn({ pagedFn, assertQualifier })(dataContext)).to.throw('Invalid data context [null].');
       expect(bind.notCalled).to.be.true;
     });
 
     it('throws an invalid qualifier without draining any pages', () => {
       assertQualifier.throws(new InvalidArgumentError('Invalid qualifier.'));
 
-      expect(() => getGeneratorFn(pagedFn, assertQualifier)(dataContext)(qualifier))
+      expect(() => getGeneratorFn({ pagedFn, assertQualifier })(dataContext)(qualifier))
         .to.throw(InvalidArgumentError, 'Invalid qualifier.');
       expect(getPagedGenerator.notCalled).to.be.true;
     });
@@ -144,7 +144,7 @@ describe('paginated', () => {
     it('drains a qualifier-less getter when called with no qualifier', () => {
       getPagedGenerator.returns(mockGenerator);
 
-      const generator = getGeneratorFn(pagedFn, assertQualifier)(dataContext)();
+      const generator = getGeneratorFn({ pagedFn, assertQualifier })(dataContext)();
 
       expect(generator).to.equal(mockGenerator);
       expect(assertQualifier.calledOnceWithExactly(undefined)).to.be.true;

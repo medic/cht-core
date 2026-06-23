@@ -91,12 +91,12 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getUuids} which provides the same data, but without having to manually account for paging
    */
-  export const getUuidsPage = getPagedDataFn(
-    Local.Contact.v1.getUuidsPage,
-    Remote.Contact.v1.getUuidsPage,
-    assertContactTypeFreetextQualifier,
-    DEFAULT_IDS_PAGE_LIMIT,
-  );
+  export const getUuidsPage = getPagedDataFn({
+    localFn: Local.Contact.v1.getUuidsPage,
+    remoteFn: Remote.Contact.v1.getUuidsPage,
+    assertQualifier: assertContactTypeFreetextQualifier,
+    defaultLimit: DEFAULT_IDS_PAGE_LIMIT,
+  });
 
   /**
    * Returns a function for getting a generator that fetches contact identifiers from the given data context.
@@ -104,7 +104,10 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches contact identifiers
    * @throws Error if a data context is not provided
    */
-  export const getUuids = getGeneratorFn(v1.getUuidsPage, assertContactTypeFreetextQualifier);
+  export const getUuids = getGeneratorFn({
+    pagedFn: v1.getUuidsPage,
+    assertQualifier: assertContactTypeFreetextQualifier,
+  });
 
   /**
    * Returns a function for retrieving a paged array of contacts from the given data context.
@@ -119,12 +122,12 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    * @see {@link getAll} which provides the same data, but without having to manually account for paging
    */
-  export const getPage = getPagedDataFn(
-    Local.Contact.v1.getPage,
-    Remote.Contact.v1.getPage,
-    assertOptionalIdsQualifier,
-    DEFAULT_DOCS_PAGE_LIMIT,
-  );
+  export const getPage = getPagedDataFn({
+    localFn: Local.Contact.v1.getPage,
+    remoteFn: Remote.Contact.v1.getPage,
+    assertQualifier: assertOptionalIdsQualifier,
+    defaultLimit: DEFAULT_DOCS_PAGE_LIMIT,
+  });
 
   /**
    * Returns a function for getting a generator that fetches contacts from the given data context. When an
@@ -134,7 +137,10 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches contacts
    * @throws Error if a data context is not provided
    */
-  export const getAll = getGeneratorFn(v1.getPage, assertOptionalIdsQualifier);
+  export const getAll = getGeneratorFn({
+    pagedFn: v1.getPage,
+    assertQualifier: assertOptionalIdsQualifier,
+  });
 
   /**
    * Operations for working with contacts.
