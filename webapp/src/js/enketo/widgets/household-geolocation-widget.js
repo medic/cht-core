@@ -5,7 +5,7 @@ const $ = require('jquery');
 const moment = require('moment');
 require('enketo-core/src/js/plugins');
 
-const WEAK_SIGNAL_CODES = [2, 3, -2];
+const WEAK_SIGNAL_CODES = new Set([2, 3, -2]);
 
 const TRANSLATION_KEYS = {
   CAPTURE: 'geolocation.capture',
@@ -315,7 +315,7 @@ class HouseholdGeolocationWidget extends Widget {
     $resultRow.append($resultLabel, $resultText);
     $status.append($resultRow);
 
-    const isWeakSignal = WEAK_SIGNAL_CODES.includes(errorCode);
+    const isWeakSignal = WEAK_SIGNAL_CODES.has(errorCode);
     if (isWeakSignal) {
       const $weakSignalMsg = $('<p class="geolocation-weak-signal-msg">');
       $weakSignalMsg.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.SIGNAL_WEAK));

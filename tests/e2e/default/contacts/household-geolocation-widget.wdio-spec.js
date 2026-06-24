@@ -1,3 +1,4 @@
+/* global window */
 const fs = require('fs');
 const path = require('path');
 const utils = require('@utils');
@@ -172,8 +173,7 @@ describe('Geolocation widget - contact save pipeline', () => {
       expect(savedDoc.geolocation_log[0].is_home).to.be.false;
       expect(savedDoc.geolocation_log[0].recording).to.exist;
       expect(savedDoc.geolocation).to.not.exist;
-    }
-  );
+    });
 
   describe('edit mode', () => {
     const seedGeoData = {
@@ -265,7 +265,6 @@ describe('Geolocation widget - contact save pipeline', () => {
 
         await $(SELECTORS.EDIT_OPTIONS).waitForDisplayed();
         expect(await $(SELECTORS.KEPT_RADIO).isSelected()).to.be.true;
-      }
-    );
+      });
   });
 });
