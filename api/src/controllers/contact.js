@@ -150,7 +150,7 @@ module.exports = {
      *       Exactly one of `ids` or `type` must be provided. Use the `cursor` returned in each response to retrieve
      *       subsequent pages.
      *     tags: [Contact]
-     *     x-since: 4.19.0
+     *     x-since: 5.3.0
      *     x-permissions:
      *       hasAll: [can_view_contacts]
      *     parameters:
@@ -159,7 +159,7 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: >
-     *           A comma-separated list of contact UUIDs to fetch. Required if `type` is not provided. Takes
+     *           A comma-separated list of contact ids to fetch. Required if `type` is not provided. Takes
      *           precedence over `type` when both are provided.
      *       - in: query
      *         name: type

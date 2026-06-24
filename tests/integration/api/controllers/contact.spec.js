@@ -673,7 +673,7 @@ describe('Contact API', () => {
       const responseIds = responsePage.data.map(doc => doc._id);
 
       expect(responseIds).to.deep.equalInAnyOrder(expectedPeopleIds);
-      expect(responsePage.cursor).to.be.equal(null);
+      expect(responsePage.cursor).to.be.null;
       // The doc-page returns full documents, not just ids.
       responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
     });
@@ -691,7 +691,7 @@ describe('Contact API', () => {
       const responseIds = responsePage.data.map(doc => doc._id);
 
       expect(responseIds).to.deep.equalInAnyOrder(ids);
-      expect(responsePage.cursor).to.be.equal(null);
+      expect(responsePage.cursor).to.be.null;
       responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
     });
 

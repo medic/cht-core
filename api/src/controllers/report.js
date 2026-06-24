@@ -131,10 +131,10 @@ module.exports = {
      *     summary: Get reports
      *     operationId: v1ReportGet
      *     description: >
-     *       Returns a paginated array of report records for the given UUIDs. Use the `cursor` returned in each
+     *       Returns a paginated array of report records for the given ids. Use the `cursor` returned in each
      *       response to retrieve subsequent pages.
      *     tags: [Report]
-     *     x-since: 4.19.0
+     *     x-since: 5.3.0
      *     x-permissions:
      *       hasAll: [can_view_reports]
      *     parameters:
@@ -143,7 +143,7 @@ module.exports = {
      *         required: true
      *         schema:
      *           type: string
-     *         description: A comma-separated list of report UUIDs to fetch.
+     *         description: A comma-separated list of report ids to fetch.
      *       - $ref: '#/components/parameters/cursor'
      *       - $ref: '#/components/parameters/limitEntity'
      *     responses:
