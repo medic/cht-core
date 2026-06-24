@@ -223,7 +223,6 @@ describe('sentinel processes archive jobs', () => {
   it('exits at the duration deadline and resumes on the next run', async function () {
     this.timeout(180000);
 
-    // 2000 docs = 2 batches at BATCH_SIZE=1000 with a tight 10ms deadline
     const COUNT = 2000;
     const bulkDocs = Array.from({ length: COUNT }, (_, i) => ({
       _id: `archive-e2e-resume-${String(i).padStart(5, '0')}`,
@@ -239,7 +238,7 @@ describe('sentinel processes archive jobs', () => {
     expect(jobs).to.have.lengthOf(1);
     const jobId = jobs[0].id;
 
-    await updateSettings('10 milliseconds');
+    await updateSettings('5 milliseconds');
 
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
