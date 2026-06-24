@@ -7,6 +7,35 @@ require('enketo-core/src/js/plugins');
 const MS_PER_DAY = 86400000;
 const WEAK_SIGNAL_CODES = [2, 3, -2];
 
+const TRANSLATION_KEYS = {
+  CAPTURE: 'geolocation.capture',
+  CONTEXT_HOME: 'geolocation.context.home',
+  CONTEXT_OTHER: 'geolocation.context.other',
+  EDIT_ACKNOWLEDGE: 'geolocation.edit.acknowledge',
+  EDIT_BADGE: 'geolocation.edit.badge',
+  EDIT_CAPTURE_NEW: 'geolocation.edit.capture_new',
+  EDIT_CONTEXT_HOME: 'geolocation.edit.context.home',
+  EDIT_CONTEXT_OTHER: 'geolocation.edit.context.other',
+  EDIT_KEEP: 'geolocation.edit.keep',
+  EDIT_LAST_UPDATED_DAY: 'geolocation.edit.last_updated_day',
+  EDIT_LAST_UPDATED_DAYS: 'geolocation.edit.last_updated_days',
+  EDIT_LAST_UPDATED_TODAY: 'geolocation.edit.last_updated_today',
+  EDIT_PROMPT: 'geolocation.edit.prompt',
+  EDIT_WARNING: 'geolocation.edit.warning',
+  EDIT_WARNING_TITLE: 'geolocation.edit.warning.title',
+  FAILURE: 'geolocation.failure',
+  PERMISSION_DENIED: 'geolocation.permission.denied',
+  PROGRESS: 'geolocation.progress',
+  RESULT_LABEL: 'geolocation.result.label',
+  RETRY: 'geolocation.retry',
+  SIGNAL_WEAK: 'geolocation.signal.weak',
+  SKIP_ACKNOWLEDGE: 'geolocation.skip.acknowledge',
+  SKIP_BUTTON: 'geolocation.skip.button',
+  SKIPPED: 'geolocation.skipped',
+  SUCCESS: 'geolocation.success',
+  UNAVAILABLE: 'geolocation.unavailable',
+};
+
 class HouseholdGeolocationWidget extends Widget {
   static get selector() {
     return '.or-appearance-geolocation-capture input';
@@ -19,7 +48,7 @@ class HouseholdGeolocationWidget extends Widget {
     if (this._isPermissionDenied()) {
       $(this.element).val('denied').trigger('change');
       const $el = $('<p class="geolocation-permission-denied">');
-      $el.text(globalThis.CHTCore.Translate.instant('geolocation.permission.denied'));
+      $el.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.PERMISSION_DENIED));
       $question.append($el);
       return;
     }
@@ -27,7 +56,7 @@ class HouseholdGeolocationWidget extends Widget {
     if (!this._isGeolocationAvailable()) {
       $(this.element).val('unavailable').trigger('change');
       const $el = $('<p class="geolocation-unavailable">');
-      $el.text(globalThis.CHTCore.Translate.instant('geolocation.unavailable'));
+      $el.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.UNAVAILABLE));
       $question.append($el);
       return;
     }
@@ -49,10 +78,10 @@ class HouseholdGeolocationWidget extends Widget {
     });
 
     $button.append(
-      $('<span class="geolocation-btn-label">').text(globalThis.CHTCore.Translate.instant('geolocation.capture'))
+      $('<span class="geolocation-btn-label">').text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CAPTURE))
     );
-    $homeSpan.text(globalThis.CHTCore.Translate.instant('geolocation.context.home'));
-    $otherSpan.text(globalThis.CHTCore.Translate.instant('geolocation.context.other'));
+    $homeSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CONTEXT_HOME));
+    $otherSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CONTEXT_OTHER));
   }
 
   _buildContextOptions(radioName) {
@@ -110,17 +139,17 @@ class HouseholdGeolocationWidget extends Widget {
       this._onEditAcknowledgeChange($editAcknowledgeCheckbox, $editOptions);
     });
 
-    $badgeText.text(globalThis.CHTCore.Translate.instant('geolocation.edit.badge'));
+    $badgeText.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_BADGE));
     if (lastCapture) {
       this._translateBadgeContext(lastCapture, $badgeContext);
       this._translateBadgeMeta(lastCapture, $badgeMeta);
     }
-    $prompt.text(globalThis.CHTCore.Translate.instant('geolocation.edit.prompt'));
-    $keptSpan.text(globalThis.CHTCore.Translate.instant('geolocation.edit.keep'));
-    $captureNewSpan.text(globalThis.CHTCore.Translate.instant('geolocation.edit.capture_new'));
-    $warningTitleText.text(globalThis.CHTCore.Translate.instant('geolocation.edit.warning.title'));
-    $warningText.text(globalThis.CHTCore.Translate.instant('geolocation.edit.warning'));
-    $editAcknowledgeSpan.text(globalThis.CHTCore.Translate.instant('geolocation.edit.acknowledge'));
+    $prompt.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_PROMPT));
+    $keptSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_KEEP));
+    $captureNewSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_CAPTURE_NEW));
+    $warningTitleText.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_WARNING_TITLE));
+    $warningText.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_WARNING));
+    $editAcknowledgeSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_ACKNOWLEDGE));
   }
 
   _parseLastCapture() {
@@ -207,7 +236,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _translateBadgeContext(lastCapture, $badgeContext) {
-    const key = lastCapture.isHome ? 'geolocation.edit.context.home' : 'geolocation.edit.context.other';
+    const key = lastCapture.isHome ? TRANSLATION_KEYS.EDIT_CONTEXT_HOME : TRANSLATION_KEYS.EDIT_CONTEXT_OTHER;
     $badgeContext.text(globalThis.CHTCore.Translate.instant(key));
   }
 
@@ -215,13 +244,13 @@ class HouseholdGeolocationWidget extends Widget {
     const todayMidnight = new Date();
     todayMidnight.setHours(0, 0, 0, 0);
     if (lastCapture.timestamp >= todayMidnight.getTime()) {
-      $badgeMeta.text(globalThis.CHTCore.Translate.instant('geolocation.edit.last_updated_today'));
+      $badgeMeta.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_LAST_UPDATED_TODAY));
       return;
     }
     const captureDay = new Date(lastCapture.timestamp);
     captureDay.setHours(0, 0, 0, 0);
     const days = Math.round((todayMidnight.getTime() - captureDay.getTime()) / MS_PER_DAY);
-    const key = days === 1 ? 'geolocation.edit.last_updated_day' : 'geolocation.edit.last_updated_days';
+    const key = days === 1 ? TRANSLATION_KEYS.EDIT_LAST_UPDATED_DAY : TRANSLATION_KEYS.EDIT_LAST_UPDATED_DAYS;
     $badgeMeta.text(globalThis.CHTCore.Translate.instant(key).replace('{{days}}', days));
   }
 
@@ -253,7 +282,7 @@ class HouseholdGeolocationWidget extends Widget {
     const { $status, $progressLabel, $bar } = this._buildProgressRow();
     $question.append($status);
 
-    $progressLabel.text(globalThis.CHTCore.Translate.instant('geolocation.progress'));
+    $progressLabel.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.PROGRESS));
 
     if (!globalThis.CHTCore.Geolocation || !globalThis.CHTCore.Geolocation.currentPromise) { // NOSONAR
       console.error('Geolocation widget: currentPromise is not available. Has geolocationService.init() been called?');
@@ -291,7 +320,7 @@ class HouseholdGeolocationWidget extends Widget {
     const isWeakSignal = WEAK_SIGNAL_CODES.includes(errorCode);
     if (isWeakSignal) {
       const $weakSignalMsg = $('<p class="geolocation-weak-signal-msg">');
-      $weakSignalMsg.text(globalThis.CHTCore.Translate.instant('geolocation.signal.weak'));
+      $weakSignalMsg.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.SIGNAL_WEAK));
       $status.append($weakSignalMsg);
     }
 
@@ -327,7 +356,7 @@ class HouseholdGeolocationWidget extends Widget {
         $resultRow.remove();
         $status.find('.geolocation-weak-signal-msg').remove();
         const $skippedMsg = $('<p class="geolocation-skipped-msg">');
-        $skippedMsg.text(globalThis.CHTCore.Translate.instant('geolocation.skipped'));
+        $skippedMsg.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.SKIPPED));
         $status.append($skippedMsg);
         $(this.element).val('skipped').trigger('change');
       });
@@ -335,13 +364,13 @@ class HouseholdGeolocationWidget extends Widget {
 
     $status.append($retryBtn, $acknowledgeLabel, $skipBtn);
 
-    $resultLabel.text(globalThis.CHTCore.Translate.instant('geolocation.result.label'));
-    $resultText.text(globalThis.CHTCore.Translate.instant('geolocation.failure'));
+    $resultLabel.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.RESULT_LABEL));
+    $resultText.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.FAILURE));
     $retryBtn.append(
-      $('<span class="geolocation-btn-label">').text(globalThis.CHTCore.Translate.instant('geolocation.retry'))
+      $('<span class="geolocation-btn-label">').text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.RETRY))
     );
-    $skipBtn.text(globalThis.CHTCore.Translate.instant('geolocation.skip.button'));
-    $acknowledgeSpan.text(globalThis.CHTCore.Translate.instant('geolocation.skip.acknowledge'));
+    $skipBtn.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.SKIP_BUTTON));
+    $acknowledgeSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.SKIP_ACKNOWLEDGE));
   }
 
   _buildCaptureSuccessUI($status, $bar) {
@@ -353,8 +382,8 @@ class HouseholdGeolocationWidget extends Widget {
     $resultRow.append($resultLabel, $msg);
     $status.append($resultRow);
 
-    $resultLabel.text(globalThis.CHTCore.Translate.instant('geolocation.result.label'));
-    $msg.text(globalThis.CHTCore.Translate.instant('geolocation.success'));
+    $resultLabel.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.RESULT_LABEL));
+    $msg.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.SUCCESS));
 
     $(this.element).val('captured').trigger('change');
   }
