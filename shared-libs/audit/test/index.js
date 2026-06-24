@@ -516,7 +516,7 @@ describe('Audit', () => {
       expect(written[0].history).to.deep.equal([{ date, archived: true }]);
 
       expect(written[1]._id).to.equal('doc-b');
-      expect(written[1]._rev).to.equal(undefined);
+      expect(written[1]._rev).to.be.undefined;
       expect(written[1].history).to.deep.equal([{ date, archived: true }]);
 
       expect(written[2]._id).to.equal('doc-c');

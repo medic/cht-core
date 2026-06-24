@@ -59,7 +59,7 @@ const liveRows = async (db, opts = {}) => {
 const expectFullyPurgedFromMedic = async (ids) => {
   const allDocs = await utils.db.allDocs({ keys: ids });
   const stillPresent = allDocs.rows.filter(row => !row.error);
-  expect(stillPresent.length).to.equal(0);
+  expect(stillPresent).to.have.lengthOf(0);
 
   const changes = await utils.request({
     path: `/${constants.DB_NAME}/_changes`,
@@ -67,7 +67,7 @@ const expectFullyPurgedFromMedic = async (ids) => {
     qs: { since: 0, filter: '_doc_ids' },
     body: { doc_ids: ids },
   });
-  expect(changes.results.length).to.equal(0);
+  expect(changes.results).to.have.lengthOf(0);
 };
 
 const expectInfoDocsPurged = async (ids) => {
