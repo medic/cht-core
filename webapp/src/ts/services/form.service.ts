@@ -337,9 +337,7 @@ export class FormService {
             entry.is_home = isHome;
           }
           doc.geolocation_log.push(entry);
-          if (!restrictGeoToHomeCaptures) {
-            doc.geolocation = geoData;
-          } else if (!geoData.code && isHome) {
+          if (!restrictGeoToHomeCaptures || (!geoData.code && isHome)) {
             doc.geolocation = geoData;
           }
         });
