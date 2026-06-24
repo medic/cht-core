@@ -9,30 +9,28 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const commonEnketoPage = require('@page-objects/default/enketo/common-enketo.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
 const { CONTACT_TYPES } = require('@medic/constants');
+
+const GEO_SUCCESS = {
+  latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 0, speed: 0
+};
+const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 
 const selectHomeContext = async () => {
   await $('.geolocation-context-options input[value="home"]').waitForExist();
   await $('.geolocation-context-options input[value="home"]').click();
 };
 
-const captureAndWait = async () => {
-  await $('.geolocation-capture-btn').click();
-  // GPS may succeed or fail depending on the environment. Wait for either outcome.
-  await browser.waitUntil(
-    async () => {
-      const success = await $('.geolocation-success-msg').isExisting();
-      const skip = await $('.geolocation-skip-btn').isExisting();
-      return success || skip;
-    },
-    { timeout: 35000 }
-  );
-  if (await $('.geolocation-skip-btn').isExisting()) {
-    await $('.geolocation-acknowledge-checkbox').waitForExist();
-    await $('.geolocation-acknowledge-checkbox').click();
-    await $('.geolocation-skip-btn').waitForEnabled();
-    await $('.geolocation-skip-btn').click();
-  }
+const selectOtherContext = async () => {
+  await $('.geolocation-context-options input[value="other"]').waitForExist();
+  await $('.geolocation-context-options input[value="other"]').click();
+};
+
+const mockGeoResolved = async (result) => {
+  await browser.execute((r) => {
+    window.CHTCore.Geolocation.currentPromise = Promise.resolve(r);
+  }, result);
 };
 
 describe('Geolocation widget - contact save pipeline', () => {
@@ -105,14 +103,17 @@ describe('Geolocation widget - contact save pipeline', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should store geolocation data on the contact doc when the form has a geolocation widget', async () => {
+  it('should store geolocation data on the contact doc when home context is captured', async () => {
     await commonPage.goToPeople(healthCenter._id);
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
     await $('.or-appearance-geolocation-capture').waitForDisplayed();
     await selectHomeContext();
-    await captureAndWait();
-    await commonEnketoPage.setInputValue('Full name', 'Test Person With Geo');
+    await mockGeoResolved(GEO_SUCCESS);
+    await $('.geolocation-capture-btn').click();
+    await $('.geolocation-success-msg').waitForExist({ timeout: 10000 });
+
+    await commonEnketoPage.setInputValue('Full name', 'Test Person Home Context');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await contactPage.waitForContactLoaded();
@@ -126,6 +127,34 @@ describe('Geolocation widget - contact save pipeline', () => {
     expect(savedDoc.geolocation_log[0].is_home).to.be.true;
     expect(savedDoc.geolocation_log[0].recording).to.exist;
   });
+
+  it('should store geolocation_log with is_home false and omit geolocation field when other context is captured',
+    async () => {
+      await commonPage.goToPeople(healthCenter._id);
+      await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
+
+      await $('.or-appearance-geolocation-capture').waitForDisplayed();
+      await selectOtherContext();
+      await mockGeoResolved(GEO_SUCCESS);
+      await $('.geolocation-capture-btn').click();
+      await $('.geolocation-success-msg').waitForExist({ timeout: 10000 });
+
+      await commonEnketoPage.setInputValue('Full name', 'Test Person Other Context');
+      await genericForm.submitForm();
+      await commonPage.waitForPageLoaded();
+      await contactPage.waitForContactLoaded();
+
+      const contactId = await contactPage.getCurrentContactId();
+      const savedDoc = await utils.getDoc(contactId);
+
+      expect(savedDoc.geolocation_log).to.exist;
+      expect(savedDoc.geolocation_log).to.have.lengthOf(1);
+      expect(savedDoc.geolocation_log[0].timestamp).to.be.greaterThan(0);
+      expect(savedDoc.geolocation_log[0].is_home).to.be.false;
+      expect(savedDoc.geolocation_log[0].recording).to.exist;
+      expect(savedDoc.geolocation).to.not.exist;
+    }
+  );
 
   describe('edit mode', () => {
     const seedGeoData = {
@@ -187,34 +216,37 @@ describe('Geolocation widget - contact save pipeline', () => {
       expect(savedDoc.geolocation.latitude).to.equal(seedGeoData.latitude);
     });
 
-    it('should start GPS capture and handle the outcome when capture-new is acknowledged', async () => {
+    it('should show success message when GPS succeeds after capture-new is acknowledged', async () => {
       await openEditForm();
 
+      await mockGeoResolved(GEO_SUCCESS);
       await $('input[value="capture-new"]').click();
       await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
       await $('.geolocation-edit-acknowledge-checkbox').click();
 
-      // GPS may succeed or fail depending on the environment. Wait for either outcome.
-      await browser.waitUntil(
-        async () => {
-          const retry = await $('.geolocation-retry-btn').isExisting();
-          const success = await $('.geolocation-success-msg').isExisting();
-          return retry || success;
-        },
-        { timeout: 35000 }
-      );
+      await $('.geolocation-success-msg').waitForExist({ timeout: 10000 });
+      expect(await $('.geolocation-retry-btn').isExisting()).to.be.false;
 
-      if (await $('.geolocation-retry-btn').isExisting()) {
-        // GPS failed — verify the revert path: continue without location returns to edit choice
+      await genericForm.cancelForm();
+      await modalPage.submit();
+    });
+
+    it('should revert to edit options with keep pre-selected when GPS fails after capture-new is acknowledged',
+      async () => {
+        await openEditForm();
+
+        await mockGeoResolved(GEO_FAILURE);
+        await $('input[value="capture-new"]').click();
+        await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
+        await $('.geolocation-edit-acknowledge-checkbox').click();
+
+        await $('.geolocation-retry-btn').waitForExist({ timeout: 10000 });
         await $('.geolocation-acknowledge-checkbox').click();
         await $('.geolocation-skip-btn').click();
 
         await $('.geolocation-edit-options').waitForDisplayed();
         expect(await $('input[value="kept"]').isSelected()).to.be.true;
-      } else {
-        // GPS succeeded — verify the success message is shown
-        expect(await $('.geolocation-success-msg').isExisting()).to.be.true;
       }
-    });
+    );
   });
 });
