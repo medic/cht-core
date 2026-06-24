@@ -123,7 +123,7 @@ export class TasksSidebarFilterComponent implements OnInit, AfterViewInit, OnDes
       return;
     }
     this.isResettingFilters = true;
-    this.globalActions.clearFilters();
+    this.globalActions.clearFilters('search');
     this.clearFilters();
     this.isResettingFilters = false;
     this.applyFilters();
