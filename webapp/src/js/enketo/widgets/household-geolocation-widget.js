@@ -2,9 +2,9 @@
 'use strict';
 const Widget = require('enketo-core/src/js/widget').default;
 const $ = require('jquery');
+const moment = require('moment');
 require('enketo-core/src/js/plugins');
 
-const MS_PER_DAY = 86400000;
 const WEAK_SIGNAL_CODES = [2, 3, -2];
 
 const TRANSLATION_KEYS = {
@@ -241,15 +241,13 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _translateBadgeMeta(lastCapture, $badgeMeta) {
-    const todayMidnight = new Date();
-    todayMidnight.setHours(0, 0, 0, 0);
-    if (lastCapture.timestamp >= todayMidnight.getTime()) {
+    const today = moment().startOf('day');
+    const captureDay = moment(lastCapture.timestamp).startOf('day');
+    const days = today.diff(captureDay, 'days');
+    if (days === 0) {
       $badgeMeta.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_LAST_UPDATED_TODAY));
       return;
     }
-    const captureDay = new Date(lastCapture.timestamp);
-    captureDay.setHours(0, 0, 0, 0);
-    const days = Math.round((todayMidnight.getTime() - captureDay.getTime()) / MS_PER_DAY);
     const key = days === 1 ? TRANSLATION_KEYS.EDIT_LAST_UPDATED_DAY : TRANSLATION_KEYS.EDIT_LAST_UPDATED_DAYS;
     $badgeMeta.text(globalThis.CHTCore.Translate.instant(key).replace('{{days}}', days));
   }
