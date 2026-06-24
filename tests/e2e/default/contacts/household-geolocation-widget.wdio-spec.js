@@ -17,14 +17,33 @@ const GEO_SUCCESS = {
 };
 const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 
+const SELECTORS = {
+  ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
+  CAPTURE_BTN: '.geolocation-capture-btn',
+  CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
+  CONTEXT_OPTIONS: '.geolocation-context-options',
+  EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
+  EDIT_BADGE: '.geolocation-edit-badge',
+  EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
+  EDIT_BADGE_META: '.geolocation-edit-badge-meta',
+  EDIT_OPTIONS: '.geolocation-edit-options',
+  GEO_CAPTURE_CONTAINER: '.or-appearance-geolocation-capture',
+  HOME_RADIO: '.geolocation-context-options input[value="home"]',
+  KEPT_RADIO: 'input[value="kept"]',
+  OTHER_RADIO: '.geolocation-context-options input[value="other"]',
+  RETRY_BTN: '.geolocation-retry-btn',
+  SKIP_BTN: '.geolocation-skip-btn',
+  SUCCESS_MSG: '.geolocation-success-msg',
+};
+
 const selectHomeContext = async () => {
-  await $('.geolocation-context-options input[value="home"]').waitForExist();
-  await $('.geolocation-context-options input[value="home"]').click();
+  await $(SELECTORS.HOME_RADIO).waitForExist();
+  await $(SELECTORS.HOME_RADIO).click();
 };
 
 const selectOtherContext = async () => {
-  await $('.geolocation-context-options input[value="other"]').waitForExist();
-  await $('.geolocation-context-options input[value="other"]').click();
+  await $(SELECTORS.OTHER_RADIO).waitForExist();
+  await $(SELECTORS.OTHER_RADIO).click();
 };
 
 const mockGeoResolved = async (result) => {
@@ -107,11 +126,11 @@ describe('Geolocation widget - contact save pipeline', () => {
     await commonPage.goToPeople(healthCenter._id);
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
-    await $('.or-appearance-geolocation-capture').waitForDisplayed();
+    await $(SELECTORS.GEO_CAPTURE_CONTAINER).waitForDisplayed();
     await selectHomeContext();
     await mockGeoResolved(GEO_SUCCESS);
-    await $('.geolocation-capture-btn').click();
-    await $('.geolocation-success-msg').waitForExist({ timeout: 10000 });
+    await $(SELECTORS.CAPTURE_BTN).click();
+    await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
 
     await commonEnketoPage.setInputValue('Full name', 'Test Person Home Context');
     await genericForm.submitForm();
@@ -133,11 +152,11 @@ describe('Geolocation widget - contact save pipeline', () => {
       await commonPage.goToPeople(healthCenter._id);
       await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
-      await $('.or-appearance-geolocation-capture').waitForDisplayed();
+      await $(SELECTORS.GEO_CAPTURE_CONTAINER).waitForDisplayed();
       await selectOtherContext();
       await mockGeoResolved(GEO_SUCCESS);
-      await $('.geolocation-capture-btn').click();
-      await $('.geolocation-success-msg').waitForExist({ timeout: 10000 });
+      await $(SELECTORS.CAPTURE_BTN).click();
+      await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
 
       await commonEnketoPage.setInputValue('Full name', 'Test Person Other Context');
       await genericForm.submitForm();
@@ -187,19 +206,19 @@ describe('Geolocation widget - contact save pipeline', () => {
     const openEditForm = async () => {
       await browser.url(`/#/contacts/${contactWithGeo._id}/edit`);
       await commonPage.waitForPageLoaded();
-      await $('.geolocation-edit-badge').waitForExist();
+      await $(SELECTORS.EDIT_BADGE).waitForExist();
     };
 
     it('should show edit-mode badge and radios when editing a contact with existing geolocation', async () => {
       await openEditForm();
 
-      expect(await $('.geolocation-edit-badge').isExisting()).to.be.true;
-      expect(await $('.geolocation-edit-badge-context').isExisting()).to.be.true;
-      expect(await $('.geolocation-edit-badge-meta').isExisting()).to.be.true;
-      expect(await $('input[value="kept"]').isExisting()).to.be.true;
-      expect(await $('input[value="capture-new"]').isExisting()).to.be.true;
-      expect(await $('.geolocation-capture-btn').isExisting()).to.be.false;
-      expect(await $('.geolocation-context-options').isExisting()).to.be.false;
+      expect(await $(SELECTORS.EDIT_BADGE).isExisting()).to.be.true;
+      expect(await $(SELECTORS.EDIT_BADGE_CONTEXT).isExisting()).to.be.true;
+      expect(await $(SELECTORS.EDIT_BADGE_META).isExisting()).to.be.true;
+      expect(await $(SELECTORS.KEPT_RADIO).isExisting()).to.be.true;
+      expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isExisting()).to.be.true;
+      expect(await $(SELECTORS.CAPTURE_BTN).isExisting()).to.be.false;
+      expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
     });
 
     it('should preserve geolocation data when keeping existing location and submitting', async () => {
@@ -220,12 +239,12 @@ describe('Geolocation widget - contact save pipeline', () => {
       await openEditForm();
 
       await mockGeoResolved(GEO_SUCCESS);
-      await $('input[value="capture-new"]').click();
-      await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
-      await $('.geolocation-edit-acknowledge-checkbox').click();
+      await $(SELECTORS.CAPTURE_NEW_RADIO).click();
+      await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).waitForExist();
+      await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).click();
 
-      await $('.geolocation-success-msg').waitForExist({ timeout: 10000 });
-      expect(await $('.geolocation-retry-btn').isExisting()).to.be.false;
+      await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
+      expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
 
       await genericForm.cancelForm();
       await modalPage.submit();
@@ -236,16 +255,16 @@ describe('Geolocation widget - contact save pipeline', () => {
         await openEditForm();
 
         await mockGeoResolved(GEO_FAILURE);
-        await $('input[value="capture-new"]').click();
-        await $('.geolocation-edit-acknowledge-checkbox').waitForExist();
-        await $('.geolocation-edit-acknowledge-checkbox').click();
+        await $(SELECTORS.CAPTURE_NEW_RADIO).click();
+        await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).waitForExist();
+        await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).click();
 
-        await $('.geolocation-retry-btn').waitForExist({ timeout: 10000 });
-        await $('.geolocation-acknowledge-checkbox').click();
-        await $('.geolocation-skip-btn').click();
+        await $(SELECTORS.RETRY_BTN).waitForExist({ timeout: 10000 });
+        await $(SELECTORS.ACKNOWLEDGE_CHECKBOX).click();
+        await $(SELECTORS.SKIP_BTN).click();
 
-        await $('.geolocation-edit-options').waitForDisplayed();
-        expect(await $('input[value="kept"]').isSelected()).to.be.true;
+        await $(SELECTORS.EDIT_OPTIONS).waitForDisplayed();
+        expect(await $(SELECTORS.KEPT_RADIO).isSelected()).to.be.true;
       }
     );
   });
