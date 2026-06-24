@@ -387,20 +387,11 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _isGeolocationAvailable() {
-    return !!globalThis.navigator.geolocation;
+    return globalThis.CHTCore.Geolocation.isAvailable();
   }
 
   _isPermissionDenied() {
-    try {
-      const android = globalThis.medicmobile_android;
-      if (!android || typeof android.getLocationPermissions !== 'function') {
-        return false;
-      }
-      return !android.getLocationPermissions();
-    } catch (err) {
-      console.error('Error checking location permissions', err);
-      return false;
-    }
+    return globalThis.CHTCore.Geolocation.isPermissionDenied();
   }
 }
 

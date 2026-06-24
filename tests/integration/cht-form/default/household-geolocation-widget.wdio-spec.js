@@ -13,13 +13,13 @@ const selectHomeContext = async () => {
 
 const mockGeoPending = async () => {
   await browser.execute(() => {
-    window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}), retry: () => {} };
+    window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
   });
 };
 
 const mockGeoResolved = async (result) => {
   await browser.execute((r) => {
-    window.CHTCore.Geolocation = { currentPromise: Promise.resolve(r), retry: () => {} };
+    window.CHTCore.Geolocation.currentPromise = Promise.resolve(r);
   }, result);
 };
 

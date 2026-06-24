@@ -397,4 +397,44 @@ describe('Geolocation service', () => {
 
     });
   });
+
+  describe('isAvailable', () => {
+    it('returns true when navigator.geolocation is present', () => {
+      expect(service.isAvailable()).to.be.true;
+    });
+
+    it('returns false when navigator.geolocation is absent', () => {
+      // @ts-ignore
+      sinon.replaceGetter(window, 'navigator', () => ({}));
+      expect(service.isAvailable()).to.be.false;
+    });
+  });
+
+  describe('isPermissionDenied', () => {
+    it('returns false when not running in Android app', () => {
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('returns false when Android API is present but not a function', () => {
+      window.medicmobile_android = { getLocationPermissions: 'string' };
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('returns false when Android permission is granted', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(true) };
+      expect(service.isPermissionDenied()).to.be.false;
+    });
+
+    it('returns true when Android permission is denied', () => {
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      expect(service.isPermissionDenied()).to.be.true;
+    });
+
+    it('returns false when Android API throws', () => {
+      const consoleErrorStub = sinon.stub(console, 'error');
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().throws(new Error('error')) };
+      expect(service.isPermissionDenied()).to.be.false;
+      expect(consoleErrorStub.callCount).to.equal(1);
+    });
+  });
 });

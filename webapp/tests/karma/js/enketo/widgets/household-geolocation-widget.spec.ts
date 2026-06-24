@@ -31,7 +31,11 @@ describe('Enketo: Household Geolocation Widget', () => {
     beforeEach(() => {
       window.medicmobile_android = undefined;
       window.CHTCore = {
-        Translate: { instant: sinon.stub().callsFake((key: string) => key) }
+        Translate: { instant: sinon.stub().callsFake((key: string) => key) },
+        Geolocation: {
+          isAvailable: sinon.stub().returns(true),
+          isPermissionDenied: sinon.stub().returns(false),
+        },
       };
     });
 
@@ -54,7 +58,6 @@ describe('Enketo: Household Geolocation Widget', () => {
     const initWidget = () => {
       buildHtml();
       const widget = createWidget();
-      widget._isGeolocationAvailable = () => true;
       widget._init();
       const container = document.querySelector(
         '#geolocation-widget-test .or-appearance-geolocation-capture'
@@ -64,7 +67,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
     it('should show permission denied message when Android location permissions are denied', () => {
       buildHtml();
-      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      window.CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
       const widget = createWidget();
 
       widget._init();
@@ -76,7 +79,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
     it('should set element value to "denied" when permission is denied so required validation passes', () => {
       buildHtml();
-      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      window.CHTCore.Geolocation.isPermissionDenied = sinon.stub().returns(true);
       const widget = createWidget();
 
       widget._init();
@@ -86,8 +89,8 @@ describe('Enketo: Household Geolocation Widget', () => {
 
     it('should show unavailable message when Geolocation API is absent', () => {
       buildHtml();
+      window.CHTCore.Geolocation.isAvailable = sinon.stub().returns(false);
       const widget = createWidget();
-      widget._isGeolocationAvailable = () => false;
 
       widget._init();
 
@@ -98,8 +101,8 @@ describe('Enketo: Household Geolocation Widget', () => {
 
     it('should set element value to "unavailable" when Geolocation API is absent so required validation passes', () => {
       buildHtml();
+      window.CHTCore.Geolocation.isAvailable = sinon.stub().returns(false);
       const widget = createWidget();
-      widget._isGeolocationAvailable = () => false;
 
       widget._init();
 
@@ -148,7 +151,7 @@ describe('Enketo: Household Geolocation Widget', () => {
     });
 
     it('should hide context options when capture starts', () => {
-      window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+      window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
       const { container } = initWidget();
       const homeRadio = container.querySelector('input[type="radio"][value="home"]') as HTMLInputElement;
       homeRadio.checked = true;
@@ -164,7 +167,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
     it('should hide context options when capture fails', async () => {
       const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-      window.CHTCore.Geolocation = { currentPromise: promise };
+      window.CHTCore.Geolocation.currentPromise = promise;
       const { container } = initWidget();
       const homeRadio = container.querySelector('input[type="radio"][value="home"]') as HTMLInputElement;
       homeRadio.checked = true;
@@ -179,7 +182,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
     describe('_startCapture()', () => {
       beforeEach(() => {
-        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+        window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
       });
 
       const selectHomeContext = () => {
@@ -193,7 +196,6 @@ describe('Enketo: Household Geolocation Widget', () => {
       const initAndSelectHome = () => {
         buildHtml();
         const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
         widget._init();
         selectHomeContext();
         const container = document.querySelector(
@@ -203,7 +205,7 @@ describe('Enketo: Household Geolocation Widget', () => {
       };
 
       it('logs an error and does not throw when currentPromise is unavailable', () => {
-        window.CHTCore.Geolocation = {};
+        window.CHTCore.Geolocation.currentPromise = undefined;
         const consoleErrorStub = sinon.stub(console, 'error');
         const { container } = initAndSelectHome();
 
@@ -223,7 +225,7 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({
           latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
         });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -237,7 +239,7 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({
           latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
         });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -249,7 +251,7 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({
           latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
         });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { widget, container } = initAndSelectHome();
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
@@ -262,7 +264,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should show retry button, acknowledgement checkbox, and skip button when GPS acquisition fails', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -274,7 +276,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should disable the "Continue without location" button immediately after GPS failure', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -287,7 +289,7 @@ describe('Enketo: Household Geolocation Widget', () => {
       it('should enable the "Continue without location" button when the acknowledgement checkbox is checked',
         async () => {
           const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-          window.CHTCore.Geolocation = { currentPromise: promise };
+          window.CHTCore.Geolocation.currentPromise = promise;
           const { container } = initAndSelectHome();
           (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
           await promise;
@@ -303,7 +305,7 @@ describe('Enketo: Household Geolocation Widget', () => {
       it('should re-disable the "Continue without location" button when the acknowledgement checkbox is unchecked',
         async () => {
           const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-          window.CHTCore.Geolocation = { currentPromise: promise };
+          window.CHTCore.Geolocation.currentPromise = promise;
           const { container } = initAndSelectHome();
           (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
           await promise;
@@ -322,7 +324,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should not set hidden input value or fire change event on failure', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { widget, container } = initAndSelectHome();
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
@@ -335,7 +337,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should set hidden input to "skipped" and fire change event when skip button is clicked', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { widget, container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -353,7 +355,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should remove retry, acknowledge, and skip elements and show confirmation when skip is clicked', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -371,7 +373,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should call retry() and return to loading state when retry button is clicked', async () => {
         const failurePromise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: failurePromise };
+        window.CHTCore.Geolocation.currentPromise = failurePromise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await failurePromise;
@@ -391,7 +393,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should add failure class to progress bar when GPS acquisition fails', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -403,7 +405,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should hide weak signal message when skip is clicked after a weak signal failure', async () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -418,7 +420,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should show weak signal message for POSITION_UNAVAILABLE (code 2)', async () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -428,7 +430,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should show weak signal message for TIMEOUT (code 3)', async () => {
         const promise = Promise.resolve({ code: 3, message: 'Timeout expired' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -438,7 +440,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should show weak signal message for service timeout (code -2)', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -448,7 +450,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should not show weak signal message for PERMISSION_DENIED (code 1)', async () => {
         const promise = Promise.resolve({ code: 1, message: 'User denied Geolocation' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -458,7 +460,7 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('should not show weak signal message for other failure codes', async () => {
         const promise = Promise.resolve({ code: -3, message: 'Geolocation API unavailable' });
-        window.CHTCore.Geolocation = { currentPromise: promise };
+        window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
         await promise;
@@ -493,7 +495,6 @@ describe('Enketo: Household Geolocation Widget', () => {
       const initEditWidget = async (lastCapture?: object) => {
         buildHtmlWithExistingLocation(lastCapture);
         const widget = createWidget();
-        widget._isGeolocationAvailable = () => true;
         await widget._init();
         const container = document.querySelector(
           '#geolocation-widget-test .or-appearance-geolocation-capture'
@@ -588,7 +589,7 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       it('ticking the acknowledge checkbox shows capture progress UI and hides edit options', async () => {
-        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+        window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
         const { container } = await initEditWidget();
 
         const captureNewRadio = container.querySelector(
@@ -607,7 +608,7 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       it('data-geo-context remains home after capture starts', async () => {
-        window.CHTCore.Geolocation = { currentPromise: new Promise(() => {}) };
+        window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
         const { widget, container } = await initEditWidget();
 
         const captureNewRadio = container.querySelector(
@@ -625,7 +626,8 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       it('clicking skip after GPS failure reverts to edit options with kept selected', async () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
-        window.CHTCore.Geolocation = { currentPromise: promise, retry: sinon.stub() };
+        window.CHTCore.Geolocation.currentPromise = promise;
+        window.CHTCore.Geolocation.retry = sinon.stub();
         const { widget, container } = await initEditWidget();
 
         const captureNewRadio = container.querySelector(
@@ -662,10 +664,8 @@ describe('Enketo: Household Geolocation Widget', () => {
       it('calls retry() when re-acknowledging capture-new after a failed attempt', async () => {
         const failureResult = { code: 2, message: 'Position unavailable' };
         const retryStub = sinon.stub();
-        window.CHTCore.Geolocation = {
-          currentPromise: Promise.resolve(failureResult),
-          retry: retryStub,
-        };
+        window.CHTCore.Geolocation.currentPromise = Promise.resolve(failureResult);
+        window.CHTCore.Geolocation.retry = retryStub;
         const { container } = await initEditWidget();
 
         const captureNewRadio = container.querySelector(

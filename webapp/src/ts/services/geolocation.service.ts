@@ -151,4 +151,12 @@ export class GeolocationService {
   permissionRequestResolved () {
     this.startWatching();
   }
+
+  isAvailable(): boolean {
+    return !!window.navigator.geolocation;
+  }
+
+  isPermissionDenied(): boolean {
+    return !this.getAndroidPermission();
+  }
 }
