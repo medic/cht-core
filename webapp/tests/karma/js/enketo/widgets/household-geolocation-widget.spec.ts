@@ -756,8 +756,10 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       it('uses today translation key when capture timestamp is from the current day', async () => {
-        const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000;
-        const { container } = await initEditWidget({ isHome: true, timestamp: twoHoursAgo });
+        const todayMidnight = new Date();
+        todayMidnight.setHours(0, 0, 0, 0);
+        const twoHoursAfterMidnight = todayMidnight.getTime() + 2 * 60 * 60 * 1000;
+        const { container } = await initEditWidget({ isHome: true, timestamp: twoHoursAfterMidnight });
 
         const meta = container.querySelector('.geolocation-edit-badge-meta') as HTMLElement;
         expect(meta.textContent).to.equal('geolocation.edit.last_updated_today');
