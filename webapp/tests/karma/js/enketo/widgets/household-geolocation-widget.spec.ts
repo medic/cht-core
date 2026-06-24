@@ -31,7 +31,7 @@ describe('Enketo: Household Geolocation Widget', () => {
     beforeEach(() => {
       window.medicmobile_android = undefined;
       window.CHTCore = {
-        Translate: { get: sinon.stub().callsFake(key => Promise.resolve(key)) }
+        Translate: { instant: sinon.stub().callsFake((key: string) => key) }
       };
     });
 
@@ -728,11 +728,11 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       it('shows correct day count in badge meta when capture was multiple days ago', async () => {
-        window.CHTCore.Translate.get = sinon.stub().callsFake((key: string) => {
+        window.CHTCore.Translate.instant = sinon.stub().callsFake((key: string) => {
           if (key === 'geolocation.edit.last_updated_days') {
-            return Promise.resolve('{{days}} days ago');
+            return '{{days}} days ago';
           }
-          return Promise.resolve(key);
+          return key;
         });
         const threeDaysAgo = Date.now() - 3 * MS_PER_DAY;
         const { container } = await initEditWidget({ isHome: true, timestamp: threeDaysAgo });
@@ -750,11 +750,11 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       it('shows 1 day ago for a capture just before midnight yesterday', async () => {
-        window.CHTCore.Translate.get = sinon.stub().callsFake((key: string) => {
+        window.CHTCore.Translate.instant = sinon.stub().callsFake((key: string) => {
           if (key === 'geolocation.edit.last_updated_day') {
-            return Promise.resolve('1 day ago');
+            return '1 day ago';
           }
-          return Promise.resolve(key);
+          return key;
         });
         const todayMidnight = new Date();
         todayMidnight.setHours(0, 0, 0, 0);
