@@ -238,7 +238,7 @@ describe('sentinel processes archive jobs', () => {
     expect(jobs).to.have.lengthOf(1);
     const jobId = jobs[0].id;
 
-    await updateSettings('5 milliseconds');
+    await updateSettings('20 milliseconds');
 
     const firstRunDone = await utils.waitForSentinelLogs(true, /Finished archiving/);
     await utils.runSentinelTasks();
