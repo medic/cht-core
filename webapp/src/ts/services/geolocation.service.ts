@@ -126,13 +126,15 @@ export class GeolocationService {
 
     const complete = () => {
       console.debug('Geolocation requested');
-      this.defer();
-
+      const resolveOriginalPromise = this.deferred?.resolve;
       if (!this.geo && !this.geoError) {
         this.geoError = { code: -1, message: 'Geolocation not yet acquired' };
       }
+      this.defer();
       this.finalise();
-
+      if (resolveOriginalPromise) {
+        this.deferred.promise.then(resolveOriginalPromise);
+      }
       const promise = this.deferred.promise;
       this.deferred = null;
       return promise;

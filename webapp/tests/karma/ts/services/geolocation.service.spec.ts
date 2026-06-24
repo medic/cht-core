@@ -227,6 +227,27 @@ describe('Geolocation service', () => {
       expect(Telemetry.record.args[0][0]).to.equal('geolocation:failure:-1');
     });
 
+    it('resolves currentPromise when complete() is called before GPS acquires a position', async () => {
+      // @ts-ignore
+      window.navigator.geolocation.watchPosition.callsFake(() => {
+        // GPS never fires
+      });
+
+      const complete = service.init();
+
+      let currentPromiseResolved = false;
+      void service.currentPromise.then(() => {
+        currentPromiseResolved = true;
+      });
+      await Promise.resolve();
+      expect(currentPromiseResolved).to.be.false;
+
+      await complete();
+      await Promise.resolve();
+
+      expect(currentPromiseResolved).to.be.true;
+    });
+
     it('should resolve immediately when watcher never calls any callback', () => {
       window.navigator.geolocation.watchPosition = sinon.stub();
 
