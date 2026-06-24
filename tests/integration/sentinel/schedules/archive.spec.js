@@ -23,6 +23,17 @@ const cleanupArchiveDb = async () => {
   await archiveDb.bulkDocs(tombstones, { new_edits: true });
 };
 
+const waitForInfoDocs = async (ids) => {
+  let missingCount = 0;
+  do {
+    await utils.delayPromise(500);
+    const infoIds = ids.map(id => `${id}-info`);
+    const result = await utils.sentinelDb.allDocs({ keys: infoIds });
+    const missing = result.rows.filter(row => row.error);
+    missingCount = missing.length;
+  } while (missingCount);
+};
+
 const cleanupArchiveJobs = async () => {
   const result = await utils.sentinelDb.allDocs({
     startkey: constants.PREFIXES?.ARCHIVE_JOB,
@@ -193,8 +204,7 @@ describe('sentinel processes archive jobs', () => {
     await utils.saveDocs(bulkDocs);
     const ids = bulkDocs.map(d => d._id);
 
-    // sometimes there's an ongoing process that creates info docs.
-    await utils.delayPromise(3000);
+    await waitForInfoDocs(ids);
 
     const { jobs } = await postCsv(ids.join('\n'));
     expect(jobs).to.have.lengthOf(1);
