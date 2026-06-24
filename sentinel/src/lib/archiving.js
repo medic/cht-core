@@ -130,13 +130,13 @@ const processJob = async (job, deadline) => {
 };
 
 const processQueue = async (deadline) => {
-  while (Date.now() < deadline) {
+  do {
     const job = await fetchNextJob();
     if (!job) {
       break;
     }
     await processJob(job, deadline);
-  }
+  } while (Date.now() < deadline);
 };
 
 const archive = async ({ duration } = {}) => {
