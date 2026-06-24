@@ -1027,7 +1027,7 @@ describe('Muting transition', () => {
         });
     });
 
-    it('failure adds error with muting_error code', () => {
+    it('failure adds error with specific validation error code', () => {
       const doc = {
         type: DOC_TYPES.DATA_RECORD,
         fields: { patient_id: 'x' },
