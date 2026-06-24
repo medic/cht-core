@@ -1,10 +1,20 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
+import {
+  fetchAndFilter,
+  fetchAndFilterIds,
+  getDocById,
+  getDocsByIds,
+  queryDocIdsByKey,
+  queryDocIdsByRange,
+  queryDocsByKey
+} from './libs/doc';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
+  IdsQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isKeyedFreetextQualifier,
   UuidQualifier
 } from '../qualifier';
@@ -134,6 +144,33 @@ export namespace v1 {
       const skip = validateCursor(cursor);
       const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
+    };
+  };
+
+  /** @internal */
+  export const getPage = ({ medicDb, settings }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    const queryDocsByType = queryDocsByKey(medicDb, 'medic-client/contacts_by_type');
+
+    return async (
+      qualifier: ContactTypeQualifier | IdsQualifier,
+      cursor: Nullable<string>,
+      limit: number,
+    ): Promise<Page<Contact.v1.Contact>> => {
+      if (!isIdsQualifier(qualifier)) {
+        assertValidContactType(settings.getAll(), qualifier);
+      }
+
+      const skip = validateCursor(cursor);
+      const getPageFn = isIdsQualifier(qualifier)
+        ? (limit: number, skip: number) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit))
+        : (limit: number, skip: number) => queryDocsByType([qualifier.contactType], limit, skip);
+
+      return await fetchAndFilter(
+        getPageFn,
+        (doc: Nullable<Doc>) => isContact(settings, doc),
+        limit
+      )(limit, skip) as Page<Contact.v1.Contact>;
     };
   };
 }

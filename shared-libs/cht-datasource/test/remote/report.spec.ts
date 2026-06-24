@@ -150,6 +150,36 @@ describe('remote report', () => {
       });
     });
 
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = '1';
+
+      it('returns a page of reports for the given ids', async () => {
+        const expectedResponse = { data: [{ type: DOC_TYPES.DATA_RECORD, form: 'yes' }], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Report.v1.getPage(remoteContext)({ ids: ['a', 'b'] }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/report')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          ids: 'a,b',
+          cursor,
+        })).to.be.true;
+      });
+
+      it('omits the cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Report.v1.getPage(remoteContext)({ ids: ['a', 'b'] }, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), ids: 'a,b' })).to.be.true;
+      });
+    });
+
     describe('create', () => {
       it('returns a report doc for a valid input', async () => {
         const input = {

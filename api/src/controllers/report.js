@@ -6,8 +6,14 @@ const auth = require('../auth');
 const getReport = ctx.bind(Report.v1.get);
 const getReportWithLineage = ctx.bind(Report.v1.getWithLineage);
 const getReportIds = ctx.bind(Report.v1.getUuidsPage);
+const getReportDocs = ctx.bind(Report.v1.getPage);
 const create = ctx.bind(Report.v1.create);
 const update = ctx.bind(Report.v1.update);
+
+const buildIdsQualifier = (ids) => {
+  const idsArray = (Array.isArray(ids) ? ids : ids.split(',')).filter(Boolean);
+  return Qualifier.byIds(idsArray);
+};
 
 /**
  * @openapi
@@ -115,6 +121,61 @@ module.exports = {
       await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
       const qualifier = Qualifier.byFreetext(req.query.freetext);
       const docs = await getReportIds(qualifier, req.query.cursor, req.query.limit);
+      return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/report:
+     *   get:
+     *     summary: Get reports
+     *     operationId: v1ReportGet
+     *     description: >
+     *       Returns a paginated array of report records for the given UUIDs. Use the `cursor` returned in each
+     *       response to retrieve subsequent pages.
+     *     tags: [Report]
+     *     x-since: 4.19.0
+     *     x-permissions:
+     *       hasAll: [can_view_reports]
+     *     parameters:
+     *       - in: query
+     *         name: ids
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: A comma-separated list of report UUIDs to fetch.
+     *       - $ref: '#/components/parameters/cursor'
+     *       - $ref: '#/components/parameters/limitEntity'
+     *     responses:
+     *       '200':
+     *         description: A page of report records
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   description: The results for this page
+     *                   items:
+     *                     $ref: '#/components/schemas/v1.Report'
+     *                 cursor:
+     *                   $ref: '#/components/schemas/PageCursor'
+     *               required: [data, cursor]
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_reports'] });
+      if (!req.query.ids) {
+        return serverUtils.error({ status: 400, message: 'Query param ids is required' }, req, res);
+      }
+      const qualifier = buildIdsQualifier(req.query.ids);
+      const docs = await getReportDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
 

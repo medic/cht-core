@@ -151,5 +151,50 @@ describe('remote contact', () => {
         })).to.be.true;
       });
     });
+
+    describe('getPage', () => {
+      const limit = 3;
+      const cursor = '1';
+
+      it('returns a page of contacts for the given ids', async () => {
+        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)({ ids: ['a', 'b'] }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          ids: 'a,b',
+        })).to.be.true;
+      });
+
+      it('returns a page of contacts for the given type', async () => {
+        const expectedResponse = { data: [{ type: 'person' }], cursor };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)({ contactType: 'person' }, cursor, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesOuter.calledOnceWithExactly(remoteContext, 'api/v1/contact')).to.be.true;
+        expect(getResourcesInner.calledOnceWithExactly({
+          limit: limit.toString(),
+          cursor,
+          type: 'person',
+        })).to.be.true;
+      });
+
+      it('omits the cursor param when cursor is null', async () => {
+        const expectedResponse = { data: [], cursor: null };
+        getResourcesInner.resolves(expectedResponse);
+
+        const result = await Contact.v1.getPage(remoteContext)({ contactType: 'person' }, null, limit);
+
+        expect(result).to.equal(expectedResponse);
+        expect(getResourcesInner.calledOnceWithExactly({ limit: limit.toString(), type: 'person' })).to.be.true;
+      });
+    });
   });
 });

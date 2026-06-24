@@ -6,6 +6,12 @@ const serverUtils = require('../server-utils');
 const getContact = ctx.bind(Contact.v1.get);
 const getContactWithLineage = ctx.bind(Contact.v1.getWithLineage);
 const getContactIds = ctx.bind(Contact.v1.getUuidsPage);
+const getContactDocs = ctx.bind(Contact.v1.getPage);
+
+const buildIdsQualifier = (ids) => {
+  const idsArray = (Array.isArray(ids) ? ids : ids.split(',')).filter(Boolean);
+  return Qualifier.byIds(idsArray);
+};
 
 /**
  * @openapi
@@ -130,6 +136,71 @@ module.exports = {
         Object.assign(qualifier, Qualifier.byContactType(req.query.type));
       }
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
+      return res.json(docs);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/contact:
+     *   get:
+     *     summary: Get contacts
+     *     operationId: v1ContactGet
+     *     description: >
+     *       Returns a paginated array of contact records (persons and places) matching the given filter criteria.
+     *       Exactly one of `ids` or `type` must be provided. Use the `cursor` returned in each response to retrieve
+     *       subsequent pages.
+     *     tags: [Contact]
+     *     x-since: 4.19.0
+     *     x-permissions:
+     *       hasAll: [can_view_contacts]
+     *     parameters:
+     *       - in: query
+     *         name: ids
+     *         schema:
+     *           type: string
+     *         description: >
+     *           A comma-separated list of contact UUIDs to fetch. Required if `type` is not provided. Takes
+     *           precedence over `type` when both are provided.
+     *       - in: query
+     *         name: type
+     *         schema:
+     *           type: string
+     *         description: >
+     *           The contact_type id for the type of contacts to fetch. Required if `ids` is not provided.
+     *       - $ref: '#/components/parameters/cursor'
+     *       - $ref: '#/components/parameters/limitEntity'
+     *     responses:
+     *       '200':
+     *         description: A page of contact records
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   description: The results for this page
+     *                   items:
+     *                     $ref: '#/components/schemas/v1.Contact'
+     *                 cursor:
+     *                   $ref: '#/components/schemas/PageCursor'
+     *               required: [data, cursor]
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     */
+    getAll: serverUtils.doOrError(async (req, res) => {
+      await auth.assertPermissions(req, { isOnline: true, hasAll: ['can_view_contacts'] });
+      if (!req.query.ids && !req.query.type) {
+        return serverUtils.error({ status: 400, message: 'Either query param ids or type is required' }, req, res);
+      }
+      const qualifier = req.query.ids
+        ? buildIdsQualifier(req.query.ids)
+        : Qualifier.byContactType(req.query.type);
+      const docs = await getContactDocs(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),
   },

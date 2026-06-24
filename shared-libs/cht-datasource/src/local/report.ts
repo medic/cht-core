@@ -1,12 +1,14 @@
 import { LocalDataContext } from './libs/data-context';
 import {
   createDoc,
+  fetchAndFilter,
   fetchAndFilterIds,
   getDocById, getDocIdsByIdRange, getDocsByIds,
   queryDocIdsByKey,
-  queryDocIdsByRange, updateDoc
+  queryDocIdsByRange,
+  updateDoc
 } from './libs/doc';
-import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+import { FreetextQualifier, IdsQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import * as LocalContact from './contact';
@@ -127,6 +129,25 @@ export namespace v1 {
       const skip = validateCursor(cursor);
       const getPageFn = getOfflineFreetextQueryPageFn(freetextQualifier);
       return fetchAndFilterIds(getPageFn, limit)(limit, skip);
+    };
+  };
+
+  /** @internal */
+  export const getPage = ({ medicDb }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+
+    return async (
+      qualifier: IdsQualifier,
+      cursor: Nullable<string>,
+      limit: number,
+    ): Promise<Page<Report.v1.Report>> => {
+      const skip = validateCursor(cursor);
+      const getPageFn = (
+        limit: number,
+        skip: number
+      ) => getMedicDocsByIds(qualifier.ids.slice(skip, skip + limit));
+
+      return await fetchAndFilter(getPageFn, isReport, limit)(limit, skip) as Page<Report.v1.Report>;
     };
   };
 

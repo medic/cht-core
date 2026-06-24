@@ -2,8 +2,10 @@ import { InvalidArgumentError } from './error';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
+  IdsQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
+  isIdsQualifier,
   isUuidQualifier,
   UuidQualifier,
 } from '../qualifier';
@@ -129,6 +131,24 @@ export const assertContactTypeFreetextQualifier: (
   if (!(isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier))) {
     throw new InvalidArgumentError(
       `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type and/or freetext qualifier.`
+    );
+  }
+};
+
+/** @internal */
+export const assertIdsQualifier: (qualifier: unknown) => asserts qualifier is IdsQualifier = (qualifier: unknown) => {
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid ids qualifier [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertContactTypeIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is ContactTypeQualifier | IdsQualifier = (qualifier: unknown) => {
+  if (!(isContactTypeQualifier(qualifier) || isIdsQualifier(qualifier))) {
+    throw new InvalidArgumentError(
+      `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type or ids qualifier.`
     );
   }
 };

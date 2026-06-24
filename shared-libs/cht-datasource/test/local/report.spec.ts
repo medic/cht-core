@@ -338,6 +338,59 @@ describe('local report', () => {
       });
     });
 
+    describe('getPage', () => {
+      const limit = 3;
+      const notNullCursor = '5';
+      let getDocsByIdsInner: SinonStub;
+      let getDocsByIdsOuter: SinonStub;
+      let fetchAndFilterInner: SinonStub;
+      let fetchAndFilterOuter: SinonStub;
+
+      beforeEach(() => {
+        getDocsByIdsInner = sinon.stub();
+        getDocsByIdsOuter = sinon.stub(LocalDoc, 'getDocsByIds').returns(getDocsByIdsInner);
+        fetchAndFilterInner = sinon.stub();
+        fetchAndFilterOuter = sinon.stub(LocalDoc, 'fetchAndFilter').returns(fetchAndFilterInner);
+      });
+
+      it('returns a page of reports for the given ids, hydrating the sliced page via getDocsByIds', async () => {
+        const ids: [string, ...string[]] = ['r1', 'r2', 'r3', 'r4'];
+        const qualifier = { ids };
+        const expectedResult = { cursor: '3', data: [{ type: 'data_record', form: 'a' }] };
+        fetchAndFilterInner.resolves(expectedResult);
+
+        const res = await Report.v1.getPage(localContext)(qualifier, notNullCursor, limit);
+
+        expect(res).to.deep.equal(expectedResult);
+        expect(getDocsByIdsOuter.calledOnceWithExactly(localContext.medicDb)).to.be.true;
+        const getPageFn = fetchAndFilterOuter.firstCall.args[0];
+        expect(getPageFn).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[1]).to.be.a('function');
+        expect(fetchAndFilterOuter.firstCall.args[2]).to.equal(limit);
+        expect(fetchAndFilterInner.calledOnceWithExactly(limit, Number(notNullCursor))).to.be.true;
+
+        await getPageFn(2, 1);
+        expect(getDocsByIdsInner.calledOnceWithExactly(['r2', 'r3'])).to.be.true;
+      });
+
+      [
+        {},
+        '-1',
+        undefined,
+      ].forEach((invalidCursor) => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(invalidCursor)}`, async () => {
+          const ids: [string, ...string[]] = ['r1'];
+          const expectedMessage =
+            `The cursor must be a string or null for first page: [${JSON.stringify(invalidCursor)}]`;
+          await expect(Report.v1.getPage(localContext)({ ids }, invalidCursor as string, limit))
+            .to.be.rejectedWith(expectedMessage);
+
+          expect(fetchAndFilterOuter.notCalled).to.be.true;
+          expect(fetchAndFilterInner.notCalled).to.be.true;
+        });
+      });
+    });
+
     describe('create', () => {
       const minifiedContact = {
         _id: 'contact-1',
