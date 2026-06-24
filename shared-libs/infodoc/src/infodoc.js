@@ -58,7 +58,7 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
 
       missingTransitions.forEach(infoDoc => {
         const change = changeForInfoDoc(infoDoc._id);
-        infoDoc.transitions = infoDoc.transitions || (change.doc && change.doc.transitions);
+        infoDoc.transitions = infoDoc.transitions || change.doc?.transitions;
         dirtyInfoDocs.push(infoDoc);
       });
 
