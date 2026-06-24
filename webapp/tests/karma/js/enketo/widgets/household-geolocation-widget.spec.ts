@@ -74,6 +74,16 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect(container.querySelector('.geolocation-capture-btn')).to.be.null;
     });
 
+    it('should set element value to "denied" when permission is denied so required validation passes', () => {
+      buildHtml();
+      window.medicmobile_android = { getLocationPermissions: sinon.stub().returns(false) };
+      const widget = createWidget();
+
+      widget._init();
+
+      expect(widget.element.value).to.equal('denied');
+    });
+
     it('should show unavailable message when Geolocation API is absent', () => {
       buildHtml();
       const widget = createWidget();
@@ -84,6 +94,16 @@ describe('Enketo: Household Geolocation Widget', () => {
       const container = document.querySelector('#geolocation-widget-test .or-appearance-geolocation-capture')!;
       expect(container.querySelector('.geolocation-unavailable')).to.not.be.null;
       expect(container.querySelector('.geolocation-capture-btn')).to.be.null;
+    });
+
+    it('should set element value to "unavailable" when Geolocation API is absent so required validation passes', () => {
+      buildHtml();
+      const widget = createWidget();
+      widget._isGeolocationAvailable = () => false;
+
+      widget._init();
+
+      expect(widget.element.value).to.equal('unavailable');
     });
 
     it('should show capture button in normal state', () => {

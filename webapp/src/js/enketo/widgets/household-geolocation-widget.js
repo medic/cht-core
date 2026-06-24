@@ -16,6 +16,7 @@ class HouseholdGeolocationWidget extends Widget {
     const $question = $(this.question);
 
     if (this._isPermissionDenied()) {
+      $(this.element).val('denied').trigger('change');
       const $el = $('<p class="geolocation-permission-denied">');
       $question.append($el);
       return globalThis.CHTCore.Translate.get('geolocation.permission.denied')
@@ -23,6 +24,7 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     if (!this._isGeolocationAvailable()) {
+      $(this.element).val('unavailable').trigger('change');
       const $el = $('<p class="geolocation-unavailable">');
       $question.append($el);
       return globalThis.CHTCore.Translate.get('geolocation.unavailable')
