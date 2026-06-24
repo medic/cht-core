@@ -5,6 +5,7 @@ const $ = require('jquery');
 require('enketo-core/src/js/plugins');
 
 const MS_PER_DAY = 86400000;
+const WEAK_SIGNAL_CODES = [2, 3, -2];
 
 class HouseholdGeolocationWidget extends Widget {
   static get selector() {
@@ -294,7 +295,7 @@ class HouseholdGeolocationWidget extends Widget {
     $resultRow.append($resultLabel, $resultText);
     $status.append($resultRow);
 
-    const isWeakSignal = errorCode === 2 || errorCode === 3;
+    const isWeakSignal = WEAK_SIGNAL_CODES.includes(errorCode);
     if (isWeakSignal) {
       const $weakSignalMsg = $('<p class="geolocation-weak-signal-msg">');
       $status.append($weakSignalMsg);

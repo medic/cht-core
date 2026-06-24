@@ -436,6 +436,16 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector('.geolocation-weak-signal-msg')).to.not.be.null;
       });
 
+      it('should show weak signal message for service timeout (code -2)', async () => {
+        const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
+        window.CHTCore.Geolocation = { currentPromise: promise };
+        const { container } = initAndSelectHome();
+        (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
+        await promise;
+
+        expect(container.querySelector('.geolocation-weak-signal-msg')).to.not.be.null;
+      });
+
       it('should not show weak signal message for PERMISSION_DENIED (code 1)', async () => {
         const promise = Promise.resolve({ code: 1, message: 'User denied Geolocation' });
         window.CHTCore.Geolocation = { currentPromise: promise };
@@ -447,7 +457,7 @@ describe('Enketo: Household Geolocation Widget', () => {
       });
 
       it('should not show weak signal message for other failure codes', async () => {
-        const promise = Promise.resolve({ code: -2, message: 'Unknown failure' });
+        const promise = Promise.resolve({ code: -3, message: 'Geolocation API unavailable' });
         window.CHTCore.Geolocation = { currentPromise: promise };
         const { container } = initAndSelectHome();
         (container.querySelector('.geolocation-capture-btn') as HTMLElement).click();
