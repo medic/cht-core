@@ -268,22 +268,12 @@ export class FormService {
     return Object.values(instanceData)[0];
   }
 
-  private setLastCaptureFromHomeLog(log: any[], captureInput: HTMLInputElement) {
-    const homeEntry = [...log].reverse().find(e => e.is_home && e.recording && !('code' in e.recording));
-    if (homeEntry) {
+  private setLastCapture(log: any[], captureInput: HTMLInputElement, homeOnly: boolean) {
+    const entry = [...log].reverse().find(e => (!homeOnly || e.is_home) && e.recording && !('code' in e.recording));
+    if (entry) {
       captureInput.dataset.geoLastCapture = JSON.stringify({
-        isHome: true,
-        timestamp: homeEntry.timestamp,
-      });
-    }
-  }
-
-  private setLastCaptureFromOtherLog(log: any[], captureInput: HTMLInputElement) {
-    const latestSuccess = [...log].reverse().find(e => e.recording && !('code' in e.recording));
-    if (latestSuccess) {
-      captureInput.dataset.geoLastCapture = JSON.stringify({
-        isHome: latestSuccess.is_home,
-        timestamp: latestSuccess.timestamp,
+        isHome: entry.is_home,
+        timestamp: entry.timestamp,
       });
     }
   }
@@ -304,11 +294,7 @@ export class FormService {
     }
 
     captureInput.dataset.geoHasLocation = 'true';
-    if (hasHomeLocation) {
-      this.setLastCaptureFromHomeLog(log, captureInput);
-      return;
-    }
-    this.setLastCaptureFromOtherLog(log, captureInput);
+    this.setLastCapture(log, captureInput, hasHomeLocation);
   }
 
   private getGeoContext(formHtml?: Element): string | undefined {
