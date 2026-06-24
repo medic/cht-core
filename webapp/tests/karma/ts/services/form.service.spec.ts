@@ -2014,7 +2014,7 @@ describe('Form service', () => {
       html.appendChild(captureWrapper);
 
       enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', type: 'some-contact-type' }
+        doc: { _id: 'main1', type: 'some-contact-type', geo_capture: 'captured' }
       });
       dbBulkDocs.resolves([]);
 
@@ -2028,6 +2028,7 @@ describe('Form service', () => {
       const savedDocs = dbBulkDocs.args[0][0];
       assert.isTrue(savedDocs[0].geolocation_log[0].is_home);
       assert.deepEqual(savedDocs[0].geolocation, geoData);
+      assert.notProperty(savedDocs[0], 'geo_capture');
     });
 
     it('saves is_home: false and omits geolocation on contact doc when context is other', async () => {
@@ -2162,7 +2163,7 @@ describe('Form service', () => {
       assert.equal(dbBulkDocs.callCount, 1);
       const savedDocs = dbBulkDocs.args[0][0];
       assert.deepEqual(savedDocs[0].geolocation, originalGeo);
-      assert.equal(savedDocs[0].geo_capture, 'captured');
+      assert.notProperty(savedDocs[0], 'geo_capture');
       assert.deepEqual(savedDocs[0].geolocation_log, originalLog);
       assert.equal(savedDocs[0].name, 'My Household');
     });

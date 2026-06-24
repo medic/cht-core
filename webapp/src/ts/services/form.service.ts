@@ -448,7 +448,6 @@ export class FormService {
     const contactDoc = preparedDocs.find(doc => doc._id === docId);
     if (contactDoc && originalDoc) {
       contactDoc.geolocation = originalDoc.geolocation;
-      contactDoc.geo_capture = originalDoc.geo_capture;
       contactDoc.geolocation_log = originalDoc.geolocation_log;
     }
   }
@@ -495,6 +494,7 @@ export class FormService {
     const docsWithGeo = geoCaptureValue === 'kept'
       ? preparedDocs.preparedDocs
       : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue, true);
+    docsWithGeo.forEach((doc: any) => delete doc.geo_capture);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
     const failureMessage = this.generateFailureMessage(bulkDocsResult);
