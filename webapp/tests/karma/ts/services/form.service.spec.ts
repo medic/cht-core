@@ -714,12 +714,29 @@ describe('Form service', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, undefined);
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+      expect(captureInput.dataset.geoIsEdit).to.be.undefined;
     });
 
     it('does nothing when contact has no geolocation data', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, { _id: 'contact1' });
       expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+    });
+
+    it('sets data-geo-is-edit when contact is present even without geolocation data', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1' });
+      expect(captureInput.dataset.geoIsEdit).to.equal('true');
+    });
+
+    it('sets data-geo-is-edit when contact has geolocation data', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
+        ],
+      });
+      expect(captureInput.dataset.geoIsEdit).to.equal('true');
     });
 
     it('does nothing when contact has empty geolocation_log and no geolocation', () => {

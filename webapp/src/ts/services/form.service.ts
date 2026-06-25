@@ -286,6 +286,8 @@ export class FormService {
       return;
     }
 
+    captureInput.dataset.geoIsEdit = 'true';
+
     const log: any[] = contact.geolocation_log || [];
     const hasHomeLocation = !!contact.geolocation;
     const hasSuccessfulLogEntry = log.some(e => e.recording && !('code' in e.recording));
