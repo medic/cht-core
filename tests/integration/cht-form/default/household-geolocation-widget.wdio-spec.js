@@ -45,7 +45,7 @@ const mockGeoResolved = async (result) => {
   }, result);
 };
 
-describe('cht-form web component - Geolocation Widget', () => {
+describe('cht-form web component - HouseholdGeolocation Widget', () => {
   it('should render capture button when geolocation is available', async () => {
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 

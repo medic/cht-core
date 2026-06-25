@@ -53,7 +53,7 @@ const mockGeoResolved = async (result) => {
   }, result);
 };
 
-describe('Geolocation widget - contact save pipeline', () => {
+describe('HouseholdGeolocation widget - contact save pipeline', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get(CONTACT_TYPES.HEALTH_CENTER);
 
