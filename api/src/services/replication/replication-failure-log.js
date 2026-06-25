@@ -166,8 +166,29 @@ const getUsersWithFailuresCount = async (intervalDays) => {
   return new Set(result.rows.map(row => row.key[1])).size;
 };
 
+/**
+ * Returns failure counts nested by username then by day (YYYY-MM-DD), for every failure logged on or
+ * after `sinceDay`. The `logs/replication_failures` view is keyed by `[day, user]` with the per-day
+ * count as its value, so a single bounded query covers all users; callers narrow further per user
+ * (e.g. to each user's last successful replication).
+ *
+ * @param {string} sinceDay earliest day to include, in YYYY-MM-DD format
+ * @returns {Promise<Object<string, Object<string, number>>>} `{ [user]: { [day]: count } }`
+ */
+const getDailyFailuresByUserSince = async (sinceDay) => {
+  const result = await db.medicLogs.query('logs/replication_failures', { startkey: [sinceDay] });
+  const byUser = {};
+  for (const row of result.rows) {
+    const [day, user] = row.key;
+    byUser[user] = byUser[user] || {};
+    byUser[user][day] = (byUser[user][day] || 0) + row.value;
+  }
+  return byUser;
+};
+
 module.exports = {
   capture: captureFailure,
   get,
   getUsersWithFailuresCount,
+  getDailyFailuresByUserSince,
 };
