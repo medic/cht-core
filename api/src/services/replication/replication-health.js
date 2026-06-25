@@ -3,10 +3,7 @@ const replicationLimitLog = require('./replication-limit-log');
 const replicationFailureLog = require('./replication-failure-log');
 
 const DAY_FORMAT = 'YYYY-MM-DD';
-// Default staleness window: a user who has not successfully replicated within this many days is
-// considered for the failed list when the caller doesn't supply an explicit `days` value.
 const DEFAULT_STALE_DAYS = 30;
-// "Any number of failures counts" — flag a user with at least one failure within the window.
 const DEFAULT_MIN_FAILURES = 1;
 
 const sumFailuresSince = (dailyFailures, sinceDay) => {
@@ -26,21 +23,24 @@ const getFailuresSinceLastReplication = async (failing, logsByUser) => {
     .map(entry => logsByUser[entry.user]?.date)
     .filter(Boolean);
   if (!logDates.length) {
-    return new Map();
+    return {};
   }
 
   const earliestDay = moment(Math.min(...logDates)).format(DAY_FORMAT);
   const failuresByUser = await replicationFailureLog.getDailyFailuresByUserSince(earliestDay);
-  return new Map(failing
-    .filter(entry => logsByUser[entry.user]?.date)
-    .map(entry => {
-      const sinceDay = moment(logsByUser[entry.user].date).format(DAY_FORMAT);
-      return [entry.user, sumFailuresSince(failuresByUser[entry.user], sinceDay)];
-    }));
+  const failuresSinceByUser = {};
+  for (const entry of failing) {
+    const date = logsByUser[entry.user]?.date;
+    if (date) {
+      const sinceDay = moment(date).format(DAY_FORMAT);
+      failuresSinceByUser[entry.user] = sumFailuresSince(failuresByUser[entry.user], sinceDay);
+    }
+  }
+  return failuresSinceByUser;
 };
 
 /**
- * Lists users that appear unable to replicate within the `days` window: they have logged at least
+ * Lists users that were unable to replicate within the `days` window: they have logged at least
  * `minFailures` replication failures inside the window AND have not successfully replicated within it
  * Each listed user reports two failure counts:
  *  - `failures_in_window`: failures within the window (from the cutoff day onward). This is what
@@ -78,7 +78,7 @@ const getFailed = async ({ days = DEFAULT_STALE_DAYS, minFailures = DEFAULT_MIN_
   const users = failing.map(entry => ({
     user: entry.user,
     last_replication_date: logsByUser[entry.user]?.date ?? null,
-    failures_since_last_replication: failuresSinceByUser.get(entry.user) ?? null,
+    failures_since_last_replication: failuresSinceByUser[entry.user] ?? null,
     failures_in_window: entry.failuresInWindow,
   }));
 

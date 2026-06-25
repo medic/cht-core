@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const auth = require('../../src/auth');
 const config = require('../../src/config');
 const environment = require('@medic/environment');
-const { PermissionError, AuthenticationError } = require('../../src/errors');
+const { PermissionError } = require('../../src/errors');
 const { USER_ROLES: { COUCHDB_ADMIN } } = require('@medic/constants');
 
 let req;
@@ -225,11 +225,11 @@ describe('Auth', () => {
       chai.expect(result).to.deep.equal({ name: 'admin', roles: [COUCHDB_ADMIN] });
     });
 
-    it('should throw an AuthenticationError when the user is not a db admin', async () => {
+    it('should throw a PermissionError when the user is logged in but not a db admin', async () => {
       sinon.stub(request, 'get').resolves({ userCtx: { name: 'user', roles: ['chw'] } });
 
       await chai.expect(auth.assertDbAdmin(req))
-        .to.be.rejectedWith(AuthenticationError, 'User is not an admin');
+        .to.be.rejectedWith(PermissionError, 'User is not an admin');
     });
 
     it('should propagate authentication errors from getUserCtx', async () => {

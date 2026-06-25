@@ -1,18 +1,7 @@
-const { InvalidArgumentError } = require('@medic/cht-datasource');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const replicationHealth = require('../services/replication/replication-health');
-
-const parsePositiveInteger = (value, name) => {
-  if (value === undefined || value === null || value === '') {
-    return undefined;
-  }
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new InvalidArgumentError(`The ${name} must be a positive integer: [${JSON.stringify(value)}].`);
-  }
-  return parsed;
-};
+const { parseIntegerParam } = require('../services/pagination');
 
 module.exports = {
   /**
@@ -86,10 +75,17 @@ module.exports = {
   failed: async (req, res) => {
     try {
       await auth.assertDbAdmin(req);
+      const query = req.query;
 
       const result = await replicationHealth.getFailed({
-        days: parsePositiveInteger(req.query.days, 'days'),
-        minFailures: parsePositiveInteger(req.query.min_failures, 'min_failures'),
+        days: parseIntegerParam({
+          value: query.days,
+          minimum: 1,
+          errorMessage: `"days" must be a positive integer`}),
+        minFailures: parseIntegerParam({
+          value: query.min_failures,
+          minimum: 1,
+          errorMessage: '"min_failures" must be a positive integer' }),
       });
       res.json(result);
     } catch (err) {

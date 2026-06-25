@@ -52,7 +52,7 @@ describe('Replication Limit Log Controller', () => {
       chai.expect(serverUtils.error.callCount).to.equal(1);
       const error = serverUtils.error.args[0][0];
       chai.expect(error.message).to.equal('User is not an admin');
-      chai.expect(error.code).to.equal(401);
+      chai.expect(error.code).to.equal(403);
       chai.expect(serverUtils.error.args[0].slice(1)).to.deep.equal([req, res, true]);
     });
 

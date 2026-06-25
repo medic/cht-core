@@ -72,11 +72,11 @@ describe('replication health', () => {
   });
 
   describe('/failed', () => {
-    it('should reject a non-admin user with a 401', async () => {
+    it('should reject a non-admin user with a 403', async () => {
       await expect(utils.request({
         path: '/api/v1/replication-health/failed',
         auth: { username: offlineUser.username, password },
-      })).to.be.rejected.and.eventually.have.property('status', 401);
+      })).to.be.rejected.and.eventually.have.property('status', 403);
     });
 
     it('should list a user with a stale limit log and failures since that log', async () => {

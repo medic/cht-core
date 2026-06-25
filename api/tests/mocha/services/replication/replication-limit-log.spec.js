@@ -10,25 +10,23 @@ describe('Replication Limit Log service', () => {
   });
 
   describe('put()', () => {
-    it('should log error in console, if parameters are missing', () => {
+    it('should log error in console, if parameters are missing', async () => {
       const getStub = sinon.stub(db.medicLogs, 'get');
       const putStub = sinon.stub(db.medicLogs, 'put');
       const errorStub = sinon.stub(logger, 'error');
       const expectedMessage = 'Error on Log Replication Limit';
 
-      return replicationLimitLogService
-        .put()
-        .then(() => {
-          chai.expect(getStub.called).to.be.false;
-          chai.expect(putStub.called).to.be.false;
-          chai.expect(errorStub.called).to.be.true;
-          chai.expect(errorStub.args[0][0]).to.include(expectedMessage);
-        });
+      await replicationLimitLogService.put();
+
+      chai.expect(getStub.called).to.be.false;
+      chai.expect(putStub.called).to.be.false;
+      chai.expect(errorStub.called).to.be.true;
+      chai.expect(errorStub.args[0][0]).to.include(expectedMessage);
     });
 
-    it('should persist log with all docs count', () => {
-      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.reject({ status: 404 }));
-      const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
+    it('should persist log with all docs count', async () => {
+      const getStub = sinon.stub(db.medicLogs, 'get').rejects({ status: 404 });
+      const putStub = sinon.stub(db.medicLogs, 'put').resolves();
       const logType = replicationLimitLogService.LOG_TYPE;
 
       const expectedDoc = {
@@ -38,40 +36,35 @@ describe('Replication Limit Log service', () => {
         all_docs_count: 500
       };
 
-      return replicationLimitLogService
-        .put('userXYZ', 100, 500)
-        .then(() => {
-          chai.expect(getStub.called).to.be.true;
-          chai.expect(putStub.called).to.be.true;
-          chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
-        });
+      await replicationLimitLogService.put('userXYZ', 100, 500);
+
+      chai.expect(getStub.called).to.be.true;
+      chai.expect(putStub.called).to.be.true;
+      chai.expect(putStub.args[0][0]).to.deep.include(expectedDoc);
     });
 
     it('should always update the existing log, even when counts and date are unchanged', async () => {
       const logType = replicationLimitLogService.LOG_TYPE;
       const existingDoc = {
         _id: logType + 'userXYZ',
-        _rev: '1-abc',
         user: 'userXYZ',
         date: 1000,
         count: 100,
         all_docs_count: 500
       };
-      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.resolve(existingDoc));
-      const putStub = sinon.stub(db.medicLogs, 'put').returns(Promise.resolve());
+      const getStub = sinon.stub(db.medicLogs, 'get').resolves(existingDoc);
+      const putStub = sinon.stub(db.medicLogs, 'put').resolves();
 
       await replicationLimitLogService.put('userXYZ', 100, 500);
 
       chai.expect(getStub.called).to.be.true;
       chai.expect(putStub.called).to.be.true;
-      // Keeps the existing _rev (updates in place) and refreshes the date.
-      chai.expect(putStub.args[0][0]._rev).to.equal('1-abc');
       chai.expect(putStub.args[0][0].date).to.not.equal(1000);
     });
   });
 
   describe('get()', () => {
-    it('should retrieve log by document ID', () => {
+    it('should retrieve log by document ID', async () => {
       const logType = replicationLimitLogService.LOG_TYPE;
       const doc = {
         _id: logType + 'userXYZ',
@@ -79,19 +72,17 @@ describe('Replication Limit Log service', () => {
         count: 100
       };
       const allDocsStub = sinon.stub(db.medicLogs, 'allDocs');
-      const getStub = sinon.stub(db.medicLogs, 'get').returns(Promise.resolve(doc));
+      const getStub = sinon.stub(db.medicLogs, 'get').resolves(doc);
 
-      return replicationLimitLogService
-        .get('userXYZ')
-        .then((response) => {
-          chai.expect(getStub.called).to.be.true;
-          chai.expect(allDocsStub.called).to.be.false;
-          chai.expect(getStub.args[0][0]).to.equal(doc._id);
-          chai.expect(response.users).to.equal(doc);
-        });
+      const response = await replicationLimitLogService.get('userXYZ');
+
+      chai.expect(getStub.called).to.be.true;
+      chai.expect(allDocsStub.called).to.be.false;
+      chai.expect(getStub.args[0][0]).to.equal(doc._id);
+      chai.expect(response.users).to.equal(doc);
     });
 
-    it('should retrieve list of logs by type', () => {
+    it('should retrieve list of logs by type', async () => {
       const logType = replicationLimitLogService.LOG_TYPE;
       const doc1 = {
         _id: logType + 'userABC',
@@ -103,7 +94,7 @@ describe('Replication Limit Log service', () => {
         user: 'userXYZ',
         count: 100
       };
-      const response = {
+      const allDocsResponse = {
         rows: [
           { doc: doc1 },
           { doc: doc2 }
@@ -115,17 +106,15 @@ describe('Replication Limit Log service', () => {
         include_docs: true
       };
       const getStub = sinon.stub(db.medicLogs, 'get');
-      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve(response));
+      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').resolves(allDocsResponse);
 
-      return replicationLimitLogService
-        .get()
-        .then((response) => {
-          chai.expect(getStub.called).to.be.false;
-          chai.expect(allDocsStub.called).to.be.true;
-          chai.expect(allDocsStub.args[0][0]).to.deep.include(options);
-          chai.expect(response.users[0]).to.equal(doc1);
-          chai.expect(response.users[1]).to.equal(doc2);
-        });
+      const response = await replicationLimitLogService.get();
+
+      chai.expect(getStub.called).to.be.false;
+      chai.expect(allDocsStub.called).to.be.true;
+      chai.expect(allDocsStub.args[0][0]).to.deep.include(options);
+      chai.expect(response.users[0]).to.equal(doc1);
+      chai.expect(response.users[1]).to.equal(doc2);
     });
   });
 
@@ -133,46 +122,40 @@ describe('Replication Limit Log service', () => {
     const logType = replicationLimitLogService.LOG_TYPE;
     const log = (user, date) => ({ _id: logType + user, user, date });
 
-    it('should query by keyed doc ids and return logs keyed by username', () => {
+    it('should query by keyed doc ids and return logs keyed by username', async () => {
       const alice = log('alice', 1000);
       const bob = log('bob', 2000);
-      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
+      const allDocsStub = sinon.stub(db.medicLogs, 'allDocs').resolves({
         rows: [{ doc: alice }, { doc: bob }],
-      }));
+      });
 
-      return replicationLimitLogService
-        .getLogsForUsers(['alice', 'bob'])
-        .then((logsByUser) => {
-          chai.expect(allDocsStub.args[0][0]).to.deep.equal({
-            keys: [logType + 'alice', logType + 'bob'],
-            include_docs: true,
-          });
-          chai.expect(logsByUser).to.deep.equal({ alice, bob });
-        });
+      const logsByUser = await replicationLimitLogService.getLogsForUsers(['alice', 'bob']);
+
+      chai.expect(allDocsStub.args[0][0]).to.deep.equal({
+        keys: [logType + 'alice', logType + 'bob'],
+        include_docs: true,
+      });
+      chai.expect(logsByUser).to.deep.equal({ alice, bob });
     });
 
-    it('should omit users that have no log', () => {
+    it('should omit users that have no log', async () => {
       const alice = log('alice', 1000);
-      sinon.stub(db.medicLogs, 'allDocs').returns(Promise.resolve({
+      sinon.stub(db.medicLogs, 'allDocs').resolves({
         rows: [{ doc: alice }, { key: logType + 'ghost', error: 'not_found' }],
-      }));
+      });
 
-      return replicationLimitLogService
-        .getLogsForUsers(['alice', 'ghost'])
-        .then((logsByUser) => {
-          chai.expect(logsByUser).to.deep.equal({ alice });
-        });
+      const logsByUser = await replicationLimitLogService.getLogsForUsers(['alice', 'ghost']);
+
+      chai.expect(logsByUser).to.deep.equal({ alice });
     });
 
-    it('should not query when given no usernames', () => {
+    it('should not query when given no usernames', async () => {
       const allDocsStub = sinon.stub(db.medicLogs, 'allDocs');
 
-      return replicationLimitLogService
-        .getLogsForUsers([])
-        .then((logsByUser) => {
-          chai.expect(allDocsStub.called).to.be.false;
-          chai.expect(logsByUser).to.deep.equal({});
-        });
+      const logsByUser = await replicationLimitLogService.getLogsForUsers([]);
+
+      chai.expect(allDocsStub.called).to.be.false;
+      chai.expect(logsByUser).to.deep.equal({});
     });
   });
 

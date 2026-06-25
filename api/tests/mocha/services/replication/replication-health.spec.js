@@ -8,6 +8,8 @@ describe('Replication Health service', () => {
   let getDailyFailuresByUserSince;
 
   beforeEach(() => {
+    // Now: 2026-06-16. Default 30-day window → cutoff day 2026-05-17.
+    sinon.useFakeTimers(new Date('2026-06-16T12:00:00Z').valueOf());
     getLogsForUsers = sinon.stub(replicationLimitLog, 'getLogsForUsers');
     getDailyFailuresByUserSince = sinon.stub(replicationFailureLog, 'getDailyFailuresByUserSince');
   });
@@ -16,12 +18,8 @@ describe('Replication Health service', () => {
     sinon.restore();
   });
 
-  // Now: 2026-06-16. Default 30-day window → cutoff day 2026-05-17.
-  const fakeNow = () => sinon.useFakeTimers(new Date('2026-06-16T12:00:00Z').valueOf());
-
   describe('getFailed', () => {
     it('should query failures within the window using the cutoff day', async () => {
-      fakeNow();
       getDailyFailuresByUserSince.resolves({});
 
       await service.getFailed({ days: 7 });
@@ -32,7 +30,6 @@ describe('Replication Health service', () => {
     });
 
     it('should default the window to 30 days when no days are given', async () => {
-      fakeNow();
       getDailyFailuresByUserSince.resolves({});
 
       await service.getFailed();
@@ -41,7 +38,6 @@ describe('Replication Health service', () => {
     });
 
     it('should return no users and not read limit logs when nobody fails within the window', async () => {
-      fakeNow();
       getDailyFailuresByUserSince.resolves({});
 
       const result = await service.getFailed();
@@ -51,7 +47,6 @@ describe('Replication Health service', () => {
     });
 
     it('should report in-window and since-last-replication counts for stale users', async () => {
-      fakeNow();
       const aliceDate = new Date('2026-03-10T00:00:00Z').valueOf();
       const bobDate = new Date('2026-04-20T00:00:00Z').valueOf();
 
@@ -92,7 +87,6 @@ describe('Replication Health service', () => {
     });
 
     it('should include users that have never successfully replicated with null replication fields', async () => {
-      fakeNow();
       getDailyFailuresByUserSince.withArgs('2026-05-17').resolves({
         neverReplicated: { '2026-06-10': 4 },
       });
@@ -115,7 +109,6 @@ describe('Replication Health service', () => {
     });
 
     it('should exclude users that have replicated successfully within the window', async () => {
-      fakeNow();
       getDailyFailuresByUserSince.withArgs('2026-05-17').resolves({
         active: { '2026-06-10': 5 },
       });
@@ -130,7 +123,6 @@ describe('Replication Health service', () => {
     });
 
     it('should apply minFailures to the in-window failure count', async () => {
-      fakeNow();
       const date = new Date('2026-03-10T00:00:00Z').valueOf();
       getDailyFailuresByUserSince.withArgs('2026-05-17').resolves({
         alice: { '2026-06-10': 2 }, // below threshold
@@ -147,15 +139,9 @@ describe('Replication Health service', () => {
     });
 
     it('should propagate errors from the failure log query', async () => {
-      fakeNow();
       getDailyFailuresByUserSince.rejects({ status: 500 });
 
-      try {
-        await service.getFailed();
-        expect.fail('should have thrown');
-      } catch (err) {
-        expect(err).to.deep.equal({ status: 500 });
-      }
+      await expect(service.getFailed()).to.be.rejected.and.eventually.deep.equal({ status: 500 });
     });
   });
 });

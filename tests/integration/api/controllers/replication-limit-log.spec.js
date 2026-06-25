@@ -50,11 +50,11 @@ describe('users doc count', () => {
     await utils.revertDb();
   });
 
-  it('should reject a non-admin user with a 401', async () => {
+  it('should reject a non-admin user with a 403', async () => {
     await expect(utils.request({
       path: '/api/v1/users-doc-count',
       auth: { username: offlineUser.username, password },
-    })).to.be.rejected.and.eventually.have.property('status', 401);
+    })).to.be.rejected.and.eventually.have.property('status', 403);
   });
 
   it('should return the configured limit and a log for every user', async () => {

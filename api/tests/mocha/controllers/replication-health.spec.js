@@ -43,7 +43,7 @@ describe('Replication Health Controller', () => {
       expect(serverUtils.error.callCount).to.equal(1);
       const error = serverUtils.error.args[0][0];
       expect(error.message).to.equal('User is not an admin');
-      expect(error.code).to.equal(401);
+      expect(error.code).to.equal(403);
     });
 
     it('should return the service result for an admin with no query params', async () => {
