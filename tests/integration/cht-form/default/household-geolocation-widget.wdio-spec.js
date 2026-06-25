@@ -139,6 +139,28 @@ describe('cht-form web component - Geolocation Widget', () => {
     expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
     expect(await $(SELECTORS.SKIP_BTN).isExisting()).to.be.false;
   });
+
+  it('should not crash when currentPromise is unavailable, as in a report form', async () => {
+    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
+    // Simulate a report form context where geolocationService.init() was never called.
+    // currentPromise may be set from a previous test, so explicitly clear it.
+    await browser.execute(() => {
+      window.CHTCore.Geolocation.currentPromise = undefined;
+    });
+
+    await selectHomeContext();
+    await $(SELECTORS.CAPTURE_BTN).click();
+
+    // Progress bar appears, confirming the click was processed without throwing
+    await $(SELECTORS.PROGRESS_BAR).waitForExist();
+    // No further transition — null guard returned early before attaching .then()
+    expect(await $(SELECTORS.SUCCESS_MSG).isExisting()).to.be.false;
+    expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
+
+    // Drain logs before afterTest checks them — the console.error from the null guard is expected
+    const logs = await browser.getLogs('browser');
+    expect(logs.some(({ message }) => message.includes('currentPromise is not available'))).to.be.true;
+  });
 });
 
 describe('cht-form web component - Geolocation Widget (edit mode)', () => {
