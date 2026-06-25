@@ -115,14 +115,14 @@ const processJob = async (job, deadline) => {
     const ids = await readIds(job);
     let batches = 0;
 
-    while (job.cursor < job.total && Date.now() < deadline) {
+    do {
       const batch = ids.slice(job.cursor, job.cursor + BATCH_SIZE);
       await archiveBatch(batch);
       await saveJob(job, batch.length);
       if (++batches % 10 === 0) {
         await indexViews();
       }
-    }
+    } while (job.cursor < job.total && Date.now() < deadline);
   } catch (err) {
     await recordError(job, err);
     throw err;
