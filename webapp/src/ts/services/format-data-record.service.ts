@@ -38,9 +38,9 @@ export class FormatDataRecordService {
     };
     return this.dbService
       .get()
-      .query('medic-client/registered_patients', options)
+      .query('medic-client/reports_by_subject', options)
       .then((result) => {
-        return result.rows.map(row => row.doc);
+        return _.uniqBy(result.rows.map(row => row.doc), '_id');
       });
   }
 

@@ -94,7 +94,7 @@ describe('Message mapper', () => {
           { _id: 4, scheduled_tasks: [{ foo: 'bar' }], patient: { patient_id: 'a' } },
         ];
 
-        db.medic.query.withArgs('medic-client/registered_patients').resolves({ rows: [] });
+        db.medic.query.withArgs('medic-client/reports_by_subject').resolves({ rows: [] });
 
         return service.map().then(({ hydrate }) => {
           return hydrate(records).then(result => {
@@ -121,7 +121,7 @@ describe('Message mapper', () => {
           { _id: 4, scheduled_tasks: [{ foo: 'bar' }], patient: { patient_id: 'd' } },
         ];
 
-        db.medic.query.withArgs('medic-client/registered_patients').resolves({
+        db.medic.query.withArgs('medic-client/reports_by_subject').resolves({
           rows: [
             { key: 'a', doc: { _id: 'r1', patient_id: 'a', valid: false } },
             { key: 'b', doc: { _id: 'r2', patient_id: 'b', valid: true } },
