@@ -59,9 +59,10 @@ angular.module('services').factory('MessageQueue',
     };
 
     const findRegistrations = (registrations, message, shortcodeField) => {
-      return registrations
+      const docs = registrations
         .filter((row) => row.key === message.context[shortcodeField])
         .map((row) => row.doc);
+      return docs.filter((doc, idx) => docs.findIndex((other) => other._id === doc._id) === idx);
     };
 
     const findContactById = function(hydratedContacts, contactId) {
@@ -131,7 +132,7 @@ angular.module('services').factory('MessageQueue',
       return $q
         .all([
           DB({ remote: true }).query('medic-client/contacts_by_reference', { keys: referenceKeys }),
-          DB({ remote: true }).query('medic-client/registered_patients', { keys: shortcodes, include_docs: true }),
+          DB({ remote: true }).query('medic-client/reports_by_subject', { keys: shortcodes, include_docs: true }),
         ])
         .then(([contactsByReference, registrations]) => {
           registrations = getValidRegistrations(registrations, settings);
