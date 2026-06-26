@@ -254,11 +254,11 @@ class HouseholdGeolocationWidget extends Widget {
       '.geolocation-skip-btn',
     ].join(',')).remove();
 
-    const geoContext = this.element.dataset.geoContext;
-    if (geoContext) {
-      const confirmationKey = geoContext === 'home'
-        ? TRANSLATION_KEYS.CONFIRMATION_HOME
-        : TRANSLATION_KEYS.CONFIRMATION_OTHER;
+    const confirmationKey = {
+      home: TRANSLATION_KEYS.CONFIRMATION_HOME,
+      other: TRANSLATION_KEYS.CONFIRMATION_OTHER,
+    }[this.element.dataset.geoContext];
+    if (confirmationKey) {
       const $confirmation = $('<p class="geolocation-context-confirmation">');
       $confirmation.text(globalThis.CHTCore.Translate.instant(confirmationKey));
       $question.append($confirmation);
