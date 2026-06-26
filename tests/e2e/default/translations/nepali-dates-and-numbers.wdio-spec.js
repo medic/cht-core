@@ -287,4 +287,104 @@ describe('Bikram Sambat date display', () => {
     expect(date2vals.filter(v => !v)).to.have.lengthOf(1);   // incomplete: saved empty
     expect(date2vals.filter(v => !!v)).to.have.lengthOf(1);  // complete: saved a date
   });
+
+  it('should open the calendar popup, select a date, and populate the inputs when language is Nepali', async () => {
+    await setLanguage(NEPALI_LOCALE_CODE);
+    await commonPage.goToReports();
+    await commonPage.openFastActionReport('bikram-sambat-dates', false);
+
+    const realInput = $('input[name="/bikram-sambat-dates/data/date1"]');
+    const dateWidget = await realInput.nextElement();
+    const calendarBtn = await dateWidget.$('.calendar-btn');
+
+    await calendarBtn.waitForDisplayed();
+    await calendarBtn.click();
+
+    // Wait until at least one of the popup elements is displayed
+    await browser.waitUntil(async () => {
+      const popups = await $$('.nepali-date-picker');
+      for (const p of popups) {
+        if (await p.isDisplayed()) {
+          return true;
+        }
+      }
+      return false;
+    }, {
+      timeout: 15000,
+      timeoutMsg: 'Expected a .nepali-date-picker to be displayed'
+    });
+
+    const getVisiblePopup = async () => {
+      const popups = await $$('.nepali-date-picker');
+      for (const p of popups) {
+        if (await p.isDisplayed()) {
+          return p;
+        }
+      }
+      throw new Error('No visible .nepali-date-picker found');
+    };
+
+    let popup = await getVisiblePopup();
+    const overlay = $('.nepali-date-picker-overlay');
+    await overlay.waitForDisplayed();
+
+    // Verify overlay click closes the popup
+    await overlay.click();
+    await popup.waitForDisplayed({ reverse: true });
+    await overlay.waitForDisplayed({ reverse: true });
+
+    // Open it again
+    await calendarBtn.click();
+    await browser.waitUntil(async () => {
+      const popups = await $$('.nepali-date-picker');
+      for (const p of popups) {
+        if (await p.isDisplayed()) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    popup = await getVisiblePopup();
+    await overlay.waitForDisplayed();
+
+    // Verify close button click closes the popup
+    const closeBtn = popup.$('.close-btn');
+    await closeBtn.waitForDisplayed();
+    await closeBtn.click();
+    await popup.waitForDisplayed({ reverse: true });
+    await overlay.waitForDisplayed({ reverse: true });
+
+    // Open it again to select a date
+    await calendarBtn.click();
+    await browser.waitUntil(async () => {
+      const popups = await $$('.nepali-date-picker');
+      for (const p of popups) {
+        if (await p.isDisplayed()) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    popup = await getVisiblePopup();
+    await overlay.waitForDisplayed();
+
+    const activeDays = await popup.$$('table tbody td.current-month-date:not(.disable)');
+    expect(activeDays.length).to.be.greaterThan(0);
+    await activeDays[0].click();
+
+    await popup.waitForDisplayed({ reverse: true });
+    await overlay.waitForDisplayed({ reverse: true });
+
+    const dayVal = await dateWidget.$('input[name="day"]').getValue();
+    const monthVal = await dateWidget.$('input[name="month"]').getValue();
+    const yearVal = await dateWidget.$('input[name="year"]').getValue();
+
+    expect(dayVal).to.not.be.empty;
+    expect(monthVal).to.not.be.empty;
+    expect(yearVal).to.not.be.empty;
+
+    await genericForm.cancelForm();
+  });
 });
