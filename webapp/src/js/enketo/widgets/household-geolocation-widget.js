@@ -210,6 +210,12 @@ class HouseholdGeolocationWidget extends Widget {
   _handleEditRadioChange(value, $warning) {
     if (value === 'capture-new') {
       $(this.element).val('').trigger('change');
+      // Enketo validates asynchronously (via Promise), so the invalid-required class
+      // is added after this synchronous call returns. setTimeout defers the removal
+      // until after the microtask queue drains, keeping the UI clean while the user
+      // completes the capture flow. Validation still fires (and blocks submit) if
+      // the user tries to proceed without finishing.
+      setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
       $warning.show();
     } else {
       $(this.element).val('kept').trigger('change');
