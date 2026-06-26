@@ -557,5 +557,28 @@ describe('Audit', () => {
         { date, archived: true },
       ]);
     });
+
+    it('does not re-append an archive entry for a doc already recorded as archived', async () => {
+      const alreadyArchived = {
+        _id: 'doc-a',
+        _rev: '2-b',
+        history: [
+          { rev: '1-a', user: 'alice', date: new Date(10), service: 'api' },
+          { date: 100, archived: true },
+        ],
+      };
+      db.allDocs.resolves({ rows: [
+        { id: 'doc-a', doc: alreadyArchived },
+        { key: 'doc-b', error: 'not_found' },
+      ] });
+
+      await lib.recordArchiving(['doc-a', 'doc-b'], 200);
+
+      expect(db.bulkDocs.callCount).to.equal(1);
+      const written = db.bulkDocs.args[0][0];
+      expect(written).to.have.lengthOf(1);
+      expect(written[0]._id).to.equal('doc-b');
+      expect(written[0].history).to.deep.equal([{ date: 200, archived: true }]);
+    });
   });
 });

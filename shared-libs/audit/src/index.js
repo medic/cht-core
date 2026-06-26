@@ -165,6 +165,10 @@ const recordArchiving = async (ids, date) => {
   ids.forEach((id, idx) => {
     const auditDoc = existingAuditDocs.rows[idx].doc || getAuditDoc({ id });
 
+    if (auditDoc.history.some(entry => entry.archived)) {
+      return;
+    }
+
     auditDoc.history.push({ date, archived: true });
     newAuditDocs.push(auditDoc);
   });

@@ -471,15 +471,14 @@ describe('Sentinel archiving lib', () => {
       ]);
       chai.expect(db.archive.bulkDocs.args[0][1]).to.deep.equal({ new_edits: false });
 
-      // purge is called twice: once for the medic docs, once for their *-info docs.
       chai.expect(db.purge.callCount).to.equal(2);
-      chai.expect(db.purge.args[0][1].map(d => d._id)).to.deep.equal(['c1', 'r1']);
       chai.expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
         keys: ['c1-info', 'r1-info'],
         include_docs: true,
         conflicts: true,
       }]);
-      chai.expect(db.purge.args[1][1].map(d => d._id)).to.deep.equal(['c1-info', 'r1-info']);
+      chai.expect(db.purge.args[0][1].map(d => d._id)).to.deep.equal(['c1-info', 'r1-info']);
+      chai.expect(db.purge.args[1][1].map(d => d._id)).to.deep.equal(['c1', 'r1']);
 
       chai.expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
     });
@@ -501,8 +500,8 @@ describe('Sentinel archiving lib', () => {
 
       await archiveBatch(['r1']);
 
-      // The info-doc purge call gets an empty list (the not-found row was filtered out).
-      chai.expect(db.purge.args[1][1]).to.deep.equal([]);
+      // The info-doc purge call gets an empty list (not-found row filtered out).
+      chai.expect(db.purge.args[0][1]).to.deep.equal([]);
     });
   });
 

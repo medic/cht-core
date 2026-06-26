@@ -47,12 +47,11 @@ const archiveBatch = async (batch) => {
   const docsToArchive = medicDocs.rows
     .filter(row => canArchive(row.doc))
     .map(row => ({ ...row.doc, archive_date: date }));
+
   await db.archive.bulkDocs(docsToArchive, { new_edits: false });
-
-  await db.purge(db.medic, docsToArchive);
-
-  await purgeInfoDocs(docsToArchive);
   await persistAudit(docsToArchive, date);
+  await purgeInfoDocs(docsToArchive);
+  await db.purge(db.medic, docsToArchive);
 };
 
 const purgeInfoDocs = async (docsToArchive) => {
