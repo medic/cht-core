@@ -1058,7 +1058,7 @@ describe('Muting transition', () => {
       return transition.onMatch({ doc }).then(result => {
         chai.expect(result).to.equal(true);
         chai.expect(doc.errors.length).to.equal(1);
-        chai.expect(doc.errors[0].code).to.equal('invalid_patient_id');
+        chai.expect(doc.errors[0].code).to.equal('muting_error');
       });
     });
   });
