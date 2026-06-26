@@ -20,7 +20,6 @@ const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 
 const SELECTORS = {
   ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
-  CAPTURE_BTN: '.geolocation-capture-btn',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
@@ -128,9 +127,8 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
     await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
     await $(SELECTORS.GEO_CAPTURE_CONTAINER).waitForDisplayed();
-    await selectHomeContext();
     await mockGeoResolved(GEO_SUCCESS);
-    await $(SELECTORS.CAPTURE_BTN).click();
+    await selectHomeContext();
     await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
 
     await commonEnketoPage.setInputValue('Full name', 'Test Person Home Context');
@@ -154,9 +152,8 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       await commonPage.clickFastActionFAB({ actionId: personWithGeoType.id });
 
       await $(SELECTORS.GEO_CAPTURE_CONTAINER).waitForDisplayed();
-      await selectOtherContext();
       await mockGeoResolved(GEO_SUCCESS);
-      await $(SELECTORS.CAPTURE_BTN).click();
+      await selectOtherContext();
       await $(SELECTORS.SUCCESS_MSG).waitForExist({ timeout: 10000 });
 
       await commonEnketoPage.setInputValue('Full name', 'Test Person Other Context');
@@ -217,7 +214,6 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
       expect(await $(SELECTORS.EDIT_BADGE_META).isExisting()).to.be.true;
       expect(await $(SELECTORS.KEPT_RADIO).isExisting()).to.be.true;
       expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isExisting()).to.be.true;
-      expect(await $(SELECTORS.CAPTURE_BTN).isExisting()).to.be.false;
       expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
     });
 

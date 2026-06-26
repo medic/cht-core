@@ -9,8 +9,8 @@ const MS_PER_DAY = 86400000;
 const SELECTORS = {
   ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
   ACKNOWLEDGE_LABEL: '.geolocation-acknowledge-label',
-  CAPTURE_BTN: '.geolocation-capture-btn',
   CAPTURE_NEW_RADIO: 'input[type="radio"][value="capture-new"]',
+  CONTEXT_CONFIRMATION: '.geolocation-context-confirmation',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
@@ -21,6 +21,7 @@ const SELECTORS = {
   GEO_CAPTURE_LABEL: '.or-appearance-geolocation-capture',
   HOME_RADIO: 'input[type="radio"][value="home"]',
   KEPT_RADIO: 'input[type="radio"][value="kept"]',
+  NO_LOCATION_MSG: '.geolocation-no-location-msg',
   OTHER_RADIO: 'input[type="radio"][value="other"]',
   PERMISSION_DENIED: '.geolocation-permission-denied',
   PROGRESS_BAR: '.geolocation-progress-bar',
@@ -102,7 +103,6 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       const container = document.querySelector('#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL)!;
       expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.not.be.null;
-      expect(container.querySelector(SELECTORS.CAPTURE_BTN)).to.be.null;
     });
 
     it('should set element value to "denied" when permission is denied so required validation passes', () => {
@@ -124,7 +124,6 @@ describe('Enketo: Household Geolocation Widget', () => {
 
       const container = document.querySelector('#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL)!;
       expect(container.querySelector(SELECTORS.UNAVAILABLE)).to.not.be.null;
-      expect(container.querySelector(SELECTORS.CAPTURE_BTN)).to.be.null;
     });
 
     it('should set element value to "unavailable" when Geolocation API is absent so required validation passes', () => {
@@ -137,9 +136,9 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect(widget.element.value).to.equal('unavailable');
     });
 
-    it('should show capture button in normal state', () => {
+    it('should show context options and no error messages in normal state', () => {
       const { container } = initWidget();
-      expect(container.querySelector(SELECTORS.CAPTURE_BTN)).to.not.be.null;
+      expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
       expect(container.querySelector(SELECTORS.PERMISSION_DENIED)).to.be.null;
       expect(container.querySelector(SELECTORS.UNAVAILABLE)).to.be.null;
     });
@@ -151,46 +150,64 @@ describe('Enketo: Household Geolocation Widget', () => {
       expect(container.querySelector(SELECTORS.OTHER_RADIO)).to.not.be.null;
     });
 
-    it('should disable the capture button until a context option is selected', () => {
-      const { container } = initWidget();
-      const btn = container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLButtonElement;
-      expect(btn).to.not.be.null;
-      expect(btn.disabled).to.be.true;
-    });
-
-    it('should set data-geo-context and enable capture button when home is selected', () => {
+    it('should set data-geo-context to home and start capture when home radio is selected', () => {
+      window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
       const { widget, container } = initWidget();
-      const btn = container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLButtonElement;
       const homeRadio = container.querySelector(SELECTORS.HOME_RADIO) as HTMLInputElement;
       homeRadio.checked = true;
       $(homeRadio).trigger('change');
 
-      expect(btn.disabled).to.be.false;
       expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('home');
+      expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
     });
 
-    it('should set data-geo-context to other when other is selected', () => {
+    it('should set data-geo-context to other and start capture when other radio is selected', () => {
+      window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
       const { widget, container } = initWidget();
       const otherRadio = container.querySelector(SELECTORS.OTHER_RADIO) as HTMLInputElement;
       otherRadio.checked = true;
       $(otherRadio).trigger('change');
 
       expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('other');
+      expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
     });
 
-    it('should hide context options when capture starts', () => {
+    it('should hide context options when a radio is selected', () => {
+      window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
+      const { container } = initWidget();
+
+      const contextOptions = container.querySelector(SELECTORS.CONTEXT_OPTIONS) as HTMLElement;
+      expect(contextOptions.style.display).not.to.equal('none');
+
+      const homeRadio = container.querySelector(SELECTORS.HOME_RADIO) as HTMLInputElement;
+      homeRadio.checked = true;
+      $(homeRadio).trigger('change');
+
+      expect(contextOptions.style.display).to.equal('none');
+    });
+
+    it('should show home confirmation text when home radio is selected', () => {
       window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
       const { container } = initWidget();
       const homeRadio = container.querySelector(SELECTORS.HOME_RADIO) as HTMLInputElement;
       homeRadio.checked = true;
       $(homeRadio).trigger('change');
 
-      const contextOptions = container.querySelector(SELECTORS.CONTEXT_OPTIONS) as HTMLElement;
-      expect(contextOptions.style.display).not.to.equal('none');
+      const confirmation = container.querySelector(SELECTORS.CONTEXT_CONFIRMATION) as HTMLElement;
+      expect(confirmation).to.not.be.null;
+      expect(confirmation.textContent).to.equal('geolocation.confirmation.home');
+    });
 
-      (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
+    it('should show other confirmation text when other radio is selected', () => {
+      window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
+      const { container } = initWidget();
+      const otherRadio = container.querySelector(SELECTORS.OTHER_RADIO) as HTMLInputElement;
+      otherRadio.checked = true;
+      $(otherRadio).trigger('change');
 
-      expect(contextOptions.style.display).to.equal('none');
+      const confirmation = container.querySelector(SELECTORS.CONTEXT_CONFIRMATION) as HTMLElement;
+      expect(confirmation).to.not.be.null;
+      expect(confirmation.textContent).to.equal('geolocation.confirmation.other');
     });
 
     it('should hide context options when capture fails', async () => {
@@ -200,8 +217,6 @@ describe('Enketo: Household Geolocation Widget', () => {
       const homeRadio = container.querySelector(SELECTORS.HOME_RADIO) as HTMLInputElement;
       homeRadio.checked = true;
       $(homeRadio).trigger('change');
-
-      (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
       await promise;
 
       const contextOptions = container.querySelector(SELECTORS.CONTEXT_OPTIONS) as HTMLElement;
@@ -235,18 +250,18 @@ describe('Enketo: Household Geolocation Widget', () => {
       it('logs an error and does not throw when currentPromise is unavailable', () => {
         window.CHTCore.Geolocation.currentPromise = undefined;
         const consoleErrorStub = sinon.stub(console, 'error');
-        const { container } = initAndSelectHome();
 
-        expect(() => (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click()).to.not.throw();
+        expect(() => initAndSelectHome()).to.not.throw();
         expect(consoleErrorStub.callCount).to.equal(1);
       });
 
-      it('should show progress bar and remove capture button on click', () => {
+      it('should show progress bar and home confirmation text when capture starts', () => {
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
 
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
-        expect(container.querySelector(SELECTORS.CAPTURE_BTN)).to.be.null;
+        expect(container.querySelector(SELECTORS.CONTEXT_CONFIRMATION)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.CONTEXT_CONFIRMATION)!.textContent)
+          .to.equal('geolocation.confirmation.home');
       });
 
       it('should add success class to progress bar when GPS is acquired', async () => {
@@ -255,7 +270,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         const bar = container.querySelector(SELECTORS.PROGRESS_BAR)!;
@@ -269,7 +283,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.SUCCESS_MSG)).to.not.be.null;
@@ -280,10 +293,9 @@ describe('Enketo: Household Geolocation Widget', () => {
           latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
         });
         window.CHTCore.Geolocation.currentPromise = promise;
-        const { widget, container } = initAndSelectHome();
+        const { widget } = initAndSelectHome();
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(widget.element.value).to.equal('captured');
@@ -294,7 +306,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
@@ -306,7 +317,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         const skipBtn = container.querySelector(SELECTORS.SKIP_BTN) as HTMLButtonElement;
@@ -319,7 +329,6 @@ describe('Enketo: Household Geolocation Widget', () => {
           const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
           window.CHTCore.Geolocation.currentPromise = promise;
           const { container } = initAndSelectHome();
-          (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
           await promise;
 
           const checkbox = container.querySelector(SELECTORS.ACKNOWLEDGE_CHECKBOX) as HTMLInputElement;
@@ -335,7 +344,6 @@ describe('Enketo: Household Geolocation Widget', () => {
           const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
           window.CHTCore.Geolocation.currentPromise = promise;
           const { container } = initAndSelectHome();
-          (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
           await promise;
 
           const checkbox = container.querySelector(SELECTORS.ACKNOWLEDGE_CHECKBOX) as HTMLInputElement;
@@ -353,10 +361,9 @@ describe('Enketo: Household Geolocation Widget', () => {
       it('should not set hidden input value or fire change event on failure', async () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
-        const { widget, container } = initAndSelectHome();
+        const { widget } = initAndSelectHome();
         const changeHandler = sinon.stub();
         $(widget.element).on('change', changeHandler);
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(widget.element.value).to.equal('');
@@ -367,7 +374,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { widget, container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         const changeHandler = sinon.stub();
@@ -385,7 +391,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         const checkbox = container.querySelector(SELECTORS.ACKNOWLEDGE_CHECKBOX) as HTMLInputElement;
@@ -403,7 +408,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const failurePromise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = failurePromise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await failurePromise;
 
         const retryStub = sinon.stub().callsFake(() => {
@@ -423,7 +427,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         const bar = container.querySelector(SELECTORS.PROGRESS_BAR)!;
@@ -435,7 +438,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         const checkbox = container.querySelector(SELECTORS.ACKNOWLEDGE_CHECKBOX) as HTMLInputElement;
@@ -450,7 +452,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.WEAK_SIGNAL_MSG)).to.not.be.null;
@@ -460,7 +461,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: 3, message: 'Timeout expired' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.WEAK_SIGNAL_MSG)).to.not.be.null;
@@ -470,7 +470,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -2, message: 'Geolocation timeout exceeded' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.WEAK_SIGNAL_MSG)).to.not.be.null;
@@ -480,7 +479,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: 1, message: 'User denied Geolocation' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.WEAK_SIGNAL_MSG)).to.be.null;
@@ -490,12 +488,55 @@ describe('Enketo: Household Geolocation Widget', () => {
         const promise = Promise.resolve({ code: -3, message: 'Geolocation API unavailable' });
         window.CHTCore.Geolocation.currentPromise = promise;
         const { container } = initAndSelectHome();
-        (container.querySelector(SELECTORS.CAPTURE_BTN) as HTMLElement).click();
         await promise;
 
         expect(container.querySelector(SELECTORS.WEAK_SIGNAL_MSG)).to.be.null;
       });
 
+    });
+
+    describe('edit mode with no prior location', () => {
+      const buildHtmlForEditNoLocation = () => {
+        document.body.insertAdjacentHTML('afterbegin', `
+          <div id="geolocation-widget-test">
+            <label class="question non-select or-appearance-geolocation-capture">
+              <input type="hidden" name="/geolocation/capture" data-type-xml="string"
+                data-geo-is-edit="true" />
+            </label>
+          </div>`);
+      };
+
+      const initEditNoLocationWidget = () => {
+        buildHtmlForEditNoLocation();
+        const widget = Object.create(HouseholdGeolocationWidget.prototype);
+        widget.element = document.querySelector('#geolocation-widget-test ' + HouseholdGeolocationWidget.selector);
+        widget.question = widget.element.closest('.question');
+        widget._init();
+        const container = document.querySelector('#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL)!;
+        return { widget, container };
+      };
+
+      it('should show no-location message when contact has no prior location', () => {
+        const { container } = initEditNoLocationWidget();
+        expect(container.querySelector(SELECTORS.NO_LOCATION_MSG)).to.not.be.null;
+      });
+
+      it('should show context options alongside the no-location message', () => {
+        const { container } = initEditNoLocationWidget();
+        expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.HOME_RADIO)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.OTHER_RADIO)).to.not.be.null;
+      });
+
+      it('should not show the edit badge in edit mode with no prior location', () => {
+        const { container } = initEditNoLocationWidget();
+        expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.be.null;
+      });
+
+      it('should not show the no-location message in create mode', () => {
+        const { container } = initWidget();
+        expect(container.querySelector(SELECTORS.NO_LOCATION_MSG)).to.be.null;
+      });
     });
 
     describe('edit mode', () => {
@@ -530,12 +571,11 @@ describe('Enketo: Household Geolocation Widget', () => {
         return { widget, container };
       };
 
-      it('renders edit badge instead of context radios and capture button', async () => {
+      it('renders edit badge instead of context radios', async () => {
         const { container } = await initEditWidget();
 
         expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.not.be.null;
         expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
-        expect(container.querySelector(SELECTORS.CAPTURE_BTN)).to.be.null;
       });
 
       it('renders keep and capture-new radio options', async () => {

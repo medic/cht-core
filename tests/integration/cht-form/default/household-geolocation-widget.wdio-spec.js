@@ -8,8 +8,8 @@ const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 
 const SELECTORS = {
   ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
-  CAPTURE_BTN: '.geolocation-capture-btn',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
+  CONTEXT_CONFIRMATION: '.geolocation-context-confirmation',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
@@ -19,6 +19,7 @@ const SELECTORS = {
   EDIT_WARNING: '.geolocation-edit-warning',
   HOME_RADIO: '.geolocation-context-options input[value="home"]',
   KEPT_RADIO: 'input[value="kept"]',
+  NO_LOCATION_MSG: '.geolocation-no-location-msg',
   OTHER_RADIO: '.geolocation-context-options input[value="other"]',
   PROGRESS_BAR: '.geolocation-progress-bar',
   RETRY_BTN: '.geolocation-retry-btn',
@@ -46,14 +47,6 @@ const mockGeoResolved = async (result) => {
 };
 
 describe('cht-form web component - HouseholdGeolocation Widget', () => {
-  it('should render capture button when geolocation is available', async () => {
-    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
-
-    const captureBtn = await $(SELECTORS.CAPTURE_BTN);
-    await captureBtn.waitForExist();
-    expect(await captureBtn.isExisting()).to.be.true;
-  });
-
   it('should render home and other context options', async () => {
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
@@ -62,40 +55,28 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     expect(await $(SELECTORS.OTHER_RADIO).isExisting()).to.be.true;
   });
 
-  it('should disable capture button until a context option is selected', async () => {
-    await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
-
-    await $(SELECTORS.CAPTURE_BTN).waitForExist();
-    expect(await $(SELECTORS.CAPTURE_BTN).getAttribute('disabled')).to.not.be.null;
-
-    await selectHomeContext();
-
-    expect(await $(SELECTORS.CAPTURE_BTN).getAttribute('disabled')).to.be.null;
-  });
-
-  it('should show progress bar and remove capture button when capture is started', async () => {
+  it('should show progress bar when home is selected', async () => {
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoPending();
 
     await selectHomeContext();
-    await $(SELECTORS.CAPTURE_BTN).click();
 
     await $(SELECTORS.PROGRESS_BAR).waitForExist();
-    expect(await $(SELECTORS.CAPTURE_BTN).isExisting()).to.be.false;
   });
 
-  it('should hide context options when capture starts', async () => {
+  it('should show home confirmation text and hide context options when capture starts', async () => {
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoPending();
 
-    await selectHomeContext();
+    await $(SELECTORS.CONTEXT_OPTIONS).waitForExist();
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isDisplayed()).to.be.true;
 
-    await $(SELECTORS.CAPTURE_BTN).click();
+    await selectHomeContext();
 
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isDisplayed()).to.be.false;
+    await $(SELECTORS.CONTEXT_CONFIRMATION).waitForExist();
   });
 
   it('should show success message when GPS is acquired', async () => {
@@ -104,7 +85,6 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     await mockGeoResolved(GEO_SUCCESS);
 
     await selectHomeContext();
-    await $(SELECTORS.CAPTURE_BTN).click();
 
     await $(SELECTORS.SUCCESS_MSG).waitForExist();
     expect(await $(SELECTORS.RETRY_BTN).isExisting()).to.be.false;
@@ -116,7 +96,6 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     await mockGeoResolved(GEO_FAILURE);
 
     await selectHomeContext();
-    await $(SELECTORS.CAPTURE_BTN).click();
 
     await $(SELECTORS.RETRY_BTN).waitForExist();
     expect(await $(SELECTORS.SKIP_BTN).isExisting()).to.be.true;
@@ -129,7 +108,6 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     await mockGeoResolved(GEO_FAILURE);
 
     await selectHomeContext();
-    await $(SELECTORS.CAPTURE_BTN).click();
 
     await $(SELECTORS.ACKNOWLEDGE_CHECKBOX).waitForExist();
     await $(SELECTORS.ACKNOWLEDGE_CHECKBOX).click();
@@ -151,9 +129,8 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
       });
 
       await selectHomeContext();
-      await $(SELECTORS.CAPTURE_BTN).click();
 
-      // Progress bar appears, confirming the click was processed without throwing
+      // Progress bar appears, confirming the radio selection was processed without throwing
       await $(SELECTORS.PROGRESS_BAR).waitForExist();
       // No further transition — null guard returned early before attaching .then()
       expect(await $(SELECTORS.SUCCESS_MSG).isExisting()).to.be.false;
@@ -177,12 +154,11 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
     await $(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX).click();
   };
 
-  it('should render edit badge instead of context radios and capture button', async () => {
+  it('should render edit badge instead of context radios', async () => {
     await loadEditForm();
 
     await $(SELECTORS.EDIT_BADGE).waitForExist();
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
-    expect(await $(SELECTORS.CAPTURE_BTN).isExisting()).to.be.false;
   });
 
   it('should not render badge context or meta elements when lastCapture is absent', async () => {

@@ -8,7 +8,6 @@ require('enketo-core/src/js/plugins');
 const WEAK_SIGNAL_CODES = new Set([2, 3, -2]);
 
 const TRANSLATION_KEYS = {
-  CAPTURE: 'geolocation.capture',
   CONTEXT_HOME: 'geolocation.context.home',
   CONTEXT_OTHER: 'geolocation.context.other',
   EDIT_ACKNOWLEDGE: 'geolocation.edit.acknowledge',
@@ -29,6 +28,9 @@ const TRANSLATION_KEYS = {
   RESULT_LABEL: 'geolocation.result.label',
   RETRY: 'geolocation.retry',
   SIGNAL_WEAK: 'geolocation.signal.weak',
+  CONFIRMATION_HOME: 'geolocation.confirmation.home',
+  CONFIRMATION_OTHER: 'geolocation.confirmation.other',
+  NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
   SKIP_ACKNOWLEDGE: 'geolocation.skip.acknowledge',
   SKIP_BUTTON: 'geolocation.skip.button',
   SKIPPED: 'geolocation.skipped',
@@ -66,20 +68,22 @@ class HouseholdGeolocationWidget extends Widget {
       return;
     }
 
+    if (this.element.dataset.geoIsEdit === 'true') {
+      const $noLocationMsg = $('<p class="geolocation-no-location-msg">');
+      $noLocationMsg.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.NO_LOCATION_RECORDED));
+      $question.append($noLocationMsg);
+    }
+
     const radioName = 'geo-ctx-' + (this.element.getAttribute('name') || '').replace(/\W/g, '-');
     const { $contextOptions, $homeSpan, $otherSpan } = this._buildContextOptions(radioName);
-    const $button = this._buildCaptureButton();
-    $question.append($contextOptions, $button);
+    $question.append($contextOptions);
 
     $contextOptions.on('change', 'input[type="radio"]', event => {
       event.stopPropagation();
       this.element.dataset.geoContext = event.target.value;
-      $button.prop('disabled', false);
+      this._startCapture();
     });
 
-    $button.append(
-      $('<span class="geolocation-btn-label">').text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CAPTURE))
-    );
     $homeSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CONTEXT_HOME));
     $otherSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CONTEXT_OTHER));
   }
@@ -95,14 +99,6 @@ class HouseholdGeolocationWidget extends Widget {
 
     const $contextOptions = $('<div class="geolocation-context-options">').append($homeLabel, $otherLabel);
     return { $contextOptions, $homeSpan, $otherSpan };
-  }
-
-  _buildCaptureButton() {
-    const $button = $('<button type="button" class="btn btn-default geolocation-capture-btn">');
-    $('<i class="fa fa-map-marker" aria-hidden="true">').appendTo($button);
-    $button.prop('disabled', true);
-    $button.on('click', () => this._startCapture());
-    return $button;
   }
 
   _initEditMode() {
@@ -271,11 +267,21 @@ class HouseholdGeolocationWidget extends Widget {
     }
 
     $question.find([
-      '.geolocation-capture-btn',
+      '.geolocation-context-confirmation',
       '.geolocation-status',
       '.geolocation-retry-btn',
       '.geolocation-skip-btn',
     ].join(',')).remove();
+
+    const geoContext = this.element.dataset.geoContext;
+    if (geoContext) {
+      const confirmationKey = geoContext === 'home'
+        ? TRANSLATION_KEYS.CONFIRMATION_HOME
+        : TRANSLATION_KEYS.CONFIRMATION_OTHER;
+      const $confirmation = $('<p class="geolocation-context-confirmation">');
+      $confirmation.text(globalThis.CHTCore.Translate.instant(confirmationKey));
+      $question.append($confirmation);
+    }
 
     const { $status, $progressLabel, $bar } = this._buildProgressRow();
     $question.append($status);
