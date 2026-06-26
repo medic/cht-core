@@ -107,7 +107,7 @@ describe('Reports Search', () => {
       await commonPage.goToReports();
       await searchPage.performSearch('१२३४५');
       await commonPage.waitForLoaders();
-      expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+      expect(await reportsPage.reportsListDetails()).to.have.lengthOf(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
       await searchPage.clearSearch();
@@ -117,7 +117,7 @@ describe('Reports Search', () => {
       await commonPage.goToReports();
       await searchPage.performSearch('12345');
       await commonPage.waitForLoaders();
-      expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+      expect(await reportsPage.reportsListDetails()).to.have.lengthOf(2);
       expect(await reportsPage.leftPanelSelectors.reportByUUID(devanagariReport._id).isDisplayed()).to.be.true;
       expect(await reportsPage.leftPanelSelectors.reportByUUID(latinReport._id).isDisplayed()).to.be.true;
       await searchPage.clearSearch();
