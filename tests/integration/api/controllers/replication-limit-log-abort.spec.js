@@ -50,7 +50,7 @@ const hasCountLog = async (username) => {
 };
 
 // k3d pairs nouveau with couchdb, so stopping nouveau makes get-ids hang inside couchdb.
-describe.only('replication limit log on aborted requests @docker', () => {
+describe('replication limit log on aborted requests @docker', () => {
   before(async () => {
     await utils.saveDocs([facility, mathilPlace, mathilContact]);
     await utils.createUsers([mathilUser], true);
