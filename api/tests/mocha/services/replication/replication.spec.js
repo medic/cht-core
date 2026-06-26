@@ -56,7 +56,7 @@ describe('Initial Replication service', () => {
       expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3, 4]]);
     });
 
-    xit('should register the doc count when the client is still connected', async () => {
+    it('should register the doc count when the client is still connected', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '123-aaa' });
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
       sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
@@ -69,7 +69,7 @@ describe('Initial Replication service', () => {
       expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3, 4]]);
     });
 
-    xit('should not register the doc count when the client has disconnected', async () => {
+    it('should not register the doc count when the client has disconnected', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '123-aaa' });
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
       sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
