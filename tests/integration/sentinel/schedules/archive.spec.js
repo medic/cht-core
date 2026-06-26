@@ -4,7 +4,7 @@ PouchDB.plugin(require('pouchdb-adapter-http'));
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const constants = require('@constants');
-const { DOC_TYPES, DOC_IDS } = require('@medic/constants');
+const { DOC_TYPES, DOC_IDS, PREFIXES } = require('@medic/constants');
 
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 const archiveDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-archive`, { auth });
@@ -36,8 +36,8 @@ const waitForInfoDocs = async (ids) => {
 
 const cleanupArchiveJobs = async () => {
   const result = await utils.sentinelDb.allDocs({
-    startkey: constants.PREFIXES?.ARCHIVE_JOB,
-    endkey: `${constants.PREFIXES?.ARCHIVE_JOB}\ufff0`,
+    startkey: PREFIXES.ARCHIVE_JOB,
+    endkey: `${PREFIXES.ARCHIVE_JOB}\ufff0`,
   });
   if (!result.rows.length) {
     return;
@@ -86,6 +86,15 @@ const expectAuditedArchive = async (ids) => {
     const latest = archiveEntries[archiveEntries.length - 1];
     expect(latest.archived).to.equal(true);
   }
+};
+
+const waitForJobStatus = async (id, status) => {
+  let doc;
+  do {
+    await utils.delayPromise(1000);
+    doc = await utils.sentinelDb.get(id);
+  } while (doc.status !== status);
+  return doc;
 };
 
 describe('sentinel processes archive jobs', () => {
@@ -329,5 +338,53 @@ describe('sentinel processes archive jobs', () => {
     await expectFullyPurgedFromMedic([id]);
     await expectInfoDocsPurged([id]);
     await expectAuditedArchive([id]);
+  });
+
+  it('quarantines a job that keeps failing and keeps processing the queue behind it', async function () {
+    this.timeout(60000);
+
+    // A healthy archivable doc with its own job.
+    const healthyId = 'archive-e2e-quarantine-healthy';
+    await utils.saveDocs([{ _id: healthyId, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1 }]);
+    await waitForInfoDocs([healthyId]);
+
+    // A poison job: no `ids` attachment, so readIds throws on every run. Its id sorts before any
+    // uuid-v7 job id, so the loop hits it first. Seed error_count at the threshold-1 (the lib's
+    // MAX_JOB_ATTEMPTS is 20) so a single run trips the quarantine.
+    const poisonId = `${PREFIXES.ARCHIVE_JOB}0000-poison`;
+    await utils.sentinelDb.put({
+      _id: poisonId,
+      type: PREFIXES.ARCHIVE_JOB,
+      date: Date.now(),
+      total: 1,
+      cursor: 0,
+      error_count: 19,
+    });
+
+    const { jobs } = await postCsv(healthyId);
+    expect(jobs).to.have.lengthOf(1);
+    const healthyJobId = jobs[0].id;
+    // Sanity: the poison job is encountered before the healthy job.
+    expect(poisonId < healthyJobId).to.equal(true);
+
+    await updateSettings();
+
+    // Can't use waitForArchiveCompletion here — the quarantined job intentionally stays behind.
+    await utils.runSentinelTasks();
+    const poison = await waitForJobStatus(poisonId, 'failed');
+
+    expect(poison.error_count).to.equal(20);
+    expect(poison.status).to.equal('failed');
+    // The job doc is kept (not deleted) for an admin to inspect.
+    expect(poison._deleted).to.not.equal(true);
+
+    // The healthy job behind the poison job was not blocked — it ran to completion and was deleted.
+    const healthyJobRow = (await utils.sentinelDb.allDocs({ keys: [healthyJobId] })).rows[0];
+    expect(healthyJobRow.error || healthyJobRow.value.deleted).to.be.ok;
+
+    const archived = await liveRows(archiveDb, { keys: [healthyId] });
+    expect(archived).to.have.lengthOf(1);
+    await expectFullyPurgedFromMedic([healthyId]);
+    await expectAuditedArchive([healthyId]);
   });
 });

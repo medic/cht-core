@@ -19,8 +19,9 @@ const stubQueue = (jobs) => {
   const putSnapshots = [];
   let revCounter = 0;
 
-  sinon.stub(db.sentinel, 'allDocs').callsFake(() => {
-    const next = queue.find(j => !j._deleted);
+  sinon.stub(db.sentinel, 'allDocs').callsFake((opts = {}) => {
+    const startkey = opts.startkey || '';
+    const next = queue.find(j => !j._deleted && j._id >= startkey);
     return Promise.resolve({ rows: next ? [{ doc: next }] : [] });
   });
 
@@ -51,8 +52,12 @@ const stubQueue = (jobs) => {
 
 describe('Sentinel archiving lib', () => {
   let lib;
+  let clock;
 
   beforeEach(() => {
+    // Fake timers before rewire(): rewire binds `Date` at load time and useFakeTimers swaps the
+    // global Date object, so rewiring first would leave the module on the real Date.
+    clock = sinon.useFakeTimers({ toFake: ['Date'] });
     lib = rewire('../../../src/lib/archiving');
     // Disable archiveBatch and indexViews by default — the queue stubs don't model the
     // medic / archive dbs or _purge, and most tests just want to observe the loop.
@@ -60,7 +65,10 @@ describe('Sentinel archiving lib', () => {
     lib.__set__('indexViews', sinon.stub().resolves());
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clock.restore();
+  });
 
   it('scans the archive: prefix range with limit:1 to find the next job', async () => {
     sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
@@ -108,10 +116,9 @@ describe('Sentinel archiving lib', () => {
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd', 'utf8'));
     lib.__set__('BATCH_SIZE', 2);
 
-    let clock = 1000;
-    const nowStub = sinon.stub(Date, 'now').callsFake(() => clock);
+    clock.setSystemTime(1000);
     const archiveBatch = sinon.stub().callsFake(() => {
-      clock += 10;
+      clock.tick(10);
     });
     lib.__set__('archiveBatch', archiveBatch);
 
@@ -124,7 +131,6 @@ describe('Sentinel archiving lib', () => {
       { date: 1010, cursor: 2 },
       { date: 1020, cursor: 4 },
     ]);
-    nowStub.restore();
   });
 
   it('preserves prior-cycle history when resuming a job that was already partially saved', async () => {
@@ -134,10 +140,9 @@ describe('Sentinel archiving lib', () => {
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc', 'utf8'));
     lib.__set__('BATCH_SIZE', 10);
 
-    let clock = 2000;
-    sinon.stub(Date, 'now').callsFake(() => clock);
+    clock.setSystemTime(2000);
     const archiveBatch = sinon.stub().callsFake(() => {
-      clock += 5;
+      clock.tick(5);
     });
     lib.__set__('archiveBatch', archiveBatch);
 
@@ -168,10 +173,32 @@ describe('Sentinel archiving lib', () => {
     chai.expect(archiveBatch.args[0][0]).to.deep.equal(['c', 'd']);
   });
 
-  it('halts the entire run when a job throws — relies on the next scheduled fire to retry', async () => {
+  it('isolates a failing job and still processes the jobs behind it', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
     const next = job({ _id: 'archive:2', total: 1 });
     const { queue } = stubQueue([failing, next]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
+
+    // First job throws, second succeeds.
+    const archiveBatch = sinon.stub();
+    archiveBatch.onCall(0).rejects(new Error('boom'));
+    archiveBatch.onCall(1).resolves();
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(archiveBatch.callCount).to.equal(2);
+    // Failing job is recorded but NOT deleted (retried on the next scheduled run).
+    chai.expect(queue[0]._deleted).to.not.equal(true);
+    chai.expect(queue[0].error_count).to.equal(1);
+    // The job behind it is no longer blocked — it ran to completion.
+    chai.expect(queue[1]._deleted).to.equal(true);
+  });
+
+  it('quarantines a job once it has failed MAX_JOB_ATTEMPTS times', async () => {
+    lib.__set__('MAX_JOB_ATTEMPTS', 3);
+    const failing = job({ _id: 'archive:1', total: 1, error_count: 2 });
+    const { queue } = stubQueue([failing]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
 
     const archiveBatch = sinon.stub().rejects(new Error('boom'));
@@ -179,18 +206,36 @@ describe('Sentinel archiving lib', () => {
 
     await lib.archive();
 
-    chai.expect(archiveBatch.callCount).to.equal(1);
-    // Failing job is NOT deleted (still in the queue for retry on the next scheduled run).
+    // 3rd failure trips the threshold: status flips to 'failed', but the doc is kept for inspection.
+    chai.expect(queue[0].error_count).to.equal(3);
+    chai.expect(queue[0].status).to.equal('failed');
     chai.expect(queue[0]._deleted).to.not.equal(true);
-    // The next job in the queue was not touched.
-    chai.expect(queue[1]._deleted).to.not.equal(true);
+  });
+
+  it('skips a quarantined job and processes the next healthy one', async () => {
+    const quarantined = job({ _id: 'archive:1', total: 1, status: 'failed', error_count: 20 });
+    const healthy = job({ _id: 'archive:2', total: 1 });
+    const { queue } = stubQueue([quarantined, healthy]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
+
+    const archiveBatch = sinon.stub().resolves();
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    // Quarantined job is never read or processed...
+    chai.expect(queue[0]._deleted).to.not.equal(true);
+    chai.expect(queue[0].status).to.equal('failed');
+    // ...and the healthy job behind it still completes.
+    chai.expect(archiveBatch.callCount).to.equal(1);
+    chai.expect(queue[1]._deleted).to.equal(true);
   });
 
   it('records the error on the job doc when archiveBatch throws', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
     const { queue } = stubQueue([failing]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
-    sinon.stub(Date, 'now').returns(5000);
+    clock.setSystemTime(5000);
 
     const archiveBatch = sinon.stub().rejects(new Error('disk full'));
     lib.__set__('archiveBatch', archiveBatch);
@@ -217,8 +262,7 @@ describe('Sentinel archiving lib', () => {
     });
     const { queue } = stubQueue([failing]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
-    let clock = 100;
-    sinon.stub(Date, 'now').callsFake(() => ++clock);
+    clock.setSystemTime(100);
 
     const archiveBatch = sinon.stub().rejects(new Error('boom-5'));
     lib.__set__('archiveBatch', archiveBatch);
@@ -244,7 +288,7 @@ describe('Sentinel archiving lib', () => {
     const failing = job({ _id: 'archive:1', total: 1 });
     const { queue } = stubQueue([failing]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
-    sinon.stub(Date, 'now').returns(9000);
+    clock.setSystemTime(9000);
 
     const stackOnly = { stack: 'Error\n    at somewhere' };
     const archiveBatch = sinon.stub().rejects(stackOnly);
@@ -260,7 +304,7 @@ describe('Sentinel archiving lib', () => {
     const failing = job({ _id: 'archive:1', total: 1 });
     const { queue } = stubQueue([failing]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
-    sinon.stub(Date, 'now').returns(9999);
+    clock.setSystemTime(9999);
 
     // A non-Error rejection value with no `message` and no `stack`. sinon.rejects
     // forwards non-Error/non-string values as-is, so recordError sees the bare object
@@ -296,15 +340,13 @@ describe('Sentinel archiving lib', () => {
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd\ne\nf\ng\nh\ni\nj', 'utf8'));
     lib.__set__('BATCH_SIZE', 3);
 
-    let clock = 1000;
-    const nowStub = sinon.stub(Date, 'now').callsFake(() => clock);
+    clock.setSystemTime(1000);
     const archiveBatch = sinon.stub().callsFake(() => {
-      clock += 100;
+      clock.tick(100);
     });
     lib.__set__('archiveBatch', archiveBatch);
 
     await lib.archive({ duration: 250 });
-    nowStub.restore();
 
     // duration=250 from clock=1000 → deadline=1250. After 3 batches clock=1300, loop exits.
     chai.expect(archiveBatch.callCount).to.equal(3);
@@ -319,15 +361,13 @@ describe('Sentinel archiving lib', () => {
     const { queue } = stubQueue([job1, job2]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x', 'utf8'));
 
-    let clock = 1000;
-    const nowStub = sinon.stub(Date, 'now').callsFake(() => clock);
+    clock.setSystemTime(1000);
     const archiveBatch = sinon.stub().callsFake(() => {
-      clock += 500;
+      clock.tick(500);
     });
     lib.__set__('archiveBatch', archiveBatch);
 
     await lib.archive({ duration: 300 });
-    nowStub.restore();
 
     chai.expect(archiveBatch.callCount).to.equal(1);
     chai.expect(queue[0]._deleted).to.equal(true);
@@ -436,7 +476,7 @@ describe('Sentinel archiving lib', () => {
 
     it('archives only docs whose type passes canArchive, purges them, and audits', async () => {
       const archiveBatch = freshLib.__get__('archiveBatch');
-      sinon.stub(Date, 'now').returns(424242);
+      clock.setSystemTime(424242);
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [
@@ -485,7 +525,7 @@ describe('Sentinel archiving lib', () => {
 
     it('skips info docs that the sentinel db is missing without crashing the purge call', async () => {
       const archiveBatch = freshLib.__get__('archiveBatch');
-      sinon.stub(Date, 'now').returns(1);
+      clock.setSystemTime(1);
 
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [{ doc: { _id: 'r1', _rev: '1-a', type: 'data_record' } }],
@@ -502,6 +542,75 @@ describe('Sentinel archiving lib', () => {
 
       // The info-doc purge call gets an empty list (not-found row filtered out).
       chai.expect(db.purge.args[0][1]).to.deep.equal([]);
+    });
+
+    it('purges from medic only after the archive write, audit, and info-doc purge', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      clock.setSystemTime(1);
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [{ doc: { _id: 'r1', _rev: '1-a', type: 'data_record' } }],
+      });
+      const bulkDocs = sinon.stub(db.archive, 'bulkDocs').resolves();
+      const purge = sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'r1-info', _rev: '1-x' } }] });
+      const audit = lib.__get__('audit');
+      const recordArchiving = sinon.stub(audit, 'recordArchiving').resolves();
+
+      await archiveBatch(['r1']);
+
+      const medicPurge = purge.getCall(1);
+      chai.expect(medicPurge.args[1].map(d => d._id)).to.deep.equal(['r1']);
+      chai.expect(bulkDocs.calledBefore(medicPurge)).to.equal(true);
+      chai.expect(recordArchiving.calledBefore(medicPurge)).to.equal(true);
+      chai.expect(purge.getCall(0).calledBefore(medicPurge)).to.equal(true);
+    });
+
+    it('does not purge from medic when the audit write fails, leaving the docs recoverable', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      clock.setSystemTime(1);
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [{ doc: { _id: 'r1', _rev: '1-a', type: 'data_record' } }],
+      });
+      sinon.stub(db.archive, 'bulkDocs').resolves();
+      const purge = sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
+      const audit = lib.__get__('audit');
+      sinon.stub(audit, 'recordArchiving').rejects(new Error('audit down'));
+
+      let caught;
+      try {
+        await archiveBatch(['r1']);
+      } catch (err) {
+        caught = err;
+      }
+
+      chai.expect(caught?.message).to.equal('audit down');
+      chai.expect(purge.callCount).to.equal(0);
+    });
+
+    it('surfaces a failure from the final medic purge after archive + audit have run', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      clock.setSystemTime(1);
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [{ doc: { _id: 'r1', _rev: '1-a', type: 'data_record' } }],
+      });
+      const bulkDocs = sinon.stub(db.archive, 'bulkDocs').resolves();
+      const purge = sinon.stub(db, 'purge');
+      purge.onCall(0).resolves(); // info-doc purge
+      purge.onCall(1).rejects(new Error('purge down')); // medic purge
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'r1-info', _rev: '1-x' } }] });
+      const audit = lib.__get__('audit');
+      const recordArchiving = sinon.stub(audit, 'recordArchiving').resolves();
+
+      let caught;
+      try {
+        await archiveBatch(['r1']);
+      } catch (err) {
+        caught = err;
+      }
+      chai.expect(caught?.message).to.equal('purge down');
+      chai.expect(bulkDocs.callCount).to.equal(1);
+      chai.expect(recordArchiving.callCount).to.equal(1);
     });
   });
 
