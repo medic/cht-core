@@ -14,7 +14,6 @@ const SELECTORS = {
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
   EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
-  EDIT_BADGE_META: '.geolocation-edit-badge-meta',
   EDIT_OPTIONS: '.geolocation-edit-options',
   EDIT_WARNING: '.geolocation-edit-warning',
   HOME_RADIO: '.geolocation-context-options input[value="home"]',
@@ -161,21 +160,19 @@ describe('cht-form web component - Geolocation Widget (edit mode)', () => {
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;
   });
 
-  it('should not render badge context or meta elements when lastCapture is absent', async () => {
+  it('should not render badge context element when lastCapture is absent', async () => {
     await loadEditForm();
 
     await $(SELECTORS.EDIT_BADGE).waitForExist();
     expect(await $(SELECTORS.EDIT_BADGE_CONTEXT).isExisting()).to.be.false;
-    expect(await $(SELECTORS.EDIT_BADGE_META).isExisting()).to.be.false;
   });
 
-  it('should render badge context and meta elements when lastCapture is provided', async () => {
+  it('should render badge context element when lastCapture is provided', async () => {
     const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
     await loadEditForm({ isHome: true, timestamp: threeDaysAgo });
 
     await $(SELECTORS.EDIT_BADGE_CONTEXT).waitForExist();
     expect(await $(SELECTORS.EDIT_BADGE_CONTEXT).isExisting()).to.be.true;
-    expect(await $(SELECTORS.EDIT_BADGE_META).isExisting()).to.be.true;
   });
 
   it('should render keep and capture-new radio options', async () => {

@@ -2,7 +2,6 @@
 'use strict';
 const Widget = require('enketo-core/src/js/widget').default;
 const $ = require('jquery');
-const moment = require('moment');
 require('enketo-core/src/js/plugins');
 
 const WEAK_SIGNAL_CODES = new Set([2, 3, -2]);
@@ -16,9 +15,6 @@ const TRANSLATION_KEYS = {
   EDIT_CONTEXT_HOME: 'geolocation.edit.context.home',
   EDIT_CONTEXT_OTHER: 'geolocation.edit.context.other',
   EDIT_KEEP: 'geolocation.edit.keep',
-  EDIT_LAST_UPDATED_DAY: 'geolocation.edit.last_updated_day',
-  EDIT_LAST_UPDATED_DAYS: 'geolocation.edit.last_updated_days',
-  EDIT_LAST_UPDATED_TODAY: 'geolocation.edit.last_updated_today',
   EDIT_PROMPT: 'geolocation.edit.prompt',
   EDIT_WARNING: 'geolocation.edit.warning',
   EDIT_WARNING_TITLE: 'geolocation.edit.warning.title',
@@ -111,7 +107,7 @@ class HouseholdGeolocationWidget extends Widget {
     setTimeout(() => $(this.element).trigger('change'), 0);
 
     const lastCapture = this._parseLastCapture();
-    const { $badge, $badgeText, $badgeContext, $badgeMeta } = this._buildEditBadge(lastCapture);
+    const { $badge, $badgeText, $badgeContext } = this._buildEditBadge(lastCapture);
 
     const $prompt = $('<p class="geolocation-edit-prompt">');
     $question.append($badge, $prompt);
@@ -138,7 +134,6 @@ class HouseholdGeolocationWidget extends Widget {
     $badgeText.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_BADGE));
     if (lastCapture) {
       this._translateBadgeContext(lastCapture, $badgeContext);
-      this._translateBadgeMeta(lastCapture, $badgeMeta);
     }
     $prompt.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_PROMPT));
     $keptSpan.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_KEEP));
@@ -163,18 +158,16 @@ class HouseholdGeolocationWidget extends Widget {
     const $badge = $('<div class="geolocation-edit-badge">');
     const $badgeIcon = $('<i class="fa fa-map-marker geolocation-edit-badge-icon" aria-hidden="true">');
     const $badgeText = $('<span class="geolocation-edit-badge-text">');
-    const $badgeHeader = $('<span class="geolocation-edit-badge-header">').append($badgeIcon, $badgeText);
-    $badge.append($badgeHeader);
+    const $badgeContent = $('<div class="geolocation-edit-badge-content">').append($badgeText);
+    $('<div class="geolocation-edit-badge-header">').append($badgeIcon, $badgeContent).appendTo($badge);
 
     let $badgeContext = null;
-    let $badgeMeta = null;
     if (lastCapture) {
       $badgeContext = $('<span class="geolocation-edit-badge-context">');
-      $badgeMeta = $('<span class="geolocation-edit-badge-meta">');
-      $badge.append($badgeContext, $badgeMeta);
+      $badgeContent.append($badgeContext);
     }
 
-    return { $badge, $badgeText, $badgeContext, $badgeMeta };
+    return { $badge, $badgeText, $badgeContext };
   }
 
   _buildEditRadioOptions(radioName) {
@@ -234,18 +227,6 @@ class HouseholdGeolocationWidget extends Widget {
   _translateBadgeContext(lastCapture, $badgeContext) {
     const key = lastCapture.isHome ? TRANSLATION_KEYS.EDIT_CONTEXT_HOME : TRANSLATION_KEYS.EDIT_CONTEXT_OTHER;
     $badgeContext.text(globalThis.CHTCore.Translate.instant(key));
-  }
-
-  _translateBadgeMeta(lastCapture, $badgeMeta) {
-    const today = moment().startOf('day');
-    const captureDay = moment(lastCapture.timestamp).startOf('day');
-    const days = today.diff(captureDay, 'days');
-    if (days === 0) {
-      $badgeMeta.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_LAST_UPDATED_TODAY));
-      return;
-    }
-    const key = days === 1 ? TRANSLATION_KEYS.EDIT_LAST_UPDATED_DAY : TRANSLATION_KEYS.EDIT_LAST_UPDATED_DAYS;
-    $badgeMeta.text(globalThis.CHTCore.Translate.instant(key).replace('{{days}}', days));
   }
 
   _revertToEditChoice() {

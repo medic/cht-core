@@ -25,7 +25,6 @@ const SELECTORS = {
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
   EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
-  EDIT_BADGE_META: '.geolocation-edit-badge-meta',
   EDIT_OPTIONS: '.geolocation-edit-options',
   GEO_CAPTURE_CONTAINER: '.or-appearance-geolocation-capture',
   HOME_RADIO: '.geolocation-context-options input[value="home"]',
@@ -211,7 +210,6 @@ describe('HouseholdGeolocation widget - contact save pipeline', () => {
 
       expect(await $(SELECTORS.EDIT_BADGE).isExisting()).to.be.true;
       expect(await $(SELECTORS.EDIT_BADGE_CONTEXT).isExisting()).to.be.true;
-      expect(await $(SELECTORS.EDIT_BADGE_META).isExisting()).to.be.true;
       expect(await $(SELECTORS.KEPT_RADIO).isExisting()).to.be.true;
       expect(await $(SELECTORS.CAPTURE_NEW_RADIO).isExisting()).to.be.true;
       expect(await $(SELECTORS.CONTEXT_OPTIONS).isExisting()).to.be.false;

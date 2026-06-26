@@ -307,32 +307,24 @@
     }
 
     .geolocation-edit-badge {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding: 8px 12px;
       margin: 8px 0;
-      background-color: lighten(@ok-color, 38%);
-      border: 2px solid darken(@ok-color, 15%);
-      color: darken(@ok-color, 22%);
-      border-radius: @radius-size-small;
-      font-size: 0.875em;
-      font-weight: bold;
 
       .geolocation-edit-badge-header {
         display: flex;
-        align-items: center;
-        gap: 6px;
+        align-items: flex-start;
+        gap: 10px;
       }
 
       .geolocation-edit-badge-icon {
-        color: darken(@ok-color, 22%);
+        color: @error-color;
+        font-size: 2em;
+        text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.25);
       }
 
-      .geolocation-edit-badge-context,
-      .geolocation-edit-badge-meta {
-        font-weight: normal;
+      .geolocation-edit-badge-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
       }
     }
 
@@ -357,24 +349,12 @@
       }
 
       .geolocation-edit-warning {
-        padding: 12px;
-        background-color: @yellow-highlight;
-        border-left: 3px solid @yellow;
-        border-radius: 0 @radius-size-small @radius-size-small 0;
-        text-align: center;
-        color: darken(@yellow-dark, 20%);
-
         .geolocation-edit-warning-title {
           display: flex;
           align-items: center;
-          justify-content: center;
           gap: 6px;
           font-weight: bold;
           margin-bottom: 6px;
-        }
-
-        .geolocation-edit-warning-title-icon {
-          color: darken(@yellow-dark, 20%);
         }
 
         .geolocation-edit-warning-text {

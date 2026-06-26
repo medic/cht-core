@@ -15,7 +15,6 @@ const SELECTORS = {
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
   EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
-  EDIT_BADGE_META: '.geolocation-edit-badge-meta',
   EDIT_OPTIONS: '.geolocation-edit-options',
   EDIT_WARNING_GROUP: '.geolocation-edit-warning-group',
   GEO_CAPTURE_LABEL: '.or-appearance-geolocation-capture',
@@ -767,18 +766,16 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(retryStub.callCount).to.equal(1);
       });
 
-      it('does not render context or meta elements when data-geo-last-capture is absent', async () => {
+      it('does not render context element when data-geo-last-capture is absent', async () => {
         const { container } = await initEditWidget();
 
         expect(container.querySelector(SELECTORS.EDIT_BADGE_CONTEXT)).to.be.null;
-        expect(container.querySelector(SELECTORS.EDIT_BADGE_META)).to.be.null;
       });
 
-      it('renders context and meta elements when data-geo-last-capture is provided', async () => {
+      it('renders context element when data-geo-last-capture is provided', async () => {
         const { container } = await initEditWidget({ isHome: true, timestamp: Date.now() - 30 * MS_PER_DAY });
 
         expect(container.querySelector(SELECTORS.EDIT_BADGE_CONTEXT)).to.not.be.null;
-        expect(container.querySelector(SELECTORS.EDIT_BADGE_META)).to.not.be.null;
       });
 
       it('uses home context translation key when isHome is true', async () => {
@@ -795,53 +792,6 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(context.textContent).to.equal('geolocation.edit.context.other');
       });
 
-      it('shows correct day count in badge meta when capture was multiple days ago', async () => {
-        window.CHTCore.Translate.instant = sinon.stub().callsFake((key: string) => {
-          if (key === 'geolocation.edit.last_updated_days') {
-            return '{{days}} days ago';
-          }
-          return key;
-        });
-        const threeDaysAgo = Date.now() - 3 * MS_PER_DAY;
-        const { container } = await initEditWidget({ isHome: true, timestamp: threeDaysAgo });
-
-        const meta = container.querySelector(SELECTORS.EDIT_BADGE_META) as HTMLElement;
-        expect(meta.textContent).to.equal('3 days ago');
-      });
-
-      it('uses singular day translation key when capture was exactly one day ago', async () => {
-        const oneDayAgo = Date.now() - MS_PER_DAY;
-        const { container } = await initEditWidget({ isHome: true, timestamp: oneDayAgo });
-
-        const meta = container.querySelector(SELECTORS.EDIT_BADGE_META) as HTMLElement;
-        expect(meta.textContent).to.equal('geolocation.edit.last_updated_day');
-      });
-
-      it('shows 1 day ago for a capture just before midnight yesterday', async () => {
-        window.CHTCore.Translate.instant = sinon.stub().callsFake((key: string) => {
-          if (key === 'geolocation.edit.last_updated_day') {
-            return '1 day ago';
-          }
-          return key;
-        });
-        const todayMidnight = new Date();
-        todayMidnight.setHours(0, 0, 0, 0);
-        const fiveMinutesBeforeMidnight = todayMidnight.getTime() - 5 * 60 * 1000;
-        const { container } = await initEditWidget({ isHome: true, timestamp: fiveMinutesBeforeMidnight });
-
-        const meta = container.querySelector(SELECTORS.EDIT_BADGE_META) as HTMLElement;
-        expect(meta.textContent).to.equal('1 day ago');
-      });
-
-      it('uses today translation key when capture timestamp is from the current day', async () => {
-        const todayMidnight = new Date();
-        todayMidnight.setHours(0, 0, 0, 0);
-        const twoHoursAfterMidnight = todayMidnight.getTime() + 2 * 60 * 60 * 1000;
-        const { container } = await initEditWidget({ isHome: true, timestamp: twoHoursAfterMidnight });
-
-        const meta = container.querySelector(SELECTORS.EDIT_BADGE_META) as HTMLElement;
-        expect(meta.textContent).to.equal('geolocation.edit.last_updated_today');
-      });
     });
   });
 });
