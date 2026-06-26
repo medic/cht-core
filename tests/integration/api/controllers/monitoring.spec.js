@@ -44,11 +44,25 @@ const getExpectedViewIndexes = (db) => {
 };
 
 const getExpectedNouveauIndex = async (db, name) => {
-  const { search_index: { num_docs } } = await getNouveauIndexInfo(db, name);
-  return {
-    name,
-    doc_count: num_docs,
-  };
+  const maxRetries = 3;
+  let lastError;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const { search_index: { num_docs } } = await getNouveauIndexInfo(db, name);
+      return {
+        name,
+        doc_count: num_docs,
+      };
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
+    }
+  }
+  
+  throw lastError;
 };
 
 const getExpectedNouveauIndexes = (db) => {
