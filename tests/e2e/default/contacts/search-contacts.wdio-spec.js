@@ -70,7 +70,8 @@ describe('Contact Search', () => {
 
   before(async () => {
     await utils.saveDocs([
-      ...places.values(), sittuHealthCenter, sittuPerson, potuHealthCenter, potuPerson, devanagariPatient, latinPatient, supervisorPerson
+      ...places.values(), sittuHealthCenter, sittuPerson, potuHealthCenter, potuPerson,
+      devanagariPatient, latinPatient, supervisorPerson,
     ]);
     await utils.createUsers([offlineUser, onlineUser]);
   });
