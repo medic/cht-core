@@ -60,7 +60,6 @@ describe('replication limit log on aborted requests @docker', () => {
   afterEach(() => utils.deleteLogsByPrefix('replication-count-'));
 
   after(async () => {
-    await utils.startService('nouveau');
     await utils.deleteUsers([mathilUser]);
     await utils.revertDb();
   });

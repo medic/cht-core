@@ -20,7 +20,7 @@ const getContext = async (userCtx, res) => {
   const unpurgedWarnIds = _.intersection(unpurgedIds, warnIds);
 
   // user could have disconnected
-  if (!res || !res.closed) {
+  if (!res?.closed) {
     await replicationLimitLog.put(userCtx.name, unpurgedIds.length, allowedIds.length);
   }
 

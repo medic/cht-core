@@ -12,6 +12,10 @@ module.exports = {
     'tests/integration/api/controllers/db-doc.spec.js',
     'tests/integration/api/controllers/replication.spec.js',
     'tests/integration/api/controllers/replication-failure-log.spec.js',
+    'tests/integration/api/controllers/replication-health.spec.js',
+    'tests/integration/api/controllers/replication-limit-log.spec.js',
+    'tests/integration/api/controllers/replication-limit-log-abort.spec.js',
+
   ],
   couchdb: [
     'tests/integration/couchdb/**/*.spec.js',
