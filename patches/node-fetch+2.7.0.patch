@@ -1,0 +1,28 @@
+diff --git a/node_modules/node-fetch/lib/index.js b/node_modules/node-fetch/lib/index.js
+index 567ff5d..48adb3c 100644
+--- a/node_modules/node-fetch/lib/index.js
++++ b/node_modules/node-fetch/lib/index.js
+@@ -1737,6 +1737,14 @@ function fixResponseChunkedTransferBadEnding(request, errorCallback) {
+ 		const headers = response.headers;
+ 
+ 		if (headers['transfer-encoding'] === 'chunked' && !headers['content-length']) {
++			// Node >=22.23.0 / >=24.17.0 (CVE-2026-48931 fix, commit 0a22d40180) keeps the
++			// socket 'data' listener attached after a clean response, so the listener-count
++			// heuristic below alone yields false ERR_STREAM_PREMATURE_CLOSE errors. Track the
++			// response's own 'end' to tell a completed response from a genuinely truncated one.
++			let responseEnded = false;
++			response.once('end', function () {
++				responseEnded = true;
++			});
+ 			response.once('close', function (hadError) {
+ 				// tests for socket presence, as in some situations the
+ 				// the 'socket' event is not triggered for the request
+@@ -1744,7 +1752,7 @@ function fixResponseChunkedTransferBadEnding(request, errorCallback) {
+ 				// if a data listener is still present we didn't end cleanly
+ 				const hasDataListener = socket && socket.listenerCount('data') > 0;
+ 
+-				if (hasDataListener && !hadError) {
++				if (hasDataListener && !hadError && !responseEnded) {
+ 					const err = new Error('Premature close');
+ 					err.code = 'ERR_STREAM_PREMATURE_CLOSE';
+ 					errorCallback(err);
