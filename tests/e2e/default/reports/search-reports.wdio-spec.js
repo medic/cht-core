@@ -39,10 +39,10 @@ describe('Reports Search', () => {
     parent: { _id: potuHealthCenter._id, parent: potuHealthCenter.parent },
   });
 
-  const devanagariReport = smsPregnancyFactory.pregnancy().build({
+  const devanagariReport = pregnancyFactory.build({
     fields: { patient_id: devanagariPerson.patient_id, note: '१२३४५' }
   });
-  const latinReport = smsPregnancyFactory.pregnancy().build({
+  const latinReport = pregnancyFactory.build({
     fields: { patient_id: devanagariPerson.patient_id, note: '12345' }
   });
 
@@ -78,7 +78,7 @@ describe('Reports Search', () => {
 
   [
     ['online', onlineUser, [reports[0], reports[2]], reports],
-    ['offline', offlineUser, [reports[2]], [reports[2], reports[3]]],
+    ['offline', offlineUser, [reports[2]], [reports[2], reports[3], reports[4], reports[5]]],
   ].forEach(([userType, user, filteredReports, allReports]) => describe(`Logged in as an ${userType} user`, () => {
     before(() => loginPage.login(user));
 
