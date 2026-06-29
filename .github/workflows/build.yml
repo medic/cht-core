@@ -229,12 +229,6 @@ jobs:
       - uses: azure/setup-kubectl@829323503d1be3d00ca8346e5391ca0b07a9ab0d  # v5.1.0
       - name: Run tests
         run: npm run ${{ matrix.cmd }}
-      - name: Cleanup Docker registry (best effort)
-        if: always()
-        continue-on-error: true
-        run: |
-          docker rm -f k3d-registry.localhost 2>/dev/null || true
-          docker network prune -f 2>/dev/null || true
 #      - name: Scan logs for credential leaks
 #        if: always()
 #        run: npm run scan-logs
