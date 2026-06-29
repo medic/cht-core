@@ -4,7 +4,7 @@ const { LOG_ID_PREFIX } = require('@medic/bulk-operations');
 // Reads only bulk operation log documents from the medic-logs database. The prefix guard keeps the
 // endpoint from returning the other kinds of log documents that share this database.
 const getLog = async (id) => {
-  if (!id || !id.startsWith(LOG_ID_PREFIX)) {
+  if (!id?.startsWith(LOG_ID_PREFIX)) {
     return null;
   }
 
