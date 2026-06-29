@@ -789,17 +789,16 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await setUserContactDoc();
 };
 
-const clearReplicationFailureLogs = async () => {
-  const result = await logsDb.allDocs({
-    startkey: 'replication-fail-',
-    endkey: 'replication-fail-\ufff0',
-  });
+const deleteLogsByPrefix = async (prefix) => {
+  const result = await logsDb.allDocs({ startkey: prefix, endkey: `${prefix}\ufff0` });
   if (!result.rows.length) {
     return;
   }
   const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
   await logsDb.bulkDocs(docs);
 };
+
+const clearReplicationFailureLogs = () => deleteLogsByPrefix('replication-fail-');
 
 const getOrigin = () => `${constants.BASE_URL}`;
 
@@ -1892,6 +1891,7 @@ module.exports = {
   revertSettings,
   revertDb,
   clearReplicationFailureLogs,
+  deleteLogsByPrefix,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,
