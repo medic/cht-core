@@ -46,6 +46,7 @@ const { people, places } = require('@medic/contacts')(config, db, dataContext);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
+const bulkOperations = require('./controllers/bulk-operations');
 const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
@@ -477,6 +478,8 @@ app.get('/api/deploy-info', async (req, res) => {
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
 app.get('/api/v2/monitoring', monitoring.getV2);
 app.get('/api/v1/impact', impact.v1.get);
+
+app.get('/api/v1/bulk-operations/:id', bulkOperations.v1.get);
 
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
