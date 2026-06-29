@@ -633,9 +633,9 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Mapping error.+_idddddddddddddddd/))
         .then((result) => collect = result)
+        .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
@@ -667,9 +667,9 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: 'sentinel' })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /body.+error response/))
         .then((result) => collect = result)
+        .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
@@ -702,9 +702,9 @@ describe('mark_for_outbound', () => {
 
       return utils
         .updateSettings(config, { ignoreReload: true })
-        .then(() => utils.saveDoc(report))
         .then(() => utils.collectSentinelLogs(/Failed to push/, /cause.*ECONNREFUSED/))
         .then((result) => collect = result)
+        .then(() => utils.saveDoc(report))
         .then(() => sentinelUtils.waitForSentinel([report._id]))
         .then(() => collect())
         .then(logs => {
