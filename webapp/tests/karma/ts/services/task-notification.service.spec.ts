@@ -127,22 +127,25 @@ describe('TasksNotificationService', () => {
     expect(service).to.be.ok;
   });
 
-  it('should initialize max notifications value from settings', async () => {
+  it('should initialize notifications values from settings', async () => {
     settingsService.get.resolves({
       tasks: {
-        max_task_notifications: 20
+        max_task_notifications: 20,
+        task_notification_window: { start: '10:00', end: '18:00' }
       }
     });
-    const maxNotifications = await service.getMaxNotificationSettings();
+    const { maxNotifications, notificationWindow } = await service.getNotificationSettings();
     expect(settingsService.get.callCount).to.equal(1);
     expect(maxNotifications).to.equal(20);
+    expect(notificationWindow).to.deep.equal({ start: '10:00', end: '18:00' });
   });
 
-  it('should return default max notifications value if settings value is not valid', async () => {
+  it('should return default notification values if settings value is not valid', async () => {
     settingsService.get.resolves({ max_task_notifications: '2o' });
-    const maxNotifications = await service.getMaxNotificationSettings();
+    const { maxNotifications, notificationWindow } = await service.getNotificationSettings();
     expect(settingsService.get.callCount).to.equal(1);
     expect(maxNotifications).to.equal(8);
+    expect(notificationWindow).to.deep.equal({start: '08:00', end: '19:00'});
   });
 
   it('should fetch notifications', async () => {

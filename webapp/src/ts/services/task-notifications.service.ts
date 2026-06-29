@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 
-import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { RulesEngineService, StateHistory } from '@mm-services/rules-engine.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -11,6 +11,8 @@ import { AuthService } from '@mm-services/auth.service';
 import { orderByDueDateAndPriority } from '@mm-reducers/tasks';
 
 const DEFAULT_MAX_NOTIFICATIONS = 8;
+const DEFAULT_WINDOW_START_TIME = '08:00';
+const DEFAULT_WINDOW_END_TIME = '19:00';
 
 export interface Notification {
   _id: string,
@@ -20,6 +22,14 @@ export interface Notification {
   dueDate: number,
   readyAt: number
 }
+
+export type notificationSettings = {
+  maxNotifications: number;
+  notificationWindow: {
+    start: string;
+    end: string;
+  }
+};
 
 @Injectable({
   providedIn: 'root'
@@ -64,8 +74,13 @@ export class TasksNotificationService implements OnDestroy {
 
   private async updateAndroidStore(): Promise<void> {
     const notifications = await this.fetchNotifications();
-    const maxNotifications = await this.getMaxNotificationSettings();
-    globalThis?.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications), maxNotifications);
+    const { maxNotifications, notificationWindow } = await this.getNotificationSettings();
+    globalThis?.medicmobile_android
+      ?.updateTaskNotificationStore(
+        JSON.stringify(notifications), 
+        maxNotifications,
+        JSON.stringify(notificationWindow),
+      );
   }
 
   private async fetchNotifications(): Promise<Notification[]> {
@@ -97,17 +112,28 @@ export class TasksNotificationService implements OnDestroy {
     }
   }
 
-  private getReadyStateTimestamp(stateHistory): number {
+  private getReadyStateTimestamp(stateHistory: StateHistory): number {
     const readyState = stateHistory.find(state => state.state === 'Ready');
     return readyState ? readyState.timestamp : 0;
   }
 
-  private async getMaxNotificationSettings(): Promise<number> {
+  private async getNotificationSettings(): Promise<notificationSettings> {
     const settings = await this.settingsService.get();
+    const taskNotificationSettings: notificationSettings  = {
+      maxNotifications: DEFAULT_MAX_NOTIFICATIONS,
+      notificationWindow: {
+        start: DEFAULT_WINDOW_START_TIME,
+        end: DEFAULT_WINDOW_END_TIME,
+      }
+    };
     if (settings?.tasks?.max_task_notifications) {
-      return settings.tasks.max_task_notifications;
+      taskNotificationSettings.maxNotifications = settings.tasks.max_task_notifications;
     }
-    return DEFAULT_MAX_NOTIFICATIONS;
+
+    if (settings.tasks?.task_notification_window) {
+      taskNotificationSettings.notificationWindow = settings.tasks.task_notification_window;
+    }
+    return taskNotificationSettings;
   }
 
   private translateContentText(taskTitle: string, contact: string): string {
