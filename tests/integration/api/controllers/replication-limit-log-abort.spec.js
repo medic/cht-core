@@ -49,7 +49,8 @@ const hasCountLog = async (username) => {
   }
 };
 
-// k3d pairs nouveau with couchdb, so stopping nouveau makes get-ids hang inside couchdb.
+// this test is ignored in CI, due to a 60s required wait period
+// to run this test, run the wdio replication suite locally.
 describe('replication limit log on aborted requests @docker', () => {
   before(async () => {
     await utils.saveDocs([facility, mathilPlace, mathilContact]);
