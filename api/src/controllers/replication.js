@@ -4,7 +4,7 @@ const serverUtils = require('../server-utils');
 module.exports = {
   getDocIds: async (req, res) => {
     try {
-      const context = await replication.getContext(req.userCtx);
+      const context = await replication.getContext(req.userCtx, res);
       const docIdsRevs = await replication.getDocIdsRevPairs(context.docIds);
       return res.json({
         doc_ids_revs: docIdsRevs,
