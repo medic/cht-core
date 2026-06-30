@@ -21,12 +21,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           persist-credentials: false
 
       - name: Setup Helm
-        uses: azure/setup-helm@b7246b12e77f7134dc2d460a3d5bad15bbe29390  # v4.1.0
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2  # v5.0.0
 
       - name: Validate Helm Templates
         working-directory: scripts/build/helm

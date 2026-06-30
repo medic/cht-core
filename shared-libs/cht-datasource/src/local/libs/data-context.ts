@@ -5,7 +5,7 @@ import { assertSettingsService, DataContext, SettingsService } from '../../libs/
 export type { SettingsService } from '../../libs/data-context';
 
 /**
- * {@link PouchDB.Database}s to be used as the local data source.
+ * `PouchDB.Database`s to be used as the local data source.
  */
 export type SourceDatabases = Readonly<{ medic: PouchDB.Database<Doc> }>;
 

@@ -10,6 +10,7 @@ const SUITES = {
     './navigation/**/*.wdio-spec.js',
     './old-navigation/**/*.wdio-spec.js',
     './privacy-policy/**/*.wdio-spec.js',
+    './ui-extensions/**/*.wdio-spec.js',
   ],
   workflows_1: [
     './contacts/**/*.wdio-spec.js',

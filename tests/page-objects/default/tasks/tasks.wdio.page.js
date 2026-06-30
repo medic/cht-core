@@ -9,7 +9,7 @@ const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
 const sidebarFilterSelectors = {
-  openBtn: () => $('mm-search-bar .open-filter'),
+  openBtn: () => $('mm-search-bar .open-filter, .mm-search-bar-container .btn.open-filter'),
   resetBtn: () => $('.sidebar-reset'),
   overdueAccordionHeader: () => $('#overdue-filter-accordion mat-expansion-panel-header'),
   overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
@@ -110,6 +110,12 @@ const openTaskById = async (id, taskType) => {
   await $(TASK_FORM_SELECTOR).waitForDisplayed();
 };
 
+const openTaskByIndex = async (idx = 0) => {
+  const task = await (await getTasks())[idx];
+  await task.click();
+  await $(TASK_FORM_SELECTOR).waitForDisplayed();
+};
+
 const compileTasks = async (tasksFileName, sync) => {
   await chtConfUtils.initializeConfigDir();
   const tasksFilePath = path.join(__dirname, `../../../e2e/default/tasks/config/${tasksFileName}`);
@@ -175,6 +181,16 @@ const isPlaceFilterDisplayed = async () => {
   return await sidebarFilterSelectors.placeAccordionHeader().isDisplayed();
 };
 
+const scrollTaskList = async () => {
+  await browser.execute(() => {
+    const el = document.getElementById('tasks-list');
+    if (el) {
+      el.scrollTop += 300;
+      el.dispatchEvent(new Event('scroll'));
+    }
+  });
+};
+
 module.exports = {
   getTasks,
   getTaskByContactAndForm,
@@ -196,4 +212,6 @@ module.exports = {
   filterByPlace,
   resetFilters,
   isPlaceFilterDisplayed,
+  openTaskByIndex,
+  scrollTaskList,
 };
