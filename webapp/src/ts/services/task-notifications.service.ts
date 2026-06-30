@@ -49,12 +49,12 @@ export class TasksNotificationService implements OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  async initOnAndroid() {
+  async initOnAndroid(hasSettings?: boolean) {
     if (!await this.isEnabled()) {
       return;
     }
     this.subscribeToRulesEngine();
-    this.updateAndroidStore();
+    this.updateAndroidStore(hasSettings);
   }
 
   private async isEnabled() {
@@ -72,15 +72,19 @@ export class TasksNotificationService implements OnDestroy {
     this.subscription.add(rulesEngineSubscription);
   }
 
-  private async updateAndroidStore(): Promise<void> {
+  private async updateAndroidStore(hasSettings?: boolean): Promise<void> {
     const notifications = await this.fetchNotifications();
     const { maxNotifications, notificationWindow } = await this.getNotificationSettings();
-    globalThis?.medicmobile_android
-      ?.updateTaskNotificationStore(
-        JSON.stringify(notifications), 
-        maxNotifications,
-        JSON.stringify(notificationWindow),
-      );
+    if (hasSettings) {
+      globalThis?.medicmobile_android
+        ?.updateTaskNotificationStoreWithSettings(
+          JSON.stringify(notifications),
+          maxNotifications,
+          JSON.stringify(notificationWindow),
+        );
+      return;
+    }
+    globalThis?.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications), maxNotifications);
   }
 
   private async fetchNotifications(): Promise<Notification[]> {
@@ -119,7 +123,7 @@ export class TasksNotificationService implements OnDestroy {
 
   private async getNotificationSettings(): Promise<notificationSettings> {
     const settings = await this.settingsService.get();
-    const taskNotificationSettings: notificationSettings  = {
+    const taskNotificationSettings: notificationSettings = {
       maxNotifications: DEFAULT_MAX_NOTIFICATIONS,
       notificationWindow: {
         start: DEFAULT_WINDOW_START_TIME,
