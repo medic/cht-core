@@ -9,6 +9,7 @@ const getGenericAria = (text) => $(`aria/${text}`);
 
 const tabsSelector = {
   getAllButtonLabels: async () => await $$('.header .tabs .button-label'),
+  getAllButtonIcons: async () => await $$('.header .tabs .mm-icon span.fa:empty'),
   messagesTab: () => $('#messages-tab'),
   taskTab: () => $('#tasks-tab'),
   analyticsTab: () => $('#analytics-tab'),
@@ -55,7 +56,7 @@ const fabSelectors = {
 const hamburgerMenuItemSelector = 'mat-sidenav-content';
 const logoutButton = () => $('aria/Log out');
 const syncButton = () => $('aria/Sync now');
-const hamburguerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
+const hamburgerMenuItemByOption = (menuOption) => $(hamburgerMenuItemSelector).$(`//span[text()="${menuOption}"]`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
@@ -119,12 +120,12 @@ const accessReviewOption = async () => {
 
 const toggleMenuAndCaptureScreenshot = async (menuOption, reverse, pageName, screenshotName) => {
   await openHamburgerMenu();
-  await hamburguerMenuItemByOption(menuOption).waitForDisplayed({ reverse });
+  await hamburgerMenuItemByOption(menuOption).waitForDisplayed({ reverse });
   await generateScreenshot(pageName, screenshotName);
   if (reverse) {
     await closeHamburgerMenu();
   } else {
-    await hamburguerMenuItemByOption(menuOption).click();
+    await hamburgerMenuItemByOption(menuOption).click();
   }
 };
 
@@ -536,6 +537,12 @@ const getAllButtonLabelsNames = async () => {
   return await getTextForElements(tabsSelector.getAllButtonLabels);
 };
 
+const getAllButtonFaIconClasses = async () => {
+  const iconElements = await (await tabsSelector.getAllButtonIcons());
+  const iconClasses = await iconElements.map(element => element.getAttribute('class'));
+  return iconClasses.map(classes => classes.split(' ').find(c => c.startsWith('fa-')));
+};
+
 const isMenuOptionEnabled = async (action) => {
   const parent = await kebabMenuSelectors[action]().parentElement().parentElement();
   return await parent.getAttribute('aria-disabled') === 'false';
@@ -602,6 +609,7 @@ module.exports = {
   getJsonErrorText,
   openHamburgerMenu,
   closeHamburgerMenu,
+  hamburgerMenuItemByOption,
   openMoreOptionsMenu,
   accessEditOption,
   accessDeleteOption,
@@ -662,6 +670,7 @@ module.exports = {
   openAppManagement,
   getTextForElements,
   getAllButtonLabelsNames,
+  getAllButtonFaIconClasses,
   isMenuOptionEnabled,
   isMenuOptionVisible,
   loadNextInfiniteScrollPage,
