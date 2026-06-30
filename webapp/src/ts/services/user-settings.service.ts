@@ -20,7 +20,7 @@ export class UserSettingsService {
     private languageService:LanguageService,
     private sessionService:SessionService,
   ) {
-    this.cache = this.cacheService.register({
+    this.cache = this.cacheService.register<Record<string, unknown>>({
       get: callback => {
         const docId = this.userDocId();
         this.dbService.get()

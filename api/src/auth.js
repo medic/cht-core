@@ -40,9 +40,18 @@ const assertPermissions = async (req, { isOnline = false, hasAll = [], hasAny = 
   return userCtx;
 };
 
+const assertDbAdmin = async (req) => {
+  const userCtx = await module.exports.getUserCtx(req);
+  if (!roles.isDbAdmin(userCtx)) {
+    throw new PermissionError('User is not an admin');
+  }
+  return userCtx;
+};
+
 module.exports = {
   isOnlineOnly: roles.isOnlineOnly,
   isDbAdmin: roles.isDbAdmin,
+  assertDbAdmin,
   getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
     if (roles.isDbAdmin(userCtx)) {
