@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const controller = require('../../../src/controllers/replication');
-const replicationService = require('../../../src/services/replication');
+const replicationService = require('../../../src/services/replication/replication');
 const serverUtils = require('../../../src/server-utils');
 
 let req;
@@ -34,7 +34,7 @@ describe('Initial Replication controller', () => {
 
       await controller.getDocIds(req, res);
 
-      expect(replicationService.getContext.args).to.deep.equal([[req.userCtx]]);
+      expect(replicationService.getContext.args).to.deep.equal([[req.userCtx, res]]);
       expect(replicationService.getDocIdsRevPairs.args).to.deep.equal([[[1, 2, 3]]]);
       expect(res.json.args).to.deep.equal([[{
         doc_ids_revs: [
@@ -65,7 +65,7 @@ describe('Initial Replication controller', () => {
 
       await controller.getDocIds(req, res);
 
-      expect(replicationService.getContext.args).to.deep.equal([[req.userCtx]]);
+      expect(replicationService.getContext.args).to.deep.equal([[req.userCtx, res]]);
       expect(replicationService.getDocIdsRevPairs.args).to.deep.equal([[[4, 5, 6]]]);
       expect(res.json.args).to.deep.equal([[{
         doc_ids_revs: [

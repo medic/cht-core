@@ -1,14 +1,15 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { DOC_IDS } from '@medic/constants';
 
-import { HttpClient } from '@angular/common/http';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
+import { TranslateService } from '@mm-services/translate.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 
 describe('CHTScriptApiService service', () => {
   let service: CHTDatasourceService;
@@ -16,14 +17,18 @@ describe('CHTScriptApiService service', () => {
   let settingsService;
   let changesService;
   let dbService;
-  let http;
+  let medicDb;
+  let translateService;
+  let customResourceService;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
-    dbService = { get: sinon.stub().resolves({}) };
-    http = { get: sinon.stub().returns(of([])) };
+    medicDb = { get: sinon.stub().rejects({ status: 404 }) };
+    dbService = { get: sinon.stub().returns(medicDb) };
+    translateService = { instant: sinon.stub() };
+    customResourceService = { getResource: sinon.stub(), init: sinon.stub().resolves() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -31,7 +36,8 @@ describe('CHTScriptApiService service', () => {
         { provide: SettingsService, useValue: settingsService },
         { provide: ChangesService, useValue: changesService },
         { provide: DbService, useValue: dbService },
-        { provide: HttpClient, useValue: http },
+        { provide: TranslateService, useValue: translateService },
+        { provide: CustomResourceService, useValue: customResourceService },
       ]
     });
 
@@ -58,7 +64,9 @@ describe('CHTScriptApiService service', () => {
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(dbService.get.callCount).to.equal(2);
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
+      expect(customResourceService.init.calledOnceWithExactly()).to.be.true;
     });
 
     it('should initialise service for online user', async () => {
@@ -75,7 +83,9 @@ describe('CHTScriptApiService service', () => {
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(settingsService.get.callCount).to.equal(1);
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.notCalled).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
+      expect(customResourceService.init.calledOnceWithExactly()).to.be.true;
     });
 
     it('should return versioned api', async () => {
@@ -89,27 +99,31 @@ describe('CHTScriptApiService service', () => {
         'hasPermissions',
         'hasAnyPermission',
         'getExtensionLib',
+        'translate',
+        'getResource',
         'person',
         'analytics'
       ]);
       expect(result.v1.hasPermissions).to.be.a('function');
       expect(result.v1.hasAnyPermission).to.be.a('function');
       expect(result.v1.getExtensionLib).to.be.a('function');
+      expect(result.v1.translate).to.be.a('function');
+      expect(result.v1.getResource).to.be.a('function');
       expect(result.v1.person).to.be.a('object');
       expect(result.v1.analytics).to.be.a('object');
     });
 
     it('should initialize extension libs', async () => {
       settingsService.get.resolves();
-      http.get.onCall(0).returns(of([ 'bar.js', 'foo.js' ]));
-      http.get.onCall(1).returns(of('module.exports = (a) => a + a'));
-      http.get.onCall(2).returns(of('module.exports = function() { return "foo"; }'));
+      medicDb.get.resolves({
+        _attachments: {
+          'bar.js': { data: btoa('module.exports = (a) => a + a') },
+          'foo.js': { data: btoa('module.exports = function() { return "foo"; }') },
+        }
+      });
       await service.isInitialized();
 
-      expect(http.get.callCount).to.equal(3);
-      expect(http.get.args[0][0]).to.equal('/extension-libs');
-      expect(http.get.args[1][0]).to.equal('/extension-libs/bar.js');
-      expect(http.get.args[2][0]).to.equal('/extension-libs/foo.js');
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
 
       const result = await service.get();
 
@@ -124,6 +138,18 @@ describe('CHTScriptApiService service', () => {
       const baz = result.v1.getExtensionLib('baz.js');
       expect(baz).to.be.undefined;
     });
+
+    it('should not fail when extension libs doc does not exist', async () => {
+      settingsService.get.resolves();
+      medicDb.get.rejects({ status: 404 });
+      await service.isInitialized();
+
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
+
+      const result = await service.get();
+
+      expect(result.v1.getExtensionLib('foo.js')).to.be.undefined;
+    });
   });
 
   describe('bind()', () => {
@@ -133,7 +159,6 @@ describe('CHTScriptApiService service', () => {
     beforeEach(() => {
       settingsService.get.resolves(settings);
       sessionService.userCtx.returns(userCtx);
-      dbService.get.resolves({ hello: 'medic' });
     });
 
     [true, false].forEach((isOnlineOnly) => {
@@ -163,9 +188,9 @@ describe('CHTScriptApiService service', () => {
         expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
         expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
         expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-        expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+        expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
         expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 1 : 2);
       });
     });
 
@@ -195,9 +220,9 @@ describe('CHTScriptApiService service', () => {
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-      expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.notCalled).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
     });
   });
 
@@ -208,7 +233,6 @@ describe('CHTScriptApiService service', () => {
     beforeEach(() => {
       settingsService.get.resolves(settings);
       sessionService.userCtx.returns(userCtx);
-      dbService.get.resolves({ hello: 'medic' });
     });
 
     [true, false].forEach((isOnlineOnly) => {
@@ -245,9 +269,9 @@ describe('CHTScriptApiService service', () => {
         expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
         expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
         expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-        expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+        expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
         expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 0 : 1);
+        expect(dbService.get.callCount).to.equal(isOnlineOnly ? 1 : 2);
       });
     });
 
@@ -279,9 +303,58 @@ describe('CHTScriptApiService service', () => {
       expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
       expect(sessionService.userCtx.calledOnceWithExactly()).to.be.true;
       expect(settingsService.get.calledOnceWithExactly()).to.be.true;
-      expect(http.get.calledOnceWithExactly('/extension-libs', { responseType: 'json' })).to.be.true;
+      expect(medicDb.get.calledOnceWithExactly(DOC_IDS.EXTENSION_LIBS, { attachments: true })).to.be.true;
       expect(sessionService.isOnlineOnly.calledOnceWithExactly(userCtx)).to.be.true;
-      expect(dbService.get.notCalled).to.be.true;
+      expect(dbService.get.calledOnceWithExactly()).to.be.true;
+    });
+  });
+
+  describe('v1.translate()', () => {
+    it('should call TranslateService.instant with key', async () => {
+      translateService.instant.returns('Translated Text');
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.translate('some.key');
+
+      expect(result).to.equal('Translated Text');
+      expect(translateService.instant.calledOnceWithExactly('some.key', undefined)).to.be.true;
+    });
+
+    it('should call TranslateService.instant with key and params', async () => {
+      translateService.instant.returns('Hello John');
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.translate('greeting', { name: 'John' });
+
+      expect(result).to.equal('Hello John');
+      expect(translateService.instant.calledOnceWithExactly('greeting', { name: 'John' })).to.be.true;
+    });
+  });
+
+  describe('v1.getResource()', () => {
+    it('should call CustomResourceService.getResource', async () => {
+      const resourceData = { content_type: 'image/png', data: 'base64data' };
+      customResourceService.getResource.returns(resourceData);
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.getResource('icon');
+
+      expect(result).to.deep.equal(resourceData);
+      expect(customResourceService.getResource.calledOnceWithExactly('icon')).to.be.true;
+    });
+
+    it('should return null when resource does not exist', async () => {
+      customResourceService.getResource.returns(null);
+      await service.isInitialized();
+      const api = await service.get();
+
+      const result = api.v1.getResource('nonexistent');
+
+      expect(result).to.be.null;
+      expect(customResourceService.getResource.calledOnceWithExactly('nonexistent')).to.be.true;
     });
   });
 

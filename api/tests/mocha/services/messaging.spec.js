@@ -194,6 +194,48 @@ describe('messaging service', () => {
       });
     });
 
+    it('ignores missing docs from allDocs and updates valid docs', () => {
+      sinon.stub(db.medic, 'query').resolves({ rows: [
+        { id: 'testMessageId1' },
+        { id: 'testMessageId2' }
+      ]});
+
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
+        { doc: {
+          _id: 'testDoc',
+          tasks: [{
+            messages: [{
+              uuid: 'testMessageId1'
+            }]
+          }]
+        }},
+        { id: 'missing-doc-id', error: 'not_found' }
+      ]});
+
+      const bulk = sinon.stub(db.medic, 'bulkDocs').resolves([{ id: 'testDoc', ok: true }]);
+      const setTaskState = sinon.stub(taskUtils, 'setTaskState').returns(true);
+
+      return service.updateMessageTaskStates([
+        {
+          messageId: 'testMessageId1',
+          state: 'testState1',
+        },
+        {
+          messageId: 'testMessageId2',
+          state: 'testState2',
+        }
+      ]).then(result => {
+        chai.expect(setTaskState.callCount).to.equal(1);
+        chai.expect(setTaskState.getCall(0).args)
+          .to.deep.equal([{ messages: [{ uuid: 'testMessageId1' }] }, 'testState1', undefined, undefined]);
+
+        chai.expect(bulk.callCount).to.equal(1);
+        chai.expect(bulk.args[0][0]).to.have.length(1);
+        chai.expect(bulk.args[0][0][0]._id).to.equal('testDoc');
+        chai.expect(result).to.deep.equal({ saved: 1 });
+      });
+    });
+
     it('re-applies changes if it errored', () => {
       const view = sinon.stub(db.medic, 'query')
         .onFirstCall().resolves({rows: [

@@ -376,20 +376,6 @@ const requestDeletes = async (username, ids) => {
   return result.doc_ids;
 };
 
-const getPurgeLog = () => {
-  return sentinelUtils
-    .requestOnSentinelTestDb({
-      path: '/_all_docs',
-      qs: {
-        startkey: JSON.stringify('purgelog\ufff0'),
-        limit: 1,
-        include_docs: true,
-        descending: true,
-      }
-    })
-    .then(result => result.rows[0].doc);
-};
-
 const getDocIds = docs => docs.map(doc => doc.id);
 
 const updateUser = async user => {
@@ -422,9 +408,7 @@ describe('Server side purge', () => {
   it('should purge correct docs', async () => {
     const seq = await sentinelUtils.getCurrentSeq();
     await utils.updateSettings({ purge: purgeSettings }, { ignoreReload: true });
-    await sentinelUtils.waitForPurgeCompletion(seq);
-
-    const purgeLog = await getPurgeLog();
+    const purgeLog = await sentinelUtils.waitForPurgeCompletion(seq);
 
     chai.expect(Object.values(purgeLog.roles)).to.deep.equal([
       users[0].roles,
