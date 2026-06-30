@@ -264,6 +264,7 @@
     "can_view_tasks_group": [
       "chw"
     ],
+    "can_track_task_interactions": [],
     "can_view_unallocated_data_records": [
       "gateway",
       "program_officer",
