@@ -7,19 +7,19 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { HomeComponent } from '@mm-modules/home/home.component';
-import { AuthService } from '@mm-services/auth.service';
+import { HeaderTabsService } from '@mm-services/header-tabs.service';
 
 describe('HomeComponent', () => {
 
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
-  let authServiceMock;
+  let headerTabsServiceMock;
   let routerMock;
 
   beforeEach(waitForAsync(() => {
 
-    authServiceMock = {
-      has: sinon.stub(),
+    headerTabsServiceMock = {
+      getPrimaryTab: sinon.stub().resolves({ route: 'messages' }),
     };
     routerMock = {
       navigate: sinon.stub(),
@@ -34,7 +34,7 @@ describe('HomeComponent', () => {
           HomeComponent,
         ],
         providers: [
-          { provide: AuthService, useValue: authServiceMock },
+          { provide: HeaderTabsService, useValue: headerTabsServiceMock },
           { provide: Router, useValue: routerMock },
         ]
       })
@@ -50,7 +50,7 @@ describe('HomeComponent', () => {
   });
 
   it('handles no permissions', async () => {
-    authServiceMock.has.resolves(false);
+    headerTabsServiceMock.getPrimaryTab.resolves(undefined);
 
     await component.ngOnInit();
     expect(routerMock.navigate.callCount).to.equal(1);
@@ -58,12 +58,7 @@ describe('HomeComponent', () => {
   });
 
   it('handles some permissions', async () => {
-    authServiceMock.has
-      .withArgs(['can_view_messages', 'can_view_messages_tab']).resolves(false)
-      .withArgs(['can_view_tasks', 'can_view_tasks_tab']).resolves(false)
-      .withArgs(['can_view_reports', 'can_view_reports_tab']).resolves(true)
-      .withArgs(['can_view_analytics', 'can_view_analytics_tab']).resolves(false)
-      .withArgs(['can_view_contacts', 'can_view_contacts_tab']).resolves(true);
+    headerTabsServiceMock.getPrimaryTab.resolves({ route: 'reports' });
 
     await component.ngOnInit();
     expect(routerMock.navigate.callCount).to.equal(1);
