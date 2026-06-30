@@ -282,7 +282,7 @@ export class FormService {
     const captureInput = formHtml?.querySelector(
       '.or-appearance-geolocation-capture input'
     ) as HTMLInputElement | null;
-    if (!captureInput || !contact) {
+    if (!captureInput || !contact?._id) {
       return;
     }
 

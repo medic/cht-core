@@ -24,6 +24,7 @@ const TRANSLATION_KEYS = {
   RESULT_LABEL: 'geolocation.result.label',
   RETRY: 'geolocation.retry',
   SIGNAL_WEAK: 'geolocation.signal.weak',
+  CHANGE_CONTEXT: 'geolocation.change.context',
   CONFIRMATION_HOME: 'geolocation.confirmation.home',
   CONFIRMATION_OTHER: 'geolocation.confirmation.other',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
@@ -255,6 +256,7 @@ class HouseholdGeolocationWidget extends Widget {
 
     $question.find([
       '.geolocation-context-confirmation',
+      '.geolocation-context-change-btn',
       '.geolocation-status',
       '.geolocation-retry-btn',
       '.geolocation-skip-btn',
@@ -268,6 +270,22 @@ class HouseholdGeolocationWidget extends Widget {
       const $confirmation = $('<p class="geolocation-context-confirmation">');
       $confirmation.text(globalThis.CHTCore.Translate.instant(confirmationKey));
       $question.append($confirmation);
+    }
+
+    if (!isEditMode) {
+      const $changeBtn = $('<button type="button" class="btn btn-link geolocation-context-change-btn">');
+      $changeBtn.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CHANGE_CONTEXT));
+      $changeBtn.on('click', () => {
+        globalThis.CHTCore.Geolocation.retry();
+        $question.find([
+          '.geolocation-context-confirmation',
+          '.geolocation-context-change-btn',
+          '.geolocation-status',
+        ].join(',')).remove();
+        $question.find('.geolocation-context-options').show();
+        delete this.element.dataset.geoContext;
+      });
+      $question.append($changeBtn);
     }
 
     const { $status, $progressLabel, $bar } = this._buildProgressRow();

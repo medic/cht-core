@@ -10,6 +10,7 @@ const SELECTORS = {
   ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
   ACKNOWLEDGE_LABEL: '.geolocation-acknowledge-label',
   CAPTURE_NEW_RADIO: 'input[type="radio"][value="capture-new"]',
+  CONTEXT_CHANGE_BTN: '.geolocation-context-change-btn',
   CONTEXT_CONFIRMATION: '.geolocation-context-confirmation',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
@@ -225,6 +226,7 @@ describe('Enketo: Household Geolocation Widget', () => {
     describe('_startCapture()', () => {
       beforeEach(() => {
         window.CHTCore.Geolocation.currentPromise = new Promise(() => {});
+        window.CHTCore.Geolocation.retry = sinon.stub();
       });
 
       const selectHomeContext = () => {
@@ -261,6 +263,54 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.CONTEXT_CONFIRMATION)).to.not.be.null;
         expect(container.querySelector(SELECTORS.CONTEXT_CONFIRMATION)!.textContent)
           .to.equal('geolocation.confirmation.home');
+      });
+
+      it('should show change button when capture starts in create mode', () => {
+        const { container } = initAndSelectHome();
+
+        expect(container.querySelector(SELECTORS.CONTEXT_CHANGE_BTN)).to.not.be.null;
+        expect((container.querySelector(SELECTORS.CONTEXT_CHANGE_BTN) as HTMLElement).textContent)
+          .to.equal('geolocation.change.context');
+      });
+
+      it('should not show change button in edit mode', () => {
+        buildHtml();
+        const input = document.querySelector('#geolocation-widget-test input') as HTMLInputElement;
+        input.dataset.geoHasLocation = 'true';
+        input.dataset.geoLastCapture = JSON.stringify({ isHome: true, timestamp: Date.now() });
+        const widget = createWidget();
+        widget._init();
+        const container = document.querySelector('#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL)!;
+        const editAcknowledge = container.querySelector(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX) as HTMLInputElement;
+        editAcknowledge.checked = true;
+        $(editAcknowledge).trigger('change');
+
+        expect(container.querySelector(SELECTORS.CONTEXT_CHANGE_BTN)).to.be.null;
+      });
+
+      it('should re-show context options and call retry when change button is clicked', () => {
+        const { container } = initAndSelectHome();
+        const contextOptions = container.querySelector(SELECTORS.CONTEXT_OPTIONS) as HTMLElement;
+        expect(contextOptions.style.display).to.equal('none');
+
+        (container.querySelector(SELECTORS.CONTEXT_CHANGE_BTN) as HTMLElement).click();
+
+        expect(contextOptions.style.display).not.to.equal('none');
+        expect(window.CHTCore.Geolocation.retry.callCount).to.equal(1);
+        expect(container.querySelector(SELECTORS.STATUS)).to.be.null;
+        expect(container.querySelector(SELECTORS.CONTEXT_CHANGE_BTN)).to.be.null;
+        expect(container.querySelector(SELECTORS.CONTEXT_CONFIRMATION)).to.be.null;
+      });
+
+      it('should keep change button visible after GPS succeeds so user can correct a mis-click', async () => {
+        const promise = Promise.resolve({
+          latitude: 1, longitude: 2, altitude: 3, accuracy: 4, altitudeAccuracy: 5, heading: 6, speed: 7
+        });
+        window.CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initAndSelectHome();
+        await promise;
+
+        expect(container.querySelector(SELECTORS.CONTEXT_CHANGE_BTN)).to.not.be.null;
       });
 
       it('should add success class to progress bar when GPS is acquired', async () => {

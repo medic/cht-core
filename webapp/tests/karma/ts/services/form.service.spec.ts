@@ -732,6 +732,7 @@ describe('Form service', () => {
     it('sets data-geo-is-edit when contact has geolocation data', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
         ],
@@ -748,6 +749,7 @@ describe('Form service', () => {
     it('does nothing when geolocation_log contains only failed recordings and no geolocation', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation: '',
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS, recording: { code: 1, message: 'User denied Geolocation' }, is_home: true }
@@ -759,6 +761,7 @@ describe('Form service', () => {
     it('does not throw when a log entry has a null recording', () => {
       const { formHtml, captureInput } = buildFormHtml();
       expect(() => (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS, recording: null, is_home: false },
           { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
@@ -770,6 +773,7 @@ describe('Form service', () => {
     it('sets data-geo-has-location when geolocation_log is non-empty', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true }
         ],
@@ -780,6 +784,7 @@ describe('Form service', () => {
     it('sets data-geo-has-location when geolocation exists but log is empty (defensive)', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation_log: [],
         geolocation: { latitude: 1.23, longitude: 36.8 },
       });
@@ -788,13 +793,14 @@ describe('Form service', () => {
 
     it('sets data-geo-has-location when geolocation exists and log field is absent (defensive)', () => {
       const { formHtml, captureInput } = buildFormHtml();
-      (service as any).injectGeoEditContext(formHtml, { geolocation: { latitude: 1.23, longitude: 36.8 } });
+      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 } });
       expect(captureInput.dataset.geoHasLocation).to.equal('true');
     });
 
     it('sets data-geo-last-capture with isHome:true from most recent successful home entry', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation: { latitude: 1.23, longitude: 36.8 },
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
@@ -809,6 +815,7 @@ describe('Form service', () => {
     it('sets data-geo-last-capture with isHome:false from most recent entry when no geolocation', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
           { timestamp: LATER_CAPTURE_TS, recording: { latitude: 1.30, longitude: 36.9 }, is_home: false },
@@ -822,6 +829,7 @@ describe('Form service', () => {
     it('does not set data-geo-last-capture when geolocation exists but log is empty (degraded)', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation: { latitude: 1.23, longitude: 36.8 },
         geolocation_log: [],
       });
@@ -831,6 +839,7 @@ describe('Form service', () => {
     it('uses most recent successful home entry even when a later other capture exists', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation: { latitude: 1.23, longitude: 36.8 },
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
@@ -845,6 +854,7 @@ describe('Form service', () => {
     it('skips failed home attempts when finding most recent successful home entry', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation: { latitude: 1.23, longitude: 36.8 },
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS,  recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
@@ -859,6 +869,7 @@ describe('Form service', () => {
     it('skips failed trailing entries when finding most recent successful other-context entry', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
         geolocation_log: [
           { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: false },
           { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },

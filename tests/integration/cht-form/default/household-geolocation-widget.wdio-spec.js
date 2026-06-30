@@ -9,6 +9,7 @@ const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 const SELECTORS = {
   ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
+  CONTEXT_CHANGE_BTN: '.geolocation-context-change-btn',
   CONTEXT_CONFIRMATION: '.geolocation-context-confirmation',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
@@ -76,6 +77,7 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
 
     expect(await $(SELECTORS.CONTEXT_OPTIONS).isDisplayed()).to.be.false;
     await $(SELECTORS.CONTEXT_CONFIRMATION).waitForExist();
+    await $(SELECTORS.CONTEXT_CHANGE_BTN).waitForExist();
   });
 
   it('should show success message when GPS is acquired', async () => {
