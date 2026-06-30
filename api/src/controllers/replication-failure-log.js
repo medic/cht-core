@@ -2,7 +2,6 @@ const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const replicationFailureLog = require('../services/replication/replication-failure-log');
 const pagination = require('../services/pagination');
-const errors = require('../errors');
 const moment = require('moment');
 
 module.exports = {
@@ -110,10 +109,7 @@ module.exports = {
    */
   get: async (req, res) => {
     try {
-      const userCtx = await auth.getUserCtx(req);
-      if (!auth.isDbAdmin(userCtx)) {
-        throw new errors.AuthenticationError('User is not an admin');
-      }
+      await auth.assertDbAdmin(req);
 
       let reportingPeriod = req.query.reporting_period;
       if (!reportingPeriod && !req.query.user) {
