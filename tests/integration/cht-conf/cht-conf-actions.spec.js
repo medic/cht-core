@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { DOC_IDS } = require('@medic/constants');
 
-const { runCommand } = require('@utils/cht-conf');
+const chtConfUtils = require('@utils/cht-conf');
 const utils = require('@utils');
 
 //Not all actions tested here due to missing forms and config
@@ -20,20 +20,25 @@ const actions = [
   'upload-branding',
   'upload-partners'
 ];
-const configPath = 'config/default';
+const configPath = chtConfUtils.getDirPath();
 let originalVersion;
 
 describe('cht-conf actions tests', () => {
   before(async () => {
+    await chtConfUtils.copyDefaultConfig();
+
     const settings = await utils.getDoc(DOC_IDS.SETTINGS);
     originalVersion = Number(settings._rev.charAt(0));
     expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor');
   });
 
-  after(async () => await utils.revertSettings(true));
+  after(async () => {
+    await utils.revertSettings(true);
+    await chtConfUtils.clearTempDir();
+  });
 
   it('should execute upload-app-settings', async () => {
-    const result = await runCommand('upload-app-settings', configPath);
+    const result = await chtConfUtils.runCommand('upload-app-settings', configPath);
     expect(result).to.contain(`INFO Settings updated successfully`);
     const settings = await utils.getDoc(DOC_IDS.SETTINGS);
     const newVersion = Number(settings._rev.charAt(0));
@@ -43,7 +48,7 @@ describe('cht-conf actions tests', () => {
 
   for (const action of actions) {
     it(`should execute ${action}`, async () => {
-      const result = await runCommand(action, configPath);
+      const result = await chtConfUtils.runCommand(action, configPath);
       expect(result).to.contain(`INFO ${action} complete.`);
     });
   }
