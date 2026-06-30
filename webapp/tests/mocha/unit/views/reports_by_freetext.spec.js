@@ -122,7 +122,6 @@ describe('reports_by_freetext', () => {
       hello3: 'world',
     });
 
-
     const emitted = mapFn(doc, true);
 
     expect(emitted).to.deep.equal([
