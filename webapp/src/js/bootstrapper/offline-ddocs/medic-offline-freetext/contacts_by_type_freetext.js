@@ -4,6 +4,7 @@ module.exports.map = (doc) => {
   const normalizeDevanagariNumerals = (str) => {
     return str.replace(/[०-९]/g, (d) => String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
   };
+
   const keyShouldBeSkipped = key => skip.indexOf(key) !== -1 || /_date$/.test(key);
 
   const usedKeys = [];
