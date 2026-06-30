@@ -12,7 +12,6 @@ const isUnspecified = (value) => UNSPECIFIED_VALUES.has(value);
 
 /**
  * Parse a query-param-style integer.
- * @private
  * @param {object} options
  * @param {*} options.value the raw param value
  * @param {number} options.defaultValue returned when the value is unspecified
@@ -70,4 +69,5 @@ module.exports = {
   parseCursor,
   parseLimit,
   buildNextCursor,
+  parseIntegerParam,
 };

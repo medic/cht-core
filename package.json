@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -34,6 +34,7 @@
     "-- DEV TEST SCRIPTS": "-----------------------------------------------------------------------------------------------",
     "integration-all-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all",
     "integration-replication": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-replication",
+    "integration-couchdb": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-couchdb",
     "integration-sentinel-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-sentinel",
     "integration-api": "./api/tests/integration/couch-start.sh && mocha --config ./api/tests/integration/.mocharc.js && ./api/tests/integration/couch-stop.sh",
     "integration-all-k3d-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && npm run ci-integration-all-k3d",
@@ -65,6 +66,7 @@
     "ci-compile": "node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run unit-nginx && npm run unit-haproxy && npm run unit-haproxy-healthcheck && npm run build && npm run integration-api && npm run unit",
     "ci-integration-all": "mocha --config tests/integration/.mocharc-all.js",
     "ci-integration-replication": "mocha --config tests/integration/.mocharc-replication.js",
+    "ci-integration-couchdb": "mocha --config tests/integration/.mocharc-couchdb.js",
     "ci-integration-all-k3d": "mocha --config tests/integration/.mocharc-k3d.js",
     "ci-integration-sentinel": "mocha --config tests/integration/.mocharc-sentinel.js",
     "ci-integration-sentinel-k3d": "mocha --config tests/integration/.mocharc-sentinel-k3d.js",
@@ -207,7 +209,7 @@
   },
   "dependencies": {
     "async": "^3.2.6",
-    "bikram-sambat": "^1.8.0",
+    "bikram-sambat": "^1.8.1",
     "body-parser": "^1.20.3",
     "bowser": "^2.12.1",
     "buffer-shims": "^1.0.0",
@@ -249,7 +251,7 @@
     "semver": "^7.7.0",
     "simple-password-tester": "^1.0.0",
     "tmp-promise": "^3.0.3",
-    "undici": "^7.24.7",
+    "undici": "^7.28.0",
     "url": "^0.11.1",
     "url-join": "^4.0.1",
     "uuid": "^10.0.0",
