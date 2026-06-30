@@ -36,6 +36,8 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
   afterEach(() => {
     sinon.restore();
     $('#bikram-sambat-test').remove();
+    $('.nepali-date-picker-overlay').remove();
+    $('.nepali-date-picker').remove();
   });
 
   const initWidget = async () => {
@@ -92,5 +94,102 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(realDateInput().val()).to.equal('2024-07-24');
+  });
+
+  it('initializes with a calendar button', async () => {
+    await initWidget();
+    expect($('.calendar-btn')).to.have.lengthOf(1);
+  });
+
+  it('opens calendar popup and backdrop when calendar button is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(1);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(1);
+    expect($('.nepali-date-picker .close-btn')).to.have.lengthOf(1);
+  });
+
+  it('closes calendar popup and backdrop when close button is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(1);
+    $('.nepali-date-picker .close-btn').click();
+
+    expect($('.nepali-date-picker').is(':visible')).to.be.false;
+    expect($('.nepali-date-picker-overlay').is(':visible')).to.be.false;
+  });
+
+  it('closes calendar popup and backdrop when overlay is clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker-overlay').is(':visible')).to.be.true;
+    $('.nepali-date-picker-overlay').click();
+
+    expect($('.nepali-date-picker').is(':visible')).to.be.false;
+    expect($('.nepali-date-picker-overlay').is(':visible')).to.be.false;
+  });
+
+  it('closes calendar popup and backdrop when Escape key is pressed', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker').is(':visible')).to.be.true;
+    
+    // Simulate Escape key press
+    const event = $.Event('keydown');
+    event.keyCode = 27;
+    $(document).trigger(event);
+
+    expect($('.nepali-date-picker').is(':visible')).to.be.false;
+    expect($('.nepali-date-picker-overlay').is(':visible')).to.be.false;
+  });
+
+  it('updates input fields when a date is selected from calendar', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    // Click on a date cell in the calendar table (e.g. the first active day)
+    const activeDays = $('.nepali-date-picker table tbody td.current-month-date:not(.disable)');
+    if (activeDays.length > 0) {
+      $(activeDays[0]).click();
+    }
+
+    // Expect inputs to have been populated
+    expect(dayInput().val()).to.not.equal('');
+    expect(monthInput().val()).to.not.equal('');
+    expect(yearInput().val()).to.not.equal('');
+    expect(realDateInput().val()).to.not.equal('');
+  });
+
+  it('correctly updates fields and converts date when dateSelect event is triggered', async () => {
+    await initWidget();
+    const hiddenInput = $('.nepali-datepicker-input');
+    const event: any = $.Event('dateSelect');
+    event.datePickerData = {
+      bsYear: 2081,
+      bsMonth: 3,
+      bsDate: 15
+    };
+    hiddenInput.trigger(event);
+
+    expect(dayInput().val()).to.equal('१५');
+    expect(monthInput().val()).to.equal('३');
+    expect(yearInput().val()).to.equal('२०८१');
+    expect(realDateInput().val()).to.equal('2024-06-29');
+  });
+
+  it('correctly parses Devanagari numbers in manual fields when opening calendar', async () => {
+    await initWidget();
+    
+    dayInput().val('१५');
+    monthInput().val('३');
+    yearInput().val('२०८१');
+
+    $('.calendar-btn').click();
+
+    expect($('.nepali-datepicker-input').val()).to.equal('२०८१-३-१५');
   });
 });
