@@ -320,6 +320,10 @@ describe('qualifier', () => {
       });
     });
 
+    it('dedupes the provided ids', () => {
+      expect(byIds(['abc-123', 'abc-123', 'abc-200'])).to.deep.equal({ ids: ['abc-123', 'abc-200'] });
+    });
+
     ([
       null,
       '',

@@ -320,13 +320,13 @@ export namespace v1 {
     getUuidsByFreetext: (qualifier: string) => AsyncGenerator<string, null>;
 
     /**
-     * Returns a page of reports for the given UUIDs.
-     * @param ids the UUIDs of the reports to return
+     * Returns a page of reports for the given ids.
+     * @param ids the ids of the reports to return
      * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
      * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
      * @param limit the maximum number of reports to return. Default is 100.
-     * @returns a page of reports for the provided UUIDs
-     * @throws InvalidArgumentError if no UUIDs are provided
+     * @returns a page of reports for the provided ids
+     * @throws InvalidArgumentError if no ids are provided
      * @throws InvalidArgumentError if the provided limit is `<= 0`
      * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
      */
@@ -337,10 +337,10 @@ export namespace v1 {
     ) => Promise<Page<v1.Report>>;
 
     /**
-     * Returns a generator for fetching all reports with the given UUIDs.
-     * @param ids the UUIDs of the reports to return
-     * @returns a generator for fetching all reports with the given UUIDs
-     * @throws InvalidArgumentError if no UUIDs are provided
+     * Returns a generator for fetching all reports with the given ids.
+     * @param ids the ids of the reports to return
+     * @returns a generator for fetching all reports with the given ids
+     * @throws InvalidArgumentError if no ids are provided
      */
     getByIds: (ids: [string, ...string[]]) => AsyncGenerator<v1.Report, null>;
 

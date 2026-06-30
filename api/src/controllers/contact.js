@@ -147,8 +147,8 @@ module.exports = {
      *     operationId: v1ContactGet
      *     description: >
      *       Returns a paginated array of contact records (persons and places) matching the given filter criteria.
-     *       Exactly one of `ids` or `type` must be provided. Use the `cursor` returned in each response to retrieve
-     *       subsequent pages.
+     *       At least one of `ids` or `type` must be provided. If both are provided, `ids` takes precedence over
+     *       `type`. Use the `cursor` returned in each response to retrieve subsequent pages.
      *     tags: [Contact]
      *     x-since: 5.3.0
      *     x-permissions:

@@ -57,7 +57,7 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
- * A qualifier that identifies entities by their UUIDs.
+ * A qualifier that identifies entities by their ids.
  */
 export interface IdsQualifier {
   readonly ids: [string, ...string[]]
@@ -77,17 +77,16 @@ export const isIdsQualifier = (qualifier: unknown): qualifier is IdsQualifier =>
 };
 
 /**
- * Builds a qualifier for finding entities by their UUIDs.
- * @param ids the UUIDs to search with
+ * Builds a qualifier for finding entities by their ids.
+ * @param ids the ids to search with
  * @returns the qualifier
- * @throws InvalidArgumentError if the UUIDs are not valid
+ * @throws InvalidArgumentError if the ids are not valid
  */
 export const byIds = (ids: [string, ...string[]]): IdsQualifier => {
-  const qualifier = { ids };
-  if (!isIdsQualifier(qualifier)) {
+  if (!isIdsQualifier({ ids })) {
     throw new InvalidArgumentError(`Invalid ids [${JSON.stringify(ids)}].`);
   }
-  return qualifier;
+  return { ids: [...new Set(ids)] as [string, ...string[]] };
 };
 
 /**
