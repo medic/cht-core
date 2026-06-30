@@ -7,7 +7,6 @@ const resources = require('./resources.js');
 const db = require('./db');
 const logger = require('@medic/logger');
 const loginController = require('./controllers/login');
-const extensionLibs = require('./services/extension-libs');
 const { DOC_IDS } = require('@medic/constants');
 
 const SWMETA_DOC_ID = DOC_IDS.SERVICE_WORKER_META;
@@ -58,18 +57,6 @@ const getPasswordResetPageContents = async () => {
   return await loginController.renderPasswordReset();
 };
 
-const appendExtensionLibs = async (config) => {
-  const libs = await extensionLibs.getAll();
-  // cache this even if there are no libs so offline client knows there are no libs
-  config.globPatterns.push('/extension-libs');
-  config.templatedURLs['/extension-libs'] = JSON.stringify(libs.map(lib => lib.name));
-  libs.forEach(lib => {
-    const libPath = path.join('/extension-libs', lib.name);
-    config.globPatterns.push(libPath);
-    config.templatedURLs[libPath] = lib.data;
-  });
-};
-
 // Use the workbox library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
   const config = {
@@ -112,7 +99,6 @@ const writeServiceWorkerFile = async () => {
       'webapp/': '/',
     },
   };
-  await appendExtensionLibs(config);
   await workbox.generateSW(config);
 };
 

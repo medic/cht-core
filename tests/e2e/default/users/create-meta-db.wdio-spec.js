@@ -3,7 +3,7 @@ const utils = require('@utils');
 const usersPage = require('@page-objects/default/users/user.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 
 describe('Create user meta db : ', () => {
   const USERNAME = 'fulltester';

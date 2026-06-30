@@ -10,7 +10,8 @@ describe('nouveau utils', () => {
   });
 
   describe('escaping special characters', () => {
-    [ '+', '-', '&', '|', '!', '^', '"', '~', '*', '?', ':', '[', ']' ].forEach(specialChar => {
+    const chars = ['+', '-', '&', '|', '!', '(', ')', '{', '}', '^', '"', '~', '*', '?', ':', '\\', '/', '[', ']'];
+    chars.forEach(specialChar => {
       it(`should escape ${specialChar}`, () => {
         expect(lib.escapeKeys(`a${specialChar}string`)).to.equal(`a\\${specialChar}string`);
       });

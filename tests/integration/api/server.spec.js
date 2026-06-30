@@ -358,7 +358,7 @@ describe('server', () => {
         const collectApiLogs = await utils.collectApiLogs(/replication/);
         const collectHaproxyLogs = await utils.collectHaproxyLogs(/.*/);
 
-        await utils.request({ path: '/api/v1/initial-replication/get-ids', ...reqOptions });
+        await utils.request({ path: '/api/v1/replication/get-ids', ...reqOptions });
         await utils.delayPromise(500); // wait for everything to get logged
 
         const apiLogs = (await collectApiLogs()).filter(log => log.length);
