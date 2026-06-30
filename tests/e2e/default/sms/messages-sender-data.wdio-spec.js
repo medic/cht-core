@@ -1,4 +1,4 @@
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const utils = require('@utils');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');

@@ -62,6 +62,8 @@ const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
+const replicationFailureLogController = require('./controllers/replication-failure-log');
+const replicationHealthController = require('./controllers/replication-health');
 const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
@@ -73,12 +75,11 @@ const appPrefix = `${routePrefix}_design/${environment.ddoc}/_rewrite/`;
 const adminAppPrefix = `${routePrefix}_design/medic-admin/_rewrite{/{*path}}`;
 const adminAppReg = new RegExp(`/${environment.db}/_design/medic-admin/_rewrite/`);
 const serverUtils = require('./server-utils');
-const uuid = require('uuid');
+const crypto = require('node:crypto');
 const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
-const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
@@ -182,10 +183,7 @@ if (process.argv.slice(2).includes('--allow-cors')) {
   });
 }
 
-const shortUuid = () => {
-  const ID_LENGTH = 12;
-  return uuid.v4().replace(/-/g, '').toLowerCase().slice(0, ID_LENGTH);
-};
+const shortUuid = () => crypto.randomBytes(6).toString('hex');
 
 app.use((req, res, next) => {
   req.id = shortUuid();
@@ -321,8 +319,6 @@ app.all('/admin{/{*thing}}', authorization.handleAuthErrors, authorization.offli
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
-app.get('/extension-libs', extensionLibs.list);
-app.get('/extension-libs/:name', extensionLibs.get);
 app.get(`${routePrefix}login`, login.get);
 app.get(`${routePrefix}login/identity`, login.getIdentity);
 app.postJson(`${routePrefix}login`, login.post);
@@ -797,6 +793,8 @@ app.put(
 );
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
+app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);
+app.get('/api/v1/replication-health/failed', replicationHealthController.failed);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
@@ -917,15 +915,10 @@ app.all(
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
 app.get(
-  '/api/v1/initial-replication/get-ids',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  replication.getDocIds,
-);
-app.get(
   '/api/v1/replication/get-ids',
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough,
+  authorization.captureReplicationFailures,
   replication.getDocIds,
 );
 app.post(

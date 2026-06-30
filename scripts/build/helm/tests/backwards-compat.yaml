@@ -1,0 +1,28 @@
+# Test values file for backwards compatibility
+# Simulates a pre-5.1 values file that does not define api or sentinel sections.
+# This validates that templates render correctly without those sections present.
+# Usage:
+#   helm template test scripts/build/helm \
+#     -f scripts/build/helm/values/deployment-single.yaml \
+#     -f scripts/build/helm/values/platform-k3s-k3d.yaml \
+#     -f scripts/build/helm/tests/backwards-compat.yaml
+
+project_name: "test"
+namespace: "test"
+cht_image_tag: "test"
+cache_images: true
+
+upstream_servers:
+  docker_registry: "public.ecr.aws/medic"
+  builds_url: "https://staging.dev.medicmobile.org/_couch/builds_4"
+
+couchdb:
+  password: "test"
+  secret: "test"
+  uuid: "test"
+  couchdb_node_storage_size: 10Gi
+
+ingress:
+  host: "test.example.com"
+
+# Deliberately omitting api and sentinel sections to test nil-safety of templates

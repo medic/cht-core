@@ -50,19 +50,14 @@ const deleteStagedDdocs = async () => {
 };
 
 /**
- * Runs compaction and view cleanup for every database.
+ * Runs view cleanup for every database.
  */
 const cleanup = () => {
   for (const database of DATABASES) {
-    logger.info(`Running DB compact and view cleanup for ${database.name}`);
-    Promise
-      .all([
-        database.db.compact(),
-        database.db.viewCleanup(),
-      ])
-      .catch(err => {
-        logger.error('Error while running cleanup: %o', err);
-      });
+    logger.info(`Running view cleanup for ${database.name}`);
+    database.db.viewCleanup().catch(err => {
+      logger.error('Error while running cleanup: %o', err);
+    });
   }
   db.nouveauCleanup().catch(err => {
     logger.error('Error while running cleanup: %o', err);

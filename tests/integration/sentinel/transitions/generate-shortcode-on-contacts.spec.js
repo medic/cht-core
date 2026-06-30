@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const { CONTACT_TYPES, DOC_TYPES } = require('@medic/constants');
 
 describe('generate_shortcode_on_contacts', () => {

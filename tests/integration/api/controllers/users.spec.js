@@ -1,5 +1,5 @@
 const utils = require('@utils');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 const querystring = require('querystring');
 const sentinelUtils = require('@utils/sentinel');
 const placeFactory = require('@factories/cht/contacts/place');

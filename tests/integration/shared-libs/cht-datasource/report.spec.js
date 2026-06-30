@@ -14,7 +14,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { setAuth, removeAuth } = require('./auth');
 const { expect } = require('chai');
-const uuid = require('uuid').v4;
+const uuid = require('uuid').v7;
 
 describe('cht-datasource Report', () => {
   const contact0Id = uuid();

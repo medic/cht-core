@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatIconModule } from '@angular/material/icon';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 
 import { SidebarMenuComponent } from '@mm-components/sidebar-menu/sidebar-menu.component';
 import { LocationService } from '@mm-services/location.service';
@@ -18,6 +18,10 @@ import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+import { HeaderTabsService, SidebarTab } from '@mm-services/header-tabs.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
+import { ChangesService } from '@mm-services/changes.service';
+import { Selectors } from '@mm-selectors/index';
 
 describe('SidebarMenuComponent', () => {
   let component: SidebarMenuComponent;
@@ -26,20 +30,19 @@ describe('SidebarMenuComponent', () => {
   let dbSyncService;
   let modalService;
   let authService;
+  let headerTabsService;
+  let customResourceService;
+  let changesService;
+  let store: MockStore;
 
-  beforeEach(async () => {
-    locationService = { adminPath: '/admin/' };
-    dbSyncService = { sync: sinon.stub() };
-    modalService = { show: sinon.stub() };
-    authService = { has: sinon.stub(), online: sinon.stub() };
-
+  const createComponent = async () => {
     await TestBed
       .configureTestingModule({
         imports: [
           RouterTestingModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
           MatSidenavModule,
-          MatIconModule,
+          MatIconTestingModule,
           SidebarMenuComponent,
           PanelHeaderComponent,
           AuthDirective,
@@ -51,12 +54,30 @@ describe('SidebarMenuComponent', () => {
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: ModalService, useValue: modalService },
           { provide: AuthService, useValue: authService },
+          { provide: HeaderTabsService, useValue: headerTabsService },
+          { provide: CustomResourceService, useValue: customResourceService },
+          { provide: ChangesService, useValue: changesService },
         ],
       })
       .compileComponents();
+    store = TestBed.inject(MockStore);
+    store.overrideSelector(Selectors.getShowPrivacyPolicy, false);
     fixture = TestBed.createComponent(SidebarMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
+  };
+
+  beforeEach(async () => {
+    locationService = { adminPath: '/admin/' };
+    dbSyncService = { sync: sinon.stub() };
+    modalService = { show: sinon.stub() };
+    authService = { has: sinon.stub(), online: sinon.stub() };
+    headerTabsService = { getSidebarTabs: sinon.stub().resolves([]) };
+    customResourceService = { getImg: sinon.stub().returns('') };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+
+    await createComponent();
   });
 
   afterEach(() => sinon.restore());
@@ -69,73 +90,43 @@ describe('SidebarMenuComponent', () => {
     expect(unsubscribeSpy.calledOnce).to.be.true;
   });
 
-  it('should initialise component with menu options', () => {
+  it('should initialise the component', () => {
     expect(component.adminAppPath).to.equal('/admin/');
+    expect(component.headerTabsForSidebar).to.deep.equal([]);
+    expect(component.showPrivacyPolicy).to.be.false;
+  });
 
-    expect(component.moduleOptions).have.deep.members([
+  it('should populate headerTabsForSidebar', async () => {
+    const sidebarTabs: SidebarTab[] = [
       {
-        routerLink: 'messages',
-        icon: 'fa-envelope',
-        translationKey: 'Messages',
-        hasPermissions: 'can_view_messages,!can_view_messages_tab'
+        name: 'messages',
+        route: 'messages',
+        defaultIcon: 'fa-envelope',
+        translation: 'Messages',
+        permissions: ['can_view_messages', '!can_view_messages_tab'],
       },
       {
-        routerLink: 'tasks',
-        icon: 'fa-flag',
-        translationKey: 'Tasks',
-        hasPermissions: 'can_view_tasks,!can_view_tasks_tab'
+        name: 'bug',
+        defaultIcon: 'fa-bug',
+        translation: 'Report Bug',
+        permissions: [],
       },
-      {
-        routerLink: 'reports',
-        icon: 'fa-list-alt',
-        translationKey: 'Reports',
-        hasPermissions: 'can_view_reports,!can_view_reports_tab'
-      },
-      {
-        routerLink: 'contacts',
-        icon: 'fa-user',
-        translationKey: 'Contacts',
-        hasPermissions: 'can_view_contacts,!can_view_contacts_tab'
-      },
-      {
-        routerLink: 'analytics',
-        icon: 'fa-bar-chart-o',
-        translationKey: 'Analytics',
-        hasPermissions: 'can_view_analytics,!can_view_analytics_tab',
-      },
-    ]);
+    ];
+    headerTabsService.getSidebarTabs.resetHistory();
+    headerTabsService.getSidebarTabs.resolves(sidebarTabs);
 
-    expect(component.secondaryOptions).excluding('click').have.deep.members([
-      {
-        routerLink: 'trainings',
-        icon: 'fa-graduation-cap',
-        translationKey: 'training_materials.page.title',
-        canDisplay: true,
-      },
-      {
-        routerLink: 'about',
-        icon: 'fa-question',
-        translationKey: 'about',
-        canDisplay: true,
-      },
-      {
-        routerLink: 'user',
-        icon: 'fa-user',
-        translationKey: 'edit.user.settings',
-        hasPermissions: 'can_edit_profile'
-      },
-      {
-        routerLink: 'privacy-policy',
-        icon: 'fa-lock',
-        translationKey: 'privacy.policy',
-        canDisplay: false,
-      },
-      {
-        icon: 'fa-bug',
-        translationKey: 'Report Bug',
-        canDisplay: true,
-      },
-    ]);
+    await TestBed.resetTestingModule();
+    await createComponent();
+
+    expect(headerTabsService.getSidebarTabs).to.have.been.calledOnceWithExactly();
+    expect(component.headerTabsForSidebar).to.deep.equal(sidebarTabs);
+  });
+
+  it('should update showPrivacyPolicy when the selector emits', () => {
+    store.overrideSelector(Selectors.getShowPrivacyPolicy, true);
+    store.refreshState();
+
+    expect(component.showPrivacyPolicy).to.be.true;
   });
 
   it('should close sidebar menu', () => {
@@ -169,17 +160,35 @@ describe('SidebarMenuComponent', () => {
     expect(modalService.show.args[0][0]).to.deep.equal(LogoutConfirmComponent);
   });
 
-  it('should show report bug modal', () => {
-    const reportBug = component.secondaryOptions.find(option => option.translationKey === 'Report Bug');
+  describe('onTabClick()', () => {
+    it('should show the feedback modal and close the sidebar when the bug tab is clicked', () => {
+      const closeStub = sinon.stub(GlobalActions.prototype, 'closeSidebarMenu');
 
-    if (!reportBug?.click) {
-      assert.fail('should have report bug option');
-      return;
-    }
+      component.onTabClick({
+        name: 'bug',
+        defaultIcon: 'fa-bug',
+        translation: 'Report Bug',
+        permissions: [],
+      });
 
-    reportBug.click();
+      expect(modalService.show).to.have.been.calledOnce;
+      expect(modalService.show.args[0][0]).to.deep.equal(FeedbackComponent);
+      expect(closeStub).to.have.been.calledOnceWithExactly();
+    });
 
-    expect(modalService.show.calledOnce).to.be.true;
-    expect(modalService.show.args[0][0]).to.deep.equal(FeedbackComponent);
+    it('should close the sidebar for any other tab', () => {
+      const closeStub = sinon.stub(GlobalActions.prototype, 'closeSidebarMenu');
+
+      component.onTabClick({
+        name: 'messages',
+        route: 'messages',
+        defaultIcon: 'fa-envelope',
+        translation: 'Messages',
+        permissions: [],
+      });
+
+      expect(modalService.show).to.not.have.been.called;
+      expect(closeStub).to.have.been.calledOnceWithExactly();
+    });
   });
 });

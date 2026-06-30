@@ -1,6 +1,6 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { v4 as uuidv4 } from 'uuid';
+import { v7 as uuid } from 'uuid';
 import { DOC_IDS } from '@medic/constants';
 
 import { DbService } from '@mm-services/db.service';
@@ -31,7 +31,7 @@ export class TelemetryService {
     let uniqueDeviceId = this.windowRef.localStorage.getItem(this.DEVICE_ID_KEY);
 
     if (!uniqueDeviceId) {
-      uniqueDeviceId = uuidv4();
+      uniqueDeviceId = uuid();
       this.windowRef.localStorage.setItem(this.DEVICE_ID_KEY, uniqueDeviceId!);
     }
 
