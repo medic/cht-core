@@ -81,7 +81,7 @@ const placeRequest = (filters) => {
   return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
 };
 
-const normalizeNumerals = (text) => {
+const normalizeDevanagariNumerals = (text) => {
   return text.replace(/[०-९]/g, (d) => String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030));
 };
 
@@ -107,7 +107,7 @@ const freetextRequest = (filters, view) => {
     .toLowerCase()
     .split(/\s+/);
   const requests = words.map((word) => {
-    const params = freetextRequestParams(normalizeNumerals(word));
+    const params = freetextRequestParams(normalizeDevanagariNumerals(word));
     return params && { view, params, freetext: true };
   });
   return _.compact(requests);

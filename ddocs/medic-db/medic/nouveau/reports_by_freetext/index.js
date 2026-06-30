@@ -3,9 +3,9 @@ function(doc) {
   var maxLength = 1000;
   var minLength = 3;
 
-  var normalizeNumerals = function(str) {
+  var normalizeDevanagariNumerals = function(str) {
     return str.replace(/[०-९]/g, function(d) {
-      return String.fromCharCode(d.charCodeAt(0) - 0x0966 + 0x0030);
+      return String.fromCodePoint(d.codePointAt(0) - 0x0966 + 0x0030);
     });
   };
 
@@ -31,7 +31,7 @@ function(doc) {
     }
 
     if (typeof value === 'string') {
-      var lowerValue = normalizeNumerals(value.toLowerCase());
+      var lowerValue = normalizeDevanagariNumerals(value.toLowerCase());
       indexMaybe('text', 'default', lowerValue);
       indexMaybe('string', 'exact_match', lowerKey + ':' + lowerValue);
     } else if (typeof value === 'number') {
