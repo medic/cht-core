@@ -209,20 +209,20 @@ describe('summary lib', () => {
 
   describe('summarise', () => {
     it('returns undefined for falsy doc', () => {
-      expect(summarise(null)).to.equal(undefined);
-      expect(summarise(undefined)).to.equal(undefined);
+      expect(summarise(null)).to.be.undefined;
+      expect(summarise(undefined)).to.be.undefined;
     });
 
     it('returns undefined for a doc without a type', () => {
-      expect(summarise({ _id: 'a', _rev: '1' })).to.equal(undefined);
+      expect(summarise({ _id: 'a', _rev: '1' })).to.be.undefined;
     });
 
     it('returns undefined for non-matching doc types', () => {
-      expect(summarise({ _id: 'a', _rev: '1', type: 'form' })).to.equal(undefined);
+      expect(summarise({ _id: 'a', _rev: '1', type: 'form' })).to.be.undefined;
     });
 
     it('returns undefined for data_record without form', () => {
-      expect(summarise({ _id: 'a', _rev: '1', type: 'data_record' })).to.equal(undefined);
+      expect(summarise({ _id: 'a', _rev: '1', type: 'data_record' })).to.be.undefined;
     });
 
     it('dispatches to summariseReport for data_record docs', () => {
