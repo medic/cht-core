@@ -10,7 +10,7 @@ describe('HydrateContactNames service', () => {
     module('adminApp');
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('GetSummaries', GetSummaries);
+      $provide.value('GetSummaries', { getContacts: GetSummaries });
     });
     inject($injector => service = $injector.get('HydrateContactNames'));
   });
