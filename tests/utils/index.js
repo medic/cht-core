@@ -789,17 +789,16 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await setUserContactDoc();
 };
 
-const clearReplicationFailureLogs = async () => {
-  const result = await logsDb.allDocs({
-    startkey: 'replication-fail-',
-    endkey: 'replication-fail-\ufff0',
-  });
+const deleteLogsByPrefix = async (prefix) => {
+  const result = await logsDb.allDocs({ startkey: prefix, endkey: `${prefix}\ufff0` });
   if (!result.rows.length) {
     return;
   }
   const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
   await logsDb.bulkDocs(docs);
 };
+
+const clearReplicationFailureLogs = () => deleteLogsByPrefix('replication-fail-');
 
 const getOrigin = () => `${constants.BASE_URL}`;
 
@@ -1726,7 +1725,7 @@ const collectLogs = (container, ...regex) => {
 
   const collect = async () => {
     if (isK3D()) {
-      await delayPromise(500);
+      await delayPromise(1000);
     }
     clearTimeout(timeout);
     if (errors.length) {
@@ -1734,6 +1733,10 @@ const collectLogs = (container, ...regex) => {
       error.errors = errors;
       error.logs = logs;
       throw error;
+    }
+
+    if (!matches.length) {
+      console.warn('No logs matched', logs);
     }
 
     return matches;
@@ -1773,6 +1776,9 @@ const updateContainerNames = (project = PROJECT_NAME) => {
 };
 
 const getContainerName = (service, project = PROJECT_NAME) => {
+  if (service.includes('nouveau')) {
+    service = 'nouveau'; // naming here is inconsistent between container and repository.
+  }
   return isDocker() ? `${project}-${service}-1` : `deployment/cht-${service}`;
 };
 
@@ -1885,6 +1891,7 @@ module.exports = {
   revertSettings,
   revertDb,
   clearReplicationFailureLogs,
+  deleteLogsByPrefix,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,
