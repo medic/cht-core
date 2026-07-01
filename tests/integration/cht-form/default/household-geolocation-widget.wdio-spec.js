@@ -9,8 +9,6 @@ const GEO_FAILURE = { code: -2, message: 'Geolocation timeout exceeded' };
 const SELECTORS = {
   ACKNOWLEDGE_CHECKBOX: '.geolocation-acknowledge-checkbox',
   CAPTURE_NEW_RADIO: 'input[value="capture-new"]',
-  CONTEXT_CHANGE_BTN: '.geolocation-context-change-btn',
-  CONTEXT_CONFIRMATION: '.geolocation-context-confirmation',
   CONTEXT_OPTIONS: '.geolocation-context-options',
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
@@ -65,7 +63,7 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
     await $(SELECTORS.PROGRESS_BAR).waitForExist();
   });
 
-  it('should show home confirmation text and hide context options when capture starts', async () => {
+  it('should keep context options visible when capture starts', async () => {
     await mockConfig.loadForm('default', 'test', 'household-geolocation-widget');
 
     await mockGeoPending();
@@ -75,9 +73,8 @@ describe('cht-form web component - HouseholdGeolocation Widget', () => {
 
     await selectHomeContext();
 
-    expect(await $(SELECTORS.CONTEXT_OPTIONS).isDisplayed()).to.be.false;
-    await $(SELECTORS.CONTEXT_CONFIRMATION).waitForExist();
-    await $(SELECTORS.CONTEXT_CHANGE_BTN).waitForExist();
+    expect(await $(SELECTORS.CONTEXT_OPTIONS).isDisplayed()).to.be.true;
+    await $(SELECTORS.PROGRESS_BAR).waitForExist();
   });
 
   it('should show success message when GPS is acquired', async () => {

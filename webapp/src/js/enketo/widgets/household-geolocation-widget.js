@@ -24,9 +24,6 @@ const TRANSLATION_KEYS = {
   RESULT_LABEL: 'geolocation.result.label',
   RETRY: 'geolocation.retry',
   SIGNAL_WEAK: 'geolocation.signal.weak',
-  CHANGE_CONTEXT: 'geolocation.change.context',
-  CONFIRMATION_HOME: 'geolocation.confirmation.home',
-  CONFIRMATION_OTHER: 'geolocation.confirmation.other',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
   SKIP_ACKNOWLEDGE: 'geolocation.skip.acknowledge',
   SKIP_BUTTON: 'geolocation.skip.button',
@@ -250,43 +247,14 @@ class HouseholdGeolocationWidget extends Widget {
 
     if (isEditMode) {
       $question.find('.geolocation-edit-options').hide();
-    } else {
-      $question.find('.geolocation-context-options').hide();
     }
 
     $question.find([
       '.geolocation-context-confirmation',
-      '.geolocation-context-change-btn',
       '.geolocation-status',
       '.geolocation-retry-btn',
       '.geolocation-skip-btn',
     ].join(',')).remove();
-
-    const confirmationKey = {
-      home: TRANSLATION_KEYS.CONFIRMATION_HOME,
-      other: TRANSLATION_KEYS.CONFIRMATION_OTHER,
-    }[this.element.dataset.geoContext];
-    if (confirmationKey) {
-      const $confirmation = $('<p class="geolocation-context-confirmation">');
-      $confirmation.text(globalThis.CHTCore.Translate.instant(confirmationKey));
-      $question.append($confirmation);
-    }
-
-    if (!isEditMode) {
-      const $changeBtn = $('<button type="button" class="btn btn-link geolocation-context-change-btn">');
-      $changeBtn.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.CHANGE_CONTEXT));
-      $changeBtn.on('click', () => {
-        globalThis.CHTCore.Geolocation.retry();
-        $question.find([
-          '.geolocation-context-confirmation',
-          '.geolocation-context-change-btn',
-          '.geolocation-status',
-        ].join(',')).remove();
-        $question.find('.geolocation-context-options').show();
-        delete this.element.dataset.geoContext;
-      });
-      $question.append($changeBtn);
-    }
 
     const { $status, $progressLabel, $bar } = this._buildProgressRow();
     $question.append($status);
