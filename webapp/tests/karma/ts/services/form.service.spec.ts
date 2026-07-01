@@ -793,7 +793,9 @@ describe('Form service', () => {
 
     it('sets data-geo-has-location when geolocation exists and log field is absent (defensive)', () => {
       const { formHtml, captureInput } = buildFormHtml();
-      (service as any).injectGeoEditContext(formHtml, { _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 } });
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1', geolocation: { latitude: 1.23, longitude: 36.8 }
+      });
       expect(captureInput.dataset.geoHasLocation).to.equal('true');
     });
 
