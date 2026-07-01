@@ -49,12 +49,12 @@ export class TasksNotificationService implements OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  async initOnAndroid(hasSettings?: boolean) {
+  async initOnAndroid() {
     if (!await this.isEnabled()) {
       return;
     }
     this.subscribeToRulesEngine();
-    this.updateAndroidStore(hasSettings);
+    this.updateAndroidStore();
   }
 
   private async isEnabled() {
@@ -72,16 +72,16 @@ export class TasksNotificationService implements OnDestroy {
     this.subscription.add(rulesEngineSubscription);
   }
 
-  private async updateAndroidStore(hasSettings?: boolean): Promise<void> {
+  private async updateAndroidStore(): Promise<void> {
     const notifications = await this.fetchNotifications();
     const { maxNotifications, notificationWindow } = await this.getNotificationSettings();
-    if (hasSettings) {
-      globalThis?.medicmobile_android
-        ?.updateTaskNotificationStoreWithSettings(
-          JSON.stringify(notifications),
-          maxNotifications,
-          JSON.stringify(notificationWindow),
-        );
+
+    if (globalThis?.medicmobile_android?.updateTaskNotificationStoreWithSettings) {
+      globalThis.medicmobile_android.updateTaskNotificationStoreWithSettings(
+        JSON.stringify(notifications),
+        maxNotifications,
+        JSON.stringify(notificationWindow),
+      );
       return;
     }
     globalThis?.medicmobile_android?.updateTaskNotificationStore(JSON.stringify(notifications), maxNotifications);

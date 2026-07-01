@@ -266,10 +266,7 @@ describe('TasksNotificationService', () => {
     let androidApi: any;
 
     beforeEach(() => {
-      androidApi = {
-        updateTaskNotificationStore: sinon.stub(),
-        updateTaskNotificationStoreWithSettings: sinon.stub(),
-      };
+      androidApi = {};
       (globalThis as any).medicmobile_android = androidApi;
     });
 
@@ -277,18 +274,21 @@ describe('TasksNotificationService', () => {
       delete (globalThis as any).medicmobile_android;
     });
 
-    it('should update the android store without settings', async () => {
+    it('should update the android store without settings when only the basic api is available', async () => {
+      androidApi.updateTaskNotificationStore = sinon.stub();
+
       await service.updateAndroidStore();
 
       expect(androidApi.updateTaskNotificationStore.callCount).to.equal(1);
-      expect(androidApi.updateTaskNotificationStoreWithSettings.callCount).to.equal(0);
 
       const [notificationsJson, maxNotifications] = androidApi.updateTaskNotificationStore.args[0];
       expect(JSON.parse(notificationsJson)).to.be.an('array').that.has.lengthOf(3);
       expect(maxNotifications).to.equal(8);
     });
 
-    it('should update the android store with settings', async () => {
+    it('should update the android store with settings when the settings api is available', async () => {
+      androidApi.updateTaskNotificationStore = sinon.stub();
+      androidApi.updateTaskNotificationStoreWithSettings = sinon.stub();
       settingsService.get.resolves({
         tasks: {
           max_task_notifications: 20,
@@ -296,7 +296,7 @@ describe('TasksNotificationService', () => {
         },
       });
 
-      await service.updateAndroidStore(true);
+      await service.updateAndroidStore();
 
       expect(androidApi.updateTaskNotificationStore.callCount).to.equal(0);
       expect(androidApi.updateTaskNotificationStoreWithSettings.callCount).to.equal(1);

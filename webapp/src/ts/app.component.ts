@@ -349,9 +349,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private initAndroidTaskNotifications() {
-    if (typeof globalThis?.medicmobile_android?.updateTaskNotificationStoreWithSettings === 'function'){
-      this.taskNotificationService.initOnAndroid(true);
-    } else if (typeof globalThis?.medicmobile_android?.updateTaskNotificationStore === 'function') {
+    const android = globalThis?.medicmobile_android;
+    if (
+      typeof android?.updateTaskNotificationStoreWithSettings === 'function' ||
+      typeof android?.updateTaskNotificationStore === 'function'
+    ) {
       this.taskNotificationService.initOnAndroid();
     }
   }

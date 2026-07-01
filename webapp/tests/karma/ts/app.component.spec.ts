@@ -340,17 +340,11 @@ describe('AppComponent', () => {
     expect(tasksNotificationService.initOnAndroid.callCount).to.equal(1);
   });
 
-  it('should prioritize updateTaskNotificationStoreWithSettings', async () => {
-    window.medicmobile_android = {
-      updateTaskNotificationStoreWithSettings: sinon.stub().returns(true),
-      updateTaskNotificationStore: sinon.stub().returns(true),
-    };
-
+  it('should init task notifications on android if updateTaskNotificationStoreWithSettings', async () => {
+    window.medicmobile_android = { updateTaskNotificationStoreWithSettings: sinon.stub().returns(true) };
     await getComponent();
     await component.setupPromise;
-
     expect(tasksNotificationService.initOnAndroid.callCount).to.equal(1);
-    expect(tasksNotificationService.initOnAndroid.calledOnceWith(true)).to.equal(true);
   });
 
   it('should show reload popup when service worker is updated', async () => {
