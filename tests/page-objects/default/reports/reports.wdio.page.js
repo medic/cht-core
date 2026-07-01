@@ -299,6 +299,33 @@ const setSidebarFilterToDate = () => {
   return setSidebarFilterDate(sidebarFilterSelectors.toDate(), 2, 'r3c5');
 };
 
+const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
+  await fieldPromise.waitForDisplayed();
+  await fieldPromise.click();
+
+  const picker = $('.nepali-date-picker');
+  await picker.waitForDisplayed();
+
+  const prevBtn = picker.$('.prev-btn.icon');
+  await prevBtn.waitForDisplayed();
+  for (let i = 0; i < prevClicks; i++) {
+    await prevBtn.click();
+  }
+
+  const cells = await picker.$$('table tbody td.current-month-date:not(.disable)');
+  if (cells.length > cellIndex) {
+    await cells[cellIndex].click();
+  }
+};
+
+const setSidebarFilterBikFromDate = () => {
+  return setSidebarFilterBikDate(sidebarFilterSelectors.fromDate(), 2, 0);
+};
+
+const setSidebarFilterBikToDate = () => {
+  return setSidebarFilterBikDate(sidebarFilterSelectors.toDate(), 0, 20);
+};
+
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
 
 const getAllReportsText = async () => {
@@ -465,6 +492,8 @@ module.exports = {
   openSidebarFilterDateAccordion,
   setSidebarFilterFromDate,
   setSidebarFilterToDate,
+  setSidebarFilterBikFromDate,
+  setSidebarFilterBikToDate,
   filterByForm,
   filterByFacility,
   filterByStatus,
