@@ -301,11 +301,14 @@ describe('TasksNotificationService', () => {
       expect(androidApi.updateTaskNotificationStore.callCount).to.equal(0);
       expect(androidApi.updateTaskNotificationStoreWithSettings.callCount).to.equal(1);
 
-      const [notificationsJson, maxNotifications, windowJson] =
+      const [notificationsJson, settingsJson] =
         androidApi.updateTaskNotificationStoreWithSettings.args[0];
       expect(JSON.parse(notificationsJson)).to.be.an('array').that.has.lengthOf(3);
-      expect(maxNotifications).to.equal(20);
-      expect(JSON.parse(windowJson)).to.deep.equal({ start: '10:00', end: '18:00' });
+      expect(JSON.parse(settingsJson)).to.deep.equal({
+        maxNotifications: 20,
+        start: '10:00', 
+        end: '18:00'
+      });
     });
   });
 

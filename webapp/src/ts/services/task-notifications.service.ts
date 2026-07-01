@@ -79,8 +79,7 @@ export class TasksNotificationService implements OnDestroy {
     if (globalThis?.medicmobile_android?.updateTaskNotificationStoreWithSettings) {
       globalThis.medicmobile_android.updateTaskNotificationStoreWithSettings(
         JSON.stringify(notifications),
-        maxNotifications,
-        JSON.stringify(notificationWindow),
+        JSON.stringify({maxNotifications, ...notificationWindow}),
       );
       return;
     }
