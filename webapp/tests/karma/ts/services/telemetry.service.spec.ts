@@ -323,7 +323,7 @@ describe('TelemetryService', () => {
 
       const formsAllDocsCalls = medicDb.allDocs.getCalls()
         .filter(call => call.args[0]?.start_key === 'form:');
-      expect(formsAllDocsCalls.length).to.equal(2);
+      expect(formsAllDocsCalls).to.have.lengthOf(2);
       expect(formsAllDocsCalls[0].args[0]).to.deep.equal({
         start_key: 'form:',
         end_key: 'form:\ufff0',
