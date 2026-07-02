@@ -1342,6 +1342,67 @@ describe('ContactSave service', () => {
       expect(sibling.badge, 'sibling binary left empty (no sidecar to restore)').to.equal('');
     });
 
+    // Siblings/repeats aren't stamped with a sidecar in production yet (they're
+    // always brand-new on a parent-form edit), but the restore path resolves the
+    // owner doc the same way for every section type, so these pin that it routes
+    // a sidecar-bearing sibling/repeat binary correctly if one is ever present.
+    it('restores an untouched sibling binary on edit via its data-attachment-ref sidecar', async () => {
+      const ref = 'sib-badge-ref';
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<contact db-doc="true">' +
+            '<name>Amina</name>' +
+            `<badge type="binary" data-attachment-ref="${ref}"></badge>` +
+          '</contact>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', contact: 'NEW' },
+        siblings: { contact: { _id: 'sib1', type: 'person', name: 'Amina', badge: '', parent: 'PARENT' } },
+        repeats: {},
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const sibling = result.preparedDocs.find(d => d._id === 'sib1');
+
+      expect(sibling.badge, 'sibling field value restored from sidecar').to.equal(ref);
+      expect(attachmentService.add.called, 'untouched sibling binary not re-attached').to.be.false;
+    });
+
+    it('restores an untouched repeat-child binary on edit via its data-attachment-ref sidecar', async () => {
+      const ref = 'kid-badge-ref';
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<repeat>' +
+            `<child><name>Child A</name><badge type="binary" data-attachment-ref="${ref}"></badge></child>` +
+          '</repeat>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF' },
+        siblings: {},
+        repeats: { child_data: [
+          { _id: 'kid1', type: 'person', name: 'Child A', badge: '', parent: 'PARENT' },
+        ] },
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const kid = result.preparedDocs.find(d => d._id === 'kid1');
+
+      expect(kid.badge, 'repeat-child field value restored from sidecar').to.equal(ref);
+      expect(attachmentService.add.called, 'untouched repeat-child binary not re-attached').to.be.false;
+    });
+
     it('routes uploads using the type="file" attribute', async () => {
       // Enketo's setVal rewrites uploaded binary nodes to type="file" at
       // runtime (enketo-core form-model.js setVal).
