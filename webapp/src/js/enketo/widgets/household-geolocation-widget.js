@@ -237,7 +237,7 @@ class HouseholdGeolocationWidget extends Widget {
   _revertToEditChoice() {
     globalThis.CHTCore.Geolocation.retry();
     const $question = $(this.question);
-    $question.find('.geolocation-edit-options').show();
+    $question.find('.geolocation-edit-options, .geolocation-edit-prompt').show();
     const $keptRadio = $question.find('input[type="radio"][value="kept"]');
     $keptRadio.prop('checked', true).trigger('change');
   }
@@ -247,7 +247,7 @@ class HouseholdGeolocationWidget extends Widget {
     const $question = $(this.question);
 
     if (isEditMode) {
-      $question.find('.geolocation-edit-options').hide();
+      $question.find('.geolocation-edit-options, .geolocation-edit-prompt').hide();
     }
 
     $question.find([

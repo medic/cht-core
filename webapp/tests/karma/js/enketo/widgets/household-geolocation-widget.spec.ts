@@ -645,6 +645,8 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
         expect((container.querySelector(SELECTORS.EDIT_OPTIONS) as HTMLElement).style.display)
           .to.equal('none');
+        expect((container.querySelector('.geolocation-edit-prompt') as HTMLElement).style.display)
+          .to.equal('none');
       });
 
       it('data-geo-context remains home after capture starts', async () => {
