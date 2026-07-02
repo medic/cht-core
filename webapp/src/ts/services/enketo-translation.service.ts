@@ -109,12 +109,12 @@ export class EnketoTranslationService {
   // base64 is the source of truth. Skip the bind when the saved value is empty
   // (keep the form default) or is an attachment reference (the real data lives
   // in the attachment). Genuine inline base64 still binds.
-  private shouldSkipBinaryBind(elem, data): boolean {
+  private shouldSkipBinaryBind(elem, data, isRef: boolean): boolean {
     const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
     if (typeAttr !== 'binary') {
       return false;
     }
-    return [ null, undefined, '' ].includes(data) || this.isAttachmentRef(data);
+    return [ null, undefined, '' ].includes(data) || isRef;
   }
 
   private bindArrayToXml(elem, data) {
@@ -145,9 +145,10 @@ export class EnketoTranslationService {
     elem.removeAttr('jr:template');
     elem.removeAttr('template');
 
-    if (this.shouldSkipBinaryBind(elem, data)) {
+    const isRef = this.isAttachmentRef(data);
+    if (this.shouldSkipBinaryBind(elem, data, isRef)) {
       // Stash the skipped reference so an untouched field can be restored on save.
-      if (this.isAttachmentRef(data)) {
+      if (isRef) {
         elem.attr('data-attachment-ref', data);
       }
       return;
