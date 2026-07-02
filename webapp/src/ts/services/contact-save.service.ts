@@ -314,7 +314,7 @@ export class ContactSaveService {
 
   /** Bare attachment reference for a binary node: the element's xpath with the
    * instance root swapped for the form internal ID and the leading slash
-   * dropped -> `<formId>/<xpath>/<field>`. */
+   * dropped -> `<formId>/<field-path>` (e.g. `family/details/photo`). */
   private computeBinaryReference(element: Element, ctx: ContactOwnerContext): string {
     const formId = $(ctx.root).attr('id');
     const xpath = Xpath.getElementXPath(element);
