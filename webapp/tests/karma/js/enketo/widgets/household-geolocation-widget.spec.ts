@@ -14,6 +14,7 @@ const SELECTORS = {
   EDIT_ACKNOWLEDGE_CHECKBOX: '.geolocation-edit-acknowledge-checkbox',
   EDIT_BADGE: '.geolocation-edit-badge',
   EDIT_BADGE_CONTEXT: '.geolocation-edit-badge-context',
+  EDIT_HOME_REMOVING_MSG: '.geolocation-home-removing-msg',
   EDIT_OPTIONS: '.geolocation-edit-options',
   EDIT_WARNING_GROUP: '.geolocation-edit-warning-group',
   GEO_CAPTURE_LABEL: '.or-appearance-geolocation-capture',
@@ -663,21 +664,16 @@ describe('Enketo: Household Geolocation Widget', () => {
         expect((widget.element as HTMLInputElement).dataset.geoContext).to.equal('home');
       });
 
-      it('clicking skip after GPS failure reverts to edit options with kept selected', async () => {
+      it('clicking skip after GPS failure shows home-removing message and sets capture to skipped', async () => {
         const promise = Promise.resolve({ code: 2, message: 'Position unavailable' });
         window.CHTCore.Geolocation.currentPromise = promise;
-        window.CHTCore.Geolocation.retry = sinon.stub();
         const { widget, container } = await initEditWidget();
 
-        const captureNewRadio = container.querySelector(
-          SELECTORS.CAPTURE_NEW_RADIO
-        ) as HTMLInputElement;
+        const captureNewRadio = container.querySelector(SELECTORS.CAPTURE_NEW_RADIO) as HTMLInputElement;
         captureNewRadio.checked = true;
         $(captureNewRadio).trigger('change');
 
-        const editCheckbox = container.querySelector(
-          SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX
-        ) as HTMLInputElement;
+        const editCheckbox = container.querySelector(SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX) as HTMLInputElement;
         editCheckbox.checked = true;
         $(editCheckbox).trigger('change');
 
@@ -691,51 +687,12 @@ describe('Enketo: Household Geolocation Widget', () => {
 
         (container.querySelector(SELECTORS.SKIP_BTN) as HTMLElement).click();
 
-        const editOptions = container.querySelector(SELECTORS.EDIT_OPTIONS) as HTMLElement;
-        expect(editOptions.style.display).to.not.equal('none');
         expect(container.querySelector(SELECTORS.STATUS)).to.be.null;
-
-        const keptRadio = container.querySelector(SELECTORS.KEPT_RADIO) as HTMLInputElement;
-        expect(keptRadio.checked).to.be.true;
-        expect((widget.element as HTMLInputElement).value).to.equal('kept');
-      });
-
-      it('calls retry() when re-acknowledging capture-new after a failed attempt', async () => {
-        const failureResult = { code: 2, message: 'Position unavailable' };
-        const retryStub = sinon.stub();
-        window.CHTCore.Geolocation.currentPromise = Promise.resolve(failureResult);
-        window.CHTCore.Geolocation.retry = retryStub;
-        const { container } = await initEditWidget();
-
-        const captureNewRadio = container.querySelector(
-          SELECTORS.CAPTURE_NEW_RADIO
-        ) as HTMLInputElement;
-        captureNewRadio.checked = true;
-        $(captureNewRadio).trigger('change');
-
-        const editCheckbox = container.querySelector(
-          SELECTORS.EDIT_ACKNOWLEDGE_CHECKBOX
-        ) as HTMLInputElement;
-        editCheckbox.checked = true;
-        $(editCheckbox).trigger('change');
-
-        await window.CHTCore.Geolocation.currentPromise;
-
-        // Skip reverts to edit choice
-        const skipAcknowledgeCheckbox = container.querySelector(
-          SELECTORS.STATUS_ACKNOWLEDGE_CHECKBOX
-        ) as HTMLInputElement;
-        skipAcknowledgeCheckbox.checked = true;
-        $(skipAcknowledgeCheckbox).trigger('change');
-        (container.querySelector(SELECTORS.SKIP_BTN) as HTMLElement).click();
-
-        // Re-select capture-new and acknowledge again
-        captureNewRadio.checked = true;
-        $(captureNewRadio).trigger('change');
-        editCheckbox.checked = true;
-        $(editCheckbox).trigger('change');
-
-        expect(retryStub.callCount).to.equal(1);
+        expect((container.querySelector(SELECTORS.EDIT_BADGE) as HTMLElement).style.display).to.equal('none');
+        expect((container.querySelector(SELECTORS.EDIT_OPTIONS) as HTMLElement).style.display).to.equal('none');
+        expect((container.querySelector('.geolocation-edit-prompt') as HTMLElement).style.display).to.equal('none');
+        expect(container.querySelector(SELECTORS.EDIT_HOME_REMOVING_MSG)).to.not.be.null;
+        expect((widget.element as HTMLInputElement).value).to.equal('skipped');
       });
 
       it('does not render context element when data-geo-last-capture is absent', async () => {

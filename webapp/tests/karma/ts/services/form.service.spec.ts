@@ -868,7 +868,7 @@ describe('Form service', () => {
       expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
     });
 
-    it('skips failed trailing entries when finding most recent successful other-context entry', () => {
+    it('does nothing when last log entry is a failure even if earlier entries succeeded', () => {
       const { formHtml, captureInput } = buildFormHtml();
       (service as any).injectGeoEditContext(formHtml, {
         _id: 'contact1',
@@ -877,9 +877,21 @@ describe('Form service', () => {
           { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },
         ],
       });
-      const lastCapture = JSON.parse(captureInput.dataset.geoLastCapture!);
-      expect(lastCapture.isHome).to.be.false;
-      expect(lastCapture.timestamp).to.equal(EARLIER_CAPTURE_TS);
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
+      expect(captureInput.dataset.geoLastCapture).to.be.undefined;
+    });
+
+    it('does nothing when home was removed (geolocation is empty string and last log entry is a failure)', () => {
+      const { formHtml, captureInput } = buildFormHtml();
+      (service as any).injectGeoEditContext(formHtml, {
+        _id: 'contact1',
+        geolocation: '',
+        geolocation_log: [
+          { timestamp: EARLIER_CAPTURE_TS, recording: { latitude: 1.23, longitude: 36.8 }, is_home: true },
+          { timestamp: LATER_CAPTURE_TS, recording: { code: 2, message: 'Position unavailable' }, is_home: true },
+        ],
+      });
+      expect(captureInput.dataset.geoHasLocation).to.be.undefined;
     });
 
   });

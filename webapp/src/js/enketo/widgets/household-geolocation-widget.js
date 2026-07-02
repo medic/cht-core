@@ -24,6 +24,7 @@ const TRANSLATION_KEYS = {
   RESULT_LABEL: 'geolocation.result.label',
   RETRY: 'geolocation.retry',
   SIGNAL_WEAK: 'geolocation.signal.weak',
+  EDIT_HOME_REMOVING: 'geolocation.edit.home.removing',
   NO_LOCATION_RECORDED: 'geolocation.no.location.recorded',
   SKIP_ACKNOWLEDGE: 'geolocation.skip.acknowledge',
   SKIP_BUTTON: 'geolocation.skip.button',
@@ -322,8 +323,17 @@ class HouseholdGeolocationWidget extends Widget {
 
     if (isEditMode) {
       $skipBtn.on('click', () => {
+        const $question = $(this.question);
         $status.remove();
-        this._revertToEditChoice();
+        $question.find([
+          '.geolocation-edit-badge',
+          '.geolocation-edit-options',
+          '.geolocation-edit-prompt',
+        ].join(',')).hide();
+        const $removingMsg = $('<p class="geolocation-home-removing-msg">');
+        $removingMsg.text(globalThis.CHTCore.Translate.instant(TRANSLATION_KEYS.EDIT_HOME_REMOVING));
+        $question.append($removingMsg);
+        $(this.element).val('skipped').trigger('change');
       });
     } else {
       $skipBtn.on('click', () => {
