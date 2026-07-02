@@ -192,4 +192,39 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
 
     expect($('.nepali-datepicker-input').val()).to.equal('२०८१-३-१५');
   });
+
+  it('renders clear button and clears fields when clicked', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker .clear-btn')).to.have.lengthOf(1);
+
+    // Set initial values
+    dayInput().val('१५');
+    monthInput().val('३');
+    yearInput().val('२०८१');
+    realDateInput().val('2024-06-29');
+
+    // Click clear button
+    $('.nepali-date-picker .clear-btn').click();
+
+    // Verify fields are empty
+    expect(dayInput().val()).to.equal('');
+    expect(monthInput().val()).to.equal('');
+    expect(yearInput().val()).to.equal('');
+    expect(realDateInput().val()).to.equal('');
+    expect($('.nepali-date-picker').is(':visible')).to.be.false;
+  });
+
+  it('keeps calendar open after selecting a date', async () => {
+    await initWidget();
+    $('.calendar-btn').click();
+
+    const activeDays = $('.nepali-date-picker table tbody td.current-month-date:not(.disable)');
+    if (activeDays.length > 0) {
+      $(activeDays[0]).click();
+    }
+
+    expect($('.nepali-date-picker').is(':visible')).to.be.true;
+  });
 });
