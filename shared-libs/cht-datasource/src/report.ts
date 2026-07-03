@@ -1,11 +1,19 @@
+import { ReportSummary as LibReportSummary } from '@medic/summaries';
 import { DataObject, getPagedGenerator, isIdentifiable, isRecord, NormalizedParent, Nullable, Page } from './libs/core';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import * as Local from './local';
-import { byFreetext, byUuid, FreetextQualifier, UuidQualifier } from './qualifier';
+import { validateCursor } from './local/libs/core';
+import { byFreetext, byUuid, byIds, FreetextQualifier, UuidQualifier, IdsQualifier } from './qualifier';
 import * as Remote from './remote';
-import { DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
-import { assertCursor, assertFreetextQualifier, assertLimit, assertUuidQualifier } from './libs/parameter-validators';
+import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
+import {
+  assertCursor,
+  assertFreetextQualifier,
+  assertLimit,
+  assertUuidQualifier,
+  assertIdsQualifier,
+} from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
 import * as Contact from './contact';
@@ -31,6 +39,11 @@ export namespace v1 {
     readonly place?: Contact.v1.ContactWithLineage | NormalizedParent;
   }
 
+  /**
+   * A compact summary of a report record.
+   */
+  export type ReportSummary = LibReportSummary;
+
 
   /**
    * Returns a function for retrieving a report from the given data context.
@@ -55,6 +68,75 @@ export namespace v1 {
       return fn(qualifier);
     };
     return curriedFn;
+  };
+
+  /**
+   * Returns a function for retrieving a paged array of report summaries from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving a paged array of report summaries
+   * @throws Error if a data context is not provided
+   * @see {@link getSummaries} which provides the same data, but without having to manually account for paging
+   */
+  export const getSummariesPage = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.getSummaries, Remote.Report.v1.getSummaries);
+
+    /**
+     * Returns a page of summary records for the reports identified by the given qualifier. Any identifiers that do
+     * not identify an existing report are silently omitted from the result.
+     * @param qualifier the identifiers of the reports to summarise
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of summaries to return. Default is 100.
+     * @returns a page of report summaries for the provided specification
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    const curriedFn = async (
+      qualifier: IdsQualifier,
+      cursor: Nullable<string> = null,
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
+    ): Promise<Page<ReportSummary>> => {
+      assertCursor(cursor);
+      assertLimit(limit);
+      assertIdsQualifier(qualifier);
+
+      const skip = validateCursor(cursor);
+      const numberLimit = Number(limit);
+      const data = await fn({ ids: qualifier.ids.slice(skip, skip + numberLimit) });
+      const nextSkip = skip + numberLimit;
+      return {
+        data,
+        cursor: nextSkip < qualifier.ids.length ? `${nextSkip}` : null,
+      };
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for getting a generator that fetches report summaries from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches report summaries
+   * @throws Error if a data context is not provided
+   */
+  export const getSummaries = (context: DataContext): typeof curriedGen => {
+    assertDataContext(context);
+    const getPage = context.bind(v1.getSummariesPage);
+
+    /**
+     * Returns a generator for fetching summary records for the reports identified by the given qualifier. Any
+     * identifiers that do not identify an existing report are silently omitted from the result.
+     * @param qualifier the identifiers of the reports to summarise
+     * @returns a generator for fetching all the matching report summaries
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
+     */
+    const curriedGen = (qualifier: IdsQualifier): AsyncGenerator<ReportSummary, null> => {
+      assertIdsQualifier(qualifier);
+
+      return getPagedGenerator(getPage, qualifier);
+    };
+    return curriedGen;
   };
 
   /**
@@ -211,6 +293,33 @@ export namespace v1 {
    */
   export interface Datasource {
     /**
+     * Returns a generator for fetching summary records for the given report identifiers.
+     * @param ids the identifiers of the reports to summarise
+     * @returns a generator for fetching all the matching report summaries. Identifiers that do not identify an
+     * existing report are silently omitted from the result.
+     * @throws InvalidArgumentError if `ids` is not an array of non-empty strings
+     */
+    getSummaries: (ids: string[]) => AsyncGenerator<ReportSummary, null>;
+
+    /**
+     * Returns a paged array of summary records for the given report identifiers.
+     * @param ids the identifiers of the reports to summarise
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of summaries to return. Default is 100.
+     * @returns a page of report summaries. Identifiers that do not identify an existing report are silently
+     * omitted from the result.
+     * @throws InvalidArgumentError if `ids` is not an array of non-empty strings
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getSummariesPage: (
+      ids: string[],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<ReportSummary>>;
+
+    /**
      * Returns a report by their UUID.
      * @param uuid the UUID of the report to retrieve
      * @returns the report or `null` if no report is found for the UUID
@@ -283,6 +392,12 @@ export namespace v1 {
   /** @internal */
   export const getDatasource = (ctx: DataContext): Datasource => {
     return {
+      getSummaries: (ids) => ctx.bind(v1.getSummaries)(byIds(ids)),
+      getSummariesPage: (
+        ids,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getSummariesPage)(byIds(ids), cursor, limit),
       getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
       getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
       getUuidsPageByFreetext: (

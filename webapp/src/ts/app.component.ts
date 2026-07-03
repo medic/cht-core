@@ -80,6 +80,13 @@ const SYNC_STATUS = {
   }
 };
 
+const DOC_IDS_TRIGGER_UPDATE = new Set([
+  '_design/medic',
+  '_design/medic-client',
+  DOC_IDS.SERVICE_WORKER_META,
+  DOC_IDS.SETTINGS,
+  DOC_IDS.EXTENSION_LIBS
+]);
 
 @Component({
   selector: 'app-root',
@@ -404,17 +411,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   private watchDDocChanges() {
     this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
-
     this.changesService.subscribe({
       key: 'ddoc',
-      filter: (change) => {
-        return (
-          change.id === '_design/medic' ||
-          change.id === '_design/medic-client' ||
-          change.id === DOC_IDS.SERVICE_WORKER_META ||
-          change.id === DOC_IDS.SETTINGS
-        );
-      },
+      filter: ({ id }) => DOC_IDS_TRIGGER_UPDATE.has(id) || id.startsWith(PREFIXES.UI_EXTENSION),
       callback: (change) => {
         if (change.id === DOC_IDS.SERVICE_WORKER_META) {
           this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));

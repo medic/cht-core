@@ -106,7 +106,6 @@ describe('Service worker cache', () => {
       '/',
       '/audio/alert.mp3',
       '/deploy-info.json',
-      '/extension-libs',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',

@@ -26,6 +26,7 @@ const DOC_TYPES = {
   TOKEN_LOGIN: 'token_login',
   TRANSLATIONS: 'translations',
   DATA_RECORD: 'data_record',
+  UI_EXTENSION: 'ui-extension'
 };
 
 // HTTP Headers
@@ -60,10 +61,12 @@ const USER_ROLES = {
 
 const DB_ADMIN_ROLES = [USER_ROLES.ADMIN, USER_ROLES.COUCHDB_ADMIN];
 
-// Prefixes
+// Document ID prefixes used for _all_docs prefix range scans.
 const PREFIXES = {
   COUCH_USER: 'org.couchdb.user:',
   TRANSLATIONS: 'messages-',
+  FORM: 'form:',
+  UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`
 };
 
 module.exports = {

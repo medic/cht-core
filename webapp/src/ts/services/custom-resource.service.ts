@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import {ChangesService} from '@mm-services/changes.service';
 import {DbService} from '@mm-services/db.service';
 import { DOC_IDS } from '@medic/constants';
+const logger = require('@medic/logger');
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +35,7 @@ export class CustomResourceService {
     private readonly db: DbService,
   ) {
     this.RESOURCE_DOC_IDS.slice(1).forEach(doc => this.updateResources(doc));
-    this.initResources = this.updateResources(this.RESOURCE_DOC_IDS[0]);
+    this.initResources = this.init();
 
     this.changes.subscribe({
       key: 'resource-icons',
@@ -72,15 +73,20 @@ export class CustomResourceService {
   }
 
   private getHtmlContent(name, docId, faPlaceholder) {
-    if (!this.cache[docId]?.htmlContent) {
+    try {
+      if (!this.cache[docId]?.htmlContent) {
+        return '&nbsp';
+      }
+
+      if (this.cache[docId].htmlContent[name]) {
+        return this.cache[docId].htmlContent[name];
+      }
+
+      return this.buildAndCacheContent(name, docId, faPlaceholder);
+    } catch (err) {
+      logger.error(`Error getting resource content [${name}] from [${docId}: `, err);
       return '&nbsp';
     }
-
-    if (this.cache[docId].htmlContent[name]) {
-      return this.cache[docId].htmlContent[name];
-    }
-    
-    return this.buildAndCacheContent(name, docId, faPlaceholder);
   }
 
   private getHtml (name, docId, faPlaceholder) {
@@ -122,6 +128,14 @@ export class CustomResourceService {
       });
   }
 
+  async init() {
+    if (this.initResources) {
+      return this.initResources;
+    }
+
+    return this.updateResources(this.RESOURCE_DOC_IDS[0]);
+  }
+
   getImg(name?, docId?, faPlaceholder?) {
     if (!name || !docId) {
       return '';
@@ -158,9 +172,8 @@ export class CustomResourceService {
     return xml;
   }
 
-  replacePlaceholders($elem) {
-    return this.initResources.then(() => {
-      this.updateDom($elem, this.RESOURCE_DOC_IDS[0]);
-    });
+  async replacePlaceholders($elem) {
+    await this.init();
+    this.updateDom($elem, this.RESOURCE_DOC_IDS[0]);
   }
 }

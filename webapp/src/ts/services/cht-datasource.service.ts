@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { DataContext, getDatasource, getLocalDataContext, getRemoteDataContext } from '@medic/cht-datasource';
 import { DOC_IDS } from '@medic/constants';
 
@@ -9,8 +8,6 @@ import { SessionService } from '@mm-services/session.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
-
-import { lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +20,6 @@ export class CHTDatasourceService {
   private extensionLibs = {};
 
   constructor(
-    private http: HttpClient,
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private changesService: ChangesService,
@@ -43,7 +39,7 @@ export class CHTDatasourceService {
   private async init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    await Promise.all([this.getSettings(), this.loadScripts()]);
+    await Promise.all([this.getSettings(), this.loadExtensionLibs(), this.customResourceService.init()]);
     this.dataContext = await this.createDataContext();
   }
 
@@ -57,28 +53,30 @@ export class CHTDatasourceService {
     return getLocalDataContext(settingsService, sourceDatabases);
   }
 
-  private async loadScripts() {
+  private decodeExtensionLib(name: string, { data }: { data: string }) {
     try {
-      const request = this.http.get<string[]>('/extension-libs', { responseType: 'json' });
-      const extensionLibs = await lastValueFrom(request);
-      if (extensionLibs?.length) {
-        return Promise.all(extensionLibs.map(name => this.loadScript(name)));
-      }
-    } catch (e) {
-      console.error('Error loading extension libs', e);
-    }
-  }
-
-  private async loadScript(name) {
-    try {
-      const request = this.http.get('/extension-libs/' + name, { responseType: 'text' });
-      const result = await lastValueFrom(request);
+      const result = atob(data);
       const module = { exports: null };
       new Function('module', result)(module);
-      this.extensionLibs[name] = module.exports;
+      return module.exports;
     } catch (e) {
       console.error(`Error loading extension lib: "${name}"`, e);
     }
+  }
+
+  private async loadExtensionLibs() {
+    const doc: { _attachments?: Record<string, { data: string }> } | null = await this.dbService
+      .get()
+      .get(DOC_IDS.EXTENSION_LIBS, { attachments: true })
+      .catch(err => {
+        if (err.status === 404) {
+          return null;
+        }
+        throw err;
+      });
+    Object
+      .entries(doc?._attachments ?? {})
+      .forEach(([k, v]) => this.extensionLibs[k] = this.decodeExtensionLib(k, v));
   }
 
   private async getSettings() {

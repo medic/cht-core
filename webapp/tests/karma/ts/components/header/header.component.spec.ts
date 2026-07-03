@@ -10,10 +10,10 @@ import { HeaderComponent } from '@mm-components/header/header.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
 import { ModalService } from '@mm-services/modal.service';
 import { StorageInfoService } from '@mm-services/storage-info.service';
-import { SettingsService } from '@mm-services/settings.service';
 import { HeaderTabsService } from '@mm-services/header-tabs.service';
 import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { Selectors } from '@mm-selectors/index';
 
 describe('Header Component', () => {
@@ -23,7 +23,6 @@ describe('Header Component', () => {
   let dbSyncService;
   let modalService;
   let storageInfoService;
-  let settingsService;
   let headerTabsService;
   let customResourceService;
   let changesService;
@@ -35,14 +34,14 @@ describe('Header Component', () => {
       init: sinon.stub(),
       stop: sinon.stub()
     };
-    settingsService = { get: sinon.stub().resolves({ header_tabs: {} }) };
     headerTabsService = {
       get: sinon.stub().returns([]),
       getAuthorizedTabs: sinon.stub().resolves([
         { name: 'messages', defaultIcon: 'fa-envelope' },
         { name: 'tasks', defaultIcon: 'fa-flag', typeName: 'task' },
         { name: 'reports', defaultIcon: 'fa-list-alt', typeName: 'report' },
-      ])
+      ]),
+      getSidebarTabs: sinon.stub().resolves([])
     };
     customResourceService = {
       getAppTitle: sinon.stub().resolves('App Title'),
@@ -72,7 +71,6 @@ describe('Header Component', () => {
           { provide: DBSyncService, useValue: dbSyncService },
           { provide: ModalService, useValue: modalService },
           { provide: StorageInfoService, useValue: storageInfoService },
-          { provide: SettingsService, useValue: settingsService },
           { provide: HeaderTabsService, useValue: headerTabsService },
           { provide: CustomResourceService, useValue: customResourceService },
           { provide: ChangesService, useValue: changesService },
@@ -155,12 +153,12 @@ describe('Header Component', () => {
     expect(component.showPrivacyPolicy).to.be.true;
   });
 
-  it('should load header tabs from settings service', async () => {
+  it('should load header tabs from header tabs service', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(settingsService.get.callCount).to.equal(1);
     expect(headerTabsService.getAuthorizedTabs.callCount).to.equal(1);
+    expect(headerTabsService.getAuthorizedTabs.args[0]).to.deep.equal([]);
   });
 
   it('should set permitted tabs after loading', async () => {
@@ -185,6 +183,80 @@ describe('Header Component', () => {
     component.ngOnDestroy();
 
     expect(unsubscribeSpy.callCount).to.equal(1);
+  });
+
+  describe('legacy menu tabs', () => {
+    it('should initialize legacyMenuTabs as empty array', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(headerTabsService.getSidebarTabs.callCount).to.equal(1);
+      expect(component.headerTabsForLegacySidebar).to.deep.equal([]);
+    });
+
+    it('should populate legacyMenuTabs', async () => {
+      const sidebarTabs = [
+        {
+          name: 'messages',
+          route: 'messages',
+          defaultIcon: 'fa-envelope',
+          translation: 'Messages',
+          permissions: ['can_view_messages', '!can_view_messages_tab'],
+        },
+        {
+          name: 'ui-extension-first',
+          route: 'ui-extensions/first',
+          defaultIcon: 'fa-question-circle',
+          translation: 'First Extension',
+          permissions: [],
+          icon: 'fa-icon-1',
+          resourceIcon: 'res-1',
+        },
+        {
+          name: 'bug',
+          defaultIcon: 'fa-bug',
+          translation: 'Report Bug',
+          permissions: [],
+        },
+      ];
+      headerTabsService.getSidebarTabs.resolves(sidebarTabs);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(headerTabsService.getSidebarTabs).to.have.been.calledOnceWithExactly();
+      expect(component.headerTabsForLegacySidebar).to.deep.equal(sidebarTabs);
+    });
+  });
+
+  describe('onLegacyMenuClick()', () => {
+    it('should open the feedback modal when the bug tab is clicked', () => {
+      fixture.detectChanges();
+
+      component.onLegacyMenuClick({
+        name: 'bug',
+        defaultIcon: 'fa-bug',
+        translation: 'Report Bug',
+        permissions: [],
+      });
+
+      expect(modalService.show).to.have.been.calledOnce;
+      expect(modalService.show.args[0][0]).to.equal(FeedbackComponent);
+    });
+
+    it('should not open the feedback modal for any other tab', () => {
+      fixture.detectChanges();
+
+      component.onLegacyMenuClick({
+        name: 'messages',
+        route: 'messages',
+        defaultIcon: 'fa-envelope',
+        translation: 'Messages',
+        permissions: [],
+      });
+
+      expect(modalService.show).to.not.have.been.called;
+    });
   });
 
   describe('bubble counter integration', () => {
