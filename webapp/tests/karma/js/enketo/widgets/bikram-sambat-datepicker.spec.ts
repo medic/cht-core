@@ -153,9 +153,8 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
 
     // Click on a date cell in the calendar table (e.g. the first active day)
     const activeDays = $('.nepali-date-picker table tbody td.current-month-date:not(.disable)');
-    if (activeDays.length > 0) {
-      $(activeDays[0]).click();
-    }
+    expect(activeDays.length).to.be.greaterThan(0);
+    $(activeDays[0]).click();
 
     // Expect inputs to have been populated
     expect(dayInput().val()).to.not.equal('');
@@ -221,9 +220,8 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     $('.calendar-btn').click();
 
     const activeDays = $('.nepali-date-picker table tbody td.current-month-date:not(.disable)');
-    if (activeDays.length > 0) {
-      $(activeDays[0]).click();
-    }
+    expect(activeDays.length).to.be.greaterThan(0);
+    $(activeDays[0]).click();
 
     expect($('.nepali-date-picker').is(':visible')).to.be.true;
   });
