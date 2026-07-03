@@ -34,9 +34,6 @@ describe('Select from external dataset (select_one_from_file)', () => {
   before(async () => {
     await upsertResourcesDoc();
     await utils.saveDocIfNotExists(commonPage.createFormDoc(`${__dirname}/forms/select_from_file`));
-
-    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await waitForServiceWorker.promise;
     await commonPage.reloadSession();
   });
 
