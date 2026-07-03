@@ -12,6 +12,9 @@ const { DOC_IDS } = require('@medic/constants');
 const colorsXmlContent = fs.readFileSync(path.join(__dirname, 'forms', 'colors.xml'));
 
 const upsertResourcesDoc = async () => {
+  // The resource must be registered in the `resources` map (name -> attachment name) as well as
+  // added as an attachment, otherwise CustomResourceService.getResource/getXml cannot resolve it.
+  const resources = { 'colors.xml': 'colors.xml' };
   const attachment = {
     'colors.xml': {
       content_type: 'application/xml',
@@ -22,9 +25,10 @@ const upsertResourcesDoc = async () => {
   let resourcesDoc;
   try {
     resourcesDoc = await utils.getDoc(DOC_IDS.RESOURCES);
+    resourcesDoc.resources = { ...resourcesDoc.resources, ...resources };
     resourcesDoc._attachments = { ...resourcesDoc._attachments, ...attachment };
   } catch {
-    resourcesDoc = { _id: DOC_IDS.RESOURCES, _attachments: attachment };
+    resourcesDoc = { _id: DOC_IDS.RESOURCES, resources, _attachments: attachment };
   }
   await utils.saveDoc(resourcesDoc);
 };
