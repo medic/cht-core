@@ -52,6 +52,7 @@ describe('message duplicates', () => {
   after(async () => {
     await utils.revertDb([], true);
   });
+  afterEach(() => utils.revertSettings(true));
 
   it('should mark as duplicate after 5 retries by default', () => {
     const message1 = {
