@@ -20,7 +20,8 @@ import { Qualifier, Report } from '@medic/cht-datasource';
  * Prefix for every CouchDB attachment created from a form media field, so a
  * field's value is uniformly resolved as `USER_FILE_PREFIX + value`:
  *   - file-widget uploads  -> `user-file-<sanitized-filename>`
- *   - inline-binary fields -> `user-file-<formId>/<xpath>/<field>`
+ *   - inline-binary fields -> `user-file-<formId>/<field-path>`
+ *     (field-path is the field's xpath under the form root, e.g. `group/photo`)
  */
 export const USER_FILE_PREFIX = 'user-file-';
 
@@ -526,19 +527,18 @@ export class EnketoService {
         this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${file.name}`, file, file.type, false);
       });
 
-    // Attaches an inline-binary blob and returns its bare reference (attachment
-    // name minus USER_FILE_PREFIX), so node text / parsed fields resolve via the
-    // same `USER_FILE_PREFIX + value` rule as file-widget uploads.
+    const computeInlineBinaryReference = (elem, ownerDoc) => {
+      const xpath = Xpath.getElementXPath(elem);
+      const formId = ownerDoc.form || doc.form;
+      // the element's xpath with its root node name swapped for the form id and
+      // the leading slash dropped, e.g. `/my-form/group/photo` -> `my-form/group/photo`
+      return (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId))
+        .slice(1);
+    };
+
     const attachInlineBinary = (elem, file, type, alreadyEncoded) => {
       const ownerDoc = resolveOwnerDoc(elem);
-      const xpath = Xpath.getElementXPath(elem);
-      // Sub-docs carry their own `.form`, so each sub-doc's binaries are
-      // namespaced by it; the main report doc falls back to `doc.form`.
-      const formId = ownerDoc.form || doc.form;
-      // replace instance root element node name with form internal ID, drop
-      // the leading slash -> `<formId>/<xpath>/<field>`
-      const reference = (xpath.startsWith('/' + formId) ? xpath : xpath.replace(/^\/[^/]+/, '/' + formId))
-        .slice(1);
+      const reference = computeInlineBinaryReference(elem, ownerDoc);
       this.attachmentService.add(ownerDoc, `${USER_FILE_PREFIX}${reference}`, file, type, alreadyEncoded);
       return reference;
     };
@@ -546,19 +546,28 @@ export class EnketoService {
     $record
       .find('[type=binary]')
       .each((idx, element) => {
-        const file = $(element).text();
+        const $element = $(element);
+        // Reference stashed during prepopulation for an untouched field (see
+        // bindJsonToXml); it rides through Enketo's model merge as a data-*
+        // attribute, so an unedited field still carries it here on save.
+        const sidecar = $element.attr('data-attachment-ref');
+        $element.removeAttr('data-attachment-ref');
+
+        const file = $element.text();
         if (!file) {
+          // An untouched field loads empty on edit (its base64 lives only in the
+          // attachment); restore its reference so the field keeps pointing at it.
+          if (sidecar) {
+            $element.text(sidecar);
+          }
           return;
         }
-        // Skip values that already look like an attachment reference, so a
-        // re-save can't double-attach the reference string as base64 data.
+        // Don't re-attach a value that is already a reference.
         if (this.enketoTranslationService.isAttachmentRef(file)) {
           return;
         }
         const reference = attachInlineBinary(element, file, 'image/png', true);
-        // Rewrite node text to the bare reference so the re-parse below puts the
-        // reference in doc.fields instead of the inline base64.
-        $(element).text(reference);
+        $element.text(reference);
       });
 
     // Re-parse sub-docs from the now-rewritten XML and merge in the

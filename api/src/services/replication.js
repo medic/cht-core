@@ -4,7 +4,7 @@ const purgedDocs = require('./purged-docs');
 const _ = require('lodash');
 const replicationLimitLog = require('../services/replication-limit-log');
 
-const getContext = async (userCtx) => {
+const getContext = async (userCtx, res) => {
   const info = await db.medic.info();
   const authContext = await authorization.getAuthorizationContext(userCtx);
   const docsByReplicationKey = await authorization.getDocsByReplicationKey(authContext);
@@ -16,7 +16,10 @@ const getContext = async (userCtx) => {
   const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTasks);
   const unpurgedWarnIds = _.intersection(unpurgedIds, warnIds);
 
-  await replicationLimitLog.put(userCtx.name, unpurgedIds.length, allowedIds.length);
+  // user could have disconnected
+  if (!res?.closed) {
+    await replicationLimitLog.put(userCtx.name, unpurgedIds.length, allowedIds.length);
+  }
 
   return {
     docIds: unpurgedIds,

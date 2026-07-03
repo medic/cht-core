@@ -27,6 +27,7 @@ type FileNameMapByDoc = Map<Record<string, any>, Map<string, string>>;
 })
 export class ContactSaveService {
   private readonly CONTACT_FIELD_NAMES = [ 'parent', 'contact' ];
+  private readonly REPEAT_CHILD_NODE_NAME = 'child';
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
@@ -260,11 +261,21 @@ export class ContactSaveService {
     fileManagerNames: Set<string>,
     newAttachmentNamesByDoc: AttachmentNamesByDoc,
   ) {
-    const content = $(element).text();
-    // Skip: empty; a value that already looks like an attachment reference
-    // (re-saves stay idempotent); or a file-upload widget tagged type="binary"
-    // whose blob the FileManager pass already attached.
-    if (!content || this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
+    const $element = $(element);
+    // Reference stashed at load for an untouched field (see bindJsonToXml);
+    // it survives Enketo's model merge as a data-* attribute.
+    const sidecar = $element.attr('data-attachment-ref');
+    $element.removeAttr('data-attachment-ref');
+
+    const content = $element.text();
+    if (!content) {
+      this.restoreUntouchedBinary(element, ctx, sidecar);
+      return;
+    }
+
+    // Skip a value that is already a reference (idempotent re-save) or a
+    // type="file" widget whose blob the FileManager pass already attached.
+    if (this.enketoTranslationService.isAttachmentRef(content) || fileManagerNames.has(content)) {
       return;
     }
 
@@ -284,9 +295,26 @@ export class ContactSaveService {
     }
   }
 
+  /**
+   * Restores an untouched inline-binary field on edit from its sidecar reference.
+   * Restoring the value is enough: finalizeDocs's referenced-attachment scan keeps
+   * the attachment.
+   */
+  private restoreUntouchedBinary(element: Element, ctx: ContactOwnerContext, sidecar?: string) {
+    if (!sidecar) {
+      return;
+    }
+    const ownerDoc = this.resolveContactOwnerDoc(element, ctx);
+    const container = this.findFieldContainerElement(element, ctx);
+    const fieldPath = container && this.computeFieldPath(element, container);
+    if (fieldPath) {
+      objectPath.set(ownerDoc, fieldPath, sidecar);
+    }
+  }
+
   /** Bare attachment reference for a binary node: the element's xpath with the
    * instance root swapped for the form internal ID and the leading slash
-   * dropped -> `<formId>/<xpath>/<field>`. */
+   * dropped -> `<formId>/<field-path>` (e.g. `family/details/photo`). */
   private computeBinaryReference(element: Element, ctx: ContactOwnerContext): string {
     const formId = $(ctx.root).attr('id');
     const xpath = Xpath.getElementXPath(element);
@@ -340,7 +368,9 @@ export class ContactSaveService {
     preparedDocs: Record<string, any>[],
     submittedRepeatsLen: number,
   ): Record<string, any> | null {
-    const repeatChildren = Array.from(section.children) as Element[];
+    // a <repeat> can also serialize non-<child> nodes (e.g. child_count); skip them
+    const repeatChildren = (Array.from(section.children) as Element[])
+      .filter(c => c.tagName === this.REPEAT_CHILD_NODE_NAME);
     const childIdx = repeatChildren.findIndex(c => c.contains(el));
     if (childIdx >= 0 && childIdx < submittedRepeatsLen) {
       return preparedDocs[1 + childIdx];
@@ -359,7 +389,8 @@ export class ContactSaveService {
       return null;
     }
     if (section.tagName === 'repeat') {
-      const repeatChildren = Array.from(section.children) as Element[];
+      const repeatChildren = (Array.from(section.children) as Element[])
+        .filter(c => c.tagName === this.REPEAT_CHILD_NODE_NAME);
       return repeatChildren.find(c => c.contains(el)) ?? null;
     }
     return section;

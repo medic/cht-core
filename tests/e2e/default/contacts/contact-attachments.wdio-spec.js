@@ -14,6 +14,11 @@ describe('Contact form attachments', () => {
   const photoPngPath = path.join(__dirname, '../enketo/images/photo-for-upload-form.png');
   const layersPngPath = path.join(__dirname, '../../../../webapp/src/img/layers.png');
 
+  const BADGE_REFERENCE = 'person-with-attachments/badge';
+  const BADGE_ATTACHMENT = `user-file-${BADGE_REFERENCE}`;
+  const BADGE_BASE64 =
+    'iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC';
+
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
 
@@ -241,6 +246,48 @@ describe('Contact form attachments', () => {
     expect(attachmentsAfter[0]).to.equal(originalAttachments[0]);
     expect(contactAfter._attachments[attachmentsAfter[0]].length, 'Preserved attachment should have a valid size')
       .to.be.greaterThan(0);
+  });
+
+  it('preserves an untouched inline-binary field and its attachment on edit', async () => {
+    // Seed directly: the inline-binary node loads empty on edit, so only the
+    // data-attachment-ref sidecar carries the reference into the save.
+    const contact = personFactory.build({
+      name: 'Person With Badge',
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+      type: 'contact',
+      contact_type: 'person_with_attachments',
+      badge: BADGE_REFERENCE,
+      _attachments: {
+        [BADGE_ATTACHMENT]: { content_type: 'image/png', data: BADGE_BASE64 },
+      },
+    });
+    await utils.saveDocs([contact]);
+    const seededBadge = (await utils.getDoc(contact._id, '', '?attachments=true'))._attachments[BADGE_ATTACHMENT];
+    expect(seededBadge, 'seed should have the badge attachment').to.exist;
+
+    await browser.url(`#/contacts/${contact._id}/edit`);
+    await commonPage.waitForPageLoaded();
+
+    // Guard: the inline-binary field must load EMPTY (the form has no default/calculate),
+    // so the sidecar — not a re-supplied value — is what preserves it on save.
+    const badgeInput = await $('input[name="/data/person_with_attachments/badge"]');
+    expect(await badgeInput.getValue()).to.equal('');
+
+    await commonEnketoPage.setInputValue('Full name', 'Person With Badge Edited');
+    await genericForm.submitForm();
+    await commonPage.waitForPageLoaded();
+    await contactPage.waitForContactLoaded();
+
+    const updated = await utils.getDoc(contact._id, '', '?attachments=true');
+    expect(updated.name).to.equal('Person With Badge Edited');
+    expect(updated.badge, 'untouched inline-binary value retained').to.equal(BADGE_REFERENCE);
+
+    const updatedBadge = updated._attachments[BADGE_ATTACHMENT];
+    expect(updatedBadge, 'badge attachment should survive the edit').to.exist;
+    expect(updatedBadge.content_type).to.equal('image/png');
+    expect(updatedBadge.data, 'attachment content unchanged').to.equal(BADGE_BASE64);
+    expect(updatedBadge.digest, 'attachment digest unchanged').to.equal(seededBadge.digest);
+    expect(updatedBadge.revpos, 'attachment revision unchanged').to.equal(seededBadge.revpos);
   });
 
   it('should remove attachment when editing contact', async () => {

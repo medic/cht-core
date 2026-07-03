@@ -813,6 +813,42 @@ describe('ContactSave service', () => {
       expect(bTarget?.args[0]._id, 'childB file -> second repeat doc').to.equal('kid2');
     });
 
+    it('routes repeat-child uploads correctly when <repeat> has a leading non-child node', async () => {
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<repeat>' +
+            '<child_count>2</child_count>' +
+            '<child><name>Child A</name><photo type="file">childA.png</photo></child>' +
+            '<child><name>Child B</name><photo type="file">childB.png</photo></child>' +
+          '</repeat>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF' },
+        siblings: {},
+        repeats: { child_data: [
+          { _id: 'kid1', type: 'person', name: 'Child A', parent: 'PARENT' },
+          { _id: 'kid2', type: 'person', name: 'Child B', parent: 'PARENT' },
+        ] },
+      });
+      stubSiblingAndRepeat();
+
+      const fileA = new File(['a'], 'childA.png', { type: 'image/png' });
+      const fileB = new File(['b'], 'childB.png', { type: 'image/png' });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([ fileA, fileB ]);
+
+      await service.save(form, null, 'family');
+
+      const calls = attachmentService.add.getCalls();
+      const aTarget = calls.find(c => c.args[1] === 'user-file-childA.png');
+      const bTarget = calls.find(c => c.args[1] === 'user-file-childB.png');
+      expect(aTarget?.args[0]._id, 'childA file -> first repeat doc').to.equal('kid1');
+      expect(bTarget?.args[0]._id, 'childB file -> second repeat doc').to.equal('kid2');
+    });
+
     it('routes mixed uploads to their respective sub-docs', async () => {
       const xml =
         '<data id="contact:family:create">' +
@@ -1196,6 +1232,175 @@ describe('ContactSave service', () => {
         ),
         'stale main-doc attachment should be removed'
       ).to.be.true;
+    });
+
+    it('preserves an untouched main-doc binary on edit via the data-attachment-ref sidecar', async () => {
+      const ref = 'contact:family:create/family/photo';
+      const name = `user-file-${ref}`;
+      const attachment = {
+        content_type: 'image/png',
+        data: 'iVBORw0KGgoAAAANSUhEUg==',
+        digest: 'md5-1B2M2Y8AsgTpgAmY7PhCfg==',
+        revpos: 4,
+        length: 17,
+      };
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            `<photo type="binary" data-attachment-ref="${ref}"></photo>` +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      // Binary node loads empty (no form default); only the sidecar carries the reference.
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: '' },
+      });
+      getContact.withArgs(Qualifier.byUuid('main1')).resolves({
+        _id: 'main1',
+        _rev: '4-abc',
+        type: 'family',
+        name: 'Kigali HF',
+        photo: ref,
+        _attachments: { [name]: { ...attachment } },
+      });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, 'main1', 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      expect(main.photo, 'field value restored from sidecar').to.equal(ref);
+      expect(attachmentService.add.called, 'untouched binary not re-attached').to.be.false;
+      expect(attachmentService.remove.called, 'preserved attachment not orphan-removed').to.be.false;
+      expect(main._attachments[name], 'attachment content + revision untouched').to.deep.equal(attachment);
+      expect(main._attachments[name].data, 'content unchanged').to.equal(attachment.data);
+      expect(main._attachments[name].revpos, 'revision unchanged').to.equal(4);
+    });
+
+    it('ignores a stale sidecar when the binary is edited (fresh base64 wins)', async () => {
+      // Non-empty content wins: re-attach and recompute the value from the xpath, ignoring the sidecar.
+      const staleRef = 'contact:family:create/family/old-photo';
+      const base64 = 'FRESH_BASE64';
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family>' +
+            '<name>Kigali HF</name>' +
+            `<photo type="binary" data-attachment-ref="${staleRef}">${base64}</photo>` +
+          '</family>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', photo: base64 },
+      });
+      getContact.withArgs(Qualifier.byUuid('main1')).resolves({
+        _id: 'main1', type: 'family', name: 'Kigali HF',
+      });
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, 'main1', 'family');
+      const main = result.preparedDocs.find(d => d._id === 'main1');
+
+      const photoCall = attachmentService.add.getCalls().find(c => c.args[2] === base64);
+      expect(photoCall, 'fresh base64 should be attached').to.not.be.undefined;
+      expect(
+        photoCall.args[1],
+        'attached under the recomputed reference name',
+      ).to.equal('user-file-contact:family:create/family/photo');
+      expect(main.photo, 'value is the recomputed reference, not the stale sidecar')
+        .to.equal('contact:family:create/family/photo');
+    });
+
+    it('does not restore a sibling binary that carries no sidecar (non-goal)', async () => {
+      // Brand-new siblings are never stamped with a sidecar, so nothing is restored.
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<contact db-doc="true">' +
+            '<name>Amina</name>' +
+            '<badge type="binary"></badge>' +
+          '</contact>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', contact: 'NEW' },
+        siblings: { contact: { _id: 'sib1', type: 'person', name: 'Amina', badge: '', parent: 'PARENT' } },
+        repeats: {},
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const sibling = result.preparedDocs.find(d => d._id === 'sib1');
+
+      expect(attachmentService.add.called, 'no attach for an empty sibling binary').to.be.false;
+      expect(sibling.badge, 'sibling binary left empty (no sidecar to restore)').to.equal('');
+    });
+
+    // Siblings/repeats aren't stamped with a sidecar in production yet (they're
+    // always brand-new on a parent-form edit), but the restore path resolves the
+    // owner doc the same way for every section type, so these pin that it routes
+    // a sidecar-bearing sibling/repeat binary correctly if one is ever present.
+    it('restores an untouched sibling binary on edit via its data-attachment-ref sidecar', async () => {
+      const ref = 'sib-badge-ref';
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<contact db-doc="true">' +
+            '<name>Amina</name>' +
+            `<badge type="binary" data-attachment-ref="${ref}"></badge>` +
+          '</contact>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF', contact: 'NEW' },
+        siblings: { contact: { _id: 'sib1', type: 'person', name: 'Amina', badge: '', parent: 'PARENT' } },
+        repeats: {},
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const sibling = result.preparedDocs.find(d => d._id === 'sib1');
+
+      expect(sibling.badge, 'sibling field value restored from sidecar').to.equal(ref);
+      expect(attachmentService.add.called, 'untouched sibling binary not re-attached').to.be.false;
+    });
+
+    it('restores an untouched repeat-child binary on edit via its data-attachment-ref sidecar', async () => {
+      const ref = 'kid-badge-ref';
+      const xml =
+        '<data id="contact:family:create">' +
+          '<meta><instanceID/></meta>' +
+          '<family><name>Kigali HF</name></family>' +
+          '<repeat>' +
+            `<child><name>Child A</name><badge type="binary" data-attachment-ref="${ref}"></badge></child>` +
+          '</repeat>' +
+        '</data>';
+      const form = { getDataStr: () => xml };
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: 'main1', type: 'family', name: 'Kigali HF' },
+        siblings: {},
+        repeats: { child_data: [
+          { _id: 'kid1', type: 'person', name: 'Child A', badge: '', parent: 'PARENT' },
+        ] },
+      });
+      stubSiblingAndRepeat();
+      sinon.stub(FileManager, 'getCurrentFiles').returns([]);
+
+      const result = await service.save(form, null, 'family');
+      const kid = result.preparedDocs.find(d => d._id === 'kid1');
+
+      expect(kid.badge, 'repeat-child field value restored from sidecar').to.equal(ref);
+      expect(attachmentService.add.called, 'untouched repeat-child binary not re-attached').to.be.false;
     });
 
     it('routes uploads using the type="file" attribute', async () => {
