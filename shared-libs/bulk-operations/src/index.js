@@ -63,11 +63,11 @@ const buildLogAction = (action, totalChangesCount, date) => ({
 
 /**
  * Builds the documents that make up a single bulk operation.
- * @param {Array<{action: string, operations: Object[]}>} actionOperations - one entry per action type, each holding
+ * @param {Object[]} actionOperations - one entry per action type (`{ action, operations }`), each holding
  *   its list of per-item params
  * @param {Date} date - the operation start date, also the initial updated_date of every action
- * @returns {{log: Object, actions: Object[]}} the log document (for medic-logs) and the action documents
- *   (for medic-sentinel); the log's `actions` map is keyed by each action document's `_id`
+ * @returns {Object} the log document (for medic-logs) and the action documents (for medic-sentinel)
+ *   as `{ log, actions }`; the log's `actions` map is keyed by each action document's `_id`
  */
 const buildBulkOperation = (actionOperations, date) => {
   const operationId = generateOperationId();

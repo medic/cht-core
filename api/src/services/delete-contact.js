@@ -60,11 +60,13 @@ const getLinkedUserIds = async (contactIds) => {
 /**
  * Gathers everything a contact-hierarchy delete touches and queues it as a bulk operation.
  * @param {string} id - the target contact id
- * @param {{deleteUsers: boolean, dryRun: boolean}} options
- * @returns {Promise<{breakdown: Object, id?: string}>} the breakdown of changes, and the bulk
- *   operation id when the operation was queued
- * @throws a 404 when the contact does not exist, or a 400 when linked users would be left behind
- *   and `deleteUsers` was not requested
+ * @param {Object} options
+ * @param {boolean} options.deleteUsers - also remove users linked to the deleted contacts
+ * @param {boolean} options.dryRun - return the breakdown without queuing anything
+ * @returns {Promise<Object>} the breakdown of changes, plus the bulk operation id when the
+ *   operation was queued (omitted for a dry run)
+ * @throws {Error} a 404 when the contact does not exist, or a 400 when linked users would be left
+ *   behind and `deleteUsers` was not requested
  */
 const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
   const subtree = await getSubtree(id);
