@@ -47,6 +47,9 @@ logger.info('Running server checks...');
     const schedule = require('./src/schedule');
     schedule.init();
 
+    const bulkOperations = require('./src/lib/bulk-operations');
+    bulkOperations.listen();
+
     logger.info('startup complete.');
 
     const processHooks = require('./src/process-hooks');
