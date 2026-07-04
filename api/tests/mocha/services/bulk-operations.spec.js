@@ -61,4 +61,50 @@ describe('Bulk operations service', () => {
         .catch((err) => chai.expect(err.status).to.equal(500));
     });
   });
+
+  describe('queue', () => {
+    const actionOperations = [
+      { action: 'archive', operations: [{ id: 'person' }, { id: 'report' }] },
+      { action: 'set-contact', operations: [{ id: 'place', current_contact_id: 'person' }] },
+      { action: 'delete-user', operations: [{ id: 'org.couchdb.user:chw' }] },
+    ];
+
+    it('writes the log to medic-logs and the actions to medic-sentinel, and returns the operation id', () => {
+      const put = sinon.stub(db.medicLogs, 'put').resolves();
+      const bulkDocs = sinon.stub(db.sentinel, 'bulkDocs').resolves();
+
+      return service.queue(actionOperations).then((operationId) => {
+        chai.expect(operationId.startsWith('bulk-operation:')).to.equal(true);
+
+        chai.expect(put.calledOnce).to.equal(true);
+        const log = put.args[0][0];
+        chai.expect(log._id).to.equal(operationId);
+        chai.expect(Object.keys(log.actions)).to.have.length(3);
+
+        chai.expect(bulkDocs.calledOnce).to.equal(true);
+        const actions = bulkDocs.args[0][0];
+        chai.expect(actions).to.have.length(3);
+        chai.expect(actions.map(action => action.action)).to.deep.equal(['archive', 'set-contact', 'delete-user']);
+        chai.expect(actions[0].bulk_operation_id).to.equal(operationId);
+
+        // the log must exist before the listener can pick up an action
+        chai.expect(put.calledBefore(bulkDocs)).to.equal(true);
+      });
+    });
+
+    it('skips action groups that have no operations', () => {
+      sinon.stub(db.medicLogs, 'put').resolves();
+      const bulkDocs = sinon.stub(db.sentinel, 'bulkDocs').resolves();
+      const groups = [
+        { action: 'archive', operations: [{ id: 'person' }] },
+        { action: 'set-contact', operations: [] },
+        { action: 'delete-user', operations: [{ id: 'org.couchdb.user:chw' }] },
+      ];
+
+      return service.queue(groups).then(() => {
+        const actions = bulkDocs.args[0][0];
+        chai.expect(actions.map(action => action.action)).to.deep.equal(['archive', 'delete-user']);
+      });
+    });
+  });
 });
