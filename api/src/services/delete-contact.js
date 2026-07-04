@@ -27,9 +27,6 @@ const getSubjectKeys = (rows) => {
 // Reports are matched by both the contact uuid and its shortcode, so a report that only records the
 // shortcode is not missed.
 const getReportIds = async (subjectKeys) => {
-  if (!subjectKeys.length) {
-    return [];
-  }
   const result = await db.medic.query('medic-client/reports_by_subject', { keys: subjectKeys });
   return [ ...new Set(result.rows.map(row => row.id)) ];
 };
@@ -90,10 +87,11 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
     );
   }
 
+  const userOperations = deleteUsers ? userIds.map(userId => ({ id: userId })) : [];
   const breakdown = {
     archive: { contacts: contactIds.length, reports: reportIds.length },
     'set-contact': setContactOperations.length,
-    'delete-user': deleteUsers ? userIds.length : 0,
+    'delete-user': userOperations.length,
   };
 
   if (dryRun) {
@@ -103,7 +101,7 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
   const bulkOperationId = await bulkOperations.queue([
     { action: ACTIONS.ARCHIVE, operations: [ ...contactIds, ...reportIds ].map(docId => ({ id: docId })) },
     { action: ACTIONS.SET_CONTACT, operations: setContactOperations },
-    { action: ACTIONS.DELETE_USER, operations: deleteUsers ? userIds.map(userId => ({ id: userId })) : [] },
+    { action: ACTIONS.DELETE_USER, operations: userOperations },
   ]);
 
   return { breakdown, id: bulkOperationId };
