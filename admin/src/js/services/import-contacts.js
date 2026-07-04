@@ -22,7 +22,7 @@ angular.module('services').factory('ImportContacts',
           }
           return $q.reject(new Error(`Unknown type "${provided}"" for person named "${contact.name}"`));
         }
-        if (types.find(type => type.id === constants.CONTACT_TYPES.PERSON)) {
+        if (types.some(type => type.id === constants.CONTACT_TYPES.PERSON)) {
           // retained for backwards compatibility
           return constants.CONTACT_TYPES.PERSON;
         }
