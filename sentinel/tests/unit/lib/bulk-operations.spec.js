@@ -54,7 +54,7 @@ describe('bulk-operations sentinel processor', () => {
         expect(medicBulk.calledOnce).to.equal(true);
         const updated = medicBulk.args[0][0];
         expect(updated.find(d => d._id === 'place-1').contact).to.deep.equal({ _id: 'new-1' });
-        expect(updated.find(d => d._id === 'place-2').contact).to.equal(undefined);
+        expect(updated.find(d => d._id === 'place-2').contact).to.be.undefined;
 
         expect(action.cursor).to.equal(2);
         expect(db.sentinel.put.called).to.equal(true);
@@ -63,7 +63,7 @@ describe('bulk-operations sentinel processor', () => {
         expect(entry.status).to.equal('completed');
         expect(entry.action).to.equal('set-contact');
         expect(entry.total_changes_count).to.equal(2);
-        expect(entry.failed_operations).to.equal(undefined);
+        expect(entry.failed_operations).to.be.undefined;
 
         expect(db.sentinel.put.args.some(callArgs => callArgs[0]._deleted === true)).to.equal(true);
       });
@@ -132,31 +132,52 @@ describe('bulk-operations sentinel processor', () => {
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => expect(err.message).to.contain('no handler'));
     });
+
+    it('stops safely when an action has fewer operations than its total', () => {
+      const action = buildAction({ total: 1 });
+      sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from(JSON.stringify([])));
+      stubActionWrites();
+
+      return service.processAction(action).then(() => {
+        expect(db.sentinel.put.args.some(callArgs => callArgs[0]._deleted === true)).to.equal(true);
+      });
+    });
   });
 
   describe('listen', () => {
-    it('queues and processes action docs already waiting in medic-sentinel', () => {
-      const processStub = sinon.stub().resolves();
+    it('processes waiting and feed-delivered actions, dedupes, and ignores irrelevant changes', () => {
+      const processStub = sinon.stub();
+      processStub.onFirstCall().rejects(new Error('processing error')); // exercises the queue error handler
+      processStub.resolves();
       service.__set__('processAction', processStub);
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [
-        { doc: { _id: 'bulk-operation-action:op:1' } },
-        { doc: { _id: 'bulk-operation-action:op:2' } },
-      ] });
-      const changes = sinon.stub(db.sentinel, 'changes').returns({ on() {
-        return this;
-      } });
+      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'bulk-operation-action:op:1' } }] });
+      let onChange;
+      const changes = sinon.stub(db.sentinel, 'changes').returns({
+        on(event, cb) {
+          if (event === 'change') {
+            onChange = cb;
+          }
+          return this;
+        },
+      });
 
       return service
         .listen()
-        .then(() => new Promise(resolve => setTimeout(resolve, 20)))
         .then(() => {
           expect(changes.calledOnce).to.equal(true);
-          expect(processStub.callCount).to.equal(2);
+          onChange({ id: 'bulk-operation-action:op:2', doc: { _id: 'bulk-operation-action:op:2' } });
+          onChange({ id: 'bulk-operation-action:op:2', doc: { _id: 'bulk-operation-action:op:2' } }); // already queued
+          onChange({ id: 'bulk-operation-action:op:3', deleted: true }); // ignored: deleted
+          onChange({ id: 'not-an-action', doc: { _id: 'not-an-action' } }); // ignored: wrong prefix
+          return new Promise(resolve => setTimeout(resolve, 20));
+        })
+        .then(() => {
           expect(processStub.args.map(a => a[0]._id)).to.deep.equal([
             'bulk-operation-action:op:1',
             'bulk-operation-action:op:2',
           ]);
         });
     });
+
   });
 });

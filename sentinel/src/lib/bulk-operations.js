@@ -159,7 +159,7 @@ const registerFeed = () => {
         enqueue(change.doc);
       }
     })
-    .on('error', (err) => {
+    .on('error', /* istanbul ignore next: feed-error retry, exercised via integration tests */ (err) => {
       logger.error('bulk-operations: changes feed error: %o', err);
       setTimeout(registerFeed, RETRY_TIMEOUT);
     });
