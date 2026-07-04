@@ -2,6 +2,7 @@ const { Place, Qualifier } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
+const deleteContactService = require('../services/delete-contact');
 
 const getPlace = ctx.bind(Place.v1.get);
 const getPlaceWithLineage = ctx.bind(Place.v1.getWithLineage);
@@ -214,6 +215,77 @@ module.exports = {
       };
       const updatedPlaceDoc = await update(updatePlaceInput);
       return res.json(updatedPlaceDoc);
+    }),
+
+    /**
+     * @openapi
+     * /api/v1/place/{id}:
+     *   delete:
+     *     summary: Delete a place and its hierarchy
+     *     operationId: v1PlaceIdDelete
+     *     description: >
+     *       Queues an asynchronous bulk operation that removes the place, every descendant contact,
+     *       and the reports they are the subject of, clears any dangling primary-contact references,
+     *       and (with delete_users=true) removes linked user accounts. Returns a breakdown of the
+     *       changes and the bulk operation id to poll.
+     *     tags: [Place]
+     *     x-since: 5.2.0
+     *     x-permissions:
+     *       hasAll: [can_delete_contact_hierarchy]
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: The id of the place to delete
+     *       - in: query
+     *         name: delete_users
+     *         schema:
+     *           type: boolean
+     *         description: >
+     *           Also delete user accounts linked to the removed contacts. Requires the
+     *           can_delete_users permission. When not set, the request is rejected with 400 if any
+     *           linked users exist.
+     *       - in: query
+     *         name: dry_run
+     *         schema:
+     *           type: boolean
+     *         description: Return the breakdown of changes without queuing anything.
+     *     responses:
+     *       '202':
+     *         description: The bulk operation was queued
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 breakdown:
+     *                   type: object
+     *                 id:
+     *                   type: string
+     *                   description: The bulk operation id to poll.
+     *       '200':
+     *         description: The dry-run breakdown (nothing queued)
+     *       '400':
+     *         $ref: '#/components/responses/BadRequest'
+     *       '401':
+     *         $ref: '#/components/responses/Unauthorized'
+     *       '403':
+     *         $ref: '#/components/responses/Forbidden'
+     *       '404':
+     *         $ref: '#/components/responses/NotFound'
+     */
+    delete: serverUtils.doOrError(async (req, res) => {
+      const deleteUsers = req.query.delete_users === 'true';
+      const dryRun = req.query.dry_run === 'true';
+      const permissions = deleteUsers
+        ? ['can_delete_contact_hierarchy', 'can_delete_users']
+        : ['can_delete_contact_hierarchy'];
+      await auth.assertPermissions(req, { isOnline: true, hasAll: permissions });
+
+      const result = await deleteContactService.deleteContactHierarchy(req.params.uuid, { deleteUsers, dryRun });
+      return res.status(dryRun ? 200 : 202).json(result);
     })
   }
 };

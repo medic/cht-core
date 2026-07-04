@@ -664,6 +664,7 @@ app.get('/api/v1/place', place.v1.getAll);
 app.get('/api/v1/place/:uuid', place.v1.get);
 app.postJson('/api/v1/place', place.v1.create);
 app.putJson('/api/v1/place/:uuid', place.v1.update);
+app.delete('/api/v1/place/:uuid', place.v1.delete);
 
 /**
  * @openapi
@@ -739,6 +740,7 @@ app.get('/api/v1/person', person.v1.getAll);
 app.get('/api/v1/person/:uuid', person.v1.get);
 app.postJson('/api/v1/person', person.v1.create);
 app.putJson('/api/v1/person/:uuid', person.v1.update);
+app.delete('/api/v1/person/:uuid', person.v1.delete);
 
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
 app.get('/api/v1/contact/:uuid', contact.v1.get);

@@ -204,5 +204,52 @@ describe('Person Controller', () => {
         expect(res.json.calledOnceWithExactly(updatePersonDoc)).to.be.true;
       });
     });
+
+    describe('delete', () => {
+      let deleteContact;
+      beforeEach(() => {
+        deleteContact = sinon.stub(require('../../../src/services/delete-contact'), 'deleteContactHierarchy');
+        res.status = sinon.stub().returns(res);
+      });
+
+      it('queues the delete and responds 202 with the result', async () => {
+        req = { params: { uuid: '123' }, query: {} };
+        const result = { breakdown: { archive: { contacts: 1, reports: 0 } }, id: 'bulk-operation:1' };
+        deleteContact.resolves(result);
+
+        await controller.v1.delete(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_delete_contact_hierarchy'] }
+        )).to.be.true;
+        expect(deleteContact.calledOnceWithExactly('123', { deleteUsers: false, dryRun: false })).to.be.true;
+        expect(res.status.calledOnceWithExactly(202)).to.be.true;
+        expect(res.json.calledOnceWithExactly(result)).to.be.true;
+      });
+
+      it('also requires can_delete_users when delete_users=true', async () => {
+        req = { params: { uuid: '123' }, query: { delete_users: 'true' } };
+        deleteContact.resolves({ breakdown: {}, id: 'x' });
+
+        await controller.v1.delete(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_delete_contact_hierarchy', 'can_delete_users'] }
+        )).to.be.true;
+        expect(deleteContact.calledOnceWithExactly('123', { deleteUsers: true, dryRun: false })).to.be.true;
+      });
+
+      it('responds 200 for a dry run', async () => {
+        req = { params: { uuid: '123' }, query: { dry_run: 'true' } };
+        deleteContact.resolves({ breakdown: {} });
+
+        await controller.v1.delete(req, res);
+
+        expect(deleteContact.calledOnceWithExactly('123', { deleteUsers: false, dryRun: true })).to.be.true;
+        expect(res.status.calledOnceWithExactly(200)).to.be.true;
+      });
+    });
   });
 });
