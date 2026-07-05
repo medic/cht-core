@@ -27,6 +27,7 @@ import { setupNepaliDatePicker, hideDatePicker } from '../../../../js/enketo/wid
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions: GlobalActions;
   private subscription: Subscription = new Subscription();
+  isNepali = false;
   inputLabel;
   error?: string;
   direction: string | undefined;
@@ -55,6 +56,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
+    this.isNepali = this.languageService.useDevanagariScript();
     const subscription = this.store
       .select(Selectors.getFilters)
       .subscribe(({ date }) => {
@@ -66,7 +68,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.languageService.useDevanagariScript()) {
+    if (this.isNepali) {
       this.initNepaliDatePicker();
       return;
     }
@@ -121,15 +123,15 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initNepaliDatePicker() {
-    const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input" ' +
-      'style="position: absolute; opacity: 0; width: 0; height: 0; padding: 0; border: 0;" />');
+    const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input" />');
     $(`#${this.fieldId}`).parent().append($hiddenDateInput);
 
     setupNepaliDatePicker($hiddenDateInput, {
       onDateSelect: (data: any) => {
         const gregDateStr = toGreg_text(data.bsYear, data.bsMonth, data.bsDate);
         const gregMoment = moment(gregDateStr);
-        const dateRange = this.createDateRange(gregMoment, gregMoment);
+        const normalizedMoment = this.isStartDate ? gregMoment.startOf('day') : gregMoment.endOf('day');
+        const dateRange = this.createDateRange(normalizedMoment, normalizedMoment);
         this.applyFilter(dateRange);
       }
     });
@@ -147,7 +149,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         const bsDate = toBik(moment(activeDate));
         const bsMonth = String(bsDate.month).padStart(2, '0');
         const bsDay = String(bsDate.day).padStart(2, '0');
-        $hiddenDateInput.val(`${bsDate.year}-${bsMonth}-${bsDay}`);
+        const latinVal = `${bsDate.year}-${bsMonth}-${bsDay}`;
+        const devanagariVal = latinVal.replace(/\d/g, (w) => ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'][+w]);
+        $hiddenDateInput.val(devanagariVal);
       } else {
         $hiddenDateInput.val('');
       }
@@ -213,7 +217,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   setLabel(dateRange) {
     this.inputLabel = '';
-    if (this.languageService.useDevanagariScript()) {
+    if (this.isNepali) {
       const dates = {
         from: dateRange.from ? this.formatDateService.dayMonth(dateRange.from) : undefined,
         to: dateRange.to ? this.formatDateService.dayMonth(dateRange.to) : undefined,
@@ -248,7 +252,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     this.setError(false);
     this.subscription.unsubscribe();
 
-    if (this.languageService.useDevanagariScript()) {
+    if (this.isNepali) {
       this.cleanupNepaliDatePicker();
       return;
     }
@@ -262,10 +266,17 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private cleanupNepaliDatePicker() {
     const $hiddenDateInput = $(`#${this.fieldId}`).parent().find('.nepali-datepicker-input');
     if ($hiddenDateInput.length) {
+      const container = $hiddenDateInput.data('pickerContainer');
       hideDatePicker($hiddenDateInput);
       $hiddenDateInput.remove();
+      if (container) {
+        $(container).remove();
+      } else {
+        $('.nepali-date-picker').remove();
+      }
     }
-    $('.nepali-date-picker-overlay').remove();
-    $('.nepali-date-picker').remove();
+    if ($('.nepali-date-picker').length === 0) {
+      $('.nepali-date-picker-overlay').remove();
+    }
   }
 }

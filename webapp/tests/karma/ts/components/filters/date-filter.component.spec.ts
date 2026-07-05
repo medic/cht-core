@@ -160,6 +160,7 @@ describe('Date Filter Component', () => {
       // Re-create component to pick up the updated stub value
       fixture = TestBed.createComponent(DateFilterComponent);
       component = fixture.componentInstance;
+      component.ngOnInit();
       // Mock the field element so we can append/find the hidden input
       const html = `<div id="bikram-sambat-test-wrapper"><input id="test-field-id" /></div>`;
       document.body.insertAdjacentHTML('afterbegin', html);
@@ -195,7 +196,7 @@ describe('Date Filter Component', () => {
       $(`#test-field-id`).click();
 
       expect(clickSpy.callCount).to.equal(1);
-      expect(hiddenInput.val()).to.equal('2081-04-09'); // 2024-07-24 is 2081-04-09 in Bikram Sambat
+      expect(hiddenInput.val()).to.equal('२०८१-०४-०९'); // 2024-07-24 is 2081-04-09 in Bikram Sambat (Devanagari format)
 
       clickSpy.restore();
     });
@@ -220,6 +221,49 @@ describe('Date Filter Component', () => {
       expect(setFilter.callCount).to.equal(1);
       const appliedDate = setFilter.args[0][0].date.from;
       expect(moment(appliedDate).format('YYYY-MM-DD')).to.equal('2024-07-24');
+      setFilter.restore();
+    });
+
+    it('should normalize to-date to end of day on selection', () => {
+      component.ngAfterViewInit();
+      component.isStartDate = false;
+      component.dateRange = { from: undefined, to: undefined };
+
+      const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
+      const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+
+      const event = $.Event('dateSelect');
+      (event as any).datePickerData = {
+        bsYear: 2081,
+        bsMonth: 4,
+        bsDate: 9
+      };
+      hiddenInput.trigger(event);
+
+      expect(setFilter.callCount).to.equal(1);
+      const appliedDate = setFilter.args[0][0].date.to;
+      expect(moment(appliedDate).format('YYYY-MM-DD HH:mm:ss.SSS')).to.equal('2024-07-24 23:59:59.999');
+      setFilter.restore();
+    });
+
+    it('ngOnDestroy should clean up specific picker container and overlay', () => {
+      component.ngAfterViewInit();
+      const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
+      
+      // Mock pickerContainer data and element
+      const containerHtml = `<div class="nepali-date-picker"></div>`;
+      document.body.insertAdjacentHTML('afterbegin', containerHtml);
+      const containerEl = $('.nepali-date-picker')[0];
+      hiddenInput.data('pickerContainer', containerEl);
+
+      // Create overlay
+      $('<div class="nepali-date-picker-overlay"></div>').appendTo('body');
+
+      component.ngOnDestroy();
+
+      expect($('.nepali-datepicker-input')).to.have.lengthOf(0);
+      expect($('.nepali-date-picker')).to.have.lengthOf(0);
+      expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
     });
 
     it('setLabel should use formatDateService.dayMonth', () => {
