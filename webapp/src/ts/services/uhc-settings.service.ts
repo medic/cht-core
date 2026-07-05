@@ -16,15 +16,23 @@ export class UHCSettingsService {
       );
   }
 
+  getUseBikramSambatMonths(settings) {
+    return !!settings?.uhc?.visit_count?.use_bikram_sambat_months;
+  }
+
   getVisitCountSettings(settings?) {
     if (!settings || !settings.uhc || !settings.uhc.visit_count) {
       return {};
     }
 
-    return {
+    const res: any = {
       monthStartDate: this.getMonthStartDate(settings),
       visitCountGoal: settings.uhc.visit_count.visit_count_goal,
     };
+    if (this.getUseBikramSambatMonths(settings)) {
+      res.useBikramSambatMonths = true;
+    }
+    return res;
   }
 
   getContactsDefaultSort(settings) {

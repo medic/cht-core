@@ -65,7 +65,7 @@ export class UHCStatsService {
       return;
     }
 
-    return CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
+    return CalendarInterval.getCurrent(visitCountSettings.monthStartDate, visitCountSettings.useBikramSambatMonths);
   }
 
   async getHomeVisitStats(contact, visitCountSettings: VisitCountSettings): Promise<VisitStats | undefined> {
@@ -106,6 +106,7 @@ type DateRange = {
 interface VisitCountSettings {
   monthStartDate?: number; // Ex: 26
   visitCountGoal?: number;
+  useBikramSambatMonths?: boolean;
 }
 
 interface VisitStats {
