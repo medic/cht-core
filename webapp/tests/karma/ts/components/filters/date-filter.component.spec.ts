@@ -250,11 +250,11 @@ describe('Date Filter Component', () => {
       component.ngAfterViewInit();
       const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
       
-      // Mock pickerContainer data and element
+      // Mock picker data and element
       const containerHtml = `<div class="nepali-date-picker"></div>`;
       document.body.insertAdjacentHTML('afterbegin', containerHtml);
-      const containerEl = $('.nepali-date-picker')[0];
-      hiddenInput.data('pickerContainer', containerEl);
+      const $pickerEl = $('.nepali-date-picker');
+      hiddenInput.data('picker', $pickerEl);
 
       // Create overlay
       $('<div class="nepali-date-picker-overlay"></div>').appendTo('body');

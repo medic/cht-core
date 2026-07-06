@@ -266,17 +266,21 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private cleanupNepaliDatePicker() {
     const $hiddenDateInput = $(`#${this.fieldId}`).parent().find('.nepali-datepicker-input');
     if ($hiddenDateInput.length) {
-      const container = $hiddenDateInput.data('pickerContainer');
-      hideDatePicker($hiddenDateInput);
-      $hiddenDateInput.remove();
-      if (container) {
-        $(container).remove();
-      } else {
-        $('.nepali-date-picker').remove();
-      }
+      this.removeSpecificPicker($hiddenDateInput);
     }
     if ($('.nepali-date-picker').length === 0) {
       $('.nepali-date-picker-overlay').remove();
+    }
+  }
+
+  private removeSpecificPicker($hiddenDateInput) {
+    const $picker = $hiddenDateInput.data('picker');
+    hideDatePicker($hiddenDateInput);
+    $hiddenDateInput.remove();
+    if ($picker) {
+      $picker.remove();
+    } else {
+      $('.nepali-date-picker').remove();
     }
   }
 }
