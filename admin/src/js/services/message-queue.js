@@ -59,10 +59,9 @@ angular.module('services').factory('MessageQueue',
     };
 
     const findRegistrations = (registrations, message, shortcodeField) => {
-      const docs = registrations
+      return registrations
         .filter((row) => row.key === message.context[shortcodeField])
         .map((row) => row.doc);
-      return docs.filter((doc, idx) => docs.findIndex((other) => other._id === doc._id) === idx);
     };
 
     const findContactById = function(hydratedContacts, contactId) {
