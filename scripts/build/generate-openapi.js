@@ -89,13 +89,42 @@ const SWAGGER_OPTIONS = {
           name: 'with_lineage',
           schema: { 'enum': ['true', 'false'], default: 'false' },
           description: 'Include the full parent lineage.'
+        },
+        deleteUsers: {
+          in: 'query',
+          name: 'delete_users',
+          schema: { type: 'boolean' },
+          description:
+            'Also delete user accounts linked to the removed contacts. Requires the can_delete_users ' +
+            'permission. When not set, the request is rejected with 400 if any linked users exist.',
+        },
+        dryRun: {
+          in: 'query',
+          name: 'dry_run',
+          schema: { type: 'boolean' },
+          description: 'Return the breakdown of changes without queuing anything.',
         }
       },
       responses: {
         NotFound: { description: 'Entity not found' },
         BadRequest: { description: 'Invalid input (missing required fields, invalid types, etc.)' },
         Unauthorized: { description: 'Not authenticated' },
-        Forbidden: { description: 'Insufficient permissions' }
+        Forbidden: { description: 'Insufficient permissions' },
+        BulkOperationQueued: {
+          description: 'The bulk operation was queued',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  breakdown: { type: 'object' },
+                  id: { type: 'string', description: 'The bulk operation id to poll.' }
+                }
+              }
+            }
+          }
+        },
+        BulkOperationDryRun: { description: 'The dry-run breakdown (nothing queued)' }
       }
     },
   },

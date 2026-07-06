@@ -239,34 +239,13 @@ module.exports = {
      *         schema:
      *           type: string
      *         description: The id of the place to delete
-     *       - in: query
-     *         name: delete_users
-     *         schema:
-     *           type: boolean
-     *         description: >
-     *           Also delete user accounts linked to the removed contacts. Requires the
-     *           can_delete_users permission. When not set, the request is rejected with 400 if any
-     *           linked users exist.
-     *       - in: query
-     *         name: dry_run
-     *         schema:
-     *           type: boolean
-     *         description: Return the breakdown of changes without queuing anything.
+     *       - $ref: '#/components/parameters/deleteUsers'
+     *       - $ref: '#/components/parameters/dryRun'
      *     responses:
      *       '202':
-     *         description: The bulk operation was queued
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 breakdown:
-     *                   type: object
-     *                 id:
-     *                   type: string
-     *                   description: The bulk operation id to poll.
+     *         $ref: '#/components/responses/BulkOperationQueued'
      *       '200':
-     *         description: The dry-run breakdown (nothing queued)
+     *         $ref: '#/components/responses/BulkOperationDryRun'
      *       '400':
      *         $ref: '#/components/responses/BadRequest'
      *       '401':
@@ -276,16 +255,6 @@ module.exports = {
      *       '404':
      *         $ref: '#/components/responses/NotFound'
      */
-    delete: serverUtils.doOrError(async (req, res) => {
-      const deleteUsers = req.query.delete_users === 'true';
-      const dryRun = req.query.dry_run === 'true';
-      const permissions = deleteUsers
-        ? ['can_delete_contact_hierarchy', 'can_delete_users']
-        : ['can_delete_contact_hierarchy'];
-      await auth.assertPermissions(req, { isOnline: true, hasAll: permissions });
-
-      const result = await deleteContactService.deleteContactHierarchy(req.params.uuid, { deleteUsers, dryRun });
-      return res.status(dryRun ? 200 : 202).json(result);
-    })
+    delete: deleteContactService.handleDelete
   }
 };

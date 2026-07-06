@@ -1,4 +1,6 @@
 const db = require('../db');
+const auth = require('../auth');
+const serverUtils = require('../server-utils');
 const bulkOperations = require('./bulk-operations');
 const { ACTIONS } = require('@medic/bulk-operations');
 
@@ -109,6 +111,25 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
   return { breakdown, id: bulkOperationId };
 };
 
+/**
+ * Express handler shared by the person and place DELETE endpoints. Deleting a contact hierarchy is
+ * the same regardless of contact type, so both controllers point their `delete` at this: it reads
+ * the `delete_users`/`dry_run` query params, asserts the required permissions, hands off to
+ * `deleteContactHierarchy`, and responds with the breakdown (202 when queued, 200 for a dry run).
+ */
+const handleDelete = serverUtils.doOrError(async (req, res) => {
+  const deleteUsers = req.query.delete_users === 'true';
+  const dryRun = req.query.dry_run === 'true';
+  const permissions = deleteUsers
+    ? ['can_delete_contact_hierarchy', 'can_delete_users']
+    : ['can_delete_contact_hierarchy'];
+  await auth.assertPermissions(req, { isOnline: true, hasAll: permissions });
+
+  const result = await module.exports.deleteContactHierarchy(req.params.uuid, { deleteUsers, dryRun });
+  return res.status(dryRun ? 200 : 202).json(result);
+});
+
 module.exports = {
   deleteContactHierarchy,
+  handleDelete,
 };

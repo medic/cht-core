@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 
 const db = require('../../../src/db');
+const auth = require('../../../src/auth');
 const bulkOperations = require('../../../src/services/bulk-operations');
 const service = require('../../../src/services/delete-contact');
 
@@ -108,6 +109,64 @@ describe('Delete contact service', () => {
         });
         expect(queue.called).to.equal(false);
       });
+    });
+  });
+
+  describe('handleDelete', () => {
+    let req;
+    let res;
+
+    beforeEach(() => {
+      sinon.stub(auth, 'assertPermissions').resolves();
+      res = { status: sinon.stub().returnsThis(), json: sinon.stub() };
+    });
+
+    it('queues the delete and responds 202 with the result', async () => {
+      req = { params: { uuid: '123' }, query: {} };
+      const result = { breakdown: { archive: { contacts: 1, reports: 0 } }, id: 'bulk-operation:1' };
+      sinon.stub(service, 'deleteContactHierarchy').resolves(result);
+
+      await service.handleDelete(req, res);
+
+      expect(auth.assertPermissions.calledOnceWithExactly(
+        req,
+        { isOnline: true, hasAll: ['can_delete_contact_hierarchy'] }
+      )).to.be.true;
+      expect(service.deleteContactHierarchy.calledOnceWithExactly(
+        '123',
+        { deleteUsers: false, dryRun: false }
+      )).to.be.true;
+      expect(res.status.calledOnceWithExactly(202)).to.be.true;
+      expect(res.json.calledOnceWithExactly(result)).to.be.true;
+    });
+
+    it('also requires can_delete_users when delete_users=true', async () => {
+      req = { params: { uuid: '123' }, query: { delete_users: 'true' } };
+      sinon.stub(service, 'deleteContactHierarchy').resolves({ breakdown: {}, id: 'x' });
+
+      await service.handleDelete(req, res);
+
+      expect(auth.assertPermissions.calledOnceWithExactly(
+        req,
+        { isOnline: true, hasAll: ['can_delete_contact_hierarchy', 'can_delete_users'] }
+      )).to.be.true;
+      expect(service.deleteContactHierarchy.calledOnceWithExactly(
+        '123',
+        { deleteUsers: true, dryRun: false }
+      )).to.be.true;
+    });
+
+    it('responds 200 for a dry run', async () => {
+      req = { params: { uuid: '123' }, query: { dry_run: 'true' } };
+      sinon.stub(service, 'deleteContactHierarchy').resolves({ breakdown: {} });
+
+      await service.handleDelete(req, res);
+
+      expect(service.deleteContactHierarchy.calledOnceWithExactly(
+        '123',
+        { deleteUsers: false, dryRun: true }
+      )).to.be.true;
+      expect(res.status.calledOnceWithExactly(200)).to.be.true;
     });
   });
 });
