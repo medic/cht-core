@@ -1,5 +1,5 @@
 const auth = require('../auth');
-const { Contact, Qualifier } = require('@medic/cht-datasource');
+const { Contact, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
 
@@ -11,6 +11,9 @@ const getContactSummaries = ctx.bind(Contact.v1.getSummaries);
 
 const buildIdsQualifier = (ids) => {
   const idsArray = (Array.isArray(ids) ? ids : ids.split(',')).filter(Boolean);
+  if (!idsArray.length) {
+    throw new InvalidArgumentError(`Invalid ids [${JSON.stringify(ids)}].`);
+  }
   return Qualifier.byIds(idsArray);
 };
 

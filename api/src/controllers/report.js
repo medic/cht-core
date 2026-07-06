@@ -1,6 +1,6 @@
 const ctx = require('../services/data-context');
 const serverUtils = require('../server-utils');
-const { Report, Qualifier } = require('@medic/cht-datasource');
+const { Report, Qualifier, InvalidArgumentError } = require('@medic/cht-datasource');
 const auth = require('../auth');
 
 const getReport = ctx.bind(Report.v1.get);
@@ -13,6 +13,9 @@ const update = ctx.bind(Report.v1.update);
 
 const buildIdsQualifier = (ids) => {
   const idsArray = (Array.isArray(ids) ? ids : ids.split(',')).filter(Boolean);
+  if (!idsArray.length) {
+    throw new InvalidArgumentError(`Invalid ids [${JSON.stringify(ids)}].`);
+  }
   return Qualifier.byIds(idsArray);
 };
 

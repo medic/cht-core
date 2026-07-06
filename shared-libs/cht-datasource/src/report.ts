@@ -44,6 +44,15 @@ export namespace v1 {
    */
   export type ReportSummary = LibReportSummary;
 
+  type IdsGenerator<T> = (qualifier: IdsQualifier) => AsyncGenerator<T, null>;
+
+  const getIdsGenerator = <T>(
+    fetchPage: (qualifier: IdsQualifier, cursor: Nullable<string>, limit?: number) => Promise<Page<T>>
+  ): IdsGenerator<T> => (qualifier: IdsQualifier): AsyncGenerator<T, null> => {
+    assertIdsQualifier(qualifier);
+
+    return getPagedGenerator(fetchPage, qualifier);
+  };
 
   /**
    * Returns a function for retrieving a report from the given data context.
@@ -120,23 +129,11 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches report summaries
    * @throws Error if a data context is not provided
    */
-  export const getSummaries = (context: DataContext): typeof curriedGen => {
+  export const getSummaries = (context: DataContext): IdsGenerator<ReportSummary> => {
     assertDataContext(context);
     const getPage = context.bind(v1.getSummariesPage);
 
-    /**
-     * Returns a generator for fetching summary records for the reports identified by the given qualifier. Any
-     * identifiers that do not identify an existing report are silently omitted from the result.
-     * @param qualifier the identifiers of the reports to summarise
-     * @returns a generator for fetching all the matching report summaries
-     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
-     */
-    const curriedGen = (qualifier: IdsQualifier): AsyncGenerator<ReportSummary, null> => {
-      assertIdsQualifier(qualifier);
-
-      return getPagedGenerator(getPage, qualifier);
-    };
-    return curriedGen;
+    return getIdsGenerator<ReportSummary>(getPage);
   };
 
   /**
@@ -243,24 +240,11 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches reports
    * @throws Error if a data context is not provided
    */
-  export const getAll = (context: DataContext): typeof curriedGen => {
+  export const getAll = (context: DataContext): IdsGenerator<Report> => {
     assertDataContext(context);
     const getPage = context.bind(v1.getPage);
 
-    /**
-     * Returns a generator for fetching all reports that match the given qualifier.
-     * @param qualifier the UUIDs of the reports to return
-     * @returns a generator for fetching all reports that match the given qualifier
-     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
-     */
-    const curriedGen = (
-      qualifier: IdsQualifier
-    ): AsyncGenerator<Report, null> => {
-      assertIdsQualifier(qualifier);
-
-      return getPagedGenerator(getPage, qualifier);
-    };
-    return curriedGen;
+    return getIdsGenerator<Report>(getPage);
   };
 
   /**
