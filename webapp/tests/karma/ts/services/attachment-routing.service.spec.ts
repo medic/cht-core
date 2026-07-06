@@ -188,4 +188,35 @@ describe('AttachmentRoutingService', () => {
 
     expect(remove.args.map(args => args[1])).to.deep.equal([ 'user-file-orphan' ]);
   });
+
+  // finalize runs orphan cleanup on every prepared doc, not just the main one.
+  // Replacing a sub-doc upload must drop the sub-doc's stale user-file-<old> while
+  // the main doc's referenced attachment is left untouched.
+  it('removes a stale attachment from a sub-doc, sparing the main doc', () => {
+    const root = parse(
+      '<my-form><name>parent</name>' +
+        '<child db-doc="true"><photo type="file">new_upload.png</photo></child>' +
+      '</my-form>'
+    );
+    getCurrentFiles.returns([ { name: 'new_upload.png', type: 'image/png' } ]);
+    const mainDoc: Record<string, any> = {
+      name: 'parent',
+      photo: 'keep.png',
+      _attachments: { 'user-file-keep.png': { stub: true } },
+    };
+    const childEl = root.getElementsByTagName('child')[0];
+    const subDoc: Record<string, any> = {
+      photo: 'new_upload.png',
+      _attachments: { 'user-file-old.png': { stub: true } },
+    };
+
+    service.route(sectionStrategy(root, mainDoc, [ { el: childEl, doc: subDoc } ]));
+
+    // new blob lands on the sub-doc
+    expect(add.args.find(args => args[1] === 'user-file-new_upload.png')?.[0]).to.equal(subDoc);
+    // only the sub-doc's stale attachment is removed; the main doc is untouched
+    expect(remove.calledOnce).to.be.true;
+    expect(remove.args[0][0]).to.equal(subDoc);
+    expect(remove.args[0][1]).to.equal('user-file-old.png');
+  });
 });
