@@ -58,7 +58,7 @@ describe('file-manager', () => {
 
       const files = fileManager.getCurrentFiles();
 
-      expect(files.length).to.equal(2);
+      expect(files).to.have.lengthOf(2);
       expect(files[0].name).to.equal('photo-10_30_01.png');
       expect(files[1].name).to.equal('photo-10_30_02.png');
       expect(files[0].name).to.not.equal(files[1].name);

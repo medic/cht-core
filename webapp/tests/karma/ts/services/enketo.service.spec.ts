@@ -1337,7 +1337,7 @@ describe('Enketo service', () => {
       );
 
       // actual[0] = main doc, actual[1] = doc1, actual[2] = doc2
-      expect(actual.length).to.equal(3);
+      expect(actual).to.have.lengthOf(3);
 
       // 3 binary fields = 3 AddAttachment calls
       expect(AddAttachment.callCount).to.equal(3);
@@ -1381,7 +1381,7 @@ describe('Enketo service', () => {
         { _id: 'my-user', phone: '8989' }
       );
 
-      expect(actual.length).to.equal(2);
+      expect(actual).to.have.lengthOf(2);
 
       // FileManager file calls: main_upload.png and sub_upload.png
       const mainFileCall = AddAttachment.args.find(
@@ -1410,7 +1410,7 @@ describe('Enketo service', () => {
         { _id: 'my-user', phone: '8989' }
       );
 
-      expect(actual.length).to.equal(1);
+      expect(actual).to.have.lengthOf(1);
       expect(AddAttachment.callCount).to.equal(1);
       expect(AddAttachment.args[0][0]._id).to.equal(actual[0]._id);
     });
@@ -1432,7 +1432,7 @@ describe('Enketo service', () => {
       );
 
       // actual[0] = main doc, actual[1] = doc1
-      expect(actual.length).to.equal(2);
+      expect(actual).to.have.lengthOf(2);
 
       const orphanCall = AddAttachment.args.find(
         args => args[1] === 'user-file-no_such_node.png'
@@ -1459,7 +1459,7 @@ describe('Enketo service', () => {
       );
 
       // actual[0] = main doc, actual[1] = first repeat doc, actual[2] = second repeat doc
-      expect(actual.length).to.equal(3);
+      expect(actual).to.have.lengthOf(3);
 
       const file1Call = AddAttachment.args.find(
         args => args[1] === 'user-file-repeat_upload_1.png'
@@ -1526,7 +1526,7 @@ describe('Enketo service', () => {
       );
 
       // actual[0] = main doc, actual[1] = doc1 sub-doc
-      expect(actual.length).to.equal(2);
+      expect(actual).to.have.lengthOf(2);
 
       // Only the main file should be attached
       const mainFileCall = AddAttachment.args.find(

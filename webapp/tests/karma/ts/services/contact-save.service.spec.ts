@@ -889,7 +889,7 @@ describe('ContactSave service', () => {
       ['user-file-facility.jpg', 'user-file-amina.png', 'user-file-childA.png']
         .forEach(name => {
           const matches = calls.filter(c => c.args[1] === name);
-          expect(matches.length, `${name} should be added exactly once`).to.equal(1);
+          expect(matches, `${name} should be added exactly once`).to.have.lengthOf(1);
         });
     });
 

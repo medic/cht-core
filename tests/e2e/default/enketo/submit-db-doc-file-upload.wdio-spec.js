@@ -142,7 +142,7 @@ describe('Submit form with file uploads routed to db-doc sub-documents (#10904)'
     // There should be two repeat sections, each with a db-doc-ref
     const repeatSections = report.fields.repeat_section;
     expect(repeatSections).to.be.an('array');
-    expect(repeatSections.length).to.equal(2);
+    expect(repeatSections).to.have.lengthOf(2);
 
     // Verify first repeat sub-doc
     const repeatDoc1Id = repeatSections[0].repeat_doc_ref;

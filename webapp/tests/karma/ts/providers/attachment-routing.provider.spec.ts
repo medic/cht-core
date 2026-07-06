@@ -46,7 +46,7 @@ describe('attachment-routing', () => {
 
     it('returns null when no [type=file] node matches', () => {
       const root = parse('<f><a type="file">one.png</a></f>');
-      expect(findUploadNodeByFilename(root, 'missing.png')).to.equal(null);
+      expect(findUploadNodeByFilename(root, 'missing.png')).to.be.null;
     });
 
     it('returns the first match when multiple nodes share the filename', () => {
@@ -66,7 +66,7 @@ describe('attachment-routing', () => {
       expect(second?.tagName).to.equal('b');
 
       consumed.add(second as Element);
-      expect(findUploadNodeByFilename(root, 'dup.png', consumed)).to.equal(null);
+      expect(findUploadNodeByFilename(root, 'dup.png', consumed)).to.be.null;
     });
 
     it('matches a [type=binary] node (draw/signature widget not rewritten to type=file)', () => {
@@ -76,7 +76,7 @@ describe('attachment-routing', () => {
 
     it('never matches a genuine inline binary (base64 text is not a filename)', () => {
       const root = parse('<f><photo type="binary">iVBORw0KGgoBASE64</photo></f>');
-      expect(findUploadNodeByFilename(root, 'photo.png')).to.equal(null);
+      expect(findUploadNodeByFilename(root, 'photo.png')).to.be.null;
     });
   });
 
@@ -92,14 +92,14 @@ describe('attachment-routing', () => {
       const fields: any = translation.reportRecordToJs(RECORD, FORM);
       expect(translation.getRepeatPaths(FORM)).to.deep.equal(['/my-form/my_repeat']);
       expect(Array.isArray(fields.my_repeat)).to.equal(true);
-      expect(fields.my_repeat.length).to.equal(2);
+      expect(fields.my_repeat).to.have.lengthOf(2);
     });
 
     it('reconstructs the array-index path and objectPath.set preserves the array', () => {
       const root = parse(RECORD);
       const repeatPaths = translation.getRepeatPaths(FORM);
       const photos = Array.from(root.getElementsByTagName('photo'));
-      expect(photos.length).to.equal(2);
+      expect(photos).to.have.lengthOf(2);
 
       // segments are fields-relative (the report strategy prepends 'fields')
       expect(indexedFieldPath(photos[0], root, repeatPaths)).to.deep.equal(['my_repeat', 0, 'photo']);

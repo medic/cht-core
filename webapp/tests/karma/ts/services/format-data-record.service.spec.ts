@@ -312,7 +312,7 @@ describe('FormatDataRecord service', () => {
       };
 
       const result = await service.format(report);
-      expect((result.fields as any[])[0].imagePath).to.equal(undefined);
+      expect((result.fields as any[])[0].imagePath).to.be.undefined;
     });
 
     it('returns empty image path if attachment does not exist for image name', async () => {
