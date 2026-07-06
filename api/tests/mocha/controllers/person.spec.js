@@ -206,8 +206,36 @@ describe('Person Controller', () => {
     });
 
     describe('delete', () => {
-      it('delegates to the shared delete-contact handler', () => {
-        expect(controller.v1.delete).to.equal(require('../../../src/services/delete-contact').handleDelete);
+      let deleteContact;
+      beforeEach(() => {
+        deleteContact = sinon.stub(require('../../../src/services/delete-contact'), 'deleteContactHierarchy');
+        res.status = sinon.stub().returns(res);
+      });
+
+      it('deletes the hierarchy when the id is a person', async () => {
+        req = { params: { uuid: '123' }, query: {} };
+        personGet.resolves({ _id: '123' });
+        deleteContact.resolves({ breakdown: {}, id: 'bulk-operation:1' });
+
+        await controller.v1.delete(req, res);
+
+        expect(personGet.calledOnceWithExactly(Qualifier.byUuid('123'))).to.be.true;
+        expect(deleteContact.calledOnceWithExactly('123', { deleteUsers: false, dryRun: false })).to.be.true;
+        expect(res.status.calledOnceWithExactly(202)).to.be.true;
+      });
+
+      it('responds 404 and does not delete when the id is not a person', async () => {
+        req = { params: { uuid: 'place-1' }, query: {} };
+        personGet.resolves(null);
+
+        await controller.v1.delete(req, res);
+
+        expect(serverUtilsError.calledOnceWithExactly(
+          { status: 404, message: 'Person not found' },
+          req,
+          res
+        )).to.be.true;
+        expect(deleteContact.notCalled).to.be.true;
       });
     });
   });

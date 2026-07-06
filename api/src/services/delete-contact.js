@@ -112,12 +112,19 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
 };
 
 /**
- * Express handler shared by the person and place DELETE endpoints. Deleting a contact hierarchy is
- * the same regardless of contact type, so both controllers point their `delete` at this: it reads
- * the `delete_users`/`dry_run` query params, asserts the required permissions, hands off to
- * `deleteContactHierarchy`, and responds with the breakdown (202 when queued, 200 for a dry run).
+ * Builds the DELETE express handler for a contact type. The person and place endpoints delete a
+ * hierarchy the same way, so they share this handler; each passes the pieces that make its endpoint
+ * type-specific. `get` fetches the target as its own type and returns null for the wrong type, so a
+ * place id cannot be deleted through the person endpoint or vice versa, and `type` names it for the
+ * not-found message. The handler reads the `delete_users`/`dry_run` query params, asserts the
+ * required permissions, hands the type-agnostic work off to `deleteContactHierarchy`, and responds
+ * with the breakdown (202 when queued, 200 for a dry run).
+ * @param {Object} options
+ * @param {Function} options.get - fetches the target contact by uuid, or null when it is not this type
+ * @param {string} options.type - the contact type name, used in the not-found message
+ * @returns {Function} the express request handler
  */
-const handleDelete = serverUtils.doOrError(async (req, res) => {
+const handleDelete = ({ get, type }) => serverUtils.doOrError(async (req, res) => {
   const deleteUsers = req.query.delete_users === 'true';
   const dryRun = req.query.dry_run === 'true';
   const permissions = deleteUsers
@@ -125,7 +132,13 @@ const handleDelete = serverUtils.doOrError(async (req, res) => {
     : ['can_delete_contact_hierarchy'];
   await auth.assertPermissions(req, { isOnline: true, hasAll: permissions });
 
-  const result = await module.exports.deleteContactHierarchy(req.params.uuid, { deleteUsers, dryRun });
+  const { uuid } = req.params;
+  const contact = await get(uuid);
+  if (!contact) {
+    return serverUtils.error({ status: 404, message: `${type} not found` }, req, res);
+  }
+
+  const result = await module.exports.deleteContactHierarchy(uuid, { deleteUsers, dryRun });
   return res.status(dryRun ? 200 : 202).json(result);
 });
 

@@ -3,6 +3,7 @@ const sinon = require('sinon');
 
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
+const serverUtils = require('../../../src/server-utils');
 const bulkOperations = require('../../../src/services/bulk-operations');
 const service = require('../../../src/services/delete-contact');
 
@@ -115,19 +116,25 @@ describe('Delete contact service', () => {
   describe('handleDelete', () => {
     let req;
     let res;
+    let get;
+    let handler;
 
     beforeEach(() => {
       sinon.stub(auth, 'assertPermissions').resolves();
+      sinon.stub(serverUtils, 'error');
       res = { status: sinon.stub().returnsThis(), json: sinon.stub() };
+      get = sinon.stub().resolves({ _id: '123' });
+      handler = service.handleDelete({ get, type: 'Person' });
     });
 
-    it('queues the delete and responds 202 with the result', async () => {
+    it('validates the type, queues the delete, and responds 202 with the result', async () => {
       req = { params: { uuid: '123' }, query: {} };
       const result = { breakdown: { archive: { contacts: 1, reports: 0 } }, id: 'bulk-operation:1' };
       sinon.stub(service, 'deleteContactHierarchy').resolves(result);
 
-      await service.handleDelete(req, res);
+      await handler(req, res);
 
+      expect(get.calledOnceWithExactly('123')).to.be.true;
       expect(auth.assertPermissions.calledOnceWithExactly(
         req,
         { isOnline: true, hasAll: ['can_delete_contact_hierarchy'] }
@@ -144,7 +151,7 @@ describe('Delete contact service', () => {
       req = { params: { uuid: '123' }, query: { delete_users: 'true' } };
       sinon.stub(service, 'deleteContactHierarchy').resolves({ breakdown: {}, id: 'x' });
 
-      await service.handleDelete(req, res);
+      await handler(req, res);
 
       expect(auth.assertPermissions.calledOnceWithExactly(
         req,
@@ -160,13 +167,28 @@ describe('Delete contact service', () => {
       req = { params: { uuid: '123' }, query: { dry_run: 'true' } };
       sinon.stub(service, 'deleteContactHierarchy').resolves({ breakdown: {} });
 
-      await service.handleDelete(req, res);
+      await handler(req, res);
 
       expect(service.deleteContactHierarchy.calledOnceWithExactly(
         '123',
         { deleteUsers: false, dryRun: true }
       )).to.be.true;
       expect(res.status.calledOnceWithExactly(200)).to.be.true;
+    });
+
+    it('responds 404 and does not delete when the target is not the expected type', async () => {
+      req = { params: { uuid: 'place-1' }, query: {} };
+      get.resolves(null);
+      const deleteStub = sinon.stub(service, 'deleteContactHierarchy');
+
+      await handler(req, res);
+
+      expect(serverUtils.error.calledOnceWithExactly(
+        { status: 404, message: 'Person not found' },
+        req,
+        res
+      )).to.be.true;
+      expect(deleteStub.notCalled).to.be.true;
     });
   });
 });

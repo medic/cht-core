@@ -248,6 +248,9 @@ module.exports = {
      *       '404':
      *         $ref: '#/components/responses/NotFound'
      */
-    delete: deleteContactService.handleDelete,
+    delete: deleteContactService.handleDelete({
+      get: (uuid) => getPerson(Qualifier.byUuid(uuid)),
+      type: 'Person',
+    }),
   },
 };
