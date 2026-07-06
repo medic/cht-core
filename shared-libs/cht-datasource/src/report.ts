@@ -44,11 +44,9 @@ export namespace v1 {
    */
   export type ReportSummary = LibReportSummary;
 
-  type IdsGenerator<T> = (qualifier: IdsQualifier) => AsyncGenerator<T, null>;
-
   const getIdsGenerator = <T>(
     fetchPage: (qualifier: IdsQualifier, cursor: Nullable<string>, limit?: number) => Promise<Page<T>>
-  ): IdsGenerator<T> => (qualifier: IdsQualifier): AsyncGenerator<T, null> => {
+  ) => (qualifier: IdsQualifier): AsyncGenerator<T, null> => {
     assertIdsQualifier(qualifier);
 
     return getPagedGenerator(fetchPage, qualifier);
@@ -129,11 +127,12 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches report summaries
    * @throws Error if a data context is not provided
    */
-  export const getSummaries = (context: DataContext): IdsGenerator<ReportSummary> => {
+  export const getSummaries = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
     const getPage = context.bind(v1.getSummariesPage);
 
-    return getIdsGenerator<ReportSummary>(getPage);
+    const curriedGen = getIdsGenerator<ReportSummary>(getPage);
+    return curriedGen;
   };
 
   /**
@@ -240,11 +239,12 @@ export namespace v1 {
    * @returns a function for getting a generator that fetches reports
    * @throws Error if a data context is not provided
    */
-  export const getAll = (context: DataContext): IdsGenerator<Report> => {
+  export const getAll = (context: DataContext): typeof curriedGen => {
     assertDataContext(context);
     const getPage = context.bind(v1.getPage);
 
-    return getIdsGenerator<Report>(getPage);
+    const curriedGen = getIdsGenerator<Report>(getPage);
+    return curriedGen;
   };
 
   /**
