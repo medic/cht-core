@@ -54,9 +54,14 @@ describe('attachment-routing', () => {
       expect(findUploadNodeByFilename(root, 'dup.png')?.tagName).to.equal('a');
     });
 
-    it('ignores a non-file node even when its text matches', () => {
-      const root = parse('<f><a type="binary">x.png</a><b type="file">x.png</b></f>');
-      expect(findUploadNodeByFilename(root, 'x.png')?.tagName).to.equal('b');
+    it('matches a [type=binary] node (draw/signature widget not rewritten to type=file)', () => {
+      const root = parse('<f><signature type="binary">sig-12_30_45.png</signature></f>');
+      expect(findUploadNodeByFilename(root, 'sig-12_30_45.png')?.tagName).to.equal('signature');
+    });
+
+    it('never matches a genuine inline binary (base64 text is not a filename)', () => {
+      const root = parse('<f><photo type="binary">iVBORw0KGgoBASE64</photo></f>');
+      expect(findUploadNodeByFilename(root, 'photo.png')).to.equal(null);
     });
   });
 

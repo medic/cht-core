@@ -26,6 +26,26 @@ describe('AttachmentRoutingService', () => {
     fieldPathFor: (element: Element) => computeFieldPath(element, root),
   });
 
+  // Nodes inside `subEl` route to `subDoc`; everything else to `mainDoc`. Mirrors
+  // the main+sub routing the report/contact strategies build.
+  const twoDocStrategy = (
+    root: Element,
+    mainDoc: Record<string, any>,
+    subEl: Element,
+    subDoc: Record<string, any>,
+  ): AttachmentRoutingStrategy => {
+    const ownerFor = (element: Element) => subEl.contains(element) ? subDoc : mainDoc;
+    const containerFor = (element: Element) => subEl.contains(element) ? subEl : root;
+    return {
+      root,
+      docs: [ mainDoc, subDoc ],
+      mainDoc,
+      resolveOwnerForNode: ownerFor,
+      containerFor,
+      fieldPathFor: (element: Element) => computeFieldPath(element, containerFor(element)),
+    };
+  };
+
   beforeEach(() => {
     add = sinon.stub();
     remove = sinon.stub();
@@ -85,6 +105,32 @@ describe('AttachmentRoutingService', () => {
 
     // only the upload widget's blob is attached; the binary pass does not re-attach it
     expect(add.args.map(args => args[1])).to.deep.equal([ 'user-file-up.png' ]);
+  });
+
+  // A draw/signature widget in a sub-doc, tracked by FileManager but still
+  // type="binary". Its upload must route to the sub-doc it lives in, not fall back
+  // to the main doc, or the blob and the field value split across docs.
+  it('routes a type=binary widget upload to its sub-doc, not the main doc', () => {
+    const root = parse(
+      '<my-form><name>p</name>' +
+        '<child db-doc="true"><signature type="binary">Sig 12_30_45.png</signature></child>' +
+      '</my-form>'
+    );
+    const file = { name: 'Sig 12_30_45.png', type: 'image/png' };
+    getCurrentFiles.returns([ file ]);
+    const mainDoc: Record<string, any> = { name: 'p' };
+    const subEl = root.getElementsByTagName('child')[0];
+    const subDoc: Record<string, any> = { signature: 'Sig 12_30_45.png' };
+
+    service.route(twoDocStrategy(root, mainDoc, subEl, subDoc));
+
+    // the blob and the field-value rewrite both land on the sub-doc
+    expect(add.calledOnce).to.be.true;
+    expect(add.args[0][0]).to.equal(subDoc);
+    expect(add.args[0][1]).to.equal('user-file-Sig12_30_45.png');
+    expect(subDoc.signature).to.equal('Sig12_30_45.png');
+    // main doc keeps its own value and gets no attachment
+    expect(mainDoc).to.deep.equal({ name: 'p' });
   });
 
   it('restores an untouched binary from its data-attachment-ref sidecar', () => {

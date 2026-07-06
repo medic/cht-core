@@ -35,12 +35,18 @@ export interface AttachmentRoutingStrategy {
 }
 
 /**
- * The `[type=file]` widget node within `root` whose text is `filename`, or null.
- * Filenames are session-unique, so the first match is the only match; the caller
- * owns the no-match fallback.
+ * The media node within `root` whose text is `filename`, or null; the caller owns
+ * the no-match fallback. Filenames are session-unique, so the first match wins.
+ *
+ * Matches both `[type=file]` and `[type=binary]`. A draw/signature/annotate widget
+ * tracked by FileManager can still read `type="binary"` (Enketo only rewrites to
+ * `file` on a value change), so routing its upload to the right owner can't depend
+ * on that. Genuine inline binaries hold base64, never a filename, so they never
+ * match here.
  */
 export const findUploadNodeByFilename = (root: Element, filename: string): Element | null => {
-  return $(root).find('[type=file]').toArray().find(element => $(element).text() === filename) ?? null;
+  return $(root).find('[type=file],[type=binary]').toArray()
+    .find(element => $(element).text() === filename) ?? null;
 };
 
 /** 0-based count of an element's preceding same-node-name element siblings. */
