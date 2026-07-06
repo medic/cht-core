@@ -60,7 +60,9 @@ const Search = require('@medic/search');
         }
         return _search(type, filters, options)
           .then(function(searchResults) {
-            return GetDataRecords(searchResults.docIds, options);
+            return type === 'reports' ?
+              GetDataRecords.getReports(searchResults.docIds, options) :
+              GetDataRecords.getContacts(searchResults.docIds, options);
           })
           .then(function(results) {
             _currentQuery = {};

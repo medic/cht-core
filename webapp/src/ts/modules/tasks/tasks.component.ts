@@ -138,6 +138,7 @@ export class TasksComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.trackLoadPerformance = this.performanceService.track();
+    this.globalActions.clearFilters();
     this.tasksActions.setSelectedTask(null);
     this.subscribeToStore();
     this.subscribeToChanges();

@@ -9,7 +9,7 @@ const FORM_TITLE_SELECTOR = `${TASK_FORM_SELECTOR} h3#form-title`;
 const NO_SELECTED_TASK_SELECTOR = '.empty-selection';
 
 const sidebarFilterSelectors = {
-  openBtn: () => $('mm-search-bar .open-filter'),
+  openBtn: () => $('mm-search-bar .open-filter, .mm-search-bar-container .btn.open-filter'),
   resetBtn: () => $('.sidebar-reset'),
   overdueAccordionHeader: () => $('#overdue-filter-accordion mat-expansion-panel-header'),
   overdueAccordionBody: () => $('#overdue-filter-accordion mat-panel-description'),
@@ -140,8 +140,9 @@ const filterByOverdue = async (overdueOption) => {
     await sidebarFilterSelectors.overdueAccordionBody().waitForDisplayed();
   }
 
-  const option = sidebarFilterSelectors.overdueAccordionBody().$(`a*=${overdueOption}`);
-  await option.click();
+  const option = sidebarFilterSelectors.overdueAccordionBody().$(`label*=${overdueOption}`);
+  const radio = await option.$('input[type="radio"]');
+  await radio.click();
 };
 
 const filterByTaskType = async (taskType) => {

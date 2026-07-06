@@ -13,7 +13,7 @@ describe('HydrateContactNames service', () => {
     GetSummaries = sinon.stub();
     TestBed.configureTestingModule({
       providers: [
-        { provide: GetSummariesService, useValue: { get: GetSummaries } },
+        { provide: GetSummariesService, useValue: { getContacts: GetSummaries } },
       ]
     });
 

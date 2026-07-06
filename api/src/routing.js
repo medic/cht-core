@@ -63,6 +63,7 @@ const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const replicationFailureLogController = require('./controllers/replication-failure-log');
+const replicationHealthController = require('./controllers/replication-health');
 const wellKnownController = require('./controllers/well-known');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
@@ -79,7 +80,6 @@ const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
-const extensionLibs = require('./controllers/extension-libs');
 const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const asyncLocalStorage = require('./services/async-storage');
@@ -319,8 +319,6 @@ app.all('/admin{/{*thing}}', authorization.handleAuthErrors, authorization.offli
 
 app.use(express.static(resources.staticPath));
 app.use(express.static(resources.webappPath));
-app.get('/extension-libs', extensionLibs.list);
-app.get('/extension-libs/:name', extensionLibs.get);
 app.get(`${routePrefix}login`, login.get);
 app.get(`${routePrefix}login/identity`, login.getIdentity);
 app.postJson(`${routePrefix}login`, login.post);
@@ -738,9 +736,11 @@ app.postJson('/api/v1/person', person.v1.create);
 app.putJson('/api/v1/person/:uuid', person.v1.update);
 
 app.get('/api/v1/contact/uuid', contact.v1.getUuids);
+app.postJson('/api/v1/contact/summary', contact.v1.getSummaries);
 app.get('/api/v1/contact/:uuid', contact.v1.get);
 
 app.get('/api/v1/report/uuid', report.v1.getUuids);
+app.postJson('/api/v1/report/summary', report.v1.getSummaries);
 app.get('/api/v1/report/:uuid', report.v1.get);
 app.postJson('/api/v1/report', report.v1.create);
 app.putJson('/api/v1/report/:uuid', report.v1.update);
@@ -796,6 +796,7 @@ app.put(
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);
+app.get('/api/v1/replication-health/failed', replicationHealthController.failed);
 
 // authorization middleware to proxy online users requests directly to CouchDB
 // reads offline users `user-settings` and saves it as `req.userCtx`
