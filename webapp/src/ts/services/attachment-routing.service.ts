@@ -48,10 +48,14 @@ export class AttachmentRoutingService {
     fileNameMapByDoc: FileNameMapByDoc,
   ): Set<string> {
     const fileManagerNames = new Set<string>();
+    const consumedNodes = new Set<Element>();
     FileManager
       .getCurrentFiles()
       .forEach(file => {
-        const node = findUploadNodeByFilename(strategy.root, file.name);
+        const node = findUploadNodeByFilename(strategy.root, file.name, consumedNodes);
+        if (node) {
+          consumedNodes.add(node);
+        }
         const ownerDoc = node ? strategy.resolveOwnerForNode(node) : strategy.mainDoc;
         const sanitizedFileName = this.sanitizeFileName(file.name);
         const attachmentName = `${USER_FILE_PREFIX}${sanitizedFileName}`;

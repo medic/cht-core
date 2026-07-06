@@ -49,9 +49,24 @@ describe('attachment-routing', () => {
       expect(findUploadNodeByFilename(root, 'missing.png')).to.equal(null);
     });
 
-    it('returns the first match when multiple nodes share the filename (session-unique in practice)', () => {
+    it('returns the first match when multiple nodes share the filename', () => {
       const root = parse('<f><a type="file">dup.png</a><b type="file">dup.png</b></f>');
       expect(findUploadNodeByFilename(root, 'dup.png')?.tagName).to.equal('a');
+    });
+
+    it('skips consumed nodes so same-named files map to distinct nodes', () => {
+      const root = parse('<f><a type="file">dup.png</a><b type="file">dup.png</b></f>');
+      const consumed = new Set<Element>();
+
+      const first = findUploadNodeByFilename(root, 'dup.png', consumed);
+      expect(first?.tagName).to.equal('a');
+
+      consumed.add(first as Element);
+      const second = findUploadNodeByFilename(root, 'dup.png', consumed);
+      expect(second?.tagName).to.equal('b');
+
+      consumed.add(second as Element);
+      expect(findUploadNodeByFilename(root, 'dup.png', consumed)).to.equal(null);
     });
 
     it('matches a [type=binary] node (draw/signature widget not rewritten to type=file)', () => {

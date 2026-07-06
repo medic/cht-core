@@ -26,21 +26,20 @@ describe('AttachmentRoutingService', () => {
     fieldPathFor: (element: Element) => computeFieldPath(element, root),
   });
 
-  // Nodes inside `subEl` route to `subDoc`; everything else to `mainDoc`. Mirrors
+  // Each section's nodes route to its doc; everything else to `mainDoc`. Mirrors
   // the main+sub routing the report/contact strategies build.
-  const twoDocStrategy = (
+  const sectionStrategy = (
     root: Element,
     mainDoc: Record<string, any>,
-    subEl: Element,
-    subDoc: Record<string, any>,
+    sections: { el: Element; doc: Record<string, any> }[],
   ): AttachmentRoutingStrategy => {
-    const ownerFor = (element: Element) => subEl.contains(element) ? subDoc : mainDoc;
-    const containerFor = (element: Element) => subEl.contains(element) ? subEl : root;
+    const sectionFor = (element: Element) => sections.find(s => s.el.contains(element));
+    const containerFor = (element: Element) => sectionFor(element)?.el ?? root;
     return {
       root,
-      docs: [ mainDoc, subDoc ],
+      docs: [ mainDoc, ...sections.map(s => s.doc) ],
       mainDoc,
-      resolveOwnerForNode: ownerFor,
+      resolveOwnerForNode: (element: Element) => sectionFor(element)?.doc ?? mainDoc,
       containerFor,
       fieldPathFor: (element: Element) => computeFieldPath(element, containerFor(element)),
     };
@@ -122,7 +121,7 @@ describe('AttachmentRoutingService', () => {
     const subEl = root.getElementsByTagName('child')[0];
     const subDoc: Record<string, any> = { signature: 'Sig 12_30_45.png' };
 
-    service.route(twoDocStrategy(root, mainDoc, subEl, subDoc));
+    service.route(sectionStrategy(root, mainDoc, [ { el: subEl, doc: subDoc } ]));
 
     // the blob and the field-value rewrite both land on the sub-doc
     expect(add.calledOnce).to.be.true;
@@ -131,6 +130,37 @@ describe('AttachmentRoutingService', () => {
     expect(subDoc.signature).to.equal('Sig12_30_45.png');
     // main doc keeps its own value and gets no attachment
     expect(mainDoc).to.deep.equal({ name: 'p' });
+  });
+
+  // Two files uploaded in the same second share a name (the postfix is only
+  // second-resolution). Each must claim its own node so the blobs land on distinct
+  // sub-docs; without node consumption both resolve to the first node and the
+  // second sub-doc's field points at a missing attachment.
+  it('maps same-named files in different sub-docs to distinct docs', () => {
+    const root = parse(
+      '<my-form>' +
+        '<a db-doc="true"><photo type="binary">dup-12_30_45.png</photo></a>' +
+        '<b db-doc="true"><photo type="binary">dup-12_30_45.png</photo></b>' +
+      '</my-form>'
+    );
+    getCurrentFiles.returns([
+      { name: 'dup-12_30_45.png', type: 'image/png' },
+      { name: 'dup-12_30_45.png', type: 'image/png' },
+    ]);
+    const mainDoc: Record<string, any> = {};
+    const aEl = root.getElementsByTagName('a')[0];
+    const bEl = root.getElementsByTagName('b')[0];
+    const aDoc: Record<string, any> = { photo: 'dup-12_30_45.png' };
+    const bDoc: Record<string, any> = { photo: 'dup-12_30_45.png' };
+
+    service.route(sectionStrategy(root, mainDoc, [ { el: aEl, doc: aDoc }, { el: bEl, doc: bDoc } ]));
+
+    // one blob on each sub-doc, none on the main doc
+    const targets = add.args.map(args => args[0]);
+    expect(targets).to.have.members([ aDoc, bDoc ]);
+    expect(add.args.every(args => args[1] === 'user-file-dup-12_30_45.png')).to.be.true;
+    expect(aDoc.photo).to.equal('dup-12_30_45.png');
+    expect(bDoc.photo).to.equal('dup-12_30_45.png');
   });
 
   it('restores an untouched binary from its data-attachment-ref sidecar', () => {

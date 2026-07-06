@@ -35,18 +35,24 @@ export interface AttachmentRoutingStrategy {
 }
 
 /**
- * The media node within `root` whose text is `filename`, or null; the caller owns
- * the no-match fallback. Filenames are session-unique, so the first match wins.
+ * The first media node within `root` whose text is `filename` and isn't already in
+ * `consumed`, or null; the caller owns the no-match fallback. Enketo's filename
+ * postfix is only second-resolution, so two same-named files can share a name — add
+ * each returned node to `consumed` so every file claims a distinct node (else both
+ * route to one doc and the other's field points at a missing attachment).
  *
- * Matches both `[type=file]` and `[type=binary]`. A draw/signature/annotate widget
+ * Matches both `[type=file]` and `[type=binary]`: a draw/signature/annotate widget
  * tracked by FileManager can still read `type="binary"` (Enketo only rewrites to
- * `file` on a value change), so routing its upload to the right owner can't depend
- * on that. Genuine inline binaries hold base64, never a filename, so they never
- * match here.
+ * `file` on a value change), so owner routing can't depend on that. Genuine inline
+ * binaries hold base64, never a filename, so they never match here.
  */
-export const findUploadNodeByFilename = (root: Element, filename: string): Element | null => {
+export const findUploadNodeByFilename = (
+  root: Element,
+  filename: string,
+  consumed?: ReadonlySet<Element>,
+): Element | null => {
   return $(root).find('[type=file],[type=binary]').toArray()
-    .find(element => $(element).text() === filename) ?? null;
+    .find(element => $(element).text() === filename && !consumed?.has(element)) ?? null;
 };
 
 /** 0-based count of an element's preceding same-node-name element siblings. */
