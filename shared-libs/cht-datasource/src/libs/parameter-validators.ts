@@ -136,13 +136,6 @@ export const assertContactTypeFreetextQualifier: (
 };
 
 /** @internal */
-export const assertIdsQualifier: (qualifier: unknown) => asserts qualifier is IdsQualifier = (qualifier: unknown) => {
-  if (!isIdsQualifier(qualifier)) {
-    throw new InvalidArgumentError(`Invalid ids qualifier [${JSON.stringify(qualifier)}].`);
-  }
-};
-
-/** @internal */
 export const assertContactTypeIdsQualifier: (
   qualifier: unknown
 ) => asserts qualifier is ContactTypeQualifier | IdsQualifier = (qualifier: unknown) => {
@@ -157,6 +150,15 @@ export const assertContactTypeIdsQualifier: (
 export const assertUuidQualifier: (qualifier: unknown) => asserts qualifier is UuidQualifier = (qualifier: unknown) => {
   if (!isUuidQualifier(qualifier)) {
     throw new InvalidArgumentError(`Invalid identifier [${JSON.stringify(qualifier)}].`);
+  }
+};
+
+/** @internal */
+export const assertIdsQualifier: (
+  qualifier: unknown
+) => asserts qualifier is IdsQualifier = (qualifier: unknown) => {
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(qualifier)}].`);
   }
 };
 

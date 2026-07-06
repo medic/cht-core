@@ -6,7 +6,8 @@ import {
   byFreetext,
   byReportingPeriod,
   byUsername,
-  byUuid, FreetextQualifier,
+  byUuid,
+  byIds, FreetextQualifier,
   isContactTypeQualifier,
   isContactIdQualifier,
   isContactIdsQualifier,
@@ -15,10 +16,9 @@ import {
   isReportingPeriodQualifier,
   isUsernameQualifier,
   isUuidQualifier,
+  isIdsQualifier,
   byId,
-  isIdQualifier,
-  byIds,
-  isIdsQualifier
+  isIdQualifier
 } from '../src/qualifier';
 import { expect } from 'chai';
 
@@ -79,6 +79,47 @@ describe('qualifier', () => {
     ].forEach(([ identifier, expected ]) => {
       it(`evaluates ${JSON.stringify(identifier)}`, () => {
         expect(isUuidQualifier(identifier)).to.equal(expected);
+      });
+    });
+  });
+
+  describe('byIds', () => {
+    [
+      [],
+      ['id'],
+      ['id-1', 'id-2'],
+    ].forEach(ids => {
+      it(`builds a qualifier that identifies entities by their identifiers for ${JSON.stringify(ids)}`, () => {
+        expect(byIds(ids)).to.deep.equal({ ids });
+      });
+    });
+
+    [
+      null,
+      'abc',
+      [''],
+      ['id', ''],
+    ].forEach(ids => {
+      it(`throws an error for ${JSON.stringify(ids)}`, () => {
+        expect(() => byIds(ids as string[])).to.throw(`Invalid identifiers [${JSON.stringify(ids)}].`);
+      });
+    });
+  });
+
+  describe('isIdsQualifier', () => {
+    [
+      [ null, false ],
+      [ 'id', false ],
+      [ { ids: '' }, false ],
+      [ { ids: { } }, false ],
+      [ { ids: ['id', ''] }, false ],
+      [ { ids: [null, 'id'] }, false ],
+      [ { ids: [] }, true ],
+      [ { ids: ['id'] }, true ],
+      [ { ids: ['id-1', 'id-2'] }, true ],
+    ].forEach(([ qualifier, expected ]) => {
+      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
+        expect(isIdsQualifier(qualifier)).to.equal(expected);
       });
     });
   });
@@ -306,51 +347,6 @@ describe('qualifier', () => {
     ].forEach(([ qualifier, expected ]) => {
       it(`evaluates ${JSON.stringify(qualifier)}`, () => {
         expect(isContactIdsQualifier(qualifier)).to.equal(expected);
-      });
-    });
-  });
-
-  describe('byIds', () => {
-    ([
-      ['abc-123'],
-      ['abc-123', 'abc-200']
-    ] as [string, ...string[]][]).forEach((ids) => {
-      it('builds a qualifier for searching by ids', () => {
-        expect(byIds(ids)).to.deep.equal({ ids });
-      });
-    });
-
-    it('dedupes the provided ids', () => {
-      expect(byIds(['abc-123', 'abc-123', 'abc-200'])).to.deep.equal({ ids: ['abc-123', 'abc-200'] });
-    });
-
-    ([
-      null,
-      '',
-      [],
-      [''],
-      [null, 'abc-123'],
-    ] as [string, ...string[]][]).forEach(ids => {
-      it(`throws an error for ${JSON.stringify(ids)}`, () => {
-        expect(() => byIds(ids)).to.throw(`Invalid ids [${JSON.stringify(ids)}].`);
-      });
-    });
-  });
-
-  describe('isIdsQualifier', () => {
-    [
-      [ null, false ],
-      [ 'abc-123', false ],
-      [ { ids: '' }, false ],
-      [ { ids: { } }, false ],
-      [ { ids: [] }, false ],
-      [ { ids: ['abc-123', ''] }, false ],
-      [ { ids: [null, 'abc-123'] }, false ],
-      [ { ids: ['abc-123'] }, true ],
-      [ { ids: ['abc-123', 'abc-456', 'abc-789'] }, true ],
-    ].forEach(([ qualifier, expected ]) => {
-      it(`evaluates ${JSON.stringify(qualifier)}`, () => {
-        expect(isIdsQualifier(qualifier)).to.equal(expected);
       });
     });
   });

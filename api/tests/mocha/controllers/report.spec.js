@@ -12,6 +12,7 @@ describe('Report Controller Tests', () => {
   const reportGetWithLineage = sandbox.stub();
   const reportGetIdsPage = sandbox.stub();
   const reportGetPage = sandbox.stub();
+  const reportGetSummaries = sandbox.stub();
   const createReport = sandbox.stub();
   const updateReport = sandbox.stub();
 
@@ -27,6 +28,7 @@ describe('Report Controller Tests', () => {
     bind.withArgs(Report.v1.getWithLineage).returns(reportGetWithLineage);
     bind.withArgs(Report.v1.getUuidsPage).returns(reportGetIdsPage);
     bind.withArgs(Report.v1.getPage).returns(reportGetPage);
+    bind.withArgs(Report.v1.getSummaries).returns(reportGetSummaries);
     bind.withArgs(Report.v1.create).returns(createReport);
     bind.withArgs(Report.v1.update).returns(updateReport);
     controller = require('../../../src/controllers/report');
@@ -226,6 +228,27 @@ describe('Report Controller Tests', () => {
         expect(reportGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.called).to.be.true;
+      });
+    });
+
+    describe('getSummaries', () => {
+      it('returns summaries for the provided ids', async () => {
+        const ids = ['a', 'b'];
+        const summaries = [{ _id: 'a' }, { _id: 'b' }];
+        req = { body: { ids } };
+        reportGetSummaries.returns((async function* () {
+          yield* summaries;
+        })());
+
+        await controller.v1.getSummaries(req, res);
+
+        expect(assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: ['can_view_reports'] }
+        )).to.be.true;
+        expect(reportGetSummaries.calledOnceWithExactly({ ids })).to.be.true;
+        expect(res.json.calledOnceWithExactly(summaries)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
       });
     });
 

@@ -61,7 +61,7 @@ describe('Languages service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: SettingsService, useValue: settingsService },
-        { provide: DbService, useValue: { get: () => ({ query: dbQuery })  } },
+        { provide: DbService, useValue: { get: () => ({ allDocs: dbQuery })  } },
       ]
     });
     languagesService = TestBed.inject(LanguagesService);

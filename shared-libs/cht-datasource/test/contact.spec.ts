@@ -134,6 +134,155 @@ describe('contact', () => {
       });
     });
 
+    describe('getSummariesPage', () => {
+      const ids = ['contact-1', 'contact-2', 'contact-3'];
+      const qualifier = { ids };
+      const summaries = [{ _id: 'contact-1' }, { _id: 'contact-2' }] as Contact.v1.ContactSummary[];
+      let getSummariesFn: SinonStub;
+
+      beforeEach(() => {
+        getSummariesFn = sinon.stub();
+        adapt.returns(getSummariesFn);
+        isIdsQualifier.returns(true);
+      });
+
+      it('retrieves the first page of summaries when cursor is null', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Contact.v1.getSummariesPage(dataContext)(qualifier, null, 2);
+
+        expect(result).to.deep.equal({ data: summaries, cursor: '2' });
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(
+          adapt.calledOnceWithExactly(dataContext, Local.Contact.v1.getSummaries, Remote.Contact.v1.getSummaries)
+        ).to.be.true;
+        expect(getSummariesFn.calledOnceWithExactly({ ids: ['contact-1', 'contact-2'] })).to.be.true;
+      });
+
+      it('returns a null cursor for the last page', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Contact.v1.getSummariesPage(dataContext)(qualifier, '2', 2);
+
+        expect(result).to.deep.equal({ data: summaries, cursor: null });
+        expect(getSummariesFn.calledOnceWithExactly({ ids: ['contact-3'] })).to.be.true;
+      });
+
+      it('uses the default limit when not provided', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Contact.v1.getSummariesPage(dataContext)(qualifier);
+
+        expect(result).to.deep.equal({ data: summaries, cursor: null });
+        expect(getSummariesFn.calledOnceWithExactly({ ids })).to.be.true;
+      });
+
+      it('accepts a stringified limit', async () => {
+        getSummariesFn.resolves(summaries);
+
+        const result = await Contact.v1.getSummariesPage(dataContext)(qualifier, null, '2');
+
+        expect(result).to.deep.equal({ data: summaries, cursor: '2' });
+        expect(getSummariesFn.calledOnceWithExactly({ ids: ['contact-1', 'contact-2'] })).to.be.true;
+      });
+
+      it('throws an error if the data context is invalid', () => {
+        assertDataContext.throws(new Error(`Invalid data context [null].`));
+
+        expect(() => Contact.v1.getSummariesPage(dataContext)).to.throw(`Invalid data context [null].`);
+
+        expect(adapt.notCalled).to.be.true;
+      });
+
+      ([
+        null,
+        undefined,
+        'not-an-array',
+        { ids: 'not-an-array' },
+        { ids: [1, 2] },
+        { ids: ['valid', ''] },
+      ] as unknown[]).forEach((invalid) => {
+        it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, async () => {
+          isIdsQualifier.returns(false);
+
+          await expect(Contact.v1.getSummariesPage(dataContext)(invalid as never))
+            .to.be.rejectedWith(`Invalid identifiers [${JSON.stringify(invalid)}].`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+
+      [-1, null, {}, '', 0, 1.1, false].forEach((limitValue) => {
+        it(`throws an error if limit is invalid: ${JSON.stringify(limitValue)}`, async () => {
+          await expect(Contact.v1.getSummariesPage(dataContext)(qualifier, null, limitValue as number))
+            .to.be.rejectedWith(`The limit must be a positive integer: [${JSON.stringify(limitValue)}]`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+
+      [{}, '', 1, false, 'abc', '-1', '1.1'].forEach((cursorValue) => {
+        it(`throws an error if cursor is invalid: ${JSON.stringify(cursorValue)}`, async () => {
+          await expect(Contact.v1.getSummariesPage(dataContext)(qualifier, cursorValue as string, 2))
+            .to.be.rejectedWith(`The cursor must be a string or null for first page: [${JSON.stringify(cursorValue)}]`);
+
+          expect(getSummariesFn.notCalled).to.be.true;
+        });
+      });
+    });
+
+    describe('getSummaries', () => {
+      const ids = ['contact-1', 'contact-2'];
+      const qualifier = { ids };
+      const mockGenerator = {} as AsyncGenerator<Contact.v1.ContactSummary, null>;
+      let contactGetSummariesPage: sinon.SinonStub;
+      let getPagedGenerator: sinon.SinonStub;
+
+      beforeEach(() => {
+        contactGetSummariesPage = sinon.stub(Contact.v1, 'getSummariesPage');
+        dataContext.bind = sinon.stub().returns(contactGetSummariesPage);
+        getPagedGenerator = sinon.stub(Core, 'getPagedGenerator');
+        isIdsQualifier.returns(true);
+      });
+
+      it('should get summaries generator with correct parameters', () => {
+        getPagedGenerator.returns(mockGenerator);
+
+        const generator = Contact.v1.getSummaries(dataContext)(qualifier);
+
+        expect(generator).to.deep.equal(mockGenerator);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(getPagedGenerator.calledOnceWithExactly(contactGetSummariesPage, qualifier)).to.be.true;
+      });
+
+      it('should throw an error for invalid datacontext', () => {
+        const errMsg = 'Invalid data context [null].';
+        assertDataContext.throws(new Error(errMsg));
+
+        expect(() => Contact.v1.getSummaries(dataContext)).to.throw(errMsg);
+        expect(assertDataContext.calledOnceWithExactly(dataContext)).to.be.true;
+        expect(contactGetSummariesPage.notCalled).to.be.true;
+      });
+
+      ([
+        null,
+        undefined,
+        'not-an-array',
+        { ids: 'not-an-array' },
+        { ids: [1, 2] },
+        { ids: ['valid', ''] },
+      ] as unknown[]).forEach((invalid) => {
+        it(`throws an error for invalid qualifier ${JSON.stringify(invalid)}`, () => {
+          isIdsQualifier.returns(false);
+
+          expect(() => Contact.v1.getSummaries(dataContext)(invalid as never))
+            .to.throw(`Invalid identifiers [${JSON.stringify(invalid)}].`);
+
+          expect(getPagedGenerator.notCalled).to.be.true;
+        });
+      });
+    });
+
     describe('getUuidsPage', () => {
       const contactIds = ['contact1', 'contact2', 'contact3'] as string[];
       const cursor = '1';
@@ -597,6 +746,8 @@ describe('contact', () => {
       it('contains expected keys', () => {
         expect(contact).to.have.all.keys(
           [
+            'getSummaries',
+            'getSummariesPage',
             'getByUuid',
             'getByUuidWithLineage',
             'getUuidsByTypeFreetext',
@@ -611,6 +762,54 @@ describe('contact', () => {
             'getByIds',
           ]
         );
+      });
+
+      it('getSummaries', () => {
+        const mockAsyncGenerator = fakeGenerator();
+        const contactGetSummaries = sinon.stub().returns(mockAsyncGenerator);
+        dataContextBind.returns(contactGetSummaries);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(qualifier);
+
+        const res = contact.getSummaries(ids);
+
+        expect(res).to.deep.equal(mockAsyncGenerator);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getSummaries)).to.be.true;
+        expect(contactGetSummaries.calledOnceWithExactly(qualifier)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getSummariesPage', async () => {
+        const expectedPage: Page<Contact.v1.ContactSummary> = { data: [], cursor: null };
+        const contactGetSummariesPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(contactGetSummariesPage);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        const limit = 2;
+        const cursor = '1';
+        const byIds = sinon.stub(Qualifier, 'byIds').returns(qualifier);
+
+        const returnedPage = await contact.getSummariesPage(ids, cursor, limit);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(dataContextBind.calledOnceWithExactly(Contact.v1.getSummariesPage)).to.be.true;
+        expect(contactGetSummariesPage.calledOnceWithExactly(qualifier, cursor, limit)).to.be.true;
+        expect(byIds.calledOnceWithExactly(ids)).to.be.true;
+      });
+
+      it('getSummariesPage uses default cursor and limit', async () => {
+        const expectedPage: Page<Contact.v1.ContactSummary> = { data: [], cursor: null };
+        const contactGetSummariesPage = sinon.stub().resolves(expectedPage);
+        dataContextBind.returns(contactGetSummariesPage);
+        const ids = ['uuid-1', 'uuid-2'];
+        const qualifier = { ids };
+        sinon.stub(Qualifier, 'byIds').returns(qualifier);
+
+        const returnedPage = await contact.getSummariesPage(ids);
+
+        expect(returnedPage).to.equal(expectedPage);
+        expect(contactGetSummariesPage.calledOnceWithExactly(qualifier, null, 100)).to.be.true;
       });
 
       it('getByUuid', async () => {

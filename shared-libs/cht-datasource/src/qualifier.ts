@@ -57,36 +57,35 @@ export const isUuidQualifier = (identifier: unknown): identifier is UuidQualifie
 };
 
 /**
- * A qualifier that identifies entities by their ids.
+ * A qualifier that identifies entities by their identifiers.
  */
-export interface IdsQualifier {
-  readonly ids: [string, ...string[]]
-}
+export type IdsQualifier = Readonly<{ ids: string[] }>;
 
 /**
- * Returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`.
+ * Returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`. An empty array of identifiers is
+ * considered valid.
  * @param qualifier the qualifier to check
- * @returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`.
+ * @returns `true` if the given qualifier is an {@link IdsQualifier}, otherwise `false`
  */
 export const isIdsQualifier = (qualifier: unknown): qualifier is IdsQualifier => {
   return isRecord(qualifier)
     && hasField(qualifier, { name: 'ids', type: 'object' })
     && Array.isArray(qualifier.ids)
-    && qualifier.ids.length > 0
-    && qualifier.ids.every((id) => isString(id) && id.length > 0);
+    && qualifier.ids.every(id => isString(id) && id.length > 0);
 };
 
 /**
- * Builds a qualifier for finding entities by their ids.
- * @param ids the ids to search with
+ * Builds a qualifier that identifies entities by their identifiers.
+ * @param ids the identifiers of the entities
  * @returns the qualifier
- * @throws InvalidArgumentError if the ids are not valid
+ * @throws InvalidArgumentError if the identifiers are not an array of non-empty strings
  */
-export const byIds = (ids: [string, ...string[]]): IdsQualifier => {
-  if (!isIdsQualifier({ ids })) {
-    throw new InvalidArgumentError(`Invalid ids [${JSON.stringify(ids)}].`);
+export const byIds = (ids: string[]): IdsQualifier => {
+  const qualifier = { ids };
+  if (!isIdsQualifier(qualifier)) {
+    throw new InvalidArgumentError(`Invalid identifiers [${JSON.stringify(ids)}].`);
   }
-  return { ids: [...new Set(ids)] as [string, ...string[]] };
+  return qualifier;
 };
 
 /**

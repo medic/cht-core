@@ -31,7 +31,7 @@ describe('UserSettings service', () => {
         { provide: LanguageService, useValue: { get: getLanguage } },
         { provide: SessionService, useValue: { userCtx } },
         { provide: DbService, useValue: { get: () => ({ get }) } },
-        { provide: GetDataRecordsService, useValue: { get: getDataRecords } }
+        { provide: GetDataRecordsService, useValue: { getContacts: getDataRecords } }
       ],
     });
     service = TestBed.inject(UserSettingsService);

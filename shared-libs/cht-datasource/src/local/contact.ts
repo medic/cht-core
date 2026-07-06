@@ -28,6 +28,7 @@ import { normalizeFreetextQualifier, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
+import { summariseContact } from '@medic/summaries';
 
 const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQualifier) => {
   const contactTypesIds = contactTypeUtils.getContactTypeIds(settings);
@@ -108,6 +109,17 @@ export namespace v1 {
       }
 
       return contact;
+    };
+  };
+
+  /** @internal */
+  export const getSummaries = ({ medicDb, settings }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    return async ({ ids }: IdsQualifier): Promise<Contact.v1.ContactSummary[]> => {
+      const docs = await getMedicDocsByIds(ids);
+      return docs
+        .filter(doc => isContact(settings, doc))
+        .map(doc => summariseContact(doc));
     };
   };
 

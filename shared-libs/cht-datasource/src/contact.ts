@@ -1,3 +1,4 @@
+import { ContactSummary as LibContactSummary } from '@medic/summaries';
 import {
   getPagedGenerator, NormalizedParent,
   Nullable,
@@ -16,6 +17,7 @@ import {
 } from './qualifier';
 import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { LocalDataContext } from './local/libs/data-context';
+import { validateCursor } from './local/libs/core';
 import { RemoteDataContext } from './remote/libs/data-context';
 import * as Local from './local';
 import * as Remote from './remote';
@@ -26,6 +28,7 @@ import {
   assertCursor,
   assertLimit,
   assertUuidQualifier,
+  assertIdsQualifier,
 } from './libs/parameter-validators';
 import { Doc } from './libs/doc';
 
@@ -47,6 +50,11 @@ export namespace v1 {
   export interface ContactWithLineage extends Contact {
     readonly parent?: ContactWithLineage | NormalizedParent;
   }
+
+  /**
+   * A compact summary of a contact record.
+   */
+  export type ContactSummary = LibContactSummary;
 
   const getContact =
     <T>(
@@ -84,6 +92,75 @@ export namespace v1 {
    * @throws Error if a data context is not provided
    */
   export const getWithLineage = getContact(Local.Contact.v1.getWithLineage, Remote.Contact.v1.getWithLineage);
+
+  /**
+   * Returns a function for retrieving a paged array of contact summaries from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving a paged array of contact summaries
+   * @throws Error if a data context is not provided
+   * @see {@link getSummaries} which provides the same data, but without having to manually account for paging
+   */
+  export const getSummariesPage = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Contact.v1.getSummaries, Remote.Contact.v1.getSummaries);
+
+    /**
+     * Returns a page of summary records for the contacts identified by the given qualifier. Any identifiers that do
+     * not identify an existing contact are silently omitted from the result.
+     * @param qualifier the identifiers of the contacts to summarise
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of summaries to return. Default is 100.
+     * @returns a page of contact summaries for the provided specification
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    const curriedFn = async (
+      qualifier: IdsQualifier,
+      cursor: Nullable<string> = null,
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
+    ): Promise<Page<ContactSummary>> => {
+      assertCursor(cursor);
+      assertLimit(limit);
+      assertIdsQualifier(qualifier);
+
+      const skip = validateCursor(cursor);
+      const numberLimit = Number(limit);
+      const data = await fn({ ids: qualifier.ids.slice(skip, skip + numberLimit) });
+      const nextSkip = skip + numberLimit;
+      return {
+        data,
+        cursor: nextSkip < qualifier.ids.length ? `${nextSkip}` : null,
+      };
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for getting a generator that fetches contact summaries from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches contact summaries
+   * @throws Error if a data context is not provided
+   */
+  export const getSummaries = (context: DataContext): typeof curriedGen => {
+    assertDataContext(context);
+    const getPage = context.bind(v1.getSummariesPage);
+
+    /**
+     * Returns a generator for fetching summary records for the contacts identified by the given qualifier. Any
+     * identifiers that do not identify an existing contact are silently omitted from the result.
+     * @param qualifier the identifiers of the contacts to summarise
+     * @returns a generator for fetching all the matching contact summaries
+     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
+     */
+    const curriedGen = (qualifier: IdsQualifier): AsyncGenerator<ContactSummary, null> => {
+      assertIdsQualifier(qualifier);
+
+      return getPagedGenerator(getPage, qualifier);
+    };
+    return curriedGen;
+  };
 
   /**
    * Returns a function for retrieving a paged array of contact identifiers from the given data context.
@@ -213,6 +290,33 @@ export namespace v1 {
    * Operations for working with contacts.
    */
   export interface Datasource {
+    /**
+     * Returns a generator for fetching summary records for the given contact identifiers.
+     * @param ids the identifiers of the contacts to summarise
+     * @returns a generator for fetching all the matching contact summaries. Identifiers that do not identify an
+     * existing contact are silently omitted from the result.
+     * @throws InvalidArgumentError if `ids` is not an array of non-empty strings
+     */
+    getSummaries: (ids: string[]) => AsyncGenerator<ContactSummary, null>;
+
+    /**
+     * Returns a paged array of summary records for the given contact identifiers.
+     * @param ids the identifiers of the contacts to summarise
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of summaries to return. Default is 100.
+     * @returns a page of contact summaries. Identifiers that do not identify an existing contact are silently
+     * omitted from the result.
+     * @throws InvalidArgumentError if `ids` is not an array of non-empty strings
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getSummariesPage: (
+      ids: string[],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<ContactSummary>>;
+
     /**
      * Returns a contact by their UUID.
      * @param uuid the UUID of the contact to retrieve
@@ -367,6 +471,12 @@ export namespace v1 {
   /** @internal */
   export const getDatasource = (ctx: DataContext): Datasource => {
     return {
+      getSummaries: (ids) => ctx.bind(v1.getSummaries)(byIds(ids)),
+      getSummariesPage: (
+        ids,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getSummariesPage)(byIds(ids), cursor, limit),
       getByUuid: (uuid) => ctx.bind(v1.get)(byUuid(uuid)),
       getByUuidWithLineage: (uuid) => ctx.bind(v1.getWithLineage)(byUuid(uuid)),
       getUuidsPageByTypeFreetext: (

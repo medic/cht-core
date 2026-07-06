@@ -1,4 +1,4 @@
-import { getResource, getResources, RemoteDataContext } from './libs/data-context';
+import { getResource, getResources, postResource, RemoteDataContext } from './libs/data-context';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
@@ -32,6 +32,15 @@ export namespace v1 {
   ): Promise<Nullable<Contact.v1.ContactWithLineage>> => getContact(remoteContext)(identifier.uuid, {
     with_lineage: 'true',
   });
+
+  const postContactSummary = postResource('api/v1/contact/summary');
+
+  /** @internal */
+  export const getSummaries = (
+    remoteContext: RemoteDataContext
+  ) => ({ ids }: IdsQualifier): Promise<Contact.v1.ContactSummary[]> => {
+    return postContactSummary(remoteContext)({ ids });
+  };
 
   /** @internal */
   export const getUuidsPage = (remoteContext: RemoteDataContext) => (

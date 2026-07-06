@@ -30,6 +30,15 @@ export namespace v1 {
     return getReportUuids(remoteContext)(queryParams);
   };
 
+  const postReportSummary = postResource('api/v1/report/summary');
+
+  /** @internal */
+  export const getSummaries = (
+    remoteContext: RemoteDataContext
+  ) => ({ ids }: IdsQualifier): Promise<Report.v1.ReportSummary[]> => {
+    return postReportSummary(remoteContext)({ ids });
+  };
+
   /** @internal */
   export const getPage = (remoteContext: RemoteDataContext) => (
     qualifier: IdsQualifier,
