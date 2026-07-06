@@ -6,7 +6,7 @@ import { EnketoTranslationService } from '@mm-services/enketo-translation.servic
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
-import { AttachmentRoutingStrategy, FieldPath, computeFieldPath } from '@mm-services/attachment-routing';
+import { AttachmentRoutingStrategy, FieldPath, computeFieldPath } from '@mm-providers/attachment-routing.provider';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 

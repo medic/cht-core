@@ -10,7 +10,7 @@ import {
   FieldPath,
   computeFieldPath,
   indexedFieldPath,
-} from '@mm-services/attachment-routing';
+} from '@mm-providers/attachment-routing.provider';
 import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';

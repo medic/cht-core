@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import * as FileManager from '../../../../src/js/enketo/file-manager.js';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
-import { AttachmentRoutingStrategy, computeFieldPath } from '@mm-services/attachment-routing';
+import { AttachmentRoutingStrategy, computeFieldPath } from '@mm-providers/attachment-routing.provider';
 
 describe('AttachmentRoutingService', () => {
   let service;

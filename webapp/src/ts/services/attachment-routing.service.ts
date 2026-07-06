@@ -8,7 +8,7 @@ import {
   USER_FILE_PREFIX,
   computeAttachmentReference,
   findUploadNodeByFilename,
-} from '@mm-services/attachment-routing';
+} from '@mm-providers/attachment-routing.provider';
 import * as FileManager from '../../js/enketo/file-manager.js';
 
 type AttachmentNamesByDoc = Map<Record<string, any>, Set<string>>;

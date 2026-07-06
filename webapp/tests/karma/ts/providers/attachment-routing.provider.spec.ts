@@ -5,7 +5,7 @@ import {
   computeAttachmentReference,
   findUploadNodeByFilename,
   indexedFieldPath,
-} from '@mm-services/attachment-routing';
+} from '@mm-providers/attachment-routing.provider';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 
 describe('attachment-routing', () => {
