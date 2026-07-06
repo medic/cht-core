@@ -715,7 +715,10 @@ const getDefaultForms = async () => {
     const doc = await db.get(docName);
     PROTECTED_DOCS.push(...doc.forms);
   } catch {
-    const result = await db.allDocs({ startkey: 'form:', endkey: 'form:\ufff0' });
+    const result = await db.allDocs({
+      startkey: PREFIXES.FORM,
+      endkey: PREFIXES.FORM + '\ufff0',
+    });
     const doc = {
       _id: docName,
       forms: result.rows.map(row => row.id),
@@ -789,17 +792,16 @@ const revertDb = async (except = [], ignoreRefresh = true) => { //NOSONAR
   await setUserContactDoc();
 };
 
-const clearReplicationFailureLogs = async () => {
-  const result = await logsDb.allDocs({
-    startkey: 'replication-fail-',
-    endkey: 'replication-fail-\ufff0',
-  });
+const deleteLogsByPrefix = async (prefix) => {
+  const result = await logsDb.allDocs({ startkey: prefix, endkey: `${prefix}\ufff0` });
   if (!result.rows.length) {
     return;
   }
   const docs = result.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
   await logsDb.bulkDocs(docs);
 };
+
+const clearReplicationFailureLogs = () => deleteLogsByPrefix('replication-fail-');
 
 const getOrigin = () => `${constants.BASE_URL}`;
 
@@ -915,7 +917,11 @@ const createUsers = async (users, meta = false, password_change_required = false
 };
 
 const getAllUserSettings = () => db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .allDocs({
+    include_docs: true,
+    start_key: PREFIXES.COUCH_USER,
+    end_key: PREFIXES.COUCH_USER + '\ufff0',
+  })
   .then(response => response.rows.map(row => row.doc));
 
 /**
@@ -1892,6 +1898,7 @@ module.exports = {
   revertSettings,
   revertDb,
   clearReplicationFailureLogs,
+  deleteLogsByPrefix,
   getOrigin,
   getBaseUrl,
   getAdminBaseUrl,
