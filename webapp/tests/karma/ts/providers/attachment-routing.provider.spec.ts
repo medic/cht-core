@@ -84,8 +84,8 @@ describe('attachment-routing', () => {
   // (doc.fields.<repeat>[i].<field>); indexedFieldPath must reconstruct that array
   // index so objectPath.set lands on the array entry instead of corrupting it.
   describe('indexedFieldPath (report repeat-index reconstruction)', () => {
-    const RECORD = require('./enketo-xml/plain-repeat-binary.xml').default;
-    const FORM = require('./enketo-xml/plain-repeat-binary-form.xml').default;
+    const RECORD = require('../services/enketo-xml/plain-repeat-binary.xml').default;
+    const FORM = require('../services/enketo-xml/plain-repeat-binary-form.xml').default;
     const translation = new EnketoTranslationService();
 
     it('reportRecordToJs array-ifies a plain repeat', () => {
