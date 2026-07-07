@@ -133,7 +133,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         const normalizedMoment = this.isStartDate ? gregMoment.startOf('day') : gregMoment.endOf('day');
         const dateRange = this.createDateRange(normalizedMoment, normalizedMoment);
         this.applyFilter(dateRange);
-      }
+      },
+      position: 'anchored'
     });
 
     $(`#${this.fieldId}`).on('click', (e) => {
@@ -218,9 +219,11 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   setLabel(dateRange) {
     this.inputLabel = '';
     if (this.isNepali) {
+      const fromVal = dateRange.from ? moment(dateRange.from).startOf('day').valueOf() : undefined;
+      const toVal = dateRange.to ? moment(dateRange.to).startOf('day').valueOf() : undefined;
       const dates = {
-        from: dateRange.from ? this.formatDateService.dayMonth(dateRange.from) : undefined,
-        to: dateRange.to ? this.formatDateService.dayMonth(dateRange.to) : undefined,
+        from: fromVal ? this.formatDateService.dayMonth(fromVal) : undefined,
+        to: toVal ? this.formatDateService.dayMonth(toVal) : undefined,
       };
 
       if (dates.from && this.isStartDate) {

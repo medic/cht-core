@@ -22,7 +22,7 @@ const sanitizeHrefs = (container) => {
   $(container).find('a').each(function() {
     const $a = $(this);
     const href = $a.attr('href') || '';
-    if (href.startsWith('javascript:')) {
+    if (/^\s*(javascript|data|vbscript):/i.test(href)) {
       $a.attr('href', '#');
       $a.off('click.csp').on('click.csp', preventDefaultClick);
     }
@@ -57,6 +57,9 @@ const hideDatePicker = ($hiddenInput) => {
 };
 
 const ensureClearButton = (container, onClear) => {
+  if (typeof onClear !== 'function') {
+    return;
+  }
   const $today = $(container).find('.today-btn');
   if (!$today.length || $(container).find('.clear-btn').length) {
     return;
@@ -132,6 +135,9 @@ const initializePickerContainer = (container, $hiddenInput, onClear) => {
   const observer = new MutationObserver(() => {
     sanitizeHrefs(container);
     ensureClearButton(container, onClear);
+    if (!container.contains(document.activeElement)) {
+      container.focus();
+    }
   });
   observer.observe(container, { childList: true, subtree: true });
   $hiddenInput.data('observer', observer);
@@ -139,10 +145,13 @@ const initializePickerContainer = (container, $hiddenInput, onClear) => {
   $(container).off('keydown.focusTrap').on('keydown.focusTrap', (e) => handleFocusTrap(e, container));
 };
 
-const handleDateSelect = (event, onDateSelect) => {
+const handleDateSelect = (event, $hiddenInput, onDateSelect, closeOnDateSelect) => {
   const data = event.datePickerData;
   if (data && typeof onDateSelect === 'function') {
     onDateSelect(data);
+  }
+  if (closeOnDateSelect) {
+    hideDatePicker($hiddenInput);
   }
 };
 
@@ -153,23 +162,36 @@ const handleClose = ($hiddenInput, onClose) => {
   }
 };
 
-const handleShow = ($hiddenInput, onClear) => {
-  $hiddenInput.data('activeElementBeforeShow', document.activeElement);
-
+const ensureOverlay = (position) => {
+  if (position === 'anchored') {
+    return;
+  }
   if ($('.nepali-date-picker-overlay').length) {
     $('.nepali-date-picker-overlay').show();
   } else {
     $('<div class="nepali-date-picker-overlay"></div>').appendTo('body').show();
   }
+};
 
-  const $picker = $hiddenInput.data('picker');
+const showPickerContainer = ($picker, $hiddenInput, onClear) => {
   if ($picker) {
     if ($picker.length) {
       initializePickerContainer($picker[0], $hiddenInput, onClear);
     }
   }
+};
 
-  $('.nepali-date-picker-overlay').off('click').on('click', () => hideDatePicker($hiddenInput));
+const handleShow = ($hiddenInput, onClear, position) => {
+  $hiddenInput.data('activeElementBeforeShow', document.activeElement);
+
+  ensureOverlay(position);
+
+  const $picker = $hiddenInput.data('picker');
+  showPickerContainer($picker, $hiddenInput, onClear);
+
+  if (position !== 'anchored') {
+    $('.nepali-date-picker-overlay').off('click').on('click', () => hideDatePicker($hiddenInput));
+  }
 
   $(document).off('keydown.nepaliDatePicker').on('keydown.nepaliDatePicker', function(e) {
     if (e.keyCode === 27) {
@@ -178,7 +200,9 @@ const handleShow = ($hiddenInput, onClear) => {
   });
 };
 
-const setupNepaliDatePicker = ($hiddenInput, { onDateSelect, onClose, onClear, closeOnDateSelect = true }) => {
+const setupNepaliDatePicker = ($hiddenInput, {
+  onDateSelect, onClose, onClear, closeOnDateSelect = true, position
+}) => {
   if (typeof $.fn.nepaliDatePicker !== 'function') {
     return;
   }
@@ -193,12 +217,15 @@ const setupNepaliDatePicker = ($hiddenInput, { onDateSelect, onClose, onClear, c
   const afterPickers = $('.nepali-date-picker');
   const container = afterPickers.eq(beforeCount)[0];
   if (container) {
+    if (position === 'anchored') {
+      $(container).addClass('anchored');
+    }
     $hiddenInput.data('picker', $(container));
   }
 
-  $hiddenInput.on('dateSelect', (event) => handleDateSelect(event, onDateSelect));
+  $hiddenInput.on('dateSelect', (event) => handleDateSelect(event, $hiddenInput, onDateSelect, closeOnDateSelect));
   $hiddenInput.on('close', () => handleClose($hiddenInput, onClose));
-  $hiddenInput.on('show', () => handleShow($hiddenInput, onClear));
+  $hiddenInput.on('show', () => handleShow($hiddenInput, onClear, position));
 };
 
 module.exports = {
