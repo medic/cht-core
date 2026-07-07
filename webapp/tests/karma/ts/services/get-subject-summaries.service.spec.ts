@@ -30,7 +30,7 @@ describe('GetSubjectSummaries service', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: DbService, useValue: { get: sinon.stub().returns({ query }) } },
-        { provide: GetSummariesService, useValue: { get: GetSummaries } },
+        { provide: GetSummariesService, useValue: { getContacts: GetSummaries } },
         { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
       ]
     });
