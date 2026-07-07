@@ -131,6 +131,11 @@
   opacity: 1 !important;
   pointer-events: auto !important;
   
+  &.anchored {
+    position: absolute !important;
+    transform: none !important;
+  }
+  
   .close-btn {
     position: absolute;
     top: -12px;
@@ -175,6 +180,11 @@
 
     &:hover {
       opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 1px;
     }
   }
 
