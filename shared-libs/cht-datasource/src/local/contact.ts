@@ -1,12 +1,13 @@
 import { LocalDataContext, SettingsService } from './libs/data-context';
-import { fetchAndFilterIds, getDocById, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
+import { fetchAndFilterIds, getDocById, getDocsByIds, queryDocIdsByKey, queryDocIdsByRange } from './libs/doc';
 import {
   ContactTypeQualifier,
   FreetextQualifier,
   isContactTypeQualifier,
   isFreetextQualifier,
   isKeyedFreetextQualifier,
-  UuidQualifier
+  UuidQualifier,
+  IdsQualifier
 } from '../qualifier';
 import * as Contact from '../contact';
 import { DataObject, Nullable, Page } from '../libs/core';
@@ -18,6 +19,7 @@ import { normalizeFreetextQualifier, validateCursor } from './libs/core';
 import { END_OF_ALPHABET_MARKER } from '../libs/constants';
 import { fetchHydratedDoc } from './libs/lineage';
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
+import { summariseContact } from '@medic/summaries';
 
 const assertValidContactType = (settings: DataObject, qualifier: ContactTypeQualifier) => {
   const contactTypesIds = contactTypeUtils.getContactTypeIds(settings);
@@ -98,6 +100,17 @@ export namespace v1 {
       }
 
       return contact;
+    };
+  };
+
+  /** @internal */
+  export const getSummaries = ({ medicDb, settings }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    return async ({ ids }: IdsQualifier): Promise<Contact.v1.ContactSummary[]> => {
+      const docs = await getMedicDocsByIds(ids);
+      return docs
+        .filter(doc => isContact(settings, doc))
+        .map(doc => summariseContact(doc));
     };
   };
 
