@@ -166,7 +166,7 @@ module.exports = {
       ],
       getRows: record => {
         const tasks = normalizeTasks(record);
-        return tasks.map(task => {
+        return tasks.flatMap(task => {
           const history = buildHistory(task);
 
           if (!task.messages) {
@@ -210,7 +210,7 @@ module.exports = {
             message.to,
             message.message
           ]);
-        }).flat();
+        });
       },
       hydrate: hydrate
     });
