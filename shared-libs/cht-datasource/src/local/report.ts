@@ -6,7 +6,7 @@ import {
   queryDocIdsByKey,
   queryDocIdsByRange, updateDoc
 } from './libs/doc';
-import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier } from '../qualifier';
+import { FreetextQualifier, isKeyedFreetextQualifier, UuidQualifier, IdsQualifier } from '../qualifier';
 import { assertHasRequiredField, hasStringFieldWithValue, Nullable, Page } from '../libs/core';
 import * as Report from '../report';
 import * as LocalContact from './contact';
@@ -26,6 +26,7 @@ import { fetchHydratedDoc, getContactIdForUpdate, getUpdatedContact, minifyDoc }
 import { queryByFreetext, useNouveauIndexes } from './libs/nouveau';
 import { InvalidArgumentError, ResourceNotFoundError } from '../libs/error';
 import { assertReportInput } from '../libs/parameter-validators';
+import { summariseReport } from '@medic/summaries';
 
 const FORM_DOC_ID_PREFIX = 'form:';
 
@@ -103,6 +104,17 @@ export namespace v1 {
       }
 
       return report;
+    };
+  };
+
+  /** @internal */
+  export const getSummaries = ({ medicDb }: LocalDataContext) => {
+    const getMedicDocsByIds = getDocsByIds(medicDb);
+    return async ({ ids }: IdsQualifier): Promise<Report.v1.ReportSummary[]> => {
+      const docs = await getMedicDocsByIds(ids);
+      return docs
+        .filter(isReport)
+        .map(doc => summariseReport(doc));
     };
   };
 
