@@ -2,7 +2,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import * as RegistrationUtils from '@medic/registration-utils';
 import * as RulesEngineCore from '@medic/rules-engine';
 import { Subject, Subscription } from 'rxjs';
-import { debounce as _debounce, uniq as _uniq } from 'lodash-es';
+import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 import { DOC_IDS, DOC_TYPES } from '@medic/constants';
 
@@ -363,7 +363,7 @@ export class RulesEngineService implements OnDestroy {
       return;
     }
 
-    return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
+    return this.rulesEngineCore.updateEmissionsFor([...new Set(contactsWithUpdatedTasks)]);
   }
 
   private hydrateTaskDocs(taskDocs: Array<TaskDoc> = []) {

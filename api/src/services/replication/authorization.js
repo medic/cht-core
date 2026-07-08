@@ -369,7 +369,7 @@ const getAuthorizationContext = async (userCtx) => {
     await addPrimaryContactsSubjects(authCtx, contactsSubjects);
   }
 
-  authCtx.subjectIds = _.uniq(authCtx.subjectIds);
+  authCtx.subjectIds = [...new Set(authCtx.subjectIds)];
   if (hasAccessToUnassignedDocs(userCtx)) {
     authCtx.subjectIds.push(UNASSIGNED_KEY);
     authCtx.subjectsDepth[UNASSIGNED_KEY] = 0;
@@ -392,7 +392,7 @@ const addPrimaryContactsSubjects = async (authCtx, contacts) => {
     .values(contacts)
     .map(({ primaryContact }) => primaryContact)
     .filter(id => !!id);
-  const unknownPrimaryContacts = _.uniq(primaryContactIds.filter(id => !contacts[id]));
+  const unknownPrimaryContacts = [...new Set(primaryContactIds.filter(id => !contacts[id]))];
 
   if (unknownPrimaryContacts.length) {
     const result = await db.medic.query('medic/contacts_by_depth', { keys: unknownPrimaryContacts.map(id => [id] ) });
@@ -438,7 +438,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
     return Promise.resolve([]);
   }
 
-  replicationKeys = _.uniq(replicationKeys);
+  replicationKeys = [...new Set(replicationKeys)];
   const keys = replicationKeys.map(id => ['shortcode', id]);
 
   return db.medic
@@ -702,7 +702,7 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = tru
     }
   }
 
-  return _.uniq(validatedIds);
+  return [...new Set(validatedIds)];
 };
 
 /**
