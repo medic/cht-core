@@ -13,6 +13,8 @@ const NEPALI_MONTH_NAMES = [
   'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
 ];
 
+const MONTH_PLACEHOLDER = 'महिना';
+
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
     return 'input[type=date]';
@@ -114,6 +116,7 @@ const setupCalendarPicker = ($parent, widget) => {
   widget.$hiddenDateInput = $hiddenDateInput;
 
   setupNepaliDatePicker($hiddenDateInput, {
+    closeOnDateSelect: false,
     onDateSelect: (data) => {
       const year = data.bsYear;
       const monthNum = data.bsMonth;
@@ -126,6 +129,22 @@ const setupCalendarPicker = ($parent, widget) => {
         $parent.find('input[name="year"]').val(toDevanagari(year.toString())).trigger('change').trigger('blur');
         $group.find('.month-dropdown button').html(monthName + ' <span class="caret"></span>');
       }
+    },
+    onClear: () => {
+      $parent.find('input[name="day"]').val('').trigger('change');
+      $parent.find('input[name="month"]').val('').trigger('change');
+      $parent.find('input[name="year"]').val('').trigger('change').trigger('blur');
+      $group.find('.month-dropdown button').html(`${MONTH_PLACEHOLDER} <span class="caret"></span>`);
+      $hiddenDateInput.val('');
+      const $picker = $hiddenDateInput.data('picker');
+      if ($picker) {
+        if ($picker.length) {
+          $picker.find('td.active').removeClass('active');
+        }
+      }
+      const $realDateInput = $parent.children('input[type="date"]');
+      $realDateInput.val('').trigger('change');
+      hideDatePicker($hiddenDateInput);
     }
   });
 
@@ -164,7 +183,7 @@ const TEMPLATE = `
     <div class="input-group-btn month-dropdown">
       <button type="button" class="btn btn-default dropdown-toggle" 
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        महिना <span class="caret"></span>
+        ${MONTH_PLACEHOLDER} <span class="caret"></span>
       </button>
       <ul class="dropdown-menu">
         <li><a>बैशाख</a></li>

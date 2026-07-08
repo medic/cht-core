@@ -274,5 +274,17 @@ describe('Date Filter Component', () => {
       expect(formatDateService.dayMonth.args[0][0]).to.equal(moment('2024-07-24').valueOf());
       expect(component.inputLabel).to.equal('Formatted Date');
     });
+
+    it('setLabel should normalize to-date to start of day', () => {
+      component.isStartDate = false;
+      const endOfDayVal = moment('2024-07-24').endOf('day').valueOf();
+      const startOfDayVal = moment('2024-07-24').startOf('day').valueOf();
+
+      component.setLabel({ from: undefined, to: endOfDayVal });
+
+      expect(formatDateService.dayMonth.callCount).to.equal(1);
+      expect(formatDateService.dayMonth.args[0][0]).to.equal(startOfDayVal);
+      expect(component.inputLabel).to.equal('Formatted Date');
+    });
   });
 });

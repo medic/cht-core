@@ -204,6 +204,9 @@ describe('Reports Sidebar Filter', () => {
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id).isDisplayed()).to.be.true;
+
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await browser.refresh();
   });
 });
 

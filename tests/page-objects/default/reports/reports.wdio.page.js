@@ -303,8 +303,17 @@ const setSidebarFilterBikDate = async (fieldPromise, prevClicks, cellIndex) => {
   await fieldPromise.waitForDisplayed();
   await fieldPromise.click();
 
-  const picker = $('.nepali-date-picker');
-  await picker.waitForDisplayed();
+  let picker;
+  await browser.waitUntil(async () => {
+    const pickers = await $$('.nepali-date-picker');
+    for (const p of pickers) {
+      if (await p.isDisplayed()) {
+        picker = p;
+        return true;
+      }
+    }
+    return false;
+  }, { timeout: 5000, timeoutMsg: 'Nepali date picker not displayed' });
 
   const prevBtn = picker.$('.prev-btn.icon');
   await prevBtn.waitForDisplayed();

@@ -173,12 +173,32 @@ const ensureOverlay = (position) => {
   }
 };
 
-const showPickerContainer = ($picker, $hiddenInput, onClear) => {
-  if ($picker) {
-    if ($picker.length) {
-      initializePickerContainer($picker[0], $hiddenInput, onClear);
-    }
+const showPickerContainer = ($picker, $hiddenInput, onClear, position) => {
+  if (!$picker) {
+    return;
   }
+  if ($picker.length === 0) {
+    return;
+  }
+
+  initializePickerContainer($picker[0], $hiddenInput, onClear);
+
+  if (position !== 'anchored') {
+    return;
+  }
+
+  const $trigger = $hiddenInput.siblings('a, button, input').filter(':visible').first();
+  if (!$trigger.length) {
+    return;
+  }
+
+  const offset = $trigger.offset();
+  const height = $trigger.outerHeight();
+  $picker.css({
+    top: (offset.top + height) + 'px',
+    left: offset.left + 'px',
+    position: 'absolute'
+  });
 };
 
 const handleShow = ($hiddenInput, onClear, position) => {
@@ -187,7 +207,7 @@ const handleShow = ($hiddenInput, onClear, position) => {
   ensureOverlay(position);
 
   const $picker = $hiddenInput.data('picker');
-  showPickerContainer($picker, $hiddenInput, onClear);
+  showPickerContainer($picker, $hiddenInput, onClear, position);
 
   if (position !== 'anchored') {
     $('.nepali-date-picker-overlay').off('click').on('click', () => hideDatePicker($hiddenInput));

@@ -147,7 +147,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
       const activeDate = this.isStartDate ? this.dateRange.from : this.dateRange.to;
       if (activeDate) {
-        const bsDate = toBik(moment(activeDate));
+        const bsDate = toBik(moment(activeDate).startOf('day'));
         const bsMonth = String(bsDate.month).padStart(2, '0');
         const bsDay = String(bsDate.day).padStart(2, '0');
         const latinVal = `${bsDate.year}-${bsMonth}-${bsDay}`;
