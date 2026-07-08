@@ -644,7 +644,7 @@ describe('Contact API', () => {
     });
   });
 
-  describe('GET /api/v1/contact', async () => {
+  describe('GET /api/v1/contact', () => {
     const endpoint = '/api/v1/contact';
     const allContactIds = [
       ...expectedPeopleIds,

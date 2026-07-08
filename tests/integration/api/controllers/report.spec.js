@@ -416,7 +416,7 @@ describe('Report API', () => {
     });
   });
 
-  describe('GET /api/v1/report', async () => {
+  describe('GET /api/v1/report', () => {
     const endpoint = '/api/v1/report';
     const allReportIds = allReports.map(report => report._id);
 
