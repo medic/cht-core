@@ -1138,7 +1138,7 @@ describe('Enketo service', () => {
       expect(AddAttachment.args[1][3]).to.equal(file1.type);
     });
 
-    it('should remove binary data from content', async () => {
+    it('should rewrite [type=binary] field value to attachment name on save', async () => {
       form.validate.resolves(true);
       const content = loadXML('binary-field');
 
@@ -1151,17 +1151,485 @@ describe('Enketo service', () => {
         { doc: { } },
         { _id: 'my-user', phone: '8989' }
       );
+      // The binary loop attaches the base64 under its relative name and rewrites
+      // the field to the bare reference, resolved via `user-file-` + value.
       expect(actual.fields).to.deep.equal({
         name: 'Mary',
         age: '10',
         gender: 'f',
-        my_file: '',
+        my_file: 'my_file',
       });
       expect(AddAttachment.callCount).to.equal(1);
 
-      expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my_file');
       expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
       expect(AddAttachment.args[0][3]).to.equal('image/png');
+    });
+
+    it('skips an empty [type=binary] node (no attachment)', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
+      );
+      dbGetAttachment.resolves('<form/>');
+
+      const [actual] = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: { } },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('');
+    });
+
+    it('restores an inline-binary field from the data-attachment-ref sidecar on edit', async () => {
+      // Loaded fields omit `my_file`, so only the sidecar can drive the restore.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name>'
+          + '<my_file type="binary" data-attachment-ref="my_file"></my_file>'
+          + '</my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary' },
+        _attachments: { 'user-file-my_file': { stub: true, content_type: 'image/png' } },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('my_file');
+      expect(actual._attachments['user-file-my_file']).to.exist;
+    });
+
+    it('leaves an empty inline-binary field empty on edit when no sidecar is present', async () => {
+      // No sidecar on the node, so the saved-fields reference is not recovered - the sidecar is the only source.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary', my_file: 'my_file' },
+        _attachments: { 'user-file-my_file': { stub: true, content_type: 'image/png' } },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('');
+    });
+
+    it('leaves an empty inline-binary field empty on edit when no attachment exists', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name><my_file type="binary"></my_file></my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary', my_file: '' },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual.fields.my_file).to.equal('');
+    });
+
+    it('attaches the replacement and ignores the sidecar when an edited binary field is re-entered', async () => {
+      // Fresh base64 alongside a stale sidecar: the non-empty text must win.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Mary</name>'
+          + '<my_file type="binary" data-attachment-ref="my_file">NEW_BASE64</my_file>'
+          + '</my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Mary', my_file: 'my_file' },
+        _attachments: { 'user-file-my_file': { stub: true, content_type: 'image/png' } },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      expect(AddAttachment.callCount).to.equal(1);
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my_file');
+      expect(AddAttachment.args[0][2]).to.equal('NEW_BASE64');
+      expect(actual.fields.my_file).to.equal('my_file');
+    });
+
+    it('restores an unchanged sub-doc binary field from its sidecar on edit', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><name>Sally</name>'
+          + '<doc1 db-doc="true">'
+          + '<type>data_record</type><form>thing_1</form>'
+          + '<photo1 type="binary" data-attachment-ref="photo1"></photo1>'
+          + '</doc1>'
+          + '</my-form>'
+      );
+      getReport.resolves({
+        _id: '6',
+        _rev: '1-abc',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 500,
+        fields: { name: 'Sally' },
+      });
+
+      const actual = await service.completeExistingReport(form, { doc: {} }, '6');
+
+      // actual[0] = main doc, actual[1] = doc1 sub-doc
+      expect(AddAttachment.callCount).to.equal(0);
+      expect(actual[1].photo1).to.equal('photo1');
+    });
+
+    it('reports with an empty saved binary field re-attach under the same relative name', async () => {
+      // On edit the form default re-supplies fresh base64; the save re-attaches
+      // under the same relative name (overwrite-in-place) and rewrites the field.
+      form.validate.resolves(true);
+      const content = loadXML('binary-field');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const [actual] = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: { } },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(AddAttachment.callCount).to.equal(1);
+      expect(AddAttachment.args[0][1]).to.equal('user-file-my_file');
+      expect(actual.fields.my_file).to.equal('my_file');
+    });
+
+    it('should route binary attachments to correct sub-docs', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-binary');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // actual[0] = main doc, actual[1] = doc1, actual[2] = doc2
+      expect(actual).to.have.lengthOf(3);
+
+      // 3 binary fields = 3 AddAttachment calls
+      expect(AddAttachment.callCount).to.equal(3);
+
+      // main_photo should be attached to main doc (actual[0])
+      const mainPhotoCall = AddAttachment.args.find(args => args[2] === 'main_photo_data');
+      expect(mainPhotoCall).to.exist;
+      expect(mainPhotoCall[0]._id).to.equal(actual[0]._id);
+
+      // sub_photo_data_1 should be attached to doc1 (actual[1])
+      const subPhoto1Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_1');
+      expect(subPhoto1Call).to.exist;
+      expect(subPhoto1Call[0]._id).to.equal(actual[1]._id);
+
+      // sub_photo_data_2 should be attached to doc2 (actual[2])
+      const subPhoto2Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_2');
+      expect(subPhoto2Call).to.exist;
+      expect(subPhoto2Call[0]._id).to.equal(actual[2]._id);
+
+      // Each sub-doc's binary field holds its bare reference value
+      // (xpath relative to its owner doc), resolved via `user-file-` + value.
+      expect(actual[0].fields.main_photo).to.equal('main_photo');
+      expect(actual[1].photo1).to.equal('photo1');
+      expect(actual[2].photo2).to.equal('photo2');
+    });
+
+    it('should route FileManager files to correct sub-doc', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-file-field');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const mainFile = { name: 'main_upload.png', type: 'image/png' };
+      const subFile = { name: 'sub_upload.png', type: 'image/png' };
+      getCurrentFiles.returns([mainFile, subFile]);
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(actual).to.have.lengthOf(2);
+
+      // FileManager file calls: main_upload.png and sub_upload.png
+      const mainFileCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-main_upload.png'
+      );
+      expect(mainFileCall).to.exist;
+      expect(mainFileCall[0]._id).to.equal(actual[0]._id);
+
+      const subFileCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-sub_upload.png'
+      );
+      expect(subFileCall).to.exist;
+      expect(subFileCall[0]._id).to.equal(actual[1]._id);
+    });
+
+    it('should fall back to main doc when file is not inside a db-doc', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('binary-field');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(actual).to.have.lengthOf(1);
+      expect(AddAttachment.callCount).to.equal(1);
+      expect(AddAttachment.args[0][0]._id).to.equal(actual[0]._id);
+    });
+
+    it('should fall back to main doc when FileManager file has no matching XML node', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-orphan-file');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const orphanFile = { name: 'no_such_node.png', type: 'image/png' };
+      getCurrentFiles.returns([orphanFile]);
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // actual[0] = main doc, actual[1] = doc1
+      expect(actual).to.have.lengthOf(2);
+
+      const orphanCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-no_such_node.png'
+      );
+      expect(orphanCall).to.exist;
+      expect(orphanCall[0]._id).to.equal(actual[0]._id);
+    });
+
+    it('should route files inside db-doc nested in repeats to corresponding sub-docs', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-in-repeat-with-files');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      const file1 = { name: 'repeat_upload_1.png', type: 'image/png' };
+      const file2 = { name: 'repeat_upload_2.png', type: 'image/png' };
+      getCurrentFiles.returns([file1, file2]);
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // actual[0] = main doc, actual[1] = first repeat doc, actual[2] = second repeat doc
+      expect(actual).to.have.lengthOf(3);
+
+      const file1Call = AddAttachment.args.find(
+        args => args[1] === 'user-file-repeat_upload_1.png'
+      );
+      expect(file1Call).to.exist;
+      expect(file1Call[0]._id).to.equal(actual[1]._id);
+
+      const file2Call = AddAttachment.args.find(
+        args => args[1] === 'user-file-repeat_upload_2.png'
+      );
+      expect(file2Call).to.exist;
+      expect(file2Call[0]._id).to.equal(actual[2]._id);
+
+      // No file should land on the main doc.
+      const mainDocFileCalls = AddAttachment.args.filter(
+        args => args[0]._id === actual[0]._id && args[1].startsWith('user-file-')
+      );
+      expect(mainDocFileCalls).to.be.empty;
+    });
+
+    it('names sub-doc binary attachments relative to the owner db-doc container', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-binary');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // The name is the field's xpath relative to its owner container (the db-doc
+      // element for a sub-report, the instance root for the main doc).
+      const subPhoto1Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_1');
+      expect(subPhoto1Call).to.exist;
+      expect(subPhoto1Call[1]).to.equal('user-file-photo1');
+
+      const subPhoto2Call = AddAttachment.args.find(args => args[2] === 'sub_photo_data_2');
+      expect(subPhoto2Call).to.exist;
+      expect(subPhoto2Call[1]).to.equal('user-file-photo2');
+
+      const mainPhotoCall = AddAttachment.args.find(args => args[2] === 'main_photo_data');
+      expect(mainPhotoCall).to.exist;
+      expect(mainPhotoCall[1]).to.equal('user-file-main_photo');
+    });
+
+    it('should not attach removed files to sub-docs during edit', async () => {
+      form.validate.resolves(true);
+      const content = loadXML('db-doc-with-file-field-cleared');
+      form.getDataStr.returns(content);
+      dbGetAttachment.resolves('<form/>');
+
+      // Only the main file remains; sub_file was cleared during edit
+      const mainFile = { name: 'main_upload.png', type: 'image/png' };
+      getCurrentFiles.returns([mainFile]);
+
+      const actual = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {} },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      // actual[0] = main doc, actual[1] = doc1 sub-doc
+      expect(actual).to.have.lengthOf(2);
+
+      // Only the main file should be attached
+      const mainFileCall = AddAttachment.args.find(
+        args => args[1] === 'user-file-main_upload.png'
+      );
+      expect(mainFileCall).to.exist;
+      expect(mainFileCall[0]._id).to.equal(actual[0]._id);
+
+      // No attachment should land on the sub-doc
+      const subDocAttachments = AddAttachment.args.filter(
+        args => args[0]._id === actual[1]._id
+      );
+      expect(subDocAttachments).to.be.empty;
+    });
+
+    it('sanitizes report upload filenames and field values', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns('<my-form><my_file type="file">my photo!.png</my_file></my-form>');
+      dbGetAttachment.resolves('<form/>');
+      const file = { name: 'my photo!.png', type: 'image/png' };
+      getCurrentFiles.returns([file]);
+
+      const [actual] = await service.completeNewReport(
+        'my-form', form, { doc: {} }, { _id: 'my-user', phone: '8989' }
+      );
+
+      const addCall = AddAttachment.args.find(args => args[2] === file);
+      expect(addCall[1]).to.equal('user-file-myphoto.png');
+      expect(actual.fields.my_file).to.equal('myphoto.png');
+    });
+
+    it('removes orphaned report attachments but keeps referenced ones on edit', async () => {
+      // On edit the binary node loads empty; its sidecar carries the reference,
+      // which restoreUntouchedBinary writes back as the field value so the
+      // referenced attachment survives orphan cleanup.
+      form.validate.resolves(true);
+      form.getDataStr.returns(
+        '<my-form><keep type="binary" data-attachment-ref="keep"></keep></my-form>'
+      );
+      dbGetAttachment.resolves('<form/>');
+      getReport.resolves({
+        _id: '7',
+        _rev: '1-x',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1,
+        fields: { keep: 'keep' },
+        _attachments: {
+          'user-file-keep': { stub: true, content_type: 'image/png' },
+          'user-file-stale': { stub: true, content_type: 'image/png' },
+        },
+      });
+
+      const [actual] = await service.completeExistingReport(form, { doc: {} }, '7');
+
+      expect(actual.fields.keep).to.equal('keep');
+      expect(removeAttachment.args.some(args => args[1] === 'user-file-stale')).to.be.true;
+      expect(removeAttachment.args.some(args => args[1] === 'user-file-keep')).to.be.false;
+    });
+
+    it('routes plain-repeat inline binaries to array-indexed field paths', async () => {
+      // The dropped reparse means fieldPathFor must reconstruct the repeat array
+      // index so doc.fields.<repeat>[i] stays an array. The form XML (with the
+      // <repeat nodeset>) is supplied via formDoc.xml, which drives getRepeatPaths.
+      form.validate.resolves(true);
+      form.getDataStr.returns(loadXML('plain-repeat-binary'));
+      dbGetAttachment.resolves('<form/>');
+
+      const [actual] = await service.completeNewReport(
+        'my-form',
+        form,
+        { doc: {}, xml: loadXML('plain-repeat-binary-form') },
+        { _id: 'my-user', phone: '8989' }
+      );
+
+      expect(actual.fields.my_repeat).to.deep.equal([
+        { photo: 'my_repeat[1]/photo' },
+        { photo: 'my_repeat[2]/photo' },
+      ]);
+      expect(AddAttachment.callCount).to.equal(2);
+      expect(AddAttachment.args.map(args => args[1])).to.have.members([
+        'user-file-my_repeat[1]/photo',
+        'user-file-my_repeat[2]/photo',
+      ]);
+    });
+
+    it('leaves a legacy slash-named report attachment intact on edit', async () => {
+      form.validate.resolves(true);
+      form.getDataStr.returns('<my-form><name>Mary</name></my-form>');
+      dbGetAttachment.resolves('<form/>');
+      getReport.resolves({
+        _id: '8',
+        _rev: '1-x',
+        form: 'my-form',
+        type: DOC_TYPES.DATA_RECORD,
+        reported_date: 1,
+        fields: { name: 'Mary' },
+        _attachments: { 'user-file/my-form/legacy': { stub: true, content_type: 'image/png' } },
+      });
+
+      await service.completeExistingReport(form, { doc: {} }, '8');
+
+      expect(removeAttachment.args.some(args => args[1] === 'user-file/my-form/legacy')).to.be.false;
     });
   });
 

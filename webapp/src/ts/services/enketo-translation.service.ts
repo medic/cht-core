@@ -35,16 +35,12 @@ export class EnketoTranslationService {
     path = path || '';
     const result = {};
     this.withElements(data).forEach((n:any) => {
-      const typeAttribute = n.attributes.getNamedItem('type');
       const updatedPath = path + '/' + n.nodeName;
       let value;
 
       const hasChildren = this.withElements(n.childNodes).length > 0;
       if (hasChildren) {
         value = this.nodesToJs(n.childNodes, repeatPaths, updatedPath);
-      } else if (typeAttribute && typeAttribute.value === 'binary') {
-        // this is attached to the doc instead of inlined
-        value = '';
       } else {
         value = n.textContent;
       }
@@ -91,7 +87,47 @@ export class EnketoTranslationService {
       return found;
     }
 
-    return elem.children(name);
+    // Match by node name in JS rather than passing `name` to the jQuery selector
+    // data keys can be `_attachments` names containing ':' / '/' (form-id-derived),
+    // which jQuery would reject as an invalid selector.
+    return elem.children().filter((_idx, child) => child.nodeName === name);
+  }
+
+  /** True for a `[type=binary]` form field (an inline-binary / media node). */
+  private isBinaryField(elem): boolean {
+    const typeAttr = elem.attr ? elem.attr('type') : elem[0]?.getAttribute?.('type');
+    return typeAttr === 'binary';
+  }
+
+  // Stash a binary field's prior value so routeOneBinary can restore an untouched
+  // field on save; binary values are never loaded into the model (a relative
+  // reference can't be told apart from inline base64).
+  private stashBinaryReference(elem, data) {
+    if (![ null, undefined, '' ].includes(data)) {
+      elem.attr('data-attachment-ref', data);
+    }
+  }
+
+  private bindArrayToXml(elem, data) {
+    const parent = elem.parent();
+    elem.remove();
+
+    data.forEach((dataEntry) => {
+      const clone = elem.clone();
+      this.bindJsonToXml(clone, dataEntry);
+      parent.append(clone);
+    });
+  }
+
+  private bindObjectToXml(elem, data, childMatcher?) {
+    if (!elem.children().length) {
+      this.bindJsonToXml(elem, data._id);
+    }
+
+    Object.keys(data).forEach((key) => {
+      const current = this.findCurrentElement(elem, key, childMatcher);
+      this.bindJsonToXml(current, data[key]);
+    });
   }
 
   bindJsonToXml(elem, data, childMatcher?) {
@@ -100,32 +136,22 @@ export class EnketoTranslationService {
     elem.removeAttr('jr:template');
     elem.removeAttr('template');
 
+    if (this.isBinaryField(elem)) {
+      this.stashBinaryReference(elem, data);
+      return;
+    }
+
     if (data === null || typeof data !== 'object') {
       elem.text(data);
       return;
     }
 
     if (Array.isArray(data)) {
-      const parent = elem.parent();
-      elem.remove();
-
-      data.forEach((dataEntry) => {
-        const clone = elem.clone();
-        this.bindJsonToXml(clone, dataEntry);
-        parent.append(clone);
-      });
+      this.bindArrayToXml(elem, data);
       return;
     }
 
-    if (!elem.children().length) {
-      this.bindJsonToXml(elem, data._id);
-    }
-
-    Object.keys(data).forEach((key) => {
-      const value = data[key];
-      const current = this.findCurrentElement(elem, key, childMatcher);
-      this.bindJsonToXml(current, value);
-    });
+    this.bindObjectToXml(elem, data, childMatcher);
   }
 
   getHiddenFieldList (model, dbDocFields:Array<any>) {

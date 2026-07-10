@@ -461,6 +461,8 @@ export class FormatDataRecordService {
       return undefined;
     }
     const isImagePath = filePath => doc._attachments[filePath]?.content_type?.startsWith('image/');
+    // A media field's value is its attachment name minus the `user-file-` prefix
+    // (file-widget filename, or an inline binary's owner-relative xpath).
     const filePath = 'user-file-' + value;
     if (isImagePath(filePath)) {
       return filePath;

@@ -2,10 +2,16 @@ import { Injectable, NgZone } from '@angular/core';
 import { v7 as uuid } from 'uuid';
 import * as pojo2xml from 'pojo2xml';
 import type JQuery from 'jquery';
-import * as FileManager from '../../js/enketo/file-manager.js';
 import events from 'enketo-core/src/js/event';
 
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
+import {
+  AttachmentRoutingStrategy,
+  FieldPath,
+  computeFieldPath,
+  indexedFieldPath,
+} from '@mm-providers/attachment-routing.provider';
+import { AttachmentRoutingService } from '@mm-services/attachment-routing.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
@@ -30,6 +36,7 @@ import { DOC_TYPES } from '@medic/constants';
 export class EnketoService {
   constructor(
     private attachmentService: AttachmentService,
+    private readonly attachmentRoutingService: AttachmentRoutingService,
     private dbService: DbService,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
     private enketoTranslationService: EnketoTranslationService,
@@ -465,15 +472,16 @@ export class EnketoService {
         $element.text(refId);
       });
 
-    const docsToStore = $record
-      .find('[db-doc=true]')
-      .map((idx, element) => {
-        const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
-        docToStore._id = getId(Xpath.getElementXPath(element));
-        docToStore.reported_date = Date.now();
-        return docToStore;
-      })
-      .get();
+    // Single sub-doc parse, taken after the db-doc-ref rewrites so the resolved
+    // IDs land in doc.fields; route() objectPath-sets the binary references below.
+    const resolvedRecord = getOuterHTML($record[0]);
+    const subDocElements = $record.find('[db-doc=true]').toArray();
+    const docsToStore = subDocElements.map((element: any) => {
+      const docToStore: any = this.enketoTranslationService.reportRecordToJs(getOuterHTML(element));
+      docToStore._id = getId(Xpath.getElementXPath(element));
+      docToStore.reported_date = Date.now();
+      return docToStore;
+    });
 
     doc._id = getId('/*');
     if (xmlVersion) {
@@ -481,38 +489,74 @@ export class EnketoService {
     }
     doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
-    FileManager
-      .getCurrentFiles()
-      .forEach(file => this.attachmentService.add(doc, `user-file-${file.name}`, file, file.type, false));
+    // Build a lookup map: sub-doc _couchId -> prepared doc object
+    const subDocById = new Map<string, any>();
+    docsToStore.forEach(subDoc => subDocById.set(subDoc._id, subDoc));
 
-    const attachLegacyFile = (elem, file, type, alreadyEncoded) => {
-      const xpath = Xpath.getElementXPath(elem);
-      // replace instance root element node name with form internal ID
-      const filename = 'user-file' +
-        (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
+    // doc.fields must exist before route() objectPath-sets binary references into it.
+    doc.fields = this.enketoTranslationService.reportRecordToJs(resolvedRecord, formXml);
+
+    const routingContext: ReportRoutingContext = {
+      doc, docsToStore, root: $record[0], recordDoc, subDocById, repeatPaths,
     };
-
-    $record
-      .find('[type=binary]')
-      .each((idx, element) => {
-        const file = $(element).text();
-        if (file) {
-          // Attach binary file with legacy-style filename because the actual filename is not stored as the question
-          // value in the form model (and so there is currently no way to map the answer in a saved report to the
-          // associated file attachment).
-          attachLegacyFile(element, file, 'image/png', true);
-        }
-      });
-
-    record = getOuterHTML($record[0]);
+    this.attachmentRoutingService.route(this.reportRoutingStrategy(routingContext));
 
     // remove old style content attachment
     this.attachmentService.remove(doc, REPORT_ATTACHMENT_NAME);
     docsToStore.unshift(doc);
-
-    doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
     return docsToStore;
+  }
+
+  /**
+   * Report pipeline's attachment-routing strategy: owner is the nearest
+   * `[db-doc=true]` ancestor (else the main doc); the reference container is the
+   * form-instance root for the main doc or the db-doc element for a sub-report;
+   * field paths route to repeat-index-aware `doc.fields` for the main doc, or
+   * top-level fields for db-doc sub-reports.
+   */
+  private reportRoutingStrategy(ctx: ReportRoutingContext): AttachmentRoutingStrategy {
+    return {
+      root: ctx.root,
+      docs: [ ctx.doc, ...ctx.docsToStore ],
+      mainDoc: ctx.doc,
+      resolveOwnerForNode: (element) => this.resolveReportOwnerDoc(element, ctx),
+      containerFor: (element, ownerDoc) => ownerDoc === ctx.doc
+        ? ctx.root
+        : this.reportSubDocContainer(element, ownerDoc, ctx),
+      fieldPathFor: (element, ownerDoc) => this.reportFieldPath(element, ownerDoc, ctx),
+    };
+  }
+
+  /** Owner doc for a node: the nearest `[db-doc=true]` ancestor, else the main doc. */
+  private resolveReportOwnerDoc(element, ctx: ReportRoutingContext) {
+    let node = element.parentNode;
+    while (node && node !== ctx.recordDoc) {
+      if (node._couchId && ctx.subDocById.has(node._couchId)) {
+        return ctx.subDocById.get(node._couchId);
+      }
+      node = node.parentNode;
+    }
+    return ctx.doc;
+  }
+
+  /** The db-doc ancestor element that owns `ownerDoc` (its fields' container). */
+  private reportSubDocContainer(element, ownerDoc, ctx: ReportRoutingContext): Element | null {
+    let node = element;
+    while (node && node !== ctx.recordDoc) {
+      if (node._couchId === ownerDoc._id) {
+        return node;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  private reportFieldPath(element, ownerDoc, ctx: ReportRoutingContext): FieldPath | null {
+    if (ownerDoc === ctx.doc) {
+      return [ 'fields', ...indexedFieldPath(element, ctx.root, ctx.repeatPaths) ];
+    }
+    const container = this.reportSubDocContainer(element, ownerDoc, ctx);
+    return container ? computeFieldPath(element, container) : null;
   }
 
   private async update(docId) {
@@ -638,6 +682,15 @@ interface XmlFormContext {
   isFormInModal?: boolean;
   contactSummary?: ContactSummary;
   userContactSummary?: ContactSummary;
+}
+
+interface ReportRoutingContext {
+  doc: Record<string, any>;
+  docsToStore: Record<string, any>[];
+  root: Element;
+  recordDoc: Document;
+  subDocById: Map<string, any>;
+  repeatPaths: string[];
 }
 
 export type FormType = 'contact' | 'report' | 'task' | 'training-card';

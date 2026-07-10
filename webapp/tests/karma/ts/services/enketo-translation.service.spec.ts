@@ -337,6 +337,23 @@ describe('EnketoTranslation service', () => {
       });
     });
 
+    it('preserves text content of [type=binary] nodes', () => {
+      const xml =
+        `<data id="form" version="1">
+          <photo type="binary">form/photo</photo>
+          <signature type="binary">SOME_BASE64</signature>
+          <empty type="binary"></empty>
+          <name>Alice</name>
+        </data>`;
+
+      const js = service.reportRecordToJs(xml);
+
+      assert.equal(js.photo, 'form/photo');
+      assert.equal(js.signature, 'SOME_BASE64');
+      assert.equal(js.empty, '');
+      assert.equal(js.name, 'Alice');
+    });
+
     it('converts repeated fields to arrays - #3430', () => {
       // given
       const record = `
@@ -808,6 +825,88 @@ describe('EnketoTranslation service', () => {
         serialize(element.find('mixrepeat')[2]),
         '<mixrepeat><property>propvalue</property></mixrepeat>'
       );
+    });
+
+    describe('[type=binary] handling', () => {
+      const buildModel = (defaultText = '') => $($.parseXML(
+        `<data id="form" version="1">
+          <photo type="binary">${defaultText}</photo>
+          <name/>
+        </data>`
+      )).children().first();
+
+      // Binary fields are never loaded into the form model (a relative reference
+      // can't be told apart from base64): the form default is kept and any prior
+      // non-empty value is stashed to the data-attachment-ref sidecar.
+
+      it('never binds a binary reference value, preserving the form default', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: 'photo', name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+        assert.equal(element.find('name').text(), 'Alice');
+      });
+
+      [ '', null, undefined ].forEach((value) => {
+        it(`preserves the form default when saved value is ${JSON.stringify(value)}`, () => {
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: value, name: 'Alice' });
+          assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+        });
+      });
+
+      it('does not bind even genuine-looking inline base64 (binary values are never inspected)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: 'INJECTED_BASE64_DATA', name: 'Alice' });
+        assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+      });
+
+      it('still clears empty values on non-binary leaves (no regression)', () => {
+        const element = buildModel('DEFAULT_BASE64');
+        service.bindJsonToXml(element, { photo: '', name: '' });
+        assert.equal(element.find('name').text(), '');
+      });
+
+      it('binds through saved filenames on [type=file] nodes (file-widget unaffected)', () => {
+        const element = $($.parseXML(
+          `<data id="form" version="1">
+            <upload type="file"/>
+          </data>`
+        )).children().first();
+        service.bindJsonToXml(element, { upload: 'photo.jpg-1700000000000' });
+        assert.equal(element.find('upload').text(), 'photo.jpg-1700000000000');
+      });
+
+      describe('data-attachment-ref sidecar', () => {
+        it('stashes a single-segment relative reference', () => {
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: 'photo', name: 'Alice' });
+          assert.equal(element.find('photo').attr('data-attachment-ref'), 'photo');
+          // text untouched, so the display widget still renders the form default
+          assert.equal(element.find('photo').text(), 'DEFAULT_BASE64');
+        });
+
+        it('stashes a nested relative reference', () => {
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: 'group/photo', name: 'Alice' });
+          assert.equal(element.find('photo').attr('data-attachment-ref'), 'group/photo');
+        });
+
+        it('stashes any non-empty value without inspection, even one that looks like base64', () => {
+          // Saved docs never hold raw base64 in a binary field, so stashing
+          // whatever is there is correct; the value is deliberately not inspected.
+          const element = buildModel('DEFAULT_BASE64');
+          service.bindJsonToXml(element, { photo: 'INJECTED_BASE64_DATA', name: 'Alice' });
+          assert.equal(element.find('photo').attr('data-attachment-ref'), 'INJECTED_BASE64_DATA');
+        });
+
+        [ '', null, undefined ].forEach((value) => {
+          it(`does not stash a sidecar when saved value is ${JSON.stringify(value)}`, () => {
+            const element = buildModel('DEFAULT_BASE64');
+            service.bindJsonToXml(element, { photo: value, name: 'Alice' });
+            assert.isUndefined(element.find('photo').attr('data-attachment-ref'));
+          });
+        });
+      });
     });
 
     it('should remove template-like attributes', () => {
