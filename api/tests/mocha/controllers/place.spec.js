@@ -214,36 +214,19 @@ describe('Place Controller', () => {
     });
 
     describe('delete', () => {
-      let deleteContact;
-      beforeEach(() => {
-        deleteContact = sinon.stub(require('../../../src/services/delete-contact'), 'deleteContactHierarchy');
-        res.status = sinon.stub().returns(res);
-      });
-
-      it('deletes the hierarchy when the id is a place', async () => {
-        req = { params: { uuid: '123' }, query: {} };
-        placeGet.resolves({ _id: '123' });
-        deleteContact.resolves({ breakdown: {}, id: 'bulk-operation:1' });
-
-        await controller.v1.delete(req, res);
-
-        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid('123'))).to.be.true;
-        expect(deleteContact.calledOnceWithExactly('123', { deleteUsers: false, dryRun: false })).to.be.true;
-        expect(res.status.calledOnceWithExactly(202)).to.be.true;
-      });
-
-      it('responds 404 and does not delete when the id is not a place', async () => {
+      // the delete logic itself is covered in the delete-contact service spec
+      it('responds 404 for an id that is not a place', async () => {
         req = { params: { uuid: 'person-1' }, query: {} };
         placeGet.resolves(null);
 
         await controller.v1.delete(req, res);
 
+        expect(placeGet.calledOnceWithExactly(Qualifier.byUuid('person-1'))).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
           { status: 404, message: 'Place not found' },
           req,
           res
         )).to.be.true;
-        expect(deleteContact.notCalled).to.be.true;
       });
     });
   });

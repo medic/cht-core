@@ -69,6 +69,25 @@ const PREFIXES = {
   UI_EXTENSION: `${DOC_TYPES.UI_EXTENSION}:`
 };
 
+// Bulk operation framework (delete, move, merge): the document id prefixes, action types, statuses,
+// and the attachment name shared between the api (which queues operations) and sentinel (which runs
+// them).
+const BULK_OPERATIONS = {
+  LOG_ID_PREFIX: 'bulk-operation:',
+  ACTION_ID_PREFIX: 'bulk-operation-action:',
+  OPERATIONS_ATTACHMENT: 'operations',
+  ACTIONS: {
+    ARCHIVE: 'archive',
+    SET_CONTACT: 'set-contact',
+    DELETE_USER: 'delete-user',
+  },
+  STATUSES: {
+    QUEUED: 'queued',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+  },
+};
+
 module.exports = {
   DOC_IDS,
   DOC_TYPES,
@@ -79,4 +98,5 @@ module.exports = {
   CONTACT_TYPES,
   STANDARD_HTTP_HEADERS,
   PREFIXES,
+  BULK_OPERATIONS,
 };

@@ -214,17 +214,17 @@ module.exports = {
      * @openapi
      * /api/v1/person/{id}:
      *   delete:
-     *     summary: Delete a person and their hierarchy
+     *     summary: Delete a person
      *     operationId: v1PersonIdDelete
      *     description: >
-     *       Queues an asynchronous bulk operation that removes the person, every descendant contact,
-     *       and the reports they are the subject of, clears any dangling primary-contact references,
-     *       and (with delete_users=true) removes linked user accounts. Returns a breakdown of the
-     *       changes and the bulk operation id to poll.
+     *       Queues an asynchronous bulk operation that removes the person and the reports they are the
+     *       subject of, clears any dangling primary-contact references, and (with delete_users=true)
+     *       removes linked user accounts. Returns a summary of the changes and the bulk operation id
+     *       to poll.
      *     tags: [Person]
-     *     x-since: 5.2.0
+     *     x-since: 5.3.0
      *     x-permissions:
-     *       hasAll: [can_delete_contact_hierarchy]
+     *       hasAll: [can_delete_contact_hierarchy, can_delete_users]
      *     parameters:
      *       - in: path
      *         name: id

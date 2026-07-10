@@ -2,12 +2,6 @@ const service = require('../services/bulk-operations');
 const serverUtils = require('../server-utils');
 const auth = require('../auth');
 
-/**
- * @openapi
- * tags:
- *   - name: Bulk operations
- *     description: Status of long-running bulk operations (delete, move, merge)
- */
 module.exports = {
   v1: {
     /**
@@ -20,8 +14,8 @@ module.exports = {
      *       Returns the log document for a bulk operation, including the per-action status and the
      *       count of changes applied so far. Used to poll the progress of an operation that was
      *       started through one of the bulk endpoints.
-     *     tags: [Bulk operations]
-     *     x-since: 5.1.0
+     *     tags: [Bulk]
+     *     x-since: 5.3.0
      *     parameters:
      *       - in: path
      *         name: id
@@ -47,6 +41,25 @@ module.exports = {
      *                 actions:
      *                   type: object
      *                   description: Per-action status, keyed by action id.
+     *                   additionalProperties:
+     *                     type: object
+     *                     properties:
+     *                       status:
+     *                         type: string
+     *                         enum: [queued, completed, failed]
+     *                       action:
+     *                         type: string
+     *                         enum: [archive, set-contact, delete-user]
+     *                       updated_date:
+     *                         type: string
+     *                         format: date-time
+     *                       total_changes_count:
+     *                         type: integer
+     *                       failed_operations:
+     *                         type: array
+     *                         description: The operations that failed, present only when status is failed.
+     *                         items:
+     *                           type: object
      *       '401':
      *         $ref: '#/components/responses/Unauthorized'
      *       '403':

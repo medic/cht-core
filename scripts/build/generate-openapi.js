@@ -62,6 +62,28 @@ const SWAGGER_OPTIONS = {
             ok: { const: true },
           },
         },
+        BulkOperationSummary: {
+          type: 'object',
+          description: 'A count of the changes an operation will make, grouped by action.',
+          properties: {
+            archive: {
+              type: 'object',
+              description: 'Documents to remove: the contacts in the hierarchy and their reports.',
+              properties: {
+                contacts: { type: 'integer' },
+                reports: { type: 'integer' },
+              },
+            },
+            'set-contact': {
+              type: 'integer',
+              description: 'Primary-contact references on surviving places that will be cleared.',
+            },
+            'delete-user': {
+              type: 'integer',
+              description: 'Linked user accounts that will be removed.',
+            },
+          },
+        },
       },
       parameters: {
         cursor: {
@@ -93,7 +115,7 @@ const SWAGGER_OPTIONS = {
         deleteUsers: {
           in: 'query',
           name: 'delete_users',
-          schema: { type: 'boolean' },
+          schema: { type: 'boolean', default: false },
           description:
             'Also delete user accounts linked to the removed contacts. Requires the can_delete_users ' +
             'permission. When not set, the request is rejected with 400 if any linked users exist.',
@@ -101,8 +123,10 @@ const SWAGGER_OPTIONS = {
         dryRun: {
           in: 'query',
           name: 'dry_run',
-          schema: { type: 'boolean' },
-          description: 'Return the breakdown of changes without queuing anything.',
+          schema: { type: 'boolean', default: false },
+          description:
+            'Return the summary of what would be changed by executing this operation. Nothing is ' +
+            'applied when dry_run is set.',
         }
       },
       responses: {
@@ -117,14 +141,26 @@ const SWAGGER_OPTIONS = {
               schema: {
                 type: 'object',
                 properties: {
-                  breakdown: { type: 'object' },
+                  summary: { $ref: '#/components/schemas/BulkOperationSummary' },
                   id: { type: 'string', description: 'The bulk operation id to poll.' }
                 }
               }
             }
           }
         },
-        BulkOperationDryRun: { description: 'The dry-run breakdown (nothing queued)' }
+        BulkOperationDryRun: {
+          description: 'The dry-run summary (nothing queued)',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  summary: { $ref: '#/components/schemas/BulkOperationSummary' }
+                }
+              }
+            }
+          }
+        }
       }
     },
   },

@@ -2,7 +2,9 @@ const db = require('../db');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
 const bulkOperations = require('./bulk-operations');
-const { ACTIONS } = require('@medic/bulk-operations');
+const { BULK_OPERATIONS } = require('@medic/constants');
+
+const { ACTIONS } = BULK_OPERATIONS;
 
 const httpError = (status, message) => {
   const err = new Error(message);
@@ -10,9 +12,7 @@ const httpError = (status, message) => {
   return err;
 };
 
-// `contacts_by_depth` keyed by a single id returns one row per contact in that subtree (the target
-// and every descendant). Each row carries the contact's uuid (row.id) and its shortcode
-// (row.value.shortcode), the same pairing the replication authorization service uses.
+// contacts_by_depth returns one row per contact in the subtree, each carrying its uuid and shortcode.
 const getSubtree = (id) => db.medic.query('medic/contacts_by_depth', { key: [id] });
 
 const getSubjectKeys = (rows) => {
@@ -26,16 +26,13 @@ const getSubjectKeys = (rows) => {
   return keys;
 };
 
-// Reports are matched by both the contact uuid and its shortcode, so a report that only records the
-// shortcode is not missed.
+// Match reports by uuid and shortcode, so a report recording only the shortcode is not missed.
 const getReportIds = async (subjectKeys) => {
   const result = await db.medic.query('medic-client/reports_by_subject', { keys: subjectKeys });
   return [ ...new Set(result.rows.map(row => row.id)) ];
 };
 
-// Places whose primary contact is one of the deleted contacts, excluding places that are being
-// deleted themselves. Each keeps the current primary id so the set-contact handler can verify it
-// has not changed before clearing the reference.
+// Surviving places whose primary contact is being deleted; the current id guards a since-changed ref.
 const getPrimaryContactClears = async (contactIds) => {
   const result = await db.medic.query('medic/contacts_by_primary_contact', { keys: contactIds });
   const deleted = new Set(contactIds);
@@ -51,10 +48,10 @@ const getPrimaryContactClears = async (contactIds) => {
   return operations;
 };
 
-// Users whose facility is one of the deleted contacts (only places have linked users).
+// A place is a user's `facility_id` and a person can be their `contact_id`; either breaks the user.
 const getLinkedUserIds = async (contactIds) => {
   const result = await db.users.query('users/users_by_field', {
-    keys: contactIds.map(id => [ 'facility_id', id ]),
+    keys: contactIds.flatMap(id => [ [ 'facility_id', id ], [ 'contact_id', id ] ]),
   });
   return [ ...new Set(result.rows.map(row => row.id)) ];
 };
@@ -64,18 +61,14 @@ const getLinkedUserIds = async (contactIds) => {
  * @param {string} id - the target contact id
  * @param {Object} options
  * @param {boolean} options.deleteUsers - also remove users linked to the deleted contacts
- * @param {boolean} options.dryRun - return the breakdown without queuing anything
- * @returns {Promise<Object>} the breakdown of changes, plus the bulk operation id when the
- *   operation was queued (omitted for a dry run)
- * @throws {Error} a 404 when the contact does not exist, or a 400 when linked users would be left
- *   behind and `deleteUsers` was not requested
+ * @param {boolean} options.dryRun - return the summary without queuing anything
+ * @returns {Promise<Object>} the summary of changes, plus the bulk operation id when the operation
+ *   was queued (omitted for a dry run)
+ * @throws {Error} a 400 when linked users would be left behind and `deleteUsers` was not requested
  */
 const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
   const subtree = await getSubtree(id);
   const contactIds = subtree.rows.map(row => row.id);
-  if (!contactIds.length) {
-    throw httpError(404, `Contact "${id}" not found`);
-  }
 
   const [ reportIds, setContactOperations, userIds ] = await Promise.all([
     getReportIds(getSubjectKeys(subtree.rows)),
@@ -91,24 +84,25 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
     );
   }
 
-  const userOperations = deleteUsers ? userIds.map(userId => ({ id: userId })) : [];
-  const breakdown = {
+  const userOperations = userIds.map(userId => ({ id: userId }));
+  const summary = {
     archive: { contacts: contactIds.length, reports: reportIds.length },
     'set-contact': setContactOperations.length,
     'delete-user': userOperations.length,
   };
 
   if (dryRun) {
-    return { breakdown };
+    return { summary };
   }
 
+  // Archive last, so contacts are removed only after the references to them are cleared.
   const bulkOperationId = await bulkOperations.queue([
-    { action: ACTIONS.ARCHIVE, operations: [ ...contactIds, ...reportIds ].map(docId => ({ id: docId })) },
     { action: ACTIONS.SET_CONTACT, operations: setContactOperations },
     { action: ACTIONS.DELETE_USER, operations: userOperations },
+    { action: ACTIONS.ARCHIVE, operations: [ ...reportIds, ...contactIds ].map(docId => ({ id: docId })) },
   ]);
 
-  return { breakdown, id: bulkOperationId };
+  return { summary, id: bulkOperationId };
 };
 
 /**
@@ -118,7 +112,7 @@ const deleteContactHierarchy = async (id, { deleteUsers, dryRun } = {}) => {
  * place id cannot be deleted through the person endpoint or vice versa, and `type` names it for the
  * not-found message. The handler reads the `delete_users`/`dry_run` query params, asserts the
  * required permissions, hands the type-agnostic work off to `deleteContactHierarchy`, and responds
- * with the breakdown (202 when queued, 200 for a dry run).
+ * with the summary (202 when queued, 200 for a dry run).
  * @param {Object} options
  * @param {Function} options.get - fetches the target contact by uuid, or null when it is not this type
  * @param {string} options.type - the contact type name, used in the not-found message
@@ -138,11 +132,10 @@ const handleDelete = ({ get, type }) => serverUtils.doOrError(async (req, res) =
     return serverUtils.error({ status: 404, message: `${type} not found` }, req, res);
   }
 
-  const result = await module.exports.deleteContactHierarchy(uuid, { deleteUsers, dryRun });
+  const result = await deleteContactHierarchy(uuid, { deleteUsers, dryRun });
   return res.status(dryRun ? 200 : 202).json(result);
 });
 
 module.exports = {
-  deleteContactHierarchy,
   handleDelete,
 };

@@ -226,12 +226,12 @@ module.exports = {
      *     description: >
      *       Queues an asynchronous bulk operation that removes the place, every descendant contact,
      *       and the reports they are the subject of, clears any dangling primary-contact references,
-     *       and (with delete_users=true) removes linked user accounts. Returns a breakdown of the
+     *       and (with delete_users=true) removes linked user accounts. Returns a summary of the
      *       changes and the bulk operation id to poll.
      *     tags: [Place]
-     *     x-since: 5.2.0
+     *     x-since: 5.3.0
      *     x-permissions:
-     *       hasAll: [can_delete_contact_hierarchy]
+     *       hasAll: [can_delete_contact_hierarchy, can_delete_users]
      *     parameters:
      *       - in: path
      *         name: id

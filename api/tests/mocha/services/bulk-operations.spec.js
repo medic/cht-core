@@ -92,6 +92,40 @@ describe('Bulk operations service', () => {
       });
     });
 
+    it('stores each action\'s params in a base64 json attachment and records the log action detail', () => {
+      const put = sinon.stub(db.medicLogs, 'put').resolves();
+      const bulkDocs = sinon.stub(db.sentinel, 'bulkDocs').resolves();
+
+      return service.queue(actionOperations).then(() => {
+        const log = put.args[0][0];
+        const actions = bulkDocs.args[0][0];
+
+        // per-item params live in a base64 json attachment
+        const attachment = actions[0]._attachments.operations;
+        chai.expect(attachment.content_type).to.equal('application/json');
+        chai.expect(JSON.parse(Buffer.from(attachment.data, 'base64').toString()))
+          .to.deep.equal(actionOperations[0].operations);
+        chai.expect(actions[0].cursor).to.equal(0);
+        chai.expect(actions[0].total).to.equal(2);
+
+        // the log action entry cross-links to the action doc and starts queued
+        const logAction = log.actions[actions[0]._id];
+        chai.expect(logAction.status).to.equal('queued');
+        chai.expect(logAction.action).to.equal('archive');
+        chai.expect(logAction.total_changes_count).to.equal(2);
+        chai.expect(logAction.updated_date).to.equal(log.start_date);
+      });
+    });
+
+    it('generates a distinct operation id on each call', () => {
+      sinon.stub(db.medicLogs, 'put').resolves();
+      sinon.stub(db.sentinel, 'bulkDocs').resolves();
+
+      return Promise
+        .all([ service.queue(actionOperations), service.queue(actionOperations) ])
+        .then(([ first, second ]) => chai.expect(first).to.not.equal(second));
+    });
+
     it('skips action groups that have no operations', () => {
       sinon.stub(db.medicLogs, 'put').resolves();
       const bulkDocs = sinon.stub(db.sentinel, 'bulkDocs').resolves();

@@ -10,10 +10,24 @@ const service = require('../../../src/services/delete-contact');
 const expect = chai.expect;
 
 describe('Delete contact service', () => {
+  let res;
+
+  beforeEach(() => {
+    sinon.stub(auth, 'assertPermissions').resolves();
+    sinon.stub(serverUtils, 'error');
+    res = { status: sinon.stub().returnsThis(), json: sinon.stub() };
+  });
+
   afterEach(() => sinon.restore());
 
-  describe('deleteContactHierarchy', () => {
-    it('gathers the hierarchy and queues the bulk operation', () => {
+  // The delete logic is only reachable through the shared handler, so it is tested through it: each
+  // test builds the handler with a `get` (the type-specific fetch the controllers pass in) and stubs
+  // the db layer the gather runs against.
+  const handlerFor = (get) => service.handleDelete({ get, type: 'Person' });
+
+  describe('handleDelete', () => {
+    it('gathers the hierarchy, queues the actions in order, and responds 202 with the summary', () => {
+      const get = sinon.stub().resolves({ _id: 'target' });
       sinon.stub(db.medic, 'query').callsFake((view) => {
         if (view === 'medic/contacts_by_depth') {
           return Promise.resolve({ rows: [
@@ -35,63 +49,64 @@ describe('Delete contact service', () => {
       sinon.stub(db.users, 'query').resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
       const queue = sinon.stub(bulkOperations, 'queue').resolves('bulk-operation:xyz');
 
-      return service.deleteContactHierarchy('target', { deleteUsers: true, dryRun: false }).then(result => {
-        expect(result).to.deep.equal({
-          breakdown: {
-            archive: { contacts: 2, reports: 2 },
-            'set-contact': 1,
-            'delete-user': 1,
-          },
-          id: 'bulk-operation:xyz',
-        });
+      const req = { params: { uuid: 'target' }, query: { delete_users: 'true' } };
+      return handlerFor(get)(req, res).then(() => {
+        expect(auth.assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: [ 'can_delete_contact_hierarchy', 'can_delete_users' ] }
+        )).to.be.true;
 
         // reports matched by uuid + shortcode
         const reportsCall = db.medic.query.getCalls().find(c => c.args[0] === 'medic-client/reports_by_subject');
         expect(reportsCall.args[1].keys).to.deep.equal([ 'target', 'PID-1', 'child' ]);
 
-        // linked users looked up by facility
+        // users looked up by both facility_id and contact_id
         expect(db.users.query.args[0][1].keys).to.deep.equal([
-          [ 'facility_id', 'target' ],
-          [ 'facility_id', 'child' ],
+          [ 'facility_id', 'target' ], [ 'contact_id', 'target' ],
+          [ 'facility_id', 'child' ], [ 'contact_id', 'child' ],
         ]);
 
-        // the queued action lists
-        const byAction = Object.fromEntries(queue.args[0][0].map(a => [ a.action, a.operations ]));
-        expect(byAction.archive.map(o => o.id)).to.deep.equal([ 'target', 'child', 'report-1', 'report-2' ]);
+        // queued in order: set-contact, delete-user, then archive (reports before their subject contacts)
+        const actions = queue.args[0][0];
+        expect(actions.map(a => a.action)).to.deep.equal([ 'set-contact', 'delete-user', 'archive' ]);
+        const byAction = Object.fromEntries(actions.map(a => [ a.action, a.operations ]));
         expect(byAction['set-contact']).to.deep.equal([ { id: 'parent-place', current_contact_id: 'target' } ]);
         expect(byAction['delete-user']).to.deep.equal([ { id: 'org.couchdb.user:chw' } ]);
+        expect(byAction.archive.map(o => o.id)).to.deep.equal([ 'report-1', 'report-2', 'target', 'child' ]);
+
+        expect(res.status.calledOnceWithExactly(202)).to.be.true;
+        expect(res.json.calledOnceWithExactly({
+          summary: { archive: { contacts: 2, reports: 2 }, 'set-contact': 1, 'delete-user': 1 },
+          id: 'bulk-operation:xyz',
+        })).to.be.true;
       });
     });
 
-    it('throws 404 when the contact does not exist', () => {
-      sinon.stub(db.medic, 'query').resolves({ rows: [] });
-
-      return service
-        .deleteContactHierarchy('missing', {})
-        .then(() => chai.expect.fail('should have thrown'))
-        .catch(err => expect(err.status).to.equal(404));
-    });
-
-    it('throws 400 when linked users exist and delete_users is not set', () => {
+    it('asserts only can_delete_contact_hierarchy when delete_users is not set', () => {
+      const get = sinon.stub().resolves({ _id: 'place' });
       sinon.stub(db.medic, 'query').callsFake((view) => {
         if (view === 'medic/contacts_by_depth') {
           return Promise.resolve({ rows: [ { id: 'place', value: {} } ] });
         }
         return Promise.resolve({ rows: [] });
       });
-      sinon.stub(db.users, 'query').resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
-      const queue = sinon.stub(bulkOperations, 'queue').resolves('x');
+      sinon.stub(db.users, 'query').resolves({ rows: [] });
+      const queue = sinon.stub(bulkOperations, 'queue').resolves('bulk-operation:1');
 
-      return service
-        .deleteContactHierarchy('place', { deleteUsers: false })
-        .then(() => chai.expect.fail('should have thrown'))
-        .catch(err => {
-          expect(err.status).to.equal(400);
-          expect(queue.called).to.equal(false);
-        });
+      const req = { params: { uuid: 'place' }, query: {} };
+      return handlerFor(get)(req, res).then(() => {
+        expect(auth.assertPermissions.calledOnceWithExactly(
+          req,
+          { isOnline: true, hasAll: [ 'can_delete_contact_hierarchy' ] }
+        )).to.be.true;
+        const byAction = Object.fromEntries(queue.args[0][0].map(a => [ a.action, a.operations ]));
+        expect(byAction['delete-user']).to.deep.equal([]);
+        expect(res.status.calledOnceWithExactly(202)).to.be.true;
+      });
     });
 
-    it('returns the breakdown without queuing for a dry run', () => {
+    it('responds 200 with the summary and queues nothing for a dry run', () => {
+      const get = sinon.stub().resolves({ _id: 'place' });
       sinon.stub(db.medic, 'query').callsFake((view) => {
         if (view === 'medic/contacts_by_depth') {
           return Promise.resolve({ rows: [ { id: 'place', value: {} } ] });
@@ -104,91 +119,50 @@ describe('Delete contact service', () => {
       sinon.stub(db.users, 'query').resolves({ rows: [] });
       const queue = sinon.stub(bulkOperations, 'queue').resolves('x');
 
-      return service.deleteContactHierarchy('place', { dryRun: true }).then(result => {
-        expect(result).to.deep.equal({
-          breakdown: { archive: { contacts: 1, reports: 1 }, 'set-contact': 0, 'delete-user': 0 },
-        });
+      const req = { params: { uuid: 'place' }, query: { dry_run: 'true' } };
+      return handlerFor(get)(req, res).then(() => {
+        expect(queue.called).to.equal(false);
+        expect(res.status.calledOnceWithExactly(200)).to.be.true;
+        expect(res.json.calledOnceWithExactly({
+          summary: { archive: { contacts: 1, reports: 1 }, 'set-contact': 0, 'delete-user': 0 },
+        })).to.be.true;
+      });
+    });
+
+    it('responds 404 and does not gather when the target is not the expected type', () => {
+      const get = sinon.stub().resolves(null);
+      const query = sinon.stub(db.medic, 'query');
+      const queue = sinon.stub(bulkOperations, 'queue');
+
+      const req = { params: { uuid: 'wrong' }, query: {} };
+      return handlerFor(get)(req, res).then(() => {
+        expect(serverUtils.error.calledOnceWithExactly(
+          { status: 404, message: 'Person not found' },
+          req,
+          res
+        )).to.be.true;
+        expect(query.called).to.equal(false);
         expect(queue.called).to.equal(false);
       });
     });
-  });
 
-  describe('handleDelete', () => {
-    let req;
-    let res;
-    let get;
-    let handler;
+    it('responds 400 and queues nothing when linked users exist and delete_users is not set', () => {
+      const get = sinon.stub().resolves({ _id: 'place' });
+      sinon.stub(db.medic, 'query').callsFake((view) => {
+        if (view === 'medic/contacts_by_depth') {
+          return Promise.resolve({ rows: [ { id: 'place', value: {} } ] });
+        }
+        return Promise.resolve({ rows: [] });
+      });
+      sinon.stub(db.users, 'query').resolves({ rows: [ { id: 'org.couchdb.user:chw' } ] });
+      const queue = sinon.stub(bulkOperations, 'queue');
 
-    beforeEach(() => {
-      sinon.stub(auth, 'assertPermissions').resolves();
-      sinon.stub(serverUtils, 'error');
-      res = { status: sinon.stub().returnsThis(), json: sinon.stub() };
-      get = sinon.stub().resolves({ _id: '123' });
-      handler = service.handleDelete({ get, type: 'Person' });
-    });
-
-    it('validates the type, queues the delete, and responds 202 with the result', async () => {
-      req = { params: { uuid: '123' }, query: {} };
-      const result = { breakdown: { archive: { contacts: 1, reports: 0 } }, id: 'bulk-operation:1' };
-      sinon.stub(service, 'deleteContactHierarchy').resolves(result);
-
-      await handler(req, res);
-
-      expect(get.calledOnceWithExactly('123')).to.be.true;
-      expect(auth.assertPermissions.calledOnceWithExactly(
-        req,
-        { isOnline: true, hasAll: ['can_delete_contact_hierarchy'] }
-      )).to.be.true;
-      expect(service.deleteContactHierarchy.calledOnceWithExactly(
-        '123',
-        { deleteUsers: false, dryRun: false }
-      )).to.be.true;
-      expect(res.status.calledOnceWithExactly(202)).to.be.true;
-      expect(res.json.calledOnceWithExactly(result)).to.be.true;
-    });
-
-    it('also requires can_delete_users when delete_users=true', async () => {
-      req = { params: { uuid: '123' }, query: { delete_users: 'true' } };
-      sinon.stub(service, 'deleteContactHierarchy').resolves({ breakdown: {}, id: 'x' });
-
-      await handler(req, res);
-
-      expect(auth.assertPermissions.calledOnceWithExactly(
-        req,
-        { isOnline: true, hasAll: ['can_delete_contact_hierarchy', 'can_delete_users'] }
-      )).to.be.true;
-      expect(service.deleteContactHierarchy.calledOnceWithExactly(
-        '123',
-        { deleteUsers: true, dryRun: false }
-      )).to.be.true;
-    });
-
-    it('responds 200 for a dry run', async () => {
-      req = { params: { uuid: '123' }, query: { dry_run: 'true' } };
-      sinon.stub(service, 'deleteContactHierarchy').resolves({ breakdown: {} });
-
-      await handler(req, res);
-
-      expect(service.deleteContactHierarchy.calledOnceWithExactly(
-        '123',
-        { deleteUsers: false, dryRun: true }
-      )).to.be.true;
-      expect(res.status.calledOnceWithExactly(200)).to.be.true;
-    });
-
-    it('responds 404 and does not delete when the target is not the expected type', async () => {
-      req = { params: { uuid: 'place-1' }, query: {} };
-      get.resolves(null);
-      const deleteStub = sinon.stub(service, 'deleteContactHierarchy');
-
-      await handler(req, res);
-
-      expect(serverUtils.error.calledOnceWithExactly(
-        { status: 404, message: 'Person not found' },
-        req,
-        res
-      )).to.be.true;
-      expect(deleteStub.notCalled).to.be.true;
+      const req = { params: { uuid: 'place' }, query: {} };
+      return handlerFor(get)(req, res).then(() => {
+        expect(serverUtils.error.calledOnce).to.be.true;
+        expect(serverUtils.error.args[0][0].status).to.equal(400);
+        expect(queue.called).to.equal(false);
+      });
     });
   });
 });
