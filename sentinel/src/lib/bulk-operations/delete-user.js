@@ -7,7 +7,7 @@ const { PREFIXES } = require('@medic/constants');
 const userManagement = require('@medic/user-management')(config, db, dataContext);
 
 // Remove each linked user via the existing user-delete path; a failure fails only that op.
-module.exports = async (batch, actionId) => {
+const deleteUser = async (batch, actionId) => {
   const failed = [];
   for (const op of batch) {
     if (!op.id) {
@@ -24,3 +24,5 @@ module.exports = async (batch, actionId) => {
   }
   return failed;
 };
+
+module.exports = deleteUser;

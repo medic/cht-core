@@ -3,7 +3,7 @@ const db = require('../../db');
 
 // Point a place's contact at a new value (or clear it), only when the doc still holds the contact we
 // recorded, so a concurrent edit is not clobbered. A missing id/doc or a changed contact is failed.
-module.exports = async (batch, actionId) => {
+const setContact = async (batch, actionId) => {
   const withId = batch.filter(op => op.id);
   const result = withId.length
     ? await db.medic.allDocs({ keys: withId.map(op => op.id), include_docs: true })
@@ -44,3 +44,5 @@ module.exports = async (batch, actionId) => {
   }
   return failed;
 };
+
+module.exports = setContact;

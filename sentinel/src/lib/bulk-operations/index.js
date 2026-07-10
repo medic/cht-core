@@ -64,16 +64,32 @@ const deleteAction = async (action) => {
   await db.sentinel.put({ ...latest, _deleted: true });
 };
 
-// A missing action doc (already processed and removed, e.g. queued twice at startup) is a no-op.
-const processAction = async (actionId) => {
-  let action;
+// null when the action doc is gone (already processed and removed, e.g. queued twice at startup).
+const getAction = async (actionId) => {
   try {
-    action = await db.sentinel.get(actionId);
+    return await db.sentinel.get(actionId);
   } catch (err) {
     if (err.status === 404) {
-      return;
+      return null;
     }
     throw err;
+  }
+};
+
+const runOperations = async (action, handler, actionId) => {
+  const operations = await readOperations(actionId);
+  while (action.cursor < operations.length) {
+    const batch = operations.slice(action.cursor, action.cursor + BATCH_SIZE);
+    const failed = await handler(batch, actionId);
+    action = await saveProgress(action, batch.length, failed);
+  }
+  return action;
+};
+
+const processAction = async (actionId) => {
+  let action = await getAction(actionId);
+  if (!action) {
+    return;
   }
 
   const handler = HANDLERS[action.action];
@@ -82,12 +98,7 @@ const processAction = async (actionId) => {
   }
 
   if (action.cursor < action.total) {
-    const operations = await readOperations(actionId);
-    while (action.cursor < operations.length) {
-      const batch = operations.slice(action.cursor, action.cursor + BATCH_SIZE);
-      const failed = await handler(batch, actionId);
-      action = await saveProgress(action, batch.length, failed);
-    }
+    action = await runOperations(action, handler, actionId);
   }
 
   await recordResultOnLog(action);
