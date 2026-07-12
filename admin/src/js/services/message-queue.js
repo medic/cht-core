@@ -49,7 +49,7 @@ angular.module('services').factory('MessageQueue',
 
     const findIdByKey = (contactsByReference, key) => {
       const row = contactsByReference.rows.find((row) => row.key[1] === key);
-      return row && row.id;
+      return row && row.id; // NOSONAR: browserify-ngannotate does not support optional chaining.
     };
 
     const findPatientUuid = (contactsByReference, message) => {

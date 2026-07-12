@@ -4,14 +4,15 @@ const logger = require('@medic/logger');
 let extensionLibs = {};
 
 const decodeBase64 = data => {
-  const bytes = Uint8Array.from(atob(data), character => character.charCodeAt(0));
+  const bytes = Uint8Array.from(atob(data), character => character.codePointAt(0));
   return new TextDecoder().decode(bytes);
 };
 
 const decode = ({ data }) => {
   const module = { exports: null };
   const source = decodeBase64(data);
-  new Function('module', source)(module);
+  // Extension libs are trusted configuration restricted to authorized administrators by CouchDB validation.
+  new Function('module', source)(module); // NOSONAR: trusted admin configuration.
   return module.exports;
 };
 

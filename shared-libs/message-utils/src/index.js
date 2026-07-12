@@ -324,8 +324,8 @@ mustache.escape = function(value) {
   return value;
 };
 
-const formatDate = function(config, text, view, formatString, locale, extensionLibs) {
-  let date = render(config, text, view, undefined, extensionLibs);
+const formatDate = function({ config, text, view, formatString, locale, extensionLibs }) {
+  let date = render({ config, template: text, view, extensionLibs });
   if (!isNaN(date)) {
     date = parseInt(date, 10);
   }
@@ -345,36 +345,74 @@ const getExtensionLibHelpers = (extensionLibs = {}) => Object.entries(extensionL
     return helpers;
   }, {});
 
-const render = function(config, template, view, locale, extensionLibs) {
-  const helpers = Object.assign(getExtensionLibHelpers(extensionLibs), {
+const render = function({ config, template, view, locale, extensionLibs }) {
+  const helpers = {
+    ...getExtensionLibHelpers(extensionLibs),
     bikram_sambat_date: function() {
       return function(text) {
-        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD', undefined, extensionLibs));
+        return toBikramSambatLetters(formatDate({
+          config,
+          text,
+          view,
+          formatString: 'YYYY-MM-DD',
+          extensionLibs,
+        }));
       };
     },
     date: function() {
       return function(text) {
-        return formatDate(config, text, view, config.date_format, locale, extensionLibs);
+        return formatDate({ config, text, view, formatString: config.date_format, locale, extensionLibs });
       };
     },
     datetime: function() {
       return function(text) {
-        return formatDate(config, text, view, config.reported_date_format, locale, extensionLibs);
+        return formatDate({ config, text, view, formatString: config.reported_date_format, locale, extensionLibs });
       };
     },
     local_phone: function() {
       return function(text) {
-        const phone = render(config, text, view, undefined, extensionLibs);
+        const phone = render({ config, template: text, view, extensionLibs });
         return stripCountryCode(config, phone.trim());
       };
     }
-  });
-  return mustache.render(template, Object.assign({}, view, helpers));
+  };
+  return mustache.render(template, { ...view, ...helpers });
 };
 
 const truncateMessage = function(parts, max) {
   const message = parts.slice(0, max).join('');
   return message.slice(0, -SMS_TRUNCATION_SUFFIX.length) + SMS_TRUNCATION_SUFFIX;
+};
+
+const normalizeGenerateOptions = (options, legacyArgs) => legacyArgs.length ? {
+  config: options,
+  translate: legacyArgs[0],
+  doc: legacyArgs[1],
+  content: legacyArgs[2],
+  recipient: legacyArgs[3],
+  extraContext: legacyArgs[4],
+} : options;
+
+const applyMessageLength = (result, message, config) => {
+  const parsed = gsm(message);
+  const max = config.multipart_sms_limit || 10;
+
+  if (parsed.sms_count <= max) {
+    result.message = message;
+    return;
+  }
+
+  result.message = truncateMessage(parsed.parts, max);
+  result.original_message = message;
+};
+
+const getMissingContextError = extraContext => {
+  if (extraContext?.registrations?.length && !extraContext.patient) {
+    return 'messages.errors.patient.missing';
+  }
+  if (extraContext?.placeRegistrations?.length && !extraContext.place) {
+    return 'messages.errors.place.missing';
+  }
 };
 
 /**
@@ -406,14 +444,7 @@ exports.generate = function(options, ...legacyArgs) {
     recipient,
     extraContext,
     extensionLibs,
-  } = legacyArgs.length ? {
-    config: options,
-    translate: legacyArgs[0],
-    doc: legacyArgs[1],
-    content: legacyArgs[2],
-    recipient: legacyArgs[3],
-    extraContext: legacyArgs[4],
-  } : options;
+  } = normalizeGenerateOptions(options, legacyArgs);
 
   const context = extendedTemplateContext(doc, extraContext || {});
 
@@ -428,32 +459,10 @@ exports.generate = function(options, ...legacyArgs) {
     return [ result ];
   }
 
-  const parsed = gsm(message);
-  const max = config.multipart_sms_limit || 10;
-
-  if (parsed.sms_count <= max) {
-    // no need to truncate
-    result.message = message;
-  } else {
-    // message too long - truncate
-    result.message = truncateMessage(parsed.parts, max);
-    result.original_message = message;
-  }
-
-  const isMissingPatient = extraContext &&
-                         !extraContext.patient &&
-                         extraContext.registrations &&
-                         extraContext.registrations.length;
-  if (isMissingPatient) {
-    result.error = 'messages.errors.patient.missing';
-  }
-
-  const isMissingPlace = extraContext &&
-                         !extraContext.place &&
-                         extraContext.placeRegistrations &&
-                         extraContext.placeRegistrations.length;
-  if (isMissingPlace) {
-    result.error = 'messages.errors.place.missing';
+  applyMessageLength(result, message, config);
+  const contextError = getMissingContextError(extraContext);
+  if (contextError) {
+    result.error = contextError;
   }
 
   return [ result ];
@@ -490,7 +499,7 @@ exports.template = function(options, ...legacyArgs) {
   }
 
   const context = extendedTemplateContext(doc, contextExtras);
-  return render(config, template, context, locale, extensionLibs);
+  return render({ config, template, view: context, locale, extensionLibs });
 };
 
 const getMessageLegacy = (configuration, locale = DEFAULT_LOCALE) => {
