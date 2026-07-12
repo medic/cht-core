@@ -3,6 +3,18 @@ const assert = require('chai').assert;
 const config = require('../../src/config');
 const sinon = require('sinon');
 const messageUtils = require('@medic/message-utils');
+
+const getLegacyGenerateArgs = call => {
+  const options = call[0];
+  return [
+    options.config,
+    options.translate,
+    options.doc,
+    options.content,
+    options.recipient,
+    options.extraContext,
+  ];
+};
 const utils = require('../../src/lib/utils');
 const logger = require('@medic/logger');
 
@@ -542,7 +554,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule, { patient, patientRegistrations });
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(getLegacyGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -586,7 +598,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations });
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(getLegacyGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -632,7 +644,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations, patient, patientRegistrations });
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(getLegacyGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,
@@ -675,7 +687,7 @@ describe('schedules', () => {
       schedules.assignSchedule(doc, schedule);
 
       assert.equal(messageUtils.generate.callCount, 1);
-      assert.deepEqual(messageUtils.generate.args[0], [
+      assert.deepEqual(getLegacyGenerateArgs(messageUtils.generate.args[0]), [
         {},
         utils.translate,
         doc,

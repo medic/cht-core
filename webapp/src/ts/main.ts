@@ -44,12 +44,14 @@ import {
   TranslateLoader,
   MissingTranslationHandler,
   TranslateCompiler,
+  TranslateParser,
   MissingTranslationHandlerParams
 } from '@ngx-translate/core';
 import { DbService } from '@mm-services/db.service';
 import { LanguageService } from '@mm-services/language.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
 import { TranslateMessageFormatCompilerProvider } from '@mm-providers/translate-messageformat-compiler.provider';
+import { TranslateMustacheParserProvider } from '@mm-providers/translate-mustache-parser.provider';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { FormsModule } from '@angular/forms';
@@ -116,6 +118,10 @@ bootstrapper(POUCHDB_OPTIONS)
             compiler: {
               provide: TranslateCompiler,
               useClass: TranslateMessageFormatCompilerProvider,
+            },
+            parser: {
+              provide: TranslateParser,
+              useClass: TranslateMustacheParserProvider,
             },
           }),
           BsDropdownModule.forRoot(),

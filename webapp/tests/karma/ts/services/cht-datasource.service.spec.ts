@@ -2,6 +2,7 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { DOC_IDS } from '@medic/constants';
+import * as extensionLibs from '@medic/extension-libs';
 
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -22,6 +23,7 @@ describe('CHTScriptApiService service', () => {
   let customResourceService;
 
   beforeEach(() => {
+    extensionLibs.set({});
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
@@ -45,6 +47,7 @@ describe('CHTScriptApiService service', () => {
   });
 
   afterEach(() => {
+    extensionLibs.set({});
     sinon.restore();
   });
 

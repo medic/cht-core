@@ -8,6 +8,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { TranslateLocaleService } from '@mm-services/translate-locale.service';
 
 import * as messages from '@medic/message-utils';
+import * as extensionLibs from '@medic/extension-libs';
 import * as registrationUtils from '@medic/registration-utils';
 
 @Injectable({
@@ -546,14 +547,15 @@ export class FormatDataRecordService {
 
       if (!copy.messages) {
         // backwards compatibility
-        copy.messages = messages.generate(
-          settings,
-          (key, locale?) => this.translate(settings, key, locale, null, true),
+        copy.messages = messages.generate({
+          config: settings,
+          translate: (key, locale?) => this.translate(settings, key, locale, null, true),
           doc,
           content,
-          task.recipient,
-          context
-        );
+          recipient: task.recipient,
+          extraContext: context,
+          extensionLibs: extensionLibs.getAll(),
+        });
 
         if (messages.hasError(copy.messages)) {
           copy.error = true;
@@ -724,4 +726,3 @@ export class FormatDataRecordService {
       });
   }
 }
-

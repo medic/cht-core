@@ -25,6 +25,7 @@ describe('MessageQueue service', function() {
     translate.preferredLanguage = sinon.stub();
     clock = sinon.useFakeTimers();
     utils = {
+      loadExtensionLibs: sinon.stub().resolves({}),
       messages: {
         generate: sinon.stub()
       },
@@ -92,11 +93,22 @@ describe('MessageQueue service', function() {
 
       return service.query('tab', 10, 5, false).then(result => {
         chai.expect(result).to.deep.equal({ messages: [], total: 0 });
+        chai.expect(utils.loadExtensionLibs.calledOnceWithExactly()).to.equal(true);
         chai.expect(query.callCount).to.equal(2);
         chai.expect(query.args[0])
           .to.deep.equal(['medic-admin/message_queue', { limit: 5, skip: 10, reduce: false, include_docs: true }]);
         chai.expect(query.args[1]).to.deep.equal(['medic-admin/message_queue', { reduce: true, group_level: 1 }]);
       });
+    });
+
+    it('rejects when extension-libs cannot be loaded', () => {
+      const error = new Error('extension-libs unavailable');
+      utils.loadExtensionLibs.rejects(error);
+      query.resolves({ rows: [] });
+
+      return service.query('tab')
+        .then(() => chai.expect.fail('Expected query to reject'))
+        .catch(err => chai.expect(err).to.equal(error));
     });
 
     it('should query the message_queue view with correct default params', () => {
@@ -298,7 +310,7 @@ describe('MessageQueue service', function() {
 
       translate.instant.withArgs('task1').returns('task 1 translation');
 
-      utils.messages.generate.callsFake((settings, translate, doc, content, recipient) => ([{
+      utils.messages.generate.callsFake(({ doc, content, recipient }) => ([{
         message: content.translationKey || content.message,
         to: recipient,
         error: doc.error
@@ -579,7 +591,7 @@ describe('MessageQueue service', function() {
       ]);
       utils.lineage.fillParentsInDocs.callsFake(doc => doc);
 
-      utils.messages.generate.callsFake((settings, translate, doc, content, recipient) => ([{
+      utils.messages.generate.callsFake(({ content, recipient }) => ([{
         message: content.translation_key,
         to: recipient
       }]));
@@ -740,7 +752,7 @@ describe('MessageQueue service', function() {
       ]);
       utils.lineage.fillParentsInDocs.callsFake(doc => doc);
 
-      utils.messages.generate.callsFake((settings, translate, doc, content, recipient) => ([{
+      utils.messages.generate.callsFake(({ content, recipient }) => ([{
         message: content.translationKey || content.message,
         to: recipient
       }]));
@@ -765,8 +777,12 @@ describe('MessageQueue service', function() {
       return service.query('tab').then((result) => {
         chai.expect(utils.registrations.isValidRegistration.callCount).to.equal(13);
         chai.expect(utils.messages.generate.callCount).to.equal(6);
+        const getGenerateArgs = index => {
+          const options = utils.messages.generate.args[index][0];
+          return [ options.doc, options.content, options.recipient, options.extraContext ];
+        };
 
-        chai.expect(utils.messages.generate.args[0].slice(2)).to.deep.equal([
+        chai.expect(getGenerateArgs(0)).to.deep.equal([
           {
             _id: 'report_id1',
             reported_date: 100,
@@ -794,7 +810,7 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(utils.messages.generate.args[1].slice(2)).to.deep.equal([
+        chai.expect(getGenerateArgs(1)).to.deep.equal([
           {
             _id: 'report_id2',
             reported_date: 200,
@@ -818,7 +834,7 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(utils.messages.generate.args[2].slice(2)).to.deep.equal([
+        chai.expect(getGenerateArgs(2)).to.deep.equal([
           {
             _id: 'report_id3',
             reported_date: 200,
@@ -842,7 +858,7 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(utils.messages.generate.args[3].slice(2)).to.deep.equal([
+        chai.expect(getGenerateArgs(3)).to.deep.equal([
           {
             _id: 'report_id4',
             reported_date: 200,
@@ -868,7 +884,7 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(utils.messages.generate.args[4].slice(2)).to.deep.equal([
+        chai.expect(getGenerateArgs(4)).to.deep.equal([
           {
             _id: 'report_id5',
             reported_date: 200,
@@ -897,7 +913,7 @@ describe('MessageQueue service', function() {
           }
         ]);
 
-        chai.expect(utils.messages.generate.args[5].slice(2)).to.deep.equal([
+        chai.expect(getGenerateArgs(5)).to.deep.equal([
           {
             _id: 'report_id6',
             reported_date: 200,
@@ -1059,7 +1075,7 @@ describe('MessageQueue service', function() {
       ]);
       utils.lineage.fillParentsInDocs.callsFake(doc => doc);
 
-      utils.messages.generate.callsFake((settings, translate, doc, content, recipient) => ([{
+      utils.messages.generate.callsFake(({ doc, content, recipient }) => ([{
         message: content.translationKey || content.message,
         to: recipient,
         error: doc.error

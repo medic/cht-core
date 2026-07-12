@@ -1,6 +1,7 @@
 const lineageFactory = require('@medic/lineage');
 const messageUtils = require('@medic/message-utils');
 const registrationUtils = require('@medic/registration-utils');
+const extensionLibs = require('@medic/extension-libs');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
 
@@ -15,6 +16,7 @@ angular.module('services').factory('MessageQueueUtils',
 
     return {
       lineage: lineageFactory($q, DB({ remote: true })),
+      loadExtensionLibs: () => extensionLibs.load(DB({ remote: true })),
       messages: messageUtils,
       registrations: registrationUtils
     };
@@ -184,7 +186,7 @@ angular.module('services').factory('MessageQueue',
         });
     };
 
-    const generateScheduledMessages = function(messages, settings) {
+    const generateScheduledMessages = function(messages, settings, extensionLibs) {
       const translate = function(key, locale) {
         return $translate.instant(key, null, 'no-interpolation', locale, null);
       };
@@ -199,14 +201,15 @@ angular.module('services').factory('MessageQueue',
           message: message.scheduled_sms.content
         };
 
-        message.sms = MessageQueueUtils.messages.generate(
-          settings,
+        message.sms = MessageQueueUtils.messages.generate({
+          config: settings,
           translate,
-          message.doc,
+          doc: message.doc,
           content,
-          message.scheduled_sms.recipient,
-          message.context
-        )[0];
+          recipient: message.scheduled_sms.recipient,
+          extraContext: message.context,
+          extensionLibs,
+        })[0];
       });
 
       return messages;
@@ -314,9 +317,10 @@ angular.module('services').factory('MessageQueue',
           .all([
             Settings(),
             DB({ remote: true }).query('medic-admin/message_queue', params.list),
-            DB({ remote: true }).query('medic-admin/message_queue', params.count)
+            DB({ remote: true }).query('medic-admin/message_queue', params.count),
+            MessageQueueUtils.loadExtensionLibs(),
           ])
-          .then(([settings, messagesList, messagesCount]) => {
+          .then(([settings, messagesList, messagesCount, extensionLibs]) => {
             const messages = messagesList.rows.map((row) => {
               const extras = {
                 doc: row.doc,
@@ -331,7 +335,7 @@ angular.module('services').factory('MessageQueue',
 
             return getSubjectsAndRegistrations(messages, settings)
               .then(hydrateContacts)
-              .then((messages) => generateScheduledMessages(messages, settings))
+              .then((messages) => generateScheduledMessages(messages, settings, extensionLibs))
               .then(getRecipients)
               .then((messages) => {
                 return {

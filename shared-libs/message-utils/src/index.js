@@ -324,8 +324,8 @@ mustache.escape = function(value) {
   return value;
 };
 
-const formatDate = function(config, text, view, formatString, locale) {
-  let date = render(config, text, view);
+const formatDate = function(config, text, view, formatString, locale, extensionLibs) {
+  let date = render(config, text, view, undefined, extensionLibs);
   if (!isNaN(date)) {
     date = parseInt(date, 10);
   }
@@ -333,30 +333,43 @@ const formatDate = function(config, text, view, formatString, locale) {
   return moment(date).locale(locale).format(formatString);
 };
 
-const render = function(config, template, view, locale) {
-  return mustache.render(template, Object.assign(view, {
+const getExtensionLibHelpers = (extensionLibs = {}) => Object.entries(extensionLibs)
+  .filter(([, extensionLib]) => typeof extensionLib === 'function')
+  .reduce((helpers, [fileName, extensionLib]) => {
+    const helperName = fileName.replace(/\.js$/, '');
+    helpers[helperName] = function() {
+      return function(text, renderText) {
+        return extensionLib(renderText(text));
+      };
+    };
+    return helpers;
+  }, {});
+
+const render = function(config, template, view, locale, extensionLibs) {
+  const helpers = Object.assign(getExtensionLibHelpers(extensionLibs), {
     bikram_sambat_date: function() {
       return function(text) {
-        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD'));
+        return toBikramSambatLetters(formatDate(config, text, view, 'YYYY-MM-DD', undefined, extensionLibs));
       };
     },
     date: function() {
       return function(text) {
-        return formatDate(config, text, view, config.date_format, locale);
+        return formatDate(config, text, view, config.date_format, locale, extensionLibs);
       };
     },
     datetime: function() {
       return function(text) {
-        return formatDate(config, text, view, config.reported_date_format, locale);
+        return formatDate(config, text, view, config.reported_date_format, locale, extensionLibs);
       };
     },
     local_phone: function() {
       return function(text) {
-        const phone = render(config, text, view);
+        const phone = render(config, text, view, undefined, extensionLibs);
         return stripCountryCode(config, phone.trim());
       };
     }
-  }));
+  });
+  return mustache.render(template, Object.assign({}, view, helpers));
 };
 
 const truncateMessage = function(parts, max) {
@@ -365,26 +378,42 @@ const truncateMessage = function(parts, max) {
 };
 
 /**
- * @param {Object} config A object of the entire app config
- * @param {Function} translate A function which returns a localised string when given
- *        a key and locale
- * @param {Object} doc The couchdb document this message relates to
- * @param {Object} content An object with one of `translationKey` or a `messages`
+ * @param {Object} options Rendering options.
+ * @param {Object} options.config An object of the entire app config.
+ * @param {Function} options.translate A function which returns a localised string when given a key and locale.
+ * @param {Object} options.doc The CouchDB document this message relates to.
+ * @param {Object} options.content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param {String|String[]} recipient A recipient definition. This can be a string or an array of recipients.
+ * @param {String|String[]} options.recipient A recipient definition. This can be a string or an array of recipients.
  *        String or String value can be one of: 'reporting_unit', 'clinic', 'parent', 'grandparent',
  *        the name of a property in `fields` or on the doc, a valid phone number directly, a path to a
  *        property on the doc.
  *        If an array is provided, each entry is tried in order and the first successfully resolved phone number 
  *       is used.
- * @param {Object} [extraContext={}] An object with additional values to
+ * @param {Object} [options.extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), `place` (object), `placeRegistrations` (array),
  *        and `templateContext` (object) for any unstructured context additions.
+ * @param {Object} [options.extensionLibs={}] Project extension libraries exposed as Mustache helpers.
  * @returns {Object} The generated message object.
  */
-exports.generate = function(config, translate, doc, content, recipient, extraContext) {
-  'use strict';
+exports.generate = function(options, ...legacyArgs) {
+  const {
+    config,
+    translate,
+    doc,
+    content,
+    recipient,
+    extraContext,
+    extensionLibs,
+  } = legacyArgs.length ? {
+    config: options,
+    translate: legacyArgs[0],
+    doc: legacyArgs[1],
+    content: legacyArgs[2],
+    recipient: legacyArgs[3],
+    extraContext: legacyArgs[4],
+  } : options;
 
   const context = extendedTemplateContext(doc, extraContext || {});
 
@@ -393,7 +422,7 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
     to: getPhone(config, context, recipient)
   };
 
-  const message = exports.template(config, translate, doc, content, extraContext);
+  const message = exports.template({ config, translate, doc, content, extraContext, extensionLibs });
   if (!message || (content.translationKey && message === content.translationKey)) {
     result.error = 'messages.errors.message.empty';
     return [ result ];
@@ -431,20 +460,28 @@ exports.generate = function(config, translate, doc, content, recipient, extraCon
 };
 
 /**
- * @param {Object} config A object of the entire app config
- * @param {Function} translate A function which returns a localised string when given
- *        a key and locale
- * @param {Object} doc The couchdb document this message relates to
- * @param {Object} content An object with one of `translationKey` or a `messages`
+ * @param {Object} options Rendering options.
+ * @param {Object} options.config An object of the entire app config.
+ * @param {Function} options.translate A function which returns a localised string when given a key and locale.
+ * @param {Object} options.doc The CouchDB document this message relates to.
+ * @param {Object} options.content An object with one of `translationKey` or a `messages`
  *        array for translation, or an already prepared `message` string.
- * @param {Object} [extraContext={}] An object with additional values to
+ * @param {Object} [options.extraContext={}] An object with additional values to
  *        provide as a context for templating. Properties: `patient` (object),
  *        `registrations` (array), and `templateContext` (object) for any
  *        unstructured context additions.
+ * @param {Object} [options.extensionLibs={}] Project extension libraries exposed as Mustache helpers.
  * @returns {String} The message.
  */
-exports.template = function(config, translate, doc, content, extraContext) {
-  extraContext = extraContext || {};
+exports.template = function(options, ...legacyArgs) {
+  const { config, translate, doc, content, extraContext, extensionLibs } = legacyArgs.length ? {
+    config: options,
+    translate: legacyArgs[0],
+    doc: legacyArgs[1],
+    content: legacyArgs[2],
+    extraContext: legacyArgs[3],
+  } : options;
+  const contextExtras = extraContext || {};
   const locale = getLocale(config, doc);
   const template = exports.getMessage(content, translate, locale);
 
@@ -452,8 +489,8 @@ exports.template = function(config, translate, doc, content, extraContext) {
     return '';
   }
 
-  const context = extendedTemplateContext(doc, extraContext);
-  return render(config, template, context, locale);
+  const context = extendedTemplateContext(doc, contextExtras);
+  return render(config, template, context, locale, extensionLibs);
 };
 
 const getMessageLegacy = (configuration, locale = DEFAULT_LOCALE) => {
@@ -502,6 +539,5 @@ exports.hasError = function(messages) {
 };
 
 exports.getLocale = getLocale;
-
 exports._getRecipient = getRecipient;
 exports._extendedTemplateContext = extendedTemplateContext;

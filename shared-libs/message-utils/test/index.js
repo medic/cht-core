@@ -1747,4 +1747,86 @@ describe('messageUtils', () => {
       expect(result).to.equal('Call 9841234567');
     });
   });
+
+  describe('extension-lib mustache helpers', () => {
+    const translate = (key) => key;
+
+    it('uses the extension-lib filename without the .js suffix as the helper name', () => {
+      const extensionLibs = {
+        'to_devanagari.js': value => value.replace(/\d/g, digit => '०१२३४५६७८९'[digit]),
+      };
+      const doc = { locale: 'en', patient_id: '12345' };
+      const content = {
+        message: [{
+          locale: 'en',
+          content: 'ID: {{#to_devanagari}}{{patient_id}}{{/to_devanagari}}',
+        }],
+      };
+
+      const result = utils.template({ config: {}, translate, doc, content, extensionLibs });
+
+      expect(result).to.equal('ID: १२३४५');
+    });
+
+    it('applies extension-lib helpers to translated outgoing messages', () => {
+      const extensionLibs = {
+        'uppercase.js': value => value.toUpperCase(),
+      };
+      const translateMessage = sinon.stub().returns('Hello {{#uppercase}}{{patient.name}}{{/uppercase}}');
+      const result = utils.generate({
+        config: {},
+        translate: translateMessage,
+        doc: { locale: 'en', from: '+123', patient: { name: 'Ada' } },
+        content: { translationKey: 'messages.greeting' },
+        extensionLibs,
+      });
+
+      expect(result[0].message).to.equal('Hello ADA');
+    });
+
+    it('supports extension-lib names that do not have a .js suffix', () => {
+      const extensionLibs = {
+        uppercase: value => value.toUpperCase(),
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: { name: 'Ada' },
+        content: { message: '{{#uppercase}}{{name}}{{/uppercase}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('ADA');
+    });
+
+    it('ignores extension-lib exports that are not functions', () => {
+      const extensionLibs = {
+        'not_a_helper.js': { value: 'not a function' },
+      };
+
+      const result = utils.template({
+        config: {},
+        doc: {},
+        content: { message: 'value: {{#not_a_helper}}text{{/not_a_helper}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('value: ');
+    });
+
+    it('does not allow an extension-lib to replace a built-in helper', () => {
+      const customHelper = sinon.stub().returns('custom');
+      const extensionLibs = { 'local_phone.js': customHelper };
+
+      const result = utils.template({
+        config: { default_country_code: '977' },
+        doc: {},
+        content: { message: '{{#local_phone}}+9779841234567{{/local_phone}}' },
+        extensionLibs,
+      });
+
+      expect(result).to.equal('9841234567');
+      expect(customHelper.callCount).to.equal(0);
+    });
+  });
 });

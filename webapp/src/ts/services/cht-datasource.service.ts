@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DataContext, getDatasource, getLocalDataContext, getRemoteDataContext } from '@medic/cht-datasource';
+import * as extensionLibs from '@medic/extension-libs';
 import { DOC_IDS } from '@medic/constants';
 
 import { SettingsService } from '@mm-services/settings.service';
@@ -17,7 +18,6 @@ export class CHTDatasourceService {
   private dataContext!: DataContext;
   private settings;
   private initialized;
-  private extensionLibs = {};
 
   constructor(
     private sessionService: SessionService,
@@ -53,30 +53,8 @@ export class CHTDatasourceService {
     return getLocalDataContext(settingsService, sourceDatabases);
   }
 
-  private decodeExtensionLib(name: string, { data }: { data: string }) {
-    try {
-      const result = atob(data);
-      const module = { exports: null };
-      new Function('module', result)(module);
-      return module.exports;
-    } catch (e) {
-      console.error(`Error loading extension lib: "${name}"`, e);
-    }
-  }
-
   private async loadExtensionLibs() {
-    const doc: { _attachments?: Record<string, { data: string }> } | null = await this.dbService
-      .get()
-      .get(DOC_IDS.EXTENSION_LIBS, { attachments: true })
-      .catch(err => {
-        if (err.status === 404) {
-          return null;
-        }
-        throw err;
-      });
-    Object
-      .entries(doc?._attachments ?? {})
-      .forEach(([k, v]) => this.extensionLibs[k] = this.decodeExtensionLib(k, v));
+    return extensionLibs.load(this.dbService.get());
   }
 
   private async getSettings() {
@@ -146,7 +124,7 @@ export class CHTDatasourceService {
           return dataSource.v1.hasAnyPermission(permissionsGroupList, userRoles, chtSettings?.permissions);
         },
         getExtensionLib: (id) => {
-          return this.extensionLibs[id];
+          return extensionLibs.get(id);
         },
         translate: (key: string, interpolateParams?: Record<string, unknown>) => {
           return this.translateService.instant(key, interpolateParams);
