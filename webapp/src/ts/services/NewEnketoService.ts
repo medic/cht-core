@@ -62,43 +62,41 @@ export class EnketoForm {
   }
 
   public async getOutputDocs(rootDoc: Record<string, any>) {
-    const formData = new EnketoDocData(this.form.getDataStr({ irrelevant: false }));
-    const docElementsById: Record<string, Element> = {
-      ...formData.getDbDocElementsById(),
-      [rootDoc._id]: formData.rootElement
-    };
-    const idsByDocElements = new Map<Node, string>(
-      Object
-        .entries(docElementsById)
-        .map(([id, element]) => [element, id])
-    );
+    const docData = new EnketoDocData(this.form.getDataStr({ irrelevant: false }), rootDoc._id);
+    const allDocs = [
+      docData,
+      ...docData.getDbDocs()
+    ];
 
-    formData.dbDocRefElements.forEach(this.populateDbDocRefElementText(formData, idsByDocElements));
+    this.populateDbDocRefElements(allDocs);
 
     // TODO Since we are making docData out of these anyway, maybe we use that to hold id, etc and help with mapping.
     // TODO Would it add complication though to NOT have node identity? (If we deserialize each DocData into a different
     //  xml tree
-    Object
-      .entries(docElementsById)
-      .map(([id, docElement]) => {
-        const doc = new EnketoDocData(docElement.outerHTML).getDocObject(this.config);
-      })
+
   }
 
-  private populateDbDocRefElementText(formData: EnketoDocData, idsByDocElements: Map<Node, string>) {
-    return (element: Element) => {
+  private populateDbDocRefElements(allDocs: EnketoDocData[]) {
+    const [rootDoc] = allDocs;
+    rootDoc.dbDocRefElements.forEach(element => {
       const $element = $(element);
       const reference = $element.attr('db-doc-ref');
-      const referencedNode = formData.getNodeByXpath(element, reference);
-      const refId = referencedNode && idsByDocElements.get(referencedNode);
+      const referencedNode = rootDoc.getNodeByXpath(element, reference);
+      if (!referencedNode) {
+        return;
+      }
+      const refId = allDocs
+        .find(({ contextElement }) => contextElement === referencedNode)
+        ?.id;
       if (!refId) {
         return;
       }
 
+      // TODO if this is on a DB doc, it will not be populated....
+      // TODO Can we run this for _each_ of allDocs?
       $element.text(refId);
-    };
+    });
   }
-
 }
 
 export class FormConfig {
@@ -149,26 +147,37 @@ class EnketoDocData {
 
   private readonly dataXml: XMLDocument;
   private readonly $rootElement: JQuery<Element>;
+  public readonly contextElement: Element;
   public readonly rootElement: Element;
-  private readonly dbDocElements: Element[];
-  public readonly dbDocRefElements: Element[];
 
-  constructor(data: string) {
+  constructor(
+    data: string,
+    public readonly id: string,
+    contextElement?: Element
+  ) {
     this.dataXml = $.parseXML(data); // TODO Do we need this as a XMLDocument?
     this.$rootElement = $($(this.dataXml).children()[0]);
     this.rootElement = this.$rootElement[0];
-    this.dbDocElements = this.$rootElement
-      .find('[db-doc=true]')
-      .get();
-    this.dbDocRefElements = this.$rootElement
+    this.contextElement = contextElement || this.rootElement;
+  }
+
+  public getDbDocRefElements() {
+    this.$rootElement
       .find('[db-doc-ref]')
+      .filter((_, el) => !$(el).parents('[db-doc=true]').not(this.rootElement).length)
       .get();
   }
 
-  public getDbDocElementsById() {
+  public getDbDocs() {
     const getDbDocId = (e: Element) => $(e).children('_id').text() || uuid();
-    // TODO Don't cache this uness we use it multiple times
-    return this.dbDocElements.reduce((acc, element) => acc[getDbDocId(element)] = element, {});
+    const dbDocElements = this.$rootElement
+      .find('[db-doc=true]')
+      .get();
+    return dbDocElements.map(dbDoc => new EnketoDocData(
+      dbDoc.outerHTML,
+      getDbDocId(dbDoc),
+      dbDoc
+    ));
   }
 
   public getNodeByXpath(contextNode: Node, rawXpath?: string): Node | null {
