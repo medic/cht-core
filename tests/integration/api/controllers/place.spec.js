@@ -2,6 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const reportFactory = require('@factories/cht/reports/generic-report');
 const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
@@ -588,6 +589,122 @@ describe('Place API', () => {
         };
 
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+  });
+
+  describe('DELETE /api/v1/place/:uuid', async () => {
+    const endpoint = '/api/v1/place';
+
+    it('returns a dry-run summary of the subtree and deletes nothing', async () => {
+      const hc = placeFactory.place().build({ name: 'del-hc', type: CONTACT_TYPES.HEALTH_CENTER, contact: {} });
+      const clinic = placeFactory.place().build({
+        name: 'del-clinic',
+        type: CONTACT_TYPES.CLINIC,
+        contact: {},
+        parent: { _id: hc._id },
+      });
+      const person = personFactory.build({ parent: { _id: clinic._id, parent: { _id: hc._id } } });
+      const report = reportFactory.report().build({ form: 'test-report' }, { patient: person });
+      await utils.saveDocs([hc, clinic, person, report]);
+
+      const response = await utils.request({
+        path: `${endpoint}/${hc._id}`,
+        method: 'DELETE',
+        qs: { dry_run: true },
+      });
+
+      expect(response).to.deep.equal({
+        summary: { archive: { contacts: 3, reports: 1 }, 'set-contact': 0, 'delete-user': 0 },
+      });
+      const stillThere = await utils.getDoc(hc._id);
+      expect(stillThere._id).to.equal(hc._id);
+    });
+
+    it('throws 400 when a linked user would be left behind and delete_users is not set', async () => {
+      const clinic = placeFactory.place().build({
+        name: 'del-clinic-user',
+        type: CONTACT_TYPES.CLINIC,
+        contact: {},
+        parent: { _id: place1._id, parent: { _id: place2._id } },
+      });
+      await utils.saveDocs([clinic]);
+      const linkedUser = userFactory.build({
+        username: 'del-linked-user',
+        place: clinic._id,
+        contact: { _id: 'fixture:user:del-linked-user', name: 'Linked User' },
+        roles: ['chw'],
+      });
+      await utils.createUsers([linkedUser]);
+
+      try {
+        await expect(utils.request({ path: `${endpoint}/${clinic._id}`, method: 'DELETE' }))
+          .to.be.rejectedWith(/400 - .*user\(s\) are linked to contacts/);
+      } finally {
+        await utils.deleteUsers([linkedUser]);
+      }
+    });
+
+    it('throws 404 when the id is a person, not a place', async () => {
+      await expect(utils.request({ path: `${endpoint}/${contact0._id}`, method: 'DELETE' }))
+        .to.be.rejectedWith('404 - {"code":404,"error":"Place not found"}');
+    });
+
+    [
+      ['does not have can_delete_contact_hierarchy permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws 403 when user ${description}`, async () => {
+        const opts = {
+          path: `${endpoint}/${place0._id}`,
+          method: 'DELETE',
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+
+    describe.skip('once the archive handler is wired (#6615)', () => {
+      const pollBulkOperation = async (id, tries = 30) => {
+        for (let i = 0; i < tries; i++) {
+          const log = await utils.request({ path: `/api/v1/bulk-operations/${id}` });
+          const actions = Object.values(log.actions || {});
+          if (actions.length && actions.every(action => action.status !== 'queued')) {
+            return log;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        throw new Error(`bulk operation ${id} did not complete`);
+      };
+
+      it('removes the place, its subtree and (with delete_users) the linked users', async () => {
+        const clinic = placeFactory.place().build({
+          name: 'del-clinic-full',
+          type: CONTACT_TYPES.CLINIC,
+          contact: {},
+          parent: { _id: place1._id, parent: { _id: place2._id } },
+        });
+        const person = personFactory.build({ parent: { _id: clinic._id, parent: clinic.parent } });
+        const report = reportFactory.report().build({ form: 'test-report' }, { patient: person });
+        await utils.saveDocs([clinic, person, report]);
+        const linkedUser = userFactory.build({
+          username: 'del-full-user',
+          place: clinic._id,
+          contact: { _id: 'fixture:user:del-full-user', name: 'Full User' },
+          roles: ['chw'],
+        });
+        await utils.createUsers([linkedUser]);
+
+        const { id } = await utils.request({
+          path: `${endpoint}/${clinic._id}`,
+          method: 'DELETE',
+          qs: { delete_users: true },
+        });
+        await pollBulkOperation(id);
+
+        await expect(utils.getDoc(clinic._id)).to.be.rejectedWith('404');
+        await expect(utils.getDoc(person._id)).to.be.rejectedWith('404');
+        await expect(utils.getDoc(report._id)).to.be.rejectedWith('404');
       });
     });
   });

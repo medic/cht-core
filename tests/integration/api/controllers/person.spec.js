@@ -2,6 +2,7 @@ const utils = require('@utils');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
+const reportFactory = require('@factories/cht/reports/generic-report');
 const { USER_ROLES, CONTACT_TYPES } = require('@medic/constants');
 const { expect } = require('chai');
 
@@ -489,6 +490,76 @@ describe('Person API', () => {
         };
 
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+  });
+
+  describe('DELETE /api/v1/person/:uuid', async () => {
+    const endpoint = '/api/v1/person';
+
+    it('returns a dry-run summary and deletes nothing', async () => {
+      const person = personFactory.build({ parent: { _id: place0._id, parent: place0.parent } });
+      const reports = [
+        reportFactory.report().build({ form: 'test-report' }, { patient: person }),
+        reportFactory.report().build({ form: 'test-report' }, { patient: person }),
+      ];
+      await utils.saveDocs([person, ...reports]);
+
+      const response = await utils.request({
+        path: `${endpoint}/${person._id}`,
+        method: 'DELETE',
+        qs: { dry_run: true },
+      });
+
+      expect(response).to.deep.equal({
+        summary: { archive: { contacts: 1, reports: 2 }, 'set-contact': 0, 'delete-user': 0 },
+      });
+      const stillThere = await utils.getDoc(person._id);
+      expect(stillThere._id).to.equal(person._id);
+    });
+
+    it('throws 404 when the id is a place, not a person', async () => {
+      await expect(utils.request({ path: `${endpoint}/${place0._id}`, method: 'DELETE' }))
+        .to.be.rejectedWith('404 - {"code":404,"error":"Person not found"}');
+    });
+
+    [
+      ['does not have can_delete_contact_hierarchy permission', userNoPerms],
+      ['is not an online user', offlineUser]
+    ].forEach(([description, user]) => {
+      it(`throws 403 when user ${description}`, async () => {
+        const opts = {
+          path: `${endpoint}/${patient._id}`,
+          method: 'DELETE',
+          auth: { username: user.username, password: user.password },
+        };
+        await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
+      });
+    });
+
+    describe.skip('once the archive handler is wired (#6615)', () => {
+      const pollBulkOperation = async (id, tries = 30) => {
+        for (let i = 0; i < tries; i++) {
+          const log = await utils.request({ path: `/api/v1/bulk-operations/${id}` });
+          const actions = Object.values(log.actions || {});
+          if (actions.length && actions.every(action => action.status !== 'queued')) {
+            return log;
+          }
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        throw new Error(`bulk operation ${id} did not complete`);
+      };
+
+      it('removes the person and their reports', async () => {
+        const person = personFactory.build({ parent: { _id: place0._id, parent: place0.parent } });
+        const report = reportFactory.report().build({ form: 'test-report' }, { patient: person });
+        await utils.saveDocs([person, report]);
+
+        const { id } = await utils.request({ path: `${endpoint}/${person._id}`, method: 'DELETE' });
+        await pollBulkOperation(id);
+
+        await expect(utils.getDoc(person._id)).to.be.rejectedWith('404');
+        await expect(utils.getDoc(report._id)).to.be.rejectedWith('404');
       });
     });
   });
