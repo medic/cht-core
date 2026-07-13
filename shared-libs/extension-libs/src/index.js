@@ -13,7 +13,7 @@ const decode = ({ data }) => {
   const source = decodeBase64(data);
   // Extension libs are trusted configuration restricted to authorized administrators by CouchDB validation.
   // NOSONAR_BEGIN: executing this trusted configuration is the purpose of the extension-libs feature.
-  new Function('module', source)(module);
+  new Function('module', source)(module); // NOSONAR
   // NOSONAR_END
   return module.exports;
 };
