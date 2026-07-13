@@ -27,7 +27,7 @@ import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
-import { Nullable, Person, Contact } from '@medic/cht-datasource';
+import { Nullable, Person, Contact, Report, Qualifier } from '@medic/cht-datasource';
 import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
@@ -75,8 +75,10 @@ export class FormService {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
     this.servicesActions = new ServicesActions(this.store);
+    this.getReport = chtDatasourceService.bind(Report.v1.get);
   }
 
+  private readonly getReport: ReturnType<typeof Report.v1.get>;
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
 
@@ -313,17 +315,17 @@ export class FormService {
   private async completeReport(formInternalId, form, docId?) {
     const formDoc = await this.ngZone
       .runOutsideAngular(() => this.xmlFormsService.getDocAndFormAttachment(formInternalId));
+    const formConfig = new FormConfig(formDoc.doc, formDoc.xml);
     if (docId) {
-      return this.enketoService.completeExistingReport(form, formDoc, docId);
+      const doc = await this.getReport(Qualifier.byUuid(docId));
+      return this.newEnketoService.saveReport(formConfig, form, doc!);
+      // return this.enketoService.completeExistingReport(form, formDoc, docId);
     }
 
     const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(formInternalId);
     const contact = this.extractLineageService.extract(await this.getUserContact(!isTrainingCardForm));
 
-    const formConfig = new FormConfig(formDoc.doc, formDoc.xml);
     const docs = await this.newEnketoService.saveReport(formConfig, form, { contact });
-    console.log('hello');
-
     // const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
     if (!docId && isTrainingCardForm) {
       docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
