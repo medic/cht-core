@@ -181,6 +181,9 @@ describe('Date Filter Component', () => {
       expect(dateRangePicker.callCount).to.equal(0);
       expect(nepaliDatePickerStub.callCount).to.equal(1);
 
+      const maxDateVal = nepaliDatePickerStub.args[0][0].maxDate;
+      expect(maxDateVal).to.match(/^[०-९-]+$/);
+
       const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
       expect(hiddenInput).to.have.lengthOf(1);
     });
@@ -197,6 +200,24 @@ describe('Date Filter Component', () => {
 
       expect(clickSpy.callCount).to.equal(1);
       expect(hiddenInput.val()).to.equal('२०८१-०४-०९'); // 2024-07-24 is 2081-04-09 in Bikram Sambat (Devanagari format)
+
+      clickSpy.restore();
+    });
+
+    it('clicking filter input for to-date should trigger click on hidden input with start-of-day BS date', () => {
+      component.ngAfterViewInit();
+      component.isStartDate = false;
+      const endOfDay = moment('2024-07-24').endOf('day').valueOf();
+      component.dateRange = { from: undefined, to: endOfDay };
+
+      const hiddenInput = $('#bikram-sambat-test-wrapper .nepali-datepicker-input');
+      const clickSpy = sinon.spy(hiddenInput[0], 'click');
+
+      $(`#test-field-id`).click();
+
+      expect(clickSpy.callCount).to.equal(1);
+      // Should still be 2081-04-09, NOT 2081-04-10 (which is the next day)
+      expect(hiddenInput.val()).to.equal('२०८१-०४-०९');
 
       clickSpy.restore();
     });

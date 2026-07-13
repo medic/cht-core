@@ -16,7 +16,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 import { LanguageService } from '@mm-services/language.service';
 import { FormatDateService } from '@mm-services/format-date.service';
-import { toBik, toGreg_text } from 'bikram-sambat';
+import { toBik, toGreg_text, toBik_dev } from 'bikram-sambat';
 import { setupNepaliDatePicker, hideDatePicker } from '../../../../js/enketo/widgets/bikram-sambat-picker-shared';
 
 @Component({
@@ -126,6 +126,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input" />');
     $(`#${this.fieldId}`).parent().append($hiddenDateInput);
 
+    // Get today's date in Devanagari BS format using clone().locale('en') to ensure timezone/locale safety.
+    const maxDate = toBik_dev(moment().clone().locale('en').format('YYYY-MM-DD'));
+
     setupNepaliDatePicker($hiddenDateInput, {
       onDateSelect: (data: any) => {
         const gregDateStr = toGreg_text(data.bsYear, data.bsMonth, data.bsDate);
@@ -134,7 +137,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         const dateRange = this.createDateRange(normalizedMoment, normalizedMoment);
         this.applyFilter(dateRange);
       },
-      position: 'anchored'
+      position: 'anchored',
+      maxDate
     });
 
     $(`#${this.fieldId}`).on('click', (e) => {
@@ -145,9 +149,17 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
         return;
       }
 
+      // Close other open datepickers to enable single-click switching
+      $('.nepali-datepicker-input').each(function() {
+        const $input = $(this);
+        if ($input[0] !== $hiddenDateInput[0]) {
+          hideDatePicker($input);
+        }
+      });
+
       const activeDate = this.isStartDate ? this.dateRange.from : this.dateRange.to;
       if (activeDate) {
-        const bsDate = toBik(moment(activeDate).startOf('day'));
+        const bsDate = toBik(moment(activeDate).clone().locale('en').format('YYYY-MM-DD'));
         const bsMonth = String(bsDate.month).padStart(2, '0');
         const bsDay = String(bsDate.day).padStart(2, '0');
         const latinVal = `${bsDate.year}-${bsMonth}-${bsDay}`;

@@ -41,6 +41,14 @@ const hideDatePicker = ($hiddenInput) => {
     observer.disconnect();
     $hiddenInput.removeData('observer');
   }
+
+  const scrollCallback = $hiddenInput.data('scrollCallback');
+  if (scrollCallback) {
+    window.removeEventListener('scroll', scrollCallback, true);
+    $(window).off('resize.nepaliDatePicker', scrollCallback);
+    $hiddenInput.removeData('scrollCallback');
+  }
+
   const $picker = $hiddenInput.data('picker');
   if ($picker) {
     if ($picker.length) {
@@ -133,13 +141,22 @@ const initializePickerContainer = (container, $hiddenInput, onClear) => {
   }
 
   const observer = new MutationObserver(() => {
+    if (container.style.display === 'none') {
+      hideDatePicker($hiddenInput);
+      return;
+    }
     sanitizeHrefs(container);
     ensureClearButton(container, onClear);
     if (!container.contains(document.activeElement)) {
       container.focus();
     }
   });
-  observer.observe(container, { childList: true, subtree: true });
+  observer.observe(container, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style']
+  });
   $hiddenInput.data('observer', observer);
 
   $(container).off('keydown.focusTrap').on('keydown.focusTrap', (e) => handleFocusTrap(e, container));
@@ -173,6 +190,31 @@ const ensureOverlay = (position) => {
   }
 };
 
+const handleReposition = ($picker, $trigger) => {
+  if (!$picker.is(':visible') || !$trigger.is(':visible')) {
+    return;
+  }
+  const offset = $trigger.offset();
+  if (!offset) {
+    return;
+  }
+  const height = $trigger.outerHeight();
+  const pickerHeight = $picker.outerHeight() || 300;
+  const scrollTop = $(window).scrollTop();
+  const viewportHeight = $(window).height();
+
+  let top = offset.top + height;
+  if (top + pickerHeight - scrollTop > viewportHeight && offset.top - pickerHeight - scrollTop > 0) {
+    top = offset.top - pickerHeight;
+  }
+
+  $picker.css({
+    top: top + 'px',
+    left: offset.left + 'px',
+    position: 'absolute'
+  });
+};
+
 const showPickerContainer = ($picker, $hiddenInput, onClear, position) => {
   if (!$picker) {
     return;
@@ -192,17 +234,25 @@ const showPickerContainer = ($picker, $hiddenInput, onClear, position) => {
     return;
   }
 
-  const offset = $trigger.offset();
-  const height = $trigger.outerHeight();
-  $picker.css({
-    top: (offset.top + height) + 'px',
-    left: offset.left + 'px',
-    position: 'absolute'
-  });
+  handleReposition($picker, $trigger);
+
+  const scrollCallback = () => handleReposition($picker, $trigger);
+  window.addEventListener('scroll', scrollCallback, true);
+  $(window).on('resize.nepaliDatePicker', scrollCallback);
+
+  $hiddenInput.data('scrollCallback', scrollCallback);
 };
 
 const handleShow = ($hiddenInput, onClear, position) => {
   $hiddenInput.data('activeElementBeforeShow', document.activeElement);
+
+  // Close any other open datepickers first to prevent overlapping calendars
+  $('.nepali-datepicker-input').each(function() {
+    const $input = $(this);
+    if ($input[0] !== $hiddenInput[0]) {
+      hideDatePicker($input);
+    }
+  });
 
   ensureOverlay(position);
 
@@ -221,7 +271,7 @@ const handleShow = ($hiddenInput, onClear, position) => {
 };
 
 const setupNepaliDatePicker = ($hiddenInput, {
-  onDateSelect, onClose, onClear, closeOnDateSelect = true, position
+  onDateSelect, onClose, onClear, closeOnDateSelect = true, position, maxDate
 }) => {
   if (typeof $.fn.nepaliDatePicker !== 'function') {
     return;
@@ -229,10 +279,15 @@ const setupNepaliDatePicker = ($hiddenInput, {
 
   const beforeCount = $('.nepali-date-picker').length;
 
-  $hiddenInput.nepaliDatePicker({
+  const options = {
     dateFormat: '%y-%m-%d',
     closeOnDateSelect: closeOnDateSelect
-  });
+  };
+  if (maxDate) {
+    options.maxDate = maxDate;
+  }
+
+  $hiddenInput.nepaliDatePicker(options);
 
   const afterPickers = $('.nepali-date-picker');
   const container = afterPickers.eq(beforeCount)[0];
