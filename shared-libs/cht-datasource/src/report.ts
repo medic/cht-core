@@ -4,15 +4,15 @@ import { adapt, assertDataContext, DataContext } from './libs/data-context';
 import { Doc } from './libs/doc';
 import * as Local from './local';
 import { validateCursor } from './local/libs/core';
-import { byFreetext, byUuid, byIds, FreetextQualifier, UuidQualifier, IdsQualifier } from './qualifier';
+import { byFreetext, byIds, byUuid, FreetextQualifier, IdsQualifier, UuidQualifier } from './qualifier';
 import * as Remote from './remote';
 import { DEFAULT_DOCS_PAGE_LIMIT, DEFAULT_IDS_PAGE_LIMIT } from './libs/constants';
 import {
   assertCursor,
   assertFreetextQualifier,
-  assertLimit,
-  assertUuidQualifier,
   assertIdsQualifier,
+  assertLimit,
+  assertUuidQualifier
 } from './libs/parameter-validators';
 import * as Input from './input';
 import { InvalidArgumentError } from './libs/error';
@@ -44,6 +44,13 @@ export namespace v1 {
    */
   export type ReportSummary = LibReportSummary;
 
+  const getIdsGenerator = <T>(
+    fetchPage: (qualifier: IdsQualifier, cursor: Nullable<string>, limit?: number) => Promise<Page<T>>
+  ) => (qualifier: IdsQualifier): AsyncGenerator<T, null> => {
+    assertIdsQualifier(qualifier);
+
+    return getPagedGenerator(fetchPage, qualifier);
+  };
 
   /**
    * Returns a function for retrieving a report from the given data context.
@@ -124,18 +131,7 @@ export namespace v1 {
     assertDataContext(context);
     const getPage = context.bind(v1.getSummariesPage);
 
-    /**
-     * Returns a generator for fetching summary records for the reports identified by the given qualifier. Any
-     * identifiers that do not identify an existing report are silently omitted from the result.
-     * @param qualifier the identifiers of the reports to summarise
-     * @returns a generator for fetching all the matching report summaries
-     * @throws InvalidArgumentError if the qualifier does not contain an array of non-empty identifier strings
-     */
-    const curriedGen = (qualifier: IdsQualifier): AsyncGenerator<ReportSummary, null> => {
-      assertIdsQualifier(qualifier);
-
-      return getPagedGenerator(getPage, qualifier);
-    };
+    const curriedGen = getIdsGenerator<ReportSummary>(getPage);
     return curriedGen;
   };
 
@@ -198,6 +194,56 @@ export namespace v1 {
 
       return getPagedGenerator(getPage, qualifier);
     };
+    return curriedGen;
+  };
+
+  /**
+   * Returns a function for retrieving a paged array of reports from the given data context.
+   * @param context the current data context
+   * @returns a function for retrieving a paged array of reports
+   * @throws Error if a data context is not provided
+   * @see {@link getAll} which provides the same data, but without having to manually account for paging
+   */
+  export const getPage = (context: DataContext): typeof curriedFn => {
+    assertDataContext(context);
+    const fn = adapt(context, Local.Report.v1.getPage, Remote.Report.v1.getPage);
+
+    /**
+     * Returns an array of reports for the provided page specifications.
+     * @param qualifier the UUIDs of the reports to return
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of reports to return. Default is 100.
+     * @returns a page of reports for the provided specification
+     * @throws InvalidArgumentError if no qualifier is provided or if the qualifier is invalid
+     * @throws InvalidArgumentError if the provided `limit` value is `<=0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    const curriedFn = async (
+      qualifier: IdsQualifier,
+      cursor: Nullable<string> = null,
+      limit: number | `${number}` = DEFAULT_DOCS_PAGE_LIMIT
+    ): Promise<Page<Report>> => {
+      assertIdsQualifier(qualifier);
+      assertCursor(cursor);
+      assertLimit(limit);
+
+      return fn(qualifier, cursor, Number(limit));
+    };
+    return curriedFn;
+  };
+
+  /**
+   * Returns a function for getting a generator that fetches reports from the given data context.
+   * @param context the current data context
+   * @returns a function for getting a generator that fetches reports
+   * @throws Error if a data context is not provided
+   */
+  export const getAll = (context: DataContext): typeof curriedGen => {
+    assertDataContext(context);
+    const getPage = context.bind(v1.getPage);
+
+    const curriedGen = getIdsGenerator<Report>(getPage);
     return curriedGen;
   };
 
@@ -361,6 +407,31 @@ export namespace v1 {
     getUuidsByFreetext: (qualifier: string) => AsyncGenerator<string, null>;
 
     /**
+     * Returns a page of reports for the given ids.
+     * @param ids the ids of the reports to return
+     * @param cursor the token identifying which page to retrieve. A `null` value indicates the first page should be
+     * returned. Subsequent pages can be retrieved by providing the cursor returned with the previous page.
+     * @param limit the maximum number of reports to return. Default is 100.
+     * @returns a page of reports for the provided ids
+     * @throws InvalidArgumentError if no ids are provided
+     * @throws InvalidArgumentError if the provided limit is `<= 0`
+     * @throws InvalidArgumentError if the provided cursor is not a valid page token or `null`
+     */
+    getPageByIds: (
+      ids: [string, ...string[]],
+      cursor?: Nullable<string>,
+      limit?: number | `${number}`
+    ) => Promise<Page<v1.Report>>;
+
+    /**
+     * Returns a generator for fetching all reports with the given ids.
+     * @param ids the ids of the reports to return
+     * @returns a generator for fetching all reports with the given ids
+     * @throws InvalidArgumentError if no ids are provided
+     */
+    getByIds: (ids: [string, ...string[]]) => AsyncGenerator<v1.Report, null>;
+
+    /**
      * Creates a new report record.
      * @param input input fields for creating a report
      * @returns the created report record
@@ -406,6 +477,12 @@ export namespace v1 {
         limit = DEFAULT_IDS_PAGE_LIMIT
       ) => ctx.bind(v1.getUuidsPage)(byFreetext(qualifier), cursor, limit),
       getUuidsByFreetext: (qualifier) => ctx.bind(v1.getUuids)(byFreetext(qualifier)),
+      getPageByIds: (
+        ids,
+        cursor = null,
+        limit = DEFAULT_DOCS_PAGE_LIMIT
+      ) => ctx.bind(v1.getPage)(byIds(ids), cursor, limit),
+      getByIds: (ids) => ctx.bind(v1.getAll)(byIds(ids)),
       create: (input) => ctx.bind(v1.create)(input),
       update: (updated) => ctx.bind(v1.update)(updated),
     };
