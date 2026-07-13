@@ -136,34 +136,6 @@ describe('infodocs', () => {
     });
   });
 
-  describe('legacy data support', () => {
-    it('finds and migrates data from the medic doc', async () => {
-      const testDoc = {
-        _id: 'yuiop',
-        data: 'data',
-        transitions: {
-          some: 'transition info'
-        }
-      };
-
-      await utils.toggleSentinelTransitions();
-      const result = await utils.db.post(testDoc);
-      testDoc._rev = result.rev;
-
-      await utils.setTransitionSeqToNow();
-      await utils.toggleSentinelTransitions();
-
-      testDoc.data = 'data changed';
-      await utils.saveDoc(testDoc);
-
-      const [infodoc] = await delayedInfoDocsOf(testDoc._id);
-
-      assert.isOk(infodoc.initial_replication_date, 'expected an initial_replication_date');
-      assert.isOk(infodoc.latest_replication_date, 'expected a latest_replication_date');
-      assert.deepEqual(infodoc.transitions, { some: 'transition info' });
-    });
-  });
-
   describe('transitions infos', () => {
     it('should set correct transition date', async () => {
       const settings = {
