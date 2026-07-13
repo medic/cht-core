@@ -47,12 +47,19 @@ let loadErrors = false;
 
 const MAX_INFODOC_WAIT = 5;
 const INFODOC_WAIT_INTERVAL = 100;
+// time to wait before a transitions_started marker is considered stale
+const MID_WRITE_STALE_INTERVAL = 2 * 60 * 1000; // 2 minutes
 
 const isInfoDocMidWrite = infoDoc => infoDoc?.transitions_started !== undefined;
 
+const isMidWriteStale = infoDoc => {
+  return isInfoDocMidWrite(infoDoc) &&
+    Date.now() - Date.parse(infoDoc.transitions_started) >= MID_WRITE_STALE_INTERVAL;
+};
+
 const getConsistentInfoDoc = async (change, retriesLeft) => {
   const infoDoc = await infodoc.get(change);
-  if (!isInfoDocMidWrite(infoDoc) || retriesLeft <= 0) {
+  if (!isInfoDocMidWrite(infoDoc) || isMidWriteStale(infoDoc) || retriesLeft <= 0) {
     return infoDoc;
   }
   await new Promise(resolve => setTimeout(resolve, INFODOC_WAIT_INTERVAL));
@@ -65,8 +72,15 @@ const processChange = (change, callback) => {
     .fetchHydratedDoc(change.id)
     .then(doc => {
       change.doc = doc;
-      return getConsistentInfoDoc(change, MAX_INFODOC_WAIT).then(infoDoc => {
-        if (isInfoDocMidWrite(infoDoc)) {
+      return getConsistentInfoDoc(change, MAX_INFODOC_WAIT).then(async infoDoc => {
+        if (isMidWriteStale(infoDoc)) {
+          // if the transistions_started marker is stale, clear it and process the doc anyway
+          logger.warn(`transitions: clearing stale transitions_started marker on infodoc for ${change.id}`);
+          await infodoc
+            .clearTransitionsStarted(change.id)
+            .catch(err => logger.error(`transitions: error clearing stale marker on doc ${change.id}: %o`, err));
+          delete infoDoc.transitions_started;
+        } else if (isInfoDocMidWrite(infoDoc)) {
           logger.warn(
             `transitions: infodoc for ${change.id} still mid-write after ${MAX_INFODOC_WAIT} retries, skipping`
           );
@@ -74,11 +88,6 @@ const processChange = (change, callback) => {
         }
         change.info = infoDoc;
         change.initialProcessing = !infoDoc.transitions;
-        // Remove transitions from doc since those
-        // will be handled by the info doc(sentinel db) after this
-        if (change.doc.transitions) {
-          delete change.doc.transitions;
-        }
         module.exports.applyTransitions(change, callback);
       });
     })
@@ -298,7 +307,7 @@ const saveForApi = async change => {
   try {
     const result = await saveDoc(change);
     logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
-    await infodoc.saveTransitions(change, true);
+    await infodoc.saveTransitions(change);
     return result;
   } catch (err) {
     await infodoc

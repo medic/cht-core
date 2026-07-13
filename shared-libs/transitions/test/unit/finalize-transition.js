@@ -42,7 +42,7 @@ describe('finalize transition', () => {
         assert.equal(markTransitionsStarted.callCount, 1);
         assert.deepEqual(markTransitionsStarted.args[0], ['abc']);
         assert.equal(infodoc.saveTransitions.callCount, 1);
-        assert.strictEqual(infodoc.saveTransitions.args[0][1], true);
+        assert.equal(infodoc.saveTransitions.args[0][0].id, 'abc');
         assert.equal(clearTransitionsStarted.callCount, 0);
         done();
       }

@@ -103,35 +103,6 @@ describe('infodoc', () => {
       });
     });
 
-    it('should fill transition info from the document if sentinel infodocs exist with no transitions', () => {
-      const changes = [
-        { id: 'a', doc: { _id: 'a', _rev: '1-abc', transitions: { some: 'a data' }}},
-        { id: 'b', doc: { _id: 'b', _rev: '1-abc', transitions: { some: 'b data' }}},
-        { id: 'c', doc: { _id: 'c', _rev: '1-abc', transitions: { some: 'c data' }}}
-      ];
-      const infoDocs = [
-        { _id: 'a-info', _rev: 'a-r', type: 'info', doc_id: 'a' },
-        { _id: 'b-info', _rev: 'b-r', type: 'info', doc_id: 'b' },
-        { _id: 'c-info', _rev: 'c-r', type: 'info', doc_id: 'c' }
-      ];
-
-      // db.medic is intentionally left unstubbed: it throws if touched, guarding against any
-      // regression that reintroduces a medic lookup.
-      sinon.stub(db.sentinel, 'allDocs')
-        .resolves({ rows: infoDocs.map(doc => ({ key: doc._id, doc }))});
-
-      return lib.bulkGet(changes).then(result => {
-        assert.deepEqual(result, [
-          { _id: 'a-info', _rev: 'a-r', type: 'info', doc_id: 'a', transitions: {some: 'a data'} },
-          { _id: 'b-info', _rev: 'b-r', type: 'info', doc_id: 'b', transitions: {some: 'b data'} },
-          { _id: 'c-info', _rev: 'c-r', type: 'info', doc_id: 'c', transitions: {some: 'c data'} }
-        ]);
-
-        assert.equal(db.sentinel.allDocs.callCount, 1);
-        assert.deepEqual(db.sentinel.allDocs.args[0], [{ keys: ['a-info', 'b-info', 'c-info'], include_docs: true }]);
-      });
-    });
-
     it('should generate infodocs with unknown dates for existing documents, if they do not already exist', () => {
       const changes = [
         { id: 'a', doc: {_id: 'a', _rev: '1-abc' }},
@@ -146,15 +117,15 @@ describe('infodoc', () => {
         assert.deepEqual(result, [
           {
             _id: 'a-info', type: 'info', doc_id: 'a', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', transitions: undefined
+            latest_replication_date: 'unknown'
           },
           {
             _id: 'b-info', type: 'info', doc_id: 'b', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', transitions: undefined
+            latest_replication_date: 'unknown'
           },
           {
             _id: 'c-info', type: 'info', doc_id: 'c', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', transitions: undefined
+            latest_replication_date: 'unknown'
           }
         ]);
 
@@ -180,20 +151,20 @@ describe('infodoc', () => {
 
       return lib.bulkGet(changes).then(result => {
         assert.equal(result.length, 3);
-        assert.deepInclude(result[0], { _id: 'a-info', type: 'info', doc_id: 'a', transitions: undefined });
+        assert.deepInclude(result[0], { _id: 'a-info', type: 'info', doc_id: 'a' });
         assert(result[0].initial_replication_date >= now);
         assert(result[0].latest_replication_date >= now);
-        assert.deepInclude(result[1], { _id: 'b-info', type: 'info', doc_id: 'b', transitions: undefined });
+        assert.deepInclude(result[1], { _id: 'b-info', type: 'info', doc_id: 'b' });
         assert(result[1].initial_replication_date >= now);
         assert(result[1].latest_replication_date >= now);
-        assert.deepInclude(result[2], { _id: 'c-info', type: 'info', doc_id: 'c', transitions: undefined });
+        assert.deepInclude(result[2], { _id: 'c-info', type: 'info', doc_id: 'c' });
         assert(result[2].initial_replication_date >= now);
         assert(result[2].latest_replication_date >= now);
       });
     });
 
     it('creates and persists an infodoc via get when none exists', () => {
-      const change = { id: 'x', doc: { _id: 'x', _rev: '1-abc', transitions: { t: 1 } } };
+      const change = { id: 'x', doc: { _id: 'x', _rev: '1-abc' } };
 
       sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ key: 'x-info', error: 'not_found' }] });
       const bulkDocs = sinon.stub(db.sentinel, 'bulkDocs').resolves([{ ok: true, id: 'x-info', rev: '1-x' }]);
@@ -202,7 +173,7 @@ describe('infodoc', () => {
         assert.deepEqual(result, {
           _id: 'x-info', type: 'info', doc_id: 'x',
           initial_replication_date: 'unknown', latest_replication_date: 'unknown',
-          transitions: { t: 1 }, _rev: '1-x'
+          _rev: '1-x'
         });
         assert.equal(bulkDocs.callCount, 1);
         assert.deepEqual(bulkDocs.args[0][0], [result]);
@@ -236,19 +207,19 @@ describe('infodoc', () => {
           { _id: 'd-info', _rev: 'd-r', doc_id: 'd', transitions: {} },
           {
             _id: 'b-info', doc_id: 'b', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', type: 'info', transitions: undefined
+            latest_replication_date: 'unknown', type: 'info'
           },
           {
             _id: 'c-info', doc_id: 'c', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', type: 'info', transitions: undefined
+            latest_replication_date: 'unknown', type: 'info'
           },
           {
             _id: 'e-info', doc_id: 'e', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', type: 'info', transitions: undefined
+            latest_replication_date: 'unknown', type: 'info'
           },
           {
             _id: 'f-info', doc_id: 'f', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', type: 'info', transitions: undefined
+            latest_replication_date: 'unknown', type: 'info'
           },
         ]);
 
@@ -524,15 +495,14 @@ describe('infodoc', () => {
       });
     });
 
-    it('clears transitions_started when clearStarted is set', () => {
+    it('clears the transitions_started marker when committing transitions', () => {
       const info = { _id: 'some-info', doc_id: 'some', transitions_started: '2026-01-01T00:00:00.000Z' };
       const change = { id: 'some', info: { transitions: { one: { ok: true } } } };
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
-      return lib.saveTransitions(change, true).then(() => {
+      return lib.saveTransitions(change).then(() => {
         const saved = db.sentinel.put.args[0][0];
-        // transitions are written and the mid-write marker removed; nothing else is touched
         assert.deepEqual(saved, {
           _id: 'some-info',
           doc_id: 'some',
@@ -544,20 +514,18 @@ describe('infodoc', () => {
 
   describe('markTransitionsStarted / clearTransitionsStarted', () => {
     it('markTransitionsStarted marks the infodoc mid-write with a timestamp', () => {
+      clock = sinon.useFakeTimers({ now: new Date('2026-01-01T00:00:00.000Z').valueOf() });
       const info = { _id: 'some-info', doc_id: 'some' };
       sinon.stub(db.sentinel, 'get').resolves(info);
       sinon.stub(db.sentinel, 'put').resolves();
 
       return lib.markTransitionsStarted('some').then(() => {
         assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
-        const saved = db.sentinel.put.args[0][0];
-        assert.isString(saved.transitions_started);
-        assert.isNotNaN(Date.parse(saved.transitions_started));
-        // only the marker is added, no other fields are changed
-        assert.deepEqual(saved, {
+        // only the marker is added, set to the current time, with no other fields changed
+        assert.deepEqual(db.sentinel.put.args[0][0], {
           _id: 'some-info',
           doc_id: 'some',
-          transitions_started: saved.transitions_started,
+          transitions_started: '2026-01-01T00:00:00.000Z',
         });
       });
     });
@@ -578,10 +546,8 @@ describe('infodoc', () => {
       const info = { _id: 'some-info', doc_id: 'some' };
       sinon.stub(db.sentinel, 'get').resolves(info);
       const put = sinon.stub(db.sentinel, 'put');
-      // conflict on the first 100 attempts, succeed on the 101st - a retry limit below this would fail
-      for (let i = 0; i < 100; i++) {
-        put.onCall(i).rejects({ status: 409 });
-      }
+      // conflict on every attempt except the 101st - a retry limit below this would fail
+      put.rejects({ status: 409 });
       put.onCall(100).resolves();
 
       return lib.markTransitionsStarted('some').then(() => {

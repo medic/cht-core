@@ -34,15 +34,13 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
     return results.reduce((acc, row) => {
       if (!row.doc) {
         acc.missing.push({ _id: row.key });
-      } else if (!row.doc.transitions && !row.doc.transitions_started) {
-        acc.missingTransitions.push(row.doc);
       } else {
         acc.valid.push(row.doc);
       }
 
       return acc;
 
-    }, { valid: [], missing: [], missingTransitions: [] });
+    }, { valid: [], missing: [] });
   };
 
   const changeForInfoDoc = infoDocId => changes.find(change => getInfoDocId(change.id) === infoDocId);
@@ -51,21 +49,14 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
 
   return findInfoDocs(db.sentinel, infoDocIds)
     .then(results => {
-      const { valid, missing, missingTransitions } = splitInfoDocRows(results);
+      const { valid, missing } = splitInfoDocRows(results);
 
-      const infoDocs = valid.concat(missingTransitions);
+      const infoDocs = valid;
       const dirtyInfoDocs = [];
-
-      missingTransitions.forEach(infoDoc => {
-        const change = changeForInfoDoc(infoDoc._id);
-        infoDoc.transitions = infoDoc.transitions || change.doc?.transitions;
-        dirtyInfoDocs.push(infoDoc);
-      });
 
       missing.forEach(missingDoc => {
         const change = changeForInfoDoc(missingDoc._id);
         const infoDoc = blankInfoDoc(change.id, !change.doc._rev && Date.now());
-        infoDoc.transitions = change.doc && change.doc.transitions;
         infoDocs.push(infoDoc);
         dirtyInfoDocs.push(infoDoc);
       });
@@ -88,13 +79,10 @@ const updateTransition = (change, transition, ok) => {
   };
 };
 
-const saveTransitions = (change, clearStarted = false) => {
+const saveTransitions = change => {
   const modify = infoDoc => {
     infoDoc.transitions = change.info?.transitions || {};
-    // Clear the in-progress marker in the same write that commits the transitions (API branch only)
-    if (clearStarted) {
-      delete infoDoc.transitions_started;
-    }
+    delete infoDoc.transitions_started;
   };
   return modifyInfoDoc(change.id, modify, change.info);
 };
