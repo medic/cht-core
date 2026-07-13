@@ -57,3 +57,8 @@ Xpath.getElementTreeXPath = function(element)
 
     return paths.length ? "/" + paths.join("/") : null;
 };
+
+Xpath.getElementRawXPath = function(element){
+    const path = Xpath.getElementTreeXPath(element);
+    return path?.replace(/\[\d+\]/g, '');
+};

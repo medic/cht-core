@@ -1,5 +1,4 @@
 import { Injectable, NgZone } from '@angular/core';
-import type JQuery from 'jquery';
 import events from 'enketo-core/src/js/event';
 import { DOC_TYPES } from '@medic/constants';
 import { v7 as uuid } from 'uuid';
@@ -14,26 +13,11 @@ export class NewEnketoService {
     private readonly ngZone: NgZone
   ) { }
 
-  public async validate(form: Record<string, any>) {
-    const valid = await form.validate();
-    if (!valid) {
-      throw new Error('Form is invalid');
-    }
-    form.view.html.dispatchEvent(events.BeforeSave());
-  }
-
-  public getEnketoDoc(form: Record<string, any>, docId: string) {
-    const formString = form.getDataStr({ irrelevant: false });
-    const formDoc = new DOMParser().parseFromString(formString, 'text/xml');
-    return new EnketoRootDoc(formDoc, docId);
-  }
-
-  async saveContact() {
-
-  }
-
-  // TODO Make sure extractLineageService.extract is called on given contact.
-  async saveReport(config: FormConfig, form: Record<string, any>, defaultData: Record<string, any> = {}) {
+  async saveReport(
+    config: FormConfig,
+    form: Record<string, any>,
+    defaultData: Record<string, any> = {}
+  ): Promise<Record<string, any>> {
     return this.ngZone.runOutsideAngular(async () => {
       await this.validate(form);
       const reportDoc: Record<string, any> = this.getReportDoc(config.doc.internalId, defaultData);
@@ -45,56 +29,88 @@ export class NewEnketoService {
       const binaryAttachments = this.populateBinaryAttachmentElements(formDocData, config.doc.internalId);
       const fileAttachments = FileManager
         .getCurrentFiles()
-        .reduce((acc, file) => acc[`user-file-${file.name}`] = {
-          content_type: file.type,
-          data: new Blob([ file ], { type: file.type })
-        }, {});
+        .reduce((acc, file) => ({
+          ...acc,
+          [`user-file-${file.name}`]: { content_type: file.type, data: new Blob([ file ], { type: file.type }) }
+        }), {});
 
       const rootOutputDoc = {
         ...reportDoc,
         form_version: config.doc.xmlVersion,
-        hidden_fields: [
-          ...config.getHiddenFields(),
-          ...subDocs.map(({ rootElement }) => rootElement.tagName)
-        ],
-        fields: formDocData.getCouchDoc(config),
+        hidden_fields: this.getHiddenFields([
+          ...formDocData.hiddenElements,
+          ...subDocs.map(({ rootElement }) => rootElement)
+        ]),
+        fields: formDocData.deserialize(config),
         _attachments: {
           ...reportDoc._attachments,
           ...fileAttachments,
           ...binaryAttachments
         }
       };
-      const dbDocObjects = subDocs.map(docData => docData.getCouchDoc(config));
+
+      const dbDocObjects = subDocs.map(docData => this.initializeDoc(docData.deserialize(config), docData.id));
       return [rootOutputDoc, ...dbDocObjects];
     });
   }
 
-  private getReportDoc(form: string, defaultData: Record<string, any>) {
-    if (defaultData._id) {
-      return { ...defaultData };
+  private async validate(form: Record<string, any>) {
+    const valid = await form.validate();
+    if (!valid) {
+      throw new Error('Form is invalid');
     }
+    form.view.html.dispatchEvent(events.BeforeSave());
+  }
+
+  private getEnketoDoc(form: Record<string, any>, docId: string) {
+    const formString = form.getDataStr({ irrelevant: false });
+    const formDoc = new DOMParser().parseFromString(formString, 'text/xml');
+    return new EnketoRootDoc(formDoc, docId);
+  }
+
+  private getHiddenFields(elements: Element[]) {
+    const hiddenXpaths = new Set<string>(elements.map((element) => Xpath.getElementRawXPath(element)));
+    const hasHiddenAncestor = (
+      segments: string[]
+    ) => (_: string, i: number) => i > 0 && hiddenXpaths.has(segments.slice(0, i).join('/'));
+    return [...hiddenXpaths]
+      .map(xpath => xpath.split('/'))
+      .filter(segments => !segments.some(hasHiddenAncestor(segments)))
+      .map(segments => segments
+        .filter(Boolean)
+        .slice(1)
+        .join('.'));
+  }
+
+  private initializeDoc(defaultData: Record<string, any>, _id = uuid()) {
     return {
-      _id: uuid(),
+      _id,
+      reported_date: Date.now(),
+      ...defaultData
+    };
+  }
+
+  private getReportDoc(form: string, defaultData: Record<string, any>) {
+    return {
       form,
       type: DOC_TYPES.DATA_RECORD,
       content_type: 'xml',
-      reported_date: Date.now(),
       from: defaultData.contact?.phone,
+      ...this.initializeDoc(defaultData, defaultData._id),
       ...defaultData
     };
   }
 
   private populateDbDocRefElements(rootDoc: EnketoRootDoc, allDocs: EnketoDoc[]) {
     rootDoc.dbDocRefElements.forEach(element => {
-      const $element = $(element);
-      const reference = $element.attr('db-doc-ref');
+      const reference = element.getAttribute('db-doc-ref');
       const referencedNode = rootDoc.getNodeByXpath(element, reference);
       if (!referencedNode) {
         return;
       }
       const refDoc = allDocs.find(({ rootElement }) => rootElement === referencedNode);
       if (refDoc) {
-        $element.text(refDoc.id);
+        element.textContent = refDoc.id;
       }
     });
   }
@@ -110,77 +126,42 @@ export class NewEnketoService {
         element.textContent = '';
         return { filename, data };
       })
-      .reduce((acc, { filename, data }) => acc[filename] = { data, content_type: 'image/png' }, {});
+      .reduce((acc, { filename, data }) => ({
+        ...acc,
+        [filename]: { data, content_type: 'image/png' }
+      }), {});
   }
 }
 
 // TODO Should return direct from xml-forms.service...
 export class FormConfig {
-  private readonly modelDoc: XMLDocument;
   public readonly repeatPaths: string[];
 
   constructor(
     public readonly doc: Record<string, any>,
-    html: string,
     xml: string,
-    model: string
   ){
-    const domParser = new DOMParser();
-    this.modelDoc = domParser.parseFromString(model, 'text/xml');
-    const xmlDoc = domParser.parseFromString(xml, 'text/xml');
+    const xmlDoc = new DOMParser().parseFromString(xml, 'text/xml');
     this.repeatPaths = Array
       .from(xmlDoc.querySelectorAll('repeat[nodeset]'))
       .map(el => el.getAttribute('nodeset')!)
       .filter(Boolean);
   }
-
-  public getHiddenFields(modelNode = this.modelDoc.firstChild, prefix = '', current = new Set<string>()) {
-    if (!modelNode) {
-      return current;
-    }
-    this
-      .getChildElements(modelNode)
-      .forEach(node => {
-        const path = `${prefix}${node.nodeName}`;
-        const attr = node.attributes.getNamedItem('tag');
-        if (attr?.value?.toLowerCase() === 'hidden') {
-          current.add(path);
-        } else {
-          this.getHiddenFields(node, `${path}.`, current);
-        }
-      });
-    return current;
-  }
-
-  // TODO duplicated
-  private isElementNode(node: unknown): node is Element {
-    return node?.['nodeType'] === Node.ELEMENT_NODE;
-  }
-
-  private getChildElements(node: Node) {
-    return Array
-      .from(node.childNodes)
-      .filter(this.isElementNode);
-  }
 }
 
 class EnketoDoc {
-  protected readonly $rootElement: JQuery<Element>;
-
   constructor(
     public readonly rootElement: Element,
     public readonly id: string,
   ) {
-    this.$rootElement = $(rootElement);
   }
 
-  public getCouchDoc(formConfig: FormConfig): Record<string, any> {
-    const path = Xpath.getElementTreeXPath(this.rootElement);
-    return {
-      ...this.nodesToJs(this.getChildElements(this.rootElement), formConfig.repeatPaths, path),
-      _id: this.id,
-      reported_data: Date.now()
-    };
+  public deserialize(formConfig: FormConfig): Record<string, any> {
+    return this.nodesToJs(
+      this.getChildElements(this.rootElement),
+      formConfig.repeatPaths,
+      Xpath.getElementRawXPath(this.rootElement)
+    );
   }
 
   protected isElementNode(node: unknown): node is Element {
@@ -222,6 +203,7 @@ class EnketoDoc {
 // TODO Consider making this a ReportDoc and nesting all the dbDoc data stuff inside.
 class EnketoRootDoc extends EnketoDoc {
   private readonly dbDocElements: Element[];
+  public readonly hiddenElements: Element[];
   public readonly dbDocRefElements: Element[];
   public readonly binaryTypeElements: Element[];
 
@@ -230,26 +212,20 @@ class EnketoRootDoc extends EnketoDoc {
     id: string,
   ) {
     super(xmlDoc.documentElement, id);
-    this. dbDocElements = this.$rootElement
-      .find('[db-doc=true]')
-      .get();
-    this.dbDocRefElements = this.$rootElement
-      .find('[db-doc-ref]')
-      .get();
-    this.binaryTypeElements = this.$rootElement
-      .find('[type=binary]')
-      .get();
+    this.dbDocElements = Array.from(this.rootElement.querySelectorAll('[db-doc=true i]'));
+    this.hiddenElements = Array.from(this.rootElement.querySelectorAll('[tag=hidden i]'));
+    this.dbDocRefElements = Array.from(this.rootElement.querySelectorAll('[db-doc-ref]'));
+    this.binaryTypeElements = Array.from(this.rootElement.querySelectorAll('[type=binary i]'));
   }
 
   public getDbDocs() {
-    const getDbDocId = (e: Element) => $(e).children('_id').text() || uuid();
     return this.dbDocElements.map(dbDoc => new EnketoDoc(
       dbDoc,
-      getDbDocId(dbDoc),
+      this.getDocId(dbDoc),
     ));
   }
 
-  public getNodeByXpath(contextNode: Node, rawXpath?: string): Node | null {
+  public getNodeByXpath(contextNode: Node, rawXpath?: string | null): Node | null {
     const xpath = rawXpath?.trim();
     if (!xpath) {
       return null;
@@ -278,13 +254,11 @@ class EnketoRootDoc extends EnketoDoc {
     return result.singleNodeValue;
   }
 
-  public getCouchDoc(formConfig: FormConfig): Record<string, any> {
-    // TODO not exactly sure we should do the path thing here, but it matches OG.
-    return this.nodesToJs(
-      this.getChildElements(this.rootElement),
-      formConfig.repeatPaths,
-      `/${this.rootElement.nodeName}`
-    );
+  private getDocId(element: Element) {
+    return Array
+      .from(element.children)
+      .find(child => child.tagName === '_id')
+      ?.textContent || uuid();
   }
 
   private getNodeWithLineage(contextNode?: Node | null, lineage: Node[] = []): Node[] {

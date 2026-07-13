@@ -31,6 +31,8 @@ import { Nullable, Person, Contact } from '@medic/cht-datasource';
 import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { FormConfig, NewEnketoService } from '@mm-services/NewEnketoService';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -61,6 +63,8 @@ export class FormService {
     private ngZone: NgZone,
     private chtDatasourceService: CHTDatasourceService,
     private enketoService: EnketoService,
+    private newEnketoService: NewEnketoService,
+    private extractLineageService: ExtractLineageService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private readonly deduplicateService: DeduplicateService,
@@ -314,8 +318,13 @@ export class FormService {
     }
 
     const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(formInternalId);
-    const contact = await this.getUserContact(!isTrainingCardForm);
-    const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
+    const contact = this.extractLineageService.extract(await this.getUserContact(!isTrainingCardForm));
+
+    const formConfig = new FormConfig(formDoc.doc, formDoc.xml);
+    const docs = await this.newEnketoService.saveReport(formConfig, form, { contact });
+    console.log('hello');
+
+    // const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
     if (!docId && isTrainingCardForm) {
       docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
     }
