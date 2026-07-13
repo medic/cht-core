@@ -7,7 +7,13 @@ const eurodigit = require( 'eurodigit' );
 const toDevanagari = eurodigit.to_non_euro.devanagari;
 const fromDevanagari = eurodigit.to_euro;
 
-const { setupNepaliDatePicker, hideDatePicker } = require('./bikram-sambat-picker-shared');
+const {
+  setupNepaliDatePicker,
+  hideDatePicker,
+  destroyDatePicker,
+} = require('./bikram-sambat-picker-shared');
+
+const activeWidgets = new Set();
 
 const NEPALI_MONTH_NAMES = [
   'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
@@ -18,6 +24,12 @@ const MONTH_PLACEHOLDER = 'महिना';
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
     return 'input[type=date]';
+  }
+
+  static globalReset() {
+    activeWidgets.forEach(widget => widget.destroy());
+    activeWidgets.clear();
+    return super.globalReset();
   }
 
   _init() {
@@ -96,13 +108,11 @@ class Bikramsambatdatepicker extends Widget {
       });
   }
 
-  destroy( element ) {
+  destroy() {
     if ( this.$hiddenDateInput ) {
-      hideDatePicker(this.$hiddenDateInput);
+      destroyDatePicker(this.$hiddenDateInput);
+      this.$hiddenDateInput = null;
     }
-    $('.nepali-date-picker-overlay').remove();
-    $('.nepali-date-picker').remove();
-    super.destroy( element );
   }
 }
 
@@ -114,6 +124,7 @@ const setupCalendarPicker = ($parent, widget) => {
   const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
   $calendarBtn.after($hiddenDateInput);
   widget.$hiddenDateInput = $hiddenDateInput;
+  activeWidgets.add(widget);
 
   setupNepaliDatePicker($hiddenDateInput, {
     closeOnDateSelect: false,

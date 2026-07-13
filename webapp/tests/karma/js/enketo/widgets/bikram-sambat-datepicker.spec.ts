@@ -110,6 +110,21 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     expect($('.nepali-date-picker .close-btn')).to.have.lengthOf(1);
   });
 
+  it('removes body-appended picker nodes during global widget reset', async () => {
+    for (let i = 0; i < 4; i++) {
+      const widget = await initWidget();
+      $('.calendar-btn').click();
+
+      expect($('.nepali-date-picker')).to.have.lengthOf(1);
+      BikramSambatDatepicker.globalReset();
+      $('#bikram-sambat-test').remove();
+      expect(widget.$hiddenDateInput).to.be.null;
+    }
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(0);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
+  });
+
   it('closes calendar popup and backdrop when close button is clicked', async () => {
     await initWidget();
     $('.calendar-btn').click();

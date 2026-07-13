@@ -56,6 +56,26 @@ const hideDatePicker = ($hiddenInput) => {
   $hiddenInput.removeData('activeElementBeforeShow');
 };
 
+const destroyDatePicker = ($hiddenInput) => {
+  if (!$hiddenInput || !$hiddenInput.length) {
+    return;
+  }
+
+  const $picker = $hiddenInput.data('picker');
+  hideDatePicker($hiddenInput);
+  $hiddenInput.off('dateSelect close show');
+
+  if ($picker && $picker.length) {
+    $picker.remove();
+  }
+
+  $hiddenInput.remove();
+
+  if (!$('.nepali-date-picker').length) {
+    $('.nepali-date-picker-overlay').remove();
+  }
+};
+
 const ensureClearButton = (container, onClear) => {
   if (typeof onClear !== 'function') {
     return;
@@ -231,4 +251,5 @@ const setupNepaliDatePicker = ($hiddenInput, {
 module.exports = {
   setupNepaliDatePicker,
   hideDatePicker,
+  destroyDatePicker,
 };
