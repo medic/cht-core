@@ -35,7 +35,7 @@ describe('Bulk operations API', () => {
     await utils.deleteUsers([offlineUser]);
   });
 
-  describe('GET /api/v1/bulk-operations/:id', async () => {
+  describe('GET /api/v1/bulk-operations/:id', () => {
     const endpoint = '/api/v1/bulk-operations';
 
     it('throws 404 when no operation matches the id', async () => {
@@ -64,29 +64,6 @@ describe('Bulk operations API', () => {
       const actions = Object.values(log.actions || {});
       expect(actions).to.have.lengthOf(1);
       expect(actions[0]).to.include({ action: 'archive', status: 'queued' });
-    });
-
-    describe.skip('once the archive handler is wired (#6615)', () => {
-      it('reports the operation as completed and removes the contacts', async () => {
-        const person = personFactory.build({ parent: { _id: place0._id, parent: place0.parent } });
-        await utils.saveDocs([person]);
-
-        const { id } = await utils.request({ path: `/api/v1/person/${person._id}`, method: 'DELETE' });
-
-        let log;
-        for (let i = 0; i < 30; i++) {
-          log = await utils.request({ path: `${endpoint}/${id}` });
-          const actions = Object.values(log.actions || {});
-          if (actions.length && actions.every(action => action.status !== 'queued')) {
-            break;
-          }
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-
-        const actions = Object.values(log.actions || {});
-        expect(actions.every(action => action.status === 'completed')).to.equal(true);
-        await expect(utils.getDoc(person._id)).to.be.rejectedWith('404');
-      });
     });
   });
 });

@@ -494,7 +494,7 @@ describe('Person API', () => {
     });
   });
 
-  describe('DELETE /api/v1/person/:uuid', async () => {
+  describe('DELETE /api/v1/person/:uuid', () => {
     const endpoint = '/api/v1/person';
 
     it('returns a dry-run summary and deletes nothing', async () => {
@@ -534,32 +534,6 @@ describe('Person API', () => {
           auth: { username: user.username, password: user.password },
         };
         await expect(utils.request(opts)).to.be.rejectedWith('403 - {"code":403,"error":"Insufficient privileges"}');
-      });
-    });
-
-    describe.skip('once the archive handler is wired (#6615)', () => {
-      const pollBulkOperation = async (id, tries = 30) => {
-        for (let i = 0; i < tries; i++) {
-          const log = await utils.request({ path: `/api/v1/bulk-operations/${id}` });
-          const actions = Object.values(log.actions || {});
-          if (actions.length && actions.every(action => action.status !== 'queued')) {
-            return log;
-          }
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        throw new Error(`bulk operation ${id} did not complete`);
-      };
-
-      it('removes the person and their reports', async () => {
-        const person = personFactory.build({ parent: { _id: place0._id, parent: place0.parent } });
-        const report = reportFactory.report().build({ form: 'test-report' }, { patient: person });
-        await utils.saveDocs([person, report]);
-
-        const { id } = await utils.request({ path: `${endpoint}/${person._id}`, method: 'DELETE' });
-        await pollBulkOperation(id);
-
-        await expect(utils.getDoc(person._id)).to.be.rejectedWith('404');
-        await expect(utils.getDoc(report._id)).to.be.rejectedWith('404');
       });
     });
   });
