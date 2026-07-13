@@ -57,7 +57,7 @@ const hideDatePicker = ($hiddenInput) => {
 };
 
 const destroyDatePicker = ($hiddenInput) => {
-  if (!$hiddenInput || !$hiddenInput.length) {
+  if (!$hiddenInput?.length) {
     return;
   }
 
@@ -65,7 +65,7 @@ const destroyDatePicker = ($hiddenInput) => {
   hideDatePicker($hiddenInput);
   $hiddenInput.off('dateSelect close show');
 
-  if ($picker && $picker.length) {
+  if ($picker?.length) {
     $picker.remove();
   }
 
