@@ -127,6 +127,12 @@ describe('libs parameter-validators', () => {
       expect(() => assertContactTypeFreetextQualifier(validFreetext)).to.not.throw();
     });
 
+    it('should pass when given a valid phone qualifier', () => {
+      const validPhone = { phone: '+254712345678' };
+
+      expect(() => assertContactTypeFreetextQualifier(validPhone)).to.not.throw();
+    });
+
     it('should throw InvalidArgumentError when given an invalid qualifier', () => {
       const invalidQualifier = { invalid: 'data' };
 
@@ -138,7 +144,7 @@ describe('libs parameter-validators', () => {
 
       expect(() => assertContactTypeFreetextQualifier(invalidQualifier)).to.throw(
         InvalidArgumentError,
-        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type and/or freetext qualifier.'
+        'Invalid qualifier [{"invalid":"data"}]. Must be a contact type, freetext, and/or phone qualifier.'
       );
     });
 

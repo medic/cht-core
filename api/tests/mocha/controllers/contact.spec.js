@@ -241,7 +241,7 @@ describe('Contact Controller', () => {
             limit,
           }
         };
-        const err = { status: 400, message: 'Either query param freetext or type is required' };
+        const err = { status: 400, message: 'Either query param freetext, type or phone is required' };
         contactGetUuidsPage.throws(err);
 
         await controller.v1.getUuids(req, res);
@@ -255,6 +255,38 @@ describe('Contact Controller', () => {
         expect(contactGetUuidsPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(err, req, res)).to.be.true;
+      });
+
+      it('returns a page of contact ids for the phone param', async () => {
+        const phone = '+254712345678';
+        const phoneQualifier = { phone };
+        const qualifierByPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneQualifier);
+        req = { query: { phone, cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByPhone.calledOnceWithExactly(phone)).to.be.true;
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(phoneQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('uses the phone param on its own, ignoring type and freetext', async () => {
+        const phone = '+254712345678';
+        const phoneQualifier = { phone };
+        const qualifierByPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneQualifier);
+        req = { query: { phone, type: contactType, freetext, cursor, limit } };
+        contactGetUuidsPage.resolves(contacts);
+
+        await controller.v1.getUuids(req, res);
+
+        expect(qualifierByPhone.calledOnceWithExactly(phone)).to.be.true;
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(qualifierByFreetext.notCalled).to.be.true;
+        expect(contactGetUuidsPage.calledOnceWithExactly(phoneQualifier, cursor, limit)).to.be.true;
       });
     });
 
@@ -309,7 +341,37 @@ describe('Contact Controller', () => {
         expect(contactGetPage.calledOnceWithExactly(idsQualifier, cursor, limit)).to.be.true;
       });
 
-      it('returns a 400 error when neither ids nor type is provided', async () => {
+      it('returns a page of contacts for the given phone', async () => {
+        const phone = '+254712345678';
+        const phoneQualifier = { phone };
+        const qualifierByPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneQualifier);
+        req = { query: { phone, cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByPhone.calledOnceWithExactly(phone)).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(phoneQualifier, cursor, limit)).to.be.true;
+        expect(res.json.calledOnceWithExactly(contacts)).to.be.true;
+        expect(serverUtilsError.notCalled).to.be.true;
+      });
+
+      it('prefers phone over type when both are provided', async () => {
+        const phone = '+254712345678';
+        const phoneQualifier = { phone };
+        const qualifierByPhone = sinon.stub(Qualifier, 'byPhone').returns(phoneQualifier);
+        const qualifierByContactType = sinon.stub(Qualifier, 'byContactType');
+        req = { query: { phone, type: 'person', cursor, limit } };
+        contactGetPage.resolves(contacts);
+
+        await controller.v1.getAll(req, res);
+
+        expect(qualifierByPhone.calledOnceWithExactly(phone)).to.be.true;
+        expect(qualifierByContactType.notCalled).to.be.true;
+        expect(contactGetPage.calledOnceWithExactly(phoneQualifier, cursor, limit)).to.be.true;
+      });
+
+      it('returns a 400 error when neither ids, type nor phone is provided', async () => {
         req = { query: { cursor, limit } };
 
         await controller.v1.getAll(req, res);
@@ -317,7 +379,7 @@ describe('Contact Controller', () => {
         expect(contactGetPage.notCalled).to.be.true;
         expect(res.json.notCalled).to.be.true;
         expect(serverUtilsError.calledOnceWithExactly(
-          { status: 400, message: 'Either query param ids or type is required' },
+          { status: 400, message: 'Either query param ids, type or phone is required' },
           req,
           res
         )).to.be.true;
