@@ -19,6 +19,19 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
     document.body.insertAdjacentHTML('afterbegin', html);
   };
 
+  const buildHtmlMultiple = (count: number) => {
+    let html = '<div id="bikram-sambat-test">';
+    for (let i = 0; i < count; i++) {
+      html += `
+        <label class="question non-select or-appearance-bikram-sambat">
+          <span lang="" class="question-label active">Visit date ${i}</span>
+          <input type="date" name="/data/visit_date_${i}" data-type-xml="date">
+        </label>`;
+    }
+    html += '</div>';
+    document.body.insertAdjacentHTML('afterbegin', html);
+  };
+
   const dayInput = () => $('.bikram-sambat-input-group input[name="day"]');
   const monthInput = () => $('.bikram-sambat-input-group input[name="month"]');
   const yearInput = () => $('.bikram-sambat-input-group input[name="year"]');
@@ -99,6 +112,45 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
   it('initializes with a calendar button', async () => {
     await initWidget();
     expect($('.calendar-btn')).to.have.lengthOf(1);
+  });
+
+  it('removes body-appended picker nodes during global widget reset for multiple concurrent widgets', async () => {
+    buildHtmlMultiple(3);
+    const widgets: any[] = [];
+    const elements = $(BikramSambatDatepicker.selector);
+    for (let i = 0; i < elements.length; i++) {
+      const widget = new BikramSambatDatepicker(elements[i]);
+      widgets.push(widget);
+    }
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    $('.calendar-btn').each(function() {
+      $(this).click();
+    });
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(3);
+    
+    BikramSambatDatepicker.globalReset();
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(0);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
+    widgets.forEach(w => expect(w.$hiddenDateInput).to.be.null);
+  });
+
+  it('automatically cleans up pickers when widget DOM element is removed from body (repeat row removal)', async () => {
+    const widget = await initWidget();
+    $('.calendar-btn').click();
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(1);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(1);
+
+    $('#bikram-sambat-test').remove();
+
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    expect($('.nepali-date-picker')).to.have.lengthOf(0);
+    expect($('.nepali-date-picker-overlay')).to.have.lengthOf(0);
+    expect(widget.$hiddenDateInput).to.be.null;
   });
 
   it('opens calendar popup and backdrop when calendar button is clicked', async () => {
