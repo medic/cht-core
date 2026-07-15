@@ -429,4 +429,88 @@ describe('FormatDate service', () => {
       expect(translateInstant.args[0]).to.deep.equal(['task.overdue.days', { DAYS: 4 }]);
     });
   });
+
+  describe('Bikram Sambat - Real Library Conversions', () => {
+    beforeEach(() => {
+      languageService.useDevanagariScript.returns(true);
+      settingsService.get.resolves({ date_format: 'DD-MMM-YYYY' });
+    });
+
+    it('formats Gregorian date into Devanagari Bikram Sambat date correctly without stubs', () => {
+      const date = moment('2024-06-29T12:00:00.000'); // 2081-03-15 BS (noon to be timezone safe)
+      const formatted = service.date(date);
+      expect(formatted).to.equal('१५ असार २०८१');
+    });
+
+    it('formats Gregorian date and time into Devanagari Bikram Sambat datetime correctly', () => {
+      const date = moment('2024-06-29T10:15:30.000'); // 2081-03-15 BS
+      const formatted = service.datetime(date);
+      expect(formatted).to.contain('१५ असार २०८१');
+      expect(formatted).to.contain('10:15:30 AM');
+    });
+
+    it('handles day-boundaries (midnight) correctly', () => {
+      const date = moment('2024-06-29T00:00:00.000');
+      expect(service.date(date)).to.equal(BikramSambat.toBik_text(date));
+    });
+
+    it('handles day-boundaries (end-of-day) correctly', () => {
+      const date = moment('2024-06-29T23:59:59.999');
+      expect(service.date(date)).to.equal(BikramSambat.toBik_text(date));
+    });
+
+    it('correctly handles conversion across timezones and negative offsets', () => {
+      const dateInUTC = moment.utc('2024-06-29T05:00:00Z');
+      const localDate = dateInUTC.local();
+      
+      const bkDate = BikramSambat.toBik(localDate);
+      const serviceFormatted = service.date(localDate);
+      
+      const dev = BikramSambat.toDev(bkDate.year, bkDate.month, bkDate.day);
+      expect(serviceFormatted).to.equal(`${dev.day} ${dev.month} ${dev.year}`);
+    });
+
+    it('correctly handles conversion across Daylight Saving Time (DST) boundaries', () => {
+      const beforeDST = moment('2024-03-10T01:59:59'); // Standard Time
+      const afterDST = moment('2024-03-10T03:00:00'); // DST (02:00:00 doesn't exist)
+      
+      expect(service.date(beforeDST)).to.be.a('string');
+      expect(service.date(afterDST)).to.be.a('string');
+    });
+
+    it('toGreg_text reverse conversion round-trips correctly at month/year boundaries', () => {
+      const gregStr = BikramSambat.toGreg_text('2080', '12', '30');
+      expect(gregStr).to.be.a('string');
+      
+      const bik = BikramSambat.toBik(moment(gregStr));
+      expect(Number(bik.year)).to.equal(2080);
+      expect(Number(bik.month)).to.equal(12);
+      expect(Number(bik.day)).to.equal(30);
+    });
+
+    it('returns the correct day counts for divergent years 2082 and 2083', () => {
+      expect(BikramSambat.daysInMonth(2082, 8)).to.equal(29);
+      expect(BikramSambat.daysInMonth(2082, 10)).to.equal(29);
+      expect(BikramSambat.daysInMonth(2082, 2)).to.equal(31);
+      expect(BikramSambat.daysInMonth(2082, 4)).to.equal(31);
+
+      expect(BikramSambat.daysInMonth(2083, 8)).to.equal(29);
+      expect(BikramSambat.daysInMonth(2083, 10)).to.equal(29);
+    });
+
+    it('handles Devanagari free-text search queries or invalid dates gracefully without throwing', () => {
+      let threwException = false;
+      let dateResult;
+      let datetimeResult;
+      try {
+        dateResult = service.date('असार');
+        datetimeResult = service.datetime('२०८१');
+      } catch (_e) {
+        threwException = true;
+      }
+      expect(threwException).to.be.false;
+      expect(dateResult).to.equal('Invalid date');
+      expect(datetimeResult).to.equal('Invalid date');
+    });
+  });
 });

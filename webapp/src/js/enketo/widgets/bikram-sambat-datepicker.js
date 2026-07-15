@@ -59,8 +59,6 @@ class Bikramsambatdatepicker extends Widget {
       .then( ( language ) => {
         const $el = $( el );
 
-        // Here we support the appearance="bikram-sambat" attribute as
-        // well to maintain compatibility with collect.
         if ( language.indexOf( 'ne' ) !== 0 &&
           $el.parent('.or-appearance-bikram-sambat').length === 0) {
           return;
