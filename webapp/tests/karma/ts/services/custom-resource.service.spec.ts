@@ -3,16 +3,18 @@ import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { DOC_IDS } from '@medic/constants';
 
-import { ResourceIconsService } from '@mm-services/resource-icons.service';
+import { CustomResourceService } from '@mm-services/custom-resource.service';
 import { DbService } from '@mm-services/db.service';
 import { ChangesService } from '@mm-services/changes.service';
+
+const logger = require('@medic/logger');
 
 describe('ResourceIcons service', () => {
   let get;
   let Changes;
 
   const getService = () => {
-    return TestBed.inject(ResourceIconsService);
+    return TestBed.inject(CustomResourceService);
   };
 
   beforeEach(() => {
@@ -31,6 +33,47 @@ describe('ResourceIcons service', () => {
     sinon.restore();
   });
 
+
+  describe('init', () => {
+    it('should fetch resources doc when called from constructor', fakeAsync(() => {
+      const resources = {
+        resources: { child: 'child.png' },
+        _attachments: { 'child.png': { content_type: 'image/png', data: 'kiddlywinks' } }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      expect(get.args).to.deep.equal([
+        [ DOC_IDS.BRANDING, { attachments: true } ],
+        [ DOC_IDS.PARTNERS, { attachments: true } ],
+        [ DOC_IDS.RESOURCES, { attachments: true } ],
+      ]);
+      // the resources doc should now be cached
+      const actual = service.getImg('child', DOC_IDS.RESOURCES);
+      expect(actual).to.equal(
+        '<span class="resource-icon" title="child" ><img src="data:image/png;base64,kiddlywinks" /></span>'
+      );
+      expect(get).to.have.been.calledThrice;
+    }));
+
+    it('should await resources', async () => {
+      get.resolves();
+      const service = getService();
+      await service.init();
+
+      expect(get.args).to.deep.equal([
+        [ DOC_IDS.BRANDING, { attachments: true } ],
+        [ DOC_IDS.PARTNERS, { attachments: true } ],
+        [ DOC_IDS.RESOURCES, { attachments: true } ],
+      ]);
+
+      await service.init();
+
+      // Resources are not reloaded after subsequent calls
+      expect(get).to.have.been.calledThrice;
+    });
+  });
 
   describe('getImg function', () => {
 
@@ -190,6 +233,31 @@ describe('ResourceIcons service', () => {
       expect(actual).to.equal(expected);
     }));
 
+    it('should return &nbsp when building the content throws', fakeAsync(() => {
+      const resources = {
+        resources: {
+          broken: 'broken.svg'
+        },
+        _attachments: {
+          'broken.svg': {
+            content_type: 'image/svg+xml',
+            // invalid base64 data causes atob to throw inside buildAndCacheContent
+            data: 'not-valid-base64-@@@'
+          }
+        }
+      };
+      const errorLog = sinon.stub(logger, 'error');
+      get.resolves(resources);
+      const service = getService();
+      tick();
+      const actual = service.getImg('broken', 'resources', 'fa-test');
+      const expected = '<span class="resource-icon" title="broken" data-fa-placeholder="fa-test">&nbsp</span>';
+      expect(actual).to.equal(expected);
+      expect(errorLog.callCount).to.equal(1);
+      expect(errorLog.args[0][0]).to.equal('Error getting resource content [broken] from [resources: ');
+      expect(errorLog.args[0][1].name).to.equal('InvalidCharacterError');
+    }));
+
     it('should return inline svg for svg images', fakeAsync(() => {
       const data = `<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                     <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"/>
@@ -239,7 +307,47 @@ describe('ResourceIcons service', () => {
       expect(dom.find('.resource-icon[title="child"] img').attr('src'))
         .to.equal('data:image/png;base64,kiddlywinks');
       expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
-        .to.equal(undefined);
+        .to.be.undefined;
+    }));
+
+    it('should set the fallback content when building the content throws', fakeAsync(() => {
+      const resources = {
+        resources: {
+          child: 'child.png',
+          broken: 'broken.svg'
+        },
+        _attachments: {
+          'child.png': {
+            content_type: 'image/png',
+            data: 'kiddlywinks'
+          },
+          'broken.svg': {
+            content_type: 'image/svg+xml',
+            // invalid base64 data causes atob to throw inside buildAndCacheContent
+            data: 'not-valid-base64-@@@'
+          }
+        }
+      };
+      const errorLog = sinon.stub(logger, 'error');
+      get.resolves(resources);
+      const service = getService();
+      const dom = $('<ul>' +
+        '<li><span class="resource-icon" title="child"></span></li>' +
+        '<li><span class="resource-icon" title="broken"></span></li>' +
+        '</ul>');
+      service.replacePlaceholders(dom);
+      tick();
+      // sibling element is still processed normally
+      expect(dom.find('.resource-icon[title="child"] img').attr('src'))
+        .to.equal('data:image/png;base64,kiddlywinks');
+      // the throw is caught and the fallback content is used
+      const broken = dom.find('.resource-icon[title="broken"]');
+      expect(broken.find('img')).to.have.lengthOf(0);
+      // the error is logged
+      expect(errorLog.callCount).to.equal(1);
+      expect(errorLog.args[0][0]).to.equal('Error getting resource content [broken] from [resources: ');
+      expect(errorLog.args[0][1].name).to.equal('InvalidCharacterError');
+      expect(broken.text()).to.equal(' ');
     }));
 
     it('should keep the placeholder', fakeAsync(() => {
@@ -268,7 +376,7 @@ describe('ResourceIcons service', () => {
       expect(child.data('faPlaceholder')).to.equal('fa-child');
 
       const adult = dom.find('.resource-icon[title="adult"]');
-      expect(adult.find('img').attr('src')).to.equal(undefined);
+      expect(adult.find('img').attr('src')).to.be.undefined;
       expect(adult.find('span').attr('class')).to.equal('fa fa-adult');
       expect(adult.data('faPlaceholder')).to.equal('fa-adult');
     }));
@@ -317,7 +425,7 @@ describe('ResourceIcons service', () => {
       expect(dom.find('.resource-icon[title="child"] img').attr('src'))
         .to.equal('data:image/png;base64,kiddlywinks');
       expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
-        .to.equal(undefined);
+        .to.be.undefined;
 
       Changes.args[0][0].callback({ id: 'resources' }); // invoke the changes listener
       service.replacePlaceholders(dom);
@@ -386,7 +494,7 @@ describe('ResourceIcons service', () => {
       expect(child.data('faPlaceholder')).to.equal('fa-child');
 
       let adult = dom.find('.resource-icon[title="adult"]');
-      expect(adult.find('img').attr('src')).to.equal(undefined);
+      expect(adult.find('img').attr('src')).to.be.undefined;
       expect(adult.find('span').attr('class')).to.equal('fa fa-adult');
       expect(adult.data('faPlaceholder')).to.equal('fa-adult');
 
@@ -411,7 +519,7 @@ describe('ResourceIcons service', () => {
       expect(child.data('faPlaceholder')).to.equal('fa-child');
 
       adult = dom.find('.resource-icon[title="adult"]');
-      expect(adult.find('img').attr('src')).to.equal(undefined);
+      expect(adult.find('img').attr('src')).to.be.undefined;
       expect(adult.find('span').attr('class')).to.equal('fa fa-adult');
       expect(adult.data('faPlaceholder')).to.equal('fa-adult');
     }));
@@ -475,5 +583,57 @@ describe('ResourceIcons service', () => {
 
       return Promise.all(promises);
     });
+  });
+
+  describe('getResource', () => {
+    it('should return resource attachment data', fakeAsync(() => {
+      const resources = {
+        resources: {
+          icon: 'icon.png',
+          logo: 'logo.svg'
+        },
+        _attachments: {
+          'icon.png': {
+            content_type: 'image/png',
+            data: 'base64data'
+          },
+          'logo.svg': {
+            content_type: 'image/svg+xml',
+            data: 'svgdata'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      const result = service.getResource('icon');
+
+      expect(result).to.deep.equal({
+        content_type: 'image/png',
+        data: 'base64data'
+      });
+    }));
+
+    it('should return null when resource does not exist', fakeAsync(() => {
+      const resources = {
+        resources: {
+          icon: 'icon.png'
+        },
+        _attachments: {
+          'icon.png': {
+            content_type: 'image/png',
+            data: 'base64data'
+          }
+        }
+      };
+      get.resolves(resources);
+      const service = getService();
+      tick();
+
+      const result = service.getResource('nonexistent');
+
+      expect(result).to.be.null;
+    }));
   });
 });
