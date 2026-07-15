@@ -90,7 +90,10 @@ describe('Reports Sidebar Filter', () => {
     await utils.revertSettings(true);
   });
 
-  after(async () => await utils.deleteUsers([ districtHospitalUser, healthCenterUser ]));
+  after(async () => {
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await utils.deleteUsers([ districtHospitalUser, healthCenterUser ]);
+  });
 
   it('should filter by date', async () => {
     await loginPage.login(districtHospitalUser);
@@ -178,6 +181,32 @@ describe('Reports Sidebar Filter', () => {
     expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
     expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyHealthCenter._id).isDisplayed()).to.be.true;
     expect(await reportsPage.leftPanelSelectors.reportByUUID(visitHealthCenter._id).isDisplayed()).to.be.true;
+  });
+
+  it('should filter by date in Nepali language (Bikram Sambat)', async () => {
+    await browser.url('/');
+    await browser.setCookies({ name: 'locale', value: 'ne' });
+    await browser.refresh();
+
+    await loginPage.login(districtHospitalUser);
+    await commonPage.waitForPageLoaded();
+
+    await commonPage.goToReports();
+    await reportsPage.leftPanelSelectors.firstReport().waitForDisplayed();
+    expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(reports.length);
+
+    await reportsPage.openSidebarFilter();
+    await reportsPage.openSidebarFilterDateAccordion();
+    await reportsPage.setSidebarFilterBikFromDate();
+    await reportsPage.setSidebarFilterBikToDate();
+    await commonPage.waitForPageLoaded();
+
+    expect(await reportsPage.leftPanelSelectors.allReports().length).to.equal(2);
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(pregnancyDistrictHospital._id).isDisplayed()).to.be.true;
+    expect(await reportsPage.leftPanelSelectors.reportByUUID(visitDistrictHospital._id).isDisplayed()).to.be.true;
+
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await browser.refresh();
   });
 });
 

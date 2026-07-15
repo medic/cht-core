@@ -120,16 +120,19 @@
   display: block;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   padding: 8px;
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
   z-index: 9999 !important;
   user-select: none;
   min-width: 250px !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
+  
+  &:not(.anchored) {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
   
   &.anchored {
     position: absolute !important;

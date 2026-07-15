@@ -14,6 +14,11 @@ import { Selectors } from '@mm-selectors/index';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { TranslatePipe } from '@ngx-translate/core';
 
+import { LanguageService } from '@mm-services/language.service';
+import { FormatDateService } from '@mm-services/format-date.service';
+import { toBik, toGreg_text, toBik_dev } from 'bikram-sambat';
+import { setupNepaliDatePicker, hideDatePicker } from '../../../../js/enketo/widgets/bikram-sambat-picker-shared';
+
 @Component({
   selector: 'mm-date-filter',
   templateUrl: './date-filter.component.html',
@@ -22,6 +27,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   private globalActions: GlobalActions;
   private subscription: Subscription = new Subscription();
+  isNepali = false;
   inputLabel;
   error?: string;
   direction: string | undefined;
@@ -40,6 +46,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private store: Store,
     private datePipe: DatePipe,
+    private readonly languageService: LanguageService,
+    private readonly formatDateService: FormatDateService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.store.select(Selectors.getDirection).subscribe(direction => {
@@ -48,6 +56,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
+    this.isNepali = this.languageService.useDevanagariScript();
     const subscription = this.store
       .select(Selectors.getFilters)
       .subscribe(({ date }) => {
@@ -59,6 +68,11 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    if (this.isNepali) {
+      this.initNepaliDatePicker();
+      return;
+    }
+
     const datepicker:any = $(`#${this.fieldId}`).daterangepicker(
       {
         singleDatePicker: true,
@@ -105,6 +119,57 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
       if (!picker.endDate?.isSame(date, 'day')) {
         picker.setEndDate(date);
       }
+    });
+  }
+
+  private initNepaliDatePicker() {
+    const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input" />');
+    $(`#${this.fieldId}`).parent().append($hiddenDateInput);
+
+    // Get today's date in Devanagari BS format using clone().locale('en') to ensure timezone/locale safety.
+    const maxDate = toBik_dev(moment().clone().locale('en').format('YYYY-MM-DD'));
+
+    setupNepaliDatePicker($hiddenDateInput, {
+      onDateSelect: (data: any) => {
+        const gregDateStr = toGreg_text(data.bsYear, data.bsMonth, data.bsDate);
+        const gregMoment = moment(gregDateStr);
+        const normalizedMoment = this.isStartDate ? gregMoment.startOf('day') : gregMoment.endOf('day');
+        const dateRange = this.createDateRange(normalizedMoment, normalizedMoment);
+        this.applyFilter(dateRange);
+      },
+      position: 'anchored',
+      maxDate
+    });
+
+    $(`#${this.fieldId}`).on('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (this.disabled) {
+        return;
+      }
+
+      // Close other open datepickers to enable single-click switching
+      $('.nepali-datepicker-input').each(function() {
+        const $input = $(this);
+        if ($input[0] !== $hiddenDateInput[0]) {
+          hideDatePicker($input);
+        }
+      });
+
+      const activeDate = this.isStartDate ? this.dateRange.from : this.dateRange.to;
+      if (activeDate) {
+        const bsDate = toBik(moment(activeDate).clone().locale('en').format('YYYY-MM-DD'));
+        const bsMonth = String(bsDate.month).padStart(2, '0');
+        const bsDay = String(bsDate.day).padStart(2, '0');
+        const latinVal = `${bsDate.year}-${bsMonth}-${bsDay}`;
+        const devanagariVal = latinVal.replace(/\d/g, (w) => ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'][+w]);
+        $hiddenDateInput.val(devanagariVal);
+      } else {
+        $hiddenDateInput.val('');
+      }
+
+      $hiddenDateInput.click();
     });
   }
 
@@ -165,6 +230,24 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
 
   setLabel(dateRange) {
     this.inputLabel = '';
+    if (this.isNepali) {
+      const fromVal = dateRange.from ? moment(dateRange.from).startOf('day').valueOf() : undefined;
+      const toVal = dateRange.to ? moment(dateRange.to).startOf('day').valueOf() : undefined;
+      const dates = {
+        from: fromVal ? this.formatDateService.dayMonth(fromVal) : undefined,
+        to: toVal ? this.formatDateService.dayMonth(toVal) : undefined,
+      };
+
+      if (dates.from && this.isStartDate) {
+        this.inputLabel += dates.from;
+      }
+
+      if (dates.to && !this.isStartDate) {
+        this.inputLabel += dates.to;
+      }
+      return;
+    }
+
     const format = 'd MMM';
     const dates = {
       from: dateRange.from ? this.datePipe.transform(dateRange.from, format) : undefined,
@@ -183,11 +266,36 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.setError(false);
     this.subscription.unsubscribe();
-    const datePicker:any = $(`#${this.fieldId}`).data('daterangepicker');
 
+    if (this.isNepali) {
+      this.cleanupNepaliDatePicker();
+      return;
+    }
+
+    const datePicker: any = $(`#${this.fieldId}`).data('daterangepicker');
     if (datePicker) {
-      // avoid dom-nodes leaks
       datePicker.remove();
+    }
+  }
+
+  private cleanupNepaliDatePicker() {
+    const $hiddenDateInput = $(`#${this.fieldId}`).parent().find('.nepali-datepicker-input');
+    if ($hiddenDateInput.length) {
+      this.removeSpecificPicker($hiddenDateInput);
+    }
+    if ($('.nepali-date-picker').length === 0) {
+      $('.nepali-date-picker-overlay').remove();
+    }
+  }
+
+  private removeSpecificPicker($hiddenDateInput) {
+    const $picker = $hiddenDateInput.data('picker');
+    hideDatePicker($hiddenDateInput);
+    $hiddenDateInput.remove();
+    if ($picker) {
+      $picker.remove();
+    } else {
+      $('.nepali-date-picker').remove();
     }
   }
 }
