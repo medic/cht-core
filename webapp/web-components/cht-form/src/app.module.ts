@@ -10,6 +10,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { HttpClientModule } from '@angular/common/http';
 import { StoreModule } from '@ngrx/store';
 import { LanguageService } from '@mm-services/language.service';
+import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 @NgModule({
   imports: [
@@ -35,7 +36,8 @@ export class AppModule implements DoBootstrap {
   constructor(
     injector: Injector,
     private readonly dbService: DbService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly chtDatasourceService: CHTDatasourceService
   ) {
     const chtForm = createCustomElement(AppComponent, { injector });
     customElements.define('cht-form', chtForm);
@@ -52,6 +54,7 @@ export class AppModule implements DoBootstrap {
       Settings: { get: async () => ({ default_country_code: '1' }) },
       Translate: this.translateService,
       DB: this.dbService,
+      CHTDatasource: this.chtDatasourceService,
     };
   }
 }

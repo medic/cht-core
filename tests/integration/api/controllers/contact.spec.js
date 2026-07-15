@@ -340,6 +340,19 @@ describe('Contact API', () => {
       expect(responseCursor).to.not.equal(emptyNouveauCursor);
     });
 
+    it('returns a page of contact ids for the given phone', async () => {
+      const opts = {
+        path: `${endpoint}`,
+        qs: {
+          phone: patient.phone
+        }
+      };
+      const responsePage = await utils.request(opts);
+
+      expect(responsePage.data).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.equal(null);
+    });
+
     it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',
       async () => {
         const qs = {
@@ -702,11 +715,21 @@ describe('Contact API', () => {
       expect(responseIds).to.deep.equalInAnyOrder(allContactIds);
     });
 
-    it('throws 400 error when neither ids nor type is provided', async () => {
+    it('throws 400 error when neither ids, type nor phone is provided', async () => {
       const opts = { path: endpoint };
       await expect(utils.request(opts)).to.be.rejectedWith(
-        `400 - {"code":400,"error":"Either query param ids or type is required"}`
+        `400 - {"code":400,"error":"Either query param ids, type or phone is required"}`
       );
+    });
+
+    it('returns a page of contacts for the given phone', async () => {
+      const responsePage = await utils.request({ path: endpoint, qs: { phone: patient.phone } });
+      const responseIds = responsePage.data.map(doc => doc._id);
+
+      expect(responseIds).to.deep.equal([patient._id]);
+      expect(responsePage.cursor).to.be.null;
+      // The doc-page returns full documents, not just ids.
+      responsePage.data.forEach(doc => expect(doc._rev).to.be.a('string'));
     });
 
     it('throws 400 error when the contact type is invalid', async () => {
