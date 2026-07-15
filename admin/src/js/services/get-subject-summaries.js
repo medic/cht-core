@@ -67,7 +67,7 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         return $q.resolve(summaries);
       }
 
-      return GetSummaries([...new Set(ids)])
+      return GetSummaries.getContacts([...new Set(ids)])
         .then(function(response) {
           return replaceIdsWithNames(summaries, response);
         });

@@ -67,7 +67,8 @@ describe('ContactViewModelGenerator service', () => {
   };
 
   const stubGetDataRecordsService = (dataRecords) => {
-    getDataRecordsService.get = sinon.stub().resolves(dataRecords);
+    getDataRecordsService.getContacts = sinon.stub().resolves(dataRecords);
+    getDataRecordsService.getReports = sinon.stub().resolves(dataRecords);
     getDataRecordsService.getDocsSummaries = sinon.stub().resolves(dataRecords);
   };
 

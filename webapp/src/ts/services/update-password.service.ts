@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -18,13 +18,13 @@ export class UpdatePasswordService {
    * @param      {string} currentPassword  Password for Basic Auth
    * @param      {string} newPassword      Password to set
    */
-  update(username, currentPassword, newPassword): Promise<Object> {
+  update(username: string, currentPassword: string, newPassword: string): Promise<Object> {
     const url = '/api/v1/users/' + username;
-    const headers: any = {
+    const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
       Authorization: 'Basic ' + window.btoa(username + ':' + currentPassword)
-    };
+    });
     const updates = { password: newPassword };
     return this.http.post(url, updates, { headers }).toPromise() as Promise<Object>;
   }

@@ -61,7 +61,7 @@ angular.module('inboxServices').factory('HydrateContactNames',
         return $q.resolve(summaries);
       }
 
-      return GetSummaries(ids)
+      return GetSummaries.getContacts(ids)
         .then(function(response) {
           summaries = getMutedState(summaries, response);
           return replaceContactIdsWithNames(summaries, response);

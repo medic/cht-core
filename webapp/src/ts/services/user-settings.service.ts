@@ -20,7 +20,7 @@ export class UserSettingsService {
     private languageService:LanguageService,
     private sessionService:SessionService,
   ) {
-    this.cache = this.cacheService.register({
+    this.cache = this.cacheService.register<Record<string, unknown>>({
       get: callback => {
         const docId = this.userDocId();
         this.dbService.get()
@@ -81,7 +81,7 @@ export class UserSettingsService {
         if (userFacilities && !Array.isArray(userFacilities)) {
           userFacilities = [ userFacilities ];
         }
-        return this.getDataRecordsService.get(userFacilities);
+        return this.getDataRecordsService.getContacts(userFacilities);
       })
       .catch((err) => {
         console.error('Error fetching user facility:', err);
