@@ -52,7 +52,7 @@ export class ReportViewModelGeneratorService {
       })
       .then((model) => {
         return this.getSummariesService
-          .get([model.doc._id])
+          .getReports([model.doc._id])
           .then((results) => {
             return this.getSubjectSummariesService.get(results, true);
           })
