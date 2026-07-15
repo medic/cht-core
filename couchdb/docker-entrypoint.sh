@@ -62,7 +62,7 @@ setUuid() {
 	fi
 }
 
-setNouveauUrl() {
+set_nouveau_url() {
   # Ensure [nouveau] section exists
   if ! grep -q '^\s*\[\s*nouveau\s*\]\s*$' "$CLUSTER_CREDENTIALS"; then
     printf "\n[nouveau]\n" >> "$CLUSTER_CREDENTIALS"
@@ -140,8 +140,8 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 		rm "${CLUSTER_CREDENTIALS}.tmp"
 	fi
 
-	if [ "$NOUVEAU_URL" ]; then
-		setNouveauUrl
+	if [[ "$NOUVEAU_URL" ]]; then
+		set_nouveau_url
 	fi
 
 	if [ "$CLUSTER_PEER_IPS" ] || [ "$IS_CLUSTER" = false ]; then
