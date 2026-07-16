@@ -7,6 +7,7 @@ import * as FileManager from '../../js/enketo/file-manager';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
+import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 
 @Injectable({
   providedIn: 'root'
@@ -100,7 +101,10 @@ export class NewEnketoService {
         _attachments: {
           ...reportDoc._attachments,
           ...formAttachments,
-        }
+          // Remove the legacy XML content field and attachment (no longer stored since #7596 - 4.0.0)
+          [REPORT_ATTACHMENT_NAME]: undefined
+        },
+        [REPORT_ATTACHMENT_NAME]: undefined,
       };
 
       const dbDocObjects = subDocs.map(docData => this.initializeDoc(docData.deserializeDoc(config)));
