@@ -325,7 +325,7 @@ export class FormService {
     }
 
     const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(formInternalId);
-    const contact = this.extractLineageService.extract(await this.getUserContact(!isTrainingCardForm));
+    const contact = await this.getUserContact(!isTrainingCardForm);
 
     const docs = await this.newEnketoService.saveReport(formConfig, form, { contact });
     // const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);

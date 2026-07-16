@@ -59,14 +59,14 @@ export class NewEnketoService {
         );
       }));
       const outputSiblings = siblings
-        .filter(({ fieldName, doc }) => doc && rootOutputDoc[fieldName]._id === 'NEW')
+        .filter(({ fieldName, doc }) => doc && rootOutputDoc[fieldName] === doc)
         .map(({ doc }) => doc)
         .filter(doc => !!doc);
 
       const childDocs = formDocData
         .getChildDocs()
         .map(doc => this.initializeDoc(doc.deserializeDoc(config)))
-        .map(doc => ({ ...doc, parent: { _id: rootOutputDoc._id }}));
+        .map(doc => ({ ...doc, parent: rootOutputDoc }));
 
       return {
         docId: rootOutputDoc._id,
@@ -140,7 +140,7 @@ export class NewEnketoService {
     return {
       type: 'person', // legacy support - form data should override this
       ...this.initializeDoc(rawSibling),
-      parent: rawSibling.parent === 'PARENT' ? rootContactDoc : rawSibling.parent
+      parent: rawSibling.parent === 'PARENT' ? { ...rootContactDoc } : rawSibling.parent
     };
   }
 
@@ -149,13 +149,16 @@ export class NewEnketoService {
     currentValue?: Record<string, string>,
     defaultValue?: Record<string, unknown>
   ) {
-    if (currentValue?._id === 'NEW') {
+    if (!currentValue?._id) {
+      return undefined;
+    }
+    if (currentValue._id === 'NEW') {
       return sibling;
-    } else if (currentValue?._id && currentValue?._id !== defaultValue?._id) {
-      return await this.getContactFromDatasource(Qualifier.byUuid(currentValue?._id));
+    } else if (currentValue?._id === defaultValue?._id) {
+      return defaultValue;
     }
 
-    return currentValue;
+    return await this.getContactFromDatasource(Qualifier.byUuid(currentValue?._id));
   }
 
   private getHiddenFields(elements: Element[]) {
@@ -187,7 +190,7 @@ export class NewEnketoService {
       content_type: 'xml',
       from: defaultData.contact?.phone,
       ...this.initializeDoc(defaultData),
-      ...defaultData,
+      contact: this.extractLineageService.extract(defaultData.contact),
       form_version: formVersion
     };
   }
