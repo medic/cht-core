@@ -13,10 +13,10 @@ updateSystem() {
   echo installing JAVA
   apt-get install default-jre -y
 
-  echo installing node
+  echo installing node and friends
   curl -sL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
   sudo bash nodesource_setup.sh # install node 22
-  apt-get install nodejs bzip2 # some npm dependency needs to be unzipped
+  apt-get install nodejs bzip2 curl jq git wget rsync -y
 }
 
 setupCHT() {
