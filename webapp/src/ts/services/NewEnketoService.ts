@@ -7,12 +7,12 @@ import * as FileManager from '../../js/enketo/file-manager';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class NewEnketoService {
+  private readonly USER_FILE_ATTACHMENT_PREFIX = 'user-file-';
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   constructor(
@@ -37,14 +37,14 @@ export class NewEnketoService {
         contactDoc.contact_type || contactDoc.type
       );
 
-      const formAttachments = this.processFormAttachments(formDocData, config.doc.internalId);
+      const formAttachments = this.processFormAttachments(config.doc.internalId, formDocData, contactDoc._attachments);
 
       const rootOutputDoc: Record<string, any> = {
         ...contactDoc,
         ...formDocData.deserializeDoc(config),
         type: contactDoc.type,
         contact_type: contactDoc.contact_type,
-        _attachments: this.getDocAttachments(formAttachments, contactDoc._attachments)
+        _attachments: formAttachments
       };
 
       const siblings = EnektoContactRootDoc.SIBLING_FIELD_NAMES
@@ -86,11 +86,7 @@ export class NewEnketoService {
       const subDocs = formDocData.getDbDocs();
 
       this.populateDbDocRefElements(formDocData, [formDocData, ...subDocs]);
-      const formAttachments = this.processFormAttachments(formDocData, config.doc.internalId);
-
-      // Remove the legacy XML content field and attachment (no longer stored since #7596 - 4.0.0)
-      delete reportDoc[REPORT_ATTACHMENT_NAME];
-      delete reportDoc._attachments?.[REPORT_ATTACHMENT_NAME];
+      const attachments = this.processFormAttachments(config.doc.internalId, formDocData, reportDoc._attachments);
 
       const rootOutputDoc: Record<string, any> = {
         ...reportDoc,
@@ -99,20 +95,12 @@ export class NewEnketoService {
           ...subDocs.map(({ rootElement }) => rootElement)
         ]),
         fields: formDocData.deserialize(config),
-        _attachments: this.getDocAttachments(formAttachments, reportDoc._attachments)
+        _attachments: attachments
       };
 
       const dbDocObjects = subDocs.map(docData => this.initializeDoc(docData.deserializeDoc(config)));
       return [rootOutputDoc, ...dbDocObjects];
     });
-  }
-
-  private getDocAttachments(formAttachments: Record<string, any>, currentDocAttachments?: Record<string, any>) {
-    const attachments = {
-      ...currentDocAttachments,
-      ...formAttachments,
-    };
-    return Object.keys(attachments).length ? attachments : undefined;
   }
 
   private async validate(form: Record<string, any>) {
@@ -215,31 +203,48 @@ export class NewEnketoService {
     });
   }
 
-  private processFormAttachments(rootDocData: EnketoRootDoc, form: string) {
+  private processFormAttachments(
+    form: string,
+    rootDocData: EnketoRootDoc,
+    originalAttachments: Record<string, any> = {}
+  ) {
     const binaryAttachments = rootDocData.binaryTypeElements
-      .filter(({ textContent }) => textContent)
       .map(element => {
         const xpath = Xpath.getElementTreeXPath(element);
         const formXpath = xpath.replace(/^\/[^/]+/, `/${form}`);
         const filename = `user-file${formXpath}`;
         const data = element.textContent;
         element.textContent = '';
-        return { filename, data };
+        return {
+          filename,
+          // Currently do not support loading binary attachment data into edit form. So, keep existing value.
+          attachment: data ? { data, content_type: 'image/png' } : originalAttachments[filename]
+        };
       })
-      .reduce((acc, { filename, data }) => ({
-        ...acc,
-        [filename]: { data, content_type: 'image/png' }
-      }), {});
-    const fileAttachments = FileManager
+      .filter(({ attachment }) => attachment)
+      .reduce((acc, { filename, attachment }) => ({ ...acc, [filename]: attachment }), {});
+    const newFileAttachments = FileManager
       .getCurrentFiles()
       .reduce((acc, file) => ({
         ...acc,
-        [`user-file-${file.name}`]: { content_type: file.type, data: new Blob([ file ], { type: file.type }) }
+        [`${this.USER_FILE_ATTACHMENT_PREFIX}${file.name}`]: {
+          content_type: file.type,
+          data: new Blob([ file ], { type: file.type })
+        }
       }), {});
-    return {
-      ...fileAttachments,
+    const existingFileAttachments = Object
+      .entries(originalAttachments)
+      .filter(([key]) => key.startsWith(this.USER_FILE_ATTACHMENT_PREFIX))
+      // Keep existing file attachments still referenced by a field
+      .filter(([key]) => rootDocData.findNodeWithTextContent(key.slice(this.USER_FILE_ATTACHMENT_PREFIX.length)))
+      .reduce((acc, [key, attachment]) => ({ ...acc, [key]: attachment }), {});
+
+    const attachments = {
+      ...existingFileAttachments,
+      ...newFileAttachments,
       ...binaryAttachments
     };
+    return Object.keys(attachments).length ? attachments : undefined;
   }
 }
 
@@ -329,16 +334,26 @@ class EnketoDoc {
   }
 }
 
-// TODO not sure there is much value here.
 class EnketoRootDoc extends EnketoDoc {
   public readonly binaryTypeElements: Element[];
 
   constructor(
-    rootElement: Element,
+    protected readonly xmlDoc: XMLDocument,
     id: string,
   ) {
-    super(rootElement, id);
+    super(xmlDoc.documentElement, id);
     this.binaryTypeElements = Array.from(this.rootElement.querySelectorAll('[type=binary i]'));
+  }
+
+  public findNodeWithTextContent(textContent: string) {
+    const result = this.xmlDoc.evaluate(
+      `.//*[text()=${JSON.stringify(textContent)}]`,
+      this.rootElement,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null
+    );
+    return result.singleNodeValue;
   }
 }
 
@@ -352,7 +367,7 @@ class EnektoContactRootDoc extends EnketoRootDoc {
     id: string,
     type: string,
   ) {
-    super(xmlDoc.documentElement, id);
+    super(xmlDoc, id);
     this.childElements = Array.from(this.rootElement.querySelectorAll(':scope > repeat > child'));
     const elementForType = this.findChildNode(this.rootElement, type);
     if (!elementForType) {
@@ -389,21 +404,19 @@ class EnektoContactRootDoc extends EnketoRootDoc {
   }
 }
 
-class EnketoReportRootDoc extends EnketoDoc {
+class EnketoReportRootDoc extends EnketoRootDoc {
   private readonly dbDocElements: Element[];
   public readonly hiddenElements: Element[];
   public readonly dbDocRefElements: Element[];
-  public readonly binaryTypeElements: Element[];
 
   constructor(
-    private readonly xmlDoc: XMLDocument,
+    xmlDoc: XMLDocument,
     id: string,
   ) {
-    super(xmlDoc.documentElement, id);
+    super(xmlDoc, id);
     this.dbDocElements = Array.from(this.rootElement.querySelectorAll('[db-doc=true i]'));
     this.hiddenElements = Array.from(this.rootElement.querySelectorAll('[tag=hidden i]'));
     this.dbDocRefElements = Array.from(this.rootElement.querySelectorAll('[db-doc-ref]'));
-    this.binaryTypeElements = Array.from(this.rootElement.querySelectorAll('[type=binary i]'));
   }
 
   public getDbDocs() {
