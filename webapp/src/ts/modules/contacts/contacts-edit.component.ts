@@ -18,11 +18,11 @@ import { MatAccordion } from '@angular/material/expansion';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DuplicateContactsComponent } from '@mm-components/duplicate-contacts/duplicate-contacts.component';
-import { DuplicateCheck } from '@mm-services/deduplicate.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import events from 'enketo-core/src/js/event';
+import { FormConfig } from '@mm-services/NewEnketoService';
 
 @Component({
   templateUrl: './contacts-edit.component.html',
@@ -51,7 +51,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription = new Subscription();
   translationsLoadedSubscription;
   private globalActions;
-  private xmlVersion;
+  private formConfig?: FormConfig;
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
@@ -72,7 +72,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackSave;
   private trackMetadata = { action: '', form: '' };
 
-  private duplicateCheck?: DuplicateCheck;
   duplicatesAcknowledged = false;
 
   duplicates: Contact.v1.Contact[] = [];
@@ -324,8 +323,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
-    this.xmlVersion = formDoc.xmlVersion;
-    this.duplicateCheck = formDoc.duplicate_check;
+    this.formConfig = new FormConfig(formDoc, '<temp></temp>');
 
     this.globalActions.setEnketoEditedStatus(false);
 
@@ -435,7 +433,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     this.globalActions.setEnketoError(null);
 
     return Promise
-      .resolve(form.validate())
+      .resolve(form.validate())// TODO this is moving down. Make sure that is okay
       .then((valid) => {
         if (!valid) {
           throw new Error('Validation failed.');
@@ -452,8 +450,9 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
         return this.formService
           .saveContact(
-            { docId, type: this.enketoContact.type }, 
-            { form, xmlVersion: this.xmlVersion, duplicateCheck: this.duplicateCheck}, 
+            { docId, type: this.enketoContact.type },
+            form,
+            this.formConfig!,
             this.duplicatesAcknowledged
           )
           .then((result) => {

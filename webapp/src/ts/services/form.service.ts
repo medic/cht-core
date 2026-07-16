@@ -76,9 +76,11 @@ export class FormService {
     this.globalActions = new GlobalActions(store);
     this.servicesActions = new ServicesActions(this.store);
     this.getReport = chtDatasourceService.bind(Report.v1.get);
+    this.getContact = chtDatasourceService.bind(Contact.v1.get);
   }
 
   private readonly getReport: ReturnType<typeof Report.v1.get>;
+  private readonly getContact: ReturnType<typeof Contact.v1.get>;
   private globalActions: GlobalActions;
   private servicesActions: ServicesActions;
 
@@ -400,20 +402,19 @@ export class FormService {
       docId: string | undefined;
       type: string;
     },
-    formInfo: {
-      form: any;
-      xmlVersion: string | undefined;
-      duplicateCheck?: DuplicateCheck
-    },
+    form: Record<string, any>,
+    formConfig: FormConfig,
     duplicatesAcknowledged: boolean,
   ) {
     const { docId, type } = contactInfo;
-    const { form, xmlVersion, duplicateCheck } = formInfo;
     const typeFields = this.contactTypesService.isHardcodedType(type)
       ? { type }
       : { type: 'contact', contact_type: type };
 
-    const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
+    // const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
+    const defaultData = docId ? await this.getContact(Qualifier.byUuid(docId)) : typeFields;
+    const docs = await this.newEnketoService.saveContact(formConfig, form, defaultData!);
+
     const preparedDocs = await this.applyTransitions(docs);
 
     const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
@@ -422,7 +423,7 @@ export class FormService {
       primaryDoc ?? preparedDocs.preparedDocs[0],
       type,
       duplicatesAcknowledged,
-      duplicateCheck
+      formConfig.doc.duplicate_check
     );
     if (duplicates?.length) {
       throw new DuplicatesFoundError('Duplicates found', duplicates);
