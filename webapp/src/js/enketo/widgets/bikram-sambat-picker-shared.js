@@ -303,7 +303,24 @@ const setupNepaliDatePicker = ($hiddenInput, {
   $hiddenInput.on('show', () => handleShow($hiddenInput, onClear, position));
 };
 
+const destroyDatePicker = ($hiddenInput, $pickerOverride) => {
+  if (!$hiddenInput?.length) {
+    return;
+  }
+  const $picker = $pickerOverride || $hiddenInput.data('picker');
+  hideDatePicker($hiddenInput);
+  $hiddenInput.off('dateSelect close show');
+  if ($picker?.length) {
+    $picker.remove();
+  }
+  $hiddenInput.remove();
+  if (!$('.nepali-date-picker').length) {
+    $('.nepali-date-picker-overlay').remove();
+  }
+};
+
 module.exports = {
   setupNepaliDatePicker,
   hideDatePicker,
+  destroyDatePicker,
 };

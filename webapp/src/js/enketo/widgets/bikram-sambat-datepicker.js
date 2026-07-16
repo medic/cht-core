@@ -7,7 +7,28 @@ const eurodigit = require( 'eurodigit' );
 const toDevanagari = eurodigit.to_non_euro.devanagari;
 const fromDevanagari = eurodigit.to_euro;
 
-const { setupNepaliDatePicker, hideDatePicker } = require('./bikram-sambat-picker-shared');
+const {
+  setupNepaliDatePicker,
+  hideDatePicker,
+  destroyDatePicker,
+} = require('./bikram-sambat-picker-shared');
+
+const activeWidgets = new Set();
+let domObserver = null;
+
+const startDOMObserver = () => {
+  if (domObserver) {
+    return;
+  }
+  domObserver = new MutationObserver(() => {
+    activeWidgets.forEach(widget => {
+      if (!document.body.contains(widget.element)) {
+        widget.destroy();
+      }
+    });
+  });
+  domObserver.observe(document.body, { childList: true, subtree: true });
+};
 
 const NEPALI_MONTH_NAMES = [
   'बैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पौष', 'माघ', 'फाल्गुन', 'चैत'
@@ -18,6 +39,16 @@ const MONTH_PLACEHOLDER = 'महिना';
 class Bikramsambatdatepicker extends Widget {
   static get selector() {
     return 'input[type=date]';
+  }
+
+  static globalReset() {
+    if (domObserver) {
+      domObserver.disconnect();
+      domObserver = null;
+    }
+    activeWidgets.forEach(widget => widget.destroy());
+    activeWidgets.clear();
+    return super.globalReset();
   }
 
   _init() {
@@ -96,13 +127,13 @@ class Bikramsambatdatepicker extends Widget {
       });
   }
 
-  destroy( element ) {
+  destroy() {
     if ( this.$hiddenDateInput ) {
-      hideDatePicker(this.$hiddenDateInput);
+      destroyDatePicker(this.$hiddenDateInput, this.$picker);
+      this.$hiddenDateInput = null;
+      this.$picker = null;
     }
-    $('.nepali-date-picker-overlay').remove();
-    $('.nepali-date-picker').remove();
-    super.destroy( element );
+    activeWidgets.delete(this);
   }
 }
 
@@ -114,6 +145,8 @@ const setupCalendarPicker = ($parent, widget) => {
   const $hiddenDateInput = $('<input type="text" class="nepali-datepicker-input">');
   $calendarBtn.after($hiddenDateInput);
   widget.$hiddenDateInput = $hiddenDateInput;
+  activeWidgets.add(widget);
+  startDOMObserver();
 
   setupNepaliDatePicker($hiddenDateInput, {
     closeOnDateSelect: false,
@@ -147,6 +180,7 @@ const setupCalendarPicker = ($parent, widget) => {
       hideDatePicker($hiddenDateInput);
     }
   });
+  widget.$picker = $hiddenDateInput.data('picker');
 
   $calendarBtn.on('click', function(e) {
     e.preventDefault();
