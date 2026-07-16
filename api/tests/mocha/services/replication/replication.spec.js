@@ -56,6 +56,34 @@ describe('Initial Replication service', () => {
       expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3, 4]]);
     });
 
+    it('should register the doc count when the client is still connected', async () => {
+      sinon.stub(db.medic, 'info').resolves({ update_seq: '123-aaa' });
+      sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
+      sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
+      sinon.stub(authorization, 'filterAllowedDocIds').returns([1, 2, 3, 'purged']);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves([1, 2, 3]);
+      sinon.stub(replicationLimitLog, 'put');
+
+      await replication.getContext(userCtx, { closed: false });
+
+      expect(replicationLimitLog.put.args).to.deep.equal([[userCtx.name, 3, 4]]);
+    });
+
+    it('should not register the doc count when the client has disconnected', async () => {
+      sinon.stub(db.medic, 'info').resolves({ update_seq: '123-aaa' });
+      sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);
+      sinon.stub(authorization, 'getDocsByReplicationKey').resolves(docsByReplicationKey);
+      sinon.stub(authorization, 'filterAllowedDocIds').returns([1, 2, 3, 'purged']);
+      sinon.stub(purgedDocs, 'getUnPurgedIds').resolves([1, 2, 3]);
+      sinon.stub(replicationLimitLog, 'put');
+
+      // The couchdb promise chain is not cancelled on abort
+      const result = await replication.getContext(userCtx, { closed: true });
+
+      expect(replicationLimitLog.put.callCount).to.equal(0);
+      expect(result.docIds).to.deep.equal([1, 2, 3]);
+    });
+
     it('should warn if there are too many allowed docs', async () => {
       sinon.stub(db.medic, 'info').resolves({ update_seq: '222-bbb' });
       sinon.stub(authorization, 'getAuthorizationContext').resolves(authContext);

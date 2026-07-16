@@ -75,7 +75,7 @@ export class GetSubjectSummariesService {
     const uniqueIds = [...new Set(ids)];
 
     return this
-      .getSummariesService.get(uniqueIds)
+      .getSummariesService.getContacts(uniqueIds)
       .then((response) => {
         return this.replaceIdsWithNames(summaries, response);
       });
