@@ -580,5 +580,30 @@ describe('Audit', () => {
       expect(written[0]._id).to.equal('doc-b');
       expect(written[0].history).to.deep.equal([{ date: 200, archived: true }]);
     });
+
+    it('throws when any audit doc fails to save, so the batch is retried', async () => {
+      db.allDocs.resolves({ rows: [
+        { id: 'doc-a', doc: { _id: 'doc-a', _rev: '1-a', history: [] } },
+        { key: 'doc-b', error: 'not_found' },
+      ] });
+      db.bulkDocs.resolves([
+        { id: 'doc-a', error: 'conflict', reason: 'Document update conflict.' },
+        { id: 'doc-b', ok: true, rev: '1-b' },
+      ]);
+
+      await expect(lib.recordArchiving(['doc-a', 'doc-b'], 300)).to.be.rejectedWith(
+        Error,
+        /Failed to record archiving audit entries.*conflict/
+      );
+    });
+
+    it('does not throw when every audit doc saves cleanly', async () => {
+      db.allDocs.resolves({ rows: [{ key: 'doc-a', error: 'not_found' }] });
+      db.bulkDocs.resolves([{ id: 'doc-a', ok: true, rev: '1-a' }]);
+
+      await lib.recordArchiving(['doc-a'], 400);
+
+      expect(db.bulkDocs.callCount).to.equal(1);
+    });
   });
 });

@@ -172,7 +172,11 @@ const recordArchiving = async (ids, date) => {
     auditDoc.history.push({ date, archived: true });
     newAuditDocs.push(auditDoc);
   });
-  await db.bulkDocs(newAuditDocs);
+  const results = await db.bulkDocs(newAuditDocs);
+  const errors = results.filter(result => result.error);
+  if (errors.length) {
+    throw new Error(`Failed to record archiving audit entries: ${JSON.stringify(errors)}`);
+  }
 };
 
 module.exports = {

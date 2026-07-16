@@ -100,6 +100,8 @@ const waitForJobStatus = async (id, status) => {
 describe('sentinel processes archive jobs', () => {
   const fixtures = [
     { _id: 'archive-e2e-contact', type: 'contact', name: 'Archived contact' },
+    { _id: 'archive-e2e-person', type: 'person', name: 'Archived person' },
+    { _id: 'archive-e2e-clinic', type: 'clinic', name: 'Archived clinic' },
     { _id: 'archive-e2e-report', type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1 },
     { _id: 'archive-e2e-task', type: 'task', state: 'Completed' },
     { _id: 'archive-e2e-target', type: 'target', targets: [] },
@@ -335,6 +337,50 @@ describe('sentinel processes archive jobs', () => {
     expect(archived._rev).to.equal(revB);
     expect(archived.source).to.equal('B');
 
+    await expectFullyPurgedFromMedic([id]);
+    await expectInfoDocsPurged([id]);
+    await expectAuditedArchive([id]);
+  });
+
+  it('purges resolved (deleted) conflict revisions, leaving no trace in the changes feed', async function () {
+    this.timeout(60000);
+
+    const id = 'archive-e2e-resolved-conflict';
+
+    const revA = '1-c000000000000000000000000000000c';
+    const revB = '1-d000000000000000000000000000000d';
+    const docA = { _id: id, _rev: revA, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'A' };
+    const docB = { _id: id, _rev: revB, type: DOC_TYPES.DATA_RECORD, form: 'visit', reported_date: 1, source: 'B' };
+
+    await utils.request({
+      path: `/${constants.DB_NAME}/_bulk_docs`,
+      method: 'POST',
+      body: { docs: [docA, docB], new_edits: false },
+    });
+
+    // Resolve the conflict by deleting the losing branch, leaving a deleted conflict leaf behind.
+    await utils.request({
+      path: `/${constants.DB_NAME}/${id}`,
+      method: 'DELETE',
+      qs: { rev: revA },
+    });
+
+    // Sanity check: no live conflicts remain, but the deleted branch is still in the rev tree.
+    const beforeArchive = await utils.db.get(id, { conflicts: true, deleted_conflicts: true });
+    expect(beforeArchive._conflicts).to.equal(undefined);
+    expect(beforeArchive._deleted_conflicts).to.have.lengthOf(1);
+
+    await postCsv(id);
+
+    await updateSettings();
+    await runArchiving();
+
+    const archived = await archiveDb.get(id);
+    expect(archived._rev).to.equal(revB);
+    expect(archived.source).to.equal('B');
+
+    // expectFullyPurgedFromMedic asserts the changes feed is empty for the doc, which fails
+    // if the deleted conflict leaf survives the purge.
     await expectFullyPurgedFromMedic([id]);
     await expectInfoDocsPurged([id]);
     await expectAuditedArchive([id]);

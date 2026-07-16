@@ -42,7 +42,7 @@ const getDocIdsRevPairs = async (docIds) => {
 
 const getArchivedDocs = async (docIds) => {
   const result = await db.archive.allDocs({ keys: docIds });
-  return result.rows.filter(row => !row.error).map(row => row.id);
+  return result.rows.filter(row => !row.error && !row.value?.deleted).map(row => row.id);
 };
 
 const getDocIdsToDelete = async (userCtx, docIds) => {

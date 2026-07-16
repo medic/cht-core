@@ -160,13 +160,13 @@ describe('db', () => {
   });
 
   describe('purge', () => {
-    it('posts a {id: [rev, ...conflicts]} map to <db>/_purge', async () => {
+    it('posts a {id: [...leaf revs]} map to <db>/_purge', async () => {
       const fakeDb = { name: 'http://admin:pass@localhost:5984/medic' };
       sinon.stub(request, 'post').resolves({ purged: {} });
 
       const docs = [
-        { _id: 'doc-a', _rev: '1-a' },
-        { _id: 'doc-b', _rev: '2-b', _conflicts: ['2-bb', '2-bbb'] },
+        { _id: 'doc-a', _revs: ['1-a'] },
+        { _id: 'doc-b', _revs: ['2-b', '2-bb', '2-bbb'] },
       ];
       await db.purge(fakeDb, docs);
 
@@ -180,12 +180,6 @@ describe('db', () => {
       }]);
     });
 
-    it('omits conflicts when the doc has none', async () => {
-      sinon.stub(request, 'post').resolves();
-      await db.purge({ name: 'host/db' }, [{ _id: 'x', _rev: '3-x' }]);
-      expect(request.post.args[0][0].body).to.deep.equal({ x: ['3-x'] });
-    });
-
     it('handles an empty docs array', async () => {
       sinon.stub(request, 'post').resolves();
       await db.purge({ name: 'host/db' }, []);
@@ -195,7 +189,7 @@ describe('db', () => {
     it('throws request.post errors', async () => {
       sinon.stub(request, 'post').rejects(new Error('purge failed'));
       try {
-        await db.purge({ name: 'host/db' }, [{ _id: 'x', _rev: '1-x' }]);
+        await db.purge({ name: 'host/db' }, [{ _id: 'x', _revs: ['1-x'] }]);
         expect.fail('expected to reject');
       } catch (err) {
         expect(err.message).to.equal('purge failed');

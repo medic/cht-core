@@ -5,6 +5,7 @@ const constants = require('@medic/constants');
 const environment = require('@medic/environment');
 const audit = require('@medic/audit');
 const archivingUtils = require('@medic/archiving-utils');
+const contactTypesUtils = require('@medic/contact-types-utils');
 
 const BATCH_SIZE = 1000;
 const MAX_JOB_ATTEMPTS = 20;
@@ -30,6 +31,7 @@ const readIds = async (job) => {
 const canArchive = (doc) => {
   const archivableDocTypes = [
     'contact',
+    ...contactTypesUtils.HARDCODED_TYPES,
     constants.DOC_TYPES.DATA_RECORD,
     'task',
     'target',
@@ -44,7 +46,7 @@ const archiveBatch = async (batch) => {
   }
   const date = Date.now();
 
-  const medicDocs = await db.medic.allDocs({ attachments: true, keys: ids, include_docs: true, conflicts: true });
+  const medicDocs = await db.medic.allDocs({ attachments: true, keys: ids, include_docs: true });
 
   const docsToArchive = medicDocs.rows
     .filter(row => canArchive(row.doc))
@@ -52,14 +54,26 @@ const archiveBatch = async (batch) => {
 
   await db.archive.bulkDocs(docsToArchive, { new_edits: false });
   await persistAudit(docsToArchive, date);
-  await purgeInfoDocs(docsToArchive);
-  await db.purge(db.medic, docsToArchive);
+  await purgeDocs(db.sentinel, docsToArchive.map(doc => `${doc._id}-info`));
+  await purgeDocs(db.medic, docsToArchive.map(doc => doc._id));
 };
 
-const purgeInfoDocs = async (docsToArchive) => {
-  const infoDocIds = docsToArchive.map(doc => `${doc._id}-info`);
-  const infoDocs = await db.sentinel.allDocs({ keys: infoDocIds, include_docs: true, conflicts: true });
-  await db.purge(db.sentinel, infoDocs.rows.map(row => row.doc).filter(Boolean));
+// Purges every leaf revision — the winner, live conflicts and deleted conflict leaves
+const purgeDocs = async (database, ids) => {
+  if (!ids.length) {
+    return;
+  }
+  const result = await database.bulkGet({ docs: ids.map(id => ({ id })) });
+  const toPurge = result.results
+    .map(({ id, docs }) => ({
+      _id: id,
+      _revs: docs.map(leaf => leaf.ok?._rev).filter(Boolean),
+    }))
+    .filter(doc => doc._revs.length);
+  if (!toPurge.length) {
+    return;
+  }
+  await db.purge(database, toPurge);
 };
 
 const persistAudit = async (docsToArchive, date) => {
@@ -118,6 +132,9 @@ const processJob = async (job, deadline) => {
 
   try {
     const ids = await readIds(job);
+    if (ids.length !== job.total) {
+      job.total = ids.length;
+    }
     let batches = 0;
 
     do {
@@ -130,7 +147,7 @@ const processJob = async (job, deadline) => {
     } while (job.cursor < job.total && Date.now() < deadline);
   } catch (err) {
     await recordError(job, err);
-    throw err;
+    logger.error(`Archiving: job ${job._id} failed, skipping to the next job: %o`, err);
   }
 };
 
@@ -145,11 +162,7 @@ const processQueue = async (deadline) => {
     if (job.status === FAILED_STATUS) {
       continue;
     }
-    try {
-      await processJob(job, deadline);
-    } catch (err) {
-      logger.error(`Archiving: job ${job._id} failed, skipping to the next job: %o`, err);
-    }
+    await processJob(job, deadline);
   } while (Date.now() < deadline);
 };
 

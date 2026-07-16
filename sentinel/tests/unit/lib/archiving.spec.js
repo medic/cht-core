@@ -173,6 +173,38 @@ describe('Sentinel archiving lib', () => {
     chai.expect(archiveBatch.args[0][0]).to.deep.equal(['c', 'd']);
   });
 
+  it('corrects total and completes when the attachment holds fewer ids than job.total', async () => {
+    const truncated = job({ _id: 'archive:1', total: 10 });
+    const { queue } = stubQueue([truncated]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc', 'utf8'));
+
+    const archiveBatch = sinon.stub().resolves();
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(archiveBatch.callCount).to.equal(1);
+    chai.expect(archiveBatch.args[0][0]).to.deep.equal(['a', 'b', 'c']);
+    chai.expect(queue[0]._deleted).to.equal(true);
+  });
+
+  it('corrects total and processes every id when the attachment holds more ids than job.total', async () => {
+    const understated = job({ _id: 'archive:1', total: 1 });
+    const { queue } = stubQueue([understated]);
+    sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc', 'utf8'));
+    lib.__set__('BATCH_SIZE', 2);
+
+    const archiveBatch = sinon.stub().resolves();
+    lib.__set__('archiveBatch', archiveBatch);
+
+    await lib.archive();
+
+    chai.expect(archiveBatch.callCount).to.equal(2);
+    chai.expect(archiveBatch.args[0][0]).to.deep.equal(['a', 'b']);
+    chai.expect(archiveBatch.args[1][0]).to.deep.equal(['c']);
+    chai.expect(queue[0]._deleted).to.equal(true);
+  });
+
   it('isolates a failing job and still processes the jobs behind it', async () => {
     const failing = job({ _id: 'archive:1', total: 1 });
     const next = job({ _id: 'archive:2', total: 1 });
@@ -432,19 +464,22 @@ describe('Sentinel archiving lib', () => {
   });
 
   describe('canArchive', () => {
-    it('accepts the four archivable types', () => {
+    it('accepts archivable types, including hardcoded contact types', () => {
       const canArchive = lib.__get__('canArchive');
       chai.expect(canArchive({ type: 'contact' })).to.equal(true);
       chai.expect(canArchive({ type: 'data_record' })).to.equal(true);
       chai.expect(canArchive({ type: 'task' })).to.equal(true);
       chai.expect(canArchive({ type: 'target' })).to.equal(true);
+      chai.expect(canArchive({ type: 'person' })).to.equal(true);
+      chai.expect(canArchive({ type: 'clinic' })).to.equal(true);
+      chai.expect(canArchive({ type: 'health_center' })).to.equal(true);
+      chai.expect(canArchive({ type: 'district_hospital' })).to.equal(true);
     });
 
     it('rejects other types and missing docs', () => {
       const canArchive = lib.__get__('canArchive');
-      chai.expect(canArchive({ type: 'person' })).to.equal(false);
-      chai.expect(canArchive({ type: 'clinic' })).to.equal(false);
       chai.expect(canArchive({ type: 'feedback' })).to.equal(false);
+      chai.expect(canArchive({ type: 'form' })).to.equal(false);
       chai.expect(canArchive({})).to.equal(false);
       chai.expect(canArchive(null)).to.equal(false);
       chai.expect(canArchive(undefined)).to.equal(false);
@@ -458,6 +493,19 @@ describe('Sentinel archiving lib', () => {
     let freshLib;
     beforeEach(() => {
       freshLib = rewire('../../../src/lib/archiving');
+    });
+
+    // Shapes a _bulk_get response: { id: [revs] } → one result per id, one leaf per rev.
+    // A rev prefixed with 'deleted:' becomes a deleted leaf; an empty rev list means not found.
+    const bulkGetResult = (leavesById) => ({
+      results: Object.entries(leavesById).map(([id, revs]) => ({
+        id,
+        docs: revs.length
+          ? revs.map(rev => rev.startsWith('deleted:')
+            ? { ok: { _id: id, _rev: rev.replace('deleted:', ''), _deleted: true } }
+            : { ok: { _id: id, _rev: rev } })
+          : [{ error: { id, error: 'not_found' } }],
+      })),
     });
 
     it('does nothing when the batch has no usable ids', async () => {
@@ -482,28 +530,29 @@ describe('Sentinel archiving lib', () => {
         rows: [
           { doc: { _id: 'c1', _rev: '1-a', type: 'contact', name: 'C' } },
           { doc: { _id: 'r1', _rev: '1-b', type: 'data_record', form: 'visit' } },
-          { doc: { _id: 'p1', _rev: '1-c', type: 'person' } }, // not archivable
+          { doc: { _id: 'f1', _rev: '1-c', type: 'feedback' } }, // not archivable
           { doc: null }, // missing
         ],
       });
       sinon.stub(db.archive, 'bulkDocs').resolves();
       sinon.stub(db, 'purge').resolves();
-      sinon.stub(db.sentinel, 'allDocs').resolves({
-        rows: [
-          { doc: { _id: 'c1-info', _rev: '1-x' } },
-          { doc: { _id: 'r1-info', _rev: '1-y' } },
-        ],
-      });
+      sinon.stub(db.sentinel, 'bulkGet').resolves(bulkGetResult({
+        'c1-info': ['1-x'],
+        'r1-info': ['1-y'],
+      }));
+      sinon.stub(db.medic, 'bulkGet').resolves(bulkGetResult({
+        c1: ['1-a'],
+        r1: ['1-b'],
+      }));
       const audit = lib.__get__('audit');
       sinon.stub(audit, 'recordArchiving').resolves();
 
-      await archiveBatch([' c1 ', 'r1', 'p1', 'missing']);
+      await archiveBatch([' c1 ', 'r1', 'f1', 'missing']);
 
       chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
         attachments: true,
-        keys: ['c1', 'r1', 'p1', 'missing'],
+        keys: ['c1', 'r1', 'f1', 'missing'],
         include_docs: true,
-        conflicts: true,
       }]);
       chai.expect(db.archive.bulkDocs.args[0][0]).to.deep.equal([
         { _id: 'c1', _rev: '1-a', type: 'contact', name: 'C', archive_date: 424242 },
@@ -511,19 +560,52 @@ describe('Sentinel archiving lib', () => {
       ]);
       chai.expect(db.archive.bulkDocs.args[0][1]).to.deep.equal({ new_edits: false });
 
-      chai.expect(db.purge.callCount).to.equal(2);
-      chai.expect(db.sentinel.allDocs.args[0]).to.deep.equal([{
-        keys: ['c1-info', 'r1-info'],
-        include_docs: true,
-        conflicts: true,
+      chai.expect(db.sentinel.bulkGet.args[0]).to.deep.equal([{
+        docs: [{ id: 'c1-info' }, { id: 'r1-info' }],
       }]);
-      chai.expect(db.purge.args[0][1].map(d => d._id)).to.deep.equal(['c1-info', 'r1-info']);
-      chai.expect(db.purge.args[1][1].map(d => d._id)).to.deep.equal(['c1', 'r1']);
+      chai.expect(db.medic.bulkGet.args[0]).to.deep.equal([{
+        docs: [{ id: 'c1' }, { id: 'r1' }],
+      }]);
+      chai.expect(db.purge.callCount).to.equal(2);
+      chai.expect(db.purge.args[0][1]).to.deep.equal([
+        { _id: 'c1-info', _revs: ['1-x'] },
+        { _id: 'r1-info', _revs: ['1-y'] },
+      ]);
+      chai.expect(db.purge.args[1][1]).to.deep.equal([
+        { _id: 'c1', _revs: ['1-a'] },
+        { _id: 'r1', _revs: ['1-b'] },
+      ]);
 
       chai.expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
     });
 
-    it('skips info docs that the sentinel db is missing without crashing the purge call', async () => {
+    it('purges every leaf revision, including live and resolved (deleted) conflicts', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      clock.setSystemTime(1);
+
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [{ doc: { _id: 'r1', _rev: '2-winner', type: 'data_record' } }],
+      });
+      sinon.stub(db.archive, 'bulkDocs').resolves();
+      sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'bulkGet').resolves(bulkGetResult({ 'r1-info': ['1-x'] }));
+      // r1 has a live conflict and a resolved (deleted) conflict branch.
+      sinon.stub(db.medic, 'bulkGet').resolves(bulkGetResult({
+        r1: ['2-winner', '2-conflict', 'deleted:2-resolved'],
+      }));
+      const audit = lib.__get__('audit');
+      sinon.stub(audit, 'recordArchiving').resolves();
+
+      await archiveBatch(['r1']);
+
+      chai.expect(db.purge.args[1][1]).to.deep.equal([
+        { _id: 'r1', _revs: ['2-winner', '2-conflict', '2-resolved'] },
+      ]);
+      // Only the winning revision is archived.
+      chai.expect(db.archive.bulkDocs.args[0][0].map(d => d._rev)).to.deep.equal(['2-winner']);
+    });
+
+    it('skips the info-doc purge request entirely when no info docs exist', async () => {
       const archiveBatch = freshLib.__get__('archiveBatch');
       clock.setSystemTime(1);
 
@@ -532,16 +614,16 @@ describe('Sentinel archiving lib', () => {
       });
       sinon.stub(db.archive, 'bulkDocs').resolves();
       sinon.stub(db, 'purge').resolves();
-      sinon.stub(db.sentinel, 'allDocs').resolves({
-        rows: [{ key: 'r1-info', error: 'not_found' }], // no .doc
-      });
+      sinon.stub(db.sentinel, 'bulkGet').resolves(bulkGetResult({ 'r1-info': [] })); // not found
+      sinon.stub(db.medic, 'bulkGet').resolves(bulkGetResult({ r1: ['1-a'] }));
       const audit = lib.__get__('audit');
       sinon.stub(audit, 'recordArchiving').resolves();
 
       await archiveBatch(['r1']);
 
-      // The info-doc purge call gets an empty list (not-found row filtered out).
-      chai.expect(db.purge.args[0][1]).to.deep.equal([]);
+      // No info docs found → only the medic purge fires.
+      chai.expect(db.purge.callCount).to.equal(1);
+      chai.expect(db.purge.args[0][1]).to.deep.equal([{ _id: 'r1', _revs: ['1-a'] }]);
     });
 
     it('purges from medic only after the archive write, audit, and info-doc purge', async () => {
@@ -552,7 +634,8 @@ describe('Sentinel archiving lib', () => {
       });
       const bulkDocs = sinon.stub(db.archive, 'bulkDocs').resolves();
       const purge = sinon.stub(db, 'purge').resolves();
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'r1-info', _rev: '1-x' } }] });
+      sinon.stub(db.sentinel, 'bulkGet').resolves(bulkGetResult({ 'r1-info': ['1-x'] }));
+      sinon.stub(db.medic, 'bulkGet').resolves(bulkGetResult({ r1: ['1-a'] }));
       const audit = lib.__get__('audit');
       const recordArchiving = sinon.stub(audit, 'recordArchiving').resolves();
 
@@ -573,7 +656,8 @@ describe('Sentinel archiving lib', () => {
       });
       sinon.stub(db.archive, 'bulkDocs').resolves();
       const purge = sinon.stub(db, 'purge').resolves();
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [] });
+      sinon.stub(db.sentinel, 'bulkGet').resolves(bulkGetResult({ 'r1-info': [] }));
+      sinon.stub(db.medic, 'bulkGet').resolves(bulkGetResult({ r1: ['1-a'] }));
       const audit = lib.__get__('audit');
       sinon.stub(audit, 'recordArchiving').rejects(new Error('audit down'));
 
@@ -598,7 +682,8 @@ describe('Sentinel archiving lib', () => {
       const purge = sinon.stub(db, 'purge');
       purge.onCall(0).resolves(); // info-doc purge
       purge.onCall(1).rejects(new Error('purge down')); // medic purge
-      sinon.stub(db.sentinel, 'allDocs').resolves({ rows: [{ doc: { _id: 'r1-info', _rev: '1-x' } }] });
+      sinon.stub(db.sentinel, 'bulkGet').resolves(bulkGetResult({ 'r1-info': ['1-x'] }));
+      sinon.stub(db.medic, 'bulkGet').resolves(bulkGetResult({ r1: ['1-a'] }));
       const audit = lib.__get__('audit');
       const recordArchiving = sinon.stub(audit, 'recordArchiving').resolves();
 

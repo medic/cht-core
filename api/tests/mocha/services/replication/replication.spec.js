@@ -370,6 +370,26 @@ describe('Initial Replication service', () => {
       expect(result).to.have.members(['doc1', 'doc3']);
     });
 
+    it('should not treat docs deleted from the archive db as archived', async () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: 1 } },
+          { key: 'doc2', id: 'doc2', value: { rev: 1 } },
+        ]
+      });
+
+      sinon.stub(purgedDocs, 'getPurgedIds').resolves([]);
+      sinon.stub(db.archive, 'allDocs').resolves({
+        rows: [
+          { key: 'doc1', id: 'doc1', value: { rev: '2-a', deleted: true } },
+          { key: 'doc2', id: 'doc2', value: { rev: '1-a' } },
+        ]
+      });
+
+      const result = await replication.getDocIdsToDelete(userCtx, ['doc1', 'doc2']);
+      expect(result).to.have.members(['doc2']);
+    });
+
     it('should combine deleted, purged and archived docs without duplicates', async () => {
       sinon.stub(db.medic, 'allDocs').resolves({
         rows: [

@@ -20,6 +20,7 @@ if (UNIT_TEST_ENV) {
   module.exports.medic = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     remove: stubMe('remove'),
     post: stubMe('post'),
@@ -32,6 +33,7 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = {
     allDocs: stubMe('allDocs'),
     bulkDocs: stubMe('bulkDocs'),
+    bulkGet: stubMe('bulkGet'),
     put: stubMe('put'),
     post: stubMe('post'),
     query: stubMe('query'),
@@ -115,8 +117,9 @@ if (UNIT_TEST_ENV) {
     });
   };
 
+  // Every doc must carry `_revs`: the list of leaf revisions to purge.
   module.exports.purge = (db, docs) => {
-    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, [ doc._rev, ...doc._conflicts || [] ] ]));
+    const purgePayload = Object.fromEntries(docs.map(doc => [ doc._id, doc._revs ]));
 
     return request.post({
       url: `${db.name}/_purge`,
