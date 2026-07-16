@@ -44,10 +44,7 @@ export class NewEnketoService {
         ...formDocData.deserializeDoc(config),
         type: contactDoc.type,
         contact_type: contactDoc.contact_type,
-        _attachments: {
-          ...contactDoc._attachments,
-          ...formAttachments,
-        }
+        _attachments: this.getDocAttachments(formAttachments, contactDoc._attachments)
       };
 
       const siblings = EnektoContactRootDoc.SIBLING_FIELD_NAMES
@@ -91,25 +88,31 @@ export class NewEnketoService {
       this.populateDbDocRefElements(formDocData, [formDocData, ...subDocs]);
       const formAttachments = this.processFormAttachments(formDocData, config.doc.internalId);
 
-      const rootOutputDoc = {
+      // Remove the legacy XML content field and attachment (no longer stored since #7596 - 4.0.0)
+      delete reportDoc[REPORT_ATTACHMENT_NAME];
+      delete reportDoc._attachments?.[REPORT_ATTACHMENT_NAME];
+
+      const rootOutputDoc: Record<string, any> = {
         ...reportDoc,
         hidden_fields: this.getHiddenFields([
           ...formDocData.hiddenElements,
           ...subDocs.map(({ rootElement }) => rootElement)
         ]),
         fields: formDocData.deserialize(config),
-        _attachments: {
-          ...reportDoc._attachments,
-          ...formAttachments,
-          // Remove the legacy XML content field and attachment (no longer stored since #7596 - 4.0.0)
-          [REPORT_ATTACHMENT_NAME]: undefined
-        },
-        [REPORT_ATTACHMENT_NAME]: undefined,
+        _attachments: this.getDocAttachments(formAttachments, reportDoc._attachments)
       };
 
       const dbDocObjects = subDocs.map(docData => this.initializeDoc(docData.deserializeDoc(config)));
       return [rootOutputDoc, ...dbDocObjects];
     });
+  }
+
+  private getDocAttachments(formAttachments: Record<string, any>, currentDocAttachments?: Record<string, any>) {
+    const attachments = {
+      ...currentDocAttachments,
+      ...formAttachments,
+    };
+    return Object.keys(attachments).length ? attachments : undefined;
   }
 
   private async validate(form: Record<string, any>) {
