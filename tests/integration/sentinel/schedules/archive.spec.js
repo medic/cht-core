@@ -366,7 +366,11 @@ describe('sentinel processes archive jobs', () => {
     });
 
     // Sanity check: no live conflicts remain, but the deleted branch is still in the rev tree.
-    const beforeArchive = await utils.db.get(id, { conflicts: true, deleted_conflicts: true });
+    // PouchDB's get() drops the deleted_conflicts option, so query CouchDB directly.
+    const beforeArchive = await utils.request({
+      path: `/${constants.DB_NAME}/${id}`,
+      qs: { conflicts: true, deleted_conflicts: true },
+    });
     expect(beforeArchive._conflicts).to.equal(undefined);
     expect(beforeArchive._deleted_conflicts).to.have.lengthOf(1);
 

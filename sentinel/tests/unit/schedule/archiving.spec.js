@@ -4,6 +4,7 @@ const rewire = require('rewire');
 
 const config = require('../../../src/config');
 const later = require('later');
+const logger = require('@medic/logger');
 const archiveLib = require('../../../src/lib/archiving');
 
 let clock;
@@ -73,15 +74,28 @@ describe('Archiving Schedule', () => {
     chai.expect(archiveLib.archive.args[0][0]).to.deep.equal({ duration: null });
   });
 
-  it('passes duration=null when archive.duration is malformed', async () => {
+  it('passes duration=null and warns when archive.duration is malformed', async () => {
     sinon.stub(config, 'get').returns({ cron: '* 1 * * *', duration: 'lots of time' });
     sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'warn');
     const setTimeoutSpy = sinon.spy(clock, 'setTimeout');
 
     await scheduler.execute();
     setTimeoutSpy.args[0][0]();
 
     chai.expect(archiveLib.archive.args[0][0]).to.deep.equal({ duration: null });
+    chai.expect(logger.warn.callCount).to.equal(1);
+    chai.expect(logger.warn.args[0][0]).to.include('lots of time');
+  });
+
+  it('does not warn when archive.duration is simply missing', async () => {
+    sinon.stub(config, 'get').returns({ cron: '* 1 * * *' });
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'warn');
+
+    await scheduler.execute();
+
+    chai.expect(logger.warn.callCount).to.equal(0);
   });
 
   it('clears the previous timeout when re-run', () => {

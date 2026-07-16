@@ -10,6 +10,8 @@ const serverUtils = require('../server-utils');
 const errors = require('../errors');
 
 const MAX_IDS_PER_JOB = 100 * 1000;
+// Matches routing's MAX_REQUEST_SIZE; enforced here because this route skips the body parsers.
+const MAX_BODY_SIZE = 32 * 1024 * 1024;
 const EXPECTED_CONTENT_TYPE = 'text/csv';
 const parseCell = (line) => line.trim().replace(/^"(.*)"$/, '$1');
 
@@ -62,7 +64,17 @@ const flushIfFull = async (jobs, buffer) => {
 const processPayload = async (req) => {
   const jobs = [];
   let buffer = [];
+  let receivedBytes = 0;
+  let tooLarge = false;
   const rl = readline.createInterface({ input: req, crlfDelay: Infinity });
+  req.on('data', (chunk) => {
+    receivedBytes += chunk.length;
+    if (receivedBytes > MAX_BODY_SIZE) {
+      tooLarge = true;
+      rl.close();
+      req.pause();
+    }
+  });
 
   for await (const line of rl) {
     const id = parseCell(line);
@@ -73,6 +85,10 @@ const processPayload = async (req) => {
     buffer = await flushIfFull(jobs, buffer);
   }
 
+  if (tooLarge) {
+    throw new errors.PayloadTooLargeError(`Request body is larger than ${MAX_BODY_SIZE} bytes`);
+  }
+
   await persistJob(jobs, buffer);
 
   if (!jobs.length) {
@@ -81,6 +97,15 @@ const processPayload = async (req) => {
   return jobs;
 };
 
+/**
+ * POST /api/v1/archive — accepts a text/csv body of doc ids (one per line) and enqueues archive
+ * jobs for sentinel.
+ *
+ * Jobs are persisted while the payload streams in, so a mid-payload failure leaves the
+ * already-created jobs queued even though the client receives an error. A full-payload retry
+ * re-creates jobs for those ids; this is safe because archiving is idempotent (archive writes use
+ * new_edits:false and audit entries are deduped) — duplicate jobs only cost redundant processing.
+ */
 module.exports = {
   create: async (req, res) => {
     try {

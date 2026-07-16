@@ -579,6 +579,34 @@ describe('Sentinel archiving lib', () => {
       chai.expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
     });
 
+    it('fetches medic docs in chunks to bound the inlined-attachment payload size', async () => {
+      const archiveBatch = freshLib.__get__('archiveBatch');
+      freshLib.__set__('FETCH_BATCH_SIZE', 2);
+      clock.setSystemTime(1);
+
+      sinon.stub(db.medic, 'allDocs').callsFake(({ keys }) => Promise.resolve({
+        rows: keys.map(id => ({ doc: { _id: id, _rev: '1-a', type: 'data_record' } })),
+      }));
+      sinon.stub(db.archive, 'bulkDocs').resolves();
+      sinon.stub(db, 'purge').resolves();
+      sinon.stub(db.sentinel, 'bulkGet').callsFake(({ docs }) => Promise.resolve(
+        bulkGetResult(Object.fromEntries(docs.map(({ id }) => [id, ['1-x']])))
+      ));
+      sinon.stub(db.medic, 'bulkGet').callsFake(({ docs }) => Promise.resolve(
+        bulkGetResult(Object.fromEntries(docs.map(({ id }) => [id, ['1-a']])))
+      ));
+      const audit = freshLib.__get__('audit');
+      sinon.stub(audit, 'recordArchiving').resolves();
+
+      await archiveBatch(['a', 'b', 'c', 'd', 'e']);
+
+      chai.expect(db.medic.allDocs.callCount).to.equal(3);
+      chai.expect(db.medic.allDocs.args.map(a => a[0].keys)).to.deep.equal([['a', 'b'], ['c', 'd'], ['e']]);
+      // All chunks land in the same archive write and purge, so batching stays a fetch-only concern.
+      chai.expect(db.archive.bulkDocs.args[0][0].map(d => d._id)).to.deep.equal(['a', 'b', 'c', 'd', 'e']);
+      chai.expect(db.purge.args[1][1].map(d => d._id)).to.deep.equal(['a', 'b', 'c', 'd', 'e']);
+    });
+
     it('purges every leaf revision, including live and resolved (deleted) conflicts', async () => {
       const archiveBatch = freshLib.__get__('archiveBatch');
       clock.setSystemTime(1);

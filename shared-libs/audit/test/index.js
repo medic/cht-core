@@ -477,7 +477,7 @@ describe('Audit', () => {
       expect(written[0]._rev).to.equal('1-a');
       expect(written[0].history).to.deep.equal([
         { rev: '1-a', user: 'admin', date: new Date(500), service: 'api' },
-        { date, archived: true },
+        { date: new Date(date), archived: true },
       ]);
     });
 
@@ -491,7 +491,7 @@ describe('Audit', () => {
       expect(db.bulkDocs.args[0][0]).to.deep.equal([{
         _id: 'doc-new',
         _rev: undefined,
-        history: [{ date, archived: true }],
+        history: [{ date: new Date(date), archived: true }],
       }]);
     });
 
@@ -513,17 +513,17 @@ describe('Audit', () => {
 
       expect(written[0]._id).to.equal('doc-a');
       expect(written[0]._rev).to.equal('1-a');
-      expect(written[0].history).to.deep.equal([{ date, archived: true }]);
+      expect(written[0].history).to.deep.equal([{ date: new Date(date), archived: true }]);
 
       expect(written[1]._id).to.equal('doc-b');
       expect(written[1]._rev).to.be.undefined;
-      expect(written[1].history).to.deep.equal([{ date, archived: true }]);
+      expect(written[1].history).to.deep.equal([{ date: new Date(date), archived: true }]);
 
       expect(written[2]._id).to.equal('doc-c');
       expect(written[2]._rev).to.equal('3-c');
       expect(written[2].history).to.deep.equal([
         { rev: '3-c', date: new Date(1) },
-        { date, archived: true },
+        { date: new Date(date), archived: true },
       ]);
     });
 
@@ -554,7 +554,7 @@ describe('Audit', () => {
       const written = db.bulkDocs.args[0][0][0];
       expect(written.history).to.deep.equal([
         ...existingHistory,
-        { date, archived: true },
+        { date: new Date(date), archived: true },
       ]);
     });
 
@@ -578,7 +578,7 @@ describe('Audit', () => {
       const written = db.bulkDocs.args[0][0];
       expect(written).to.have.lengthOf(1);
       expect(written[0]._id).to.equal('doc-b');
-      expect(written[0].history).to.deep.equal([{ date: 200, archived: true }]);
+      expect(written[0].history).to.deep.equal([{ date: new Date(200), archived: true }]);
     });
 
     it('throws when any audit doc fails to save, so the batch is retried', async () => {

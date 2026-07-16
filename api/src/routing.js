@@ -801,7 +801,7 @@ app.post(
   '/api/v1/archive',
   authorization.handleAuthErrors,
   authorization.offlineUserFirewall,
-  archive.create
+  archive.create // no body parser: the controller streams the raw request body
 );
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);

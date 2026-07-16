@@ -8,6 +8,8 @@ const archivingUtils = require('@medic/archiving-utils');
 const contactTypesUtils = require('@medic/contact-types-utils');
 
 const BATCH_SIZE = 1000;
+// Docs are fetched with inlined attachments, so cap the number of docs per response
+const FETCH_BATCH_SIZE = 100;
 const MAX_JOB_ATTEMPTS = 20;
 const FAILED_STATUS = 'failed';
 
@@ -46,9 +48,15 @@ const archiveBatch = async (batch) => {
   }
   const date = Date.now();
 
-  const medicDocs = await db.medic.allDocs({ attachments: true, keys: ids, include_docs: true });
+  const rows = [];
+  // avoid a huge payload when docs have attachments
+  for (let i = 0; i < ids.length; i += FETCH_BATCH_SIZE) {
+    const chunk = ids.slice(i, i + FETCH_BATCH_SIZE);
+    const medicDocs = await db.medic.allDocs({ attachments: true, keys: chunk, include_docs: true });
+    rows.push(...medicDocs.rows);
+  }
 
-  const docsToArchive = medicDocs.rows
+  const docsToArchive = rows
     .filter(row => canArchive(row.doc))
     .map(row => ({ ...row.doc, archive_date: date }));
 

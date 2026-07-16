@@ -41,6 +41,13 @@ class BadRequestError extends Error {
   }
 }
 
+class PayloadTooLargeError extends Error {
+  constructor(message, ...args) {
+    super(message, ...args);
+    this.code = 413;
+  }
+}
+
 
 module.exports = {
   PublicError,
@@ -49,4 +56,5 @@ module.exports = {
   AuthenticationError,
   ContentTypeError,
   BadRequestError,
+  PayloadTooLargeError,
 };

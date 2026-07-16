@@ -1,4 +1,5 @@
 const config = require('../config');
+const logger = require('@medic/logger');
 const later = require('later');
 const moment = require('moment');
 const archiveLib = require('../lib/archiving');
@@ -34,6 +35,11 @@ module.exports = {
     }
 
     const duration = parseDuration(archiveConfig?.duration);
+    if (archiveConfig?.duration && duration === null) {
+      logger.warn(
+        `Archiving: could not parse configured duration "${archiveConfig.duration}", the run will be unbounded`
+      );
+    }
 
     if (archiveTimeout) {
       clearTimeout(archiveTimeout);

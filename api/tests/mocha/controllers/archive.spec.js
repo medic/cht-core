@@ -173,6 +173,25 @@ describe('Archive controller', () => {
       chai.expect(serverUtils.error.args[0][0].code).to.equal(400);
     });
 
+    it('rejects a body that exceeds the size limit with 413, even without newlines', async () => {
+      sinon.stub(auth, 'getUserCtx').resolves({});
+      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(db.sentinel, 'put');
+      sinon.stub(serverUtils, 'error').returns();
+      controller.__set__('MAX_BODY_SIZE', 10);
+
+      const req = newReq(['a'.repeat(50)]);
+      const res = newRes();
+      await controller.create(req, res);
+
+      chai.expect(db.sentinel.put.callCount).to.equal(0);
+      chai.expect(res.json.callCount).to.equal(0);
+      chai.expect(serverUtils.error.callCount).to.equal(1);
+      const err = serverUtils.error.args[0][0];
+      chai.expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
+      chai.expect(err.code).to.equal(413);
+    });
+
     it('surfaces errors emitted by the request stream', async () => {
       sinon.stub(auth, 'getUserCtx').resolves({});
       sinon.stub(auth, 'isDbAdmin').returns(true);
