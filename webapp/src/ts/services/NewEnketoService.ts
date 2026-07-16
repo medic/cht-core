@@ -22,7 +22,6 @@ export class NewEnketoService {
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
 
-  // TODO re-fetch contact on update to ensure latest data
   public async saveContact(
     config: FormConfig,
     form: Record<string, any>,
