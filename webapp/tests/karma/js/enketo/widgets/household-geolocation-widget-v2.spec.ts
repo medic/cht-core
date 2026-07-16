@@ -383,5 +383,106 @@ describe('Enketo: Household Geolocation Widget v2', () => {
         });
       });
     });
+
+    describe('edit flow (no prior location)', () => {
+      const buildEditHtml = () => {
+        document.body.insertAdjacentHTML('afterbegin', `
+          <div id="geolocation-widget-test">
+            <label class="question non-select or-appearance-geolocation-capture">
+              <input type="hidden" name="/geolocation/capture" data-type-xml="string"
+                data-geo-is-edit="true" />
+            </label>
+          </div>`);
+      };
+
+      const initEditWidget = () => {
+        buildEditHtml();
+        const widget = Object.create(HouseholdGeolocationWidget.prototype);
+        widget.element = document.querySelector(
+          '#geolocation-widget-test ' + HouseholdGeolocationWidget.selector
+        );
+        widget.question = widget.element.closest('.question');
+        widget._init();
+        const container = document.querySelector(
+          '#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL
+        )!;
+        return { widget, container };
+      };
+
+      it('should show no-location message', () => {
+        const { container } = initEditWidget();
+        expect(container.querySelector(SELECTORS.NO_LOCATION_MSG)).to.not.be.null;
+      });
+
+      it('should not show edit badge', () => {
+        const { container } = initEditWidget();
+        expect(container.querySelector(SELECTORS.EDIT_BADGE)).to.be.null;
+      });
+
+      it('should show progress bar immediately', () => {
+        const { container } = initEditWidget();
+        expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
+      });
+
+      it('should show "can\'t record" button immediately', () => {
+        const { container } = initEditWidget();
+        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+      });
+
+      it('should not show context choices before GPS resolves', () => {
+        const { container } = initEditWidget();
+        expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
+      });
+
+      it('should show context choices after GPS succeeds', async () => {
+        const promise = Promise.resolve(GPS_SUCCESS);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.AT_HOUSEHOLD_RADIO)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.SOMEWHERE_ELSE_RADIO)).to.not.be.null;
+      });
+
+      it('should show failure UI and keep "can\'t record" after GPS fails', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
+        const { container } = initEditWidget();
+        await promise;
+        expect(container.querySelector(SELECTORS.FAILURE_MSG)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+      });
+
+      it('should set value to "skipped" when "can\'t record" is clicked', () => {
+        const { widget, container } = initEditWidget();
+        (container.querySelector(SELECTORS.CANT_RECORD_BTN) as HTMLElement).click();
+        expect((widget.element as HTMLInputElement).value).to.equal('skipped');
+      });
+    });
+
+    describe('create mode', () => {
+      it('should not show no-location message', () => {
+        const buildHtml = () => {
+          document.body.insertAdjacentHTML('afterbegin', `
+            <div id="geolocation-widget-test">
+              <label class="question non-select or-appearance-geolocation-capture">
+                <input type="hidden" name="/geolocation/capture" data-type-xml="string" />
+              </label>
+            </div>`);
+        };
+        buildHtml();
+        const widget = Object.create(HouseholdGeolocationWidget.prototype);
+        widget.element = document.querySelector(
+          '#geolocation-widget-test ' + HouseholdGeolocationWidget.selector
+        );
+        widget.question = widget.element.closest('.question');
+        widget._init();
+        const container = document.querySelector(
+          '#geolocation-widget-test ' + SELECTORS.GEO_CAPTURE_LABEL
+        )!;
+        expect(container.querySelector(SELECTORS.NO_LOCATION_MSG)).to.be.null;
+      });
+    });
   });
 });
