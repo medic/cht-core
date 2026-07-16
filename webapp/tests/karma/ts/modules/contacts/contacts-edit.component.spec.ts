@@ -1285,36 +1285,5 @@ describe('ContactsEdit component', () => {
     });
   });
 
-  describe('geolocation widget detection', () => {
-    const setupRenderWithHtml = (html: string) => {
-      routeSnapshot.params = { type: CONTACT_TYPES.DISTRICT_HOSPITAL };
-      contactTypesService.getChildren.resolves([{ id: CONTACT_TYPES.DISTRICT_HOSPITAL }]);
-      contactTypesService.get.resolves({
-        create_form: 'district_create_form_id',
-        create_key: 'district_create_key',
-      });
-      dbGet.resolves({ _id: 'district_create_form_id', the: 'form' });
-      const formHtml = document.createElement('div');
-      formHtml.innerHTML = html;
-      formService.render.resolves({ view: { html: formHtml } });
-    };
-
-    it('should call geolocationService.init() when form contains geolocation widget', async () => {
-      setupRenderWithHtml('<div class="or-appearance-geolocation-capture"><input /></div>');
-
-      await createComponent();
-      await fixture.whenStable();
-
-      expect(geolocationService.init.callCount).to.equal(1);
-    });
-
-    it('should not call geolocationService.init() when form does not contain geolocation widget', async () => {
-      setupRenderWithHtml('<div class="some-other-widget"><input /></div>');
-
-      await createComponent();
-      await fixture.whenStable();
-
-      expect(geolocationService.init.callCount).to.equal(0);
-    });
-  });
 });
+

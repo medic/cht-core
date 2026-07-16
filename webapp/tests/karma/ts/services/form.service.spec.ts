@@ -42,6 +42,7 @@ import { PerformanceService } from '@mm-services/performance.service';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
 import { Contact, Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
+import { GeolocationService } from '@mm-services/geolocation.service';
 
 describe('Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -108,6 +109,7 @@ describe('Form service', () => {
   let performanceService;
   let performanceTracking;
   let userContactSummaryService;
+  let geolocationService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -191,6 +193,7 @@ describe('Form service', () => {
     contactsService = { getSiblings };
     performanceTracking = { stop: sinon.stub() };
     performanceService = { track: sinon.stub().returns(performanceTracking) };
+    geolocationService = { init: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -226,6 +229,7 @@ describe('Form service', () => {
         { provide: ContactsService, useValue: contactsService },
         { provide: PerformanceService, useValue: performanceService },
         { provide: UserContactSummaryService, useValue: userContactSummaryService },
+        { provide: GeolocationService, useValue: geolocationService },
       ],
     });
 
@@ -681,6 +685,41 @@ describe('Form service', () => {
         expect(feedbackService.submit.notCalled).to.be.true;
       }
     }));
+
+    describe('geolocation service initialization', () => {
+      const setupRender = (html: string) => {
+        UserContact.resolves({ contact_id: '123' });
+        xmlFormsService.canAccessForm.resolves(true);
+        dbGetAttachment
+          .onFirstCall().resolves(html)
+          .onSecondCall().resolves(VISIT_MODEL);
+        FileReader.utf8
+          .onFirstCall().resolves(html)
+          .onSecondCall().resolves(VISIT_MODEL);
+        enketoInit.returns([]);
+        EnketoPrepopulationData.returns('<xml></xml>');
+      };
+
+      it('should call geolocationService.init() before rendering when form has geolocation capture widget',
+        async () => {
+          const html = '<div><div class="or-appearance-geolocation-capture"><input type="hidden" /></div></div>';
+          setupRender(html);
+          const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
+
+          await service.render(new WebappEnketoFormContext('#div', 'contact', mockEnketoDoc('clinic')));
+
+          expect(geolocationService.init.callCount).to.equal(1);
+          expect(geolocationService.init.calledBefore(renderForm)).to.be.true;
+        });
+
+      it('should not call geolocationService.init() when form has no geolocation capture widget', async () => {
+        setupRender('<div>my form</div>');
+
+        await service.render(new WebappEnketoFormContext('#div', 'contact', mockEnketoDoc('clinic')));
+
+        expect(geolocationService.init.callCount).to.equal(0);
+      });
+    });
   });
 
   describe('injectGeoEditContext', () => {

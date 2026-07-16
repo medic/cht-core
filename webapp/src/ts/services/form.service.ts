@@ -31,6 +31,7 @@ import { Nullable, Person, Contact } from '@medic/cht-datasource';
 import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
+import { GeolocationService } from '@mm-services/geolocation.service';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -67,6 +68,7 @@ export class FormService {
     private readonly contactsService: ContactsService,
     private readonly performanceService: PerformanceService,
     private userContactSummaryService: UserContactSummaryService,
+    private geolocationService: GeolocationService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -209,6 +211,9 @@ export class FormService {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
       this.injectGeoEditContext(doc.html.get(0), this.getContactFromInstanceData(instanceData));
+      if (doc.html.get(0)?.querySelector('.or-appearance-geolocation-capture input')) {
+        this.geolocationService.init();
+      }
       return await this.enketoService.renderForm(formContext, doc, userSettings);
     } catch (error) {
       if (error.translationKey) {
