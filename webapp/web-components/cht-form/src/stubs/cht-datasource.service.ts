@@ -19,9 +19,9 @@ export class CHTDatasourceService {
         contact: {
           // No contacts are available in the standalone cht-form, so nothing matches a phone number.
           // Used by phone-widget to look for contacts with the same phone number.
-          getUuidsByPhone: () => ({
+          getUuidsByPhone: (_phone: string): AsyncIterable<string> => ({
             [Symbol.asyncIterator]: () => ({
-              next: () => Promise.resolve({ done: true, value: undefined })
+              next: () => Promise.resolve({ done: true as const, value: undefined })
             })
           })
         }

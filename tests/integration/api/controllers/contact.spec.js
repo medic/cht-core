@@ -350,7 +350,7 @@ describe('Contact API', () => {
       const responsePage = await utils.request(opts);
 
       expect(responsePage.data).to.deep.equal([patient._id]);
-      expect(responsePage.cursor).to.be.equal(null);
+      expect(responsePage.cursor).to.be.null;
     });
 
     it('returns a page of people type contact ids when limit and cursor is passed and cursor can be reused',

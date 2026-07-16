@@ -17,6 +17,20 @@ const buildIdsQualifier = (ids) => {
   return Qualifier.byIds(idsArray);
 };
 
+const buildFreetextTypePhoneQualifier = (query) => {
+  if (query.phone) {
+    return Qualifier.byPhone(query.phone);
+  }
+  const qualifier = {};
+  if (query.freetext) {
+    Object.assign(qualifier, Qualifier.byFreetext(query.freetext));
+  }
+  if (query.type) {
+    Object.assign(qualifier, Qualifier.byContactType(query.type));
+  }
+  return qualifier;
+};
+
 /**
  * @openapi
  * tags:
@@ -142,18 +156,7 @@ module.exports = {
           { status: 400, message: 'Either query param freetext, type or phone is required' }, req, res
         );
       }
-      let qualifier;
-      if (req.query.phone) {
-        qualifier = Qualifier.byPhone(req.query.phone);
-      } else {
-        qualifier = {};
-        if (req.query.freetext) {
-          Object.assign(qualifier, Qualifier.byFreetext(req.query.freetext));
-        }
-        if (req.query.type) {
-          Object.assign(qualifier, Qualifier.byContactType(req.query.type));
-        }
-      }
+      const qualifier = buildFreetextTypePhoneQualifier(req.query);
       const docs = await getContactIds(qualifier, req.query.cursor, req.query.limit);
       return res.json(docs);
     }),

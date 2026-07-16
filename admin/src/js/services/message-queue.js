@@ -4,6 +4,20 @@ const registrationUtils = require('@medic/registration-utils');
 const constants = require('@medic/constants');
 const DOC_TYPES = constants.DOC_TYPES;
 
+const collect = function(generator) {
+  const results = [];
+  const iterate = function() {
+    return generator.next().then(function(result) {
+      if (result.done) {
+        return results;
+      }
+      results.push(result.value);
+      return iterate();
+    });
+  };
+  return iterate();
+};
+
 angular.module('services').factory('MessageQueueUtils',
   function(
     $q,
@@ -35,20 +49,6 @@ angular.module('services').factory('MessageQueue',
 
     'use strict';
     'ngInject';
-
-    const collect = function(generator) {
-      const results = [];
-      const iterate = function() {
-        return generator.next().then(function(result) {
-          if (result.done) {
-            return results;
-          }
-          results.push(result.value);
-          return iterate();
-        });
-      };
-      return iterate();
-    };
 
     const findSummary = function(summaries, message) {
       if (!message.sms || !message.sms.to) {
@@ -116,7 +116,7 @@ angular.module('services').factory('MessageQueue',
           }));
         })
         .then(function(idsPerPhone) {
-          const ids = compactUnique([].concat.apply([], idsPerPhone));
+          const ids = compactUnique(idsPerPhone.flat());
 
           return GetSummaries.getContacts(ids);
         })

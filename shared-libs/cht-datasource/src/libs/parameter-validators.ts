@@ -124,10 +124,13 @@ export const assertFreetextQualifier: (qualifier: unknown) => asserts qualifier 
   }
 };
 
+type ContactTypeFreetextPhoneQualifier = ContactTypeQualifier | FreetextQualifier | PhoneQualifier;
+type ContactTypeIdsPhoneQualifier = ContactTypeQualifier | IdsQualifier | PhoneQualifier;
+
 /** @internal */
 export const assertContactTypeFreetextQualifier: (
   qualifier: unknown
-) => asserts qualifier is ContactTypeQualifier | FreetextQualifier | PhoneQualifier = (
+) => asserts qualifier is ContactTypeFreetextPhoneQualifier = (
   qualifier: unknown
 ) => {
   if (!(isContactTypeQualifier(qualifier) || isFreetextQualifier(qualifier) || isPhoneQualifier(qualifier))) {
@@ -140,7 +143,7 @@ export const assertContactTypeFreetextQualifier: (
 /** @internal */
 export const assertContactTypeIdsQualifier: (
   qualifier: unknown
-) => asserts qualifier is ContactTypeQualifier | IdsQualifier | PhoneQualifier = (qualifier: unknown) => {
+) => asserts qualifier is ContactTypeIdsPhoneQualifier = (qualifier: unknown) => {
   if (!(isContactTypeQualifier(qualifier) || isIdsQualifier(qualifier) || isPhoneQualifier(qualifier))) {
     throw new InvalidArgumentError(
       `Invalid qualifier [${JSON.stringify(qualifier)}]. Must be a contact type, ids, or phone qualifier.`
