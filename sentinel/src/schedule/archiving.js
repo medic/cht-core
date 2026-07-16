@@ -35,7 +35,7 @@ module.exports = {
     }
 
     const duration = parseDuration(archiveConfig?.duration);
-    if (archiveConfig?.duration && duration === null) {
+    if ((archiveConfig?.duration ?? null) !== null && duration === null) {
       logger.warn(
         `Archiving: could not parse configured duration "${archiveConfig.duration}", the run will be unbounded`
       );

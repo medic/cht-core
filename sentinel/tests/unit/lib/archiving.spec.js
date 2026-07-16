@@ -579,7 +579,7 @@ describe('Sentinel archiving lib', () => {
       chai.expect(audit.recordArchiving.args[0]).to.deep.equal([['c1', 'r1'], 424242]);
     });
 
-    it('fetches medic docs in chunks to bound the inlined-attachment payload size', async () => {
+    it('fetches and writes docs in chunks to bound the inlined-attachment payloads', async () => {
       const archiveBatch = freshLib.__get__('archiveBatch');
       freshLib.__set__('FETCH_BATCH_SIZE', 2);
       clock.setSystemTime(1);
@@ -602,8 +602,12 @@ describe('Sentinel archiving lib', () => {
 
       chai.expect(db.medic.allDocs.callCount).to.equal(3);
       chai.expect(db.medic.allDocs.args.map(a => a[0].keys)).to.deep.equal([['a', 'b'], ['c', 'd'], ['e']]);
-      // All chunks land in the same archive write and purge, so batching stays a fetch-only concern.
-      chai.expect(db.archive.bulkDocs.args[0][0].map(d => d._id)).to.deep.equal(['a', 'b', 'c', 'd', 'e']);
+      chai.expect(db.archive.bulkDocs.callCount).to.equal(3);
+      chai.expect(db.archive.bulkDocs.args.map(a => a[0].map(d => d._id)))
+        .to.deep.equal([['a', 'b'], ['c', 'd'], ['e']]);
+      chai.expect(db.archive.bulkDocs.args.map(a => a[1])).to.deep.equal(Array(3).fill({ new_edits: false }));
+      // Audit and purge still cover the full batch in one pass each.
+      chai.expect(audit.recordArchiving.args).to.deep.equal([[['a', 'b', 'c', 'd', 'e'], 1]]);
       chai.expect(db.purge.args[1][1].map(d => d._id)).to.deep.equal(['a', 'b', 'c', 'd', 'e']);
     });
 

@@ -88,6 +88,19 @@ describe('Archiving Schedule', () => {
     chai.expect(logger.warn.args[0][0]).to.include('lots of time');
   });
 
+  it('warns for present-but-falsy durations like 0 and empty string', async () => {
+    sinon.stub(archiveLib, 'archive').resolves();
+    sinon.stub(logger, 'warn');
+    const configGet = sinon.stub(config, 'get');
+
+    configGet.returns({ cron: '* 1 * * *', duration: 0 });
+    await scheduler.execute();
+    configGet.returns({ cron: '* 1 * * *', duration: '' });
+    await scheduler.execute();
+
+    chai.expect(logger.warn.callCount).to.equal(2);
+  });
+
   it('does not warn when archive.duration is simply missing', async () => {
     sinon.stub(config, 'get').returns({ cron: '* 1 * * *' });
     sinon.stub(archiveLib, 'archive').resolves();

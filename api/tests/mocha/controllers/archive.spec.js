@@ -173,14 +173,16 @@ describe('Archive controller', () => {
       chai.expect(serverUtils.error.args[0][0].code).to.equal(400);
     });
 
-    it('rejects a body that exceeds the size limit with 413, even without newlines', async () => {
+    it('rejects a streamed body that exceeds the size limit with 413, even without newlines', async () => {
       sinon.stub(auth, 'getUserCtx').resolves({});
       sinon.stub(auth, 'isDbAdmin').returns(true);
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
       controller.__set__('MAX_BODY_SIZE', 10);
 
-      const req = newReq(['a'.repeat(50)]);
+      const req = Readable.from(['a'.repeat(50)]);
+      req.headers = { 'content-type': 'text/csv' };
+      req.is = () => 'text/csv';
       const res = newRes();
       await controller.create(req, res);
 
@@ -190,6 +192,41 @@ describe('Archive controller', () => {
       const err = serverUtils.error.args[0][0];
       chai.expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
       chai.expect(err.code).to.equal(413);
+    });
+
+    it('rejects an oversized declared Content-Length with 413 before reading the body', async () => {
+      sinon.stub(auth, 'getUserCtx').resolves({});
+      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(db.sentinel, 'put');
+      sinon.stub(serverUtils, 'error').returns();
+      controller.__set__('MAX_BODY_SIZE', 10);
+
+      const req = newReq(['doc-1']);
+      req.headers['content-length'] = '50';
+      const res = newRes();
+      await controller.create(req, res);
+
+      chai.expect(db.sentinel.put.callCount).to.equal(0);
+      // processPayload was never entered: no readline/byte-counter listeners were attached.
+      chai.expect(req.listenerCount('data')).to.equal(0);
+      chai.expect(serverUtils.error.callCount).to.equal(1);
+      const err = serverUtils.error.args[0][0];
+      chai.expect(err).to.be.an.instanceOf(errors.PayloadTooLargeError);
+      chai.expect(err.code).to.equal(413);
+    });
+
+    it('accepts an honest Content-Length within the limit', async () => {
+      sinon.stub(auth, 'getUserCtx').resolves({});
+      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
+
+      const req = newReq(['doc-1']);
+      req.headers['content-length'] = '6';
+      const res = newRes();
+      await controller.create(req, res);
+
+      chai.expect(db.sentinel.put.callCount).to.equal(1);
+      chai.expect(res.status.calledWith(201)).to.equal(true);
     });
 
     it('surfaces errors emitted by the request stream', async () => {

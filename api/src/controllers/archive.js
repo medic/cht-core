@@ -10,8 +10,7 @@ const serverUtils = require('../server-utils');
 const errors = require('../errors');
 
 const MAX_IDS_PER_JOB = 100 * 1000;
-// Matches routing's MAX_REQUEST_SIZE; enforced here because this route skips the body parsers.
-const MAX_BODY_SIZE = 32 * 1024 * 1024;
+const MAX_BODY_SIZE = constants.MAX_REQUEST_SIZE;
 const EXPECTED_CONTENT_TYPE = 'text/csv';
 const parseCell = (line) => line.trim().replace(/^"(.*)"$/, '$1');
 
@@ -25,6 +24,12 @@ const checkAdmin = async (req) => {
 const checkContentType = (req) => {
   if (!req.is(EXPECTED_CONTENT_TYPE)) {
     throw new errors.ContentTypeError(`Content-Type must be ${EXPECTED_CONTENT_TYPE}`);
+  }
+};
+
+const checkDeclaredSize = (req) => {
+  if (Number(req.headers['content-length']) > MAX_BODY_SIZE) {
+    throw new errors.PayloadTooLargeError(`Request body is larger than ${MAX_BODY_SIZE} bytes`);
   }
 };
 
@@ -111,6 +116,7 @@ module.exports = {
     try {
       await checkAdmin(req);
       checkContentType(req);
+      checkDeclaredSize(req);
     } catch (err) {
       return serverUtils.error(err, req, res);
     }

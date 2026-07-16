@@ -48,22 +48,24 @@ const archiveBatch = async (batch) => {
   }
   const date = Date.now();
 
-  const rows = [];
-  // avoid a huge payload when docs have attachments
+  const archivedIds = [];
+  // fetch and write chunk by chunk — attachments are inlined, so both payloads need bounding
   for (let i = 0; i < ids.length; i += FETCH_BATCH_SIZE) {
     const chunk = ids.slice(i, i + FETCH_BATCH_SIZE);
     const medicDocs = await db.medic.allDocs({ attachments: true, keys: chunk, include_docs: true });
-    rows.push(...medicDocs.rows);
+    const docsToArchive = medicDocs.rows
+      .filter(row => canArchive(row.doc))
+      .map(row => ({ ...row.doc, archive_date: date }));
+    if (!docsToArchive.length) {
+      continue;
+    }
+    await db.archive.bulkDocs(docsToArchive, { new_edits: false });
+    archivedIds.push(...docsToArchive.map(doc => doc._id));
   }
 
-  const docsToArchive = rows
-    .filter(row => canArchive(row.doc))
-    .map(row => ({ ...row.doc, archive_date: date }));
-
-  await db.archive.bulkDocs(docsToArchive, { new_edits: false });
-  await persistAudit(docsToArchive, date);
-  await purgeDocs(db.sentinel, docsToArchive.map(doc => `${doc._id}-info`));
-  await purgeDocs(db.medic, docsToArchive.map(doc => doc._id));
+  await audit.recordArchiving(archivedIds, date);
+  await purgeDocs(db.sentinel, archivedIds.map(id => `${id}-info`));
+  await purgeDocs(db.medic, archivedIds);
 };
 
 // Purges every leaf revision — the winner, live conflicts and deleted conflict leaves
@@ -82,11 +84,6 @@ const purgeDocs = async (database, ids) => {
     return;
   }
   await db.purge(database, toPurge);
-};
-
-const persistAudit = async (docsToArchive, date) => {
-  const ids = docsToArchive.map(doc => doc._id);
-  await audit.recordArchiving(ids, date);
 };
 
 const indexViews = async () => {
