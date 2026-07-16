@@ -338,10 +338,6 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     formContext.titleKey = titleKey;
     const formInstance = await this.formService.render(formContext);
 
-    if (formInstance?.view?.html?.querySelector?.('.or-appearance-geolocation-capture')) {
-      this.geolocationService.init();
-    }
-
     this.trackMetadata.form = formId;
     this.trackRender?.stop({
       name: ['enketo', 'contacts', this.trackMetadata.form, this.trackMetadata.action, 'render'].join(':'),

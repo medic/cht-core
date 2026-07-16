@@ -70,13 +70,6 @@ class HouseholdGeolocationWidget extends Widget {
     const { $status, $bar } = this._buildProgressRow();
     $question.append($status);
 
-    const $cantRecordBtn = this._buildCantRecordButton();
-    $question.append($cantRecordBtn);
-
-    $cantRecordBtn.on('click', () => {
-      $(this.element).val('skipped').trigger('change');
-    });
-
     this._waitForCapture($status, $bar);
   }
 
@@ -108,8 +101,7 @@ class HouseholdGeolocationWidget extends Widget {
     $('<p class="geolocation-success-msg">').text(this._translate(TRANSLATION_KEYS.SUCCESS)).appendTo($resultRow);
     $status.append($resultRow);
 
-    const $contextOptions = this._buildContextChoices();
-    $(this.question).find('.geolocation-cant-record-btn').before($contextOptions);
+    $(this.question).append(this._buildContextChoices());
   }
 
   _buildContextChoices() {
@@ -156,15 +148,22 @@ class HouseholdGeolocationWidget extends Widget {
         $('<span class="geolocation-btn-label">').text(this._translate(TRANSLATION_KEYS.RETRY))
       );
 
+    const $cantRecordBtn = this._buildCantRecordButton();
+
     $retryBtn.on('click', () => {
       globalThis.CHTCore.Geolocation.retry();
       $status.find('.geolocation-result-row, .geolocation-weak-signal-msg').remove();
       $bar.removeClass('geolocation-progress-failure');
       $retryBtn.remove();
+      $cantRecordBtn.remove();
       this._waitForCapture($status, $bar);
     });
 
-    $(this.question).find('.geolocation-cant-record-btn').before($retryBtn);
+    $cantRecordBtn.on('click', () => {
+      $(this.element).val('skipped').trigger('change');
+    });
+
+    $(this.question).append($retryBtn, $cantRecordBtn);
   }
 
   _buildProgressRow() {
@@ -179,7 +178,7 @@ class HouseholdGeolocationWidget extends Widget {
   }
 
   _buildCantRecordButton() {
-    return $('<button type="button" class="btn btn-link geolocation-cant-record-btn">')
+    return $('<button type="button" class="btn btn-default geolocation-cant-record-btn">')
       .text(this._translate(TRANSLATION_KEYS.CANT_RECORD));
   }
 

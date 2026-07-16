@@ -125,9 +125,9 @@ describe('Enketo: Household Geolocation Widget v2', () => {
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
       });
 
-      it('should show "can\'t record" button immediately without any user action', () => {
+      it('should not show "can\'t record" button before GPS resolves', () => {
         const { container } = initWidget();
-        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
       });
 
       it('should not show context choices before GPS resolves', () => {
@@ -187,6 +187,14 @@ describe('Enketo: Household Geolocation Widget v2', () => {
           expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
           expect(container.querySelector(SELECTORS.AT_HOUSEHOLD_RADIO)).to.not.be.null;
           expect(container.querySelector(SELECTORS.SOMEWHERE_ELSE_RADIO)).to.not.be.null;
+        });
+
+        it('should not show "can\'t record" button on GPS success', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initWidget();
+          await promise;
+          expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
         });
 
         it('should set value to "captured" and geo-context to "home" when "at household" is selected', async () => {
@@ -255,12 +263,22 @@ describe('Enketo: Household Geolocation Widget v2', () => {
           expect(container.querySelector(SELECTORS.RETRY_BTN)).to.not.be.null;
         });
 
-        it('should keep "can\'t record" button visible', async () => {
+        it('should show "can\'t record" button after GPS failure', async () => {
           const promise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = promise;
           const { container } = initWidget();
           await promise;
           expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+        });
+
+        it('should style "can\'t record" button the same as retry button', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const { container } = initWidget();
+          await promise;
+          const cantRecordBtn = container.querySelector(SELECTORS.CANT_RECORD_BTN)!;
+          expect(cantRecordBtn.classList.contains('btn-default')).to.be.true;
+          expect(cantRecordBtn.classList.contains('btn-link')).to.be.false;
         });
 
         it('should not show context choices', async () => {
@@ -328,7 +346,7 @@ describe('Enketo: Household Geolocation Widget v2', () => {
           expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
         });
 
-        it('should keep "can\'t record" button visible after retry is clicked', async () => {
+        it('should remove "can\'t record" button when retry is clicked', async () => {
           const failurePromise = Promise.resolve(GPS_FAILURE);
           (window as any).CHTCore.Geolocation.currentPromise = failurePromise;
           const { container } = initWidget();
@@ -339,47 +357,31 @@ describe('Enketo: Household Geolocation Widget v2', () => {
           });
           (container.querySelector(SELECTORS.RETRY_BTN) as HTMLElement).click();
 
-          expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+          expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
         });
       });
 
       describe('"can\'t record" button', () => {
-        it('should set value to "skipped" when clicked', () => {
-          const { widget, container } = initWidget();
+        const initWidgetAfterFailure = async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initWidget();
+          await promise;
+          return result;
+        };
+
+        it('should set value to "skipped" when clicked', async () => {
+          const { widget, container } = await initWidgetAfterFailure();
           (container.querySelector(SELECTORS.CANT_RECORD_BTN) as HTMLElement).click();
           expect((widget.element as HTMLInputElement).value).to.equal('skipped');
         });
 
-        it('should fire a change event when clicked', () => {
-          const { widget, container } = initWidget();
+        it('should fire a change event when clicked', async () => {
+          const { widget, container } = await initWidgetAfterFailure();
           const changeHandler = sinon.stub();
           $((widget.element as HTMLInputElement)).on('change', changeHandler);
           (container.querySelector(SELECTORS.CANT_RECORD_BTN) as HTMLElement).click();
           expect(changeHandler.callCount).to.equal(1);
-        });
-
-        it('should ignore GPS success result if "can\'t record" was clicked first', async () => {
-          const promise = Promise.resolve(GPS_SUCCESS);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const { widget, container } = initWidget();
-
-          (container.querySelector(SELECTORS.CANT_RECORD_BTN) as HTMLElement).click();
-          await promise;
-
-          expect((widget.element as HTMLInputElement).value).to.equal('skipped');
-          expect(container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
-        });
-
-        it('should ignore GPS failure result if "can\'t record" was clicked first', async () => {
-          const promise = Promise.resolve(GPS_FAILURE);
-          (window as any).CHTCore.Geolocation.currentPromise = promise;
-          const { widget, container } = initWidget();
-
-          (container.querySelector(SELECTORS.CANT_RECORD_BTN) as HTMLElement).click();
-          await promise;
-
-          expect((widget.element as HTMLInputElement).value).to.equal('skipped');
-          expect(container.querySelector(SELECTORS.RETRY_BTN)).to.be.null;
         });
       });
     });
@@ -424,9 +426,9 @@ describe('Enketo: Household Geolocation Widget v2', () => {
         expect(container.querySelector(SELECTORS.PROGRESS_BAR)).to.not.be.null;
       });
 
-      it('should show "can\'t record" button immediately', () => {
+      it('should not show "can\'t record" button before GPS resolves', () => {
         const { container } = initEditWidget();
-        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+        expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
       });
 
       it('should not show context choices before GPS resolves', () => {
@@ -454,8 +456,11 @@ describe('Enketo: Household Geolocation Widget v2', () => {
         expect(container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
       });
 
-      it('should set value to "skipped" when "can\'t record" is clicked', () => {
+      it('should set value to "skipped" when "can\'t record" is clicked after GPS fails', async () => {
+        const promise = Promise.resolve(GPS_FAILURE);
+        (window as any).CHTCore.Geolocation.currentPromise = promise;
         const { widget, container } = initEditWidget();
+        await promise;
         (container.querySelector(SELECTORS.CANT_RECORD_BTN) as HTMLElement).click();
         expect((widget.element as HTMLInputElement).value).to.equal('skipped');
       });
