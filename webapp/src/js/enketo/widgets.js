@@ -32,9 +32,7 @@
     require( './widgets/dynamic-url' ),
     require( './widgets/draw' ),
     require( './widgets/hidden-group' ),
-    // v1 kept on disk for reference during v2 development — not registered
-    // require( './widgets/household-geolocation-widget' ),
-    require( './widgets/household-geolocation-widget-v2' ),
+    require( './widgets/household-geolocation-widget' ),
   ];
 
   module.exports = widgets;
