@@ -8,6 +8,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { FormConfig } from '@mm-services/xml-forms.service';
+import { isHardcodedType } from '@medic/contact-types-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +35,7 @@ export class NewEnketoService {
       const formDocData = new EnektoContactRootDoc(
         this.getFormDataXml(form),
         contactDoc._id,
-        contactDoc.contact_type || contactDoc.type
+        isHardcodedType(contactDoc.type) ? contactDoc.type : contactDoc.contact_type
       );
 
       const formAttachments = this.processFormAttachments(config.doc.internalId, formDocData, contactDoc._attachments);
