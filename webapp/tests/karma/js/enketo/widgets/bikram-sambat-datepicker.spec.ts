@@ -277,4 +277,41 @@ describe('Enketo: Bikram Sambat Datepicker Widget', () => {
 
     expect($('.nepali-date-picker').is(':visible')).to.be.true;
   });
+
+  it('ignores dateSelect event with an invalid/non-existent day', async () => {
+    await initWidget();
+    const hiddenInput = $('.nepali-datepicker-input');
+    const event: any = $.Event('dateSelect');
+    event.datePickerData = {
+      bsYear: 2082,
+      bsMonth: 8,
+      bsDate: 30
+    };
+    
+    let threwError = false;
+    try {
+      hiddenInput.trigger(event);
+    } catch (_e) {
+      threwError = true;
+    }
+
+    expect(threwError).to.be.false;
+    expect(dayInput().val()).to.equal('');
+    expect(monthInput().val()).to.equal('');
+    expect(yearInput().val()).to.equal('');
+    expect(realDateInput().val()).to.equal('');
+  });
+
+  it('clears invalid day input on manual entry of non-existent day', async () => {
+    await initWidget();
+
+    dayInput().val('३०').trigger('change');
+    monthInput().val('८').trigger('change');
+    yearInput().val('२०८२').trigger('change').trigger('blur');
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(dayInput().val()).to.equal('');
+    expect(realDateInput().val()).to.equal('');
+  });
 });
