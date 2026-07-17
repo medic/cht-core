@@ -50,13 +50,16 @@ export class DateFilterComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly formatDateService: FormatDateService,
   ) {
     this.globalActions = new GlobalActions(store);
-    this.store.select(Selectors.getDirection).subscribe(direction => {
-      this.direction = direction;
-    });
   }
 
   ngOnInit() {
     this.isNepali = this.languageService.useDevanagariScript();
+
+    const directionSubscription = this.store
+      .select(Selectors.getDirection)
+      .subscribe(direction => this.direction = direction);
+    this.subscription.add(directionSubscription);
+
     const subscription = this.store
       .select(Selectors.getFilters)
       .subscribe(({ date }) => {
