@@ -19,7 +19,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FormConfig } from '@mm-services/enketo.service';
+import { FormConfig } from '@mm-services/form/form-config';
 
 @Component({
   templateUrl: './reports-add.component.html',

@@ -20,9 +20,8 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { ContactSummary, EnketoFormContext, EnketoService, FormConfig } from '@mm-services/enketo.service';
+import { ContactSummary, EnketoForm, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { reduce as _reduce } from 'lodash-es';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
@@ -31,8 +30,7 @@ import { Nullable, Person, Contact, Report, Qualifier } from '@medic/cht-datasou
 import { DeduplicateService, DuplicateCheck } from '@mm-services/deduplicate.service';
 import { ContactsService } from '@mm-services/contacts.service';
 import { PerformanceService } from '@mm-services/performance.service';
-import { EnketoForm, NewEnketoService } from '@mm-services/NewEnketoService';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { FormConfig } from '@mm-services/form/form-config';
 
 /**
  * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
@@ -46,7 +44,6 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 export class FormService {
   constructor(
     private store: Store,
-    private contactSaveService: ContactSaveService,
     private contactSummaryService: ContactSummaryService,
     private contactTypesService: ContactTypesService,
     private dbService: DbService,
@@ -63,8 +60,6 @@ export class FormService {
     private ngZone: NgZone,
     private chtDatasourceService: CHTDatasourceService,
     private enketoService: EnketoService,
-    private newEnketoService: NewEnketoService,
-    private extractLineageService: ExtractLineageService,
     private targetAggregatesService: TargetAggregatesService,
     private contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private readonly deduplicateService: DeduplicateService,
@@ -314,15 +309,13 @@ export class FormService {
   private async completeReport(enketoForm: EnketoForm, docId?) {
     if (docId) {
       const doc = await this.getReport(Qualifier.byUuid(docId));
-      return this.newEnketoService.saveReport(enketoForm, doc!);
-      // return this.enketoService.completeExistingReport(form, formDoc, docId);
+      return this.enketoService.saveReport(enketoForm, doc!);
     }
 
     const isTrainingCardForm = this.trainingCardsService.isTrainingCardForm(enketoForm.config.doc.internalId);
     const contact = await this.getUserContact(!isTrainingCardForm);
 
-    const docs = await this.newEnketoService.saveReport(enketoForm, { contact });
-    // const docs = await this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
+    const docs = await this.enketoService.saveReport(enketoForm, { contact });
     if (!docId && isTrainingCardForm) {
       docs[0]._id = this.trainingCardsService.getTrainingCardDocId();
     }
@@ -406,7 +399,7 @@ export class FormService {
 
     // const docs = await this.contactSaveService.save(form, docId, typeFields, xmlVersion);
     const defaultData = docId ? await this.getContact(Qualifier.byUuid(docId)) : typeFields;
-    const docs = await this.newEnketoService.saveContact(enketoForm, defaultData!);
+    const docs = await this.enketoService.saveContact(enketoForm, defaultData!);
 
     const preparedDocs = await this.applyTransitions(docs);
 

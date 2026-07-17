@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
-import { EnketoFormContext, EnketoService, FormConfig } from '@mm-services/enketo.service';
+import { EnketoForm, EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
@@ -9,7 +9,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 import { CONTACT_TYPES } from '@medic/constants';
-import { EnketoForm, NewEnketoService } from '@mm-services/NewEnketoService';
+import { FormConfig } from '@mm-services/form/form-config';
 
 const DEFAULT_FORM_ID = 'cht-form-id';
 
@@ -45,7 +45,6 @@ export class AppComponent {
   constructor(
     chtDatasourceService: CHTDatasourceService,
     private readonly enketoService: EnketoService,
-    private readonly newEnketoService: NewEnketoService,
     private readonly translateService: TranslateService,
     @Inject(DOCUMENT) private readonly document: Document,
   ) {
@@ -154,10 +153,10 @@ export class AppComponent {
       const typeFields = this.HARDCODED_TYPES.includes(contactType)
         ? { type: contactType }
         : { type: 'contact', contact_type: contactType };
-      const { preparedDocs } = await this.newEnketoService.saveContact(this.enketoForm!, typeFields);
+      const { preparedDocs } = await this.enketoService.saveContact(this.enketoForm!, typeFields);
       return preparedDocs;
     }
-    return this.newEnketoService.saveReport(
+    return this.enketoService.saveReport(
       this.enketoForm!,
       { contact: this.formContext.content?.contact }
     );

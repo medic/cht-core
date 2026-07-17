@@ -16,7 +16,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { EnketoForm } from '@mm-services/NewEnketoService';
+import { EnketoForm } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './contacts-report.component.html',

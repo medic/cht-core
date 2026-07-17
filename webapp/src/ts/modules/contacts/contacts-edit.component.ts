@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { DuplicatesFoundError, FormService, WebappEnketoFormContext } from '@mm-services/form.service';
-import { FormValidationError } from '@mm-services/NewEnketoService';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
@@ -23,6 +22,7 @@ import { Contact, Qualifier } from '@medic/cht-datasource';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { FormValidationError } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './contacts-edit.component.html',

@@ -11,7 +11,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
-import { FormConfig, FormType } from '@mm-services/enketo.service';
+import { FormConfig, FormType } from '@mm-services/form/form-config';
 
 export const TRAINING_FORM_ID_PREFIX: string = `${PREFIXES.FORM}training:`;
 export const CONTACT_FORM_ID_PREFIX: string = `${PREFIXES.FORM}contact:`;

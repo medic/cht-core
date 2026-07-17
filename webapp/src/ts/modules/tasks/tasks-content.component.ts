@@ -21,8 +21,8 @@ import { SimpleDatePipe } from '@mm-pipes/date.pipe';
 import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
-import { EnketoForm } from '@mm-services/NewEnketoService';
-import { FormConfig } from '@mm-services/enketo.service';
+import { FormConfig } from '@mm-services/form/form-config';
+import { EnketoForm } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './tasks-content.component.html',

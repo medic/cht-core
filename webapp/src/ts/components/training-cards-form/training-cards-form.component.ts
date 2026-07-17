@@ -13,7 +13,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FormConfig } from '@mm-services/enketo.service';
+import { FormConfig } from '@mm-services/form/form-config';
 
 @Component({
   selector: 'training-cards-form',
