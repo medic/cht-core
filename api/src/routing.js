@@ -797,12 +797,7 @@ app.put(
   credentials.put
 );
 
-app.post(
-  '/api/v1/archive',
-  authorization.handleAuthErrors,
-  authorization.offlineUserFirewall,
-  archive.create // no body parser: the controller streams the raw request body
-);
+app.post('/api/v1/archive', archive.create);
 
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 app.get('/api/v1/replication-failure-logs', replicationFailureLogController.get);

@@ -61,4 +61,26 @@ describe('scheduling', () => {
       assert.equal(scheduling.nextScheduleMillis(scheduleConfig), 90);
     });
   });
+
+  describe('parseDuration', () => {
+    it('parses "<number> <unit>" expressions into moment durations', () => {
+      assert.equal(scheduling.parseDuration('4 hours').asMilliseconds(), 4 * 60 * 60 * 1000);
+      assert.equal(scheduling.parseDuration('30 minutes').asMilliseconds(), 30 * 60 * 1000);
+      assert.equal(scheduling.parseDuration('1 day').asMilliseconds(), 24 * 60 * 60 * 1000);
+      assert.equal(scheduling.parseDuration('10 minute').asMilliseconds(), 10 * 60 * 1000);
+      assert.equal(scheduling.parseDuration('2 weeks').asMilliseconds(), 14 * 24 * 60 * 60 * 1000);
+      assert.equal(scheduling.parseDuration('  90 seconds  ').asMilliseconds(), 90 * 1000);
+      assert.isTrue(moment.isDuration(scheduling.parseDuration('4 hours')));
+    });
+
+    it('returns null for missing, malformed, or non-positive durations', () => {
+      assert.equal(scheduling.parseDuration(), null);
+      assert.equal(scheduling.parseDuration(null), null);
+      assert.equal(scheduling.parseDuration(42), null);
+      assert.equal(scheduling.parseDuration('forever'), null);
+      assert.equal(scheduling.parseDuration('-1 hours'), null);
+      assert.equal(scheduling.parseDuration('0 hours'), null);
+      assert.equal(scheduling.parseDuration('4 lightyears'), null);
+    });
+  });
 });

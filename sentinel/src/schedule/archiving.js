@@ -1,7 +1,6 @@
 const config = require('../config');
 const logger = require('@medic/logger');
 const later = require('later');
-const moment = require('moment');
 const archiveLib = require('../lib/archiving');
 const scheduling = require('../lib/scheduling');
 
@@ -9,23 +8,14 @@ const scheduling = require('../lib/scheduling');
 later.date.localTime();
 let archiveTimeout;
 
-const DURATION_PATTERN = /^(\d+)\s+(\w+)$/;
-
-// Parses a "<number> <unit>" string (e.g. "4 hours", "30 minutes") into milliseconds.
-// Returns null if the input is missing, malformed, or resolves to a non-positive duration.
-const parseDuration = (text) => {
-  if (typeof text !== 'string') {
-    return null;
-  }
-  const match = DURATION_PATTERN.exec(text.trim());
-  if (!match) {
-    return null;
-  }
-  const ms = moment.duration(Number.parseInt(match[1], 10), match[2]).asMilliseconds();
-  return ms > 0 ? ms : null;
-};
-
 module.exports = {
+  /**
+   * Schedules the next archiving run from the `archive` settings: `text_expression` or `cron`
+   * decide when it fires, and the optional `duration` (e.g. "4 hours") bounds how long it runs —
+   * unbounded when missing or malformed. Called on every scheduler tick; reschedules the pending
+   * run each time so config changes take effect. A no-op when archiving is not configured.
+   * @returns {Promise<void>}
+   */
   execute: () => {
     const archiveConfig = config.get('archive');
     const schedule = scheduling.getSchedule(archiveConfig);
@@ -34,7 +24,7 @@ module.exports = {
       return Promise.resolve();
     }
 
-    const duration = parseDuration(archiveConfig?.duration);
+    const duration = scheduling.parseDuration(archiveConfig?.duration)?.asMilliseconds() ?? null;
     if ((archiveConfig?.duration ?? null) !== null && duration === null) {
       logger.warn(
         `Archiving: could not parse configured duration "${archiveConfig.duration}", the run will be unbounded`

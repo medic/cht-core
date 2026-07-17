@@ -88,7 +88,7 @@ describe('Sentinel archiving lib', () => {
     const pending = job({ _id: 'archive:1', total: 5 });
     const { queue, putSnapshots } = stubQueue([pending]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd\ne', 'utf8'));
-    lib.__set__('BATCH_SIZE', 2);
+    lib.__set__('PURGE_BATCH_SIZE', 2);
 
     const archiveBatch = sinon.stub().resolves();
     lib.__set__('archiveBatch', archiveBatch);
@@ -114,7 +114,7 @@ describe('Sentinel archiving lib', () => {
     const pending = job({ _id: 'archive:1', total: 4 });
     const { queue, putSnapshots } = stubQueue([pending]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd', 'utf8'));
-    lib.__set__('BATCH_SIZE', 2);
+    lib.__set__('PURGE_BATCH_SIZE', 2);
 
     clock.setSystemTime(1000);
     const archiveBatch = sinon.stub().callsFake(() => {
@@ -138,7 +138,7 @@ describe('Sentinel archiving lib', () => {
     const resuming = job({ _id: 'archive:1', total: 3, cursor: 1, history: [...earlierHistory] });
     const { queue, putSnapshots } = stubQueue([resuming]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc', 'utf8'));
-    lib.__set__('BATCH_SIZE', 10);
+    lib.__set__('PURGE_BATCH_SIZE', 10);
 
     clock.setSystemTime(2000);
     const archiveBatch = sinon.stub().callsFake(() => {
@@ -162,7 +162,7 @@ describe('Sentinel archiving lib', () => {
     const resuming = job({ _id: 'archive:1', total: 4, cursor: 2 });
     stubQueue([resuming]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd', 'utf8'));
-    lib.__set__('BATCH_SIZE', 10);
+    lib.__set__('PURGE_BATCH_SIZE', 10);
 
     const archiveBatch = sinon.stub().resolves();
     lib.__set__('archiveBatch', archiveBatch);
@@ -192,7 +192,7 @@ describe('Sentinel archiving lib', () => {
     const understated = job({ _id: 'archive:1', total: 1 });
     const { queue } = stubQueue([understated]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc', 'utf8'));
-    lib.__set__('BATCH_SIZE', 2);
+    lib.__set__('PURGE_BATCH_SIZE', 2);
 
     const archiveBatch = sinon.stub().resolves();
     lib.__set__('archiveBatch', archiveBatch);
@@ -370,7 +370,7 @@ describe('Sentinel archiving lib', () => {
     const pending = job({ _id: 'archive:1', total: 10 });
     const { queue, putSnapshots } = stubQueue([pending]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb\nc\nd\ne\nf\ng\nh\ni\nj', 'utf8'));
-    lib.__set__('BATCH_SIZE', 3);
+    lib.__set__('PURGE_BATCH_SIZE', 3);
 
     clock.setSystemTime(1000);
     const archiveBatch = sinon.stub().callsFake(() => {
@@ -425,7 +425,7 @@ describe('Sentinel archiving lib', () => {
     const pending = job({ _id: 'archive:1', total: 25 });
     stubQueue([pending]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('x\n'.repeat(25).slice(0, -1), 'utf8'));
-    lib.__set__('BATCH_SIZE', 1);
+    lib.__set__('PURGE_BATCH_SIZE', 1);
 
     const indexViews = sinon.stub().resolves();
     lib.__set__('indexViews', indexViews);
@@ -439,7 +439,7 @@ describe('Sentinel archiving lib', () => {
     const pending = job({ _id: 'archive:1', total: 2, _rev: '1-stale' });
     const { putSnapshots, queue } = stubQueue([pending]);
     sinon.stub(db.sentinel, 'getAttachment').resolves(Buffer.from('a\nb', 'utf8'));
-    lib.__set__('BATCH_SIZE', 1);
+    lib.__set__('PURGE_BATCH_SIZE', 1);
 
     // Simulate an external edit between fetchNextJob and the first put: bump the queue
     // doc's _rev to something fresher than what archive() saw.
@@ -781,7 +781,7 @@ describe('Sentinel archiving lib', () => {
       sinon.stub(db.sentinel, 'getAttachment').resolves(
         Buffer.from(Array.from({ length: 20 }, (_, i) => `d${i}`).join('\n'), 'utf8')
       );
-      lib.__set__('BATCH_SIZE', 2);
+      lib.__set__('PURGE_BATCH_SIZE', 2);
 
       const archiveBatch = sinon.stub().resolves();
       lib.__set__('archiveBatch', archiveBatch);

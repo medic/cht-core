@@ -129,27 +129,4 @@ describe('Archiving Schedule', () => {
       });
   });
 
-  describe('parseDuration', () => {
-    let parseDuration;
-    beforeEach(() => {
-      parseDuration = scheduler.__get__('parseDuration');
-    });
-
-    it('parses "<number> <unit>" expressions into milliseconds', () => {
-      chai.expect(parseDuration('4 hours')).to.equal(4 * 60 * 60 * 1000);
-      chai.expect(parseDuration('30 minutes')).to.equal(30 * 60 * 1000);
-      chai.expect(parseDuration('1 day')).to.equal(24 * 60 * 60 * 1000);
-      chai.expect(parseDuration('  90 seconds  ')).to.equal(90 * 1000);
-    });
-
-    it('returns null for missing, malformed, or non-positive durations', () => {
-      chai.expect(parseDuration()).to.equal(null);
-      chai.expect(parseDuration(null)).to.equal(null);
-      chai.expect(parseDuration(42)).to.equal(null);
-      chai.expect(parseDuration('forever')).to.equal(null);
-      chai.expect(parseDuration('-1 hours')).to.equal(null);
-      chai.expect(parseDuration('0 hours')).to.equal(null);
-      chai.expect(parseDuration('4 lightyears')).to.equal(null);
-    });
-  });
 });

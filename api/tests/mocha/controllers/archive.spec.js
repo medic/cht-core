@@ -35,9 +35,8 @@ describe('Archive controller', () => {
   afterEach(() => sinon.restore());
 
   describe('create', () => {
-    it('responds with an AuthenticationError when caller is not a db admin', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({ roles: [] });
-      sinon.stub(auth, 'isDbAdmin').returns(false);
+    it('responds with a PermissionError when caller is not a db admin', async () => {
+      sinon.stub(auth, 'assertDbAdmin').rejects(new errors.PermissionError('User is not an admin'));
       sinon.stub(serverUtils, 'error').returns();
       sinon.stub(db.sentinel, 'put');
 
@@ -45,17 +44,18 @@ describe('Archive controller', () => {
       const res = newRes();
       await controller.create(req, res);
 
+      chai.expect(auth.assertDbAdmin.callCount).to.equal(1);
+      chai.expect(auth.assertDbAdmin.args[0][0]).to.equal(req);
       chai.expect(serverUtils.error.callCount).to.equal(1);
       const err = serverUtils.error.args[0][0];
-      chai.expect(err).to.be.an.instanceOf(errors.AuthenticationError);
-      chai.expect(err.code).to.equal(401);
+      chai.expect(err).to.be.an.instanceOf(errors.PermissionError);
+      chai.expect(err.code).to.equal(403);
       chai.expect(err.message).to.equal('User is not an admin');
       chai.expect(db.sentinel.put.callCount).to.equal(0);
     });
 
     it('writes one job containing every doc id from the body', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['doc-1', 'doc-2', 'doc-3']);
@@ -76,8 +76,7 @@ describe('Archive controller', () => {
     });
 
     it('strips surrounding quotes and skips blank lines', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['', '"doc-1"', '  doc-2  ', '']);
@@ -90,8 +89,7 @@ describe('Archive controller', () => {
     });
 
     it('splits ids into multiple job docs at MAX_IDS_PER_JOB', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
       controller.__set__('MAX_IDS_PER_JOB', 3);
 
@@ -109,8 +107,7 @@ describe('Archive controller', () => {
     });
 
     it('rejects requests with a non-text/csv content-type with 415', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -127,8 +124,7 @@ describe('Archive controller', () => {
     });
 
     it('accepts text/csv with charset parameters', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['doc-1'], { contentType: 'text/csv; charset=utf-8' });
@@ -140,8 +136,7 @@ describe('Archive controller', () => {
     });
 
     it('rejects an empty body with 400', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -159,8 +154,7 @@ describe('Archive controller', () => {
     });
 
     it('rejects a body of only blank lines with 400', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -174,8 +168,7 @@ describe('Archive controller', () => {
     });
 
     it('rejects a streamed body that exceeds the size limit with 413, even without newlines', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
       controller.__set__('MAX_BODY_SIZE', 10);
@@ -195,8 +188,7 @@ describe('Archive controller', () => {
     });
 
     it('rejects an oversized declared Content-Length with 413 before reading the body', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
       controller.__set__('MAX_BODY_SIZE', 10);
@@ -216,8 +208,7 @@ describe('Archive controller', () => {
     });
 
     it('accepts an honest Content-Length within the limit', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').resolves({ id: 'x', rev: '1-a' });
 
       const req = newReq(['doc-1']);
@@ -230,8 +221,7 @@ describe('Archive controller', () => {
     });
 
     it('surfaces errors emitted by the request stream', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put');
       sinon.stub(serverUtils, 'error').returns();
 
@@ -250,8 +240,7 @@ describe('Archive controller', () => {
     });
 
     it('surfaces db errors via serverUtils.error', async () => {
-      sinon.stub(auth, 'getUserCtx').resolves({});
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      sinon.stub(auth, 'assertDbAdmin').resolves({});
       sinon.stub(db.sentinel, 'put').rejects({ status: 500, message: 'boom' });
       sinon.stub(serverUtils, 'error').returns();
 

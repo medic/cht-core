@@ -1,4 +1,8 @@
 const later = require('later');
+const moment = require('moment');
+
+// matches "<number> <unit>", e.g. "30 minutes": digits, whitespace, then a unit word
+const DURATION_PATTERN = /^(\d+)\s+(\w+)$/;
 
 /**
  * Fetch a schedule based on the configuration, parsing it as a "cron"
@@ -34,7 +38,26 @@ const nextScheduleMillis = scheduleConfig => {
   return diff;
 };
 
+/**
+ * Parses a "<number> <unit>" string (e.g. "4 hours", "30 minutes") into a moment.duration.
+ * Accepts any unit moment recognizes.
+ * @param {string} text
+ * @return {moment.Duration|null} null when the input is missing, malformed, or not positive
+ */
+const parseDuration = (text) => {
+  if (typeof text !== 'string') {
+    return null;
+  }
+  const match = DURATION_PATTERN.exec(text.trim());
+  if (!match) {
+    return null;
+  }
+  const duration = moment.duration(Number.parseInt(match[1], 10), match[2]);
+  return duration.asMilliseconds() > 0 ? duration : null;
+};
+
 module.exports = {
   getSchedule,
   nextScheduleMillis,
+  parseDuration,
 };
