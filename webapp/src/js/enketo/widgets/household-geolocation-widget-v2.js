@@ -234,8 +234,10 @@ class HouseholdGeolocationWidget extends Widget {
       const value = event.target.value;
       if (value === 'kept') {
         $(this.element).val('kept').trigger('change');
+        $(this.question).find('.geolocation-context-options, .geolocation-cant-record-btn').remove();
       } else if (value === 'removed') {
         $(this.element).val('skipped').trigger('change');
+        $(this.question).find('.geolocation-context-options, .geolocation-cant-record-btn').remove();
       } else if (value === 'capture-new') {
         $(this.element).val('');
         if ($bar.hasClass('geolocation-progress-failure') &&

@@ -613,6 +613,36 @@ describe('Enketo: Household Geolocation Widget v2', () => {
           $(radio).trigger('change');
           expect(changeHandler.callCount).to.equal(1);
         });
+
+        it('should remove context options when switching from Record New after GPS success', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          recordNewRadio.checked = true;
+          $(recordNewRadio).trigger('change');
+          await promise;
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
+          const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          keepRadio.checked = true;
+          $(keepRadio).trigger('change');
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
+        });
+
+        it('should remove the cant-record button when switching from Record New after GPS failure', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          recordNewRadio.checked = true;
+          $(recordNewRadio).trigger('change');
+          await promise;
+          expect(result.container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+          const keepRadio = result.container.querySelector(SELECTORS.KEEP_RADIO) as HTMLInputElement;
+          keepRadio.checked = true;
+          $(keepRadio).trigger('change');
+          expect(result.container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
+        });
       });
 
       describe('when "Remove saved location" is selected', () => {
@@ -632,6 +662,36 @@ describe('Enketo: Household Geolocation Widget v2', () => {
           radio.checked = true;
           $(radio).trigger('change');
           expect(changeHandler.callCount).to.equal(1);
+        });
+
+        it('should remove context options when switching from Record New after GPS success', async () => {
+          const promise = Promise.resolve(GPS_SUCCESS);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          recordNewRadio.checked = true;
+          $(recordNewRadio).trigger('change');
+          await promise;
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.not.be.null;
+          const removeRadio = result.container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
+          removeRadio.checked = true;
+          $(removeRadio).trigger('change');
+          expect(result.container.querySelector(SELECTORS.CONTEXT_OPTIONS)).to.be.null;
+        });
+
+        it('should remove the cant-record button when switching from Record New after GPS failure', async () => {
+          const promise = Promise.resolve(GPS_FAILURE);
+          (window as any).CHTCore.Geolocation.currentPromise = promise;
+          const result = initEditWithLocationWidget();
+          const recordNewRadio = result.container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          recordNewRadio.checked = true;
+          $(recordNewRadio).trigger('change');
+          await promise;
+          expect(result.container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.not.be.null;
+          const removeRadio = result.container.querySelector(SELECTORS.REMOVE_RADIO) as HTMLInputElement;
+          removeRadio.checked = true;
+          $(removeRadio).trigger('change');
+          expect(result.container.querySelector(SELECTORS.CANT_RECORD_BTN)).to.be.null;
         });
       });
 
