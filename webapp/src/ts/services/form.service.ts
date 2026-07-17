@@ -42,28 +42,28 @@ import { FormConfig } from '@mm-services/form/form-config';
 })
 export class FormService {
   constructor(
-    private store: Store,
-    private contactSummaryService: ContactSummaryService,
-    private contactTypesService: ContactTypesService,
-    private dbService: DbService,
-    private lineageModelGeneratorService: LineageModelGeneratorService,
-    private submitFormBySmsService: SubmitFormBySmsService,
-    private userContactService: UserContactService,
-    private userSettingsService: UserSettingsService,
-    private xmlFormsService: XmlFormsService,
-    private zScoreService: ZScoreService,
-    private trainingCardsService: TrainingCardsService,
-    private transitionsService: TransitionsService,
-    private translateService: TranslateService,
-    private ngZone: NgZone,
-    private chtDatasourceService: CHTDatasourceService,
-    private enketoService: EnketoService,
-    private targetAggregatesService: TargetAggregatesService,
-    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private readonly store: Store,
+    private readonly contactSummaryService: ContactSummaryService,
+    private readonly contactTypesService: ContactTypesService,
+    private readonly dbService: DbService,
+    private readonly lineageModelGeneratorService: LineageModelGeneratorService,
+    private readonly submitFormBySmsService: SubmitFormBySmsService,
+    private readonly userContactService: UserContactService,
+    private readonly userSettingsService: UserSettingsService,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly zScoreService: ZScoreService,
+    private readonly trainingCardsService: TrainingCardsService,
+    private readonly transitionsService: TransitionsService,
+    private readonly translateService: TranslateService,
+    private readonly ngZone: NgZone,
+    private readonly chtDatasourceService: CHTDatasourceService,
+    private readonly enketoService: EnketoService,
+    private readonly targetAggregatesService: TargetAggregatesService,
+    private readonly contactViewModelGeneratorService: ContactViewModelGeneratorService,
     private readonly deduplicateService: DeduplicateService,
     private readonly contactsService: ContactsService,
     private readonly performanceService: PerformanceService,
-    private userContactSummaryService: UserContactSummaryService,
+    private readonly userContactSummaryService: UserContactSummaryService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -74,10 +74,10 @@ export class FormService {
 
   private readonly getReport: ReturnType<typeof Report.v1.get>;
   private readonly getContact: ReturnType<typeof Contact.v1.get>;
-  private globalActions: GlobalActions;
-  private servicesActions: ServicesActions;
+  private readonly globalActions: GlobalActions;
+  private readonly servicesActions: ServicesActions;
 
-  private inited;
+  private readonly inited;
   private userContactId;
   private userFacilityIds;
 

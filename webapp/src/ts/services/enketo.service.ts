@@ -34,13 +34,13 @@ import { isHardcodedType } from '@medic/contact-types-utils';
 })
 export class EnketoService {
   constructor(
-    private dbService: DbService,
-    private enketoPrepopulationDataService: EnketoPrepopulationDataService,
-    private extractLineageService: ExtractLineageService,
-    private translateFromService: TranslateFromService,
-    private translateService: TranslateService,
+    private readonly dbService: DbService,
+    private readonly enketoPrepopulationDataService: EnketoPrepopulationDataService,
+    private readonly extractLineageService: ExtractLineageService,
+    private readonly translateFromService: TranslateFromService,
+    private readonly translateService: TranslateService,
+    private readonly ngZone: NgZone,
     chtDatasourceService: CHTDatasourceService,
-    private ngZone: NgZone,
   ) {
     this.getContactFromDatasource = chtDatasourceService.bind(Contact.v1.get);
   }
@@ -490,7 +490,7 @@ export class EnketoService {
     return {
       type: 'person', // legacy support - form data should override this
       ...this.initializeDoc(rawSibling),
-      parent: rawSibling.parent === 'PARENT' ? { ...rootContactDoc } : rawSibling.parent
+      parent: rawSibling.parent === 'PARENT' ? rootContactDoc : rawSibling.parent
     };
   }
 
@@ -606,7 +606,7 @@ export class EnketoService {
       .reduce((acc, [key, attachment]) => ({ ...acc, [key]: attachment }), {});
 
     const attachments = {
-      ...existingFileAttachments,
+      ...existingFileAttachments, // TODO I think we need to keep anything without the prefixing....
       ...newFileAttachments,
       ...binaryAttachments
     };

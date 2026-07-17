@@ -34,7 +34,7 @@ export class TrainingCardsFormComponent implements OnInit, OnDestroy {
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '', form: '' };
+  private readonly trackMetadata = { action: '', form: '' };
   readonly FORM_WRAPPER_ID = 'training-cards-form';
   trainingCardFormId: null | string = null;
   formNoTitle = false;

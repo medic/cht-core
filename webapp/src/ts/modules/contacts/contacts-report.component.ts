@@ -23,13 +23,13 @@ import { EnketoForm } from '@mm-services/enketo.service';
   imports: [NgIf, EnketoComponent, TranslatePipe]
 })
 export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit {
-  private globalActions;
+  private readonly globalActions;
   private geoHandle: any;
   private routeSnapshot;
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { form: '' };
+  private readonly trackMetadata = { form: '' };
 
   subscription: Subscription = new Subscription();
   enketoEdited;
@@ -43,17 +43,17 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
   cancelCallback;
 
   constructor(
-    private store: Store,
-    private formService: FormService,
-    private geolocationService: GeolocationService,
-    private performanceService: PerformanceService,
-    private xmlFormsService: XmlFormsService,
-    private translateFromService: TranslateFromService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private translateService: TranslateService,
-    private contactViewModelGeneratorService: ContactViewModelGeneratorService,
-    private ngZone: NgZone,
+    private readonly store: Store,
+    private readonly formService: FormService,
+    private readonly geolocationService: GeolocationService,
+    private readonly performanceService: PerformanceService,
+    private readonly xmlFormsService: XmlFormsService,
+    private readonly translateFromService: TranslateFromService,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly translateService: TranslateService,
+    private readonly contactViewModelGeneratorService: ContactViewModelGeneratorService,
+    private readonly ngZone: NgZone,
   ) {
     this.globalActions = new GlobalActions(store);
   }

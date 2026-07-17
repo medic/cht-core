@@ -30,18 +30,18 @@ import { EnketoForm } from '@mm-services/enketo.service';
 })
 export class TasksContentComponent implements OnInit, OnDestroy {
   constructor(
-    private translateService:TranslateService,
-    private route:ActivatedRoute,
-    private store:Store,
-    private formService:FormService,
-    private performanceService:PerformanceService,
-    private translateFromService:TranslateFromService,
-    private xmlFormsService:XmlFormsService,
-    private geolocationService:GeolocationService,
-    chtDatasourceService: CHTDatasourceService,
-    private router:Router,
-    private tasksForContactService:TasksForContactService,
+    private readonly translateService:TranslateService,
+    private readonly route:ActivatedRoute,
+    private readonly store:Store,
+    private readonly formService:FormService,
+    private readonly performanceService:PerformanceService,
+    private readonly translateFromService:TranslateFromService,
+    private readonly xmlFormsService:XmlFormsService,
+    private readonly geolocationService:GeolocationService,
+    private readonly router:Router,
+    private readonly tasksForContactService:TasksForContactService,
     private readonly interactionTrackingService:InteractionTrackingService,
+    chtDatasourceService: CHTDatasourceService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -49,8 +49,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   }
 
   subscription = new Subscription();
-  private globalActions;
-  private tasksActions;
+  private readonly globalActions;
+  private readonly tasksActions;
   private readonly getContact: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
@@ -69,8 +69,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '' };
-  private viewInited = new Subject();
+  private readonly trackMetadata = { action: '' };
+  private readonly viewInited = new Subject();
 
   ngOnInit() {
     this.trackRender = this.performanceService.track();

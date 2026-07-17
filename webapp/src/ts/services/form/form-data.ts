@@ -73,7 +73,7 @@ export abstract class EnketoRootFormData extends EnketoFormData {
     id: string,
   ) {
     super(xmlDoc.documentElement, id);
-    this.binaryTypeElements = Array.from(this.rootElement.querySelectorAll('[type=binary i]'));
+    this.binaryTypeElements = Array.from(this.rootElement.querySelectorAll('[type=binary]'));
   }
 
   public findNodeWithTextContent(textContent: string) {

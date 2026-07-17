@@ -21,21 +21,21 @@ export const CONTACT_FORM_ID_PREFIX: string = `${PREFIXES.FORM}contact:`;
 })
 export class XmlFormsService {
   private init;
-  private observable = new Subject();
+  private readonly observable = new Subject();
   readonly HTML_ATTACHMENT_NAME = 'form.html';
   readonly MODEL_ATTACHMENT_NAME = 'model.xml';
 
   constructor(
-    private authService:AuthService,
-    private changesService:ChangesService,
-    private contactTypesService:ContactTypesService,
-    private dbService:DbService,
-    private fileReaderService: FileReaderService,
-    private userContactService:UserContactService,
-    private userContactSummaryService: UserContactSummaryService,
-    private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
-    private parseProvider:ParseProvider,
-    private ngZone:NgZone,
+    private readonly authService:AuthService,
+    private readonly changesService:ChangesService,
+    private readonly contactTypesService:ContactTypesService,
+    private readonly dbService:DbService,
+    private readonly fileReaderService: FileReaderService,
+    private readonly userContactService:UserContactService,
+    private readonly userContactSummaryService: UserContactSummaryService,
+    private readonly xmlFormsContextUtilsService:XmlFormsContextUtilsService,
+    private readonly parseProvider:ParseProvider,
+    private readonly ngZone:NgZone,
   ) {
     this.init = this.getForms();
 
@@ -410,4 +410,3 @@ export class XmlFormsService {
     return this.init.then(forms => this.filterAll(forms, options || {}));
   }
 }
-

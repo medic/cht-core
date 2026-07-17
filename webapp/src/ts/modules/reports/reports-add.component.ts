@@ -33,19 +33,19 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();
 
   constructor(
-    private store:Store,
-    private dbService:DbService,
-    private fileReaderService:FileReaderService,
-    private geolocationService:GeolocationService,
-    private getReportContentService:GetReportContentService,
-    private lineageModelGeneratorService:LineageModelGeneratorService,
-    private xmlFormsService:XmlFormsService,
-    private formService:FormService,
-    private translateService:TranslateService,
-    private router:Router,
-    private route:ActivatedRoute,
-    private performanceService:PerformanceService,
-    private ngZone:NgZone,
+    private readonly store:Store,
+    private readonly dbService:DbService,
+    private readonly fileReaderService:FileReaderService,
+    private readonly geolocationService:GeolocationService,
+    private readonly getReportContentService:GetReportContentService,
+    private readonly lineageModelGeneratorService:LineageModelGeneratorService,
+    private readonly xmlFormsService:XmlFormsService,
+    private readonly formService:FormService,
+    private readonly translateService:TranslateService,
+    private readonly router:Router,
+    private readonly route:ActivatedRoute,
+    private readonly performanceService:PerformanceService,
+    private readonly ngZone:NgZone,
   ) {
     this.globalActions = new GlobalActions(this.store);
     this.reportsActions = new ReportsActions(this.store);
@@ -64,12 +64,12 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   selectMode;
 
   private geoHandle: any;
-  private globalActions: GlobalActions;
-  private reportsActions: ReportsActions;
+  private readonly globalActions: GlobalActions;
+  private readonly reportsActions: ReportsActions;
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '', form: '' };
+  private readonly trackMetadata = { action: '', form: '' };
   private routeSnapshot;
 
   private subscribeToStore() {

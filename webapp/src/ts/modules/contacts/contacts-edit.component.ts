@@ -51,7 +51,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   subscription = new Subscription();
   translationsLoadedSubscription;
-  private globalActions;
+  private readonly globalActions;
   private readonly getContactFromDatasource: ReturnType<typeof Contact.v1.get>;
 
   enketoStatus;
@@ -70,7 +70,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private trackRender;
   private trackEditDuration;
   private trackSave;
-  private trackMetadata = { action: '', form: '' };
+  private readonly trackMetadata = { action: '', form: '' };
 
   duplicatesAcknowledged = false;
 
