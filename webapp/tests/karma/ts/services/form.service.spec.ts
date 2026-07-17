@@ -1,9 +1,8 @@
 import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
-import { cloneDeep } from 'lodash-es';
 import { toBik_text } from 'bikram-sambat';
 import * as moment from 'moment';
 
@@ -12,12 +11,9 @@ import { Form2smsService } from '@mm-services/form2sms.service';
 import { SearchService } from '@mm-services/search.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
-import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { DuplicatesFoundError, FormService, WebappEnketoFormContext } from '@mm-services/form.service';
@@ -31,9 +27,7 @@ import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-ext
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoService } from '@mm-services/enketo.service';
-import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
-import * as FileManager from '../../../../src/js/enketo/file-manager.js';
+import { FormConfig } from '@mm-services/form/form-config';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { DeduplicateService } from '@mm-services/deduplicate.service';
@@ -61,11 +55,21 @@ describe('Form service', () => {
 
   const VISIT_MODEL = loadXML('visit');
   const VISIT_MODEL_WITH_CONTACT_SUMMARY = loadXML('visit-contact-summary');
+  const USER_SETTINGS = { name: 'Jim', language: 'en' };
+  const USER_CONTACT = { _id: '123', phone: '555' };
+
+  const mockFormConfig = (
+    formInternalId: string,
+    { type = 'report', html = '<div>my form</div>', model = VISIT_MODEL, xml = '<form/>' }: any = {}
+  ) => new FormConfig(mockEnketoDoc(formInternalId), type, xml, html, model);
+  const reportEnketoForm = (
+    form,
+    { internalId = 'V', xmlVersion, xml = '<form/>' }: any = {}
+  ) => ({ form, config: new FormConfig({ internalId, xmlVersion }, 'report', xml, '<div></div>', VISIT_MODEL) });
 
   let service;
   let setLastChangedDoc;
 
-  let enketoInit;
   let dbGetAttachment;
   let getReport;
   let getContact;
@@ -74,21 +78,14 @@ describe('Form service', () => {
   let Form2Sms;
   let UserContact;
   let UserSettings;
-  let createObjectURL;
-  let FileReader;
   let TranslateFrom;
   let form;
-  let AddAttachment;
-  let removeAttachment;
-  let EnketoForm;
-  let EnketoPrepopulationData;
+  let enketoService;
   let Search;
   let LineageModelGenerator;
   let transitionsService;
   let translateService;
   let xmlFormsService;
-  let xmlFormGet;
-  let xmlFormGetWithAttachment;
   let zScoreService;
   let zScoreUtil;
   let chtDatasourceService;
@@ -98,7 +95,6 @@ describe('Form service', () => {
   let consoleErrorMock;
   let consoleWarnMock;
   let feedbackService;
-  let extractLineageService;
   let targetAggregatesService;
   let contactViewModelGeneratorService;
   let deduplicateService;
@@ -109,7 +105,6 @@ describe('Form service', () => {
   let userContactSummaryService;
 
   beforeEach(() => {
-    enketoInit = sinon.stub();
     dbGetAttachment = sinon.stub();
     getReport = sinon.stub();
     getContact = sinon.stub();
@@ -118,8 +113,6 @@ describe('Form service', () => {
     Form2Sms = sinon.stub();
     UserContact = sinon.stub();
     UserSettings = sinon.stub();
-    createObjectURL = sinon.stub();
-    FileReader = { utf8: sinon.stub() };
     TranslateFrom = sinon.stub();
     form = {
       validate: sinon.stub(),
@@ -129,7 +122,6 @@ describe('Form service', () => {
         $: { on: sinon.stub() },
         html: document.createElement('div'),
       },
-      init: enketoInit,
       langs: {
         setAll: () => { },
         $formLanguages: $('<select><option value="en">en</option></select>'),
@@ -137,24 +129,18 @@ describe('Form service', () => {
       calc: { update: () => { } },
       output: { update: () => { } },
     };
-    AddAttachment = sinon.stub();
-    removeAttachment = sinon.stub();
-    EnketoForm = sinon.stub();
-    EnketoPrepopulationData = sinon.stub();
+    enketoService = {
+      renderForm: sinon.stub().resolves(form),
+      saveContact: sinon.stub(),
+      saveReport: sinon.stub(),
+      unload: sinon.stub(),
+      getCurrentForm: sinon.stub(),
+    };
     Search = sinon.stub();
     LineageModelGenerator = { contact: sinon.stub() };
-    xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
-    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
     xmlFormsService = {
-      get: xmlFormGet,
-      getDocAndFormAttachment: xmlFormGetWithAttachment,
       canAccessForm: sinon.stub(),
-      HTML_ATTACHMENT_NAME: 'form.html',
-      MODEL_ATTACHMENT_NAME: 'model.xml',
     };
-    window.EnketoForm = EnketoForm;
-    window.URL.createObjectURL = createObjectURL;
-    EnketoForm.returns(form);
     transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
     translateService = {
       instant: sinon.stub().returnsArg(0),
@@ -178,7 +164,6 @@ describe('Form service', () => {
     consoleErrorMock = sinon.stub(console, 'error');
     consoleWarnMock = sinon.stub(console, 'warn');
     feedbackService = { submit: sinon.stub() };
-    extractLineageService = { extract: ExtractLineageService.prototype.extract };
     targetAggregatesService = { getTargetDocs: sinon.stub() };
     contactViewModelGeneratorService = { loadReports: sinon.stub() };
     userContactSummaryService = { get: sinon.stub() };
@@ -204,12 +189,9 @@ describe('Form service', () => {
         { provide: SearchService, useValue: { search: Search } },
         { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
         { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
-        { provide: FileReaderService, useValue: FileReader },
         { provide: UserContactService, useValue: { get: UserContact } },
         { provide: UserSettingsService, useValue: { getWithLanguage: UserSettings } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
-        { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
-        { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ZScoreService, useValue: zScoreService },
         { provide: CHTDatasourceService, useValue: chtDatasourceService },
@@ -217,7 +199,7 @@ describe('Form service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
-        { provide: ExtractLineageService, useValue: extractLineageService },
+        { provide: EnketoService, useValue: enketoService },
         { provide: TargetAggregatesService, useValue: targetAggregatesService },
         { provide: ContactViewModelGeneratorService, useValue: contactViewModelGeneratorService },
         { provide: DeduplicateService, useValue: deduplicateService },
@@ -227,7 +209,7 @@ describe('Form service', () => {
       ],
     });
 
-    UserSettings.resolves({ name: 'Jim', language: 'en' });
+    UserSettings.resolves(USER_SETTINGS);
     TranslateFrom.returns('translated');
     window.CHTCore = {};
   });
@@ -273,7 +255,7 @@ describe('Form service', () => {
     it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
       return service
-        .render(new WebappEnketoFormContext('#', 'report', { }))
+        .render(new WebappEnketoFormContext('#', mockFormConfig('myform')))
         .then(() => {
           expect.fail('Should throw error');
         })
@@ -285,28 +267,23 @@ describe('Form service', () => {
     });
 
     it('return error when form initialisation fails', fakeAsync(async () => {
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
       UserContact.resolves({ contact_id: '123-user-contact' });
       xmlFormsService.canAccessForm.resolves(true);
 
       ContactSummary.resolves({ context: { pregnant: false } });
       userContactSummaryService.get.resolves({ context: { chw: true } });
-      Search.resolves([{ _id: 'some_report' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'some_parent' }] });
       const instanceData = { contact: { _id: '123-patient-contact' } };
 
-      EnketoPrepopulationData.returns('<xml></xml>');
-      const expectedErrorTitle = `Failed during the form "myform" rendering : `;
       const expectedErrorDetail = ['nope', 'still nope'];
-      const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
-      enketoInit.returns(expectedErrorDetail);
+      const expectedErrorMessage = `Failed during the form "myform" rendering : ${JSON.stringify(expectedErrorDetail)}`;
+      enketoService.renderForm.rejects(new Error(JSON.stringify(expectedErrorDetail)));
 
-      const formContext = new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext(
+        '#div',
+        mockFormConfig('myform', { model: VISIT_MODEL_WITH_CONTACT_SUMMARY }),
+        instanceData
+      );
 
       try {
         await service.render(formContext);
@@ -334,74 +311,47 @@ describe('Form service', () => {
             shouldEvaluateExpression: true
           },
         ]);
-        expect(enketoInit.callCount).to.equal(1);
+        expect(enketoService.renderForm.calledOnce).to.be.true;
         expect(error.message).to.equal(expectedErrorMessage);
         expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
-    it('return form when everything works', () => {
-      expect(form.editStatus).to.be.undefined;
+    it('return form when everything works', async () => {
       UserContact.resolves({ contact_id: '123' });
       xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.returns('<xml></xml>');
-      return service.render(new WebappEnketoFormContext('#div', 'task', mockEnketoDoc('myform'))).then(() => {
-        expect(UserContact.callCount).to.equal(1);
-        expect(EnketoPrepopulationData.callCount).to.equal(1);
-        expect(FileReader.utf8.callCount).to.equal(2);
-        expect(FileReader.utf8.args[0][0]).to.equal('<div>my form</div>');
-        expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
-        expect(enketoInit.callCount).to.equal(1);
-        expect(form.editStatus).to.equal(false);
-        expect(dbGetAttachment.callCount).to.equal(2);
-        expect(dbGetAttachment.args[0][0]).to.equal('form:myform');
-        expect(dbGetAttachment.args[0][1]).to.equal('form.html');
-        expect(dbGetAttachment.args[1][0]).to.equal('form:myform');
-        expect(dbGetAttachment.args[1][1]).to.equal('model.xml');
-      });
+      const formContext = new WebappEnketoFormContext(
+        '#div',
+        mockFormConfig('myform', { type: 'task' })
+      );
+
+      const result = await service.render(formContext);
+
+      expect(result).to.equal(form);
+      expect(UserContact).to.have.been.calledOnceWithExactly();
+      expect(enketoService.renderForm).to.have.been.calledOnceWithExactly(formContext, USER_SETTINGS);
     });
 
-    it('passes xml instance data through to Enketo', () => {
+    it('passes xml instance data through to Enketo', async () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
       xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves('my model');
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.returns(data);
-      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), data);
-      return service.render(formContext).then(() => {
-        expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
-        expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
-      });
+      const formConfig = mockFormConfig('myform', { model: 'my model' });
+      const formContext = new WebappEnketoFormContext('div', formConfig, data);
+
+      const result = await service.render(formContext);
+
+      expect(result).to.equal(form);
+      expect(enketoService.renderForm).to.have.been.calledOnceWithExactly(formContext, USER_SETTINGS);
     });
 
-    it('passes contact summary data to enketo', () => {
-      const data = '<data><patient_id>123</patient_id></data>';
+    it('passes contact summary data to enketo', async () => {
       UserContact.resolves({
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       });
       xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff',
@@ -417,54 +367,49 @@ describe('Form service', () => {
       contactViewModelGeneratorService.loadReports.resolves([{ _id: 'somereport' }]);
       targetAggregatesService.getTargetDocs.resolves([{ _id: 't1' }, { _id: 't2' }]);
       LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'someparent' }] });
-      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
+      const formContext = new WebappEnketoFormContext(
+        'div',
+        mockFormConfig('myform', { model: VISIT_MODEL_WITH_CONTACT_SUMMARY }),
+        instanceData
+      );
       service.setUserContext(['facility'], 'contact');
-      return service.render(formContext).then(() => {
-        expect(EnketoForm.callCount).to.equal(1);
-        const summary = EnketoForm.args[0][1].external;
-        expect(summary.length).to.equal(2);
-        expect(summary[0].id).to.equal('contact-summary');
-        expect(new XMLSerializer().serializeToString(summary[0].xml))
-          .to.equal('<context><pregnant>true</pregnant></context>');
-        expect(summary[1].id).to.equal('user-contact-summary');
-        expect(new XMLSerializer().serializeToString(summary[1].xml))
-          .to.equal('<context><chw>true</chw></context>');
-        expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
-        expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal(
-          [{ doc: instanceData.contact }, []]
-        );
-        expect(LineageModelGenerator.contact.callCount).to.equal(1);
-        expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
-        expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
-        expect(targetAggregatesService.getTargetDocs.args[0]).to.deep.equal([
-          { _id: 'fffff', patient_id: '44509' }, ['facility'], 'contact'
-        ]);
-        expect(ContactSummary.callCount).to.equal(1);
-        expect(ContactSummary.args[0][0]._id).to.equal('fffff');
-        expect(ContactSummary.args[0][1].length).to.equal(1);
-        expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
-        expect(ContactSummary.args[0][2].length).to.equal(1);
-        expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
-        expect(ContactSummary.args[0][3]).to.deep.equal([{ _id: 't1' }, { _id: 't2' }]);
-      });
+
+      await service.render(formContext);
+
+      expect(enketoService.renderForm.args).to.deep.equal([[
+        {
+          ...formContext,
+          contactSummary: { id: 'contact-summary', context: { pregnant: true } },
+          userContactSummary: { id: 'user-contact-summary', context: { chw: true } }
+        },
+        USER_SETTINGS
+      ]]);
+      expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(1);
+      expect(contactViewModelGeneratorService.loadReports.args[0]).to.deep.equal(
+        [{ doc: instanceData.contact }, []]
+      );
+      expect(LineageModelGenerator.contact.callCount).to.equal(1);
+      expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+      expect(targetAggregatesService.getTargetDocs.callCount).to.equal(1);
+      expect(targetAggregatesService.getTargetDocs.args[0]).to.deep.equal([
+        { _id: 'fffff', patient_id: '44509' }, ['facility'], 'contact'
+      ]);
+      expect(ContactSummary.callCount).to.equal(1);
+      expect(ContactSummary.args[0][0]._id).to.equal('fffff');
+      expect(ContactSummary.args[0][1].length).to.equal(1);
+      expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
+      expect(ContactSummary.args[0][2].length).to.equal(1);
+      expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
+      expect(ContactSummary.args[0][3]).to.deep.equal([{ _id: 't1' }, { _id: 't2' }]);
     });
 
-    it('handles arrays and escaping characters', () => {
-      const data = '<data><patient_id>123</patient_id></data>';
+    it('does not get contact summary when the form has no instance for it', async () => {
       UserContact.resolves({
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       });
       xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.returns(data);
       const instanceData = {
         contact: {
           _id: 'fffff'
@@ -474,70 +419,21 @@ describe('Form service', () => {
           name: 'sharon'
         }
       };
-      ContactSummary.resolves({
-        context: {
-          pregnant: true,
-          previousChildren: [{ dob: 2016 }, { dob: 2013 }, { dob: 2010 }],
-          notes: `always <uses> reserved "characters" & 'words'`
-        }
-      });
-      userContactSummaryService.get.resolves({ context: { chw: true, forms: false } });
-      LineageModelGenerator.contact.resolves({ lineage: [] });
-      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
-      return service.render(formContext).then(() => {
-        expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external.length).to.equal(2);
-        const summary = EnketoForm.args[0][1].external[0];
-        expect(summary.id).to.equal('contact-summary');
-        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
-        expect(xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
-          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved "' +
-          'characters" &amp; \'words\'</notes></context>');
+      const formContext = new WebappEnketoFormContext(
+        'div',
+        mockFormConfig('myform', { model: VISIT_MODEL }),
+        instanceData
+      );
 
-        const userSummary = EnketoForm.args[0][1].external[1];
-        expect(userSummary.id).to.equal('user-contact-summary');
-        expect(new XMLSerializer().serializeToString(userSummary.xml))
-          .to.equal('<context><chw>true</chw><forms>false</forms></context>');
+      await service.render(formContext);
 
-        expect(ContactSummary.callCount).to.equal(1);
-        expect(ContactSummary.args[0][0]._id).to.equal('fffff');
-      });
+      expect(enketoService.renderForm).to.have.been.calledOnceWithExactly(formContext, USER_SETTINGS);
+      expect(ContactSummary.callCount).to.equal(0);
+      expect(userContactSummaryService.get.callCount).to.equal(0);
+      expect(LineageModelGenerator.contact.callCount).to.equal(0);
     });
 
-    it('does not get contact summary when the form has no instance for it', () => {
-      const data = '<data><patient_id>123</patient_id></data>';
-      UserContact.resolves({
-        _id: '456',
-        contact_id: '123',
-        facility_id: '789'
-      });
-      xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.resolves(data);
-      const instanceData = {
-        contact: {
-          _id: 'fffff'
-        },
-        inputs: {
-          patient_id: 123,
-          name: 'sharon'
-        }
-      };
-      const formContext = new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), instanceData);
-      return service.render(formContext).then(() => {
-        expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].external).to.deep.equal([]);
-        expect(ContactSummary.callCount).to.equal(0);
-        expect(userContactSummaryService.get.callCount).to.equal(0);
-        expect(LineageModelGenerator.contact.callCount).to.equal(0);
-      });
-    });
-
-    it('ContactSummary receives empty lineage if contact doc is missing', () => {
+    it('ContactSummary receives empty lineage if contact doc is missing', async () => {
       LineageModelGenerator.contact.rejects({ code: 404 });
 
       UserContact.resolves({
@@ -546,14 +442,6 @@ describe('Form service', () => {
         facility_id: '789'
       });
       xmlFormsService.canAccessForm.resolves(true);
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      EnketoPrepopulationData.returns('<data><patient_id>123</patient_id></data>');
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
       const instanceData = {
         contact: {
           _id: 'fffff',
@@ -561,58 +449,39 @@ describe('Form service', () => {
         }
       };
       ContactSummary.resolves({ context: { pregnant: true } });
-      Search.resolves([{ _id: 'somereport' }]);
-      const formContext = new WebappEnketoFormContext('div', 'report',  mockEnketoDoc('myform'), instanceData);
-      return service.render(formContext).then(() => {
-        expect(LineageModelGenerator.contact.callCount).to.equal(1);
-        expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
-        expect(ContactSummary.callCount).to.equal(1);
-        expect(ContactSummary.args[0][2].length).to.equal(0);
-        expect(consoleWarnMock.callCount).to.equal(1);
-        expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
-      });
+      const formContext = new WebappEnketoFormContext(
+        'div',
+        mockFormConfig('myform', { model: VISIT_MODEL_WITH_CONTACT_SUMMARY }),
+        instanceData
+      );
+
+      await service.render(formContext);
+
+      expect(LineageModelGenerator.contact.callCount).to.equal(1);
+      expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+      expect(ContactSummary.callCount).to.equal(1);
+      expect(ContactSummary.args[0][2].length).to.equal(0);
+      expect(consoleWarnMock.callCount).to.equal(1);
+      expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
     });
 
     it('should execute the unload process before rendering the second form', async () => {
-      enketoInit.returns([]);
-      FileReader.utf8.resolves('<some-blob name="xml"/>');
-      EnketoPrepopulationData.returns('<xml></xml>');
       UserContact.resolves({ contact_id: '123' });
       xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>first form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
+      enketoService.getCurrentForm.returns(undefined);
 
-      await service.render(new WebappEnketoFormContext('#div', 'report',  mockEnketoDoc('firstForm')));
-      expect(form.resetView.notCalled).to.be.true;
+      await service.render(new WebappEnketoFormContext('#div', mockFormConfig('firstForm')));
+      expect(enketoService.unload.calledOnceWithExactly(undefined)).to.be.true;
+      expect(enketoService.renderForm.calledOnce).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
-      expect(EnketoPrepopulationData.calledOnce).to.be.true;
-      expect(FileReader.utf8.calledTwice).to.be.true;
-      expect(FileReader.utf8.args[0][0]).to.equal('<div>first form</div>');
-      expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
-      expect(enketoInit.calledOnce).to.be.true;
-      expect(form.editStatus).to.be.false;
-      expect(dbGetAttachment.calledTwice).to.be.true;
-      expect(dbGetAttachment.args[0]).to.have.members(['form:firstForm', 'form.html']);
-      expect(dbGetAttachment.args[1]).to.have.members(['form:firstForm', 'model.xml']);
 
       sinon.resetHistory();
-      dbGetAttachment
-        .onFirstCall().resolves('<div>second form</div>')
-        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      enketoService.getCurrentForm.returns(form);
 
-      await service.render(new WebappEnketoFormContext('#div', 'report', mockEnketoDoc('secondForm')));
-      expect(form.resetView.calledOnce).to.be.true;
+      await service.render(new WebappEnketoFormContext('#div', mockFormConfig('secondForm')));
+      expect(enketoService.unload).to.have.been.calledOnceWithExactly(form);
+      expect(enketoService.renderForm.calledOnce).to.be.true;
       expect(UserContact.calledOnce).to.be.true;
-      expect(EnketoPrepopulationData.calledOnce).to.be.true;
-      expect(FileReader.utf8.calledTwice).to.be.true;
-      expect(FileReader.utf8.args[0][0]).to.equal('<div>second form</div>');
-      expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL_WITH_CONTACT_SUMMARY);
-      expect(enketoInit.calledOnce).to.be.true;
-      expect(form.editStatus).to.be.false;
-      expect(dbGetAttachment.calledTwice).to.be.true;
-      expect(dbGetAttachment.args[0]).to.have.members(['form:secondForm', 'form.html']);
-      expect(dbGetAttachment.args[1]).to.have.members(['form:secondForm', 'model.xml']);
     });
 
     it('should throw exception if fails to get user settings', fakeAsync(async () => {
@@ -620,40 +489,34 @@ describe('Form service', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
       xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves('my model');
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.returns(data);
-      const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {
-        await service.render(new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform'), data));
+        await service.render(new WebappEnketoFormContext(
+          'div',
+          mockFormConfig('myform', { model: 'my model' }),
+          data
+        ));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
         expect(error.message).to.equal('Failed during the form "myform" rendering : invalid user');
         expect(UserContact.calledOnce).to.be.true;
-        expect(renderForm.notCalled).to.be.true;
-        expect(enketoInit.notCalled).to.be.true;
+        expect(enketoService.renderForm.notCalled).to.be.true;
         expect(consoleErrorMock.callCount).to.equal(0);
       }
     }));
 
     it('should throw exception when user does not have access to form', fakeAsync(async () => {
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
       UserContact.resolves({ contact_id: '123-user-contact' });
       xmlFormsService.canAccessForm.resolves(false);
       ContactSummary.resolves({ context: { pregnant: false } });
       userContactSummaryService.get.resolves({ context: { chw: true } });
 
       try {
-        await service.render(new WebappEnketoFormContext('div', 'report', mockEnketoDoc('myform')));
+        await service.render(new WebappEnketoFormContext(
+          'div',
+          mockFormConfig('myform', { model: VISIT_MODEL })
+        ));
         flush();
         expect.fail('Should throw error');
       } catch (error) {
@@ -674,7 +537,7 @@ describe('Form service', () => {
           undefined,
           { doc: undefined, contactSummary: undefined, shouldEvaluateExpression: true },
         ]);
-        expect(enketoInit.notCalled).to.be.true;
+        expect(enketoService.renderForm.notCalled).to.be.true;
         expect(consoleErrorMock.notCalled).to.be.true;
         expect(feedbackService.submit.notCalled).to.be.true;
       }
@@ -687,119 +550,95 @@ describe('Form service', () => {
       service = TestBed.inject(FormService);
     });
 
-    it('creates report', () => {
-      form.validate.resolves(true);
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
+    it('creates report', async () => {
       trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        actual = actual[0];
+      UserContact.resolves(USER_CONTACT);
+      const report = {
+        _id: 'report-uuid',
+        form: 'V',
+        type: 'data_record',
+        content_type: 'xml',
+        contact: { _id: '123' },
+        from: '555',
+        fields: { name: 'Sally', lmp: '10' },
+      };
+      enketoService.saveReport.resolves([{ ...report }]);
+      const reportForm = reportEnketoForm(form);
 
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-        expect(actual._id).to.match(/(\w+-)\w+/);
-        expect(actual._id.startsWith('training:user-jim:')).to.be.false;
-        expect(actual._rev).to.equal('1-abc');
-        expect(actual.fields.name).to.equal('Sally');
-        expect(actual.fields.lmp).to.equal('10');
-        expect(actual.form).to.equal('V');
-        expect(actual.type).to.equal('data_record');
-        expect(actual.content_type).to.equal('xml');
-        expect(actual.contact._id).to.equal('123');
-        expect(actual.from).to.equal('555');
-        expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-        expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-        expect(AddAttachment.callCount).to.equal(0);
-        expect(removeAttachment.callCount).to.equal(1);
-        expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
-        expect(setLastChangedDoc.callCount).to.equal(1);
-        expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
-      });
+      const [actual] = await service.save(reportForm, null);
+
+      expect(actual).excluding('_rev').to.deep.equal(report);
+      expect(enketoService.saveReport).to.have.been.calledOnceWithExactly(reportForm, { contact: USER_CONTACT });
+      expect(dbBulkDocs).to.have.been.calledOnceWithExactly([actual]);
+      expect(UserContact).to.have.been.calledOnceWithExactly();
+      expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(actual);
     });
 
-    it('creates training', () => {
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
+    it('creates training', async () => {
       trainingCardsService.isTrainingCardForm.returns(true);
       trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
-      form.validate.resolves(true);
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      UserContact.resolves({ _id: '123', phone: '555' });
+      UserContact.resolves(USER_CONTACT);
+      const training = {
+        _id: 'report-uuid',
+        form: 'training:a_new_training',
+        type: 'data_record',
+        content_type: 'xml',
+        contact: { _id: '123' },
+        from: '555',
+        fields: { name: 'Sally', lmp: '10' },
+      };
+      enketoService.saveReport.resolves([{ ...training }]);
+      const trainingForm = reportEnketoForm(form, { internalId: 'training:a_new_training' });
 
-      return service
-        .save('training:a_new_training', form)
-        .then(actual => {
-          actual = actual[0];
+      const [actual] = await service.save(trainingForm, null);
 
-          expect(form.validate.calledOnce).to.be.true;
-          expect(form.getDataStr.calledOnce).to.be.true;
-          expect(dbBulkDocs.calledOnce).to.be.true;
-          expect(UserContact.calledOnce).to.be.true;
-          expect(actual._id.startsWith('training:user-jim:')).to.be.true;
-          expect(actual._rev).to.equal('1-abc');
-          expect(actual.fields.name).to.equal('Sally');
-          expect(actual.fields.lmp).to.equal('10');
-          expect(actual.form).to.equal('training:a_new_training');
-          expect(actual.type).to.equal('data_record');
-          expect(actual.content_type).to.equal('xml');
-          expect(actual.contact._id).to.equal('123');
-          expect(actual.from).to.equal('555');
-          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('training:a_new_training');
-          expect(AddAttachment.callCount).to.equal(0);
-          expect(removeAttachment.callCount).to.equal(1);
-          expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
-        });
+      expect(actual).excluding('_rev').to.deep.equal({ ...training, _id: 'training:user-jim:' });
+      expect(enketoService.saveReport).to.have.been.calledOnceWithExactly(trainingForm, { contact: USER_CONTACT });
+      expect(dbBulkDocs).to.have.been.calledOnceWithExactly([actual]);
+      expect(UserContact).to.have.been.calledOnceWithExactly();
+      expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(actual);
     });
 
-    it('creates training when user has no contact', () => {
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
+    it('creates training when user has no contact', async () => {
       trainingCardsService.isTrainingCardForm.returns(true);
       trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
-      form.validate.resolves(true);
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves(null);
+      const training = {
+        _id: 'report-uuid',
+        form: 'training:a_new_training',
+        type: 'data_record',
+        content_type: 'xml',
+        fields: { name: 'Sally', lmp: '10' },
+      };
+      enketoService.saveReport.resolves([{ ...training }]);
+      const trainingForm = reportEnketoForm(form, { internalId: 'training:a_new_training' });
 
-      return service
-        .save('training:a_new_training', form)
-        .then(actual => {
-          actual = actual[0];
+      const [actual] = await service.save(trainingForm, null);
 
-          expect(form.validate.calledOnce).to.be.true;
-          expect(form.getDataStr.calledOnce).to.be.true;
-          expect(dbBulkDocs.calledOnce).to.be.true;
-          expect(UserContact.calledOnce).to.be.true;
-          expect(actual._id.startsWith('training:user-jim:')).to.be.true;
-          expect(actual._rev).to.equal('1-abc');
-          expect(actual.fields.name).to.equal('Sally');
-          expect(actual.fields.lmp).to.equal('10');
-          expect(actual.form).to.equal('training:a_new_training');
-          expect(actual.type).to.equal('data_record');
-          expect(actual.content_type).to.equal('xml');
-          expect(actual.contact).to.be.null;
-          expect(actual.from).to.be.undefined;
-          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('training:a_new_training');
-          expect(AddAttachment.callCount).to.equal(0);
-          expect(removeAttachment.callCount).to.equal(1);
-          expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
-        });
+      expect(actual).excluding('_rev').to.deep.equal({ ...training, _id: 'training:user-jim:' });
+      expect(enketoService.saveReport).to.have.been.calledOnceWithExactly(trainingForm, { contact: null });
+      expect(dbBulkDocs).to.have.been.calledOnceWithExactly([actual]);
+      expect(UserContact).to.have.been.calledOnceWithExactly();
+      expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(actual);
     });
 
     describe('Geolocation recording', () => {
-      it('saves geolocation data into a new report', () => {
-        form.validate.resolves(true);
-        const content = loadXML('sally-lmp');
-        form.getDataStr.returns(content);
+      it('saves geolocation data into a new report', async () => {
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-        xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
-
-        UserContact.resolves({ _id: '123', phone: '555' });
+        UserContact.resolves(USER_CONTACT);
+        const report = {
+          _id: 'report-uuid',
+          form: 'V',
+          type: 'data_record',
+          content_type: 'xml',
+          contact: { _id: '123' },
+          from: '555',
+          fields: { name: 'Sally', lmp: '10' },
+        };
+        enketoService.saveReport.resolves([{ ...report }]);
         const geoData = {
           latitude: 1,
           longitude: 2,
@@ -809,75 +648,58 @@ describe('Form service', () => {
           heading: 6,
           speed: 7
         };
-        return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
-          actual = actual[0];
+        const reportForm = reportEnketoForm(form);
 
-          expect(form.validate.callCount).to.equal(1);
-          expect(form.getDataStr.callCount).to.equal(1);
-          expect(dbBulkDocs.callCount).to.equal(1);
-          expect(UserContact.callCount).to.equal(1);
-          expect(actual._id).to.match(/(\w+-)\w+/);
-          expect(actual._rev).to.equal('1-abc');
-          expect(actual.fields.name).to.equal('Sally');
-          expect(actual.fields.lmp).to.equal('10');
-          expect(actual.form).to.equal('V');
-          expect(actual.type).to.equal('data_record');
-          expect(actual.content_type).to.equal('xml');
-          expect(actual.contact._id).to.equal('123');
-          expect(actual.from).to.equal('555');
-          expect(actual.geolocation).to.deep.equal(geoData);
-          expect(actual.geolocation_log.length).to.equal(1);
-          expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
-          expect(actual.geolocation_log[0].recording).to.deep.equal(geoData);
-          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-          expect(AddAttachment.callCount).to.equal(0);
-          expect(removeAttachment.callCount).to.equal(1);
+        const [actual] = await service.save(reportForm, () => Promise.resolve(geoData));
+
+        expect(actual).excludingEvery(['_rev', 'timestamp']).to.deep.equal({
+          ...report,
+          geolocation: geoData,
+          geolocation_log: [{ recording: geoData }]
         });
+        expect(enketoService.saveReport).to.have.been.calledOnceWithExactly(reportForm, { contact: USER_CONTACT });
+        expect(dbBulkDocs).to.have.been.calledOnceWithExactly([actual]);
+        expect(UserContact).to.have.been.calledOnceWithExactly();
+        expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(actual);
+        expect(actual._rev).to.equal('1-abc');
+        expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
       });
 
-      it('saves a geolocation error into a new report', () => {
-        form.validate.resolves(true);
-        const content = loadXML('sally-lmp');
-        form.getDataStr.returns(content);
+      it('saves a geolocation error into a new report', async () => {
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-        xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
-        UserContact.resolves({ _id: '123', phone: '555' });
+        UserContact.resolves(USER_CONTACT);
+        const report = {
+          _id: 'report-uuid',
+          form: 'V',
+          type: 'data_record',
+          content_type: 'xml',
+          contact: { _id: '123' },
+          from: '555',
+          fields: { name: 'Sally', lmp: '10' },
+        };
+        enketoService.saveReport.resolves([report]);
         const geoError = {
           code: 42,
           message: 'some bad geo'
         };
-        return service.save('V', form, () => Promise.reject(geoError)).then(actual => {
-          actual = actual[0];
+        const reportForm = reportEnketoForm(form);
 
-          expect(form.validate.callCount).to.equal(1);
-          expect(form.getDataStr.callCount).to.equal(1);
-          expect(dbBulkDocs.callCount).to.equal(1);
-          expect(UserContact.callCount).to.equal(1);
-          expect(actual._id).to.match(/(\w+-)\w+/);
-          expect(actual._rev).to.equal('1-abc');
-          expect(actual.fields.name).to.equal('Sally');
-          expect(actual.fields.lmp).to.equal('10');
-          expect(actual.form).to.equal('V');
-          expect(actual.type).to.equal('data_record');
-          expect(actual.content_type).to.equal('xml');
-          expect(actual.contact._id).to.equal('123');
-          expect(actual.from).to.equal('555');
-          expect(actual.geolocation).to.deep.equal(geoError);
-          expect(actual.geolocation_log.length).to.equal(1);
-          expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
-          expect(actual.geolocation_log[0].recording).to.deep.equal(geoError);
-          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-          expect(AddAttachment.callCount).to.equal(0);
-          expect(removeAttachment.callCount).to.equal(1);
+        const [actual] = await service.save(reportForm, () => Promise.reject(geoError));
+
+        expect(actual).excludingEvery(['_rev', 'timestamp']).to.deep.equal({
+          ...report,
+          geolocation: geoError,
+          geolocation_log: [{ recording: geoError }]
         });
+        expect(enketoService.saveReport).to.have.been.calledOnceWithExactly(reportForm, { contact: USER_CONTACT });
+        expect(dbBulkDocs).to.have.been.calledOnceWithExactly([actual]);
+        expect(UserContact).to.have.been.calledOnceWithExactly();
+        expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(actual);
+        expect(actual._rev).to.equal('1-abc');
+        expect(actual.geolocation_log[0].timestamp).to.be.greaterThan(0);
       });
 
-      it('overwrites existing geolocation info on edit with new info and appends to the log', () => {
-        form.validate.resolves(true);
-        const content = loadXML('sally-lmp');
-        form.getDataStr.returns(content);
+      it('overwrites existing geolocation info on edit with new info and appends to the log', async () => {
         const originalGeoData = {
           latitude: 1,
           longitude: 2,
@@ -891,7 +713,7 @@ describe('Form service', () => {
           timestamp: 12345,
           recording: originalGeoData
         };
-        getReport.resolves({
+        const originalReport = {
           _id: '6',
           _rev: '1-abc',
           form: 'V',
@@ -902,7 +724,20 @@ describe('Form service', () => {
           reported_date: 500,
           geolocation: originalGeoData,
           geolocation_log: [originalGeoLogEntry]
-        });
+        };
+        getReport.resolves(originalReport);
+        const report = {
+          _id: '6',
+          _rev: '1-abc',
+          form: 'V',
+          type: 'data_record',
+          content_type: 'xml',
+          reported_date: 500,
+          fields: { name: 'Sally', lmp: '10' },
+          geolocation: originalGeoData,
+          geolocation_log: [originalGeoLogEntry],
+        };
+        enketoService.saveReport.resolves([report]);
         dbBulkDocs.resolves([{ ok: true, id: '6', rev: '2-abc' }]);
         const geoData = {
           latitude: 10,
@@ -913,72 +748,27 @@ describe('Form service', () => {
           heading: 15,
           speed: 16
         };
-        return service.save('V', form, () => Promise.resolve(geoData), '6').then(actual => {
-          actual = actual[0];
+        const reportForm = reportEnketoForm(form);
 
-          expect(form.validate.callCount).to.equal(1);
-          expect(form.getDataStr.callCount).to.equal(1);
-          expect(getReport.calledOnceWithExactly(Qualifier.byUuid('6'))).to.be.true;
-          expect(dbBulkDocs.callCount).to.equal(1);
-          expect(actual._id).to.equal('6');
-          expect(actual._rev).to.equal('2-abc');
-          expect(actual.fields.name).to.equal('Sally');
-          expect(actual.fields.lmp).to.equal('10');
-          expect(actual.form).to.equal('V');
-          expect(actual.type).to.equal('data_record');
-          expect(actual.reported_date).to.equal(500);
-          expect(actual.content_type).to.equal('xml');
-          expect(actual.geolocation).to.deep.equal(geoData);
-          expect(actual.geolocation_log.length).to.equal(2);
-          expect(actual.geolocation_log[0]).to.deep.equal(originalGeoLogEntry);
-          expect(actual.geolocation_log[1].timestamp).to.be.greaterThan(0);
-          expect(actual.geolocation_log[1].recording).to.deep.equal(geoData);
-          expect(AddAttachment.callCount).to.equal(0);
-          expect(removeAttachment.callCount).to.equal(1);
-          expect(setLastChangedDoc.callCount).to.equal(1);
-          expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
+        const [actual] = await service.save(reportForm, () => Promise.resolve(geoData), '6');
+
+
+        expect(actual).excludingEvery(['_rev', 'timestamp']).to.deep.equal({
+          ...report,
+          geolocation: geoData,
+          geolocation_log: [originalGeoLogEntry, { recording: geoData }]
         });
-      });
-    });
-
-    it('creates report with erroring geolocation', () => {
-      form.validate.resolves(true);
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
-      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      UserContact.resolves({ _id: '123', phone: '555' });
-      const geoError = {
-        code: 42,
-        message: 'geolocation failed for some reason'
-      };
-      return service.save('V', form, () => Promise.reject(geoError)).then(actual => {
-        actual = actual[0];
-
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-        expect(actual._id).to.match(/(\w+-)\w+/);
-        expect(actual._rev).to.equal('1-abc');
-        expect(actual.fields.name).to.equal('Sally');
-        expect(actual.fields.lmp).to.equal('10');
-        expect(actual.form).to.equal('V');
-        expect(actual.type).to.equal('data_record');
-        expect(actual.content_type).to.equal('xml');
-        expect(actual.contact._id).to.equal('123');
-        expect(actual.from).to.equal('555');
-        expect(actual.geolocation).to.deep.equal(geoError);
-        expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-        expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-        expect(AddAttachment.callCount).to.equal(0);
-        expect(removeAttachment.callCount).to.equal(1);
+        expect(enketoService.saveReport).to.have.been.calledOnceWithExactly(reportForm, originalReport);
+        expect(dbBulkDocs).to.have.been.calledOnceWithExactly([actual]);
+        expect(UserContact).to.not.have.been.called;
+        expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(actual);
+        expect(actual._rev).to.equal('2-abc');
+        expect(actual.geolocation_log[0].timestamp).to.equal(12345);
+        expect(actual.geolocation_log[1].timestamp).to.be.greaterThan(0);
       });
     });
 
     it('updates report', () => {
-      form.validate.resolves(true);
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
       getReport.resolves({
         _id: '6',
         _rev: '1-abc',
@@ -989,12 +779,20 @@ describe('Form service', () => {
         type: DOC_TYPES.DATA_RECORD,
         reported_date: 500,
       });
+      enketoService.saveReport.resolves([{
+        _id: '6',
+        _rev: '1-abc',
+        form: 'V',
+        type: 'data_record',
+        content_type: 'xml',
+        reported_date: 500,
+        fields: { name: 'Sally', lmp: '10' },
+      }]);
       dbBulkDocs.resolves([{ ok: true, id: '6', rev: '2-abc' }]);
-      return service.save('V', form, null, '6').then(actual => {
+      return service.save(reportEnketoForm(form), null, '6').then(actual => {
         actual = actual[0];
 
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
+        expect(enketoService.saveReport.calledOnce).to.be.true;
         expect(getReport.calledOnceWithExactly(Qualifier.byUuid('6'))).to.be.true;
         expect(dbBulkDocs.callCount).to.equal(1);
         expect(actual._id).to.equal('6');
@@ -1005,92 +803,117 @@ describe('Form service', () => {
         expect(actual.type).to.equal('data_record');
         expect(actual.reported_date).to.equal(500);
         expect(actual.content_type).to.equal('xml');
-        expect(AddAttachment.callCount).to.equal(0);
-        expect(removeAttachment.callCount).to.equal(1);
-        expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
         expect(setLastChangedDoc.callCount).to.equal(1);
         expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
-    it('creates extra docs', () => {
-
+    it('creates extra docs', async () => {
       const startTime = Date.now() - 1;
-
-      form.validate.resolves(true);
-      const content = loadXML('extra-docs');
-      form.getDataStr.returns(content);
       dbBulkDocs.callsFake(docs => {
         return Promise.resolve(docs.map(doc => {
           return { ok: true, id: doc._id, rev: `1-${doc._id}-abc` };
         }));
       });
-      UserContact.resolves({ _id: '123', phone: '555' });
+      UserContact.resolves(USER_CONTACT);
+      enketoService.saveReport.resolves([
+        {
+          _id: 'report-uuid',
+          form: 'V',
+          type: 'data_record',
+          content_type: 'xml',
+          contact: { _id: '123' },
+          from: '555',
+          hidden_fields: ['secret_code_name', 'doc1', 'doc2'],
+          fields: {
+            name: 'Sally',
+            lmp: '10',
+            secret_code_name: 'S4L',
+            doc1: { some_property_1: 'some_value_1', type: 'thing_1' },
+            doc2: { some_property_2: 'some_value_2', type: 'thing_2' },
+          },
+        },
+        { _id: 'thing1-uuid', reported_date: Date.now(), type: 'thing_1', some_property_1: 'some_value_1' },
+        { _id: 'thing2-uuid', reported_date: Date.now(), type: 'thing_2', some_property_2: 'some_value_2' },
+      ]);
 
-      return service.save('V', form, null, null).then(actual => {
-        const endTime = Date.now() + 1;
+      const actual = await service.save(reportEnketoForm(form), null, null);
+      const endTime = Date.now() + 1;
 
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
+      expect(enketoService.saveReport.calledOnce).to.be.true;
+      expect(dbBulkDocs.callCount).to.equal(1);
+      expect(UserContact.callCount).to.equal(1);
 
-        expect(actual.length).to.equal(3);
+      expect(actual.length).to.equal(3);
 
-        const actualReport = actual[0];
-        expect(actualReport._id).to.match(/(\w+-)\w+/);
-        expect(actualReport._rev).to.equal(`1-${actualReport._id}-abc`);
-        expect(actualReport.fields.name).to.equal('Sally');
-        expect(actualReport.fields.lmp).to.equal('10');
-        expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        expect(actualReport.form).to.equal('V');
-        expect(actualReport.type).to.equal('data_record');
-        expect(actualReport.content_type).to.equal('xml');
-        expect(actualReport.contact._id).to.equal('123');
-        expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
+      const actualReport = actual[0];
+      expect(actualReport._id).to.match(/(\w+-)\w+/);
+      expect(actualReport._rev).to.equal(`1-${actualReport._id}-abc`);
+      expect(actualReport.fields.name).to.equal('Sally');
+      expect(actualReport.fields.lmp).to.equal('10');
+      expect(actualReport.fields.secret_code_name).to.equal('S4L');
+      expect(actualReport.form).to.equal('V');
+      expect(actualReport.type).to.equal('data_record');
+      expect(actualReport.content_type).to.equal('xml');
+      expect(actualReport.contact._id).to.equal('123');
+      expect(actualReport.from).to.equal('555');
+      expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
-        expect(actualReport.fields.doc1).to.deep.equal({
-          some_property_1: 'some_value_1',
-          type: 'thing_1',
-        });
-        expect(actualReport.fields.doc2).to.deep.equal({
-          some_property_2: 'some_value_2',
-          type: 'thing_2',
-        });
-
-        const actualThing1 = actual[1];
-        expect(actualThing1._id).to.match(/(\w+-)\w+/);
-        expect(actualThing1._rev).to.equal(`1-${actualThing1._id}-abc`);
-        expect(actualThing1.reported_date).to.be.within(startTime, endTime);
-        expect(actualThing1.some_property_1).to.equal('some_value_1');
-
-        const actualThing2 = actual[2];
-        expect(actualThing2._id).to.match(/(\w+-)\w+/);
-        expect(actualThing2._rev).to.equal(`1-${actualThing2._id}-abc`);
-        expect(actualThing2.reported_date).to.be.within(startTime, endTime);
-        expect(actualThing2.some_property_2).to.equal('some_value_2');
-
-        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
-
-        expect(setLastChangedDoc.callCount).to.equal(1);
-        expect(setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
+      expect(actualReport.fields.doc1).to.deep.equal({
+        some_property_1: 'some_value_1',
+        type: 'thing_1',
       });
+      expect(actualReport.fields.doc2).to.deep.equal({
+        some_property_2: 'some_value_2',
+        type: 'thing_2',
+      });
+
+      const actualThing1 = actual[1];
+      expect(actualThing1._id).to.match(/(\w+-)\w+/);
+      expect(actualThing1._rev).to.equal(`1-${actualThing1._id}-abc`);
+      expect(actualThing1.reported_date).to.be.within(startTime, endTime);
+      expect(actualThing1.some_property_1).to.equal('some_value_1');
+
+      const actualThing2 = actual[2];
+      expect(actualThing2._id).to.match(/(\w+-)\w+/);
+      expect(actualThing2._rev).to.equal(`1-${actualThing2._id}-abc`);
+      expect(actualThing2.reported_date).to.be.within(startTime, endTime);
+      expect(actualThing2.some_property_2).to.equal('some_value_2');
+
+      expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
+
+      expect(setLastChangedDoc.callCount).to.equal(1);
+      expect(setLastChangedDoc.args[0]).to.deep.equal([actualReport]);
     });
 
-    it('creates extra docs with geolocation', () => {
-
+    it('creates extra docs with geolocation', async () => {
       const startTime = Date.now() - 1;
-
-      form.validate.resolves(true);
-      const content = loadXML('extra-docs');
-      form.getDataStr.returns(content);
       dbBulkDocs.resolves([
         { ok: true, id: '6', rev: '1-abc' },
         { ok: true, id: '7', rev: '1-def' },
         { ok: true, id: '8', rev: '1-ghi' }
       ]);
-      UserContact.resolves({ _id: '123', phone: '555' });
+      UserContact.resolves(USER_CONTACT);
+      enketoService.saveReport.resolves([
+        {
+          _id: 'report-uuid',
+          form: 'V',
+          type: 'data_record',
+          content_type: 'xml',
+          contact: { _id: '123' },
+          from: '555',
+          hidden_fields: ['secret_code_name', 'doc1', 'doc2'],
+          fields: {
+            name: 'Sally',
+            lmp: '10',
+            secret_code_name: 'S4L',
+            doc1: { some_property_1: 'some_value_1', type: 'thing_1' },
+            doc2: { some_property_2: 'some_value_2', type: 'thing_2' },
+          },
+        },
+        { _id: 'thing1-uuid', reported_date: Date.now(), type: 'thing_1', some_property_1: 'some_value_1' },
+        { _id: 'thing2-uuid', reported_date: Date.now(), type: 'thing_2', some_property_2: 'some_value_2' },
+      ]);
       const geoData = {
         latitude: 1,
         longitude: 2,
@@ -1100,95 +923,85 @@ describe('Form service', () => {
         heading: 6,
         speed: 7
       };
-      return service.save('V', form, () => Promise.resolve(geoData)).then(actual => {
-        const endTime = Date.now() + 1;
 
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
+      const actual = await service.save(reportEnketoForm(form), () => Promise.resolve(geoData));
+      const endTime = Date.now() + 1;
 
-        expect(actual.length).to.equal(3);
+      expect(enketoService.saveReport.calledOnce).to.be.true;
+      expect(dbBulkDocs.callCount).to.equal(1);
+      expect(UserContact.callCount).to.equal(1);
 
-        const actualReport = actual[0];
-        expect(actualReport._id).to.match(/(\w+-)\w+/);
-        expect(actualReport.fields.name).to.equal('Sally');
-        expect(actualReport.fields.lmp).to.equal('10');
-        expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        expect(actualReport.form).to.equal('V');
-        expect(actualReport.type).to.equal('data_record');
-        expect(actualReport.content_type).to.equal('xml');
-        expect(actualReport.contact._id).to.equal('123');
-        expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
+      expect(actual.length).to.equal(3);
 
-        expect(actualReport.fields.doc1).to.deep.equal({
-          some_property_1: 'some_value_1',
-          type: 'thing_1',
-        });
-        expect(actualReport.fields.doc2).to.deep.equal({
-          some_property_2: 'some_value_2',
-          type: 'thing_2',
-        });
+      const actualReport = actual[0];
+      expect(actualReport._id).to.match(/(\w+-)\w+/);
+      expect(actualReport.fields.name).to.equal('Sally');
+      expect(actualReport.fields.lmp).to.equal('10');
+      expect(actualReport.fields.secret_code_name).to.equal('S4L');
+      expect(actualReport.form).to.equal('V');
+      expect(actualReport.type).to.equal('data_record');
+      expect(actualReport.content_type).to.equal('xml');
+      expect(actualReport.contact._id).to.equal('123');
+      expect(actualReport.from).to.equal('555');
+      expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
-        expect(actualReport.geolocation).to.deep.equal(geoData);
-
-        const actualThing1 = actual[1];
-        expect(actualThing1._id).to.match(/(\w+-)\w+/);
-        expect(actualThing1.reported_date).to.be.above(startTime);
-        expect(actualThing1.reported_date).to.be.below(endTime);
-        expect(actualThing1.some_property_1).to.equal('some_value_1');
-        expect(actualThing1.geolocation).to.deep.equal(geoData);
-
-        const actualThing2 = actual[2];
-        expect(actualThing2._id).to.match(/(\w+-)\w+/);
-        expect(actualThing2.reported_date).to.be.above(startTime);
-        expect(actualThing2.reported_date).to.be.below(endTime);
-        expect(actualThing2.some_property_2).to.equal('some_value_2');
-
-        expect(actualThing2.geolocation).to.deep.equal(geoData);
-
-        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
+      expect(actualReport.fields.doc1).to.deep.equal({
+        some_property_1: 'some_value_1',
+        type: 'thing_1',
       });
+      expect(actualReport.fields.doc2).to.deep.equal({
+        some_property_2: 'some_value_2',
+        type: 'thing_2',
+      });
+
+      expect(actualReport.geolocation).to.deep.equal(geoData);
+
+      const actualThing1 = actual[1];
+      expect(actualThing1._id).to.match(/(\w+-)\w+/);
+      expect(actualThing1.reported_date).to.be.above(startTime);
+      expect(actualThing1.reported_date).to.be.below(endTime);
+      expect(actualThing1.some_property_1).to.equal('some_value_1');
+      expect(actualThing1.geolocation).to.deep.equal(geoData);
+
+      const actualThing2 = actual[2];
+      expect(actualThing2._id).to.match(/(\w+-)\w+/);
+      expect(actualThing2.reported_date).to.be.above(startTime);
+      expect(actualThing2.reported_date).to.be.below(endTime);
+      expect(actualThing2.some_property_2).to.equal('some_value_2');
+
+      expect(actualThing2.geolocation).to.deep.equal(geoData);
+
+      expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
     });
 
     describe('Saving attachments', () => {
       it('should save attachments', async () => {
-        const file = { name: 'my_file', type: 'image', foo: 'bar' };
-        sinon
-          .stub(FileManager, 'getCurrentFiles')
-          .returns([file]);
-
-        form.validate.resolves(true);
-        const content = loadXML('file-field');
-
-        form.getDataStr.returns(content);
-        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
+        enketoService.saveReport.resolves([{
+          _id: 'report-uuid',
+          _attachments: { 'user-file-my_file': { content_type: 'image', data: 'abc' } },
+        }]);
         // @ts-ignore
         const saveDocsSpy = sinon.spy(FormService.prototype, 'saveDocs');
 
-        await service.save('my-form', form, () => Promise.resolve(true));
-        expect(AddAttachment.calledOnce).to.be.true;
+        await service.save(reportEnketoForm(form, { internalId: 'my-form' }), () => Promise.resolve(true));
+
+        expect(enketoService.saveReport.calledOnce).to.be.true;
         expect(saveDocsSpy.calledOnce).to.be.true;
 
-        expect(AddAttachment.args[0][1]).to.equal(`user-file-${file.name}`);
-        expect(AddAttachment.args[0][2]).to.deep.equal(file);
-        expect(AddAttachment.args[0][3]).to.equal(file.type);
+        const savedDoc = dbBulkDocs.args[0][0][0];
+        expect(savedDoc._attachments['user-file-my_file']).to.deep.include({ content_type: 'image' });
 
         expect(globalActions.setSnackbarContent.notCalled).to.be.true;
       });
 
       it('should throw exception if attachments are big', () => {
         translateService.get.returnsArg(0);
-        form.validate.resolves(true);
-        dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         // @ts-ignore
         const saveDocsStub = sinon.stub(FormService.prototype, 'saveDocs');
-        // @ts-ignore
-        const xmlToDocsStub = sinon.stub(EnketoService.prototype, 'xmlToDocs').resolves([
+        enketoService.saveReport.resolves([
           { _id: '1a' },
           { _id: '1b', _attachments: {} },
           {
@@ -1208,42 +1021,61 @@ describe('Form service', () => {
         ]);
 
         return service
-          .save('my-form', form, () => Promise.resolve(true))
+          .save(reportEnketoForm(form, { internalId: 'my-form' }), () => Promise.resolve(true))
           .then(() => expect.fail('Should have thrown exception.'))
           .catch(error => {
-            expect(xmlToDocsStub.calledOnce);
+            expect(enketoService.saveReport.calledOnce).to.be.true;
             expect(error.message).to.equal('enketo.error.max_attachment_size');
-            expect(saveDocsStub.notCalled);
-            expect(globalActions.setSnackbarContent.calledOnce);
+            expect(saveDocsStub.notCalled).to.be.true;
+            expect(globalActions.setSnackbarContent.calledOnce).to.be.true;
             expect(globalActions.setSnackbarContent.args[0]).to.have.members(['enketo.error.max_attachment_size']);
           });
       });
 
       it('should pass docs to transitions and save results', () => {
-        form.validate.resolves(true);
-        const content =
-          `<data xmlns:jr="http://openrosa.org/javarosa">
-            <name>Sally</name>
-            <lmp>10</lmp>
-            <repeat_doc db-doc="true" jr:template="">
-              <type>repeater</type>
-              <some_property>some_value_1</some_property>
-            </repeat_doc>
-            <repeat_doc db-doc="true">
-              <type>repeater</type>
-              <some_property>some_value_2</some_property>
-            </repeat_doc>
-            <repeat_doc db-doc="true">
-              <type>repeater</type>
-              <some_property>some_value_3</some_property>
-            </repeat_doc>
-          </data>`;
-        form.getDataStr.returns(content);
-
         dbBulkDocs.callsFake(docs => Promise.resolve(docs.map(doc => ({
           ok: true, id: doc._id, rev: '2'
         }))));
-        UserContact.resolves({ _id: '123', phone: '555' });
+        UserContact.resolves(USER_CONTACT);
+        enketoService.saveReport.resolves([
+          {
+            _id: 'report-uuid',
+            contact: {},
+            content_type: 'xml',
+            fields: {
+              name: 'Sally', lmp: '10',
+              repeat_doc: [
+                { type: 'repeater', some_property: 'some_value_1' },
+                { type: 'repeater', some_property: 'some_value_2' },
+                { type: 'repeater', some_property: 'some_value_3' },
+              ],
+            },
+            hidden_fields: ['repeat_doc'],
+            form: 'V',
+            form_version: { time: '1', sha256: 'imahash' },
+            from: '555',
+            _attachments: undefined,
+            type: DOC_TYPES.DATA_RECORD,
+          },
+          {
+            _id: 'thing1-uuid',
+            form_version: { time: '1', sha256: 'imahash' },
+            type: 'repeater',
+            some_property: 'some_value_1',
+          },
+          {
+            _id: 'thing2-uuid',
+            form_version: { time: '1', sha256: 'imahash' },
+            type: 'repeater',
+            some_property: 'some_value_2',
+          },
+          {
+            _id: 'thing3-uuid',
+            form_version: { time: '1', sha256: 'imahash' },
+            type: 'repeater',
+            some_property: 'some_value_3',
+          },
+        ]);
         const geoHandle = sinon.stub().resolves({ geo: 'data' });
         transitionsService.applyTransitions.callsFake((docs) => {
           const clones = _.cloneDeep(docs); // cloning for clearer assertions, as the main array gets mutated
@@ -1251,14 +1083,13 @@ describe('Form service', () => {
           clones.push({ _id: 'new doc', type: 'existent doc updated by the transition' });
           return Promise.resolve(clones);
         });
-        xmlFormGetWithAttachment.resolves({
-          doc: { _id: 'abc', xmlVersion: { time: '1', sha256: 'imahash' } },
+        const enketoForm = reportEnketoForm(form, {
+          xmlVersion: { time: '1', sha256: 'imahash' },
           xml: `<form><repeat nodeset="/data/repeat_doc"></repeat></form>`
         });
 
-        return service.save('V', form, geoHandle).then(actual => {
-          expect(form.validate.callCount).to.equal(1);
-          expect(form.getDataStr.callCount).to.equal(1);
+        return service.save(enketoForm, geoHandle).then(actual => {
+          expect(enketoService.saveReport.calledOnce).to.be.true;
           expect(dbBulkDocs.callCount).to.equal(1);
           expect(transitionsService.applyTransitions.callCount).to.equal(1);
           expect(UserContact.callCount).to.equal(1);
@@ -1291,23 +1122,27 @@ describe('Form service', () => {
                 form: 'V',
                 form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
+                _attachments: undefined,
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: DOC_TYPES.DATA_RECORD,
               },
               {
+                form_version: { time: '1', sha256: 'imahash' },
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_1',
               },
               {
+                form_version: { time: '1', sha256: 'imahash' },
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
                 some_property: 'some_value_2',
               },
               {
+                form_version: { time: '1', sha256: 'imahash' },
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
@@ -1343,12 +1178,14 @@ describe('Form service', () => {
                 form: 'V',
                 form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
+                _attachments: undefined,
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: DOC_TYPES.DATA_RECORD,
                 transitioned: true,
               },
               {
+                form_version: { time: '1', sha256: 'imahash' },
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
@@ -1356,6 +1193,7 @@ describe('Form service', () => {
                 transitioned: true,
               },
               {
+                form_version: { time: '1', sha256: 'imahash' },
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
@@ -1363,6 +1201,7 @@ describe('Form service', () => {
                 transitioned: true,
               },
               {
+                form_version: { time: '1', sha256: 'imahash' },
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
                 type: 'repeater',
@@ -1380,390 +1219,124 @@ describe('Form service', () => {
   });
 
   describe('saveContact', () => {
-    let clock;
-    let extractLineageService;
-    let enketoTranslationService;
+    const enketoForm = { form: {}, config: { doc: {} } };
+    const bulkDocsResult = [{ ok: true, id: 'main1', rev: '1-abc' }];
 
-    beforeEach(() => {
-      extractLineageService = { extract: sinon.stub() };
-      enketoTranslationService = {
-        contactRecordToJs: sinon.stub(),
-      };
+    beforeEach(() => service = TestBed.inject(FormService));
 
-      getDuplicates.resolvesArg(2);
-
-      TestBed.configureTestingModule({
-        providers: [
-          provideMockStore(),
-          {
-            provide: DbService,
-            useValue: {
-              get: () => ({ getAttachment: dbGetAttachment, bulkDocs: dbBulkDocs })
-            }
-          },
-          { provide: ContactSummaryService, useValue: { get: ContactSummary } },
-          { provide: Form2smsService, useValue: { transform: Form2Sms } },
-          { provide: SearchService, useValue: { search: Search } },
-          { provide: SettingsService, useValue: { get: sinon.stub().resolves({}) } },
-          { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
-          { provide: FileReaderService, useValue: FileReader },
-          { provide: UserContactService, useValue: { get: UserContact } },
-          { provide: UserSettingsService, useValue: { getWithLanguage: UserSettings } },
-          { provide: TranslateFromService, useValue: { get: TranslateFrom } },
-          { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
-          { provide: ExtractLineageService, useValue: extractLineageService },
-          { provide: EnketoTranslationService, useValue: enketoTranslationService },
-          { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
-          { provide: XmlFormsService, useValue: xmlFormsService },
-          { provide: ZScoreService, useValue: zScoreService },
-          { provide: CHTDatasourceService, useValue: chtDatasourceService },
-          { provide: TransitionsService, useValue: transitionsService },
-          { provide: TranslateService, useValue: translateService },
-          { provide: TrainingCardsService, useValue: trainingCardsService },
-          { provide: FeedbackService, useValue: feedbackService },
-          { provide: DeduplicateService, useValue: deduplicateService },
-          { provide: ContactsService, useValue: contactsService },
-          { provide: UserContactSummaryService, useValue: userContactSummaryService },
-        ],
-      });
-
-      service = TestBed.inject(FormService);
-    });
-
-    afterEach(() => {
-      clock?.restore();
-    });
-
-    it('fetches and binds db types and minifies string contacts', () => {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
+    it('resolves type fields as default data and saves the prepared docs for a new contact', async () => {
       const type = 'some-contact-type';
+      const preparedDocs = [{ _id: 'main1', type }];
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs });
+      dbBulkDocs.resolves(bulkDocsResult);
 
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', type: 'main', contact: 'abc' }
-      });
-      dbBulkDocs.resolves([]);
-      getContact.resolves({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } });
-      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+      const result = await service.saveContact({ docId: null, type }, enketoForm, false);
 
-      return service
-        .saveContact({ docId, type }, { form })
-        .then(() => {
-          assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
-
-          assert.equal(dbBulkDocs.callCount, 1);
-
-          const savedDocs = dbBulkDocs.args[0][0];
-
-          assert.equal(savedDocs.length, 1);
-          assert.deepEqual(savedDocs[0].contact, {
-            _id: 'abc',
-            parent: {
-              _id: 'def'
-            }
-          });
-          assert.equal(setLastChangedDoc.callCount, 1);
-          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
-        });
+      expect(result).to.deep.equal({ docId: 'main1', bulkDocsResult });
+      expect(enketoService.saveContact)
+        .to.have.been.calledOnceWithExactly(enketoForm, { type: 'contact', contact_type: type });
+      expect(getContact).to.not.have.been.called;
+      expect(transitionsService.applyTransitions).to.have.been.calledOnceWithExactly(preparedDocs);
+      expect(dbBulkDocs).to.have.been.calledOnceWithExactly(preparedDocs);
+      expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(preparedDocs[0]);
     });
 
-    it('fetches and binds db types and minifies object contacts', () => {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
+    it('fetches the existing contact to use as default data when editing', async () => {
       const type = 'some-contact-type';
+      const existingContact = { _id: 'main1', name: 'Richard' };
+      getContact.resolves(existingContact);
+      const preparedDocs = [{ _id: 'main1', type }];
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs });
+      dbBulkDocs.resolves(bulkDocsResult);
 
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
-      });
-      dbBulkDocs.resolves([]);
-      getContact.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
-      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
+      const result = await service.saveContact({ docId: 'main1', type }, enketoForm, false);
 
-      return service
-        .saveContact({ docId, type }, { form })
-        .then(() => {
-          assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
-
-          assert.equal(dbBulkDocs.callCount, 1);
-
-          const savedDocs = dbBulkDocs.args[0][0];
-
-          assert.equal(savedDocs.length, 1);
-          assert.deepEqual(savedDocs[0].contact, {
-            _id: 'abc',
-            parent: {
-              _id: 'def'
-            }
-          });
-          assert.equal(setLastChangedDoc.callCount, 1);
-          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
-        });
+      expect(result).to.deep.equal({ docId: 'main1', bulkDocsResult });
+      expect(enketoService.saveContact)
+        .to.have.been.calledOnceWithExactly(enketoForm, existingContact);
+      expect(getContact.calledOnceWithExactly(Qualifier.byUuid('main1'))).to.be.true;
+      expect(transitionsService.applyTransitions).to.have.been.calledOnceWithExactly(preparedDocs);
+      expect(dbBulkDocs).to.have.been.calledOnceWithExactly(preparedDocs);
+      expect(setLastChangedDoc).to.have.been.calledOnceWithExactly(preparedDocs[0]);
     });
 
-    it('should include parent ID in repeated children', () => {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
+    it('uses the primary doc (matching the contact type) as the last changed doc', async () => {
       const type = 'some-contact-type';
+      const primaryDoc = { _id: 'main1', type };
+      const preparedDocs = [{ _id: 'other', type: 'other' }, primaryDoc];
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs });
+      dbBulkDocs.resolves([{ ok: true, id: 'other' }, { ok: true, id: 'main1' }]);
 
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', type: 'main', contact: 'NEW' },
-        siblings: {
-          contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
-        },
-        repeats: {
-          child_data: [{ _id: 'kid1', type: 'child', parent: 'PARENT', }],
-        },
-      });
+      await service.saveContact({ docId: null, type }, enketoForm, false);
 
-      extractLineageService.extract.callsFake(contact => {
-        contact.extracted = true;
-        return contact;
-      });
-
-      dbBulkDocs.resolves([]);
-
-      return service
-        .saveContact({ docId, type }, { form })
-        .then(() => {
-          assert.isTrue(dbBulkDocs.calledOnce);
-
-          const savedDocs = dbBulkDocs.args[0][0];
-
-          assert.equal(savedDocs[0]._id, 'main1');
-
-          assert.equal(savedDocs[1]._id, 'kid1');
-          assert.equal(savedDocs[1].parent._id, 'main1');
-          assert.equal(savedDocs[1].parent.extracted, true);
-
-          assert.equal(savedDocs[2]._id, 'sis1');
-          assert.equal(savedDocs[2].parent._id, 'main1');
-          assert.equal(savedDocs[2].parent.extracted, true);
-
-          assert.equal(extractLineageService.extract.callCount, 3);
-
-          assert.equal(setLastChangedDoc.callCount, 1);
-          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
-        });
+      expect(setLastChangedDoc.calledOnce).to.be.true;
+      expect(setLastChangedDoc.args[0]).to.deep.equal([primaryDoc]);
     });
 
-    it('should copy old properties for existing contacts', () => {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = 'main1';
+    it('should throw an error with duplicates found', async () => {
       const type = 'some-contact-type';
-
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: {
-          _id: 'main1',
-          type: 'contact',
-          contact_type: 'some-contact-type',
-          contact: { _id: 'contact', name: 'Richard' },
-          value: undefined,
-        }
-      });
-      dbBulkDocs.resolves([]);
-      getContact
-        .withArgs(Qualifier.byUuid('main1'))
-        .resolves({
-          _id: 'main1',
-          name: 'Richard',
-          parent: { _id: 'def' },
-          value: 33,
-          some: 'additional',
-          data: 'is present',
-        })
-        .withArgs(Qualifier.byUuid('contact'))
-        .resolves({ _id: 'contact', name: 'Richard', parent: { _id: 'def' } });
-
-      extractLineageService.extract
-        .withArgs(sinon.match({ _id: 'contact' }))
-        .returns({ _id: 'contact', parent: { _id: 'def' } })
-        .withArgs(sinon.match({ _id: 'def' }))
-        .returns({ _id: 'def' });
-      clock = sinon.useFakeTimers({now: 5000});
-
-      return service
-        .saveContact({ docId, type }, { form })
-        .then(() => {
-          assert.equal(getContact.callCount, 2);
-          assert.deepEqual(getContact.args[0], [Qualifier.byUuid('main1')]);
-          assert.deepEqual(getContact.args[1], [Qualifier.byUuid('contact')]);
-
-          assert.equal(dbBulkDocs.callCount, 1);
-
-          const savedDocs = dbBulkDocs.args[0][0];
-
-          assert.equal(savedDocs.length, 1);
-          assert.deepEqual(savedDocs[0], {
-            _id: 'main1',
-            type: 'contact',
-            name: 'Richard',
-            contact_type: 'some-contact-type',
-            contact: { _id: 'contact', parent: { _id: 'def' } },
-            parent: { _id: 'def' },
-            value: 33,
-            some: 'additional',
-            data: 'is present',
-            reported_date: 5000,
-          });
-
-          assert.equal(setLastChangedDoc.callCount, 1);
-          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
-        });
-    });
-
-    it('should pass the contacts to transitions service before saving and save modified contacts', () => {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
-      const type = 'some-contact-type';
-
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
-      });
-      dbBulkDocs.resolves([]);
-      getContact.resolves({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } });
-      extractLineageService.extract.returns({ _id: 'abc', parent: { _id: 'def' } });
-      transitionsService.applyTransitions.callsFake((docs) => {
-        const clonedDocs = cloneDeep(docs); // don't mutate so we can assert
-        clonedDocs[0].transitioned = true;
-        clonedDocs.push({ this: 'is a new doc' });
-        return Promise.resolve(clonedDocs);
-      });
-      clock = sinon.useFakeTimers({now: 1000});
-
-      return service
-        .saveContact({ docId, type }, { form })
-        .then(() => {
-          assert.isTrue(getContact.calledOnceWithExactly(Qualifier.byUuid('abc')));
-
-          assert.equal(transitionsService.applyTransitions.callCount, 1);
-          assert.deepEqual(transitionsService.applyTransitions.args[0], [[
-            {
-              _id: 'main1',
-              contact: { _id: 'abc', parent: { _id: 'def' } },
-              contact_type: type,
-              type: 'contact',
-              parent: undefined,
-              reported_date: 1000
-            }
-          ]]);
-
-          assert.equal(dbBulkDocs.callCount, 1);
-          const savedDocs = dbBulkDocs.args[0][0];
-
-          assert.equal(savedDocs.length, 2);
-          assert.deepEqual(savedDocs, [
-            {
-              _id: 'main1',
-              contact: { _id: 'abc', parent: { _id: 'def' } },
-              contact_type: type,
-              type: 'contact',
-              parent: undefined,
-              reported_date: 1000,
-              transitioned: true,
-            },
-            { this: 'is a new doc' },
-          ]);
-          assert.equal(setLastChangedDoc.callCount, 1);
-          assert.deepEqual(setLastChangedDoc.args[0], [savedDocs[0]]);
-        });
-    });
-
-    it('should throw an error with duplicates found', async function () {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
-      const type = 'some-contact-type';
-
-      getContact.resolves({});
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
-      });
-      extractLineageService.extract.returns({ _id: 'parent1' });
-      transitionsService.applyTransitions.callsFake((docs) => {
-        docs[0].transitioned = true;
-        return Promise.resolve(docs);
-      });
-      dbBulkDocs.resolves([]);
-      clock = sinon.useFakeTimers(1000);
-
+      const primaryDoc = { _id: 'main1', type };
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs: [primaryDoc] });
       const duplicates = [
-        {
-          _id: 'sib1',
-          name: 'Sibling1',
-          parent: { _id: 'parent1' },
-          type,
-          reported_date: 1736845534000
-        },
-        {
-          _id: 'sib2',
-          name: 'Sibling2',
-          parent: { _id: 'parent1' },
-          type,
-          reported_date: 1736845534000
-        }
+        { _id: 'sib1', name: 'Sibling1', parent: { _id: 'parent1' }, type },
+        { _id: 'sib2', name: 'Sibling2', parent: { _id: 'parent1' }, type },
       ];
-      contactsService.getSiblings.resolves(duplicates);
+      const siblings = [{ _id: 'sib1' }, { _id: 'sib2' }];
+      contactsService.getSiblings.resolves(siblings);
+      getDuplicates.resolves(duplicates);
 
-      await expect(service.saveContact(
-        { docId, type, },
-        { form, xmlVersion: undefined, duplicateCheck: undefined },
-        false
-      )).to.be.rejectedWith(DuplicatesFoundError, 'Duplicates found')
+      await expect(service.saveContact({ docId: null, type }, enketoForm, false))
+        .to.be.rejectedWith(DuplicatesFoundError, 'Duplicates found')
         .and.eventually.have.property('duplicates', duplicates);
+      expect(getDuplicates).to.have.been.calledOnceWithExactly(primaryDoc, type, siblings, undefined);
       expect(performanceService.track.calledOnceWithExactly()).to.be.true;
       expect(performanceTracking.stop.calledOnceWithExactly({
         name: `enketo:contacts:${type}:duplicate_check`
       })).to.be.true;
+      expect(dbBulkDocs.notCalled).to.be.true;
     });
 
-    it('should pass duplicate check when duplicates are acknowledged', async function () {
-      const form = { getDataStr: () => '<data></data>' };
-      const docId = null;
+    it('should pass the configured duplicate_check to the deduplicate service', async () => {
       const type = 'some-contact-type';
+      const duplicateCheck = { expression: 'some expression' };
+      const mainDoc = { _id: 'main1', type };
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs: [mainDoc] });
+      contactsService.getSiblings.resolves([{ _id: 'sib1' }]);
+      getDuplicates.resolves([]);
+      dbBulkDocs.resolves(bulkDocsResult);
+      const enketoForm = { form: {}, config: { doc: { duplicate_check: duplicateCheck } } };
 
-      getContact.resolves({});
-      enketoTranslationService.contactRecordToJs.returns({
-        doc: { _id: 'main1', name: 'Main', type: 'main', parent: { _id: 'parent1' } }
-      });
-      extractLineageService.extract.returns({ _id: 'parent1' });
-      transitionsService.applyTransitions.callsFake((docs) => {
-        docs[0].transitioned = true;
-        return Promise.resolve(docs);
-      });
+      await service.saveContact({ docId: null, type }, enketoForm, false);
 
-      dbBulkDocs.resolves([]);
-      clock = sinon.useFakeTimers(1000);
+      expect(getDuplicates).to.have.been.calledOnceWithExactly(mainDoc, type, [{ _id: 'sib1' }], duplicateCheck);
+      expect(dbBulkDocs.calledOnce).to.be.true;
+    });
 
-      contactsService.getSiblings.resolves([{
-        _id: 'sib1',
-        name: 'Sibling1',
-        parent: { _id: 'parent1' },
-        type,
-        reported_date: 1736845534000
-      },
-      {
-        _id: 'sib2',
-        name: 'Sibling2',
-        parent: { _id: 'parent1' },
-        type,
-        reported_date: 1736845534000
-      },]);
+    it('should skip the duplicate check when duplicates are acknowledged', async () => {
+      const type = 'some-contact-type';
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs: [{ _id: 'main1', type }] });
+      dbBulkDocs.resolves(bulkDocsResult);
 
-      await service.saveContact({ docId, type, }, { form, xmlVersion: undefined, duplicateCheck: undefined }, true);
-      assert.equal(transitionsService.applyTransitions.callCount, 1);
-      assert.deepEqual(transitionsService.applyTransitions.args[0], [[
-        {
-          _id: 'main1',
-          name: 'Main',
-          type: 'contact',
-          contact_type: type,
-          parent: { _id: 'parent1' },
-          reported_date: 1000,
-          contact: undefined,
-          transitioned: true
-        }
-      ]]);
+      await service.saveContact({ docId: null, type }, enketoForm, true);
+
       expect(performanceService.track.notCalled).to.be.true;
-      expect(performanceTracking.stop.notCalled).to.be.true;
+      expect(contactsService.getSiblings.notCalled).to.be.true;
+      expect(getDuplicates.notCalled).to.be.true;
+      expect(dbBulkDocs.calledOnce).to.be.true;
+    });
+
+    it('should throw when bulkDocs reports a failure', async () => {
+      const type = 'some-contact-type';
+      enketoService.saveContact.resolves(<any>{ docId: 'main1', preparedDocs: [{ _id: 'main1', type }] });
+      dbBulkDocs.resolves([{ ok: false, id: 'main1', message: 'conflict' }]);
+
+      await expect(service.saveContact({ docId: null, type }, enketoForm, true))
+        .to.be.rejectedWith(Error, 'Some documents did not save correctly: main1 with conflict; ');
+
+      expect(performanceService.track.notCalled).to.be.true;
+      expect(contactsService.getSiblings.notCalled).to.be.true;
+      expect(getDuplicates.notCalled).to.be.true;
+      expect(dbBulkDocs.calledOnce).to.be.true;
     });
   });
 
@@ -1812,47 +1385,49 @@ describe('Form service', () => {
 });
 
 describe('WebappEnketoFormContext', () => {
+  const formConfigForType = (type, doc: any = {}) => new FormConfig(doc, type, '<form/>', '<div/>', '<model/>');
+
   it('should construct object correctly', () => {
-    const context = new WebappEnketoFormContext('#sel', 'task', { doc: 1 }, { data: 1 });
+    const config = formConfigForType('task', { doc: 1 });
+    const context = new WebappEnketoFormContext('#sel', config, { data: 1 });
     expect(context).to.deep.include({
       selector: '#sel',
-      type: 'task',
-      formDoc: { doc: 1 },
+      formConfig: config,
       instanceData: { data: 1 },
     });
   });
 
   it('shouldEvaluateExpression should return false for tasks', () => {
-    const ctx = new WebappEnketoFormContext('a', 'task', {}, {});
+    const ctx = new WebappEnketoFormContext('a', formConfigForType('task'));
     expect(ctx.shouldEvaluateExpression()).to.eq(false);
   });
 
   it('shouldEvaluateExpression should return false for editing reports', () => {
-    const ctx = new WebappEnketoFormContext('a', 'report', {}, {});
+    const ctx = new WebappEnketoFormContext('a', formConfigForType('report'));
     ctx.editing = true;
     expect(ctx.shouldEvaluateExpression()).to.eq(false);
   });
 
   it('shouldEvaluateExpression should return true for reports and contact forms', () => {
-    const ctxReport = new WebappEnketoFormContext('a', 'report', {}, {});
+    const ctxReport = new WebappEnketoFormContext('a', formConfigForType('report'));
     expect(ctxReport.shouldEvaluateExpression()).to.eq(true);
 
-    const ctxContact = new WebappEnketoFormContext('a', 'contact', {}, {});
+    const ctxContact = new WebappEnketoFormContext('a', formConfigForType('contact'));
     expect(ctxContact.shouldEvaluateExpression()).to.eq(true);
   });
 
   it('requiresContact should return true when type is not contact', () => {
-    const ctxReport = new WebappEnketoFormContext('a', 'report', {}, {});
+    const ctxReport = new WebappEnketoFormContext('a', formConfigForType('report'));
     expect(ctxReport.requiresContact()).to.eq(true);
   });
 
   it('requiresContact should return false when type is contact', () => {
-    const ctxReport = new WebappEnketoFormContext('a', 'contact', {}, {});
+    const ctxReport = new WebappEnketoFormContext('a', formConfigForType('contact'));
     expect(ctxReport.requiresContact()).to.eq(false);
   });
 
   it('requiresContact should return false for training forms', () => {
-    const ctxTraining = new WebappEnketoFormContext('a', 'training-card', {}, {});
+    const ctxTraining = new WebappEnketoFormContext('a', formConfigForType('training-card'));
     expect(ctxTraining.requiresContact()).to.eq(false);
   });
 });
