@@ -9,6 +9,14 @@ const excludeProps = [
   'dob_approx',
   'reported_date',
 ];
+// These properties are set by default in the enketo service to undefined
+const undefinedProps = {
+  _attachments: undefined,
+  contact: undefined,
+  contact_type: undefined,
+  form_version: undefined,
+  parent: undefined,
+};
 
 describe('cht-form web component - Edit Person Form', () => {
 
@@ -31,8 +39,6 @@ describe('cht-form web component - Edit Person Form', () => {
       role: 'chw',
       external_id: '12345',
       notes: 'Test notes',
-      contact: undefined,
-      parent: undefined,
       user_for_contact: {
         create: 'true'
       },
@@ -60,7 +66,7 @@ describe('cht-form web component - Edit Person Form', () => {
     const [doc, ...additionalDocs] = await mockConfig.submitForm();
 
     expect(additionalDocs).to.be.empty;
-    expect(doc).excludingEvery(excludeProps).to.deep.equal(initialPerson);
+    expect(doc).excludingEvery(excludeProps).to.deep.equal({ ...undefinedProps, ...initialPerson });
 
     await mockConfig.cancelForm();
 
@@ -82,14 +88,12 @@ describe('cht-form web component - Edit Person Form', () => {
       role: 'patient',
       external_id: '54321',
       notes: 'Updated notes',
-      contact: undefined,
-      parent: '',
       meta: {
         ...initialPerson.meta,
         last_edited_by: '',
         last_edited_by_person_uuid: 'default_user',
         last_edited_by_place_uuid: ''
-      },
+      }
     };
 
     await mockConfig.loadForm('default', 'contact',  'person-edit');
@@ -130,6 +134,6 @@ describe('cht-form web component - Edit Person Form', () => {
     const [updatedDoc, ...updatedAdditionalDocs] = await mockConfig.submitForm();
 
     expect(updatedAdditionalDocs).to.be.empty;
-    expect(updatedDoc).excludingEvery(excludeProps).to.deep.equal(updatedPerson);
+    expect(updatedDoc).excludingEvery(excludeProps).to.deep.equal({ ...undefinedProps, ...updatedPerson });
   });
 });

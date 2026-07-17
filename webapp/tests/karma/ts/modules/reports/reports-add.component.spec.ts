@@ -43,7 +43,7 @@ describe('Reports Add Component', () => {
     dbService = { getAttachment: sinon.stub() };
     fileReaderService = { base64: sinon.stub() };
     getReportContentService = { getReportContent: sinon.stub().resolves() };
-    xmlFormsService = { get: sinon.stub().resolves() };
+    xmlFormsService = { getFormConfig: sinon.stub().resolves() };
     lineageModelGeneratorService = { report: sinon.stub().resolves({ doc: {} }) };
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
@@ -195,9 +195,9 @@ describe('Reports Add Component', () => {
         route.snapshot.params = { formId: 'my_form' };
         const openReportContentStub = sinon.stub(ReportsActions.prototype, 'openReportContent');
         getReportContentService.getReportContent.resolves();
-        const xmlForm = { _id: 'my_form', some: 'content' };
+        const formConfig = { doc: { _id: 'my_form', some: 'content' } };
         const renderedForm = { rendered: 'form', model: {}, instance: {} };
-        xmlFormsService.get.resolves(xmlForm);
+        xmlFormsService.getFormConfig.resolves(formConfig);
         formService.render.resolves(renderedForm);
         const setEnketoEditedStatusStub = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
         const setEnketoErrorStub = sinon.stub(GlobalActions.prototype, 'setEnketoError');
@@ -216,12 +216,12 @@ describe('Reports Add Component', () => {
         expect(openReportContentStub.args[0]).to.deep.equal([{ formInternalId: 'my_form' }]);
         expect(getReportContentService.getReportContent.calledOnce).to.be.true;
         expect(getReportContentService.getReportContent.args[0]).to.deep.equal([undefined]);
-        expect(xmlFormsService.get.calledOnce).to.be.true;
-        expect(xmlFormsService.get.args[0]).to.deep.equal(['my_form']);
+        expect(xmlFormsService.getFormConfig.calledOnce).to.be.true;
+        expect(xmlFormsService.getFormConfig.args[0]).to.deep.equal(['report', 'my_form']);
         expect(setEnketoEditedStatusStub.calledOnce).to.be.true;
         expect(setEnketoEditedStatusStub.args[0]).to.deep.equal([false]);
         expect(formService.render.calledOnce).to.be.true;
-        expect(formService.render.args[0][0].formDoc).to.deep.equal(xmlForm);
+        expect(formService.render.args[0][0].formConfig).to.deep.equal(formConfig);
         expect(component.form).to.equal(renderedForm);
 
         const markFormEdited = formService.render.args[0][0].editedListener;
@@ -250,12 +250,12 @@ describe('Reports Add Component', () => {
 
       it('should catch form reading errors', fakeAsync(() => {
         sinon.resetHistory();
-        xmlFormsService.get.rejects({ error: 'boom' });
+        xmlFormsService.getFormConfig.rejects({ error: 'boom' });
 
         component.ngAfterViewInit();
         tick();
 
-        expect(xmlFormsService.get.callCount).to.equal(1);
+        expect(xmlFormsService.getFormConfig.callCount).to.equal(1);
         expect(formService.render.callCount).to.equal(0);
         expect(error.callCount).to.equal(1);
         expect(error.args[0][0]).to.equal('Error setting selected doc');
@@ -264,13 +264,13 @@ describe('Reports Add Component', () => {
       it('should catch enketo errors', fakeAsync(() => {
         sinon.resetHistory();
         getReportContentService.getReportContent.resolves();
-        xmlFormsService.get.resolves({ _id: 'my_form', some: 'content' });
+        xmlFormsService.getFormConfig.resolves({ doc: { _id: 'my_form', some: 'content' } });
         formService.render.rejects({ some: 'error' });
 
         component.ngAfterViewInit();
         tick();
 
-        expect(xmlFormsService.get.callCount).to.equal(1);
+        expect(xmlFormsService.getFormConfig.callCount).to.equal(1);
         expect(formService.render.callCount).to.equal(1);
         expect(component.form).to.equal(undefined);
         expect(error.callCount).to.equal(1);
@@ -338,8 +338,8 @@ describe('Reports Add Component', () => {
         const model = { doc, formInternalId: doc.form };
         const reportContent = { hello: 'world' };
         getReportContentService.getReportContent.resolves(reportContent);
-        const xmlForm = { _id: 'my_form', some: 'content' };
-        xmlFormsService.get.resolves(xmlForm);
+        const formConfig = { doc: { _id: 'my_form', some: 'content' } };
+        xmlFormsService.getFormConfig.resolves(formConfig);
         const renderedForm = { rendered: 'form', model: {}, instance: {} };
         formService.render.resolves(renderedForm);
 
@@ -353,14 +353,13 @@ describe('Reports Add Component', () => {
         expect(openReportContent.args).to.deep.equal([[model]]);
         expect(setLoadingContent.args).to.deep.equal([[true], [false]]);
         expect(getReportContentService.getReportContent.calledOnceWithExactly(doc)).to.be.true;
-        expect(xmlFormsService.get.calledOnceWithExactly(model.formInternalId)).to.be.true;
+        expect(xmlFormsService.getFormConfig.calledOnceWithExactly('report', model.formInternalId)).to.be.true;
         expect(setEnketoEditedStatus.calledOnceWithExactly(false)).to.be.true;
         expect(formService.render.calledOnce).to.be.true;
         expect(formService.render.args[0][0]).to.deep.include({
-          formDoc: xmlForm,
+          formConfig,
           editing: true,
           selector: '#report-form',
-          type: 'report',
           instanceData: reportContent
         });
         expect(component.form).to.equal(renderedForm);
@@ -569,7 +568,6 @@ describe('Reports Add Component', () => {
       expect(router.navigate.callCount).to.equal(0);
       expect(formService.save.callCount).to.equal(1);
       expect(formService.save.args[0]).to.deep.equal([
-        'some_form',
         { the: 'rendered form' },
         geoHandle,
         undefined, //no report id
@@ -616,7 +614,6 @@ describe('Reports Add Component', () => {
       expect(router.navigate.callCount).to.equal(0);
       expect(formService.save.callCount).to.equal(1);
       expect(formService.save.args[0]).to.deep.equal([
-        'delivery',
         { the: 'the form' },
         geoHandle,
         undefined, //no report id
