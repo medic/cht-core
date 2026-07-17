@@ -11,6 +11,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { UserContactSummaryService } from '@mm-services/user-contact-summary.service';
+import { FormConfig, FormType } from '@mm-services/enketo.service';
 
 export const TRAINING_FORM_ID_PREFIX: string = `${PREFIXES.FORM}training:`;
 export const CONTACT_FORM_ID_PREFIX: string = `${PREFIXES.FORM}contact:`;
@@ -410,22 +411,3 @@ export class XmlFormsService {
   }
 }
 
-export type FormType = 'contact' | 'report' | 'task' | 'training-card';
-
-export class FormConfig {
-  public readonly repeatPaths: string[];
-
-  constructor(
-    public readonly doc: Record<string, any>,
-    public type: FormType,
-    xml: string,
-    public readonly html: string,
-    public readonly model: string
-  ){
-    const xmlDoc = new DOMParser().parseFromString(xml, 'text/xml');
-    this.repeatPaths = Array
-      .from(xmlDoc.querySelectorAll('repeat[nodeset]'))
-      .map(el => el.getAttribute('nodeset')!)
-      .filter(Boolean);
-  }
-}

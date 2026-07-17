@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoFormContext, EnketoService, FormConfig } from '@mm-services/enketo.service';
 import * as medicXpathExtensions from '../../../src/js/enketo/medic-xpath-extensions';
 import moment from 'moment';
 import { toBik_text } from 'bikram-sambat';
@@ -9,7 +9,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { CHTDatasourceService as CHTDatasourceServiceStub } from './stubs/cht-datasource.service';
 import { CONTACT_TYPES } from '@medic/constants';
-import { FormConfig } from '@mm-services/xml-forms.service';
 import { EnketoForm, NewEnketoService } from '@mm-services/NewEnketoService';
 
 const DEFAULT_FORM_ID = 'cht-form-id';

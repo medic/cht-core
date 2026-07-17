@@ -17,7 +17,6 @@ import { TranslateService } from '@mm-services/translate.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Qualifier, Report } from '@medic/cht-datasource';
 import { DOC_TYPES } from '@medic/constants';
-import { FormConfig } from '@mm-services/xml-forms.service';
 import { EnketoForm } from '@mm-services/NewEnketoService';
 
 /**
@@ -640,6 +639,8 @@ interface XmlFormContext {
   userContactSummary?: ContactSummary;
 }
 
+export type FormType = 'contact' | 'report' | 'task' | 'training-card';
+
 export interface EnketoFormContext {
   readonly selector: string;
   readonly formConfig: FormConfig;
@@ -650,4 +651,22 @@ export interface EnketoFormContext {
   readonly isFormInModal?: boolean;
   readonly contactSummary?: ContactSummary;
   readonly userContactSummary?: ContactSummary;
+}
+
+export class FormConfig {
+  public readonly repeatPaths: string[];
+
+  constructor(
+    public readonly doc: Record<string, any>,
+    public type: FormType,
+    xml: string,
+    public readonly html: string,
+    public readonly model: string
+  ) {
+    const xmlDoc = new DOMParser().parseFromString(xml, 'text/xml');
+    this.repeatPaths = Array
+      .from(xmlDoc.querySelectorAll('repeat[nodeset]'))
+      .map(el => el.getAttribute('nodeset')!)
+      .filter(Boolean);
+  }
 }

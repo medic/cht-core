@@ -7,8 +7,8 @@ import * as FileManager from '../../js/enketo/file-manager';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
-import { FormConfig } from '@mm-services/xml-forms.service';
 import { isHardcodedType } from '@medic/contact-types-utils';
+import { FormConfig } from '@mm-services/enketo.service';
 
 @Injectable({
   providedIn: 'root'
@@ -124,10 +124,7 @@ export class NewEnketoService {
     };
   }
 
-  private initializeContactSibling(
-    rootContactDoc: Record<string, any>,
-    rawSibling?: Record<string, any>
-  ): Record<string, any> | undefined {
+  private initializeContactSibling(rootContactDoc: Record<string, any>, rawSibling?: Record<string, any>) {
     if (!rawSibling) {
       return;
     }

@@ -8,7 +8,7 @@ import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { FormConfig, XmlFormsService } from '@mm-services/xml-forms.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -19,6 +19,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { FormConfig } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './reports-add.component.html',

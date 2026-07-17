@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } fro
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
-import { FormConfig, XmlFormsService } from '@mm-services/xml-forms.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
@@ -13,6 +13,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { NgIf } from '@angular/common';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { TranslatePipe } from '@ngx-translate/core';
+import { FormConfig } from '@mm-services/enketo.service';
 
 @Component({
   selector: 'training-cards-form',

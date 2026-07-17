@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormService, WebappEnketoFormContext } from '@mm-services/form.service';
 import { PerformanceService } from '@mm-services/performance.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { FormConfig, XmlFormsService } from '@mm-services/xml-forms.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
@@ -22,6 +22,7 @@ import { TranslateFromPipe } from '@mm-pipes/translate-from.pipe';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 import { Contact, Qualifier } from '@medic/cht-datasource';
 import { EnketoForm } from '@mm-services/NewEnketoService';
+import { FormConfig } from '@mm-services/enketo.service';
 
 @Component({
   templateUrl: './tasks-content.component.html',
