@@ -2247,6 +2247,45 @@ describe('Form service', () => {
       assert.deepEqual(savedDocs[0].geolocation_log, originalLog);
       assert.equal(savedDocs[0].name, 'My Household');
     });
+
+    it('preserves existing home geolocation when capture context is other during edit', async () => {
+      const docId = 'existing-contact-id';
+      const type = 'clinic';
+      const originalGeo = { latitude: 43.06, longitude: -89.45, altitude: 0, accuracy: 35 };
+      const originalLog = [{ timestamp: 1749168000000, recording: originalGeo, is_home: true }];
+      const capturedGeoData = { latitude: 1.5, longitude: 37.0, accuracy: 8 };
+
+      const captureInput = document.createElement('input');
+      captureInput.type = 'hidden';
+      captureInput.value = 'captured';
+      captureInput.dataset.geoContext = 'other';
+      const captureWrapper = document.createElement('div');
+      captureWrapper.classList.add('or-appearance-geolocation-capture');
+      captureWrapper.appendChild(captureInput);
+      const html = document.createElement('div');
+      html.appendChild(captureWrapper);
+
+      enketoTranslationService.contactRecordToJs.returns({
+        doc: { _id: docId, type, name: 'My Household', geolocation: '', geo_capture: 'captured' }
+      });
+      dbGet.withArgs(docId).resolves({
+        _id: docId,
+        geolocation: originalGeo,
+        geolocation_log: originalLog
+      });
+      dbBulkDocs.resolves([]);
+
+      await service.saveContact(
+        { docId, type },
+        { form: { getDataStr: () => '<data></data>', view: { html } } },
+        false,
+        sinon.stub().resolves(capturedGeoData)
+      );
+
+      const savedDocs = dbBulkDocs.args[0][0];
+      assert.deepEqual(savedDocs[0].geolocation, originalGeo);
+      assert.isFalse(savedDocs[0].geolocation_log[savedDocs[0].geolocation_log.length - 1].is_home);
+    });
   });
 
   describe('load contact summary', () => {

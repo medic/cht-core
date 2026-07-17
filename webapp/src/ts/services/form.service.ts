@@ -457,6 +457,22 @@ export class FormService {
     }
   }
 
+  private async preserveHomeGeoIfNonHomeCapture(
+    geoCaptureValue: string | undefined,
+    contextValue: string | undefined,
+    docId: string | undefined,
+    docs: any[]
+  ) {
+    if (geoCaptureValue !== 'captured' || contextValue === 'home' || !docId) {
+      return;
+    }
+    const originalDoc = await this.dbService.get().get(docId);
+    const contactDoc = docs.find(doc => doc._id === docId);
+    if (contactDoc && originalDoc) {
+      contactDoc.geolocation = originalDoc.geolocation;
+    }
+  }
+
   async saveContact(
     contactInfo: {
       docId: string | undefined;
@@ -499,6 +515,7 @@ export class FormService {
     const docsWithGeo = geoCaptureValue === 'kept'
       ? preparedDocs.preparedDocs
       : await this.saveGeo(geoHandle, preparedDocs.preparedDocs, contextValue, true);
+    await this.preserveHomeGeoIfNonHomeCapture(geoCaptureValue, contextValue, docId, docsWithGeo);
     docsWithGeo.forEach((doc: any) => delete doc.geo_capture);
     this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
     const bulkDocsResult = await this.dbService.get().bulkDocs(docsWithGeo);
