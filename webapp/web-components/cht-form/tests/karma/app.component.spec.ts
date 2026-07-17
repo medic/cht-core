@@ -8,7 +8,6 @@ import { expect } from 'chai';
 import { AppComponent } from '../../src/app.component';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { EnketoService } from '@mm-services/enketo.service';
-import { ContactSaveService } from '@mm-services/contact-save.service';
 import { CHTDatasourceService } from '@mm-services/cht-datasource.service';
 
 describe('AppComponent', () => {
@@ -22,7 +21,6 @@ describe('AppComponent', () => {
   } as const;
 
   let chtDatasourceService;
-  let contactSaveService;
   let enketoService;
   let fixture;
 
@@ -38,13 +36,13 @@ describe('AppComponent', () => {
       addExtensionLib: sinon.stub(),
       clearExtensionLibs: sinon.stub(),
     };
-    contactSaveService = { save: sinon.stub() };
     enketoService = {
       renderForm: sinon
         .stub()
         .resolves(),
       getCurrentForm: sinon.stub(),
-      completeNewReport: sinon.stub(),
+      saveReport: sinon.stub(),
+      saveContact: sinon.stub(),
       unload: sinon.stub(),
     };
     await TestBed
@@ -55,7 +53,6 @@ describe('AppComponent', () => {
         ],
         providers: [
           { provide: CHTDatasourceService, useValue: chtDatasourceService },
-          { provide: ContactSaveService, useValue: contactSaveService },
           { provide: EnketoService, useValue: enketoService },
         ]
       })
@@ -437,7 +434,7 @@ describe('AppComponent', () => {
       { _id: 'doc1' },
       { _id: 'doc2' },
     ];
-    enketoService.completeNewReport.resolves(expectedDocs);
+    enketoService.saveReport.resolves(expectedDocs);
     const currentForm = { _id: 'current-form' };
     const formId = 'test-form-id';
     const formXml = '<form>custom</form>';
@@ -487,13 +484,13 @@ describe('AppComponent', () => {
     await submitPromise;
     tick();
     expect(enketoService.getCurrentForm.callCount).to.equal(8);
-    expect(contactSaveService.save.called).to.be.false;
-    expect(enketoService.completeNewReport.callCount).to.equal(1);
+    expect(enketoService.saveContact.called).to.be.false;
+    expect(enketoService.saveReport.callCount).to.equal(1);
     const expectedFormDoc = {
       xml: formXml,
       doc: {}
     };
-    expect(enketoService.completeNewReport.args[0]).to.deep.equal([
+    expect(enketoService.saveReport.args[0]).to.deep.equal([
       formId,
       currentForm,
       expectedFormDoc,
@@ -507,7 +504,7 @@ describe('AppComponent', () => {
       { _id: 'doc1' },
       { _id: 'doc2' },
     ];
-    contactSaveService.save.resolves({ preparedDocs: expectedDocs });
+    enketoService.saveContact.resolves({ preparedDocs: expectedDocs });
     const currentForm = { _id: 'current-form' };
     const formId = 'test-form-id';
     const formXml = '<form>custom</form>';
@@ -558,9 +555,9 @@ describe('AppComponent', () => {
     await submitPromise;
     tick();
     expect(enketoService.getCurrentForm.callCount).to.equal(9);
-    expect(enketoService.completeNewReport.called).to.be.false;
-    expect(contactSaveService.save.callCount).to.equal(1);
-    expect(contactSaveService.save.args[0]).to.deep.equal([
+    expect(enketoService.saveReport.called).to.be.false;
+    expect(enketoService.saveContact.callCount).to.equal(1);
+    expect(enketoService.saveContact.args[0]).to.deep.equal([
       currentForm,
       null,
       { type: 'person' },
@@ -574,7 +571,7 @@ describe('AppComponent', () => {
       { _id: 'doc1' },
       { _id: 'doc2' },
     ];
-    contactSaveService.save.resolves({ preparedDocs: expectedDocs });
+    enketoService.saveContact.resolves({ preparedDocs: expectedDocs });
     const currentForm = { _id: 'current-form' };
     const formId = 'test-form-id';
     const formXml = '<form>custom</form>';
@@ -625,9 +622,9 @@ describe('AppComponent', () => {
     await submitPromise;
     tick();
     expect(enketoService.getCurrentForm.callCount).to.equal(9);
-    expect(enketoService.completeNewReport.called).to.be.false;
-    expect(contactSaveService.save.callCount).to.equal(1);
-    expect(contactSaveService.save.args[0]).to.deep.equal([
+    expect(enketoService.saveReport.called).to.be.false;
+    expect(enketoService.saveContact.callCount).to.equal(1);
+    expect(enketoService.saveContact.args[0]).to.deep.equal([
       currentForm,
       null,
       { type: 'contact', contact_type: 'custom_contact' },
@@ -638,7 +635,7 @@ describe('AppComponent', () => {
 
   it('submits form when error thrown completing the report', fakeAsync(async () => {
     const expectedError = new Error('Validation Error');
-    enketoService.completeNewReport.rejects(expectedError);
+    enketoService.saveReport.rejects(expectedError);
     const currentForm = { _id: 'current-form' };
     const consoleErrorStub = sinon.stub(console, 'error');
 
@@ -666,12 +663,12 @@ describe('AppComponent', () => {
     expect(consoleErrorStub.callCount).to.equal(1);
     expect(consoleErrorStub.args[0]).to.deep.equal(['Error submitting form data: ', expectedError]);
     expect(enketoService.getCurrentForm.callCount).to.equal(2);
-    expect(enketoService.completeNewReport.callCount).to.equal(1);
+    expect(enketoService.saveReport.callCount).to.equal(1);
     const expectedFormDoc = {
       xml: FORM_XML,
       doc: {}
     };
-    expect(enketoService.completeNewReport.args[0]).to.deep.equal([
+    expect(enketoService.saveReport.args[0]).to.deep.equal([
       FORM_ID,
       currentForm,
       expectedFormDoc,
@@ -685,7 +682,7 @@ describe('AppComponent', () => {
       { _id: 'doc1' },
       { _id: 'doc2' },
     ];
-    enketoService.completeNewReport.resolves(expectedDocs);
+    enketoService.saveReport.resolves(expectedDocs);
     const currentForm = { _id: 'current-form' };
     const formId = 'test-form-id';
     const formXml = '<form>custom</form>';

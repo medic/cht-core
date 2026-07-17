@@ -6,7 +6,7 @@ export class FormConfig {
 
   constructor(
     public readonly doc: Record<string, any>,
-    public type: FormType,
+    public readonly type: FormType,
     xml: string,
     public readonly html: string,
     public readonly model: string

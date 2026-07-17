@@ -6,7 +6,6 @@ import * as moment from 'moment';
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { DbService } from '@mm-services/db.service';
-import { FileReaderService } from '@mm-services/file-reader.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { SubmitFormBySmsService } from '@mm-services/submit-form-by-sms.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -47,7 +46,6 @@ export class FormService {
     private contactSummaryService: ContactSummaryService,
     private contactTypesService: ContactTypesService,
     private dbService: DbService,
-    private fileReaderService: FileReaderService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private submitFormBySmsService: SubmitFormBySmsService,
     private userContactService: UserContactService,
@@ -96,30 +94,6 @@ export class FormService {
       })
       .catch((err) => {
         console.error('Error initialising enketo service', err);
-      });
-  }
-
-  private getAttachment(id, name) {
-    return this.dbService
-      .get()
-      .getAttachment(id, name)
-      .then(blob => this.fileReaderService.utf8(blob));
-  }
-
-  private transformXml(form) {
-    return Promise
-      .all([
-        this.getAttachment(form._id, this.xmlFormsService.HTML_ATTACHMENT_NAME),
-        this.getAttachment(form._id, this.xmlFormsService.MODEL_ATTACHMENT_NAME)
-      ])
-      .then(([html, model]) => {
-        const $html = $(html);
-
-        return {
-          html: $html,
-          model: model,
-          title: form.title,
-        };
       });
   }
 
