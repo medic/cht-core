@@ -174,7 +174,7 @@ export class FormService {
     const { formConfig, instanceData } = formContext;
 
     try {
-      this.unload(this.enketoService.getCurrentForm());
+      this.enketoService.unload(this.enketoService.getCurrentForm());
       const userSettings = await this.userSettingsService.getWithLanguage();
       formContext.contactSummary = await this.getContactSummary(formConfig, instanceData);
       formContext.userContactSummary = await this.getUserContactSummary(formConfig);
@@ -401,7 +401,7 @@ export class FormService {
   }
 
   unload(form?: EnketoForm) {
-    this.enketoService.unload(form);
+    this.enketoService.unload(form?.form);
   }
 }
 export class DuplicatesFoundError extends Error {

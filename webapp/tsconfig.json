@@ -43,10 +43,5 @@
     "strictInjectionParameters": true,
     "preserveWhitespaces": true,
     "skipTemplateCodegen": false
-  },
-  // TEMPORARY: skip type-checking the karma specs during `ngc` (npm run compile) so e2e can run
-  // before the unit tests are updated. tsconfig.spec.json overrides this so karma still compiles
-  // them. Revert once the webapp specs transpile again.
-  // NOTE: specifying "exclude" replaces TS's defaults, so node_modules/outDir must be re-listed.
-  "exclude": ["node_modules", "dist", "tests/**"]
+  }
 }

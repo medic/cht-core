@@ -22,6 +22,7 @@ import {
   EnketoRootFormData
 } from '@mm-services/form/form-data';
 import { isHardcodedType } from '@medic/contact-types-utils';
+import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 
 /**
  * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
@@ -449,6 +450,10 @@ export class EnketoService {
       const formData = new EnketoReportFormData(this.getFormDataXml(form), reportDoc._id);
       const subDocsData = formData.getDbDocData();
 
+      // As of 4.0.0, content is no longer stored in legacy fields
+      delete reportDoc[REPORT_ATTACHMENT_NAME];
+      delete reportDoc._attachments?.[REPORT_ATTACHMENT_NAME];
+
       this.populateDbDocRefElements(formData, [formData, ...subDocsData]);
       const attachments = this.processFormAttachments(config.doc.internalId, formData, reportDoc._attachments);
       const hiddenFields = this.getHiddenFields([
@@ -586,6 +591,10 @@ export class EnketoService {
     rootData: EnketoRootFormData,
     originalAttachments: Record<string, any> = {}
   ) {
+    const hasCustomAttachmentName = (fileName: string) => !fileName.startsWith(this.USER_FILE_ATTACHMENT_PREFIX)
+      && !fileName.startsWith(`${this.USER_BINARY_ATTACHMENT_PREFIX}/`);
+    const isExistingFileAttachment = (fileName: string) => fileName.startsWith(this.USER_FILE_ATTACHMENT_PREFIX)
+      && rootData.findNodeWithTextContent(fileName.slice(this.USER_FILE_ATTACHMENT_PREFIX.length));
     const binaryAttachments = rootData.binaryTypeElements
       .map(element => this.buildBinaryAttachmentData(form, originalAttachments, element))
       .filter(({ attachment }) => attachment)
@@ -598,23 +607,21 @@ export class EnketoService {
         data: new Blob([ file ], { type: file.type })
       }))
       .reduce((acc, { name, content_type, data }) => ({ ...acc, [name]: { content_type, data } }), {});
-    const existingFileAttachments = Object
+    const existingAttachments = Object
       .entries(originalAttachments)
-      .filter(([key]) => key.startsWith(this.USER_FILE_ATTACHMENT_PREFIX))
-      // Keep existing file attachments still referenced by a field
-      .filter(([key]) => rootData.findNodeWithTextContent(key.slice(this.USER_FILE_ATTACHMENT_PREFIX.length)))
+      // Keep custom attachments and existing file attachments still referenced by a field
+      .filter(([key]) => hasCustomAttachmentName(key) || isExistingFileAttachment(key))
       .reduce((acc, [key, attachment]) => ({ ...acc, [key]: attachment }), {});
 
     const attachments = {
-      ...existingFileAttachments, // TODO I think we need to keep anything without the prefixing....
+      ...existingAttachments,
       ...newFileAttachments,
       ...binaryAttachments
     };
     return Object.keys(attachments).length ? attachments : undefined;
   }
 
-  unload(enketoForm?: EnketoForm) {
-    const form = enketoForm?.form;
+  unload(form) {
     if (form !== this.currentForm) {
       return;
     }

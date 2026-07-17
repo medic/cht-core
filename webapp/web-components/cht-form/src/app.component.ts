@@ -198,7 +198,7 @@ export class AppComponent {
 
   private unloadForm() {
     if (this.enketoForm) {
-      this.enketoService.unload(this.enketoForm);
+      this.enketoService.unload(this.enketoForm.form);
       this.enketoForm = undefined;
       $(`${this.formContext.selector} .container.pages`).empty();
     }

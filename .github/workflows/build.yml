@@ -78,8 +78,8 @@ jobs:
     - run: npm ci
     - name: Use system shellcheck binary
       run: cp /usr/bin/shellcheck node_modules/shellcheck/bin/shellcheck
-    - name: Compile (skip unit tests)
-      run: node scripts/ci/check-versions.js && node scripts/build/cli npmCiModules && npm run lint && npm run build && npm run integration-api
+    - name: Compile
+      run: npm run ci-compile
     - name: Setup QEMU
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a  # v4.0.0
@@ -127,6 +127,28 @@ jobs:
     - run: npm ci
     - name: Run Tests
       run: npm run ${{ matrix.cmd }}
+
+  test-cht-form:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0 # zizmor: ignore[cache-poisoning]
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y xsltproc
+      - run: npm ci
+      - name: Build cht-form Web Component
+        run: npm run build-cht-form
+      - name: Run Tests
+        run: npm run integration-cht-form
 
   tests-k3d:
     needs: build
@@ -409,7 +431,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests, config-tests, build-generated-docs]
+    needs: [tests, config-tests, test-cht-form, build-generated-docs]
     name: Publish branch build
     runs-on: ubuntu-latest
     timeout-minutes: 60
