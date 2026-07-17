@@ -702,6 +702,40 @@ describe('Enketo: Household Geolocation Widget', () => {
           $(radio).trigger('change');
         };
 
+        it('should set element value to empty string', () => {
+          const { widget, container } = initEditWithLocationWidget();
+          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          expect((widget.element as HTMLInputElement).value).to.equal('');
+        });
+
+        it('should fire a change event on the element', () => {
+          const { widget, container } = initEditWithLocationWidget();
+          const changeHandler = sinon.stub();
+          $((widget.element as HTMLInputElement)).on('change', changeHandler);
+          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          expect(changeHandler.callCount).to.equal(1);
+        });
+
+        it('should remove invalid-required class so required error is not shown immediately', async () => {
+          const { widget, container } = initEditWithLocationWidget();
+          // Simulate Enketo adding invalid-required synchronously on change with empty value.
+          // The widget removes it via setTimeout(0) (a macrotask), so we must await one tick.
+          $((widget.element as HTMLInputElement)).on('change', () => {
+            if ((widget.element as HTMLInputElement).value === '') {
+              container.classList.add('invalid-required');
+            }
+          });
+          const radio = container.querySelector(SELECTORS.RECORD_NEW_RADIO) as HTMLInputElement;
+          radio.checked = true;
+          $(radio).trigger('change');
+          await new Promise(resolve => setTimeout(resolve, 0));
+          expect(container.classList.contains('invalid-required')).to.be.false;
+        });
+
         it('should keep the edit choices visible', () => {
           const result = initEditWithLocationWidget();
           selectRecordNew(result);

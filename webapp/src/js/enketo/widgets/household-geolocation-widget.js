@@ -237,7 +237,11 @@ class HouseholdGeolocationWidget extends Widget {
         $(this.element).val('skipped').trigger('change');
         $(this.question).find('.geolocation-context-options, .geolocation-cant-record-btn').remove();
       } else if (value === 'capture-new') {
-        $(this.element).val('');
+        $(this.element).val('').trigger('change');
+        // Enketo validates async (Promise), so defer the removal to a macrotask
+        // that runs after the validation completes and adds the class.
+        // This one-shot timeout means the error still appears on submit.
+        setTimeout(() => $(this.question).removeClass('invalid-required'), 0);
         if ($bar.hasClass('geolocation-progress-failure') &&
             !$(this.question).find('.geolocation-cant-record-btn').length) {
           this._appendCantRecordButton();
